@@ -143,7 +143,7 @@ describeWithCredentials('AssetService Integration Tests (Real API)', () => {
 
       for (const entityType of types) {
         const prompt = buildStructuredPrompt({
-          templateId: 'test',
+          prefabId: 'test',
           physicsShape: 'box',
           physicsWidth: 1,
           physicsHeight: 1,

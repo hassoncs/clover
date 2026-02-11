@@ -6,7 +6,7 @@ function createMinimalGame(overrides: Partial<GameDefinition> = {}): GameDefinit
   return {
     metadata: { id: 'test-game', title: 'Test Game', version: '1.0.0' },
     world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-    templates: {},
+    prefabs: {},
     entities: [
       {
         id: 'player',

@@ -110,7 +110,7 @@
     "cellsRemaining": 54,
     "firstTap": 1
   },
-  "templates": {
+  "prefabs": {
     "cell": {
       "id": "cell",
       "tags": [
@@ -183,7 +183,7 @@
     {
       "id": "cell-0-0",
       "name": "Cell 0,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": 5.35,
@@ -195,7 +195,7 @@
     {
       "id": "cell-0-1",
       "name": "Cell 0,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": 5.35,
@@ -207,7 +207,7 @@
     {
       "id": "cell-0-2",
       "name": "Cell 0,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": 5.35,
@@ -219,7 +219,7 @@
     {
       "id": "cell-0-3",
       "name": "Cell 0,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": 5.35,
@@ -231,7 +231,7 @@
     {
       "id": "cell-0-4",
       "name": "Cell 0,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": 5.35,
@@ -243,7 +243,7 @@
     {
       "id": "cell-0-5",
       "name": "Cell 0,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": 5.35,
@@ -255,7 +255,7 @@
     {
       "id": "cell-0-6",
       "name": "Cell 0,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": 5.35,
@@ -267,7 +267,7 @@
     {
       "id": "cell-0-7",
       "name": "Cell 0,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": 5.35,
@@ -279,7 +279,7 @@
     {
       "id": "cell-1-0",
       "name": "Cell 1,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": 4.05,
@@ -291,7 +291,7 @@
     {
       "id": "cell-1-1",
       "name": "Cell 1,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": 4.05,
@@ -303,7 +303,7 @@
     {
       "id": "cell-1-2",
       "name": "Cell 1,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": 4.05,
@@ -315,7 +315,7 @@
     {
       "id": "cell-1-3",
       "name": "Cell 1,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": 4.05,
@@ -327,7 +327,7 @@
     {
       "id": "cell-1-4",
       "name": "Cell 1,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": 4.05,
@@ -339,7 +339,7 @@
     {
       "id": "cell-1-5",
       "name": "Cell 1,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": 4.05,
@@ -351,7 +351,7 @@
     {
       "id": "cell-1-6",
       "name": "Cell 1,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": 4.05,
@@ -363,7 +363,7 @@
     {
       "id": "cell-1-7",
       "name": "Cell 1,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": 4.05,
@@ -375,7 +375,7 @@
     {
       "id": "cell-2-0",
       "name": "Cell 2,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": 2.75,
@@ -387,7 +387,7 @@
     {
       "id": "cell-2-1",
       "name": "Cell 2,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": 2.75,
@@ -399,7 +399,7 @@
     {
       "id": "cell-2-2",
       "name": "Cell 2,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": 2.75,
@@ -411,7 +411,7 @@
     {
       "id": "cell-2-3",
       "name": "Cell 2,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": 2.75,
@@ -423,7 +423,7 @@
     {
       "id": "cell-2-4",
       "name": "Cell 2,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": 2.75,
@@ -435,7 +435,7 @@
     {
       "id": "cell-2-5",
       "name": "Cell 2,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": 2.75,
@@ -447,7 +447,7 @@
     {
       "id": "cell-2-6",
       "name": "Cell 2,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": 2.75,
@@ -459,7 +459,7 @@
     {
       "id": "cell-2-7",
       "name": "Cell 2,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": 2.75,
@@ -471,7 +471,7 @@
     {
       "id": "cell-3-0",
       "name": "Cell 3,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": 1.4499999999999993,
@@ -483,7 +483,7 @@
     {
       "id": "cell-3-1",
       "name": "Cell 3,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": 1.4499999999999993,
@@ -495,7 +495,7 @@
     {
       "id": "cell-3-2",
       "name": "Cell 3,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": 1.4499999999999993,
@@ -507,7 +507,7 @@
     {
       "id": "cell-3-3",
       "name": "Cell 3,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": 1.4499999999999993,
@@ -519,7 +519,7 @@
     {
       "id": "cell-3-4",
       "name": "Cell 3,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": 1.4499999999999993,
@@ -531,7 +531,7 @@
     {
       "id": "cell-3-5",
       "name": "Cell 3,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": 1.4499999999999993,
@@ -543,7 +543,7 @@
     {
       "id": "cell-3-6",
       "name": "Cell 3,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": 1.4499999999999993,
@@ -555,7 +555,7 @@
     {
       "id": "cell-3-7",
       "name": "Cell 3,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": 1.4499999999999993,
@@ -567,7 +567,7 @@
     {
       "id": "cell-4-0",
       "name": "Cell 4,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": 0.14999999999999947,
@@ -579,7 +579,7 @@
     {
       "id": "cell-4-1",
       "name": "Cell 4,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": 0.14999999999999947,
@@ -591,7 +591,7 @@
     {
       "id": "cell-4-2",
       "name": "Cell 4,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": 0.14999999999999947,
@@ -603,7 +603,7 @@
     {
       "id": "cell-4-3",
       "name": "Cell 4,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": 0.14999999999999947,
@@ -615,7 +615,7 @@
     {
       "id": "cell-4-4",
       "name": "Cell 4,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": 0.14999999999999947,
@@ -627,7 +627,7 @@
     {
       "id": "cell-4-5",
       "name": "Cell 4,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": 0.14999999999999947,
@@ -639,7 +639,7 @@
     {
       "id": "cell-4-6",
       "name": "Cell 4,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": 0.14999999999999947,
@@ -651,7 +651,7 @@
     {
       "id": "cell-4-7",
       "name": "Cell 4,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": 0.14999999999999947,
@@ -663,7 +663,7 @@
     {
       "id": "cell-5-0",
       "name": "Cell 5,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": -1.1500000000000004,
@@ -675,7 +675,7 @@
     {
       "id": "cell-5-1",
       "name": "Cell 5,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": -1.1500000000000004,
@@ -687,7 +687,7 @@
     {
       "id": "cell-5-2",
       "name": "Cell 5,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": -1.1500000000000004,
@@ -699,7 +699,7 @@
     {
       "id": "cell-5-3",
       "name": "Cell 5,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": -1.1500000000000004,
@@ -711,7 +711,7 @@
     {
       "id": "cell-5-4",
       "name": "Cell 5,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": -1.1500000000000004,
@@ -723,7 +723,7 @@
     {
       "id": "cell-5-5",
       "name": "Cell 5,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": -1.1500000000000004,
@@ -735,7 +735,7 @@
     {
       "id": "cell-5-6",
       "name": "Cell 5,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": -1.1500000000000004,
@@ -747,7 +747,7 @@
     {
       "id": "cell-5-7",
       "name": "Cell 5,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": -1.1500000000000004,
@@ -759,7 +759,7 @@
     {
       "id": "cell-6-0",
       "name": "Cell 6,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": -2.450000000000001,
@@ -771,7 +771,7 @@
     {
       "id": "cell-6-1",
       "name": "Cell 6,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": -2.450000000000001,
@@ -783,7 +783,7 @@
     {
       "id": "cell-6-2",
       "name": "Cell 6,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": -2.450000000000001,
@@ -795,7 +795,7 @@
     {
       "id": "cell-6-3",
       "name": "Cell 6,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": -2.450000000000001,
@@ -807,7 +807,7 @@
     {
       "id": "cell-6-4",
       "name": "Cell 6,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": -2.450000000000001,
@@ -819,7 +819,7 @@
     {
       "id": "cell-6-5",
       "name": "Cell 6,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": -2.450000000000001,
@@ -831,7 +831,7 @@
     {
       "id": "cell-6-6",
       "name": "Cell 6,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": -2.450000000000001,
@@ -843,7 +843,7 @@
     {
       "id": "cell-6-7",
       "name": "Cell 6,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": -2.450000000000001,
@@ -855,7 +855,7 @@
     {
       "id": "cell-7-0",
       "name": "Cell 7,0",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -5.35,
         "y": -3.75,
@@ -867,7 +867,7 @@
     {
       "id": "cell-7-1",
       "name": "Cell 7,1",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -4.05,
         "y": -3.75,
@@ -879,7 +879,7 @@
     {
       "id": "cell-7-2",
       "name": "Cell 7,2",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -2.75,
         "y": -3.75,
@@ -891,7 +891,7 @@
     {
       "id": "cell-7-3",
       "name": "Cell 7,3",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -1.4499999999999993,
         "y": -3.75,
@@ -903,7 +903,7 @@
     {
       "id": "cell-7-4",
       "name": "Cell 7,4",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": -0.14999999999999947,
         "y": -3.75,
@@ -915,7 +915,7 @@
     {
       "id": "cell-7-5",
       "name": "Cell 7,5",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 1.1500000000000004,
         "y": -3.75,
@@ -927,7 +927,7 @@
     {
       "id": "cell-7-6",
       "name": "Cell 7,6",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 2.450000000000001,
         "y": -3.75,
@@ -939,7 +939,7 @@
     {
       "id": "cell-7-7",
       "name": "Cell 7,7",
-      "template": "cell",
+      "prefab": "cell",
       "transform": {
         "x": 3.75,
         "y": -3.75,

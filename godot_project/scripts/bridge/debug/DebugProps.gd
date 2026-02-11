@@ -117,8 +117,8 @@ func get_all_props(entity_id: String, options: Dictionary = {}) -> Dictionary:
 		}
 	}
 	
-	if node.has_meta("template"):
-		result["template"] = node.get_meta("template")
+	if node.has_meta("prefab"):
+		result["prefab"] = node.get_meta("prefab")
 	
 	if node.has_meta("tags"):
 		result["tags"] = node.get_meta("tags")
@@ -129,7 +129,7 @@ func get_all_props(entity_id: String, options: Dictionary = {}) -> Dictionary:
 	
 	var meta = {}
 	for key in node.get_meta_list():
-		if key != "template" and key != "tags":
+		if key != "prefab" and key != "tags":
 			var val = node.get_meta(key)
 			if val is String or val is int or val is float or val is bool or val is Array:
 				meta[key] = val
@@ -150,8 +150,8 @@ func _get_property(node: Node2D, entity_id: String, path: String) -> Variant:
 			return _get_render_prop(node, parts)
 		"tags":
 			return node.get_meta("tags") if node.has_meta("tags") else []
-		"template":
-			return node.get_meta("template") if node.has_meta("template") else null
+		"prefab":
+			return node.get_meta("prefab") if node.has_meta("prefab") else null
 		"name":
 			return node.name
 		"meta":
@@ -459,7 +459,7 @@ func _normalize_prop_path(path: String) -> String:
 		return path
 	
 	var first = parts[0]
-	if first in ["transform", "physics", "render", "tags", "template", "name", "meta"]:
+	if first in ["transform", "physics", "render", "tags", "prefab", "name", "meta"]:
 		return path
 	
 	if first in ["position", "rotation", "scale", "localPosition", "localRotation", "localScale"]:

@@ -49,7 +49,7 @@ function createMockWorldOps(): WorldOps {
     addTag: vi.fn().mockResolvedValue(undefined),
     removeTag: vi.fn().mockResolvedValue(false),
     hasTag: vi.fn().mockResolvedValue(false),
-    getTemplate: vi.fn().mockResolvedValue(undefined),
+    getPrefab: vi.fn().mockResolvedValue(undefined),
     getEntityData: vi.fn().mockResolvedValue(null),
     
     // Queries

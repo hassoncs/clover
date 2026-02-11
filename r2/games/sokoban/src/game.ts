@@ -46,7 +46,7 @@ function generateLevel(): GameEntity[] {
         entities.push({
           id: `wall-${row}-${col}`,
           name: `Wall ${row},${col}`,
-          template: "wall",
+          prefab: "wall",
           transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
         });
       } else {
@@ -54,7 +54,7 @@ function generateLevel(): GameEntity[] {
         entities.push({
           id: `floor-${row}-${col}`,
           name: `Floor ${row},${col}`,
-          template: "floor",
+          prefab: "floor",
           transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
         });
         
@@ -63,7 +63,7 @@ function generateLevel(): GameEntity[] {
           entities.push({
             id: `target-${row}-${col}`,
             name: `Target ${row},${col}`,
-            template: "target",
+            prefab: "target",
             transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
           });
         } else if (char === "$") {
@@ -71,7 +71,7 @@ function generateLevel(): GameEntity[] {
           entities.push({
             id: `box-${row}-${col}`,
             name: `Box ${row},${col}`,
-            template: "box",
+            prefab: "box",
             transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
           });
         } else if (char === "@") {
@@ -89,7 +89,7 @@ function generateLevel(): GameEntity[] {
   entities.push({
     id: "player",
     name: "Player",
-    template: "player",
+    prefab: "player",
     transform: { x: playerX, y: playerY, angle: 0, scaleX: 1, scaleY: 1 },
   });
   
@@ -143,7 +143,7 @@ const game: GameDefinition = {
     moves: 0,
     allBoxesOnTargets: 0,
   },
-  templates: {
+  prefabs: {
     floor: {
       id: "floor",
       tags: ["floor"],

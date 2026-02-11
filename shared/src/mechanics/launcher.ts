@@ -117,7 +117,7 @@ export function createLauncherRules(config: LauncherConfig): GameRule[] {
       // Spawn the projectile
       {
         type: 'spawn' as const,
-        template: projectileTemplate,
+        prefab: projectileTemplate,
         position: {
           type: 'fixed' as const,
           x: projectileSpawnPosition.x,

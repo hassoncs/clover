@@ -395,7 +395,7 @@ async function buildOfflineManifestFromLegacy(gameId: string): Promise<OfflineMa
 
 /**
  * Get resolved pack entries for a specific pack from local storage.
- * Returns a map of templateId -> ResolvedPackEntry for use with the game runtime.
+ * Returns a map of prefabId -> ResolvedPackEntry for use with the game runtime.
  */
 export async function getLocalResolvedPackEntries(
   gameId: string,
@@ -417,11 +417,11 @@ export async function getLocalResolvedPackEntries(
 
   const entries: Record<string, ResolvedPackEntry> = {};
   
-  for (const [templateId, asset] of Object.entries(pack.assets)) {
+  for (const [prefabId, asset] of Object.entries(pack.assets)) {
     // Verify file exists
     const fileInfo = await FileSystem.getInfoAsync(asset.localPath);
     if (fileInfo.exists) {
-      entries[templateId] = {
+      entries[prefabId] = {
         imageUrl: asset.localPath,
       };
     }

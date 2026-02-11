@@ -306,7 +306,7 @@ function validateBehavior(
 
 function validateEntity(
   entity: Record<string, unknown>,
-  templates: Record<string, unknown>,
+  prefabs: Record<string, unknown>,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
@@ -337,11 +337,11 @@ function validateEntity(
     }
   }
 
-  if (typeof entity.template === 'string' && !templates[entity.template]) {
+  if (typeof entity.prefab === 'string' && !prefabs[entity.prefab]) {
     errors.push({
-      code: 'UNKNOWN_TEMPLATE',
-      message: `Entity ${entityId} references unknown template: ${entity.template}`,
-      path: `entities.${entityId}.template`,
+      code: 'UNKNOWN_PREFAB',
+      message: `Entity ${entityId} references unknown prefab: ${entity.prefab}`,
+      path: `entities.${entityId}.prefab`,
     });
   }
 
@@ -356,36 +356,36 @@ function validateEntity(
   }
 }
 
-function validateTemplates(
-  templates: Record<string, unknown>,
+function validatePrefabs(
+  prefabs: Record<string, unknown>,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  for (const [templateId, template] of Object.entries(templates)) {
-    if (!isRecord(template) || typeof template.id !== 'string') {
+  for (const [prefabId, prefab] of Object.entries(prefabs)) {
+    if (!isRecord(prefab) || typeof prefab.id !== 'string') {
       errors.push({
-        code: 'MISSING_TEMPLATE_ID',
-        message: `Template ${templateId} must have an ID`,
-        path: `templates.${templateId}.id`,
+        code: 'MISSING_PREFAB_ID',
+        message: `Prefab ${prefabId} must have an ID`,
+        path: `prefabs.${prefabId}.id`,
       });
     }
 
-    if (template && isRecord(template)) {
-      if (template.physics) {
-        validatePhysicsComponent(template.physics, `template:${templateId}`, errors, warnings);
+    if (prefab && isRecord(prefab)) {
+      if (prefab.physics) {
+        validatePhysicsComponent(prefab.physics, `prefab:${prefabId}`, errors, warnings);
       }
 
-      if (template.collider) {
-        validateColliderComponent(template.collider, `template:${templateId}`, errors, warnings);
+      if (prefab.collider) {
+        validateColliderComponent(prefab.collider, `prefab:${prefabId}`, errors, warnings);
       }
 
-      if (template.visual) {
-        validateVisualComponent(template.visual, `template:${templateId}`, errors, warnings);
+      if (prefab.visual) {
+        validateVisualComponent(prefab.visual, `prefab:${prefabId}`, errors, warnings);
       }
 
-      if (Array.isArray(template.behaviors)) {
-        template.behaviors.forEach((behavior, index) => {
-          validateBehavior(behavior, `template:${templateId}`, index, errors, warnings);
+      if (Array.isArray(prefab.behaviors)) {
+        prefab.behaviors.forEach((behavior, index) => {
+          validateBehavior(behavior, `prefab:${prefabId}`, index, errors, warnings);
         });
       }
     }
@@ -425,7 +425,7 @@ function validateEntities(
 
   const entityIds = new Set<string>();
   const entities = game.entities;
-  const templates = isRecord(game.templates) ? game.templates : {};
+  const prefabs = isRecord(game.prefabs) ? game.prefabs : {};
   for (const entity of entities) {
     if (!isRecord(entity)) continue;
     if (typeof entity.id === 'string' && entityIds.has(entity.id)) {
@@ -439,7 +439,7 @@ function validateEntities(
       entityIds.add(entity.id);
     }
 
-    validateEntity(entity, templates, errors, warnings);
+    validateEntity(entity, prefabs, errors, warnings);
   }
 
   const rules = Array.isArray(game.rules) ? game.rules : [];
@@ -459,10 +459,10 @@ function validateEntities(
     if (!isRecord(entity)) return false;
     const behaviors = Array.isArray(entity.behaviors) ? entity.behaviors : [];
     if (behaviors.some((b) => isRecord(b) && b.type === 'draggable')) return true;
-    if (typeof entity.template === 'string') {
-      const template = templates[entity.template];
-      if (isRecord(template) && Array.isArray(template.behaviors)) {
-        return template.behaviors.some((b) => isRecord(b) && b.type === 'draggable');
+    if (typeof entity.prefab === 'string') {
+      const prefab = prefabs[entity.prefab];
+      if (isRecord(prefab) && Array.isArray(prefab.behaviors)) {
+        return prefab.behaviors.some((b) => isRecord(b) && b.type === 'draggable');
       }
     }
     return false;
@@ -516,19 +516,19 @@ function validateRule(
       game.entities.forEach((entity) => {
         if (!isRecord(entity)) return;
         getStringArray(entity.tags).forEach((tag) => { allTags.add(tag); });
-        if (typeof entity.template === 'string') {
-          const template = isRecord(game.templates) ? game.templates[entity.template] : undefined;
-          if (isRecord(template)) {
-            getStringArray(template.tags).forEach((tag) => { allTags.add(tag); });
+        if (typeof entity.prefab === 'string') {
+          const prefab = isRecord(game.prefabs) ? game.prefabs[entity.prefab] : undefined;
+          if (isRecord(prefab)) {
+            getStringArray(prefab.tags).forEach((tag) => { allTags.add(tag); });
           }
         }
       });
     }
 
-    if (isRecord(game.templates)) {
-      Object.values(game.templates).forEach((template) => {
-        if (!isRecord(template)) return;
-        getStringArray(template.tags).forEach((tag) => { allTags.add(tag); });
+    if (isRecord(game.prefabs)) {
+      Object.values(game.prefabs).forEach((prefab) => {
+        if (!isRecord(prefab)) return;
+        getStringArray(prefab.tags).forEach((tag) => { allTags.add(tag); });
       });
     }
 
@@ -656,8 +656,8 @@ function validateWinLoseConditions(
     const hasTaggedEntity = game.entities?.some(
       (entity) =>
         entity.tags?.includes(game.loseCondition!.tag!) ||
-        (entity.template &&
-          game.templates?.[entity.template]?.tags?.includes(game.loseCondition!.tag!))
+        (entity.prefab &&
+          game.prefabs?.[entity.prefab]?.tags?.includes(game.loseCondition!.tag!))
     );
 
     if (!hasTaggedEntity) {
@@ -673,8 +673,8 @@ function validateWinLoseConditions(
     const hasTaggedEntity = game.entities?.some(
       (entity) =>
         entity.tags?.includes(game.loseCondition!.tag!) ||
-        (entity.template &&
-          game.templates?.[entity.template]?.tags?.includes(game.loseCondition!.tag!))
+        (entity.prefab &&
+          game.prefabs?.[entity.prefab]?.tags?.includes(game.loseCondition!.tag!))
     );
 
     if (!hasTaggedEntity) {
@@ -717,8 +717,8 @@ export function validateGameDefinition(game: GameDefinition): GameDefinitionVali
   validateMetadata(parsedGame, errors, warnings);
   validateWorld(parsedGame, errors, warnings);
 
-  if (parsedGame.templates) {
-    validateTemplates(parsedGame.templates, errors, warnings);
+  if (parsedGame.prefabs) {
+    validatePrefabs(parsedGame.prefabs, errors, warnings);
   }
 
   validateEntities(parsedGame, errors, warnings);

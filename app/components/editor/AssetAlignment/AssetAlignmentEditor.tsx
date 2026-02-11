@@ -14,7 +14,7 @@ import type { PhysicsComponent, AssetPlacement } from '@slopcade/shared';
 interface AssetAlignmentEditorProps {
   visible: boolean;
   onClose: () => void;
-  templateId: string;
+  prefabId: string;
   physics?: PhysicsComponent;
   imageUrl?: string;
   initialPlacement?: AssetPlacement;
@@ -30,7 +30,7 @@ const DEFAULT_PLACEMENT: AssetPlacement = {
 export function AssetAlignmentEditor({
   visible,
   onClose,
-  templateId,
+  prefabId,
   physics,
   imageUrl,
   initialPlacement,
@@ -88,7 +88,7 @@ export function AssetAlignmentEditor({
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>Align Asset</Text>
-              <Text style={styles.subtitle}>{templateId}</Text>
+              <Text style={styles.subtitle}>{prefabId}</Text>
             </View>
             <Pressable style={styles.closeButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
               <Text style={styles.closeButtonText}>✕</Text>

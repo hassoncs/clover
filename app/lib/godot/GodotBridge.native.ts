@@ -471,8 +471,8 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('setup_world', JSON.stringify(world), JSON.stringify(background ?? {}));
     },
 
-    registerTemplates(templates) {
-      callGameBridge('register_templates', JSON.stringify(templates));
+    registerPrefabs(prefabs) {
+      callGameBridge('register_prefabs', JSON.stringify(prefabs));
     },
 
     loadEntities(entities) {
@@ -563,7 +563,22 @@ export function createNativeGodotBridge(): GodotBridge {
 
     spawnEntity(request: SpawnEntityRequest): void {
       const velocityJson = request.velocity ? JSON.stringify(request.velocity) : '';
-      callGameBridge('spawn_entity_with_id', request.templateId, request.position.x, request.position.y, request.entityId, velocityJson);
+      callGameBridge('spawn_entity_with_id', request.prefabId, request.position.x, request.position.y, request.entityId, velocityJson);
+    },
+
+    async instantiateFromScene(scenePath: string, entityId: string, position: Vec2, properties?: Record<string, unknown>): Promise<{ entityId: string }> {
+      const result = await callGameBridgeAsync(
+        'instantiate_scene',
+        scenePath,
+        entityId,
+        position.x,
+        position.y,
+        JSON.stringify(properties ?? {}),
+      );
+      if (result && typeof result === 'object' && 'entityId' in result) {
+        return result as { entityId: string };
+      }
+      return { entityId };
     },
 
     destroyEntity(entityId: string) {

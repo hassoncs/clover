@@ -1,5 +1,5 @@
 import type { Vec2 } from './common';
-import type { GameEntity, EntityTemplate } from './entity';
+import type { GameEntity, EntityPrefab } from './entity';
 import type { GameRule, WinCondition, LoseCondition } from './rules';
 import type { TileSheet, TileMap } from './tilemap';
 import type { AssetSystemConfig, AssetSource } from './asset-system';
@@ -384,7 +384,7 @@ export interface Match3Config {
   rows: number;
   cols: number;
   cellSize: number;
-  pieceTemplates: string[];
+  piecePrefabs: string[];
   minMatch?: number;
   swapDuration?: number;
   fallDuration?: number;
@@ -398,7 +398,7 @@ export interface TetrisConfig {
   gridId: string;
   boardWidth: number;
   boardHeight: number;
-  pieceTemplates: string[];
+  piecePrefabs: string[];
   initialDropSpeed?: number;
   levelSpeedMultiplier?: number;
 }
@@ -410,7 +410,7 @@ export interface GameDefinition {
   camera?: CameraConfig;
   background?: BackgroundConfig;
   variables?: Record<string, GameVariable>;
-  templates: Record<string, EntityTemplate>;
+  prefabs: Record<string, EntityPrefab>;
   entities: GameEntity[];
   joints?: GameJoint[];
   rules?: GameRule[];

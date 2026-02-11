@@ -8,9 +8,9 @@ describe('parseThemePlan', () => {
       theme: 'spooky Halloween',
       style: 'cartoon',
       globalPalette: ['#FF6600', '#000000', '#FFFFFF'],
-      templatePlans: {
+      prefabPlans: {
         ball: {
-          templateId: 'ball',
+          prefabId: 'ball',
           conceptName: 'jack-o-lantern',
           prompt: 'A glowing jack-o-lantern pumpkin with a carved spooky face',
           negativePrompt: 'realistic, photo',
@@ -18,7 +18,7 @@ describe('parseThemePlan', () => {
           rationale: 'Classic Halloween icon that fits the spooky theme',
         },
         peg: {
-          templateId: 'peg',
+          prefabId: 'peg',
           conceptName: 'bubbling cauldron',
           prompt: 'A witch\'s cauldron bubbling with green potion',
           silhouetteColor: '#000000',
@@ -43,7 +43,7 @@ describe('parseThemePlan', () => {
       version: 2,
       theme: 'test',
       globalPalette: ['#FF0000'],
-      templatePlans: {},
+      prefabPlans: {},
       cohesionAnchors: {
         motifFamily: 'test',
         colorHarmony: 'test',
@@ -60,9 +60,9 @@ describe('parseThemePlan', () => {
       version: 1,
       theme: 'test',
       globalPalette: ['#FF0000'],
-      templatePlans: {
+      prefabPlans: {
         ball: {
-          templateId: 'ball',
+          prefabId: 'ball',
           conceptName: 'test',
           prompt: 'test prompt',
           silhouetteColor: 'red',
@@ -85,7 +85,7 @@ describe('parseThemePlan', () => {
       version: 1,
       theme: 'test',
       globalPalette: ['red', '#FF0000'],
-      templatePlans: {},
+      prefabPlans: {},
       cohesionAnchors: {
         motifFamily: 'test',
         colorHarmony: 'test',
@@ -101,7 +101,7 @@ describe('parseThemePlan', () => {
     const invalidPlan = {
       version: 1,
       globalPalette: ['#FF0000'],
-      templatePlans: {},
+      prefabPlans: {},
       cohesionAnchors: {
         motifFamily: 'test',
         colorHarmony: 'test',
@@ -113,12 +113,12 @@ describe('parseThemePlan', () => {
     expect(() => parseThemePlan(invalidPlan)).toThrow();
   });
 
-  it('should accept plan with empty templatePlans', () => {
+  it('should accept plan with empty prefabPlans', () => {
     const validPlan = {
       version: 1,
       theme: 'test theme',
       globalPalette: ['#FF0000', '#00FF00'],
-      templatePlans: {},
+      prefabPlans: {},
       cohesionAnchors: {
         motifFamily: 'test family',
         colorHarmony: 'test harmony',
@@ -128,7 +128,7 @@ describe('parseThemePlan', () => {
     };
 
     const result = parseThemePlan(validPlan);
-    expect(result.templatePlans).toEqual({});
+    expect(result.prefabPlans).toEqual({});
   });
 });
 
@@ -138,16 +138,16 @@ describe('validatePlanCoherence', () => {
       version: 1,
       theme: 'underwater',
       globalPalette: ['#0066CC', '#00CCFF', '#FFCC00'],
-      templatePlans: {
+      prefabPlans: {
         ball: {
-          templateId: 'ball',
+          prefabId: 'ball',
           conceptName: 'bubble',
           prompt: 'A shimmering bubble floating underwater',
           silhouetteColor: '#00CCFF',
           rationale: 'Bubbles are iconic underwater elements',
         },
         peg: {
-          templateId: 'peg',
+          prefabId: 'peg',
           conceptName: 'coral',
           prompt: 'A colorful coral formation',
           silhouetteColor: '#FFCC00',
@@ -172,16 +172,16 @@ describe('validatePlanCoherence', () => {
       version: 1,
       theme: 'test',
       globalPalette: ['#FF0000'],
-      templatePlans: {
+      prefabPlans: {
         ball: {
-          templateId: 'ball',
+          prefabId: 'ball',
           conceptName: 'pumpkin',
           prompt: 'A pumpkin',
           silhouetteColor: '#FF6600',
           rationale: 'test',
         },
         peg: {
-          templateId: 'peg',
+          prefabId: 'peg',
           conceptName: 'pumpkin',
           prompt: 'Another pumpkin',
           silhouetteColor: '#FF6601',
@@ -208,9 +208,9 @@ describe('validatePlanCoherence', () => {
       version: 1,
       theme: 'test',
       globalPalette: ['#FF0000', '#00FF00', '#ff0000'],
-      templatePlans: {
+      prefabPlans: {
         ball: {
-          templateId: 'ball',
+          prefabId: 'ball',
           conceptName: 'test',
           prompt: 'test',
           silhouetteColor: '#FF0000',
@@ -232,12 +232,12 @@ describe('validatePlanCoherence', () => {
     expect(result.errors.some(e => e.includes('global palette'))).toBe(true);
   });
 
-  it('should accept plan with empty templatePlans', () => {
+  it('should accept plan with empty prefabPlans', () => {
     const validPlan: ThemePlan = {
       version: 1,
       theme: 'test',
       globalPalette: ['#FF0000', '#00FF00'],
-      templatePlans: {},
+      prefabPlans: {},
       cohesionAnchors: {
         motifFamily: 'test',
         colorHarmony: 'test',

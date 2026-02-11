@@ -4,7 +4,7 @@ import type {
   VisualComponent,
   PhysicsComponent,
   Behavior,
-  EntityTemplate,
+  EntityPrefab,
   EventBus,
   ConditionalBehavior,
 } from '@slopcade/shared';
@@ -43,7 +43,7 @@ export interface PendingLifecycleTransition {
 export interface RuntimeEntity {
   id: string;
   name: string;
-  template?: string;
+  prefab?: string;
   // Hierarchy tracking
   /** Parent entity ID (undefined if root entity) */
   parentId?: string;
@@ -96,6 +96,6 @@ export interface RuntimeBehavior {
 }
 
 export interface EntityManagerOptions {
-  templates?: Record<string, EntityTemplate>;
+  prefabs?: Record<string, EntityPrefab>;
   bridge?: GodotBridge;
 }

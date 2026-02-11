@@ -47,15 +47,15 @@ export class WorldOpsImpl implements WorldOps {
   ) {}
 
   async spawn(
-    templateId: string,
+    prefabId: string,
     position: Vec2,
     opts?: SpawnOptions
   ): Promise<string | null> {
-    const template = this.entityManager.getTemplate(templateId);
-    if (!template) return null;
+    const prefab = this.entityManager.getPrefab(prefabId);
+    if (!prefab) return null;
 
     const entityId = this.entityManager.spawnEntity({
-      templateId,
+      prefabId,
       position,
       velocity: opts?.velocity,
       angle: opts?.angle,
@@ -90,15 +90,15 @@ export class WorldOpsImpl implements WorldOps {
     const entity = this.entityManager.getEntity(entityId);
     if (!entity) return null;
 
-    const templateId = entity.template;
-    if (!templateId) return null;
+    const prefabId = entity.prefab;
+    if (!prefabId) return null;
 
     const position = opts?.position ?? {
       x: entity.transform.x,
       y: entity.transform.y,
     };
 
-    const newEntityId = await this.spawn(templateId, position);
+    const newEntityId = await this.spawn(prefabId, position);
     if (!newEntityId) return null;
 
     const newEntity = this.entityManager.getEntity(newEntityId);
@@ -264,9 +264,9 @@ export class WorldOpsImpl implements WorldOps {
     return this.entityManager.hasTag(entityId, tag);
   }
 
-  async getTemplate(entityId: string): Promise<string | undefined> {
+  async getPrefab(entityId: string): Promise<string | undefined> {
     const entity = this.entityManager.getEntity(entityId);
-    return entity?.template;
+    return entity?.prefab;
   }
 
   async getEntityData(entityId: string): Promise<WorldEntityData | null> {
@@ -282,7 +282,7 @@ export class WorldOpsImpl implements WorldOps {
 
     return {
       id: entity.id,
-      template: entity.template,
+      prefab: entity.prefab,
       tags: [...entity.tags],
       position: { x: entity.transform.x, y: entity.transform.y },
       rotation: entity.transform.angle,
@@ -306,7 +306,7 @@ export class WorldOpsImpl implements WorldOps {
 
     const results = this.entityManager.query({
       tags: query.tag ? [query.tag] : undefined,
-      template: query.templateId,
+      prefab: query.prefabId,
       withinAabb,
     });
 

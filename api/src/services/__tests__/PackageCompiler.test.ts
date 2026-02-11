@@ -53,7 +53,7 @@ const MINIMAL_WORKSPACE: WorkspaceFile[] = [
   {
     path: 'entities.json',
     content: JSON.stringify([
-      { id: 'ball', name: 'Ball', template: 'ball-prefab', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+      { id: 'ball', name: 'Ball', prefab: 'ball-prefab', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
     ]),
   },
   {

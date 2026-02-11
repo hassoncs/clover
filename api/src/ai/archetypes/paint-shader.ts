@@ -20,7 +20,7 @@ export const paintShaderArchetype: ShaderArchetype = {
     },
     background: { type: 'static', color: '#ffffff' },
     camera: { type: 'fixed', zoom: 1 },
-    templates: {
+    prefabs: {
       canvas: {
         id: 'canvas',
         tags: ['canvas'],
@@ -37,7 +37,7 @@ export const paintShaderArchetype: ShaderArchetype = {
       {
         id: 'canvas1',
         name: 'Canvas',
-        template: 'canvas',
+        prefab: 'canvas',
         transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
       },
     ],

@@ -263,7 +263,7 @@ function createBaseSlopeggleGame(): GameDefinition {
       ],
     },
     variables: { lives: 10 },
-    templates: {
+    prefabs: {
       ball: {
         id: 'ball',
         tags: ['ball'],
@@ -287,9 +287,9 @@ function createBaseSlopeggleGame(): GameDefinition {
       },
     },
     entities: [
-      { id: 'wall-left', name: 'Left Wall', template: 'wallVertical', transform: { x: -5.9, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-      { id: 'wall-right', name: 'Right Wall', template: 'wallVertical', transform: { x: 5.9, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-      { id: 'wall-top', name: 'Top Wall', template: 'wallTop', transform: { x: 0, y: 7.9, angle: 0, scaleX: 1, scaleY: 1 } },
+      { id: 'wall-left', name: 'Left Wall', prefab: 'wallVertical', transform: { x: -5.9, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+      { id: 'wall-right', name: 'Right Wall', prefab: 'wallVertical', transform: { x: 5.9, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+      { id: 'wall-top', name: 'Top Wall', prefab: 'wallTop', transform: { x: 0, y: 7.9, angle: 0, scaleX: 1, scaleY: 1 } },
     ],
   };
 }

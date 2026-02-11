@@ -323,7 +323,7 @@ export const assetPacksRouter = router({
   setPackEntry: protectedProcedure
     .input(z.object({
       packId: z.string(),
-      templateId: z.string(),
+      prefabId: z.string(),
       assetId: z.string(),
       placement: placementSchema.optional(),
     }))
@@ -353,7 +353,7 @@ export const assetPacksRouter = router({
          ON CONFLICT(pack_id, template_id) DO UPDATE SET
            asset_id = excluded.asset_id,
            placement_json = excluded.placement_json`
-      ).bind(id, input.packId, input.templateId, input.assetId, placementJson).run();
+      ).bind(id, input.packId, input.prefabId, input.assetId, placementJson).run();
 
       return { success: true };
     }),
@@ -361,7 +361,7 @@ export const assetPacksRouter = router({
   updateEntryPlacement: protectedProcedure
     .input(z.object({
       packId: z.string(),
-      templateId: z.string(),
+      prefabId: z.string(),
       placement: placementSchema,
     }))
     .mutation(async ({ ctx, input }) => {
@@ -383,7 +383,7 @@ export const assetPacksRouter = router({
 
       await ctx.env.DB.prepare(
         `UPDATE pack_entries SET placement_json = ? WHERE pack_id = ? AND template_id = ?`
-      ).bind(JSON.stringify(input.placement), input.packId, input.templateId).run();
+      ).bind(JSON.stringify(input.placement), input.packId, input.prefabId).run();
 
       return { success: true };
     }),
@@ -391,7 +391,7 @@ export const assetPacksRouter = router({
   removePackEntry: protectedProcedure
     .input(z.object({
       packId: z.string(),
-      templateId: z.string(),
+      prefabId: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
       const packRow = await ctx.env.DB.prepare(
@@ -412,7 +412,7 @@ export const assetPacksRouter = router({
 
       await ctx.env.DB.prepare(
         'DELETE FROM pack_entries WHERE pack_id = ? AND template_id = ?'
-      ).bind(input.packId, input.templateId).run();
+      ).bind(input.packId, input.prefabId).run();
 
       return { success: true };
     }),
@@ -475,10 +475,10 @@ export const assetPacksRouter = router({
          WHERE e.pack_id = ?`
       ).bind(input.packId).all<{ template_id: string; placement_json: string | null; r2_key: string | null }>();
 
-      const entriesByTemplateId: Record<string, { imageUrl: string | null; placement: { scale: number; offsetX: number; offsetY: number } | null }> = {};
+      const entriesByPrefabId: Record<string, { imageUrl: string | null; placement: { scale: number; offsetX: number; offsetY: number } | null }> = {};
 
       for (const entry of entriesResult.results) {
-        entriesByTemplateId[entry.template_id] = {
+        entriesByPrefabId[entry.template_id] = {
           imageUrl: entry.r2_key ? resolveAssetUrl(entry.r2_key, ctx.env.ASSET_HOST) : null,
           placement: entry.placement_json ? JSON.parse(entry.placement_json) : null,
         };
@@ -492,7 +492,7 @@ export const assetPacksRouter = router({
           baseGameId: packRow.base_game_id,
           createdAt: packRow.created_at,
         },
-        entriesByTemplateId,
+        entriesByPrefabId,
       };
     }),
 
@@ -513,14 +513,14 @@ export const assetPacksRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game definition not found' });
       }
 
-      let definition: { templates?: Record<string, unknown> };
+      let definition: { prefabs?: Record<string, unknown> };
       try {
         definition = JSON.parse(await defObj.text());
       } catch {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
       }
 
-      const templateIds = Object.keys(definition.templates ?? {});
+      const prefabIds = Object.keys(definition.prefabs ?? {});
       const baseGameId = gameRow.base_game_id ?? gameRow.id;
 
       const packsResult = await ctx.env.DB.prepare(
@@ -533,9 +533,9 @@ export const assetPacksRouter = router({
             'SELECT template_id FROM pack_entries WHERE pack_id = ?'
           ).bind(pack.id).all<{ template_id: string }>();
 
-          const coveredTemplates = new Set(entriesResult.results.map(e => e.template_id));
-          const coveredCount = templateIds.filter(t => coveredTemplates.has(t)).length;
-          const isComplete = coveredCount === templateIds.length && templateIds.length > 0;
+          const coveredPrefabs = new Set(entriesResult.results.map(e => e.template_id));
+          const coveredCount = prefabIds.filter(t => coveredPrefabs.has(t)).length;
+          const isComplete = coveredCount === prefabIds.length && prefabIds.length > 0;
 
           return {
             id: pack.id,
@@ -545,14 +545,14 @@ export const assetPacksRouter = router({
             createdAt: pack.created_at,
             isComplete,
             coveredCount,
-            totalTemplates: templateIds.length,
+            totalPrefabs: prefabIds.length,
           };
         })
       );
 
       return {
         baseGameId,
-        templateIds,
+        prefabIds,
         packs: packsWithCompleteness,
       };
     }),
@@ -601,7 +601,7 @@ export const assetPacksRouter = router({
         url: resolveAssetUrl(row.r2_key, ctx.env.ASSET_HOST),
         width: row.width ?? 0,
         height: row.height ?? 0,
-        templateId: row.template_id,
+        prefabId: row.template_id,
       }));
 
       const totalBytes = assets.length * 200 * 1024;

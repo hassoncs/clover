@@ -21,7 +21,7 @@
  * ## Usage Pattern
  *
  * 1. Load the LevelPack
- * 2. Extract base GameDefinition for common templates/rules
+ * 2. Extract base GameDefinition for common prefabs/rules
  * 3. For each level, merge LevelDefinition with GameDefinition
  * 4. Apply game-specific overrides from LevelDefinition.overrides
  */
@@ -166,7 +166,7 @@ export interface PackStats {
  *   baseGameDefinition: {
  *     metadata: { id: "slopeggle", title: "Slopeggle", ... },
  *     world: { gravity: { x: 0, y: -5 }, pixelsPerMeter: 50, ... },
- *     templates: { ball: {...}, cannon: {...}, ... },
+ *     prefabs: { ball: {...}, cannon: {...}, ... },
  *     rules: [...]
  *   }
  * }

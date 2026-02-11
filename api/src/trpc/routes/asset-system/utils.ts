@@ -88,7 +88,7 @@ export function toClientEntry(row: PackEntryRow) {
   return {
     id: row.id,
     packId: row.pack_id,
-    templateId: row.template_id,
+    prefabId: row.template_id,
     assetId: row.asset_id,
     placement: row.placement_json ? JSON.parse(row.placement_json) : undefined,
   };
@@ -113,7 +113,7 @@ export function toClientTask(row: GenerationTaskRow) {
   return {
     id: row.id,
     jobId: row.job_id,
-    templateId: row.template_id,
+    prefabId: row.template_id,
     status: row.status as 'queued' | 'running' | 'succeeded' | 'failed' | 'canceled',
     compiledPrompt: row.compiled_prompt,
     modelId: row.model_id,
@@ -174,26 +174,26 @@ export function checkPartialPlanCoherence(
   const unchangedConceptNames = new Set<string>();
   const unchangedColors = new Set<string>();
 
-  for (const [templateId, templatePlan] of Object.entries(existingPlan.templatePlans)) {
-    if (!regeneratedSet.has(templateId)) {
-      unchangedConceptNames.add(templatePlan.conceptName.toLowerCase());
-      unchangedColors.add(templatePlan.silhouetteColor.toUpperCase());
+  for (const [prefabId, prefabPlan] of Object.entries(existingPlan.prefabPlans)) {
+    if (!regeneratedSet.has(prefabId)) {
+      unchangedConceptNames.add(prefabPlan.conceptName.toLowerCase());
+      unchangedColors.add(prefabPlan.silhouetteColor.toUpperCase());
     }
   }
 
-  for (const [templateId, templatePlan] of Object.entries(newPlan.templatePlans)) {
-    const conceptLower = templatePlan.conceptName.toLowerCase();
-    const colorUpper = templatePlan.silhouetteColor.toUpperCase();
+  for (const [prefabId, prefabPlan] of Object.entries(newPlan.prefabPlans)) {
+    const conceptLower = prefabPlan.conceptName.toLowerCase();
+    const colorUpper = prefabPlan.silhouetteColor.toUpperCase();
 
     if (unchangedConceptNames.has(conceptLower)) {
       warnings.push(
-        `Template "${templateId}" has concept name "${templatePlan.conceptName}" which duplicates an unchanged template`
+        `Prefab "${prefabId}" has concept name "${prefabPlan.conceptName}" which duplicates an unchanged prefab`
       );
     }
 
     if (unchangedColors.has(colorUpper)) {
       warnings.push(
-        `Template "${templateId}" has silhouette color "${templatePlan.silhouetteColor}" which duplicates an unchanged template`
+        `Prefab "${prefabId}" has silhouette color "${prefabPlan.silhouetteColor}" which duplicates an unchanged prefab`
       );
     }
   }
@@ -202,17 +202,17 @@ export function checkPartialPlanCoherence(
 }
 
 export function buildPlannerInput(
-  definition: { templates?: Record<string, any> },
-  templateIds: string[],
+  definition: { prefabs?: Record<string, any> },
+  prefabIds: string[],
   theme: string,
   style?: string,
   gameTitle?: string,
 ): ThemePlannerInput {
-  const templates = templateIds.map((templateId) => {
-    const template = definition.templates?.[templateId];
-    const physics = template?.physics;
-    const tags = template?.tags ?? [];
-    const whatDescription = template?.whatDescription;
+  const prefabs = prefabIds.map((prefabId) => {
+    const prefab = definition.prefabs?.[prefabId];
+    const physics = prefab?.physics;
+    const tags = prefab?.tags ?? [];
+    const whatDescription = prefab?.whatDescription;
 
     let entityType: EntityType = 'item';
     if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -224,7 +224,7 @@ export function buildPlannerInput(
     const physicsShape: 'box' | 'circle' = physics?.shape === 'circle' ? 'circle' : 'box';
 
     return {
-      templateId,
+      prefabId,
       whatDescription,
       entityType,
       physicsShape,
@@ -233,7 +233,7 @@ export function buildPlannerInput(
   });
 
   return {
-    templates,
+    prefabs,
     theme,
     style,
     gameTitle,

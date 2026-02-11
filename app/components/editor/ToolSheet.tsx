@@ -45,7 +45,7 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
   const renderContent = useCallback(() => {
     switch (activeTab) {
       case "gallery":
-        return <AssetGalleryPanel onTemplatePress={() => {}} />;
+        return <AssetGalleryPanel onPrefabPress={() => {}} />;
       case "assets":
         return <AssetsPanel />;
       case "properties":

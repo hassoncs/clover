@@ -38,7 +38,7 @@ describe('RulesSystem', () => {
     gameState = createGameState({
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
       variables: {
         score: 0,
@@ -725,7 +725,7 @@ describe('RulesSystem', () => {
       const gameStateWithSM = createGameState({
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {},
+        prefabs: {},
         entities: [],
         stateMachines: [stateMachine],
       });
@@ -772,7 +772,7 @@ describe('RulesSystem', () => {
       const gameStateWithSM = createGameState({
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {},
+        prefabs: {},
         entities: [],
         stateMachines: [stateMachine],
       });

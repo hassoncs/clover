@@ -25,23 +25,23 @@ function toEntitySpecs(context: AgentExecutionStageContext, themePlan: ThemePlan
     return [];
   }
 
-  return Object.entries(context.gameDefinition.templates).map(([templateId, template]) => {
-    const tags = template.tags ?? [];
-    const physics = template.physics as { shape?: string; width?: number; height?: number; radius?: number } | undefined;
+  return Object.entries(context.gameDefinition.prefabs).map(([prefabId, prefab]) => {
+    const tags = prefab.tags ?? [];
+    const physics = prefab.physics as { shape?: string; width?: number; height?: number; radius?: number } | undefined;
     const shape = physics?.shape === 'circle' ? 'circle' : 'box';
     const width = shape === 'circle' ? (physics?.radius ?? 0.5) * 2 : (physics?.width ?? 1);
     const height = shape === 'circle' ? (physics?.radius ?? 0.5) * 2 : (physics?.height ?? 1);
-    const promptFromTheme = themePlan?.templatePlans[templateId]?.prompt;
+    const promptFromTheme = themePlan?.prefabPlans[prefabId]?.prompt;
 
     return {
       type: 'entity' as const,
-      id: templateId,
+      id: prefabId,
       shape,
       width,
       height,
       entityType: classifyEntityType(tags),
-      description: promptFromTheme ?? `${templateId} game entity`,
-      color: themePlan?.templatePlans[templateId]?.silhouetteColor,
+      description: promptFromTheme ?? `${prefabId} game entity`,
+      color: themePlan?.prefabPlans[prefabId]?.silhouetteColor,
     };
   });
 }
@@ -56,7 +56,7 @@ export async function assetStage(
     return {
       status: 'failed',
       failureReason: 'MISSING_PREREQUISITE',
-      errorMessage: 'MISSING_PREREQUISITE: no template assets to generate',
+      errorMessage: 'MISSING_PREREQUISITE: no prefab assets to generate',
       checkpoint: { stage: 'asset', assets: 0 },
       costMicros: 0,
       inputTokens: 0,

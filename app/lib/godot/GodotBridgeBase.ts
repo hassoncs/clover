@@ -304,7 +304,7 @@ export abstract class GodotBridgeBase {
     };
   }
 
-  protected generateEntityId(templateId: string): string {
-    return `${templateId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  protected generateEntityId(prefabId: string): string {
+    return `${prefabId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   }
 }

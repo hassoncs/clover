@@ -82,7 +82,7 @@ export function InteractionLayer({
         const ex = entity.transform.x;
         const ey = entity.transform.y;
         if (!entity.template) continue;
-        const template = document.templates[entity.template];
+        const template = document.prefabs[entity.prefab];
         if (!template) continue;
 
         const collider = template.collider;
@@ -108,7 +108,7 @@ export function InteractionLayer({
 
       return null;
     },
-    [document.entities, document.templates, onEntityHitTest]
+    [document.entities, document.prefabs, onEntityHitTest]
   );
 
   const handleTap = useCallback(

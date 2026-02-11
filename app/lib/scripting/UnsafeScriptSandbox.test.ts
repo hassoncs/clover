@@ -32,7 +32,7 @@ function createMockScriptContext(overrides: Partial<ScriptContext> = {}): Script
     addTag: vi.fn(),
     removeTag: vi.fn().mockReturnValue(true),
     hasTag: vi.fn().mockReturnValue(false),
-    getEntityTemplate: vi.fn().mockReturnValue(undefined),
+    getEntityPrefab: vi.fn().mockReturnValue(undefined),
     getEntityData: vi.fn().mockReturnValue(null),
     queryEntities: vi.fn().mockReturnValue([]),
     queryEntitiesWithData: vi.fn().mockReturnValue([]),

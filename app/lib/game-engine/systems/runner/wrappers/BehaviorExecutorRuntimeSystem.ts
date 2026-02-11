@@ -167,9 +167,9 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       setGameState: (state: string) => {
         this.systemContext!.eventQueue.emit('game_state_changed', { state });
       },
-      spawnEntity: (templateId: string, x: number, y: number) => {
+      spawnEntity: (prefabId: string, x: number, y: number) => {
         return this.systemContext!.entityManager.spawnEntity({
-          templateId,
+          prefabId,
           position: { x, y },
         });
       },

@@ -12,67 +12,124 @@ const monorepoRoot = path.resolve(projectRoot, "..");
 const baseConfig = getDefaultConfig(__dirname);
 
 baseConfig.server = {
-  ...baseConfig.server,
-  port: METRO_PORT,
+	...baseConfig.server,
+	port: METRO_PORT,
 };
 
 baseConfig.watchFolders = [monorepoRoot];
 
 baseConfig.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(monorepoRoot, "node_modules"),
+	path.resolve(projectRoot, "node_modules"),
+	path.resolve(monorepoRoot, "node_modules"),
 ];
 
-function getJotaiCjsPath(moduleName, root) {
-  const pnpmPath = path.resolve(root, "node_modules/.pnpm");
-  if (!fs.existsSync(pnpmPath)) return null;
+function getPackageCjsPath(packageName, moduleName, root) {
+	const directPath = path.resolve(root, "node_modules", packageName);
+	if (moduleName === packageName) {
+		const cjsPath = path.resolve(directPath, "index.js");
+		if (fs.existsSync(cjsPath)) return cjsPath;
+	} else if (moduleName.startsWith(packageName + "/")) {
+		const subpath = moduleName.replace(packageName + "/", "");
+		const cjsPath = path.resolve(directPath, `${subpath}.js`);
+		if (fs.existsSync(cjsPath)) return cjsPath;
+	}
 
-  const entries = fs.readdirSync(pnpmPath, { withFileTypes: true });
-  for (const entry of entries) {
-    if (entry.isDirectory() && entry.name.startsWith("jotai@")) {
-      const jotaiDir = path.resolve(
-        pnpmPath,
-        entry.name,
-        "node_modules/jotai"
-      );
-      if (moduleName === "jotai") {
-        const cjsPath = path.resolve(jotaiDir, "index.js");
-        if (fs.existsSync(cjsPath)) return cjsPath;
-      } else if (moduleName.startsWith("jotai/")) {
-        const subpath = moduleName.replace("jotai/", "");
-        const cjsPath = path.resolve(jotaiDir, `${subpath}.js`);
-        if (fs.existsSync(cjsPath)) return cjsPath;
-      }
-    }
-  }
-  return null;
+	const pnpmPath = path.resolve(root, "node_modules/.pnpm");
+	if (!fs.existsSync(pnpmPath)) return null;
+
+	const packagePrefix = packageName.replace("/", "+") + "@";
+	const entries = fs.readdirSync(pnpmPath, { withFileTypes: true });
+	for (const entry of entries) {
+		if (!entry.isDirectory() || !entry.name.startsWith(packagePrefix)) continue;
+		const pkgDir = path.resolve(pnpmPath, entry.name, "node_modules", packageName);
+		if (moduleName === packageName) {
+			const cjsPath = path.resolve(pkgDir, "index.js");
+			if (fs.existsSync(cjsPath)) return cjsPath;
+		} else if (moduleName.startsWith(packageName + "/")) {
+			const subpath = moduleName.replace(packageName + "/", "");
+			const cjsPath = path.resolve(pkgDir, `${subpath}.js`);
+			if (fs.existsSync(cjsPath)) return cjsPath;
+		}
+	}
+	return null;
+}
+
+const CJS_FORCE_PACKAGES = ["jotai", "zustand"];
+
+function getPackageUmdPath(packageName, root) {
+	const packagePath = path.resolve(
+		root,
+		"node_modules",
+		packageName,
+		"dist/umd/index.js",
+	);
+	if (fs.existsSync(packagePath)) {
+		return packagePath;
+	}
+
+	const pnpmPath = path.resolve(root, "node_modules/.pnpm");
+	if (!fs.existsSync(pnpmPath)) return null;
+
+	const packagePrefix = packageName.replace("/", "+") + "@";
+	const entries = fs.readdirSync(pnpmPath, { withFileTypes: true });
+	for (const entry of entries) {
+		if (!entry.isDirectory() || !entry.name.startsWith(packagePrefix)) {
+			continue;
+		}
+
+		const umdPath = path.resolve(
+			pnpmPath,
+			entry.name,
+			"node_modules",
+			packageName,
+			"dist/umd/index.js",
+		);
+		if (fs.existsSync(umdPath)) {
+			return umdPath;
+		}
+	}
+
+	return null;
 }
 
 const upstreamResolveRequest = baseConfig.resolver.resolveRequest;
 
 baseConfig.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === "jotai" || moduleName.startsWith("jotai/")) {
-    const cjsPath =
-      getJotaiCjsPath(moduleName, projectRoot) ||
-      getJotaiCjsPath(moduleName, monorepoRoot);
-    if (cjsPath) {
-      return { type: "sourceFile", filePath: cjsPath };
-    }
-  }
+	if (moduleName === "@xyflow/react" || moduleName === "@xyflow/system") {
+		const umdPath =
+			getPackageUmdPath(moduleName, projectRoot) ||
+			getPackageUmdPath(moduleName, monorepoRoot);
+		if (umdPath) {
+			return { type: "sourceFile", filePath: umdPath };
+		}
+	}
 
-  if (upstreamResolveRequest) {
-    return upstreamResolveRequest(context, moduleName, platform);
-  }
+	for (const pkg of CJS_FORCE_PACKAGES) {
+		if (moduleName === pkg || moduleName.startsWith(pkg + "/")) {
+			const cjsPath =
+				getPackageCjsPath(pkg, moduleName, projectRoot) ||
+				getPackageCjsPath(pkg, moduleName, monorepoRoot);
+			if (cjsPath) {
+				return { type: "sourceFile", filePath: cjsPath };
+			}
+		}
+	}
 
-  return context.resolveRequest(context, moduleName, platform);
+	if (upstreamResolveRequest) {
+		return upstreamResolveRequest(context, moduleName, platform);
+	}
+
+	return context.resolveRequest(context, moduleName, platform);
 };
 
 const nativeWindConfig = withNativeWind(baseConfig, { input: "./global.css" });
 
 // Auto-enable Rozenite in development, require explicit opt-in for production
 const isDev = process.env.NODE_ENV !== "production";
-const rozeniteEnabled = process.env.WITH_ROZENITE === "true" || (isDev && process.env.WITH_ROZENITE !== "false");
+const rozeniteEnabled =
+	process.env.WITH_ROZENITE === "true" ||
+	(isDev && process.env.WITH_ROZENITE !== "false");
 
 module.exports = withRozenite(nativeWindConfig, {
-  enabled: rozeniteEnabled,
+	enabled: rozeniteEnabled,
 });

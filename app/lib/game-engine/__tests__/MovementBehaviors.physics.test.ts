@@ -13,7 +13,7 @@ describe('MovementBehaviors - set_velocity', () => {
     entity = {
       id: 'test-entity',
       name: 'test',
-      template: 'test',
+      prefab: 'test',
       transform: { x: 5, y: 10, angle: 0, scaleX: 1, scaleY: 1 },
       behaviors: [],
       tags: [],
@@ -215,7 +215,7 @@ describe('MovementBehaviors - apply_impulse', () => {
     entity = {
       id: 'test-entity',
       name: 'test',
-      template: 'test',
+      prefab: 'test',
       transform: { x: 5, y: 10, angle: 0, scaleX: 1, scaleY: 1 },
       behaviors: [],
       tags: [],

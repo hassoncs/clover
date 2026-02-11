@@ -12,7 +12,7 @@ interface UseAssetGenerationOptions {
 const POLL_INTERVAL_MS = 3000;
 
 export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGenerationOptions) {
-  const [generatingTemplates, setGeneratingTemplates] = useState<Set<string>>(new Set());
+  const [generatingTemplates, setGeneratingPrefabs] = useState<Set<string>>(new Set());
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [currentPackId, setCurrentPackId] = useState<string | null>(null);
   const [status, setStatus] = useState<GenerationStatus>('idle');
@@ -24,7 +24,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
 
   const createJobMutation = trpcReact.assetSystem.createGenerationJob.useMutation({
     onError: (err) => {
-      setGeneratingTemplates(new Set());
+      setGeneratingPrefabs(new Set());
       setStatus('failed');
       setError(err.message);
       onError?.(err.message);
@@ -54,9 +54,9 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
       setProgress({ total, completed, failed });
       
       const completedTemplateIds = new Set(
-        tasks.filter(t => t.status === 'succeeded').map(t => t.templateId)
+        tasks.filter(t => t.status === 'succeeded').map(t => t.prefabId)
       );
-      setGeneratingTemplates(prev => {
+      setGeneratingPrefabs(prev => {
         const stillGenerating = new Set<string>();
         prev.forEach(id => {
           if (!completedTemplateIds.has(id)) {
@@ -82,7 +82,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
         }
         await utils.assetSystem.listPacks.invalidate({ gameId });
         setCurrentPackId(null);
-        setGeneratingTemplates(new Set());
+        setGeneratingPrefabs(new Set());
         
         if (job.status === 'succeeded') {
           onComplete?.({ successCount: completed, failCount: failed });
@@ -104,27 +104,27 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
 
   const generateAll = useCallback(async (params: {
     packId?: string;
-    templateIds: string[];
+    prefabIds: string[];
     themePrompt?: string;
     style?: string;
     removeBackground?: boolean;
   }) => {
-    if (params.templateIds.length === 0) {
+    if (params.prefabIds.length === 0) {
       onError?.('No templates to generate');
       return;
     }
 
     setError(null);
-    setGeneratingTemplates(new Set(params.templateIds));
+    setGeneratingPrefabs(new Set(params.prefabIds));
     setCurrentPackId(params.packId ?? null);
     setStatus('creating-job');
-    setProgress({ total: params.templateIds.length, completed: 0, failed: 0 });
+    setProgress({ total: params.prefabIds.length, completed: 0, failed: 0 });
 
     try {
       const { jobId } = await createJobMutation.mutateAsync({
         gameId,
         packId: params.packId,
-        templateIds: params.templateIds,
+        prefabIds: params.prefabIds,
         promptDefaults: {
           themePrompt: params.themePrompt,
           styleOverride: params.style,
@@ -147,7 +147,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
       }, 500);
 
     } catch (err) {
-      setGeneratingTemplates(new Set());
+      setGeneratingPrefabs(new Set());
       setCurrentPackId(null);
       setStatus('failed');
       const message = err instanceof Error ? err.message : 'Failed to create job';
@@ -158,7 +158,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
 
   const reset = useCallback(() => {
     stopPolling();
-    setGeneratingTemplates(new Set());
+    setGeneratingPrefabs(new Set());
     setCurrentJobId(null);
     setCurrentPackId(null);
     setStatus('idle');
@@ -283,7 +283,7 @@ export function useRegenerateAssets(gameId: string) {
 
   const regenerateAssets = useCallback(async (params: {
     packId: string;
-    templateIds: string[];
+    prefabIds: string[];
     newTheme?: string;
     newStyle?: string;
     customPrompts?: Record<string, string>;
@@ -304,11 +304,11 @@ export function useApplyThemeToPack(gameId: string) {
 
   const applyTheme = useCallback(async (packId: string, newTheme: string) => {
     const pack = await utils.assetSystem.getPack.fetch({ id: packId });
-    const templateIds = pack?.entries?.map(e => e.templateId) ?? [];
-    if (templateIds.length === 0) {
+    const prefabIds = pack?.entries?.map(e => e.prefabId) ?? [];
+    if (prefabIds.length === 0) {
       throw new Error('Pack has no entries');
     }
-    return regenerateAssets({ packId, templateIds, newTheme });
+    return regenerateAssets({ packId, prefabIds, newTheme });
   }, [utils, regenerateAssets]);
 
   return {
@@ -324,11 +324,11 @@ export function useApplyStyleToPack(gameId: string) {
 
   const applyStyle = useCallback(async (packId: string, newStyle: string) => {
     const pack = await utils.assetSystem.getPack.fetch({ id: packId });
-    const templateIds = pack?.entries?.map(e => e.templateId) ?? [];
-    if (templateIds.length === 0) {
+    const prefabIds = pack?.entries?.map(e => e.prefabId) ?? [];
+    if (prefabIds.length === 0) {
       throw new Error('Pack has no entries');
     }
-    return regenerateAssets({ packId, templateIds, newStyle });
+    return regenerateAssets({ packId, prefabIds, newStyle });
   }, [utils, regenerateAssets]);
 
   return {

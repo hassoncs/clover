@@ -185,7 +185,7 @@ export function createGodotDebugBridge(): GodotDebugBridge | null {
       id: string;
       entityId?: string;
       type: string;
-      template?: string;
+      prefab?: string;
       position: { x: number; y: number };
       angle: number;
       visible?: boolean;
@@ -263,8 +263,8 @@ export function createGodotDebugBridge(): GodotDebugBridge | null {
     // Filter entities
     let filteredEntities = sceneEntities;
 
-    if (options.filterTemplate) {
-      filteredEntities = filteredEntities.filter((e) => e.template === options.filterTemplate);
+    if (options.filterPrefab) {
+      filteredEntities = filteredEntities.filter((e) => e.prefab === options.filterPrefab);
     }
 
     if (options.filterTags && options.filterTags.length > 0) {
@@ -280,7 +280,7 @@ export function createGodotDebugBridge(): GodotDebugBridge | null {
     const entities: EntitySnapshot[] = limitedEntities.map((node) => {
       const entity: EntitySnapshot = {
         id: node.entityId ?? node.id,
-        template: node.template ?? node.type,
+        prefab: node.prefab ?? node.type,
         position: node.position,
         angle: node.angle,
       };

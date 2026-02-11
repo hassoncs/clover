@@ -21,36 +21,36 @@ export function estimateGameAssetCost(
   gameDefinition: GameDefinition,
   options: {
     regenerateAll?: boolean;
-    specificTemplates?: string[];
+    specificPrefabs?: string[];
   } = {}
 ): CostEstimate {
   const breakdown: CostBreakdownItem[] = [];
-  const templates = gameDefinition.templates ?? {};
-  const templateIds = Object.keys(templates);
+  const prefabs = gameDefinition.prefabs ?? {};
+  const prefabIds = Object.keys(prefabs);
   
-  // Filter templates if specific ones requested
-  const templatesToGenerate = options.specificTemplates
-    ? templateIds.filter(id => options.specificTemplates!.includes(id))
-    : templateIds;
+  // Filter prefabs if specific ones requested
+  const prefabsToGenerate = options.specificPrefabs
+    ? prefabIds.filter(id => options.specificPrefabs!.includes(id))
+    : prefabIds;
   
-  // Identify special templates by ID pattern or naming convention
-  const backgroundCount = templatesToGenerate.filter(id => 
+  // Identify special prefabs by ID pattern or naming convention
+  const backgroundCount = prefabsToGenerate.filter(id => 
     id.includes('background') || id.includes('bg')
   ).length;
   
-  const parallaxCount = templatesToGenerate.filter(id => 
+  const parallaxCount = prefabsToGenerate.filter(id => 
     id.includes('parallax') || id.includes('layer')
   ).length;
   
-  const titleHeroCount = templatesToGenerate.filter(id => 
+  const titleHeroCount = prefabsToGenerate.filter(id => 
     id.includes('title') || id.includes('hero')
   ).length;
   
-  const titleHeroNoBgCount = templatesToGenerate.filter(id => 
+  const titleHeroNoBgCount = prefabsToGenerate.filter(id => 
     id.includes('title_hero_no_bg') || id.includes('hero_no_bg')
   ).length;
   
-  const entityCount = templatesToGenerate.length - backgroundCount - parallaxCount - titleHeroCount - titleHeroNoBgCount;
+  const entityCount = prefabsToGenerate.length - backgroundCount - parallaxCount - titleHeroCount - titleHeroNoBgCount;
   
   // Build breakdown
   if (entityCount > 0) {
@@ -102,7 +102,7 @@ export function estimateGameAssetCost(
   let totalMicros = breakdown.reduce((sum, item) => sum + item.totalMicros, 0);
   
   // Apply bulk discount for full regeneration
-  if (options.regenerateAll && templatesToGenerate.length >= 5) {
+  if (options.regenerateAll && prefabsToGenerate.length >= 5) {
     const discount = totalMicros * (1 - USER_COSTS.FULL_GAME_RESKIN_DISCOUNT);
     breakdown.push({
       description: 'Bulk discount (20%)',

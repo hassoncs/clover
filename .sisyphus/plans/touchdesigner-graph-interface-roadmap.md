@@ -48,11 +48,11 @@ Deliver a reusable graph editor platform that can host multiple domain-specific 
 - Narrative adapter/editor implemented on top of generic platform.
 
 ### Definition of Done
-- [ ] Generic core runs without importing effect or narrative domain types.
-- [ ] Effects editor works exclusively through adapter APIs.
-- [ ] Narrative branching editor works exclusively through same adapter APIs.
-- [ ] Same canvas engine (pan/zoom/select/connect) is reused by both adapters.
-- [ ] End-to-end tests and evidence verify two domain adapters on one core.
+- [x] Generic core runs without importing effect or narrative domain types.
+- [x] Effects editor works exclusively through adapter APIs.
+- [x] Narrative branching editor works exclusively through same adapter APIs.
+- [x] Same canvas engine (pan/zoom/select/connect) is reused by both adapters.
+- [x] End-to-end tests and evidence verify two domain adapters on one core.
 
 ### Must Have
 - Shared generic graph document and deterministic command reducer.
@@ -130,7 +130,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
 
 ## TODOs
 
-- [ ] 1. Build generic graph schema + deterministic command engine
+- [x] 1. Build generic graph schema + deterministic command engine
 
   **What to do**:
   - Define generic `GraphDocument`, `GraphNode`, `GraphEdge`, `GraphPort`, `GraphViewport` in `shared/`.
@@ -146,9 +146,9 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - `shared/src/effects/types.ts` - only as migration source, not target schema.
 
   **Acceptance Criteria**:
-  - [ ] Generic schema compiles and exports from shared package.
-  - [ ] Command reducer tests pass for happy and invalid paths.
-  - [ ] No imports from `shared/src/effects/*` in core graph package.
+  - [x] Generic schema compiles and exports from shared package.
+  - [x] Command reducer tests pass for happy and invalid paths.
+  - [x] No imports from `shared/src/effects/*` in core graph package.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -171,7 +171,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-1-core-isolation.txt
   ```
 
-- [ ] 2. Define and implement `GraphDomainAdapter` contract
+- [x] 2. Define and implement `GraphDomainAdapter` contract
 
   **What to do**:
   - Define adapter interface for:
@@ -189,8 +189,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - `app/components/editor/code-editor/CodeEditor.native.tsx` - bridge message typing style.
 
   **Acceptance Criteria**:
-  - [ ] Adapter interface supports at least two concrete adapters.
-  - [ ] Unknown adapter type fails safely with explicit error.
+  - [x] Adapter interface supports at least two concrete adapters.
+  - [x] Unknown adapter type fails safely with explicit error.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -205,7 +205,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-2-adapter-registry.txt
   ```
 
-- [ ] 3. Implement generic web graph editor shell (React Flow renderer)
+- [x] 3. Implement generic web graph editor shell (React Flow renderer)
 
   **What to do**:
   - Build web graph editor route using generic graph state + commands.
@@ -220,8 +220,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - `docs/effects/deferred-phases-roadmap.md` - prior React Flow intent (now under generic shell).
 
   **Acceptance Criteria**:
-  - [ ] Generic shell renders and edits any adapter-supplied graph.
-  - [ ] Pan/zoom/connect/select are core behaviors, not adapter-owned.
+  - [x] Generic shell renders and edits any adapter-supplied graph.
+  - [x] Pan/zoom/connect/select are core behaviors, not adapter-owned.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -238,7 +238,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-3-web-generic-shell.png
   ```
 
-- [ ] 4. Implement generic native graph editor shell (WebView parity first)
+- [x] 4. Implement generic native graph editor shell (WebView parity first)
 
   **What to do**:
   - Mirror generic web shell in native via WebView bridge pattern.
@@ -254,8 +254,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - `app/components/editor/code-editor/CodeEditor.web.tsx`
 
   **Acceptance Criteria**:
-  - [ ] Native shell executes same command set as web shell.
-  - [ ] Malformed bridge payloads are rejected safely.
+  - [x] Native shell executes same command set as web shell.
+  - [x] Malformed bridge payloads are rejected safely.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -271,7 +271,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-4-native-generic-shell.png
   ```
 
-- [ ] 5. Build core test harness and cross-adapter contract tests
+- [x] 5. Build core test harness and cross-adapter contract tests
 
   **What to do**:
   - Add contract tests that each adapter must pass.
@@ -279,8 +279,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - Add integration tests for undo/redo invariants.
 
   **Acceptance Criteria**:
-  - [ ] Shared adapter contract test suite runs against at least two adapters.
-  - [ ] `pnpm test` and `pnpm tsc --noEmit` pass.
+  - [x] Shared adapter contract test suite runs against at least two adapters.
+  - [x] `pnpm test` and `pnpm tsc --noEmit` pass.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -295,7 +295,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-5-contract-suite.txt
   ```
 
-- [ ] 6. Implement Effects adapter/editor on top of generic platform
+- [x] 6. Implement Effects adapter/editor on top of generic platform
 
   **What to do**:
   - Map `EffectGraphSpec` <-> generic `GraphDocument` via Effects adapter.
@@ -311,8 +311,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - `docs/effects/EFFECTS_ARCHITECTURE.md`
 
   **Acceptance Criteria**:
-  - [ ] Effects editor runs entirely through generic shell + Effects adapter.
-  - [ ] Effects serialization round-trip is lossless.
+  - [x] Effects editor runs entirely through generic shell + Effects adapter.
+  - [x] Effects serialization round-trip is lossless.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -328,7 +328,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-6-effects-roundtrip.json
   ```
 
-- [ ] 7. Implement Narrative adapter/editor (branching tree use case)
+- [x] 7. Implement Narrative adapter/editor (branching tree use case)
 
   **What to do**:
   - Define narrative domain schema (scenes/choices/transitions) in narrative package.
@@ -339,8 +339,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - No narrative-specific types in generic core.
 
   **Acceptance Criteria**:
-  - [ ] Narrative branching graph is editable with same generic shell controls.
-  - [ ] Narrative serialization round-trip is lossless.
+  - [x] Narrative branching graph is editable with same generic shell controls.
+  - [x] Narrative serialization round-trip is lossless.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -357,7 +357,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-7-narrative-proof.png
   ```
 
-- [ ] 8. Route AI generation by adapter domain
+- [x] 8. Route AI generation by adapter domain
 
   **What to do**:
   - Add AI generation API flow keyed by adapter (`effects`, `narrative`, future).
@@ -365,8 +365,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - Convert generated domain payload into generic graph for immediate editing.
 
   **Acceptance Criteria**:
-  - [ ] AI can generate effects graph and narrative graph through same generic endpoint contract.
-  - [ ] Invalid payloads are repaired/rejected with structured errors.
+  - [x] AI can generate effects graph and narrative graph through same generic endpoint contract.
+  - [x] Invalid payloads are repaired/rejected with structured errors.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -382,7 +382,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-8-ai-multi-adapter.json
   ```
 
-- [ ] 9. Run performance gate and decide native renderer path
+- [x] 9. Run performance gate and decide native renderer path
 
   **What to do**:
   - Benchmark generic shell with both adapters at target sizes.
@@ -390,8 +390,8 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - Record thresholds and final decision.
 
   **Acceptance Criteria**:
-  - [ ] Performance evidence captured for effects and narrative fixtures on web/native.
-  - [ ] Migration decision documented with objective thresholds.
+  - [x] Performance evidence captured for effects and narrative fixtures on web/native.
+  - [x] Migration decision documented with objective thresholds.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -406,7 +406,7 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
     Evidence: .sisyphus/evidence/task-9-perf-gate.json
   ```
 
-- [ ] 10. Final integration hardening and rollout checklist
+- [x] 10. Final integration hardening and rollout checklist
 
   **What to do**:
   - Verify end-to-end create/edit/save/load/AI flows for both adapters.
@@ -414,9 +414,9 @@ Critical Path: 1 -> 2 -> 3 -> 6 -> 9 -> 10
   - Publish internal implementation checklist for next adapters.
 
   **Acceptance Criteria**:
-  - [ ] E2E flows pass for effects and narrative.
-  - [ ] Adapter onboarding checklist exists and is tested with two adapters.
-  - [ ] All evidence artifacts are present.
+  - [x] E2E flows pass for effects and narrative.
+  - [x] Adapter onboarding checklist exists and is tested with two adapters.
+  - [x] All evidence artifacts are present.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -462,10 +462,10 @@ pnpm tsc --noEmit
 ```
 
 ### Final Checklist
-- [ ] Generic graph platform has zero domain-specific compile-time dependencies.
-- [ ] Effects editor is implemented as adapter only.
-- [ ] Narrative editor is implemented as adapter only.
-- [ ] Core interaction stack is reused unchanged across both adapters.
-- [ ] AI generation works for multiple adapters through one entrypoint.
-- [ ] Performance decision for native path is evidence-backed.
-- [ ] All acceptance evidence exists in `.sisyphus/evidence/`.
+- [x] Generic graph platform has zero domain-specific compile-time dependencies.
+- [x] Effects editor is implemented as adapter only.
+- [x] Narrative editor is implemented as adapter only.
+- [x] Core interaction stack is reused unchanged across both adapters.
+- [x] AI generation works for multiple adapters through one entrypoint.
+- [x] Performance decision for native path is evidence-backed.
+- [x] All acceptance evidence exists in `.sisyphus/evidence/`.

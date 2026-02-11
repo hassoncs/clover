@@ -48,7 +48,7 @@ interface AABB {
   maxY: number;
   entityId: string;
   entityName: string;
-  template?: string;
+  prefab?: string;
   isGround: boolean;
   isStatic: boolean;
 }
@@ -70,7 +70,7 @@ function getEntityAABB(entity: GameEntity): AABB | null {
   const { transform, physics } = entity;
   const { x, y } = transform;
 
-  const isGround = entity.template === ANGRY_BURNS_CONSTANTS.GROUND_TEMPLATE;
+  const isGround = entity.prefab === ANGRY_BURNS_CONSTANTS.GROUND_TEMPLATE;
   const isStatic = physics?.bodyType === 'static';
 
   const colliderDims = getColliderDimensions(entity);
@@ -83,9 +83,9 @@ function getEntityAABB(entity: GameEntity): AABB | null {
       maxY: y + colliderDims.radius,
       entityId: entity.id,
       entityName: entity.name,
-      template: entity.template,
-      isGround,
-      isStatic,
+    prefab: entity.prefab,
+    isGround,
+    isStatic,
     };
   }
 
@@ -99,7 +99,7 @@ function getEntityAABB(entity: GameEntity): AABB | null {
     maxY: y + halfHeight,
     entityId: entity.id,
     entityName: entity.name,
-    template: entity.template,
+    prefab: entity.prefab,
     isGround,
     isStatic,
   };
@@ -248,7 +248,7 @@ export function validateSupport(entities: GameEntity[]): ValidationResult {
 
   for (const block of aabbs) {
     if (block.isGround || block.isStatic) continue;
-    if (!block.template || !ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES.includes(block.template as typeof ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES[number])) {
+    if (!block.prefab || !ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES.includes(block.prefab as typeof ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES[number])) {
       continue;
     }
 
@@ -312,27 +312,27 @@ export function validateRequiredEntities(entities: GameEntity[]): ValidationResu
   const { LAUNCHER_TEMPLATE, GROUND_TEMPLATE, TARGET_TEMPLATE } = ANGRY_BURNS_CONSTANTS;
 
   for (const entity of entities) {
-    if (entity.template === LAUNCHER_TEMPLATE) {
+    if (entity.prefab === LAUNCHER_TEMPLATE) {
       hasLauncher = true;
       launcherCount++;
     }
-    if (entity.template === GROUND_TEMPLATE) {
+    if (entity.prefab === GROUND_TEMPLATE) {
       hasGround = true;
       groundCount++;
     }
-    if (entity.template === TARGET_TEMPLATE) {
+    if (entity.prefab === TARGET_TEMPLATE) {
       targetCount++;
     }
   }
 
   if (!hasLauncher) {
-    errors.push(`Missing required entity: launcher (template "${LAUNCHER_TEMPLATE}")`);
+    errors.push(`Missing required entity: launcher (prefab "${LAUNCHER_TEMPLATE}")`);
   }
   if (!hasGround) {
-    errors.push(`Missing required entity: ground (template "${GROUND_TEMPLATE}")`);
+    errors.push(`Missing required entity: ground (prefab "${GROUND_TEMPLATE}")`);
   }
   if (targetCount === 0) {
-    errors.push(`Missing required entity: at least one target (template "${TARGET_TEMPLATE}")`);
+    errors.push(`Missing required entity: at least one target (prefab "${TARGET_TEMPLATE}")`);
   }
 
   if (launcherCount > 1) {
@@ -366,16 +366,16 @@ function collectMetrics(entities: GameEntity[]): Pick<ValidationMetrics, 'entity
   let launcherCount = 0;
 
   for (const entity of entities) {
-    if (entity.template && ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES.includes(entity.template as typeof ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES[number])) {
+    if (entity.prefab && ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES.includes(entity.prefab as typeof ANGRY_BURNS_CONSTANTS.BLOCK_TEMPLATES[number])) {
       blockCount++;
     }
-    if (entity.template === ANGRY_BURNS_CONSTANTS.TARGET_TEMPLATE) {
+    if (entity.prefab === ANGRY_BURNS_CONSTANTS.TARGET_TEMPLATE) {
       targetCount++;
     }
-    if (entity.template === ANGRY_BURNS_CONSTANTS.GROUND_TEMPLATE) {
+    if (entity.prefab === ANGRY_BURNS_CONSTANTS.GROUND_TEMPLATE) {
       groundCount++;
     }
-    if (entity.template === ANGRY_BURNS_CONSTANTS.LAUNCHER_TEMPLATE) {
+    if (entity.prefab === ANGRY_BURNS_CONSTANTS.LAUNCHER_TEMPLATE) {
       launcherCount++;
     }
   }

@@ -131,7 +131,7 @@ const game: GameDefinition = {
       layout: { columns: 4, rows: 2, cellWidth: 64, cellHeight: 64 },
     },
   },
-  templates: {
+  prefabs: {
     gem_red: {
       id: "gem_red",
       tags: ["gem", "gem_red"],
@@ -224,7 +224,7 @@ const game: GameDefinition = {
       return {
         id: `grid_${row}_${col}`,
         name: `Grid Cell ${row},${col}`,
-        template: "grid_cell",
+        prefab: "grid_cell",
         transform: { x: pos.x, y: pos.y, angle: 0, scaleX: 1, scaleY: 1 },
         layer: -1,
       };

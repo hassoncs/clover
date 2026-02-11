@@ -1,7 +1,7 @@
 import type {
   BuildManifest,
   TagPayloads,
-  EntityTemplate,
+  EntityPrefab,
   GameEntity,
   GameRule,
 } from '@slopcade/shared';
@@ -120,7 +120,7 @@ function validateArtifactHashes(
 }
 
 function validatePrefabs(
-  prefabs: Record<string, EntityTemplate>,
+  prefabs: Record<string, EntityPrefab>,
   errors: ValidationError[],
   _warnings: ValidationError[],
 ): void {
@@ -190,11 +190,11 @@ function validateEntities(
     }
     entityIds.add(entity.id);
 
-    if (entity.template && !prefabIds.has(entity.template)) {
+    if (entity.prefab && !prefabIds.has(entity.prefab)) {
       errors.push({
         code: 'UNKNOWN_PREFAB_REFERENCE',
-        message: `Entity "${entity.id}" references unknown prefab "${entity.template}"`,
-        path: `entities.${entity.id}.template`,
+        message: `Entity "${entity.id}" references unknown prefab "${entity.prefab}"`,
+        path: `entities.${entity.id}.prefab`,
         severity: 'error',
       });
     }
@@ -209,7 +209,7 @@ function collectRulePrefabRefs(rules: GameRule[]): string[] {
       if (!isRecord(action)) continue;
       const actionRecord = action as Record<string, unknown>;
       if (actionRecord.type === 'spawn') {
-        const template = actionRecord.template;
+        const template = actionRecord.prefab;
         if (typeof template === 'string') {
           refs.push(template);
         } else if (Array.isArray(template)) {

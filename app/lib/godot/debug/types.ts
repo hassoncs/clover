@@ -7,7 +7,7 @@ export type SnapshotDetail = 'low' | 'med' | 'high';
 export interface SnapshotOptions {
   detail?: SnapshotDetail;
   filterTags?: string[];
-  filterTemplate?: string;
+  filterPrefab?: string;
   maxEntities?: number;
 }
 
@@ -43,7 +43,7 @@ export interface EntityPhysicsInfo {
 
 export interface EntitySnapshot {
   id: string;
-  template: string;
+  prefab: string;
   position: Vec2;
   angle: number;
   velocity?: Vec2;
@@ -233,7 +233,7 @@ export interface DebugBridgeState {
 export interface QueryOptions {
   limit?: number;
   offset?: number;
-  orderBy?: 'id' | 'name' | 'template' | 'distance' | 'zIndex';
+  orderBy?: 'id' | 'name' | 'prefab' | 'distance' | 'zIndex';
   origin?: Vec2;
   include?: ('transform' | 'physics' | 'render' | 'shapes' | 'joints' | 'overlaps' | 'behaviors')[];
   scopeRootId?: string;
@@ -245,7 +245,7 @@ export interface QueryMatch {
   name: string;
   position: Vec2;
   angle: number;
-  template?: string;
+  prefab?: string;
   tags?: string[];
   path?: string;
   visible?: boolean;
@@ -333,7 +333,7 @@ export interface PatchPropsResult {
 // =============================================================================
 
 export interface SpawnRequest {
-  template: string;
+  prefab: string;
   name?: string;
   tags?: string[];
   position: Vec2;
@@ -425,10 +425,10 @@ export interface StepResult {
 
 export interface EventFilter {
   entityId?: string;
-  template?: string;
+  prefab?: string;
   tag?: string;
-  a?: { entityId?: string; template?: string; tag?: string };
-  b?: { entityId?: string; template?: string; tag?: string };
+  a?: { entityId?: string; prefab?: string; tag?: string };
+  b?: { entityId?: string; prefab?: string; tag?: string };
 }
 
 export interface SubscribeRequest {

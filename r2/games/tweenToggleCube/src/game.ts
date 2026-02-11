@@ -34,7 +34,7 @@ const game: GameDefinition = {
   overlay: {
     elements: [],
   },
-  templates: {
+  prefabs: {
     cube: {
       id: "cube",
       tags: ["cube"],
@@ -88,21 +88,21 @@ const game: GameDefinition = {
     {
       id: "cube",
       name: "Cube",
-      template: "cube",
+      prefab: "cube",
       transform: { x: CUBE_LEFT_X, y: CUBE_Y, angle: 0, scaleX: 1, scaleY: 1 },
       layer: 1,
     },
     {
       id: "animateButton",
       name: "Animate Button",
-      template: "animateButton",
+      prefab: "animateButton",
       transform: { x: 0, y: -6, angle: 0, scaleX: 1, scaleY: 1 },
       layer: 2,
     },
     {
       id: "animateLabel",
       name: "Animate Label",
-      template: "animateLabel",
+      prefab: "animateLabel",
       transform: { x: 0, y: -6, angle: 0, scaleX: 1, scaleY: 1 },
       layer: 3,
     },

@@ -7,7 +7,7 @@ function createValidGame(overrides: Partial<GameDefinition> = {}): GameDefinitio
   return {
     metadata: { id: 'test-game', title: 'Test Game', version: '1.0.0' },
     world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-    templates: {},
+    prefabs: {},
     entities: [
       {
         id: 'player',
@@ -30,15 +30,15 @@ function createValidGame(overrides: Partial<GameDefinition> = {}): GameDefinitio
 }
 
 describe('semantic validation', () => {
-  it('errors on template child cycles', () => {
+  it('errors on prefab child cycles', () => {
     const game = createValidGame({
-      templates: {
+      prefabs: {
         parent: {
           id: 'parent',
           children: [
             {
               name: 'child',
-              template: 'child',
+              prefab: 'child',
               localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
             },
           ],
@@ -48,7 +48,7 @@ describe('semantic validation', () => {
           children: [
             {
               name: 'parent',
-              template: 'parent',
+              prefab: 'parent',
               localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
             },
           ],
@@ -58,7 +58,7 @@ describe('semantic validation', () => {
         {
           id: 'parent-entity',
           name: 'Parent',
-          template: 'parent',
+          prefab: 'parent',
           transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         },
       ],
@@ -66,7 +66,7 @@ describe('semantic validation', () => {
 
     const result = validateGameDefinition(game);
 
-    expect(result.errors.some((error) => error.code === 'TEMPLATE_CYCLE')).toBe(true);
+    expect(result.errors.some((error) => error.code === 'PREFAB_CYCLE')).toBe(true);
   });
 
   it('errors on unresolved constant references', () => {

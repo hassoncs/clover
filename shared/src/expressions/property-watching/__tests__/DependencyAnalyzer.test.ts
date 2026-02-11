@@ -8,7 +8,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           ball: {
             id: 'ball',
             tags: ['ball'],
@@ -36,7 +36,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           player: {
             id: 'player',
             tags: ['player'],
@@ -65,7 +65,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           enemy: {
             id: 'enemy',
             tags: ['enemy'],
@@ -95,7 +95,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {},
+        prefabs: {},
         entities: [],
         rules: [
           {
@@ -123,7 +123,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {},
+        prefabs: {},
         entities: [],
         rules: [
           {
@@ -151,7 +151,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {},
+        prefabs: {},
         entities: [],
         rules: [
           {
@@ -183,7 +183,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           ball: {
             id: 'ball',
             behaviors: [
@@ -209,7 +209,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           ball: {
             id: 'ball',
             behaviors: [
@@ -237,7 +237,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {},
+        prefabs: {},
         entities: [
           {
             id: 'ball-1',
@@ -268,7 +268,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           ball: {
             id: 'ball',
             behaviors: [
@@ -284,7 +284,7 @@ describe('DependencyAnalyzer', () => {
             id: 'ball-1',
             name: 'Ball',
             transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-            template: 'ball',
+            prefab: 'ball',
           },
         ],
         rules: [
@@ -312,7 +312,7 @@ describe('DependencyAnalyzer', () => {
       const game: GameDefinition = {
         metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        templates: {
+        prefabs: {
           ball: {
             id: 'ball',
             behaviors: [

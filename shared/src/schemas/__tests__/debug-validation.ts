@@ -3,7 +3,7 @@ import { validateGameDefinition } from '../validation/gameDefinitionValidator';
 const testGame = {
   metadata: { id: 'test-game', title: 'Test Game', version: '1.0.0' },
   world: { gravity: { x: 0, y: -10 }, pixelsPerMeter: 50 },
-  templates: {
+  prefabs: {
     player: {
       id: 'player',
       tags: ['player'],
@@ -14,7 +14,7 @@ const testGame = {
     {
       id: 'player1',
       name: 'Player',
-      template: 'player',
+      prefab: 'player',
       transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 }
     }
   ],

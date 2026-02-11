@@ -286,7 +286,7 @@ export class PackageRuntimeAdapter {
       },
       world: worldPayload?.world ?? { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
       background: worldPayload?.background,
-      templates: prefabsPayload?.prefabs ?? {},
+      prefabs: prefabsPayload?.prefabs ?? {},
       entities: entitiesPayload?.entities ?? [],
       rules: rulesPayload?.rules,
       script: scriptsPayload?.script || undefined,

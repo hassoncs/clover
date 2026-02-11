@@ -32,7 +32,7 @@ func godot_to_game_pos(godot_pos: Vector2) -> Vector2:
 # =============================================================================
 
 func spawn(request: Dictionary) -> Dictionary:
-	var template = request.get("template", "")
+	var prefab_id = request.get("prefab", "")
 	var name_hint = request.get("name", "")
 	var tags = request.get("tags", [])
 	var position = request.get("position", {"x": 0, "y": 0})
@@ -41,18 +41,18 @@ func spawn(request: Dictionary) -> Dictionary:
 	var parent_id = request.get("parentId", "")
 	var id_hint = request.get("idHint", "")
 	
-	if template == "" and not _game_bridge.templates.has(template):
-		return {"ok": false, "error": "Template not found: " + template}
+	if prefab_id == "" or not _game_bridge.prefabs.has(prefab_id):
+		return {"ok": false, "error": "Prefab not found: " + prefab_id}
 	
 	_debug_entity_counter += 1
-	var entity_id = id_hint if id_hint != "" else "debug_" + template + "_" + str(_debug_entity_counter)
+	var entity_id = id_hint if id_hint != "" else "debug_" + prefab_id + "_" + str(_debug_entity_counter)
 	
 	if name_hint == "":
 		name_hint = entity_id
 	
 	var entity_data = {
 		"id": entity_id,
-		"template": template,
+		"prefab": prefab_id,
 		"transform": {
 			"x": position.get("x", 0),
 			"y": position.get("y", 0),
@@ -221,8 +221,8 @@ func clone(entity_id: String, options: Dictionary = {}) -> Dictionary:
 	if clone_node is Area2D:
 		clone_node.set_meta("entity_type", "sensor")
 	
-	if original.has_meta("template"):
-		clone_node.set_meta("template", original.get_meta("template"))
+	if original.has_meta("prefab"):
+		clone_node.set_meta("prefab", original.get_meta("prefab"))
 	
 	if original.has_meta("tags"):
 		clone_node.set_meta("tags", original.get_meta("tags").duplicate())

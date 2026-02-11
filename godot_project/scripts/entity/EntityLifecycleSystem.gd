@@ -11,7 +11,7 @@ func _js_spawn_entity(args: Array) -> void:
 	if args.size() < 1:
 		return
 	var entity_data = args[0] as Dictionary
-	if entity_data.has("id") and entity_data.has("template"):
+	if entity_data.has("id") and entity_data.has("prefab"):
 		_game_bridge._entity_factory.create_entity(entity_data)
 
 

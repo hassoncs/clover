@@ -4,7 +4,7 @@ extends RefCounted
 # =============================================================================
 # DEBUG SELECTOR
 # CSS-like selector system for querying game entities
-# Supports: #id, template, .tag, [name=X], [physicsBody=X], :inRect(), :near()
+# Supports: #id, prefab, .tag, [name=X], [physicsBody=X], :inRect(), :near()
 # Combinators: space (descendant), > (child), , (OR group)
 # =============================================================================
 
@@ -55,8 +55,8 @@ func query(selector: String, options: Dictionary = {}) -> Dictionary:
 		all_matches.sort_custom(func(a, b): return a.get("zIndex", 0) < b.get("zIndex", 0))
 	elif order_by == "name":
 		all_matches.sort_custom(func(a, b): return a.name < b.name)
-	elif order_by == "template":
-		all_matches.sort_custom(func(a, b): return a.get("template", "") < b.get("template", ""))
+	elif order_by == "prefab":
+		all_matches.sort_custom(func(a, b): return a.get("prefab", "") < b.get("prefab", ""))
 	
 	var total_count = all_matches.size()
 	var paginated = all_matches.slice(offset, offset + limit)
@@ -200,7 +200,7 @@ func _parse_compound_selector(selector: String) -> Dictionary:
 		elif c.is_valid_identifier() or c == "_":
 			var end = _find_token_end(selector, i)
 			var template_val = selector.substr(i, end - i)
-			conditions.append({"op": "template", "value": template_val})
+			conditions.append({"op": "prefab", "value": template_val})
 			i = end
 		
 		else:
@@ -246,8 +246,8 @@ func _parse_attribute(content: String) -> Dictionary:
 				return {"op": "physicsBody", "value": val}
 			"sensor":
 				return {"op": "sensor", "value": val.to_lower() == "true"}
-			"template":
-				return {"op": "template", "value": val}
+			"prefab":
+				return {"op": "prefab", "value": val}
 			_:
 				return {"op": "meta", "key": key, "value": val}
 	else:
@@ -352,8 +352,8 @@ func _matches_ast(node: Node2D, entity_id: String, ast: Dictionary) -> bool:
 		"id":
 			return entity_id == ast.value
 		
-		"template":
-			var tmpl = node.get_meta("template") if node.has_meta("template") else ""
+		"prefab":
+			var tmpl = node.get_meta("prefab") if node.has_meta("prefab") else ""
 			return tmpl == ast.value
 		
 		"tag":
@@ -475,8 +475,8 @@ func _build_match_result(entity_id: String, node: Node2D) -> Dictionary:
 		"angle": -node.global_rotation
 	}
 	
-	if node.has_meta("template"):
-		result["template"] = node.get_meta("template")
+	if node.has_meta("prefab"):
+		result["prefab"] = node.get_meta("prefab")
 	if node.has_meta("tags"):
 		result["tags"] = node.get_meta("tags")
 	

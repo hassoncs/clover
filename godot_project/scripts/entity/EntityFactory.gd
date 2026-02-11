@@ -5,7 +5,7 @@ var _bridge: Node = null
 
 # State references (passed from bridge for clean dependency injection)
 var _entities: Dictionary = {}
-var _templates: Dictionary = {}
+var _prefabs: Dictionary = {}
 var _pixels_per_meter: float = 50.0
 var _game_root: Node2D = null
 
@@ -17,12 +17,12 @@ func _init(bridge: Node):
 
 func setup(
 	entities: Dictionary,
-	templates: Dictionary,
+	prefabs: Dictionary,
 	pixels_per_meter: float,
 	game_root: Node2D
 ):
 	_entities = entities
-	_templates = templates
+	_prefabs = prefabs
 	_pixels_per_meter = pixels_per_meter
 	_game_root = game_root
 
@@ -30,10 +30,10 @@ func setup(
 func update_state():
 	if _bridge:
 		_entities = _bridge.entities
-		_templates = _bridge.templates
+		_prefabs = _bridge.prefabs
 		_pixels_per_meter = _bridge.pixels_per_meter
 		_game_root = _bridge.game_root
-		print("[EntityFactory][DIAG] update_state: game_root=", _game_root, " ppm=", _pixels_per_meter, " templates=", _templates.keys())
+		print("[EntityFactory][DIAG] update_state: game_root=", _game_root, " ppm=", _pixels_per_meter, " prefabs=", _prefabs.keys())
 
 
 func game_to_godot_pos(game_pos: Vector2) -> Vector2:
@@ -55,23 +55,23 @@ func game_to_godot_vec(game_vec: Vector2) -> Vector2:
 
 func create_entity(entity_data: Dictionary) -> EntityRecord:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
-	var template_id = entity_data.get("template", "")
+	var prefab_id = entity_data.get("prefab", "")
 	var transform_data = entity_data.get("transform", {})
 
-	# Merge template with entity data
+	# Merge prefab with entity data
 	var merged = entity_data.duplicate(true)
 
-	if template_id != "" and _templates.has(template_id):
-		var tmpl = _templates[template_id]
-		# Template provides defaults, entity_data overrides
-		for key in tmpl:
+	if prefab_id != "" and _prefabs.has(prefab_id):
+		var prefab = _prefabs[prefab_id]
+		# Prefab provides defaults, entity_data overrides
+		for key in prefab:
 			if not merged.has(key):
-				merged[key] = tmpl[key]
+				merged[key] = prefab[key]
 		# Merge components specifically
-		_merged_component(merged, tmpl, "physics")
-		_merged_component(merged, tmpl, "collider")
-		_merged_component(merged, tmpl, "visual")
-		_merged_component(merged, tmpl, "character")
+		_merged_component(merged, prefab, "physics")
+		_merged_component(merged, prefab, "collider")
+		_merged_component(merged, prefab, "visual")
+		_merged_component(merged, prefab, "character")
 
 	var physics_data = merged.get("physics", null)
 	var collider_data = merged.get("collider", null)
@@ -134,8 +134,8 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 		node.visible = false
 
 	# Set metadata for selectors
-	if template_id != "":
-		node.set_meta("template", template_id)
+	if prefab_id != "":
+		node.set_meta("prefab", prefab_id)
 	if merged.has("tags"):
 		node.set_meta("tags", merged.tags if merged.tags is Array else [])
 	if merged.has("behaviors"):
@@ -152,7 +152,7 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	# Create EntityRecord with archetype
 	var archetype = _determine_archetype(physics_data, collider_data)
 	var record = EntityRecord.new(entity_id, node, archetype)
-	record.template = template_id
+	record.prefab = prefab_id
 	if merged.has("tags"):
 		record.tags = merged.tags if merged.tags is Array else []
 	return record
@@ -162,7 +162,7 @@ func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dict
 	"""Create a child entity and attach it to the parent node."""
 	var child_name = child_def.get("name", "child_" + str(randi()))
 	var child_id = child_def.get("id", parent_id + "_" + child_name)
-	var child_template_id = child_def.get("template", "")
+	var child_prefab_id = child_def.get("prefab", "")
 	var local_transform = child_def.get("localTransform", {})
 	
 	# Build child entity data
@@ -175,16 +175,16 @@ func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dict
 	elif not child_entity_data.has("transform"):
 		child_entity_data["transform"] = {"x": 0, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1}
 	
-	# Merge with child's template if specified
+	# Merge with child's prefab if specified
 	var merged = child_entity_data.duplicate(true)
-	if child_template_id != "" and _templates.has(child_template_id):
-		var tmpl = _templates[child_template_id]
-		for key in tmpl:
+	if child_prefab_id != "" and _prefabs.has(child_prefab_id):
+		var prefab = _prefabs[child_prefab_id]
+		for key in prefab:
 			if not merged.has(key):
-				merged[key] = tmpl[key]
-		_merged_component(merged, tmpl, "physics")
-		_merged_component(merged, tmpl, "collider")
-		_merged_component(merged, tmpl, "visual")
+				merged[key] = prefab[key]
+		_merged_component(merged, prefab, "physics")
+		_merged_component(merged, prefab, "collider")
+		_merged_component(merged, prefab, "visual")
 	
 	var physics_data = merged.get("physics", null)
 	var collider_data = merged.get("collider", null)
@@ -211,8 +211,8 @@ func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dict
 	parent_node.add_child(node)
 	
 	# Set metadata
-	if child_template_id != "":
-		node.set_meta("template", child_template_id)
+	if child_prefab_id != "":
+		node.set_meta("prefab", child_prefab_id)
 	if merged.has("tags"):
 		node.set_meta("tags", merged.tags if merged.tags is Array else [])
 	if merged.has("behaviors"):
@@ -222,7 +222,7 @@ func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dict
 	# Create EntityRecord and add to registry
 	var archetype = _determine_archetype(physics_data, collider_data)
 	var record = EntityRecord.new(child_id, node, archetype)
-	record.template = child_template_id
+	record.prefab = child_prefab_id
 	if merged.has("tags"):
 		record.tags = merged.tags if merged.tags is Array else []
 	
@@ -535,15 +535,15 @@ func _create_polygon_texture(
 	return null
 
 
-func _merged_component(merged: Dictionary, tmpl: Dictionary, key: String) -> void:
-	if not tmpl.has(key):
+func _merged_component(merged: Dictionary, prefab: Dictionary, key: String) -> void:
+	if not prefab.has(key):
 		return
-	var tmpl_val = tmpl[key]
+	var prefab_val = prefab[key]
 	var merged_val = merged.get(key, {})
-	if typeof(tmpl_val) == TYPE_DICTIONARY and typeof(merged_val) == TYPE_DICTIONARY:
-		for k in tmpl_val:
+	if typeof(prefab_val) == TYPE_DICTIONARY and typeof(merged_val) == TYPE_DICTIONARY:
+		for k in prefab_val:
 			if not merged_val.has(k):
-				merged_val[k] = tmpl_val[k]
+				merged_val[k] = prefab_val[k]
 		merged[key] = merged_val
 
 

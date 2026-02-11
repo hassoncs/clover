@@ -75,7 +75,7 @@ type EditorStateAction =
   | { type: "DELETE_ENTITY"; entityId: string }
   | { type: "DUPLICATE_ENTITY"; entityId: string }
   | { type: "ADD_ENTITY"; entity: GameEntity }
-  | { type: "ADD_ENTITY_FROM_TEMPLATE"; templateId: string; x: number; y: number }
+  | { type: "ADD_ENTITY_FROM_PREFAB"; prefabId: string; x: number; y: number }
   | { type: "UPDATE_ENTITY_PROPERTY"; entityId: string; path: string; value: unknown }
   | { type: "SET_ACTIVE_ASSET_PACK"; packId: string | undefined; entries: Record<string, ResolvedPackEntry> };
 
@@ -306,8 +306,8 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       };
     }
 
-    case "ADD_ENTITY_FROM_TEMPLATE": {
-      const template = state.document.templates[action.templateId];
+    case "ADD_ENTITY_FROM_PREFAB": {
+      const template = state.document.prefabs[action.prefabId];
       if (!template) return state;
       
       const historyEntry: HistoryEntry = {
@@ -315,11 +315,11 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         selectedEntityId: state.selectedEntityId,
       };
       
-      const newId = `${action.templateId}_${Date.now()}`;
+      const newId = `${action.prefabId}_${Date.now()}`;
       const newEntity: GameEntity = {
         id: newId,
-        name: action.templateId,
-        template: action.templateId,
+        name: action.prefabId,
+        prefab: action.prefabId,
         transform: {
           x: action.x,
           y: action.y,
@@ -398,10 +398,10 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         activePackId: action.packId,
       };
 
-      for (const [templateId, entry] of Object.entries(action.entries)) {
-        const template = newDocument.templates[templateId];
-        if (template) {
-          const collider = template.collider;
+      for (const [prefabId, entry] of Object.entries(action.entries)) {
+        const prefab = newDocument.prefabs[prefabId];
+        if (prefab) {
+          const collider = prefab.collider;
           let imageWidth = 1;
           let imageHeight = 1;
           
@@ -415,14 +415,14 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
             }
           }
           
-          console.log('[EditorProvider] Updating template visual', {
-            templateId,
+          console.log('[EditorProvider] Updating prefab visual', {
+            prefabId,
             imageUrl: entry.imageUrl,
             width: imageWidth,
             height: imageHeight,
           });
           
-          template.visual = {
+          prefab.visual = {
             type: 'image',
             imageWidth,
             imageHeight,
@@ -486,7 +486,7 @@ interface EditorContextValue {
   deleteEntity: (id: string) => void;
   duplicateEntity: (id: string) => void;
   addEntity: (entity: GameEntity) => void;
-  addEntityFromTemplate: (templateId: string, x: number, y: number) => void;
+  addEntityFromPrefab: (templateId: string, x: number, y: number) => void;
   updateEntityProperty: (id: string, path: string, value: unknown) => void;
   setActiveAssetPack: (packId: string | undefined, entries: Record<string, ResolvedPackEntry>) => void;
 
@@ -612,8 +612,8 @@ export function EditorProvider({
     dispatch({ type: "ADD_ENTITY", entity });
   }, []);
 
-  const addEntityFromTemplate = useCallback((templateId: string, x: number, y: number) => {
-    dispatch({ type: "ADD_ENTITY_FROM_TEMPLATE", templateId, x, y });
+  const addEntityFromPrefab = useCallback((prefabId: string, x: number, y: number) => {
+    dispatch({ type: "ADD_ENTITY_FROM_PREFAB", prefabId, x, y });
   }, []);
 
   const updateEntityProperty = useCallback((id: string, path: string, value: unknown) => {
@@ -676,7 +676,7 @@ export function EditorProvider({
       deleteEntity,
       duplicateEntity,
       addEntity,
-      addEntityFromTemplate,
+      addEntityFromPrefab,
       updateEntityProperty,
       setActiveAssetPack,
 
@@ -717,7 +717,7 @@ export function EditorProvider({
       deleteEntity,
       duplicateEntity,
       addEntity,
-      addEntityFromTemplate,
+      addEntityFromPrefab,
       updateEntityProperty,
       setActiveAssetPack,
       undo,

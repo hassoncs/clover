@@ -57,7 +57,7 @@
     "type": "entity_destroyed",
     "tag": "bird"
   },
-  "templates": {
+  "prefabs": {
     "bird": {
       "id": "bird",
       "tags": [
@@ -219,7 +219,7 @@
       "children": [
         {
           "name": "pipeTop",
-          "template": "pipeTop",
+          "prefab": "pipeTop",
           "localTransform": {
             "x": 0,
             "y": 0,
@@ -230,7 +230,7 @@
         },
         {
           "name": "pipeBottom",
-          "template": "pipeBottom",
+          "prefab": "pipeBottom",
           "localTransform": {
             "x": 0,
             "y": 0,
@@ -241,7 +241,7 @@
         },
         {
           "name": "scoreZone",
-          "template": "scoreZone",
+          "prefab": "scoreZone",
           "localTransform": {
             "x": 0,
             "y": 0,
@@ -303,7 +303,7 @@
     {
       "id": "bird",
       "name": "Bird",
-      "template": "bird",
+      "prefab": "bird",
       "transform": {
         "x": -3,
         "y": 0,
@@ -315,7 +315,7 @@
     {
       "id": "ground",
       "name": "Ground",
-      "template": "ground",
+      "prefab": "ground",
       "transform": {
         "x": 0,
         "y": -7.25,
@@ -327,7 +327,7 @@
     {
       "id": "ceiling",
       "name": "Ceiling",
-      "template": "ceiling",
+      "prefab": "ceiling",
       "transform": {
         "x": 0,
         "y": 7.75,
@@ -339,7 +339,7 @@
     {
       "id": "initial_pipe_group",
       "name": "Initial Pipe Group",
-      "template": "pipeGroup",
+      "prefab": "pipeGroup",
       "transform": {
         "x": 2,
         "y": 0,
@@ -378,7 +378,7 @@
       "actions": [
         {
           "type": "spawn",
-          "template": "pipeGroup",
+          "prefab": "pipeGroup",
           "position": {
             "type": "fixed",
             "x": 8,

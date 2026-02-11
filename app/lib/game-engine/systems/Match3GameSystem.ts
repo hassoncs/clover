@@ -173,7 +173,7 @@ export class Match3GameSystem {
 
         do {
           pieceType = Math.floor(
-            Math.random() * this.config.pieceTemplates.length,
+            Math.random() * this.config.piecePrefabs.length,
           );
           attempts++;
         } while (attempts < 20 && this.wouldCreateMatch(row, col, pieceType));
@@ -220,14 +220,14 @@ export class Match3GameSystem {
     pieceType: number,
     aboveBoard = false,
   ): void {
-    const template = this.config.pieceTemplates[pieceType];
+    const prefab = this.config.piecePrefabs[pieceType];
     const pos = this.cellToWorldPos(row, col);
     const gridHeight = this.gridConfig.rows * this.gridConfig.cellHeight;
     const topOfGrid = gridHeight / 2;
     const spawnY = aboveBoard ? topOfGrid + this.config.cellSize : pos.y;
 
     const entityId = this.entityManager.spawnEntity({
-      templateId: template,
+      prefabId: prefab,
       position: { x: pos.x, y: spawnY },
       tags: ["match3_piece"],
     });
@@ -245,12 +245,12 @@ export class Match3GameSystem {
         pieceType,
       );
       if (result) {
-        const templateDef = this.entityManager.getTemplate(template);
+        const prefabDef = this.entityManager.getPrefab(prefab);
         let spriteWidth = 1.0;
         let spriteHeight = 1.0;
 
-        if (templateDef?.collider) {
-          const collider = templateDef.collider;
+        if (prefabDef?.collider) {
+          const collider = prefabDef.collider;
           if (collider.shape === "circle" && "radius" in collider) {
             spriteWidth = spriteHeight = collider.radius * 2;
           } else if (
@@ -759,7 +759,7 @@ export class Match3GameSystem {
 
     for (const cell of emptyCells) {
       const pieceType = Math.floor(
-        Math.random() * this.config.pieceTemplates.length,
+        Math.random() * this.config.piecePrefabs.length,
       );
       this.spawnPieceAt(cell.row, cell.col, pieceType, true);
     }

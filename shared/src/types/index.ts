@@ -36,4 +36,5 @@ export * from './PackageRuntime';
 export { WorkspaceManifest, TAG_GROUPS } from './PackageManifest';
 export * from './GamePackage';
 export * from './PackageBridge';
+export * from './Prefab';
 export * from './FeatureFlags';

@@ -172,7 +172,7 @@ export const economyRouter = router({
     .input(z.object({
       gameId: z.string(),
       regenerateAll: z.boolean().default(false),
-      specificTemplates: z.array(z.string()).optional(),
+      specificPrefabs: z.array(z.string()).optional(),
     }))
     .query(async ({ ctx, input }) => {
       const game = await ctx.env.DB
@@ -193,7 +193,7 @@ export const economyRouter = router({
       const definition = JSON.parse(await defObj.text());
       const estimate = estimateGameAssetCost(definition, {
         regenerateAll: input.regenerateAll,
-        specificTemplates: input.specificTemplates,
+        specificPrefabs: input.specificPrefabs,
       });
       
       const walletService = new WalletService(ctx.env.DB);

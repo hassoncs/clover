@@ -1,28 +1,28 @@
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { useState, useMemo, useEffect } from 'react';
 import { PrimitivePreview } from './PrimitivePreview';
-import type { EntityTemplate, AssetPlacement } from '@slopcade/shared';
+import type { EntityPrefab, AssetPlacement } from '@slopcade/shared';
 import { resolveAssetUrl } from '@/lib/config/env';
 
 type ViewMode = 'primitive' | 'generated';
 
-interface TemplateAssetCardProps {
-  templateId: string;
-  template: EntityTemplate;
+interface PrefabAssetCardProps {
+  prefabId: string;
+  prefab: EntityPrefab;
   imageUrl?: string;
   placement?: AssetPlacement;
   isGenerating?: boolean;
   onPress?: () => void;
 }
 
-export function TemplateAssetCard({
-  templateId,
-  template,
+export function PrefabAssetCard({
+  prefabId,
+  prefab,
   imageUrl,
   placement,
   isGenerating = false,
   onPress,
-}: TemplateAssetCardProps) {
+}: PrefabAssetCardProps) {
   const resolvedImageUrl = useMemo(() => resolveAssetUrl(imageUrl), [imageUrl]);
   const [viewMode, setViewMode] = useState<ViewMode>(resolvedImageUrl ? 'generated' : 'primitive');
   const [imageError, setImageError] = useState(false);
@@ -52,7 +52,7 @@ export function TemplateAssetCard({
   };
 
   return (
-    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Template ${templateId}`}>
+    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Prefab ${prefabId}`}>
       <View style={styles.previewContainer}>
         {showGeneratedView ? (
           <View style={styles.generatedImageContainer}>
@@ -67,10 +67,10 @@ export function TemplateAssetCard({
           </View>
         ) : (
           <PrimitivePreview
-            collider={template.collider}
-            visual={template.visual}
+            collider={prefab.collider}
+            visual={prefab.visual}
             size={64}
-            color={(template.visual && 'color' in template.visual ? template.visual.color : undefined) ?? '#4CAF50'}
+            color={(prefab.visual && 'color' in prefab.visual ? prefab.visual.color : undefined) ?? '#4CAF50'}
           />
         )}
         
@@ -83,8 +83,8 @@ export function TemplateAssetCard({
 
       <View style={styles.infoContainer}>
         <View style={styles.headerRow}>
-          <Text style={styles.templateName} numberOfLines={1}>
-            {templateId}
+          <Text style={styles.prefabName} numberOfLines={1}>
+            {prefabId}
           </Text>
           <View style={styles.headerActions}>
             <Text style={[styles.statusIndicator, { color: getStatusColor() }]}>
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     color: '#D1D5DB',
     fontSize: 10,
   },
-  templateName: {
+  prefabName: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',

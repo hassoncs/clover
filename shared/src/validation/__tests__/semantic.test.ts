@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { GameDefinition } from '../../types/GameDefinition';
 import type { ValidationError } from '../gameDefinitionTypes';
 import {
-  validateEntityTemplateRefs,
+  validateEntityPrefabRefs,
   validateRuleEntityRefs,
   validateParentChildCycles,
   validateConstantRefs,
@@ -12,46 +12,46 @@ function makeGame(overrides: Partial<GameDefinition> = {}): Partial<GameDefiniti
   return {
     metadata: { id: 'test', title: 'Test', version: '1.0.0' },
     world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-    templates: {},
+    prefabs: {},
     entities: [],
     rules: [],
     ...overrides,
   };
 }
 
-describe('validateEntityTemplateRefs', () => {
-  it('passes when all entity template refs are valid', () => {
+describe('validateEntityPrefabRefs', () => {
+  it('passes when all entity prefab refs are valid', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: { ball: { id: 'ball' } } as GameDefinition['templates'],
+      prefabs: { ball: { id: 'ball' } } as GameDefinition['prefabs'],
       entities: [
-        { id: 'e1', name: 'E1', template: 'ball', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+        { id: 'e1', name: 'E1', prefab: 'ball', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
       ] as GameDefinition['entities'],
     });
 
-    validateEntityTemplateRefs(game, errors);
+    validateEntityPrefabRefs(game, errors);
 
     expect(errors).toHaveLength(0);
   });
 
-  it('errors when entity references unknown template', () => {
+  it('errors when entity references unknown prefab', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: {} as GameDefinition['templates'],
+      prefabs: {} as GameDefinition['prefabs'],
       entities: [
-        { id: 'e1', name: 'E1', template: 'nonexistent', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+        { id: 'e1', name: 'E1', prefab: 'nonexistent', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
       ] as GameDefinition['entities'],
     });
 
-    validateEntityTemplateRefs(game, errors);
+    validateEntityPrefabRefs(game, errors);
 
     expect(errors).toHaveLength(1);
-    expect(errors[0].code).toBe('UNKNOWN_TEMPLATE');
+    expect(errors[0].code).toBe('UNKNOWN_PREFAB');
     expect(errors[0].message).toContain('nonexistent');
-    expect(errors[0].path).toBe('entities.e1.template');
+    expect(errors[0].path).toBe('entities.e1.prefab');
   });
 
-  it('passes when entity has no template', () => {
+  it('passes when entity has no prefab', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
       entities: [
@@ -59,7 +59,7 @@ describe('validateEntityTemplateRefs', () => {
       ] as GameDefinition['entities'],
     });
 
-    validateEntityTemplateRefs(game, errors);
+    validateEntityPrefabRefs(game, errors);
 
     expect(errors).toHaveLength(0);
   });
@@ -69,7 +69,7 @@ describe('validateRuleEntityRefs', () => {
   it('passes when rule entity refs are valid', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: { ball: { id: 'ball' } } as GameDefinition['templates'],
+      prefabs: { ball: { id: 'ball' } } as GameDefinition['prefabs'],
       entities: [
         { id: 'spawner', name: 'Spawner', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
       ] as GameDefinition['entities'],
@@ -78,7 +78,7 @@ describe('validateRuleEntityRefs', () => {
           id: 'r1',
           trigger: { type: 'tap' },
           actions: [
-            { type: 'spawn', template: 'ball', position: { type: 'at_entity', entityId: 'spawner' } },
+            { type: 'spawn', prefab: 'ball', position: { type: 'at_entity', entityId: 'spawner' } },
           ],
         },
       ] as GameDefinition['rules'],
@@ -92,14 +92,14 @@ describe('validateRuleEntityRefs', () => {
   it('errors when spawn action references unknown entity', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: { ball: { id: 'ball' } } as GameDefinition['templates'],
+      prefabs: { ball: { id: 'ball' } } as GameDefinition['prefabs'],
       entities: [] as GameDefinition['entities'],
       rules: [
         {
           id: 'r1',
           trigger: { type: 'tap' },
           actions: [
-            { type: 'spawn', template: 'ball', position: { type: 'at_entity', entityId: 'ghost' } },
+            { type: 'spawn', prefab: 'ball', position: { type: 'at_entity', entityId: 'ghost' } },
           ],
         },
       ] as GameDefinition['rules'],
@@ -110,17 +110,17 @@ describe('validateRuleEntityRefs', () => {
     expect(errors.some((e) => e.code === 'UNKNOWN_ENTITY_REF' && e.message.includes('ghost'))).toBe(true);
   });
 
-  it('errors when spawn action references unknown template', () => {
+  it('errors when spawn action references unknown prefab', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: {} as GameDefinition['templates'],
+      prefabs: {} as GameDefinition['prefabs'],
       entities: [] as GameDefinition['entities'],
       rules: [
         {
           id: 'r1',
           trigger: { type: 'tap' },
           actions: [
-            { type: 'spawn', template: 'missing_tmpl', position: { type: 'fixed', x: 0, y: 0 } },
+            { type: 'spawn', prefab: 'missing_tmpl', position: { type: 'fixed', x: 0, y: 0 } },
           ],
         },
       ] as GameDefinition['rules'],
@@ -128,7 +128,7 @@ describe('validateRuleEntityRefs', () => {
 
     validateRuleEntityRefs(game, errors);
 
-    expect(errors.some((e) => e.code === 'UNKNOWN_TEMPLATE' && e.message.includes('missing_tmpl'))).toBe(true);
+    expect(errors.some((e) => e.code === 'UNKNOWN_PREFAB' && e.message.includes('missing_tmpl'))).toBe(true);
   });
 
   it('errors when destroy action references unknown entity by id', () => {
@@ -176,15 +176,15 @@ describe('validateParentChildCycles', () => {
   it('passes with no cycles', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: {
+      prefabs: {
         parent: {
           id: 'parent',
           children: [
-            { name: 'c', template: 'leaf', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+            { name: 'c', prefab: 'leaf', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
           ],
         },
         leaf: { id: 'leaf' },
-      } as GameDefinition['templates'],
+      } as GameDefinition['prefabs'],
     });
 
     validateParentChildCycles(game, errors);
@@ -192,23 +192,23 @@ describe('validateParentChildCycles', () => {
     expect(errors).toHaveLength(0);
   });
 
-  it('detects direct cycle between two templates', () => {
+  it('detects direct cycle between two prefabs', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: {
+      prefabs: {
         a: {
           id: 'a',
           children: [
-            { name: 'b-child', template: 'b', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+            { name: 'b-child', prefab: 'b', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
           ],
         },
         b: {
           id: 'b',
           children: [
-            { name: 'a-child', template: 'a', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+            { name: 'a-child', prefab: 'a', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
           ],
         },
-      } as GameDefinition['templates'],
+      } as GameDefinition['prefabs'],
     });
 
     validateParentChildCycles(game, errors);
@@ -223,26 +223,26 @@ describe('validateParentChildCycles', () => {
   it('detects transitive cycle a -> b -> c -> a', () => {
     const errors: ValidationError[] = [];
     const game = makeGame({
-      templates: {
+      prefabs: {
         a: {
           id: 'a',
           children: [
-            { name: 'b-child', template: 'b', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+            { name: 'b-child', prefab: 'b', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
           ],
         },
         b: {
           id: 'b',
           children: [
-            { name: 'c-child', template: 'c', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+            { name: 'c-child', prefab: 'c', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
           ],
         },
         c: {
           id: 'c',
           children: [
-            { name: 'a-child', template: 'a', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+            { name: 'a-child', prefab: 'a', localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
           ],
         },
-      } as GameDefinition['templates'],
+      } as GameDefinition['prefabs'],
     });
 
     validateParentChildCycles(game, errors);
@@ -302,7 +302,7 @@ describe('validateConstantRefs', () => {
   it('errors on nested constant reference', () => {
     const errors: ValidationError[] = [];
     const game = {
-      templates: {
+      prefabs: {
         ball: {
           id: 'ball',
           collider: { shape: 'circle', radius: { const: 'BALL_RADIUS' } },

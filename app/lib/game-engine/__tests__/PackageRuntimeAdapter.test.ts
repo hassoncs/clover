@@ -36,7 +36,7 @@ const testArtifacts: Record<string, unknown> = {
       {
         id: 'box-1',
         name: 'Box 1',
-        template: 'box',
+        prefab: 'box',
         transform: { x: 5, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
       },
     ],
@@ -52,7 +52,7 @@ function createMockBridge(): GodotBridge {
     clearGame: vi.fn(),
     preloadTextures: vi.fn().mockResolvedValue({ completed: 1, failed: 0 }),
     setupWorld: vi.fn(),
-    registerTemplates: vi.fn(),
+    registerPrefabs: vi.fn(),
     loadEntities: vi.fn(),
     clearEntities: vi.fn(),
     pausePhysics: vi.fn(),
@@ -96,7 +96,7 @@ describe('PackageRuntimeAdapter', () => {
       expect(definition.world.gravity).toEqual({ x: 0, y: 10 });
       expect(definition.world.pixelsPerMeter).toBe(50);
       expect(definition.background).toEqual({ type: 'static', color: '#112233' });
-      expect(definition.templates).toEqual({ box: { id: 'box', physics: { bodyType: 'dynamic' } } });
+      expect(definition.prefabs).toEqual({ box: { id: 'box', physics: { bodyType: 'dynamic' } } });
       expect(definition.entities).toHaveLength(1);
       expect(definition.entities[0].id).toBe('box-1');
       expect(definition.rules).toEqual([]);

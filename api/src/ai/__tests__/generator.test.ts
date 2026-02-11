@@ -75,15 +75,15 @@ describe('generateGame integration (using fixtures)', () => {
       expect(targets.length).toBeGreaterThan(0);
     });
 
-    it('should have templates for spawnable entities', () => {
+    it('should have prefabs for spawnable entities', () => {
       const spawner = game.entities.find(e => 
         e.behaviors?.some(b => b.type === 'spawn_on_event')
       );
       
       if (spawner) {
         const spawnBehavior = spawner.behaviors!.find(b => b.type === 'spawn_on_event') as any;
-        expect(game.templates).toBeDefined();
-        expect(game.templates![spawnBehavior.entityTemplate]).toBeDefined();
+        expect(game.prefabs).toBeDefined();
+        expect(game.prefabs![spawnBehavior.entityTemplate]).toBeDefined();
       }
     });
 

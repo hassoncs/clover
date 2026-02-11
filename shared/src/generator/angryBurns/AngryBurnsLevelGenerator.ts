@@ -23,7 +23,7 @@ const LAUNCHER_Y = 9;
 const TOWER_MIN_X = 12;
 const TOWER_MAX_X = 18;
 
-// Block dimensions (from base game templates)
+// Block dimensions (from base game prefabs)
 const BLOCK_WIDTH = 0.8;
 const BLOCK_HEIGHT = 0.4;
 const BLOCK_GAP = 0.05; // Small gap for stability
@@ -113,7 +113,7 @@ function generateEntityId(rng: ReturnType<SeededRandom['ids']>, prefix: string):
 }
 
 /**
- * Get a block template based on material probabilities.
+ * Get a block prefab based on material probabilities.
  */
 function selectBlockTemplate(
   rng: ReturnType<SeededRandom['stream']>,
@@ -163,7 +163,7 @@ export function generateAngryBurnsLevel(params: GenerateAngryBurnsLevelParams): 
   entities.push({
     id: generateEntityId(rng.ids(), 'ground'),
     name: 'ground',
-    template: 'ground',
+    prefab: 'ground',
     transform: {
       x: WORLD_WIDTH / 2,
       y: GROUND_Y,
@@ -177,7 +177,7 @@ export function generateAngryBurnsLevel(params: GenerateAngryBurnsLevelParams): 
   entities.push({
     id: generateEntityId(rng.ids(), 'wall'),
     name: 'wall-right',
-    template: 'wall',
+    prefab: 'wall',
     transform: {
       x: RIGHT_WALL_X,
       y: WORLD_HEIGHT / 2,
@@ -191,7 +191,7 @@ export function generateAngryBurnsLevel(params: GenerateAngryBurnsLevelParams): 
   entities.push({
     id: generateEntityId(rng.ids(), 'cannon'),
     name: 'cannon',
-    template: 'cannon',
+    prefab: 'cannon',
     transform: {
       x: LAUNCHER_X,
       y: LAUNCHER_Y,
@@ -219,13 +219,13 @@ export function generateAngryBurnsLevel(params: GenerateAngryBurnsLevelParams): 
         continue;
       }
 
-      // Select block template based on material RNG
+      // Select block prefab based on material RNG
       const blockTemplate = selectBlockTemplate(materialsRng, difficulty);
 
       entities.push({
         id: generateEntityId(rng.ids(), blockTemplate.replace('Block', '')),
         name: `${blockTemplate}-r${row}-c${col}`,
-        template: blockTemplate,
+        prefab: blockTemplate,
         transform: {
           x: colX,
           y: rowY,
@@ -253,7 +253,7 @@ export function generateAngryBurnsLevel(params: GenerateAngryBurnsLevelParams): 
     entities.push({
       id: generateEntityId(rng.ids(), 'target'),
       name: `target-${i}`,
-      template: 'target',
+      prefab: 'target',
       transform: {
         x: pos.x,
         y: pos.y,
@@ -444,39 +444,39 @@ function createFallbackTower(params: GenerateAngryBurnsLevelParams): LevelDefini
   fallbackEntities.push({
     id: 'fallback-ground',
     name: 'ground',
-    template: 'ground',
+    prefab: 'ground',
     transform: { x: WORLD_WIDTH / 2, y: GROUND_Y, angle: 0, scaleX: 1, scaleY: 1 },
   });
 
   fallbackEntities.push({
     id: 'fallback-wall',
     name: 'wall-right',
-    template: 'wall',
+    prefab: 'wall',
     transform: { x: RIGHT_WALL_X, y: WORLD_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 },
   });
 
   fallbackEntities.push({
     id: 'fallback-cannon',
     name: 'cannon',
-    template: 'cannon',
+    prefab: 'cannon',
     transform: { x: LAUNCHER_X, y: LAUNCHER_Y, angle: 0, scaleX: 1, scaleY: 1 },
   });
 
   const towerStartY = GROUND_Y - (GROUND_HEIGHT / 2) - (BLOCK_HEIGHT / 2);
   const towerCenterX = (TOWER_MIN_X + TOWER_MAX_X) / 2;
 
-  const blockTemplates: Array<'woodBlock' | 'stoneBlock' | 'glassBlock'> = ['woodBlock', 'woodBlock', 'woodBlock'];
+  const blockPrefabs: Array<'woodBlock' | 'stoneBlock' | 'glassBlock'> = ['woodBlock', 'woodBlock', 'woodBlock'];
 
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
       const colX = towerCenterX - BLOCK_WIDTH + col * BLOCK_WIDTH;
       const rowY = towerStartY - row * BLOCK_HEIGHT;
-      const template = blockTemplates[(row * 3 + col) % blockTemplates.length];
+      const prefab = blockPrefabs[(row * 3 + col) % blockPrefabs.length];
 
       fallbackEntities.push({
-        id: `fallback-${template}-r${row}-c${col}`,
-        name: `${template}-r${row}-c${col}`,
-        template,
+        id: `fallback-${prefab}-r${row}-c${col}`,
+        name: `${prefab}-r${row}-c${col}`,
+        prefab,
         transform: { x: colX, y: rowY, angle: 0, scaleX: 1, scaleY: 1 },
       });
     }
@@ -485,7 +485,7 @@ function createFallbackTower(params: GenerateAngryBurnsLevelParams): LevelDefini
   fallbackEntities.push({
     id: 'fallback-target',
     name: 'target-0',
-    template: 'target',
+    prefab: 'target',
     transform: { x: towerCenterX, y: towerStartY - 3 * BLOCK_HEIGHT - TARGET_RADIUS, angle: 0, scaleX: 1, scaleY: 1 },
   });
 

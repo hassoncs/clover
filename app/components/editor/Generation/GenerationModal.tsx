@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { GenerationProgressTracker } from './GenerationProgressTracker';
-import type { EntityTemplate } from '@slopcade/shared';
+import type { EntityPrefab } from '@slopcade/shared';
 import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 import { tokens } from '@slopcade/theme';
 
@@ -33,7 +33,7 @@ interface ModalLifecycleState {
 interface GenerationModalProps {
   visible: boolean;
   onClose: () => void;
-  templates: Record<string, EntityTemplate>;
+  prefabs: Record<string, EntityPrefab>;
   packName?: string;
   packStyle?: string;
   gameDescription?: string;

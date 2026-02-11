@@ -91,7 +91,7 @@ export interface BehaviorContext {
   createEvalContextForEntity: CreateEvalContextForEntity;
 
   setGameState(state: GameState['state']): void;
-  spawnEntity(templateId: string, x: number, y: number): string | null;
+  spawnEntity(prefabId: string, x: number, y: number): string | null;
   setEntityVelocity(entityId: string, velocity: Vec2): void;
   setEntityRotation(entityId: string, angle: number): void;
   setEntityPosition(entityId: string, x: number, y: number): void;

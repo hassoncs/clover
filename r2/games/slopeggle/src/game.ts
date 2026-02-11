@@ -65,7 +65,7 @@ const bluePegEntities = pegLayout
   .map((p, i) => ({
     id: `blue-peg-${i}`,
     name: `Blue Peg ${i + 1}`,
-    template: "bluePeg",
+    prefab: "bluePeg",
     transform: { x: cx(p.x), y: cy(p.y), angle: 0, scaleX: 1, scaleY: 1 },
   }));
 
@@ -74,7 +74,7 @@ const orangePegEntities = pegLayout
   .map((p, i) => ({
     id: `orange-peg-${i}`,
     name: `Orange Peg ${i + 1}`,
-    template: "orangePeg",
+    prefab: "orangePeg",
     transform: { x: cx(p.x), y: cy(p.y), angle: 0, scaleX: 1, scaleY: 1 },
   }));
 
@@ -194,7 +194,7 @@ const game: GameDefinition = {
     type: "custom",
     expr: "lives <= 0",
   },
-  templates: {
+  prefabs: {
     ball: {
       id: "ball",
       tags: ["ball"],
@@ -447,13 +447,13 @@ const game: GameDefinition = {
     {
       id: "wall-left",
       name: "Left Wall",
-      template: "wallVertical",
+      prefab: "wallVertical",
       transform: { x: cx(0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-right",
       name: "Right Wall",
-      template: "wallVertical",
+      prefab: "wallVertical",
       transform: {
         x: cx(WORLD_WIDTH - 0.1),
         y: 0,
@@ -488,7 +488,7 @@ const game: GameDefinition = {
     {
       id: "drain",
       name: "Drain Zone",
-      template: "drain",
+      prefab: "drain",
       transform: {
         x: 0,
         y: cy(WORLD_HEIGHT + 0.5),
@@ -500,7 +500,7 @@ const game: GameDefinition = {
     {
       id: "bucket",
       name: "Free Ball Bucket",
-      template: "bucket",
+      prefab: "bucket",
       transform: {
         x: 0,
         y: cy(WORLD_HEIGHT - 0.5),
@@ -512,13 +512,13 @@ const game: GameDefinition = {
     {
       id: "portal-a",
       name: "Portal A",
-      template: "portalA",
+      prefab: "portalA",
       transform: { x: cx(1.5), y: cy(7), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "portal-b",
       name: "Portal B",
-      template: "portalB",
+      prefab: "portalB",
       transform: {
         x: cx(WORLD_WIDTH - 1.5),
         y: cy(11),
@@ -530,19 +530,19 @@ const game: GameDefinition = {
     {
       id: "cannon-base",
       name: "Cannon Base",
-      template: "cannonBase",
+      prefab: "cannonBase",
       transform: { x: 0, y: cy(1.0), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "cannon",
       name: "Cannon",
-      template: "cannon",
+      prefab: "cannon",
       transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 },
     },
     {
       id: "trajectory-line",
       name: "Trajectory Line",
-      template: "trajectoryLine",
+      prefab: "trajectoryLine",
       transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 },
     },
     ...bluePegEntities,
@@ -557,7 +557,7 @@ const game: GameDefinition = {
       actions: [
         {
           type: "spawn",
-          template: "trajectoryLine",
+          prefab: "trajectoryLine",
           position: { type: "fixed", x: 0, y: cy(1.0) },
         },
       ],
@@ -578,7 +578,7 @@ const game: GameDefinition = {
       actions: [
         {
           type: "spawn",
-          template: "ball",
+          prefab: "ball",
           position: { type: "fixed", x: 0, y: cy(1.0) },
           launch: {
             direction: "toward_touch",
@@ -597,7 +597,7 @@ const game: GameDefinition = {
       actions: [
         {
           type: "spawn",
-          template: "ball",
+          prefab: "ball",
           position: { type: "fixed", x: 0, y: cy(1.0) },
           launch: {
             direction: "toward_touch",

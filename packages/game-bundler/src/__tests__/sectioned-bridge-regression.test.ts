@@ -56,7 +56,7 @@ describe('Sectioned Bridge Regression - All Games', () => {
 
     it('has templates object with at least 1 template', () => {
       const def = loadDefinition();
-      const templates = def.templates as Record<string, unknown>;
+      const templates = def.prefabs as Record<string, unknown>;
       expect(templates).toBeDefined();
       expect(typeof templates).toBe('object');
       expect(Object.keys(templates).length).toBeGreaterThanOrEqual(1);
@@ -92,15 +92,15 @@ describe('Sectioned Bridge Regression - All Games', () => {
       expect(worldSection.bounds).not.toBeNull();
     });
 
-    it('templates section can be extracted for bridge registerTemplates', () => {
+    it('prefabs section can be extracted for bridge registerPrefabs', () => {
       const def = loadDefinition();
-      const templatesSection = def.templates as Record<string, unknown>;
+      const prefabsSection = def.prefabs as Record<string, unknown>;
 
-      expect(templatesSection).toBeDefined();
-      expect(templatesSection).not.toBeNull();
-      expect(typeof templatesSection).toBe('object');
+      expect(prefabsSection).toBeDefined();
+      expect(prefabsSection).not.toBeNull();
+      expect(typeof prefabsSection).toBe('object');
 
-      for (const [key, template] of Object.entries(templatesSection)) {
+      for (const [key, template] of Object.entries(prefabsSection)) {
         expect(typeof key).toBe('string');
         expect(template).toBeDefined();
         expect(template).not.toBeNull();

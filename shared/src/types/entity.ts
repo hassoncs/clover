@@ -23,7 +23,7 @@ export const DEFAULT_TRANSFORM: TransformComponent = {
 export interface ChildEntityDefinition {
   id?: string;
   name: string;
-  template: string;
+  prefab: string;
   localTransform: TransformComponent;
   slot?: string;
   visual?: Partial<VisualComponent>;
@@ -40,7 +40,7 @@ export interface ChildEntityDefinition {
 export interface GameEntity {
   id: string;
   name: string;
-  template?: string;
+  prefab?: string;
   transform: TransformComponent;
   visual?: VisualComponent;
   physics?: PhysicsComponent;
@@ -62,9 +62,9 @@ export interface SlotDefinition {
   layer?: number;
 }
 
-export interface ChildTemplateDefinition {
+export interface ChildPrefabDefinition {
   name: string;
-  template: string;
+  prefab: string;
   localTransform: TransformComponent;
   slot?: string;
   visual?: Partial<VisualComponent>;
@@ -73,10 +73,10 @@ export interface ChildTemplateDefinition {
   character?: Partial<CharacterComponent>;
   behaviors?: Behavior[];
   tags?: string[];
-  children?: ChildTemplateDefinition[];
+  children?: ChildPrefabDefinition[];
 }
 
-export interface BaseEntityTemplate {
+export interface BaseEntityPrefab {
   id: string;
   description?: string;
   /**
@@ -95,16 +95,16 @@ export interface BaseEntityTemplate {
   tags?: string[];
   layer?: number;
   slots?: Record<string, SlotDefinition>;
-  children?: ChildTemplateDefinition[];
+  children?: ChildPrefabDefinition[];
 }
 
-export type EntityTemplate = 
-  | (BaseEntityTemplate & { type?: 'body'; physics?: PhysicsComponent });
+export type EntityPrefab = 
+  | (BaseEntityPrefab & { type?: 'body'; physics?: PhysicsComponent });
 
 export interface BaseEntityDefinition {
   id: string;
   name: string;
-  template?: string;
+  prefab?: string;
   transform: TransformComponent;
   visual?: VisualComponent;
   physics?: PhysicsComponent;

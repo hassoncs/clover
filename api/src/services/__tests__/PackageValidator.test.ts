@@ -40,7 +40,7 @@ function createArtifacts(overrides?: Partial<TagPayloads>): TagPayloads {
         {
           id: 'ball-1',
           name: 'Ball 1',
-          template: 'ball-prefab',
+          prefab: 'ball-prefab',
           transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         } as any,
       ],
@@ -147,8 +147,8 @@ describe('PackageValidator', () => {
       const artifacts = createArtifacts({
         entities: {
           entities: [
-            { id: 'dup', name: 'A', template: 'ball-prefab', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } } as any,
-            { id: 'dup', name: 'B', template: 'ball-prefab', transform: { x: 1, y: 0, angle: 0, scaleX: 1, scaleY: 1 } } as any,
+            { id: 'dup', name: 'A', prefab: 'ball-prefab', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } } as any,
+            { id: 'dup', name: 'B', prefab: 'ball-prefab', transform: { x: 1, y: 0, angle: 0, scaleX: 1, scaleY: 1 } } as any,
           ],
         },
       });
@@ -167,7 +167,7 @@ describe('PackageValidator', () => {
             {
               id: 'e1',
               name: 'E1',
-              template: 'nonexistent-prefab',
+              prefab: 'nonexistent-prefab',
               transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
             } as any,
           ],
@@ -188,7 +188,7 @@ describe('PackageValidator', () => {
             {
               id: 'r1',
               trigger: { type: 'tap' },
-              actions: [{ type: 'spawn', template: 'ghost-prefab' }],
+              actions: [{ type: 'spawn', prefab: 'ghost-prefab' }],
             } as any,
           ],
         },
@@ -276,7 +276,7 @@ describe('PackageValidator', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('entity without template is valid', () => {
+    it('entity without prefab is valid', () => {
       const artifacts = createArtifacts({
         entities: {
           entities: [

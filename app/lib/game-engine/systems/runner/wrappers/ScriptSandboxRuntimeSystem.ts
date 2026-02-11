@@ -274,7 +274,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       return em
         .query({
           tags: query.tag ? [query.tag] : undefined,
-          template: query.templateId,
+          prefab: query.prefabId,
           withinAabb,
         })
         .map((e) => e.id);
@@ -289,7 +289,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
 
       return {
         id: entity.id,
-        template: entity.template,
+        prefab: entity.prefab,
         tags: [...entity.tags],
         position: { x: entity.transform.x, y: entity.transform.y },
         rotation: entity.transform.angle,
@@ -318,10 +318,10 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       includeChildren?: boolean
     ): string | null => {
       const source = em.getEntity(sourceEntityId);
-      if (!source || !source.template) return null;
+      if (!source || !source.prefab) return null;
 
       const newEntityId = em.spawnEntity({
-        templateId: source.template,
+        prefabId: source.prefab,
         position: positionOverride ?? { x: source.transform.x, y: source.transform.y },
         angle: source.transform.angle,
         tags: [...source.tags],
@@ -352,9 +352,9 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     };
 
     return {
-      spawnEntity: (templateId: string, position: Vec2, opts?: SpawnOptions): string | null => {
+      spawnEntity: (prefabId: string, position: Vec2, opts?: SpawnOptions): string | null => {
         return em.spawnEntity({
-          templateId,
+          prefabId,
           position,
           velocity: opts?.velocity,
           angle: opts?.angle,
@@ -494,7 +494,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
 
       hasTag: (entityId: string, tag: string): boolean => em.hasTag(entityId, tag),
 
-      getEntityTemplate: (entityId: string): string | undefined => em.getEntity(entityId)?.template,
+      getEntityPrefab: (entityId: string): string | undefined => em.getEntity(entityId)?.prefab,
 
       getEntityData,
 

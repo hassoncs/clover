@@ -19,7 +19,7 @@ import { RESERVED_VARS } from '../types';
 const createMinimalDef = (overrides: Partial<GameDefinition> = {}): GameDefinition => ({
   metadata: { id: 'test', title: 'Test', version: '1.0.0' },
   world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-  templates: {},
+  prefabs: {},
   entities: [],
   ...overrides,
 });

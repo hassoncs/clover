@@ -106,7 +106,7 @@ describe('AssetService', () => {
   describe('buildStructuredPrompt', () => {
     it('includes critical shape information', () => {
       const prompt = buildStructuredPrompt({
-        templateId: 'player',
+        prefabId: 'player',
         physicsShape: 'circle',
         entityType: 'character',
         style: 'pixel',
@@ -119,7 +119,7 @@ describe('AssetService', () => {
 
     it('includes subject description when provided', () => {
       const prompt = buildStructuredPrompt({
-        templateId: 'coin',
+        prefabId: 'coin',
         physicsShape: 'circle',
         entityType: 'item',
         style: 'cartoon',

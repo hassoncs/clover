@@ -73,7 +73,7 @@ func has_entity(entity_id: String) -> bool:
 
 
 func spawn_entity(
-	template_id: String,
+	prefab_id: String,
 	x: float,
 	y: float,
 	entity_id: String,
@@ -83,14 +83,14 @@ func spawn_entity(
 		push_error("[EntityManager] Bridge not available")
 		return null
 	
-	var templates = _bridge.templates if "templates" in _bridge else {}
-	if not templates.has(template_id):
-		push_error("[EntityManager] Template not found: " + template_id)
+	var templates = _bridge.prefabs if "templates" in _bridge else {}
+	if not prefabs.has(prefab_id):
+		push_error("[EntityManager] Prefab not found: " + template_id)
 		return null
 	
 	var entity_data = {
 		"id": entity_id,
-		"template": template_id,
+		"prefab": prefab_id,
 		"transform": {"x": x, "y": y, "angle": 0}
 	}
 	
@@ -216,7 +216,7 @@ func get_all_properties() -> Dictionary:
 func _collect_entity_properties(entity_id: String, node: Node2D) -> Dictionary:
 	var props = {
 		"id": entity_id,
-		"template": node.get_meta("template", ""),
+		"prefab": node.get_meta("prefab", ""),
 		"position": _godot_to_game_pos(node.position),
 		"rotation": -node.rotation,
 		"scale": node.scale
@@ -262,8 +262,8 @@ func get_entity_property(entity_id: String, property_name: String) -> Variant:
 			return _godot_to_game_pos(node.position).x
 		"y":
 			return _godot_to_game_pos(node.position).y
-		"template":
-			return node.get_meta("template", "")
+		"prefab":
+			return node.get_meta("prefab", "")
 		"linear_velocity":
 			if node is RigidBody2D:
 				return node.linear_velocity

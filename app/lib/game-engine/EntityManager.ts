@@ -1,6 +1,6 @@
 import type {
   GameEntity,
-  EntityTemplate,
+  EntityPrefab,
   Behavior,
   TransformComponent,
   VisualComponent,
@@ -13,7 +13,7 @@ import { recomputeActiveConditionalGroup } from './behaviors/conditional';
 
 export interface EntitySpawnedSnapshot {
   entityId: string;
-  template: string;
+  prefab: string;
   generation: number;
   tags: string[];
   transform: { x: number; y: number; angle: number; scaleX: number; scaleY: number };
@@ -61,7 +61,7 @@ export function worldToLocal(
 }
 
 export interface SpawnEntityOptions {
-  templateId: string;
+  prefabId: string;
   position: Vec2;
   velocity?: Vec2;
   angle?: number;
@@ -77,16 +77,16 @@ function generateEntityId(): string {
 
 export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
-  private templates = new Map<string, EntityTemplate>();
+  private prefabs = new Map<string, EntityPrefab>();
   private bridge: GodotBridge | null = null;
 
   private entitiesByTagId = new Map<number, Set<string>>();
 
   constructor(options: EntityManagerOptions = {}) {
     this.bridge = options.bridge ?? null;
-    if (options.templates) {
-      Object.entries(options.templates).forEach(([id, template]) => {
-        this.templates.set(id, structuredClone(template));
+    if (options.prefabs) {
+      Object.entries(options.prefabs).forEach(([id, prefab]) => {
+        this.prefabs.set(id, structuredClone(prefab));
       });
     }
   }
@@ -95,12 +95,12 @@ export class EntityManager {
     this.bridge = bridge;
   }
 
-  registerTemplate(template: EntityTemplate): void {
-    this.templates.set(template.id, template);
+  registerPrefab(prefab: EntityPrefab): void {
+    this.prefabs.set(prefab.id, prefab);
   }
 
-  getTemplate(id: string): EntityTemplate | undefined {
-    return this.templates.get(id);
+  getPrefab(id: string): EntityPrefab | undefined {
+    return this.prefabs.get(id);
   }
 
   /**
@@ -109,12 +109,12 @@ export class EntityManager {
    * 2. Tells Godot to create the node (synchronous on web WASM)
    * 3. Caches the RuntimeEntity locally
    *
-   * Returns the entityId, or null if the template doesn't exist.
+   * Returns the entityId, or null if the prefab doesn't exist.
    */
   spawnEntity(opts: SpawnEntityOptions): string | null {
-    const template = this.templates.get(opts.templateId);
-    if (!template) {
-      console.warn(`[EntityManager] Template "${opts.templateId}" not found`);
+    const prefab = this.prefabs.get(opts.prefabId);
+    if (!prefab) {
+      console.warn(`[EntityManager] Prefab "${opts.prefabId}" not found`);
       return null;
     }
 
@@ -128,13 +128,13 @@ export class EntityManager {
     if (this.bridge) {
       this.bridge.spawnEntity({
         entityId,
-        templateId: opts.templateId,
+        prefabId: opts.prefabId,
         position: opts.position,
         velocity: opts.velocity,
       });
     }
 
-    const runtime = this.cacheEntity(entityId, opts.templateId, {
+    const runtime = this.cacheEntity(entityId, opts.prefabId, {
       x: opts.position.x,
       y: opts.position.y,
       angle: opts.angle ?? 0,
@@ -156,7 +156,7 @@ export class EntityManager {
    */
   cacheEntity(
     entityId: string,
-    templateId: string,
+    prefabId: string,
     transform: { x: number; y: number; angle: number; scaleX: number; scaleY: number },
     extraTags?: string[],
   ): RuntimeEntity | null {
@@ -164,10 +164,10 @@ export class EntityManager {
       return this.entities.get(entityId)!;
     }
 
-    const template = this.templates.get(templateId);
-    const tags = [...(template?.tags ?? []), ...(extraTags ?? [])];
+    const prefab = this.prefabs.get(prefabId);
+    const tags = [...(prefab?.tags ?? []), ...(extraTags ?? [])];
 
-    const behaviors: RuntimeBehavior[] = (template?.behaviors ?? []).map((b: Behavior) => ({
+    const behaviors: RuntimeBehavior[] = (prefab?.behaviors ?? []).map((b: Behavior) => ({
       definition: b,
       enabled: b.enabled !== false,
       state: {},
@@ -175,25 +175,25 @@ export class EntityManager {
 
     const runtime: RuntimeEntity = {
       id: entityId,
-      name: template?.id ?? templateId,
-      template: templateId,
+      name: prefab?.id ?? prefabId,
+      prefab: prefabId,
       parentId: undefined,
       children: [],
       localTransform: { ...transform },
       worldTransform: { ...transform },
       transform: { ...transform },
-      visual: template?.visual ? structuredClone(template.visual) : undefined,
-      physics: template?.physics ? structuredClone(template.physics) : undefined,
-      collider: template?.collider ? structuredClone(template.collider) : undefined,
+      visual: prefab?.visual ? structuredClone(prefab.visual) : undefined,
+      physics: prefab?.physics ? structuredClone(prefab.physics) : undefined,
+      collider: prefab?.collider ? structuredClone(prefab.collider) : undefined,
       behaviors,
       tags,
       tagBits: new Set(),
-      layer: template?.layer ?? 0,
+      layer: prefab?.layer ?? 0,
       visible: true,
       active: true,
       colliderId: null,
-      assetPackId: (template as any)?.assetPackId,
-      conditionalBehaviors: template?.conditionalBehaviors ?? [],
+      assetPackId: (prefab as any)?.assetPackId,
+      conditionalBehaviors: prefab?.conditionalBehaviors ?? [],
       activeConditionalGroupId: -1,
     };
 
@@ -217,7 +217,7 @@ export class EntityManager {
   handleEntitySpawned(snapshot: EntitySpawnedSnapshot): RuntimeEntity | null {
     return this.cacheEntity(
       snapshot.entityId,
-      snapshot.template,
+      snapshot.prefab,
       snapshot.transform,
       snapshot.tags,
     );
@@ -391,7 +391,7 @@ export class EntityManager {
   loadEntities(entities: GameEntity[]): void {
     for (const e of entities) {
       const entityId = e.id || generateEntityId();
-      this.cacheEntity(entityId, e.template ?? '', e.transform, e.tags);
+      this.cacheEntity(entityId, e.prefab ?? '', e.transform, e.tags);
     }
   }
 
@@ -426,11 +426,11 @@ export class EntityManager {
 
    query(options: {
      tags?: string[];
-     template?: string;
+     prefab?: string;
      has?: Array<'visual' | 'physics' | 'collider'>;
      withinAabb?: { min: { x: number; y: number }; max: { x: number; y: number } };
    }): RuntimeEntity[] {
-    const { tags, template, has, withinAabb } = options;
+    const { tags, prefab, has, withinAabb } = options;
 
     let candidates: RuntimeEntity[] | null = null;
 
@@ -462,8 +462,8 @@ export class EntityManager {
       });
     }
 
-    if (template) {
-      result = result.filter(entity => entity.template === template);
+    if (prefab) {
+      result = result.filter(entity => entity.prefab === prefab);
     }
 
     if (has && has.length > 0) {

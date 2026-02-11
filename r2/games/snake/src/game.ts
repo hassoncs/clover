@@ -30,13 +30,13 @@ function generateWalls(): GameEntity[] {
       {
         id: `wall-left-${row}`,
         name: `Wall Left ${row}`,
-        template: "wall",
+        prefab: "wall",
         transform: { x: leftX, y, angle: 0, scaleX: 1, scaleY: 1 },
       },
       {
         id: `wall-right-${row}`,
         name: `Wall Right ${row}`,
-        template: "wall",
+        prefab: "wall",
         transform: { x: rightX, y, angle: 0, scaleX: 1, scaleY: 1 },
       }
     );
@@ -48,13 +48,13 @@ function generateWalls(): GameEntity[] {
       {
         id: `wall-top-${col}`,
         name: `Wall Top ${col}`,
-        template: "wall",
+        prefab: "wall",
         transform: { x, y: topY, angle: 0, scaleX: 1, scaleY: 1 },
       },
       {
         id: `wall-bottom-${col}`,
         name: `Wall Bottom ${col}`,
-        template: "wall",
+        prefab: "wall",
         transform: { x, y: bottomY, angle: 0, scaleX: 1, scaleY: 1 },
       }
     );
@@ -118,7 +118,7 @@ const game: GameDefinition = {
     foodX: 15,
     foodY: 12,
   },
-  templates: {
+  prefabs: {
     snakeHead: {
       id: "snakeHead",
       tags: ["snake", "player"],
@@ -202,13 +202,13 @@ const game: GameDefinition = {
     {
       id: "snake-head",
       name: "Snake Head",
-      template: "snakeHead",
+      prefab: "snakeHead",
       transform: { x: cx(9 * GRID_SIZE + 1), y: cy(12 * GRID_SIZE + 1), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "food",
       name: "Food",
-      template: "food",
+      prefab: "food",
       transform: { x: cx(15 * GRID_SIZE + 1), y: cy(12 * GRID_SIZE + 1), angle: 0, scaleX: 1, scaleY: 1 },
     },
     ...generateWalls(),
@@ -255,7 +255,7 @@ const game: GameDefinition = {
         { type: "destroy", target: { type: "by_tag", tag: "food" } },
         {
           type: "spawn",
-          template: "food",
+          prefab: "food",
           position: { type: "random", bounds: { minX: cx(2), maxX: cx(16), minY: cy(2), maxY: cy(22) } },
         },
       ],

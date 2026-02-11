@@ -12,14 +12,14 @@ const BASIC_SHAPES = [
 ];
 
 export function AssetsPanel() {
-  const { document, addEntity, addEntityFromTemplate, setSheetSnapPoint } = useEditor();
+  const { document, addEntity, addEntityFromPrefab, setSheetSnapPoint } = useEditor();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const gameAssets = Object.keys(document.templates).map((templateId) => ({
+  const gameAssets = Object.keys(document.prefabs).map((prefabId) => ({
     id: templateId,
     name: templateId,
-    template: document.templates[templateId],
+    prefab: document.prefabs[prefabId],
   }));
 
   const filteredAssets = gameAssets.filter((asset) => {
@@ -29,10 +29,10 @@ export function AssetsPanel() {
     return true;
   });
 
-  const handleAddFromTemplate = (templateId: string) => {
+  const handleAddFromTemplate = (prefabId: string) => {
     const centerX = 10;
     const centerY = 6;
-    addEntityFromTemplate(templateId, centerX, centerY);
+    addEntityFromPrefab(templateId, centerX, centerY);
     setSheetSnapPoint(0);
   };
 

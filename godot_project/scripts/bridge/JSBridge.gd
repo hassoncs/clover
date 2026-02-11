@@ -37,14 +37,14 @@ func _js_load_custom_scene(args: Array) -> bool:
 func _js_spawn_entity(args: Array) -> void:
 	if args.size() < 4:
 		return
-	var template_id = str(args[0])
+	var prefab_id = str(args[0])
 	var x = float(args[1])
 	var y = float(args[2])
 	var entity_id = str(args[3])
 	var initial_velocity_json = ""
 	if args.size() >= 5 and args[4] != null:
 		initial_velocity_json = str(args[4])
-	_game_bridge.spawn_entity_with_id(template_id, x, y, entity_id, initial_velocity_json)
+	_game_bridge.spawn_entity_with_id(prefab_id, x, y, entity_id, initial_velocity_json)
 
 func _js_destroy_entity(args: Array) -> void:
 	if args.size() < 1:

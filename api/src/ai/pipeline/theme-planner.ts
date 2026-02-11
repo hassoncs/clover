@@ -16,8 +16,8 @@ import { parseThemePlan, validatePlanCoherence } from '@/ai/pipeline/theme-plan'
 /**
  * Template information for theme planning.
  */
-export interface TemplateInfo {
-  templateId: string;
+export interface PrefabInfo {
+  prefabId: string;
   whatDescription?: string;
   entityType: EntityType;
   physicsShape: 'box' | 'circle';
@@ -28,7 +28,7 @@ export interface TemplateInfo {
  * Input parameters for the theme planner.
  */
 export interface ThemePlannerInput {
-  templates: TemplateInfo[];
+  prefabs: PrefabInfo[];
   theme: string;
   style?: string;
   gameTitle?: string;
@@ -49,10 +49,10 @@ const DEFAULT_MAX_TOKENS = 4000;
 // =============================================================================
 
 function buildSystemPrompt(input: ThemePlannerInput): string {
-  const templateList = input.templates
+  const prefabList = input.prefabs
     .map((t) => {
       const desc = t.whatDescription ? ` - "${t.whatDescription}"` : '';
-      return `  - ${t.templateId}: entityType=${t.entityType}, shape=${t.physicsShape}, tags=[${t.tags.join(', ')}]${desc}`;
+      return `  - ${t.prefabId}: entityType=${t.entityType}, shape=${t.physicsShape}, tags=[${t.tags.join(', ')}]${desc}`;
     })
     .join('\n');
 
@@ -72,15 +72,15 @@ ${input.style ? `STYLE: ${input.style}` : ''}
 ${input.gameTitle ? `GAME TITLE: ${input.gameTitle}` : ''}
 
 TEMPLATES TO DESIGN:
-${templateList}
+${prefabList}
 ${existingAnchorsSection}
 YOUR TASK:
 Create a unified visual theme plan that ensures all game assets look like they belong together.
-Each template needs a unique concept that fits the theme while respecting its functional role.
+Each prefab needs a unique concept that fits the theme while respecting its functional role.
 
 CRITICAL REQUIREMENTS:
-1. Every templateId from the list above MUST appear in templatePlans — you MUST include ALL ${input.templates.length} templates
-2. Each template MUST have a UNIQUE conceptName (no duplicates)
+1. Every prefabId from the list above MUST appear in prefabPlans — you MUST include ALL ${input.prefabs.length} prefabs
+2. Each prefab MUST have a UNIQUE conceptName (no duplicates)
 3. Each silhouetteColor MUST be a valid hex color (#RRGGBB format)
 4. globalPalette should have 5-8 colors that work harmoniously together
 5. All colors in globalPalette must be unique (no duplicates)
@@ -103,9 +103,9 @@ You must output ONLY valid JSON matching this exact schema:
   "theme": "<theme description>",
   "style": "<optional style>",
   "globalPalette": ["#RRGGBB", "#RRGGBB", ...],
-  "templatePlans": {
-    "<templateId>": {
-      "templateId": "<same as key>",
+  "prefabPlans": {
+    "<prefabId>": {
+      "prefabId": "<same as key>",
       "conceptName": "<unique human-readable concept>",
       "prompt": "<full image generation prompt>",
       "negativePrompt": "<optional: what to avoid>",
@@ -215,11 +215,11 @@ export async function generateThemePlan(
 ): Promise<ThemePlan | null> {
   const model = input.model ?? DEFAULT_MODEL;
   const systemPrompt = buildSystemPrompt(input);
-  const expectedTemplateIds = new Set(input.templates.map(t => t.templateId));
-  const userPrompt = `Generate the theme plan JSON for ALL ${input.templates.length} templates listed above. Every single templateId must appear in templatePlans.`;
+  const expectedPrefabIds = new Set(input.prefabs.map(t => t.prefabId));
+  const userPrompt = `Generate the theme plan JSON for ALL ${input.prefabs.length} prefabs listed above. Every single prefabId must appear in prefabPlans.`;
 
   console.log('[ThemePlanner] Starting theme plan generation', {
-    templateCount: input.templates.length,
+    prefabCount: input.prefabs.length,
     theme: input.theme,
     model,
   });
@@ -229,11 +229,11 @@ export async function generateThemePlan(
     const temperature = attempt === 0 ? 0.7 : 0.3;
     const attemptPrompt = attempt === 0
       ? userPrompt
-      : `Generate the theme plan JSON for ALL ${input.templates.length} templates listed above.
+      : `Generate the theme plan JSON for ALL ${input.prefabs.length} prefabs listed above.
 
 IMPORTANT: Output ONLY valid JSON. No markdown code fences, no explanation text.
 The JSON must be parseable directly.
-You MUST include ALL of these templateIds: ${[...expectedTemplateIds].join(', ')}`;
+You MUST include ALL of these prefabIds: ${[...expectedPrefabIds].join(', ')}`;
 
     console.log(`[ThemePlanner] Attempt ${attempt + 1}/${MAX_ATTEMPTS} (temperature: ${temperature})`);
 
@@ -251,9 +251,9 @@ You MUST include ALL of these templateIds: ${[...expectedTemplateIds].join(', ')
       continue;
     }
 
-    const missingTemplates = [...expectedTemplateIds].filter(id => !plan.templatePlans[id]);
-    if (missingTemplates.length > 0) {
-      console.log(`[ThemePlanner] Attempt ${attempt + 1} missing ${missingTemplates.length} templates: ${missingTemplates.join(', ')}`);
+    const missingPrefabs = [...expectedPrefabIds].filter(id => !plan.prefabPlans[id]);
+    if (missingPrefabs.length > 0) {
+      console.log(`[ThemePlanner] Attempt ${attempt + 1} missing ${missingPrefabs.length} prefabs: ${missingPrefabs.join(', ')}`);
       continue;
     }
 

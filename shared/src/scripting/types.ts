@@ -122,7 +122,7 @@ export interface ScriptContext {
   /** Remove a tag from an entity */
   removeTag: (entityId: string, tag: string) => void;
   /** Spawn a new entity */
-  spawnEntity: (templateId: string, position: { x: number; y: number }) => string;
+  spawnEntity: (prefabId: string, position: { x: number; y: number }) => string;
   /** Destroy an entity */
   destroyEntity: (entityId: string) => void;
   /** Emit an event */

@@ -151,7 +151,7 @@
     "type": "custom",
     "expr": "lives <= 0"
   },
-  "templates": {
+  "prefabs": {
     "ball": {
       "id": "ball",
       "tags": [
@@ -470,7 +470,7 @@
     {
       "id": "wall-left",
       "name": "Left Wall",
-      "template": "wallVertical",
+      "prefab": "wallVertical",
       "transform": {
         "x": -5.9,
         "y": 0,
@@ -482,7 +482,7 @@
     {
       "id": "wall-right",
       "name": "Right Wall",
-      "template": "wallVertical",
+      "prefab": "wallVertical",
       "transform": {
         "x": 5.9,
         "y": 0,
@@ -525,7 +525,7 @@
     {
       "id": "drain",
       "name": "Drain Zone",
-      "template": "drain",
+      "prefab": "drain",
       "transform": {
         "x": 0,
         "y": -8.5,
@@ -537,7 +537,7 @@
     {
       "id": "bucket",
       "name": "Free Ball Bucket",
-      "template": "bucket",
+      "prefab": "bucket",
       "transform": {
         "x": 0,
         "y": -7.5,
@@ -549,7 +549,7 @@
     {
       "id": "portal-a",
       "name": "Portal A",
-      "template": "portalA",
+      "prefab": "portalA",
       "transform": {
         "x": -4.5,
         "y": 1,
@@ -561,7 +561,7 @@
     {
       "id": "portal-b",
       "name": "Portal B",
-      "template": "portalB",
+      "prefab": "portalB",
       "transform": {
         "x": 4.5,
         "y": -3,
@@ -573,7 +573,7 @@
     {
       "id": "cannon-base",
       "name": "Cannon Base",
-      "template": "cannonBase",
+      "prefab": "cannonBase",
       "transform": {
         "x": 0,
         "y": 7,
@@ -585,7 +585,7 @@
     {
       "id": "cannon",
       "name": "Cannon",
-      "template": "cannon",
+      "prefab": "cannon",
       "transform": {
         "x": 0,
         "y": 7,
@@ -597,7 +597,7 @@
     {
       "id": "trajectory-line",
       "name": "Trajectory Line",
-      "template": "trajectoryLine",
+      "prefab": "trajectoryLine",
       "transform": {
         "x": 0,
         "y": 7,
@@ -609,7 +609,7 @@
     {
       "id": "blue-peg-0",
       "name": "Blue Peg 1",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.8,
         "y": 4.5,
@@ -621,7 +621,7 @@
     {
       "id": "blue-peg-1",
       "name": "Blue Peg 2",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.6,
         "y": 4.5,
@@ -633,7 +633,7 @@
     {
       "id": "blue-peg-2",
       "name": "Blue Peg 3",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.4000000000000004,
         "y": 4.5,
@@ -645,7 +645,7 @@
     {
       "id": "blue-peg-3",
       "name": "Blue Peg 4",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.2000000000000002,
         "y": 4.5,
@@ -657,7 +657,7 @@
     {
       "id": "blue-peg-4",
       "name": "Blue Peg 5",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0,
         "y": 4.5,
@@ -669,7 +669,7 @@
     {
       "id": "blue-peg-5",
       "name": "Blue Peg 6",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.3999999999999986,
         "y": 4.5,
@@ -681,7 +681,7 @@
     {
       "id": "blue-peg-6",
       "name": "Blue Peg 7",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.5999999999999996,
         "y": 4.5,
@@ -693,7 +693,7 @@
     {
       "id": "blue-peg-7",
       "name": "Blue Peg 8",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 4.799999999999999,
         "y": 4.5,
@@ -705,7 +705,7 @@
     {
       "id": "blue-peg-8",
       "name": "Blue Peg 9",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.55,
         "y": 3.7,
@@ -717,7 +717,7 @@
     {
       "id": "blue-peg-9",
       "name": "Blue Peg 10",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.4833333333333334,
         "y": 3.7,
@@ -729,7 +729,7 @@
     {
       "id": "blue-peg-10",
       "name": "Blue Peg 11",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.416666666666667,
         "y": 3.7,
@@ -741,7 +741,7 @@
     {
       "id": "blue-peg-11",
       "name": "Blue Peg 12",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.3499999999999996,
         "y": 3.7,
@@ -753,7 +753,7 @@
     {
       "id": "blue-peg-12",
       "name": "Blue Peg 13",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -0.2833333333333332,
         "y": 3.7,
@@ -765,7 +765,7 @@
     {
       "id": "blue-peg-13",
       "name": "Blue Peg 14",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0.7833333333333332,
         "y": 3.7,
@@ -777,7 +777,7 @@
     {
       "id": "blue-peg-14",
       "name": "Blue Peg 15",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.916666666666666,
         "y": 3.7,
@@ -789,7 +789,7 @@
     {
       "id": "blue-peg-15",
       "name": "Blue Peg 16",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.9833333333333325,
         "y": 3.7,
@@ -801,7 +801,7 @@
     {
       "id": "blue-peg-16",
       "name": "Blue Peg 17",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 5.049999999999999,
         "y": 3.7,
@@ -813,7 +813,7 @@
     {
       "id": "blue-peg-17",
       "name": "Blue Peg 18",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.8,
         "y": 2.9000000000000004,
@@ -825,7 +825,7 @@
     {
       "id": "blue-peg-18",
       "name": "Blue Peg 19",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.6,
         "y": 2.9000000000000004,
@@ -837,7 +837,7 @@
     {
       "id": "blue-peg-19",
       "name": "Blue Peg 20",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.4000000000000004,
         "y": 2.9000000000000004,
@@ -849,7 +849,7 @@
     {
       "id": "blue-peg-20",
       "name": "Blue Peg 21",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.2000000000000002,
         "y": 2.9000000000000004,
@@ -861,7 +861,7 @@
     {
       "id": "blue-peg-21",
       "name": "Blue Peg 22",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0,
         "y": 2.9000000000000004,
@@ -873,7 +873,7 @@
     {
       "id": "blue-peg-22",
       "name": "Blue Peg 23",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.3999999999999986,
         "y": 2.9000000000000004,
@@ -885,7 +885,7 @@
     {
       "id": "blue-peg-23",
       "name": "Blue Peg 24",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.5999999999999996,
         "y": 2.9000000000000004,
@@ -897,7 +897,7 @@
     {
       "id": "blue-peg-24",
       "name": "Blue Peg 25",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 4.799999999999999,
         "y": 2.9000000000000004,
@@ -909,7 +909,7 @@
     {
       "id": "blue-peg-25",
       "name": "Blue Peg 26",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.55,
         "y": 2.0999999999999996,
@@ -921,7 +921,7 @@
     {
       "id": "blue-peg-26",
       "name": "Blue Peg 27",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.4833333333333334,
         "y": 2.0999999999999996,
@@ -933,7 +933,7 @@
     {
       "id": "blue-peg-27",
       "name": "Blue Peg 28",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.416666666666667,
         "y": 2.0999999999999996,
@@ -945,7 +945,7 @@
     {
       "id": "blue-peg-28",
       "name": "Blue Peg 29",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.3499999999999996,
         "y": 2.0999999999999996,
@@ -957,7 +957,7 @@
     {
       "id": "blue-peg-29",
       "name": "Blue Peg 30",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -0.2833333333333332,
         "y": 2.0999999999999996,
@@ -969,7 +969,7 @@
     {
       "id": "blue-peg-30",
       "name": "Blue Peg 31",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0.7833333333333332,
         "y": 2.0999999999999996,
@@ -981,7 +981,7 @@
     {
       "id": "blue-peg-31",
       "name": "Blue Peg 32",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.8500000000000005,
         "y": 2.0999999999999996,
@@ -993,7 +993,7 @@
     {
       "id": "blue-peg-32",
       "name": "Blue Peg 33",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.9833333333333325,
         "y": 2.0999999999999996,
@@ -1005,7 +1005,7 @@
     {
       "id": "blue-peg-33",
       "name": "Blue Peg 34",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 5.049999999999999,
         "y": 2.0999999999999996,
@@ -1017,7 +1017,7 @@
     {
       "id": "blue-peg-34",
       "name": "Blue Peg 35",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.8,
         "y": 1.2999999999999998,
@@ -1029,7 +1029,7 @@
     {
       "id": "blue-peg-35",
       "name": "Blue Peg 36",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.6,
         "y": 1.2999999999999998,
@@ -1041,7 +1041,7 @@
     {
       "id": "blue-peg-36",
       "name": "Blue Peg 37",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.4000000000000004,
         "y": 1.2999999999999998,
@@ -1053,7 +1053,7 @@
     {
       "id": "blue-peg-37",
       "name": "Blue Peg 38",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.2000000000000002,
         "y": 1.2999999999999998,
@@ -1065,7 +1065,7 @@
     {
       "id": "blue-peg-38",
       "name": "Blue Peg 39",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0,
         "y": 1.2999999999999998,
@@ -1077,7 +1077,7 @@
     {
       "id": "blue-peg-39",
       "name": "Blue Peg 40",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.2000000000000002,
         "y": 1.2999999999999998,
@@ -1089,7 +1089,7 @@
     {
       "id": "blue-peg-40",
       "name": "Blue Peg 41",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.5999999999999996,
         "y": 1.2999999999999998,
@@ -1101,7 +1101,7 @@
     {
       "id": "blue-peg-41",
       "name": "Blue Peg 42",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 4.799999999999999,
         "y": 1.2999999999999998,
@@ -1113,7 +1113,7 @@
     {
       "id": "blue-peg-42",
       "name": "Blue Peg 43",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.55,
         "y": 0.5,
@@ -1125,7 +1125,7 @@
     {
       "id": "blue-peg-43",
       "name": "Blue Peg 44",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.4833333333333334,
         "y": 0.5,
@@ -1137,7 +1137,7 @@
     {
       "id": "blue-peg-44",
       "name": "Blue Peg 45",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.416666666666667,
         "y": 0.5,
@@ -1149,7 +1149,7 @@
     {
       "id": "blue-peg-45",
       "name": "Blue Peg 46",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.3499999999999996,
         "y": 0.5,
@@ -1161,7 +1161,7 @@
     {
       "id": "blue-peg-46",
       "name": "Blue Peg 47",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -0.2833333333333332,
         "y": 0.5,
@@ -1173,7 +1173,7 @@
     {
       "id": "blue-peg-47",
       "name": "Blue Peg 48",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0.7833333333333332,
         "y": 0.5,
@@ -1185,7 +1185,7 @@
     {
       "id": "blue-peg-48",
       "name": "Blue Peg 49",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.8500000000000005,
         "y": 0.5,
@@ -1197,7 +1197,7 @@
     {
       "id": "blue-peg-49",
       "name": "Blue Peg 50",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.916666666666666,
         "y": 0.5,
@@ -1209,7 +1209,7 @@
     {
       "id": "blue-peg-50",
       "name": "Blue Peg 51",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 5.049999999999999,
         "y": 0.5,
@@ -1221,7 +1221,7 @@
     {
       "id": "blue-peg-51",
       "name": "Blue Peg 52",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.8,
         "y": -0.3000000000000007,
@@ -1233,7 +1233,7 @@
     {
       "id": "blue-peg-52",
       "name": "Blue Peg 53",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.6,
         "y": -0.3000000000000007,
@@ -1245,7 +1245,7 @@
     {
       "id": "blue-peg-53",
       "name": "Blue Peg 54",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.4000000000000004,
         "y": -0.3000000000000007,
@@ -1257,7 +1257,7 @@
     {
       "id": "blue-peg-54",
       "name": "Blue Peg 55",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.2000000000000002,
         "y": -0.3000000000000007,
@@ -1269,7 +1269,7 @@
     {
       "id": "blue-peg-55",
       "name": "Blue Peg 56",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0,
         "y": -0.3000000000000007,
@@ -1281,7 +1281,7 @@
     {
       "id": "blue-peg-56",
       "name": "Blue Peg 57",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.2000000000000002,
         "y": -0.3000000000000007,
@@ -1293,7 +1293,7 @@
     {
       "id": "blue-peg-57",
       "name": "Blue Peg 58",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.5999999999999996,
         "y": -0.3000000000000007,
@@ -1305,7 +1305,7 @@
     {
       "id": "blue-peg-58",
       "name": "Blue Peg 59",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 4.799999999999999,
         "y": -0.3000000000000007,
@@ -1317,7 +1317,7 @@
     {
       "id": "blue-peg-59",
       "name": "Blue Peg 60",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.55,
         "y": -1.0999999999999996,
@@ -1329,7 +1329,7 @@
     {
       "id": "blue-peg-60",
       "name": "Blue Peg 61",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.4833333333333334,
         "y": -1.0999999999999996,
@@ -1341,7 +1341,7 @@
     {
       "id": "blue-peg-61",
       "name": "Blue Peg 62",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.416666666666667,
         "y": -1.0999999999999996,
@@ -1353,7 +1353,7 @@
     {
       "id": "blue-peg-62",
       "name": "Blue Peg 63",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.3499999999999996,
         "y": -1.0999999999999996,
@@ -1365,7 +1365,7 @@
     {
       "id": "blue-peg-63",
       "name": "Blue Peg 64",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -0.2833333333333332,
         "y": -1.0999999999999996,
@@ -1377,7 +1377,7 @@
     {
       "id": "blue-peg-64",
       "name": "Blue Peg 65",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0.7833333333333332,
         "y": -1.0999999999999996,
@@ -1389,7 +1389,7 @@
     {
       "id": "blue-peg-65",
       "name": "Blue Peg 66",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.8500000000000005,
         "y": -1.0999999999999996,
@@ -1401,7 +1401,7 @@
     {
       "id": "blue-peg-66",
       "name": "Blue Peg 67",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.916666666666666,
         "y": -1.0999999999999996,
@@ -1413,7 +1413,7 @@
     {
       "id": "blue-peg-67",
       "name": "Blue Peg 68",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 5.049999999999999,
         "y": -1.0999999999999996,
@@ -1425,7 +1425,7 @@
     {
       "id": "blue-peg-68",
       "name": "Blue Peg 69",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.8,
         "y": -1.9000000000000004,
@@ -1437,7 +1437,7 @@
     {
       "id": "blue-peg-69",
       "name": "Blue Peg 70",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.6,
         "y": -1.9000000000000004,
@@ -1449,7 +1449,7 @@
     {
       "id": "blue-peg-70",
       "name": "Blue Peg 71",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.4000000000000004,
         "y": -1.9000000000000004,
@@ -1461,7 +1461,7 @@
     {
       "id": "blue-peg-71",
       "name": "Blue Peg 72",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.2000000000000002,
         "y": -1.9000000000000004,
@@ -1473,7 +1473,7 @@
     {
       "id": "blue-peg-72",
       "name": "Blue Peg 73",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0,
         "y": -1.9000000000000004,
@@ -1485,7 +1485,7 @@
     {
       "id": "blue-peg-73",
       "name": "Blue Peg 74",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.2000000000000002,
         "y": -1.9000000000000004,
@@ -1497,7 +1497,7 @@
     {
       "id": "blue-peg-74",
       "name": "Blue Peg 75",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.5999999999999996,
         "y": -1.9000000000000004,
@@ -1509,7 +1509,7 @@
     {
       "id": "blue-peg-75",
       "name": "Blue Peg 76",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 4.799999999999999,
         "y": -1.9000000000000004,
@@ -1521,7 +1521,7 @@
     {
       "id": "blue-peg-76",
       "name": "Blue Peg 77",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.55,
         "y": -2.6999999999999993,
@@ -1533,7 +1533,7 @@
     {
       "id": "blue-peg-77",
       "name": "Blue Peg 78",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.4833333333333334,
         "y": -2.6999999999999993,
@@ -1545,7 +1545,7 @@
     {
       "id": "blue-peg-78",
       "name": "Blue Peg 79",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.416666666666667,
         "y": -2.6999999999999993,
@@ -1557,7 +1557,7 @@
     {
       "id": "blue-peg-79",
       "name": "Blue Peg 80",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.3499999999999996,
         "y": -2.6999999999999993,
@@ -1569,7 +1569,7 @@
     {
       "id": "blue-peg-80",
       "name": "Blue Peg 81",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -0.2833333333333332,
         "y": -2.6999999999999993,
@@ -1581,7 +1581,7 @@
     {
       "id": "blue-peg-81",
       "name": "Blue Peg 82",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0.7833333333333332,
         "y": -2.6999999999999993,
@@ -1593,7 +1593,7 @@
     {
       "id": "blue-peg-82",
       "name": "Blue Peg 83",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.8500000000000005,
         "y": -2.6999999999999993,
@@ -1605,7 +1605,7 @@
     {
       "id": "blue-peg-83",
       "name": "Blue Peg 84",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.916666666666666,
         "y": -2.6999999999999993,
@@ -1617,7 +1617,7 @@
     {
       "id": "blue-peg-84",
       "name": "Blue Peg 85",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.9833333333333325,
         "y": -2.6999999999999993,
@@ -1629,7 +1629,7 @@
     {
       "id": "blue-peg-85",
       "name": "Blue Peg 86",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 5.049999999999999,
         "y": -2.6999999999999993,
@@ -1641,7 +1641,7 @@
     {
       "id": "blue-peg-86",
       "name": "Blue Peg 87",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.6,
         "y": -3.5,
@@ -1653,7 +1653,7 @@
     {
       "id": "blue-peg-87",
       "name": "Blue Peg 88",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -2.4000000000000004,
         "y": -3.5,
@@ -1665,7 +1665,7 @@
     {
       "id": "blue-peg-88",
       "name": "Blue Peg 89",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.2000000000000002,
         "y": -3.5,
@@ -1677,7 +1677,7 @@
     {
       "id": "blue-peg-89",
       "name": "Blue Peg 90",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0,
         "y": -3.5,
@@ -1689,7 +1689,7 @@
     {
       "id": "blue-peg-90",
       "name": "Blue Peg 91",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 1.2000000000000002,
         "y": -3.5,
@@ -1701,7 +1701,7 @@
     {
       "id": "blue-peg-91",
       "name": "Blue Peg 92",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.3999999999999986,
         "y": -3.5,
@@ -1713,7 +1713,7 @@
     {
       "id": "blue-peg-92",
       "name": "Blue Peg 93",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.5999999999999996,
         "y": -3.5,
@@ -1725,7 +1725,7 @@
     {
       "id": "blue-peg-93",
       "name": "Blue Peg 94",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 4.799999999999999,
         "y": -3.5,
@@ -1737,7 +1737,7 @@
     {
       "id": "blue-peg-94",
       "name": "Blue Peg 95",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -4.55,
         "y": -4.300000000000001,
@@ -1749,7 +1749,7 @@
     {
       "id": "blue-peg-95",
       "name": "Blue Peg 96",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -3.178571428571429,
         "y": -4.300000000000001,
@@ -1761,7 +1761,7 @@
     {
       "id": "blue-peg-96",
       "name": "Blue Peg 97",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -1.807142857142857,
         "y": -4.300000000000001,
@@ -1773,7 +1773,7 @@
     {
       "id": "blue-peg-97",
       "name": "Blue Peg 98",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": -0.43571428571428594,
         "y": -4.300000000000001,
@@ -1785,7 +1785,7 @@
     {
       "id": "blue-peg-98",
       "name": "Blue Peg 99",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 0.9357142857142859,
         "y": -4.300000000000001,
@@ -1797,7 +1797,7 @@
     {
       "id": "blue-peg-99",
       "name": "Blue Peg 100",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 2.307142857142857,
         "y": -4.300000000000001,
@@ -1809,7 +1809,7 @@
     {
       "id": "blue-peg-100",
       "name": "Blue Peg 101",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 3.678571428571427,
         "y": -4.300000000000001,
@@ -1821,7 +1821,7 @@
     {
       "id": "blue-peg-101",
       "name": "Blue Peg 102",
-      "template": "bluePeg",
+      "prefab": "bluePeg",
       "transform": {
         "x": 5.049999999999999,
         "y": -4.300000000000001,
@@ -1833,7 +1833,7 @@
     {
       "id": "orange-peg-0",
       "name": "Orange Peg 1",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 1.2000000000000002,
         "y": 4.5,
@@ -1845,7 +1845,7 @@
     {
       "id": "orange-peg-1",
       "name": "Orange Peg 2",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 1.8500000000000005,
         "y": 3.7,
@@ -1857,7 +1857,7 @@
     {
       "id": "orange-peg-2",
       "name": "Orange Peg 3",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 1.2000000000000002,
         "y": 2.9000000000000004,
@@ -1869,7 +1869,7 @@
     {
       "id": "orange-peg-3",
       "name": "Orange Peg 4",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 2.916666666666666,
         "y": 2.0999999999999996,
@@ -1881,7 +1881,7 @@
     {
       "id": "orange-peg-4",
       "name": "Orange Peg 5",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 2.3999999999999986,
         "y": 1.2999999999999998,
@@ -1893,7 +1893,7 @@
     {
       "id": "orange-peg-5",
       "name": "Orange Peg 6",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 3.9833333333333325,
         "y": 0.5,
@@ -1905,7 +1905,7 @@
     {
       "id": "orange-peg-6",
       "name": "Orange Peg 7",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 2.3999999999999986,
         "y": -0.3000000000000007,
@@ -1917,7 +1917,7 @@
     {
       "id": "orange-peg-7",
       "name": "Orange Peg 8",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 3.9833333333333325,
         "y": -1.0999999999999996,
@@ -1929,7 +1929,7 @@
     {
       "id": "orange-peg-8",
       "name": "Orange Peg 9",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": 2.3999999999999986,
         "y": -1.9000000000000004,
@@ -1941,7 +1941,7 @@
     {
       "id": "orange-peg-9",
       "name": "Orange Peg 10",
-      "template": "orangePeg",
+      "prefab": "orangePeg",
       "transform": {
         "x": -4.8,
         "y": -3.5,
@@ -1969,7 +1969,7 @@
       "actions": [
         {
           "type": "spawn",
-          "template": "trajectoryLine",
+          "prefab": "trajectoryLine",
           "position": {
             "type": "fixed",
             "x": 0,
@@ -2012,7 +2012,7 @@
       "actions": [
         {
           "type": "spawn",
-          "template": "ball",
+          "prefab": "ball",
           "position": {
             "type": "fixed",
             "x": 0,
@@ -2048,7 +2048,7 @@
       "actions": [
         {
           "type": "spawn",
-          "template": "ball",
+          "prefab": "ball",
           "position": {
             "type": "fixed",
             "x": 0,

@@ -8,7 +8,7 @@ import {
   getSession,
 } from "@/lib/supabase/auth";
 import { trpc } from "@/lib/trpc/client";
-import { setDevAuthenticated, DEV_USER_ID } from "@/lib/auth/token";
+import { setDevAuthenticated, loadDevAuthState, isDevAuthenticated, DEV_USER_ID } from "@/lib/auth/token";
 
 interface AuthState {
   user: User | null;
@@ -20,7 +20,7 @@ interface AuthState {
 interface AuthContextValue extends AuthState {
   signInWithGoogle: () => Promise<void>;
   sendMagicLink: (email: string) => Promise<void>;
-  signInAsDev: () => void;
+  signInAsDev: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -75,30 +75,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch { }
 
+    const wasDevAuth = await loadDevAuthState();
+    if (wasDevAuth) {
+      setAuthenticatedUser(DEV_USER_STUB, null);
+      return;
+    }
+
     setUnauthenticated();
   }, [setAuthenticatedUser, setUnauthenticated]);
 
   useEffect(() => {
-    refreshSession();
+    let subscription: { unsubscribe: () => void } | undefined;
 
-    if (!supabase) return;
+    async function init() {
+      await refreshSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
-      if (user) {
-        setDevAuthenticated(false);
-        setAuthenticatedUser(user, session);
-      } else {
-        setUnauthenticated();
-      }
-    });
+      if (!supabase) return;
 
-    return () => { subscription.unsubscribe(); };
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        const user = session?.user ?? null;
+        if (user) {
+          void setDevAuthenticated(false);
+          setAuthenticatedUser(user, session);
+        } else if (!isDevAuthenticated()) {
+          setUnauthenticated();
+        }
+      });
+      subscription = data.subscription;
+    }
+
+    init();
+
+    return () => { subscription?.unsubscribe(); };
   }, [refreshSession, setAuthenticatedUser, setUnauthenticated]);
 
-  const signInAsDev = useCallback(() => {
+  const signInAsDev = useCallback(async () => {
     if (!__DEV__) return;
-    setDevAuthenticated(true);
+    await setDevAuthenticated(true);
     setAuthenticatedUser(DEV_USER_STUB, null);
   }, [setAuthenticatedUser]);
 

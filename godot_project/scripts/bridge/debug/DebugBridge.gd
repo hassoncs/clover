@@ -365,8 +365,8 @@ func _collect_scene_nodes(node: Node, list: Array) -> void:
 			"zIndex": node2d.z_index
 		}
 		
-		if node2d.has_meta("template"):
-			data["template"] = node2d.get_meta("template")
+		if node2d.has_meta("prefab"):
+			data["prefab"] = node2d.get_meta("prefab")
 		
 		if node2d.has_meta("tags"):
 			data["tags"] = node2d.get_meta("tags")
@@ -420,14 +420,14 @@ func _collect_scene_nodes(node: Node, list: Array) -> void:
 		_collect_scene_nodes(child, list)
 
 func find_entities(args: Array) -> Array:
-	var template_filter = ""
+	var prefab_filter = ""
 	var tag_filter = ""
 	var name_filter = ""
 	var limit = 100
 	
 	if args.size() > 0 and args[0] is Dictionary:
 		var opts = args[0] as Dictionary
-		template_filter = opts.get("template", "")
+		template_filter = opts.get("prefab", "")
 		tag_filter = opts.get("tag", "")
 		name_filter = opts.get("name", "")
 		limit = opts.get("limit", 100)
@@ -441,8 +441,8 @@ func find_entities(args: Array) -> Array:
 		
 		var node = entities[entity_id]
 		
-		if template_filter != "" and node.has_meta("template"):
-			if node.get_meta("template") != template_filter:
+		if prefab_filter != "" and node.has_meta("prefab"):
+			if node.get_meta("prefab") != template_filter:
 				continue
 		
 		if tag_filter != "" and node.has_meta("tags"):
@@ -460,8 +460,8 @@ func find_entities(args: Array) -> Array:
 			"angle": -node.rotation
 		}
 		
-		if node.has_meta("template"):
-			entry["template"] = node.get_meta("template")
+		if node.has_meta("prefab"):
+			entry["prefab"] = node.get_meta("prefab")
 		if node.has_meta("tags"):
 			entry["tags"] = node.get_meta("tags")
 		
@@ -483,7 +483,7 @@ func get_entities_at_point(world_x: float, world_y: float) -> Array:
 				"id": entity_id,
 				"position": {"x": game_pos.x, "y": game_pos.y},
 				"distance": dist / _pixels_per_meter,
-				"template": node.get_meta("template") if node.has_meta("template") else null
+				"prefab": node.get_meta("prefab") if node.has_meta("prefab") else null
 			})
 	entities_list.sort_custom(func(a, b): return a.distance < b.distance)
 	return entities_list
@@ -495,28 +495,28 @@ func get_entities_in_rect(min_x: float, min_y: float, max_x: float, max_y: float
 		entities_list.append({
 			"id": match_data.entityId,
 			"position": match_data.position,
-			"template": match_data.get("template", null)
+			"prefab": match_data.get("prefab", null)
 		})
 	return entities_list
 
 func get_entity_count(args: Array) -> Dictionary:
-	var template_filter = ""
+	var prefab_filter = ""
 	var tag_filter = ""
 	
 	if args.size() > 0 and args[0] is Dictionary:
 		var opts = args[0] as Dictionary
-		template_filter = opts.get("template", "")
+		template_filter = opts.get("prefab", "")
 		tag_filter = opts.get("tag", "")
 	
 	var total = 0
-	var by_template = {}
+	var by_prefab = {}
 	var entities = _game_bridge.entities
 	
 	for entity_id in entities:
 		var node = entities[entity_id]
-		var template = node.get_meta("template") if node.has_meta("template") else "unknown"
+		var prefab_val = node.get_meta("prefab") if node.has_meta("prefab") else "unknown"
 		
-		if template_filter != "" and template != template_filter:
+		if prefab_filter != "" and prefab_val != prefab_filter:
 			continue
 		
 		if tag_filter != "":
@@ -527,13 +527,13 @@ func get_entity_count(args: Array) -> Dictionary:
 				continue
 		
 		total += 1
-		if not by_template.has(template):
-			by_template[template] = 0
-		by_template[template] += 1
+		if not by_prefab.has(prefab_val):
+			by_prefab[prefab_val] = 0
+		by_prefab[prefab_val] += 1
 	
 	return {
 		"total": total,
-		"byTemplate": by_template
+		"byPrefab": by_prefab
 	}
 
 # =============================================================================

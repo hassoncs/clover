@@ -37,7 +37,7 @@ const testArtifacts: Record<string, unknown> = {
       {
         id: 'box-1',
         name: 'Box 1',
-        template: 'box',
+        prefab: 'box',
         transform: { x: 5, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
       },
     ],
@@ -53,7 +53,7 @@ function createMockBridge(): GodotBridge {
     clearGame: vi.fn(),
     preloadTextures: vi.fn().mockResolvedValue({ completed: 1, failed: 0 }),
     setupWorld: vi.fn(),
-    registerTemplates: vi.fn(),
+    registerPrefabs: vi.fn(),
     loadEntities: vi.fn(),
     clearEntities: vi.fn(),
     pausePhysics: vi.fn(),
@@ -83,7 +83,7 @@ describe('PackageRuntimeOrchestrator', () => {
       expect(result.loadedTags).toEqual(['world', 'prefabs', 'entities', 'rules', 'scripts', 'assets']);
       expect(bridge.loadGame).not.toHaveBeenCalled();
       expect(bridge.setupWorld).toHaveBeenCalledTimes(1);
-      expect(bridge.registerTemplates).toHaveBeenCalledTimes(1);
+      expect(bridge.registerPrefabs).toHaveBeenCalledTimes(1);
       expect(bridge.loadEntities).toHaveBeenCalledTimes(1);
       expect(bridge.preloadTextures).toHaveBeenCalledTimes(1);
     });
@@ -96,21 +96,21 @@ describe('PackageRuntimeOrchestrator', () => {
         { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
         { type: 'static', color: '#112233' },
       );
-      expect(bridge.registerTemplates).toHaveBeenCalledWith({
+      expect(bridge.registerPrefabs).toHaveBeenCalledWith({
         box: { id: 'box', physics: { bodyType: 'dynamic' } },
       });
       expect(bridge.loadEntities).toHaveBeenCalledWith([
-        { id: 'box-1', name: 'Box 1', template: 'box', transform: { x: 5, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
+        { id: 'box-1', name: 'Box 1', prefab: 'box', transform: { x: 5, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
       ]);
       expect(bridge.preloadTextures).toHaveBeenCalledWith(['https://cdn.example.com/bg.png']);
     });
 
-    it('calls section methods in correct order: setupWorld → registerTemplates → loadEntities', async () => {
+    it('calls section methods in correct order: setupWorld → registerPrefabs → loadEntities', async () => {
       const manifest = createManifest();
       await orchestrator.loadPackage(manifest);
 
       const setupOrder = vi.mocked(bridge.setupWorld).mock.invocationCallOrder[0];
-      const registerOrder = vi.mocked(bridge.registerTemplates).mock.invocationCallOrder[0];
+      const registerOrder = vi.mocked(bridge.registerPrefabs).mock.invocationCallOrder[0];
       const loadOrder = vi.mocked(bridge.loadEntities).mock.invocationCallOrder[0];
 
       expect(setupOrder).toBeLessThan(registerOrder);
@@ -205,7 +205,7 @@ describe('PackageRuntimeOrchestrator', () => {
       const manifest = createManifest();
       await orchestrator.loadPackage(manifest);
       vi.mocked(bridge.setupWorld).mockClear();
-      vi.mocked(bridge.registerTemplates).mockClear();
+      vi.mocked(bridge.registerPrefabs).mockClear();
       vi.mocked(bridge.loadEntities).mockClear();
       vi.mocked(bridge.clearEntities).mockClear();
 
@@ -213,19 +213,19 @@ describe('PackageRuntimeOrchestrator', () => {
 
       expect(result.success).toBe(true);
       expect(bridge.setupWorld).toHaveBeenCalledTimes(1);
-      expect(bridge.registerTemplates).not.toHaveBeenCalled();
+      expect(bridge.registerPrefabs).not.toHaveBeenCalled();
       expect(bridge.loadEntities).not.toHaveBeenCalled();
     });
 
-    it('calls registerTemplates for prefabs tag', async () => {
+    it('calls registerPrefabs for prefabs tag', async () => {
       const manifest = createManifest();
       await orchestrator.loadPackage(manifest);
-      vi.mocked(bridge.registerTemplates).mockClear();
+      vi.mocked(bridge.registerPrefabs).mockClear();
 
       const result = await orchestrator.loadByTag('prefabs');
 
       expect(result.success).toBe(true);
-      expect(bridge.registerTemplates).toHaveBeenCalledTimes(1);
+      expect(bridge.registerPrefabs).toHaveBeenCalledTimes(1);
     });
 
     it('calls clearEntities + loadEntities for entities tag', async () => {
@@ -248,14 +248,14 @@ describe('PackageRuntimeOrchestrator', () => {
       const manifest = createManifest();
       await orchestrator.loadPackage(manifest);
       vi.mocked(bridge.setupWorld).mockClear();
-      vi.mocked(bridge.registerTemplates).mockClear();
+      vi.mocked(bridge.registerPrefabs).mockClear();
       vi.mocked(bridge.loadEntities).mockClear();
 
       const result = await orchestrator.loadByTag('rules');
 
       expect(result.success).toBe(true);
       expect(bridge.setupWorld).not.toHaveBeenCalled();
-      expect(bridge.registerTemplates).not.toHaveBeenCalled();
+      expect(bridge.registerPrefabs).not.toHaveBeenCalled();
       expect(bridge.loadEntities).not.toHaveBeenCalled();
     });
 
@@ -263,14 +263,14 @@ describe('PackageRuntimeOrchestrator', () => {
       const manifest = createManifest();
       await orchestrator.loadPackage(manifest);
       vi.mocked(bridge.setupWorld).mockClear();
-      vi.mocked(bridge.registerTemplates).mockClear();
+      vi.mocked(bridge.registerPrefabs).mockClear();
       vi.mocked(bridge.loadEntities).mockClear();
 
       const result = await orchestrator.loadByTag('scripts');
 
       expect(result.success).toBe(true);
       expect(bridge.setupWorld).not.toHaveBeenCalled();
-      expect(bridge.registerTemplates).not.toHaveBeenCalled();
+      expect(bridge.registerPrefabs).not.toHaveBeenCalled();
       expect(bridge.loadEntities).not.toHaveBeenCalled();
     });
 
@@ -306,7 +306,7 @@ describe('PackageRuntimeOrchestrator', () => {
       vi.mocked(bridge.clearEntities).mockClear();
       vi.mocked(bridge.loadEntities).mockClear();
       vi.mocked(bridge.setupWorld).mockClear();
-      vi.mocked(bridge.registerTemplates).mockClear();
+      vi.mocked(bridge.registerPrefabs).mockClear();
 
       const manifest2 = createManifest({
         buildId: 'build-002',
@@ -327,14 +327,14 @@ describe('PackageRuntimeOrchestrator', () => {
       expect(bridge.clearEntities).toHaveBeenCalledTimes(1);
       expect(bridge.loadEntities).toHaveBeenCalledTimes(1);
       expect(bridge.setupWorld).not.toHaveBeenCalled();
-      expect(bridge.registerTemplates).not.toHaveBeenCalled();
+      expect(bridge.registerPrefabs).not.toHaveBeenCalled();
     });
 
     it('skips reload when no hashes changed', async () => {
       const manifest = createManifest();
       await orchestrator.loadPackage(manifest);
       vi.mocked(bridge.setupWorld).mockClear();
-      vi.mocked(bridge.registerTemplates).mockClear();
+      vi.mocked(bridge.registerPrefabs).mockClear();
       vi.mocked(bridge.loadEntities).mockClear();
 
       const result = await orchestrator.reloadChangedTags(manifest);
@@ -494,7 +494,7 @@ describe('Adapter ↔ Orchestrator parity', () => {
     expect(result.success).toBe(true);
     expect(bridge.loadGame).not.toHaveBeenCalled();
     expect(bridge.setupWorld).toHaveBeenCalledTimes(1);
-    expect(bridge.registerTemplates).toHaveBeenCalledTimes(1);
+    expect(bridge.registerPrefabs).toHaveBeenCalledTimes(1);
     expect(bridge.loadEntities).toHaveBeenCalledTimes(1);
   });
 

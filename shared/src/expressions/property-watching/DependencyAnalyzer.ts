@@ -1,5 +1,5 @@
 import type { GameDefinition } from '../../types/GameDefinition';
-import type { EntityTemplate } from '../../types/entity';
+import type { EntityPrefab } from '../../types/entity';
 import type { Behavior } from '../../types/behavior';
 import type { GameRule, RuleCondition, RuleAction } from '../../types/rules';
 import type { ASTNode, ExpressionValue } from '../types';
@@ -33,7 +33,7 @@ export class DependencyAnalyzer {
     this.dependencyGraph = {};
     this.expressionCount = 0;
 
-    this.analyzeTemplates();
+    this.analyzePrefabs();
     this.analyzeEntities();
     this.analyzeRules();
 
@@ -53,21 +53,21 @@ export class DependencyAnalyzer {
     return this.watches;
   }
 
-  private analyzeTemplates(): void {
-    for (const [templateId, template] of Object.entries(this.game.templates)) {
-      this.analyzeTemplate(templateId, template);
+  private analyzePrefabs(): void {
+    for (const [prefabId, prefab] of Object.entries(this.game.prefabs)) {
+      this.analyzePrefab(prefabId, prefab as EntityPrefab);
     }
   }
 
-  private analyzeTemplate(templateId: string, template: EntityTemplate): void {
-    if (!template.behaviors) return;
+  private analyzePrefab(prefabId: string, prefab: EntityPrefab): void {
+    if (!prefab.behaviors) return;
 
-    for (let i = 0; i < template.behaviors.length; i++) {
-      const behavior = template.behaviors[i];
+    for (let i = 0; i < prefab.behaviors.length; i++) {
+      const behavior = prefab.behaviors[i];
       this.analyzeBehavior(behavior, {
         hasSelfContext: true,
-        contextTags: template.tags,
-        debugName: `Template[${templateId}].Behavior[${i}:${behavior.type}]`,
+        contextTags: prefab.tags,
+        debugName: `Prefab[${prefabId}].Behavior[${i}:${behavior.type}]`,
         behaviorType: behavior.type,
       });
     }
@@ -535,8 +535,8 @@ export class DependencyAnalyzer {
   private countBehaviors(): number {
     let count = 0;
 
-    for (const template of Object.values(this.game.templates)) {
-      count += template.behaviors?.length ?? 0;
+    for (const prefab of Object.values(this.game.prefabs)) {
+      count += prefab.behaviors?.length ?? 0;
     }
 
     for (const entity of this.game.entities) {

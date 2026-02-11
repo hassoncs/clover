@@ -14,7 +14,7 @@ const makeDefinition = (overrides?: Partial<GameDefinition>): GameDefinition => 
     gravity: { x: 0, y: 10 },
     pixelsPerMeter: 50,
   },
-  templates: {},
+  prefabs: {},
   entities: [],
   ...overrides,
 });

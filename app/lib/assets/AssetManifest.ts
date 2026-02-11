@@ -146,12 +146,12 @@ export function extractAssetManifest(
   // Priority: resolvedPackEntries (from DB) > embedded assetPacks > template visuals
   
   if (options?.resolvedPackEntries) {
-    Object.entries(options.resolvedPackEntries).forEach(([templateId, entry]) => {
+    Object.entries(options.resolvedPackEntries).forEach(([prefabId, entry]) => {
       if (entry.imageUrl) {
         addImage(
           entry.imageUrl,
-          `pack-${templateId}`,
-          templateId,
+          `pack-${prefabId}`,
+          prefabId,
           'normal'
         );
       }

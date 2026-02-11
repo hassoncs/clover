@@ -46,7 +46,7 @@ export type EntityType =
   | 'ui';
 
 export interface StructuredPromptParams {
-  templateId: string;
+  prefabId: string;
   physicsShape: 'box' | 'circle' | 'polygon';
   physicsWidth?: number;
   physicsHeight?: number;
@@ -378,7 +378,7 @@ function camelToWords(str: string): string {
 
 export function buildStructuredPrompt(params: StructuredPromptParams): string {
   const {
-    templateId,
+    prefabId,
     physicsShape,
     physicsWidth,
     physicsHeight,
@@ -388,7 +388,7 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
     style,
   } = params;
 
-  const readableName = camelToWords(templateId);
+  const readableName = camelToWords(prefabId);
   const shapeDesc = describeShapeSilhouette(physicsShape, physicsWidth, physicsHeight);
   const compositionDesc = describeComposition(physicsShape, entityType);
 

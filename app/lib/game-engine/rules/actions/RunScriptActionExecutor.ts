@@ -22,7 +22,7 @@ import { SequenceManager } from '../../SequenceManager';
 
 interface DeferredSpawn {
   entityId: string;
-  templateId: string;
+  prefabId: string;
   x: number;
   y: number;
   velocity?: { x: number; y: number };
@@ -53,7 +53,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       if (context.bridge) {
         context.bridge.spawnEntity({
           entityId: spawn.entityId,
-          templateId: spawn.templateId,
+          prefabId: spawn.prefabId,
           position: { x: spawn.x, y: spawn.y },
           velocity: spawn.velocity,
         });
@@ -80,7 +80,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       if (!entity) return null;
       return {
         id: entity.id,
-        template: entity.template,
+        prefab: entity.prefab,
         tags: [...entity.tags],
         position: { x: entity.transform.x, y: entity.transform.y },
         rotation: entity.transform.angle,
@@ -95,7 +95,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       }
       return entities.map(e => ({
         id: e.id,
-        template: e.template,
+        prefab: e.prefab,
         tags: [...e.tags],
         position: { x: e.transform.x, y: e.transform.y },
         rotation: e.transform.angle,
@@ -155,8 +155,8 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       return entityManager.hasTag(entityId, tag);
     };
 
-    const getEntityTemplate = (entityId: string): string | undefined => {
-      return entityManager.getEntity(entityId)?.template;
+    const getEntityPrefab = (entityId: string): string | undefined => {
+      return entityManager.getEntity(entityId)?.prefab;
     };
 
     const getVariable = (name: string): unknown => {
@@ -176,14 +176,14 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
     const frameId = context.evalContext?.frameId ?? 0;
     let spawnCounter = 0;
 
-    const spawnEntity = (templateId: string, position: Vec2, opts?: SpawnOptions): string | null => {
+    const spawnEntity = (prefabId: string, position: Vec2, opts?: SpawnOptions): string | null => {
       const entityId = opts?.entityId ?? `spawned_${frameId}_${spawnCounter}`;
       spawnCounter += 1;
 
       if (context.bridge) {
         deferredSpawns.push({
           entityId,
-          templateId,
+          prefabId,
           x: position.x,
           y: position.y,
           velocity: opts?.velocity,
@@ -192,7 +192,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
 
       entityManager.cacheEntity(
         entityId,
-        templateId,
+        prefabId,
         { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
       );
 
@@ -318,7 +318,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       addTag,
       removeTag,
       hasTag,
-      getEntityTemplate,
+      getEntityPrefab,
       getEntityData,
       queryEntities,
       queryEntitiesWithData,

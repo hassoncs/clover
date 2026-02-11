@@ -5,7 +5,7 @@ import { GameEntity } from './entity';
  * @description Type definitions for JSON level schemas used in AI-generated game levels.
  *
  * LevelDefinition is an "overlay" type that describes what changes per-level within a pack.
- * It does NOT contain full GameDefinition data (entities, templates, rules) - those are
+ * It does NOT contain full GameDefinition data (entities, prefabs, rules) - those are
  * typically defined once at the game/pack level and shared across levels.
  *
  * ## Schema Versioning Strategy
@@ -196,7 +196,7 @@ export interface AngryBurnsLevelOverrides {
  * Level definition overlay for AI-generated levels.
  *
  * This type describes what varies between levels in a pack.
- * Shared game configuration (templates, rules, base entities) is
+ * Shared game configuration (prefabs, rules, base entities) is
  * defined at the pack level and merged with level-specific overrides.
  *
  * @example Basic level definition

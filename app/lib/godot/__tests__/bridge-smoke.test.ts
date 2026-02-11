@@ -166,7 +166,7 @@ describe("Bridge Smoke Test Harness", () => {
       const result = await queryAsync<any>(
         bridge,
         'spawn',
-        [{ template: 'box', position: { x: 5, y: 10 } }],
+        [{ prefab: 'box', position: { x: 5, y: 10 } }],
         { timeoutMs: 1000 }
       );
 

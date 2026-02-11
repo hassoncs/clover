@@ -22,23 +22,23 @@ function buildPlannerInput(context: AgentExecutionStageContext): ThemePlannerInp
   const game = context.gameDefinition;
   if (!game) {
     return {
-      templates: [],
+      prefabs: [],
       theme: context.context.gameTitle,
       style: undefined,
       gameTitle: context.context.gameTitle,
     };
   }
 
-  const templates = Object.entries(game.templates ?? {}).map(([templateId, template]) => {
-    const tags = template.tags ?? [];
+  const prefabs = Object.entries(game.prefabs ?? {}).map(([prefabId, prefab]) => {
+    const tags = prefab.tags ?? [];
     const physicsShape: 'box' | 'circle' =
-      template.physics && 'shape' in template.physics && template.physics.shape === 'circle'
+      prefab.physics && 'shape' in prefab.physics && prefab.physics.shape === 'circle'
         ? 'circle'
         : 'box';
 
     return {
-      templateId,
-      whatDescription: template.id,
+      prefabId,
+      whatDescription: prefab.id,
       entityType: classifyEntityType(tags),
       physicsShape,
       tags,
@@ -46,7 +46,7 @@ function buildPlannerInput(context: AgentExecutionStageContext): ThemePlannerInp
   });
 
   return {
-    templates,
+    prefabs,
     theme: context.context.gameDescription ?? context.context.gameTitle,
     gameTitle: context.context.gameTitle,
   };
@@ -79,7 +79,7 @@ export async function themeStage(
       errorMessage: 'MODEL_ERROR: theme planner returned no plan',
       checkpoint: {
         stage: 'theme',
-        templateCount: plannerInput.templates.length,
+        prefabCount: plannerInput.prefabs.length,
       },
       costMicros: 0,
       inputTokens: 0,
@@ -104,7 +104,7 @@ export async function themeStage(
     model: plan.providerModel ?? 'openai/gpt-4o-mini',
     checkpoint: {
       stage: 'theme',
-      templateCount: Object.keys(plan.templatePlans).length,
+      templateCount: Object.keys(plan.prefabPlans).length,
     },
   };
 }

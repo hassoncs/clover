@@ -3,22 +3,22 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { AssetPackSelector } from './AssetPackSelector';
 import { AssetAlignmentEditor } from '../AssetAlignment/AssetAlignmentEditor';
 import { QuickGenerationForm } from './QuickGenerationForm';
-import { TemplateGrid } from './TemplateGrid';
+import { PrefabGrid } from './PrefabGrid';
 import { useAssetGeneration, useCreateAssetPack, useAssetPacks, useAssetPackWithEntries, useUpdatePlacement, useDeleteAssetPack } from './useAssetGeneration';
 import { useEditor, type ResolvedPackEntry } from '../EditorProvider';
-import type { AssetPlacement, EntityTemplate } from '@slopcade/shared';
+import type { AssetPlacement, EntityPrefab } from '@slopcade/shared';
 import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 import { trpcReact } from '@/lib/trpc/react';
 import { tokens } from '@slopcade/theme';
 
 interface AssetGalleryPanelProps {
-  onTemplatePress?: (templateId: string) => void;
+  onPrefabPress?: (prefabId: string) => void;
 }
 
 interface AlignmentEditorState {
   visible: boolean;
-  templateId: string;
-  template: EntityTemplate | null;
+  prefabId: string;
+  prefab: EntityPrefab | null;
   imageUrl?: string;
   placement?: AssetPlacement;
 }
@@ -58,7 +58,7 @@ const UI_STATES: { id: UIState; label: string }[] = [
 ];
 
 export function AssetGalleryPanel({
-  onTemplatePress,
+  onPrefabPress,
 }: AssetGalleryPanelProps) {
   const { gameId, document, setActiveAssetPack } = useEditor();
   const isPreviewMode = gameId === 'preview';
@@ -69,8 +69,8 @@ export function AssetGalleryPanel({
   const [packSelectorVisible, setPackSelectorVisible] = useState(false);
   const [alignmentEditor, setAlignmentEditor] = useState<AlignmentEditorState>({
     visible: false,
-    templateId: '',
-    template: null,
+    prefabId: '',
+    prefab: null,
   });
 
   const [quickCreateTheme, setQuickCreateTheme] = useState('');
@@ -85,12 +85,12 @@ export function AssetGalleryPanel({
   const [uiTheme, setUiTheme] = useState('');
   const [isGeneratingUI, setIsGeneratingUI] = useState(false);
 
-  const templates = useMemo(() => {
-    return Object.entries(document.templates).map(([id, template]) => ({
+  const prefabs = useMemo(() => {
+    return Object.entries(document.prefabs).map(([id, prefab]) => ({
       id,
-      template,
+      prefab,
     }));
-  }, [document.templates]);
+  }, [document.prefabs]);
 
   const { data: assetPacks, isLoading: isLoadingPacks } = useAssetPacks(gameId);
   const { data: activePack, isLoading: isLoadingActivePack } = useAssetPackWithEntries(selectedPackId);
@@ -108,11 +108,11 @@ export function AssetGalleryPanel({
   const createJobMutation = trpcReact.assetSystem.createGenerationJob.useMutation();
   const processJobMutation = trpcReact.assetSystem.processGenerationJob.useMutation();
 
-  const entriesByTemplateId = useMemo(() => {
+  const entriesByPrefabId = useMemo(() => {
     if (!activePack?.entries) return new Map<string, { imageUrl?: string; placement?: AssetPlacement }>();
     const map = new Map<string, { imageUrl?: string; placement?: AssetPlacement }>();
     for (const entry of activePack.entries) {
-      map.set(entry.templateId, {
+      map.set(entry.prefabId, {
         imageUrl: entry.imageUrl ?? undefined,
         placement: entry.placement,
       });
@@ -147,7 +147,7 @@ export function AssetGalleryPanel({
     const resolvedEntries: Record<string, ResolvedPackEntry> = {};
     for (const entry of activePack.entries) {
       if (entry.imageUrl) {
-        resolvedEntries[entry.templateId] = {
+        resolvedEntries[entry.prefabId] = {
           imageUrl: entry.imageUrl,
           placement: entry.placement ?? undefined,
         };
@@ -168,21 +168,21 @@ export function AssetGalleryPanel({
       id: pack.id,
       name: pack.name,
       assetCount: 0,
-      totalTemplates: templates.length,
+      totalPrefabs: prefabs.length,
     }));
-  }, [assetPacks, templates.length]);
+  }, [assetPacks, prefabs.length]);
 
   const coverage = useMemo(() => {
-    const covered = templates.filter(t => entriesByTemplateId.has(t.id) && entriesByTemplateId.get(t.id)?.imageUrl).length;
-    return { covered, total: templates.length };
-  }, [entriesByTemplateId, templates]);
+    const covered = prefabs.filter(t => entriesByPrefabId.has(t.id) && entriesByPrefabId.get(t.id)?.imageUrl).length;
+    return { covered, total: prefabs.length };
+  }, [entriesByPrefabId, prefabs]);
 
   const { createPack, isCreating: isCreatingPack } = useCreateAssetPack(gameId);
   const { deletePack, isDeleting: isDeletingPack } = useDeleteAssetPack(gameId);
 
   const {
     isGenerating,
-    generatingTemplates,
+    generatingPrefabs,
     progress,
     generateAll,
   } = useAssetGeneration({
@@ -264,7 +264,7 @@ export function AssetGalleryPanel({
       console.log('[AssetGallery] Starting generateAll with packId:', pack.id);
       generateAll({
         packId: pack.id,
-        templateIds: templates.map(t => t.id),
+        prefabIds: templates.map(t => t.id),
         themePrompt: quickCreateTheme.trim() || document.metadata?.description,
         style: quickCreateStyle,
         removeBackground,
@@ -282,25 +282,25 @@ export function AssetGalleryPanel({
       return;
     }
 
-    const templateIds = templates.map(t => t.id);
+    const prefabIds = templates.map(t => t.id);
 
     generateAll({
       packId: selectedPackId,
-      templateIds,
+      prefabIds,
       themePrompt: document.metadata?.description,
     });
   }, [selectedPackId, templates, document.metadata?.description, generateAll]);
 
   const updatePlacementMutation = useUpdatePlacement();
 
-  const handleTemplatePress = useCallback((templateId: string) => {
-    const template = document.templates[templateId];
-    const entryData = entriesByTemplateId.get(templateId);
+  const handlePrefabPress = useCallback((prefabId: string) => {
+    const template = document.prefabs[prefabId];
+    const entryData = entriesByPrefabId.get(prefabId);
     
     if (entryData?.imageUrl) {
       setAlignmentEditor({
         visible: true,
-        templateId,
+        prefabId,
         template,
         imageUrl: entryData.imageUrl,
         placement: entryData.placement ?? {
@@ -310,23 +310,23 @@ export function AssetGalleryPanel({
         },
       });
     } else {
-      onTemplatePress?.(templateId);
+      onPrefabPress?.(prefabId);
     }
-  }, [document.templates, entriesByTemplateId, onTemplatePress]);
+  }, [document.prefabs, entriesByPrefabId, onPrefabPress]);
 
   const handleSavePlacement = useCallback(async (placement: AssetPlacement) => {
-    if (!selectedPackId || !alignmentEditor.templateId) return;
+    if (!selectedPackId || !alignmentEditor.prefabId) return;
 
     try {
       await updatePlacementMutation.mutateAsync({
         packId: selectedPackId,
-        templateId: alignmentEditor.templateId,
+        templateId: alignmentEditor.prefabId,
         placement,
       });
     } catch {
       Alert.alert('Error', 'Failed to save alignment');
     }
-  }, [selectedPackId, alignmentEditor.templateId, updatePlacementMutation]);
+  }, [selectedPackId, alignmentEditor.prefabId, updatePlacementMutation]);
 
   const toggleState = useCallback((state: UIState) => {
     setSelectedStates(prev => 
@@ -369,7 +369,7 @@ export function AssetGalleryPanel({
       const jobResult = await createJobMutation.mutateAsync({
         gameId,
         packId: packResult.packId,
-        templateIds: [],
+        prefabIds: [],
         promptDefaults: {
           componentType: uiComponentType,
           states: selectedStates,
@@ -520,7 +520,7 @@ export function AssetGalleryPanel({
             entriesByTemplateId={entriesByTemplateId}
             generatingTemplates={generatingTemplates}
             isLoading={isLoading}
-            onTemplatePress={handleTemplatePress}
+            onPrefabPress={handlePrefabPress}
           />
 
       <AssetPackSelector
@@ -539,8 +539,8 @@ export function AssetGalleryPanel({
       <AssetAlignmentEditor
         visible={alignmentEditor.visible}
         onClose={() => setAlignmentEditor(prev => ({ ...prev, visible: false }))}
-        templateId={alignmentEditor.templateId}
-        physics={alignmentEditor.template?.physics}
+        prefabId={alignmentEditor.prefabId}
+        physics={alignmentEditor.prefab?.physics}
         imageUrl={alignmentEditor.imageUrl}
         initialPlacement={alignmentEditor.placement}
         onSave={handleSavePlacement}

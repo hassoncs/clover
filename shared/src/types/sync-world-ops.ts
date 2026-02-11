@@ -19,7 +19,7 @@ export interface SyncWorldOps {
   // ═══════════════════════════════════════════════════════════════
   // Entity Lifecycle
   // ═══════════════════════════════════════════════════════════════
-  spawnEntity(templateId: string, position: Vec2, opts?: SpawnOptions): string | null;
+  spawnEntity(prefabId: string, position: Vec2, opts?: SpawnOptions): string | null;
   destroyEntity(entityId: string): void;
   cloneEntity(entityId: string, opts?: CloneOptions): string | null;
   reparentEntity(entityId: string, newParentId: string, opts?: ReparentOptions): void;
@@ -52,7 +52,7 @@ export interface SyncWorldOps {
   addTag(entityId: string, tag: string): void;
   removeTag(entityId: string, tag: string): boolean;
   hasTag(entityId: string, tag: string): boolean;
-  getEntityTemplate(entityId: string): string | undefined;
+  getEntityPrefab(entityId: string): string | undefined;
   getEntityData(entityId: string): WorldEntityData | null;
 
   // ═══════════════════════════════════════════════════════════════

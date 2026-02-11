@@ -18,7 +18,7 @@ export type WaveSpawnPosition =
   | { type: 'formation_center'; center: Vec2 };
 
 export interface SpawnGroup {
-  template: string | string[];
+  prefab: string | string[];
   count: Value<number>;
   interval: Value<number>;
   delay?: Value<number>;

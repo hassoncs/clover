@@ -3,6 +3,8 @@ export * from "./effects";
 export * from "./events";
 export * from "./expressions";
 export * from "./generator";
+export * as graphAdapters from "./graph-adapters";
+export * as graphCore from "./graph-core";
 export * from "./mechanics";
 export * from "./systems";
 export * from "./tags";

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { RuntimeEntity } from '../types';
-import type { AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent, AssetUrlConfig } from '@slopcade/shared';
+import type { AssetConfig, AssetPlacement, GameDefinition, EntityPrefab, ColliderComponent, AssetUrlConfig } from '@slopcade/shared';
 import { getAssetUrl } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
 import { env } from '@/lib/config/env';
@@ -29,7 +29,7 @@ interface DatabasePack {
   name: string;
   description?: string | null;
   entries: Array<{
-    templateId: string;
+    prefabId: string;
     r2Key: string | null;
     placement?: AssetPlacement | null;
   }>;
@@ -51,7 +51,7 @@ function convertDbPackToEmbedded(dbPack: DatabasePack, config?: AssetUrlConfig):
   for (const entry of dbPack.entries) {
     if (entry.r2Key) {
       const fullUrl = getAssetUrl(entry.r2Key, env.assetCdnUrl, config);
-      assets[entry.templateId] = {
+      assets[entry.prefabId] = {
         imageUrl: fullUrl,
         assetRef: entry.r2Key,
         source: 'generated' as const,
@@ -65,10 +65,10 @@ function convertDbPackToEmbedded(dbPack: DatabasePack, config?: AssetUrlConfig):
 }
 
 function validatePackCoverage(
-  templates: Record<string, EntityTemplate>,
+  prefabs: Record<string, EntityPrefab>,
   pack: any
 ): void {
-  const imageTemplates = Object.entries(templates)
+  const imagePrefabs = Object.entries(prefabs)
     .filter(([_, t]) => t.visual?.type === 'image')
     .map(([id]) => id);
   
@@ -76,8 +76,8 @@ function validatePackCoverage(
   
   if (missingAssets.length > 0) {
     throw new Error(
-      `Asset pack "${pack.id}" missing required assets for templates: ${missingAssets.join(', ')}. ` +
-      `Each template with visual.type='image' must have a corresponding entry in the asset pack.`
+      `Asset pack "${pack.id}" missing required assets for prefabs: ${missingAssets.join(', ')}. ` +
+      `Each prefab with visual.type='image' must have a corresponding entry in the asset pack.`
     );
   }
 }
@@ -121,13 +121,13 @@ export function resolveAssetForEntity(
   }
 
   const pack = assetPacks[packIdToUse];
-  const templateId = entity.template;
+  const prefabId = entity.prefab;
   
-  if (!templateId || !pack.assets[templateId]) {
+  if (!prefabId || !pack.assets[prefabId]) {
     return null;
   }
 
-  const assetConfig = pack.assets[templateId];
+  const assetConfig = pack.assets[prefabId];
   if (!assetConfig.imageUrl || assetConfig.source === 'none') {
     return null;
   }
@@ -161,9 +161,9 @@ export function useAssetResolution(
       mergedPacks[dbPack.name] = dbPack;
     }
 
-    if (activePackId && mergedPacks[activePackId] && definition.templates) {
+    if (activePackId && mergedPacks[activePackId] && definition.prefabs) {
       try {
-        validatePackCoverage(definition.templates, mergedPacks[activePackId]);
+        validatePackCoverage(definition.prefabs, mergedPacks[activePackId]);
       } catch (error) {
         console.error('[useAssetResolution]', error);
         throw error;
@@ -187,7 +187,7 @@ export function useAssetResolution(
     entities,
     activePackId,
     definition.assetSystem,
-    definition.templates,
+    definition.prefabs,
     dbPackQuery.data,
   ]);
 }

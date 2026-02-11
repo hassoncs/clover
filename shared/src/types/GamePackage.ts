@@ -1,7 +1,10 @@
 import type { WorkspaceManifest } from './PackageManifest';
-import type { EntityTemplate, GameEntity } from './entity';
+import type { EntityPrefab, GameEntity } from './entity';
 import type { GameRule } from './rules';
 import type { WorldConfig } from './GameDefinition';
+import type { PrefabDefinition } from './Prefab';
+
+export type { PrefabDefinition } from './Prefab';
 
 export interface AssetManifestEntry {
   id: string;
@@ -15,14 +18,13 @@ export interface AssetManifestEntry {
 export type AssetManifest = Record<string, AssetManifestEntry>;
 
 /**
- * Alias for EntityTemplate during the template→prefab migration.
- * Task 10 will make this a standalone type and remove EntityTemplate.
+ * Alias for EntityPrefab for backward compatibility.
  */
-export type PrefabDefinition = EntityTemplate;
+export type LegacyPrefabDefinition = EntityPrefab;
 
 export interface GamePackage {
   manifest: WorkspaceManifest;
-  prefabs?: Record<string, PrefabDefinition>;
+  prefabs?: Record<string, PrefabDefinition | LegacyPrefabDefinition>;
   entities?: GameEntity[];
   rules?: GameRule[];
   scripts?: string;

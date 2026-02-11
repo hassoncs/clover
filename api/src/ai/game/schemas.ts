@@ -265,7 +265,7 @@ export const TransformSchema = z.object({
   scaleY: z.number().default(1),
 });
 
-export const EntityTemplateSchema = z.object({
+export const EntityPrefabSchema = z.object({
   id: z.string(),
   visual: VisualComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
@@ -277,7 +277,7 @@ export const EntityTemplateSchema = z.object({
 export const GameEntitySchema = z.object({
   id: z.string(),
   name: z.string(),
-  template: z.string().optional(),
+  prefab: z.string().optional(),
   transform: TransformSchema,
   visual: VisualComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
@@ -322,7 +322,7 @@ export const RuleTriggerSchema = z.discriminatedUnion('type', [
 
 export const SpawnActionSchema = z.object({
   type: z.literal('spawn'),
-  template: z.string(),
+  prefab: z.string(),
   position: z.object({
     type: z.enum(['fixed', 'random', 'at_entity', 'at_collision']),
     x: z.number().optional(),
@@ -562,7 +562,7 @@ export const GameDefinitionSchema = z.object({
   world: WorldConfigSchema,
   presentation: PresentationConfigSchema.optional(),
   camera: CameraConfigSchema.optional(),
-  templates: z.record(z.string(), EntityTemplateSchema),
+  prefabs: z.record(z.string(), EntityPrefabSchema),
   entities: z.array(GameEntitySchema).min(1),
   rules: z.array(GameRuleSchema).optional(),
   winCondition: WinConditionSchema.optional(),

@@ -8,7 +8,7 @@ describe('validateMatch3Playability', () => {
     rows: 8,
     cols: 8,
     cellSize: 1,
-    pieceTemplates: ['red', 'blue', 'green', 'yellow'],
+    piecePrefabs: ['red', 'blue', 'green', 'yellow'],
     minMatch: 3,
   };
 
@@ -19,41 +19,41 @@ describe('validateMatch3Playability', () => {
     expect(result.warnings).toHaveLength(0);
   });
 
-  describe('pieceTemplates validation', () => {
-    it('should error when pieceTemplates has fewer than 3 items', () => {
-      const config: Match3Config = { ...validConfig, pieceTemplates: ['red', 'blue'] };
+  describe('piecePrefabs validation', () => {
+    it('should error when piecePrefabs has fewer than 3 items', () => {
+      const config: Match3Config = { ...validConfig, piecePrefabs: ['red', 'blue'] };
       const result = validateMatch3Playability(config);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Match3: At least 3 piece templates required, got 2');
+      expect(result.errors).toContain('Match3: At least 3 piece prefabs required, got 2');
     });
 
-    it('should error when pieceTemplates is empty', () => {
-      const config: Match3Config = { ...validConfig, pieceTemplates: [] };
+    it('should error when piecePrefabs is empty', () => {
+      const config: Match3Config = { ...validConfig, piecePrefabs: [] };
       const result = validateMatch3Playability(config);
       expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('At least 3 piece templates required');
+      expect(result.errors[0]).toContain('At least 3 piece prefabs required');
     });
 
-    it('should warn when pieceTemplates has more than 6 items', () => {
+    it('should warn when piecePrefabs has more than 6 items', () => {
       const config: Match3Config = {
         ...validConfig,
-        pieceTemplates: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+        piecePrefabs: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
       };
       const result = validateMatch3Playability(config);
       expect(result.valid).toBe(true);
-      expect(result.warnings).toContain('Match3: More than 6 piece templates may reduce match frequency');
+      expect(result.warnings).toContain('Match3: More than 6 piece prefabs may reduce match frequency');
     });
 
-    it('should pass with exactly 3 piece templates', () => {
-      const config: Match3Config = { ...validConfig, pieceTemplates: ['a', 'b', 'c'] };
+    it('should pass with exactly 3 piece prefabs', () => {
+      const config: Match3Config = { ...validConfig, piecePrefabs: ['a', 'b', 'c'] };
       const result = validateMatch3Playability(config);
       expect(result.valid).toBe(true);
     });
 
-    it('should pass with exactly 6 piece templates', () => {
+    it('should pass with exactly 6 piece prefabs', () => {
       const config: Match3Config = {
         ...validConfig,
-        pieceTemplates: ['a', 'b', 'c', 'd', 'e', 'f'],
+        piecePrefabs: ['a', 'b', 'c', 'd', 'e', 'f'],
       };
       const result = validateMatch3Playability(config);
       expect(result.valid).toBe(true);
@@ -180,7 +180,7 @@ describe('validateMatch3Playability', () => {
         rows: 2,
         cols: 15,
         cellSize: -1,
-        pieceTemplates: ['a'],
+        piecePrefabs: ['a'],
         minMatch: 1,
       };
       const result = validateMatch3Playability(config);
@@ -195,7 +195,7 @@ describe('validateTetrisPlayability', () => {
     gridId: 'test-grid',
     boardWidth: 10,
     boardHeight: 20,
-    pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
+    piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
     initialDropSpeed: 1,
   };
 
@@ -262,30 +262,30 @@ describe('validateTetrisPlayability', () => {
     });
   });
 
-  describe('pieceTemplates validation', () => {
-    it('should error when pieceTemplates has fewer than 7 items', () => {
-      const config: TetrisConfig = { ...validConfig, pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J'] };
+  describe('piecePrefabs validation', () => {
+    it('should error when piecePrefabs has fewer than 7 items', () => {
+      const config: TetrisConfig = { ...validConfig, piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J'] };
       const result = validateTetrisPlayability(config);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Tetris: pieceTemplates must have exactly 7 items (I, O, T, S, Z, J, L), got 6');
+      expect(result.errors).toContain('Tetris: piecePrefabs must have exactly 7 items (I, O, T, S, Z, J, L), got 6');
     });
 
-    it('should error when pieceTemplates has more than 7 items', () => {
-      const config: TetrisConfig = { ...validConfig, pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J', 'L', 'X'] };
+    it('should error when piecePrefabs has more than 7 items', () => {
+      const config: TetrisConfig = { ...validConfig, piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J', 'L', 'X'] };
       const result = validateTetrisPlayability(config);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Tetris: pieceTemplates must have exactly 7 items (I, O, T, S, Z, J, L), got 8');
+      expect(result.errors).toContain('Tetris: piecePrefabs must have exactly 7 items (I, O, T, S, Z, J, L), got 8');
     });
 
-    it('should error when pieceTemplates is empty', () => {
-      const config: TetrisConfig = { ...validConfig, pieceTemplates: [] };
+    it('should error when piecePrefabs is empty', () => {
+      const config: TetrisConfig = { ...validConfig, piecePrefabs: [] };
       const result = validateTetrisPlayability(config);
       expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('pieceTemplates must have exactly 7 items');
+      expect(result.errors[0]).toContain('piecePrefabs must have exactly 7 items');
     });
 
-    it('should pass with exactly 7 piece templates', () => {
-      const config: TetrisConfig = { ...validConfig, pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'] };
+    it('should pass with exactly 7 piece prefabs', () => {
+      const config: TetrisConfig = { ...validConfig, piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'] };
       const result = validateTetrisPlayability(config);
       expect(result.valid).toBe(true);
     });
@@ -331,7 +331,7 @@ describe('validateTetrisPlayability', () => {
         gridId: 'test',
         boardWidth: 5,
         boardHeight: 10,
-        pieceTemplates: ['I', 'O'],
+        piecePrefabs: ['I', 'O'],
         initialDropSpeed: 0,
       };
       const result = validateTetrisPlayability(config);
@@ -346,7 +346,7 @@ describe('validatePlayable', () => {
     const gameDef = {
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
     } as GameDefinition;
 
@@ -359,14 +359,14 @@ describe('validatePlayable', () => {
     const gameDef = {
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
       match3: {
         gridId: 'grid',
         rows: 2,
         cols: 8,
         cellSize: 1,
-        pieceTemplates: ['a', 'b', 'c'],
+        piecePrefabs: ['a', 'b', 'c'],
       },
     } as GameDefinition;
 
@@ -379,14 +379,14 @@ describe('validatePlayable', () => {
     const gameDef = {
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
       match3: {
         gridId: 'grid',
         rows: 8,
         cols: 8,
         cellSize: 1,
-        pieceTemplates: ['red', 'blue', 'green'],
+        piecePrefabs: ['red', 'blue', 'green'],
       },
     } as GameDefinition;
 
@@ -398,13 +398,13 @@ describe('validatePlayable', () => {
     const gameDef = {
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
       tetris: {
         gridId: 'grid',
         boardWidth: 5,
         boardHeight: 20,
-        pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
+        piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
       },
     } as GameDefinition;
 
@@ -417,13 +417,13 @@ describe('validatePlayable', () => {
     const gameDef = {
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
       tetris: {
         gridId: 'grid',
         boardWidth: 10,
         boardHeight: 20,
-        pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
+        piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
       },
     } as GameDefinition;
 
@@ -435,20 +435,20 @@ describe('validatePlayable', () => {
     const gameDef = {
       metadata: { id: 'test', title: 'Test', version: '1.0.0' },
       world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-      templates: {},
+      prefabs: {},
       entities: [],
       match3: {
         gridId: 'grid1',
         rows: 2,
         cols: 8,
         cellSize: 1,
-        pieceTemplates: ['a', 'b', 'c'],
+        piecePrefabs: ['a', 'b', 'c'],
       },
       tetris: {
         gridId: 'grid2',
         boardWidth: 5,
         boardHeight: 20,
-        pieceTemplates: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
+        piecePrefabs: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'],
       },
     } as GameDefinition;
 

@@ -14,7 +14,7 @@ function createMockEntityManager(): EntityManager {
   const mockEntity: RuntimeEntity = {
     id: 'entity_1',
     name: 'test-entity',
-    template: 'ball',
+    prefab: 'ball',
     parentId: undefined,
     children: [],
     localTransform: { x: 5, y: 10, angle: 0, scaleX: 1, scaleY: 1 },
@@ -40,8 +40,8 @@ function createMockEntityManager(): EntityManager {
     spawnEntity: vi.fn((opts) => {
       const entity: RuntimeEntity = {
         id: 'entity_2',
-        name: opts.templateId,
-        template: opts.templateId,
+        name: opts.prefabId,
+        prefab: opts.prefabId,
         parentId: undefined,
         children: [],
         localTransform: { x: opts.position.x, y: opts.position.y, angle: opts.angle ?? 0, scaleX: 1, scaleY: 1 },
@@ -64,7 +64,7 @@ function createMockEntityManager(): EntityManager {
     }),
     handleEntitySpawned: vi.fn(),
     cacheEntity: vi.fn(),
-    getTemplate: vi.fn((id: string) => {
+    getPrefab: vi.fn((id: string) => {
       if (id === 'ball') {
         return { id: 'ball', name: 'Ball', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } };
       }
@@ -160,7 +160,7 @@ describe('WorldOpsImpl', () => {
       
       expect(entityId).toBe('entity_2');
       expect(mockEntityManager.spawnEntity).toHaveBeenCalledWith({
-        templateId: 'ball',
+        prefabId: 'ball',
         position: { x: 5, y: 10 },
         velocity: undefined,
         angle: undefined,
@@ -168,7 +168,7 @@ describe('WorldOpsImpl', () => {
       });
     });
     
-    it('should return null if template not found', async () => {
+    it('should return null if prefab not found', async () => {
       const entityId = await worldOps.spawn('nonexistent', { x: 0, y: 0 });
       
       expect(entityId).toBeNull();
@@ -315,17 +315,17 @@ describe('WorldOpsImpl', () => {
       
       expect(mockEntityManager.query).toHaveBeenCalledWith({
         tags: ['test-tag'],
-        template: undefined,
+        prefab: undefined,
         withinAabb: undefined,
       });
     });
     
-    it('should filter by template', async () => {
-      await worldOps.queryEntities({ templateId: 'ball' });
+    it('should filter by prefab', async () => {
+      await worldOps.queryEntities({ prefabId: 'ball' });
       
       expect(mockEntityManager.query).toHaveBeenCalledWith({
         tags: undefined,
-        template: 'ball',
+        prefab: 'ball',
         withinAabb: undefined,
       });
     });
@@ -337,7 +337,7 @@ describe('WorldOpsImpl', () => {
       
       expect(mockEntityManager.query).toHaveBeenCalledWith({
         tags: undefined,
-        template: undefined,
+        prefab: undefined,
         withinAabb: {
           min: { x: 0, y: 0 },
           max: { x: 10, y: 10 },

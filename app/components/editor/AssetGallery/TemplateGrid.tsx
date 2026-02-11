@@ -1,25 +1,25 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { TemplateAssetCard } from './TemplateAssetCard';
-import type { EntityTemplate } from '@slopcade/shared';
+import { PrefabAssetCard } from './PrefabAssetCard';
+import type { EntityPrefab } from '@slopcade/shared';
 
-interface TemplateGridProps {
-  templates: Array<{ id: string; template: EntityTemplate }>;
-  entriesByTemplateId: Map<string, {
+interface PrefabGridProps {
+  prefabs: Array<{ id: string; prefab: EntityPrefab }>;
+  entriesByPrefabId: Map<string, {
     imageUrl?: string;
     placement?: { scale: number; offsetX: number; offsetY: number };
   }>;
-  generatingTemplates: Set<string>;
+  generatingPrefabs: Set<string>;
   isLoading: boolean;
-  onTemplatePress: (templateId: string) => void;
+  onPrefabPress: (prefabId: string) => void;
 }
 
-export function TemplateGrid({
-  templates,
-  entriesByTemplateId,
-  generatingTemplates,
+export function PrefabGrid({
+  prefabs,
+  entriesByPrefabId,
+  generatingPrefabs,
   isLoading,
-  onTemplatePress,
-}: TemplateGridProps) {
+  onPrefabPress,
+}: PrefabGridProps) {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -28,10 +28,10 @@ export function TemplateGrid({
     );
   }
 
-  if (templates.length === 0) {
+  if (prefabs.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyStateText}>No templates in this game</Text>
+        <Text style={styles.emptyStateText}>No prefabs in this game</Text>
         <Text style={styles.emptyStateSubtext}>
           Add entities to your game to see them here
         </Text>
@@ -41,17 +41,17 @@ export function TemplateGrid({
 
   return (
     <View style={styles.grid}>
-      {templates.map(({ id, template }) => {
-        const entryData = entriesByTemplateId.get(id);
+      {prefabs.map(({ id, prefab }) => {
+        const entryData = entriesByPrefabId.get(id);
         return (
-          <TemplateAssetCard
+          <PrefabAssetCard
             key={id}
-            templateId={id}
-            template={template}
+            prefabId={id}
+            prefab={prefab}
             imageUrl={entryData?.imageUrl}
             placement={entryData?.placement}
-            isGenerating={generatingTemplates.has(id)}
-            onPress={() => onTemplatePress(id)}
+            isGenerating={generatingPrefabs.has(id)}
+            onPress={() => onPrefabPress(id)}
           />
         );
       })}

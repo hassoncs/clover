@@ -3,7 +3,7 @@ class_name EntityRecord extends RefCounted
 var entity_id: String
 var node: Node2D
 var archetype: String
-var template: String
+var prefab: String
 var tags: Array[String]
 var group: String
 var user_data: Dictionary

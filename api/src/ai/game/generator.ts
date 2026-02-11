@@ -67,7 +67,7 @@ Given a user's game description, generate a complete GameDefinition that can be 
 **Match-3** (Candy Crush style):
 - Use the Match3GameSystem by populating the 'match3' configuration object
 - Set 'match3.rows' and 'match3.cols' between 4 and 12
-- Provide 3 to 6 distinct piece templates in 'match3.pieceTemplates'
+- Provide 3 to 6 distinct piece prefabs in 'match3.piecePrefabs'
 - All pieces must use 'bodyType: kinematic' and 'isSensor: true'
 - Do NOT provide 'matchDetection' or 'scoring' slots; the engine uses default Match-3 logic
 - Use 'sys.match3:selected' and 'sys.match3:matched' tags in conditionalBehaviors for visual feedback
@@ -155,9 +155,9 @@ IMPORTANT: This is a Match-3 game. You MUST:
    - rows: 4-12 (default 8)
    - cols: 4-12 (default 8)
    - cellSize: 0.8-1.5 (default 1.2)
-   - pieceTemplates: array of 3-6 template IDs
+   - piecePrefabs: array of 3-6 prefab IDs
    - minMatch: 3-5 (default 3)
-2. Create 3-6 piece templates with:
+2. Create 3-6 piece prefabs with:
    - tags: ["piece", "<color>"]
    - physics: { bodyType: "kinematic", isSensor: true }
    - conditionalBehaviors for visual feedback:
@@ -176,8 +176,8 @@ IMPORTANT: This is a Tetris game. You MUST:
    - boardWidth: 10-20 (default 10)
    - boardHeight: 15-25 (default 20)
    - initialDropSpeed: 0.1-5 (default 1)
-   - pieceTemplates: array of EXACTLY 7 template IDs (I, O, T, S, Z, J, L)
-2. Create 7 piece templates with:
+   - piecePrefabs: array of EXACTLY 7 prefab IDs (I, O, T, S, Z, J, L)
+2. Create 7 piece prefabs with:
    - tags: ["piece", "<color>"]
    - physics: { bodyType: "kinematic", isSensor: true }
    - conditionalBehaviors for visual feedback:

@@ -22,7 +22,7 @@ function createTestEntity(overrides: Partial<GameEntity> = {}): GameEntity {
   return {
     id: 'test-entity',
     name: 'test',
-    template: 'woodBlock',
+    prefab: 'woodBlock',
     transform: { x: 10, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
     collider: { shape: 'box', width: 0.8, height: 0.4, friction: 0.5, restitution: 0.1 },
     physics: { bodyType: 'dynamic', density: 1 },
@@ -38,7 +38,7 @@ function createValidTowerLevel(): GameEntity[] {
   entities.push({
     id: 'ground',
     name: 'ground',
-    template: 'ground',
+    prefab: 'ground',
     transform: { x: 10, y: 11, angle: 0, scaleX: 1, scaleY: 1 },
     collider: { shape: 'box', width: 20, height: 1, friction: 0.5, restitution: 0.1 },
     physics: { bodyType: 'static', density: 0 },
@@ -48,7 +48,7 @@ function createValidTowerLevel(): GameEntity[] {
   entities.push({
     id: 'wall',
     name: 'wall-right',
-    template: 'wall',
+    prefab: 'wall',
     transform: { x: 19.75, y: 6, angle: 0, scaleX: 1, scaleY: 1 },
     collider: { shape: 'box', width: 0.5, height: 12, friction: 0.5, restitution: 0.1 },
     physics: { bodyType: 'static', density: 0 },
@@ -58,7 +58,7 @@ function createValidTowerLevel(): GameEntity[] {
   entities.push({
     id: 'cannon',
     name: 'cannon',
-    template: 'cannon',
+    prefab: 'cannon',
     transform: { x: 3, y: 9, angle: 0, scaleX: 1, scaleY: 1 },
     collider: { shape: 'box', width: 0.6, height: 0.25, friction: 0, restitution: 0 },
     physics: { bodyType: 'kinematic', density: 0 },
@@ -70,7 +70,7 @@ function createValidTowerLevel(): GameEntity[] {
       entities.push({
         id: `block-${row}-${col}`,
         name: `block-r${row}-c${col}`,
-        template: 'woodBlock',
+        prefab: 'woodBlock',
         transform: { x: 14 + col * 0.85, y: 10.4 - row * 0.4, angle: 0, scaleX: 1, scaleY: 1 },
         collider: { shape: 'box', width: 0.8, height: 0.4, friction: 0.5, restitution: 0.1 },
         physics: { bodyType: 'dynamic', density: 1 },
@@ -82,7 +82,7 @@ function createValidTowerLevel(): GameEntity[] {
   entities.push({
     id: 'target',
     name: 'target-0',
-    template: 'target',
+    prefab: 'target',
     transform: { x: 15, y: 9, angle: 0, scaleX: 1, scaleY: 1 },
     collider: { shape: 'circle', radius: 0.35, friction: 0.3, restitution: 0.2 },
     physics: { bodyType: 'dynamic', density: 0.5 },
@@ -270,12 +270,12 @@ describe('AngryBurnsLevelGenerator', () => {
       });
 
       const entities = level.overrides?.angryBurns?.entities ?? [];
-      const templates = entities.map(e => e.template);
+      const prefabs = entities.map(e => e.prefab);
 
-      expect(templates).toContain('ground');
-      expect(templates).toContain('wall');
-      expect(templates).toContain('cannon');
-      expect(templates).toContain('target');
+      expect(prefabs).toContain('ground');
+      expect(prefabs).toContain('wall');
+      expect(prefabs).toContain('cannon');
+      expect(prefabs).toContain('target');
     });
 
     it('should have valid generator metadata', () => {

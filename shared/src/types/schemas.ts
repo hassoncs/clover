@@ -789,7 +789,7 @@ export const DestroyTargetSchema = z.discriminatedUnion('type', [
 
 export const SpawnActionSchema = z.object({
   type: z.literal('spawn'),
-  template: z.union([z.string(), z.array(z.string())]),
+  prefab: z.union([z.string(), z.array(z.string())]),
   position: SpawnPositionSchema,
   count: z.number().positive().optional(),
   spread: z.number().optional(),
@@ -1210,7 +1210,7 @@ export const ChildEntityDefinitionSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     id: z.string().optional(),
     name: z.string(),
-    template: z.string(),
+    prefab: z.string(),
     localTransform: TransformComponentSchema,
     slot: z.string().optional(),
     visual: VisualComponentSchema.optional(),
@@ -1226,10 +1226,10 @@ export const ChildEntityDefinitionSchema: z.ZodType<any> = z.lazy(() =>
   })
 );
 
-export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
+export const ChildPrefabDefinitionSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     name: z.string(),
-    template: z.string(),
+    prefab: z.string(),
     localTransform: TransformComponentSchema,
     slot: z.string().optional(),
     visual: VisualComponentSchema.optional(),
@@ -1239,11 +1239,11 @@ export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
     behaviors: z.array(BehaviorSchema).optional(),
     conditionalBehaviors: z.array(ConditionalBehaviorSchema).optional(),
     tags: z.array(z.string()).optional(),
-    children: z.array(ChildTemplateDefinitionSchema).optional(),
+    children: z.array(ChildPrefabDefinitionSchema).optional(),
   })
 );
 
-export const BodyEntityTemplateSchema = z.object({
+export const BodyEntityPrefabSchema = z.object({
   type: z.literal('body').optional(),
   id: z.string(),
   description: z.string().optional(),
@@ -1257,15 +1257,15 @@ export const BodyEntityTemplateSchema = z.object({
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),
   slots: z.record(z.string(), SlotDefinitionSchema).optional(),
-  children: z.array(ChildTemplateDefinitionSchema).optional(),
+  children: z.array(ChildPrefabDefinitionSchema).optional(),
 });
 
-export const EntityTemplateSchema = BodyEntityTemplateSchema.describe('Entity template');
+export const EntityPrefabSchema = BodyEntityPrefabSchema.describe('Entity prefab');
 
 export const GameEntitySchema = z.object({
   id: z.string(),
   name: z.string().default(''),
-  template: z.string().optional(),
+  prefab: z.string().optional(),
   transform: TransformComponentSchema,
   visual: VisualComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
@@ -1788,7 +1788,7 @@ export const Match3ConfigSchema = z.object({
   rows: z.number(),
   cols: z.number(),
   cellSize: z.number(),
-  pieceTemplates: z.array(z.string()),
+  piecePrefabs: z.array(z.string()),
   minMatch: z.number().optional(),
   swapDuration: z.number().optional(),
   fallDuration: z.number().optional(),
@@ -1802,7 +1802,7 @@ export const TetrisConfigSchema = z.object({
   gridId: z.string(),
   boardWidth: z.number(),
   boardHeight: z.number(),
-  pieceTemplates: z.array(z.string()),
+  piecePrefabs: z.array(z.string()),
   initialDropSpeed: z.number().optional(),
   levelSpeedMultiplier: z.number().optional(),
 });
@@ -1884,7 +1884,7 @@ export const GameDefinitionSchema = z.object({
   camera: CameraConfigSchema.optional(),
   background: BackgroundConfigSchema.optional(),
   variables: GameVariablesSchema.optional(),
-  templates: z.record(z.string(), EntityTemplateSchema),
+  prefabs: z.record(z.string(), EntityPrefabSchema),
   entities: z.array(GameEntitySchema),
   joints: z.array(GameJointSchema).optional(),
   rules: z.array(GameRuleSchema).optional(),

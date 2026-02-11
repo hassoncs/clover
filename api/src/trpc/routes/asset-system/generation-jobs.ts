@@ -59,9 +59,9 @@ export const generationJobsRouter = router({
     .input(z.object({
       gameId: z.string(),
       packId: z.string().optional(),
-      templateIds: z.array(z.string()).min(1),
+      prefabIds: z.array(z.string()).min(1),
       promptDefaults: promptDefaultsSchema,
-      templateOverrides: z.record(z.string(), z.object({
+      prefabOverrides: z.record(z.string(), z.object({
         entityPrompt: z.string().optional(),
         styleOverride: z.string().optional(),
       })).optional(),
@@ -94,7 +94,7 @@ export const generationJobsRouter = router({
         });
       }
 
-      const estimatedCostMicros = input.templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const estimatedCostMicros = input.prefabIds.length * USER_COSTS.ASSET_ENTITY;
       const jobId = crypto.randomUUID();
 
       try {
@@ -105,7 +105,7 @@ export const generationJobsRouter = router({
           referenceType: 'generation_job',
           referenceId: jobId,
           idempotencyKey: `gen_debit_${jobId}`,
-          description: `Asset generation for ${input.templateIds.length} templates`,
+          description: `Asset generation for ${input.prefabIds.length} prefabs`,
         });
       } catch (err) {
         if (err instanceof InsufficientBalanceError) {
@@ -117,7 +117,7 @@ export const generationJobsRouter = router({
         throw err;
       }
 
-      let definition: { templates?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
+      let definition: { prefabs?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
       try {
         definition = JSON.parse(gameRow.definition);
       } catch {
@@ -157,7 +157,7 @@ export const generationJobsRouter = router({
           console.log('[AssetSystem] Theme planner: generating plan for createGenerationJob');
           const plannerInput = buildPlannerInput(
             definition,
-            input.templateIds,
+            input.prefabIds,
             input.promptDefaults.themePrompt,
             input.promptDefaults.styleOverride,
           );
@@ -173,10 +173,10 @@ export const generationJobsRouter = router({
           }
         }
 
-        for (const templateId of input.templateIds) {
-          const template = definition.templates?.[templateId];
-          const physics = template?.physics;
-          const tags = template?.tags ?? [];
+        for (const prefabId of input.prefabIds) {
+          const prefab = definition.prefabs?.[prefabId];
+          const physics = prefab?.physics;
+          const tags = prefab?.tags ?? [];
 
           let entityType: EntityType = 'item';
           if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -199,11 +199,11 @@ export const generationJobsRouter = router({
           );
 
           let compiledPrompt: string;
-          if (themePlan && themePlan.templatePlans[templateId]) {
-            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          if (themePlan && themePlan.prefabPlans[prefabId]) {
+            compiledPrompt = themePlan.prefabPlans[prefabId].prompt;
           } else {
             compiledPrompt = buildStructuredPrompt({
-              templateId,
+              prefabId,
               physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
               physicsWidth: physicsContext.width,
               physicsHeight: physicsContext.height,
@@ -224,7 +224,7 @@ export const generationJobsRouter = router({
           ).bind(
             taskId,
             jobId,
-            templateId,
+            prefabId,
             compiledPrompt,
             input.promptDefaults.modelId ?? null,
             dimensions.width,
@@ -233,7 +233,7 @@ export const generationJobsRouter = router({
           ).run();
         }
 
-        return { jobId, taskCount: input.templateIds.length };
+        return { jobId, taskCount: input.prefabIds.length };
       } catch (jobCreationError) {
         await walletService.credit({
           userId: ctx.user.id,
@@ -290,13 +290,13 @@ export const generationJobsRouter = router({
         'SELECT template_id FROM pack_entries WHERE pack_id = ?'
       ).bind(input.packId).all<{ template_id: string }>();
 
-      const templateIds = entriesResult.results.map(e => e.template_id);
+      const prefabIds = entriesResult.results.map(e => e.template_id);
 
-      if (templateIds.length === 0) {
+      if (prefabIds.length === 0) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Pack has no entries to regenerate' });
       }
 
-      const estimatedCostMicros = templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const estimatedCostMicros = prefabIds.length * USER_COSTS.ASSET_ENTITY;
       const jobId = crypto.randomUUID();
 
       try {
@@ -307,7 +307,7 @@ export const generationJobsRouter = router({
           referenceType: 'generation_job',
           referenceId: jobId,
           idempotencyKey: `gen_debit_${jobId}`,
-          description: `Asset regeneration for ${templateIds.length} templates`,
+          description: `Asset regeneration for ${prefabIds.length} prefabs`,
         });
       } catch (err) {
         if (err instanceof InsufficientBalanceError) {
@@ -336,7 +336,7 @@ export const generationJobsRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      let definition: { templates?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
+      let definition: { prefabs?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
       try {
         definition = JSON.parse(gameRow.definition);
       } catch {
@@ -373,7 +373,7 @@ export const generationJobsRouter = router({
           console.log('[AssetSystem] Theme planner: generating plan for regeneratePack');
           const plannerInput = buildPlannerInput(
             definition,
-            templateIds,
+            prefabIds,
             input.newTheme,
             input.newStyle,
           );
@@ -389,10 +389,10 @@ export const generationJobsRouter = router({
           }
         }
 
-        for (const templateId of templateIds) {
-          const template = definition.templates?.[templateId];
-          const physics = template?.physics;
-          const tags = template?.tags ?? [];
+        for (const prefabId of prefabIds) {
+          const prefab = definition.prefabs?.[prefabId];
+          const physics = prefab?.physics;
+          const tags = prefab?.tags ?? [];
 
           let entityType: EntityType = 'item';
           if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -415,11 +415,11 @@ export const generationJobsRouter = router({
           );
 
           let compiledPrompt: string;
-          if (themePlan && themePlan.templatePlans[templateId]) {
-            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          if (themePlan && themePlan.prefabPlans[prefabId]) {
+            compiledPrompt = themePlan.prefabPlans[prefabId].prompt;
           } else {
             compiledPrompt = buildStructuredPrompt({
-              templateId,
+              prefabId,
               physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
               physicsWidth: physicsContext.width,
               physicsHeight: physicsContext.height,
@@ -440,7 +440,7 @@ export const generationJobsRouter = router({
           ).bind(
             taskId,
             jobId,
-            templateId,
+            prefabId,
             compiledPrompt,
             dimensions.width,
             dimensions.height,
@@ -448,7 +448,7 @@ export const generationJobsRouter = router({
           ).run();
         }
 
-        return { jobId, taskCount: templateIds.length };
+        return { jobId, taskCount: prefabIds.length };
       } catch (jobCreationError) {
         await walletService.credit({
           userId: ctx.user.id,
@@ -706,7 +706,7 @@ export const generationJobsRouter = router({
   regenerateAssets: protectedProcedure
     .input(z.object({
       packId: z.string(),
-      templateIds: z.array(z.string()).min(1),
+      prefabIds: z.array(z.string()).min(1),
       newTheme: z.string().optional(),
       newStyle: z.string().optional(),
       customPrompts: z.record(z.string()).optional(),
@@ -739,16 +739,16 @@ export const generationJobsRouter = router({
         'SELECT template_id FROM pack_entries WHERE pack_id = ?'
       ).bind(input.packId).all<{ template_id: string }>();
 
-      const validTemplateIds = new Set(entriesResult.results.map(e => e.template_id));
-      const invalidTemplateIds = input.templateIds.filter(id => !validTemplateIds.has(id));
-      if (invalidTemplateIds.length > 0) {
+      const validPrefabIds = new Set(entriesResult.results.map(e => e.template_id));
+      const invalidPrefabIds = input.prefabIds.filter(id => !validPrefabIds.has(id));
+      if (invalidPrefabIds.length > 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: `Invalid templateIds not in pack: ${invalidTemplateIds.join(', ')}`,
+          message: `Invalid prefabIds not in pack: ${invalidPrefabIds.join(', ')}`,
         });
       }
 
-      const estimatedCostMicros = input.templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const estimatedCostMicros = input.prefabIds.length * USER_COSTS.ASSET_ENTITY;
       const jobId = crypto.randomUUID();
 
       try {
@@ -759,7 +759,7 @@ export const generationJobsRouter = router({
           referenceType: 'generation_job',
           referenceId: jobId,
           idempotencyKey: `gen_debit_${jobId}`,
-          description: `Asset regeneration for ${input.templateIds.length} templates`,
+          description: `Asset regeneration for ${input.prefabIds.length} prefabs`,
         });
       } catch (err) {
         if (err instanceof InsufficientBalanceError) {
@@ -788,7 +788,7 @@ export const generationJobsRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      let definition: { templates?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
+      let definition: { prefabs?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
       try {
         definition = JSON.parse(gameRow.definition);
       } catch {
@@ -843,7 +843,7 @@ export const generationJobsRouter = router({
 
           const plannerInput = buildPlannerInput(
             definition,
-            input.templateIds,
+            input.prefabIds,
             input.newTheme,
             input.newStyle,
           );
@@ -858,16 +858,16 @@ export const generationJobsRouter = router({
             console.log('[AssetSystem] Theme planner: plan generated successfully');
 
             if (existingPlan) {
-              const coherenceCheck = checkPartialPlanCoherence(newPlan, existingPlan, input.templateIds);
+              const coherenceCheck = checkPartialPlanCoherence(newPlan, existingPlan, input.prefabIds);
               if (coherenceCheck.warnings.length > 0) {
                 console.log('[AssetSystem] Theme planner: coherence warnings:', coherenceCheck.warnings);
               }
 
               themePlan = {
                 ...newPlan,
-                templatePlans: {
-                  ...existingPlan.templatePlans,
-                  ...newPlan.templatePlans,
+                prefabPlans: {
+                  ...existingPlan.prefabPlans,
+                  ...newPlan.prefabPlans,
                 },
               };
             } else {
@@ -882,10 +882,10 @@ export const generationJobsRouter = router({
           }
         }
 
-        for (const templateId of input.templateIds) {
-          const template = definition.templates?.[templateId];
-          const physics = template?.physics;
-          const tags = template?.tags ?? [];
+        for (const prefabId of input.prefabIds) {
+          const prefab = definition.prefabs?.[prefabId];
+          const physics = prefab?.physics;
+          const tags = prefab?.tags ?? [];
 
           let entityType: EntityType = 'item';
           if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -907,16 +907,16 @@ export const generationJobsRouter = router({
             physicsContext.height
           );
 
-          const customPrompt = input.customPrompts?.[templateId];
+          const customPrompt = input.customPrompts?.[prefabId];
 
           let compiledPrompt: string;
           if (customPrompt) {
             compiledPrompt = customPrompt;
-          } else if (themePlan && themePlan.templatePlans[templateId]) {
-            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          } else if (themePlan && themePlan.prefabPlans[prefabId]) {
+            compiledPrompt = themePlan.prefabPlans[prefabId].prompt;
           } else {
             compiledPrompt = buildStructuredPrompt({
-              templateId,
+              prefabId,
               physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
               physicsWidth: physicsContext.width,
               physicsHeight: physicsContext.height,
@@ -937,7 +937,7 @@ export const generationJobsRouter = router({
           ).bind(
             taskId,
             jobId,
-            templateId,
+            prefabId,
             compiledPrompt,
             dimensions.width,
             dimensions.height,
@@ -945,7 +945,7 @@ export const generationJobsRouter = router({
           ).run();
         }
 
-        return { jobId, taskCount: input.templateIds.length };
+        return { jobId, taskCount: input.prefabIds.length };
       } catch (jobCreationError) {
         await walletService.credit({
           userId: ctx.user.id,

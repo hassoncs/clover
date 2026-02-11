@@ -36,7 +36,7 @@ export class GameLoader {
     this.physics.createWorld(definition.world.gravity);
 
     const entityManager = new EntityManager({
-      templates: definition.templates,
+      prefabs: definition.prefabs,
       bridge: this.bridge,
     });
 
@@ -145,11 +145,11 @@ export class GameLoader {
     this.physics.createWorld(definition.world.gravity);
 
     this.bridge?.setupWorld(definition.world, definition.background);
-    this.bridge?.registerTemplates(definition.templates);
+    this.bridge?.registerPrefabs(definition.prefabs);
     this.bridge?.loadEntities(definition.entities);
 
     const entityManager = new EntityManager({
-      templates: definition.templates,
+      prefabs: definition.prefabs,
       bridge: this.bridge,
     });
 
@@ -256,7 +256,7 @@ export function createDefaultGameDefinition(): GameDefinition {
       pixelsPerMeter: 50,
       bounds: { width: 20, height: 12 },
     },
-    templates: {},
+    prefabs: {},
     entities: [],
     rules: [],
   };

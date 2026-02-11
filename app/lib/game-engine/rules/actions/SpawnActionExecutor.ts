@@ -44,22 +44,22 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
         y += (Math.random() - 0.5) * action.spread * 2;
       }
 
-      const templateId = Array.isArray(action.template)
-        ? action.template[Math.floor(Math.random() * action.template.length)]
-        : action.template;
+      const prefabId = Array.isArray(action.prefab)
+        ? action.prefab[Math.floor(Math.random() * action.prefab.length)]
+        : action.prefab;
 
-        const template = context.entityManager.getTemplate(templateId);
-        if (template) {
+        const prefab = context.entityManager.getPrefab(prefabId);
+        if (prefab) {
           let initialVelocity: { x: number; y: number } | undefined;
           if (action.launch) {
             initialVelocity = this.calculateLaunchVelocity(action.launch, x, y, context);
           }
 
           if (context.worldOps) {
-            context.worldOps.spawn(templateId, { x, y }, { velocity: initialVelocity });
+            context.worldOps.spawn(prefabId, { x, y }, { velocity: initialVelocity });
           } else {
             context.entityManager.spawnEntity({
-              templateId,
+              prefabId,
               position: { x, y },
               velocity: initialVelocity,
             });

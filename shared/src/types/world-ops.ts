@@ -19,7 +19,7 @@ export interface ReparentOptions {
 
 export interface WorldEntityData {
   id: string;
-  template?: string;
+  prefab?: string;
   tags: string[];
   position: Vec2;
   rotation: number;
@@ -30,7 +30,7 @@ export interface WorldEntityData {
 
 export interface WorldEntityQuery {
   tag?: string;
-  templateId?: string;
+  prefabId?: string;
   inAABB?: Bounds;
 }
 
@@ -83,7 +83,7 @@ export interface SequenceHandle {
 
 export interface WorldOps {
   // --- Entity Lifecycle ---
-  spawn(templateId: string, position: Vec2, opts?: SpawnOptions): Promise<string | null>;
+  spawn(prefabId: string, position: Vec2, opts?: SpawnOptions): Promise<string | null>;
   destroy(entityId: string): Promise<void>;
   clone(entityId: string, opts?: CloneOptions): Promise<string | null>;
   reparent(entityId: string, newParentId: string, opts?: ReparentOptions): Promise<void>;
@@ -110,7 +110,7 @@ export interface WorldOps {
   addTag(entityId: string, tag: string): Promise<void>;
   removeTag(entityId: string, tag: string): Promise<boolean>;
   hasTag(entityId: string, tag: string): Promise<boolean>;
-  getTemplate(entityId: string): Promise<string | undefined>;
+  getPrefab(entityId: string): Promise<string | undefined>;
   getEntityData(entityId: string): Promise<WorldEntityData | null>;
 
   // --- Queries ---

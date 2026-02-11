@@ -1,6 +1,6 @@
 import type { Vec2 } from './common';
 import type { WorldConfig, BackgroundConfig } from './GameDefinition';
-import type { EntityTemplate, GameEntity } from './entity';
+import type { EntityPrefab, GameEntity } from './entity';
 import type { GameRule } from './rules';
 import type { WorkspaceManifest } from './PackageManifest';
 
@@ -32,7 +32,7 @@ export interface TagPayloads {
     background?: BackgroundConfig;
   };
   prefabs: {
-    prefabs: Record<string, EntityTemplate>;
+    prefabs: Record<string, EntityPrefab>;
   };
   entities: {
     entities: GameEntity[];
@@ -91,7 +91,7 @@ export type TimeMode = 'paused' | 'playing';
 
 /**
  * Orchestration layer between editor/game-runner and GodotBridge.
- * Maps to bridge primitives: setupWorld, registerTemplates, loadEntities, etc.
+ * Maps to bridge primitives: setupWorld, registerPrefabs, loadEntities, etc.
  */
 export interface PackageRuntimeAPI {
   /** Load all tag groups from manifest in order: world → prefabs → entities → rules → scripts → assets */

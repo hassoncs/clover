@@ -66,11 +66,11 @@ declare global {
       loadGameJson: (json: string) => boolean;
       clearGame: () => void;
       setupWorld: (worldJson: string, backgroundJson: string) => void;
-      registerTemplates: (templatesJson: string) => void;
+      registerPrefabs(prefabsJson: string): void;
       loadEntities: (entitiesJson: string) => number;
       clearEntities: () => void;
       spawnEntity: (
-        templateId: string,
+        prefabId: string,
         x: number,
         y: number,
         entityId: string,
@@ -593,8 +593,8 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setupWorld(JSON.stringify(world), JSON.stringify(background ?? {}));
     },
 
-    registerTemplates(templates) {
-      getGodotBridge()?.registerTemplates(JSON.stringify(templates));
+    registerPrefabs(prefabs) {
+      getGodotBridge()?.registerPrefabs(JSON.stringify(prefabs));
     },
 
     loadEntities(entities) {
@@ -624,7 +624,15 @@ export function createWebGodotBridge(): GodotBridge {
 
     spawnEntity(request: SpawnEntityRequest): void {
       const velocityJson = request.velocity ? JSON.stringify(request.velocity) : "";
-      getGodotBridge()?.spawnEntity(request.templateId, request.position.x, request.position.y, request.entityId, velocityJson);
+      getGodotBridge()?.spawnEntity(request.prefabId, request.position.x, request.position.y, request.entityId, velocityJson);
+    },
+
+    async instantiateFromScene(scenePath: string, entityId: string, position: Vec2, properties?: Record<string, unknown>): Promise<{ entityId: string }> {
+      const result = await queryAsync<{ entityId: string }>(
+        "instantiate_scene",
+        [scenePath, entityId, position.x, position.y, JSON.stringify(properties ?? {})],
+      );
+      return result ?? { entityId };
     },
 
     destroyEntity(entityId: string) {

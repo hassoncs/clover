@@ -11,8 +11,8 @@ const MATCH3_CONSTRAINTS = {
   MAX_ROWS: 12,
   MIN_COLS: 4,
   MAX_COLS: 12,
-  MIN_PIECE_TEMPLATES: 3,
-  MAX_PIECE_TEMPLATES: 6,
+  MIN_PIECE_PREFABS: 3,
+  MAX_PIECE_PREFABS: 6,
   MIN_MATCH_MIN: 3,
   MIN_MATCH_MAX: 5,
 } as const;
@@ -22,7 +22,7 @@ const TETRIS_CONSTRAINTS = {
   MAX_BOARD_WIDTH: 20,
   MIN_BOARD_HEIGHT: 15,
   MAX_BOARD_HEIGHT: 25,
-  REQUIRED_PIECE_TEMPLATES: 7,
+  REQUIRED_PIECE_PREFABS: 7,
   MIN_DROP_SPEED: 0.1,
 } as const;
 
@@ -30,15 +30,15 @@ export function validateMatch3Playability(config: Match3Config): PlayableValidat
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!config.pieceTemplates || config.pieceTemplates.length < MATCH3_CONSTRAINTS.MIN_PIECE_TEMPLATES) {
+  if (!config.piecePrefabs || config.piecePrefabs.length < MATCH3_CONSTRAINTS.MIN_PIECE_PREFABS) {
     errors.push(
-      `Match3: At least ${MATCH3_CONSTRAINTS.MIN_PIECE_TEMPLATES} piece templates required, got ${config.pieceTemplates?.length ?? 0}`
+      `Match3: At least ${MATCH3_CONSTRAINTS.MIN_PIECE_PREFABS} piece prefabs required, got ${config.piecePrefabs?.length ?? 0}`
     );
   }
 
-  if (config.pieceTemplates && config.pieceTemplates.length > MATCH3_CONSTRAINTS.MAX_PIECE_TEMPLATES) {
+  if (config.piecePrefabs && config.piecePrefabs.length > MATCH3_CONSTRAINTS.MAX_PIECE_PREFABS) {
     warnings.push(
-      `Match3: More than ${MATCH3_CONSTRAINTS.MAX_PIECE_TEMPLATES} piece templates may reduce match frequency`
+      `Match3: More than ${MATCH3_CONSTRAINTS.MAX_PIECE_PREFABS} piece prefabs may reduce match frequency`
     );
   }
 
@@ -97,9 +97,9 @@ export function validateTetrisPlayability(config: TetrisConfig): PlayableValidat
     );
   }
 
-  if (!config.pieceTemplates || config.pieceTemplates.length !== TETRIS_CONSTRAINTS.REQUIRED_PIECE_TEMPLATES) {
+  if (!config.piecePrefabs || config.piecePrefabs.length !== TETRIS_CONSTRAINTS.REQUIRED_PIECE_PREFABS) {
     errors.push(
-      `Tetris: pieceTemplates must have exactly ${TETRIS_CONSTRAINTS.REQUIRED_PIECE_TEMPLATES} items (I, O, T, S, Z, J, L), got ${config.pieceTemplates?.length ?? 0}`
+      `Tetris: piecePrefabs must have exactly ${TETRIS_CONSTRAINTS.REQUIRED_PIECE_PREFABS} items (I, O, T, S, Z, J, L), got ${config.piecePrefabs?.length ?? 0}`
     );
   }
 

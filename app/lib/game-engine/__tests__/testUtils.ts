@@ -19,7 +19,7 @@ export function createMockEntityManager(): EntityManager {
     clearAll: vi.fn(),
     spawnEntity: vi.fn(),
     cacheEntity: vi.fn(),
-    getTemplate: vi.fn().mockReturnValue({ id: 'test' }),
+    getPrefab: vi.fn().mockReturnValue({ id: 'test' }),
     getActiveEntities: vi.fn().mockReturnValue([]),
     getVisibleEntities: vi.fn().mockReturnValue([]),
     addTag: vi.fn(),

@@ -102,20 +102,20 @@ export const orchestrationRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      let definition: { templates?: Record<string, any>; assetSystem?: any };
+      let definition: { prefabs?: Record<string, any>; assetSystem?: any };
       try {
         definition = JSON.parse(gameDefRow.definition);
       } catch {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
       }
 
-      const templateIds = Object.keys(definition.templates ?? {});
+      const prefabIds = Object.keys(definition.prefabs ?? {});
 
-      if (templateIds.length === 0) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Game has no templates to generate' });
+      if (prefabIds.length === 0) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Game has no prefabs to generate' });
       }
 
-      const estimatedCostMicros = templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const estimatedCostMicros = prefabIds.length * USER_COSTS.ASSET_ENTITY;
       const jobId = crypto.randomUUID();
 
       try {
@@ -126,7 +126,7 @@ export const orchestrationRouter = router({
           referenceType: 'generation_job',
           referenceId: jobId,
           idempotencyKey: `gen_debit_${jobId}`,
-          description: `Theme application for ${templateIds.length} templates`,
+          description: `Theme application for ${prefabIds.length} prefabs`,
         });
       } catch (err) {
         if (err instanceof InsufficientBalanceError) {
@@ -158,7 +158,7 @@ export const orchestrationRouter = router({
             console.log('[AssetSystem] Theme planner: generating plan for applyThemeToGame');
             const plannerInput = buildPlannerInput(
               definition,
-              templateIds,
+              prefabIds,
               themeRow.prompt_modifier,
               input.styleOverride,
             );
@@ -175,10 +175,10 @@ export const orchestrationRouter = router({
           }
         }
 
-        for (const templateId of templateIds) {
-          const template = definition.templates?.[templateId];
-          const physics = template?.physics;
-          const tags = template?.tags ?? [];
+        for (const prefabId of prefabIds) {
+          const prefab = definition.prefabs?.[prefabId];
+          const physics = prefab?.physics;
+          const tags = prefab?.tags ?? [];
 
           let entityType: EntityType = 'item';
           if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -201,11 +201,11 @@ export const orchestrationRouter = router({
           );
 
           let compiledPrompt: string;
-          if (themePlan && themePlan.templatePlans[templateId]) {
-            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          if (themePlan && themePlan.prefabPlans[prefabId]) {
+            compiledPrompt = themePlan.prefabPlans[prefabId].prompt;
           } else {
             compiledPrompt = buildStructuredPrompt({
-              templateId,
+              prefabId,
               physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
               physicsWidth: physicsContext.width,
               physicsHeight: physicsContext.height,
@@ -226,7 +226,7 @@ export const orchestrationRouter = router({
           ).bind(
             taskId,
             jobId,
-            templateId,
+            prefabId,
             compiledPrompt,
             dimensions.width,
             dimensions.height,
@@ -243,7 +243,7 @@ export const orchestrationRouter = router({
           ).bind(JSON.stringify(definition), now, input.gameId).run();
         }
 
-        return { themeId, packId, jobId, taskCount: templateIds.length };
+        return { themeId, packId, jobId, taskCount: prefabIds.length };
       } catch (jobCreationError) {
         await walletService.credit({
           userId: ctx.user.id,

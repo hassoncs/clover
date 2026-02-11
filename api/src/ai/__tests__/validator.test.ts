@@ -366,7 +366,7 @@ describe('validateGameDefinition', () => {
       expect(result.errors.some(e => e.code === 'INVALID_BEHAVIOR_TYPE')).toBe(true);
     });
 
-    it('should error on spawn_on_event missing template', () => {
+    it('should error on spawn_on_event missing prefab', () => {
       const game = {
         metadata: { id: 'test' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },

@@ -24,7 +24,7 @@ export interface GridGeneratorOptions {
   startY: number;
   cellSize: number;
   gap?: number;
-  template: string;
+  prefab: string;
   tags?: string[];
   idPrefix?: string;
   namePrefix?: string;
@@ -39,7 +39,7 @@ export function generateGridEntities(options: GridGeneratorOptions): GameEntity[
     startY,
     cellSize,
     gap = 0,
-    template,
+    prefab,
     tags = [],
     idPrefix = 'grid',
     namePrefix = 'Grid',
@@ -57,7 +57,7 @@ export function generateGridEntities(options: GridGeneratorOptions): GameEntity[
       entities.push({
         id: `${idPrefix}-${row}-${col}`,
         name: `${namePrefix} ${row},${col}`,
-        template,
+        prefab,
         tags,
         transform: {
           x: coordinateHelpers.cx(x),

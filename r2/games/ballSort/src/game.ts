@@ -1,4 +1,4 @@
-import type { GameDefinition, EntityTemplate, GameDialogsConfig } from "@slopcade/shared";
+import type { GameDefinition, EntityPrefab, GameDialogsConfig } from "@slopcade/shared";
 import {
   BallSortProgressSchema,
   type BallSortProgress,
@@ -173,7 +173,7 @@ export function createBallSortGame(): GameDefinition {
       },
     ],
     winCondition: {},
-    templates: {
+    prefabs: {
       background: {
         id: "background",
         tags: ["background"],
@@ -214,14 +214,14 @@ export function createBallSortGame(): GameDefinition {
           blendMode: "add",
         },
       },
-      ball0: createBallTemplate(0) as EntityTemplate,
-      ball1: createBallTemplate(1) as EntityTemplate,
-      ball2: createBallTemplate(2) as EntityTemplate,
-      ball3: createBallTemplate(3) as EntityTemplate,
-      ball4: createBallTemplate(4) as EntityTemplate,
-      ball5: createBallTemplate(5) as EntityTemplate,
-      ball6: createBallTemplate(6) as EntityTemplate,
-      ball7: createBallTemplate(7) as EntityTemplate,
+      ball0: createBallTemplate(0) as EntityPrefab,
+      ball1: createBallTemplate(1) as EntityPrefab,
+      ball2: createBallTemplate(2) as EntityPrefab,
+      ball3: createBallTemplate(3) as EntityPrefab,
+      ball4: createBallTemplate(4) as EntityPrefab,
+      ball5: createBallTemplate(5) as EntityPrefab,
+      ball6: createBallTemplate(6) as EntityPrefab,
+      ball7: createBallTemplate(7) as EntityPrefab,
       heldBallIndicator: {
         id: "heldBallIndicator",
         tags: ["held-indicator"],
@@ -240,7 +240,7 @@ export function createBallSortGame(): GameDefinition {
       {
         id: "background",
         name: "Background",
-        template: "background",
+        prefab: "background",
         transform: {
           x: 0,
           y: 0,
@@ -252,7 +252,7 @@ export function createBallSortGame(): GameDefinition {
       {
         id: "tube-hover-highlight",
         name: "Tube Hover Highlight",
-        template: "tubeHoverHighlight",
+        prefab: "tubeHoverHighlight",
         visible: false,
         transform: {
           x: 0,

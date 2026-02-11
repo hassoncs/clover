@@ -35,14 +35,14 @@ export interface SensorEvent {
 
 export interface SpawnEntityRequest {
   entityId: string;
-  templateId: string;
+  prefabId: string;
   position: Vec2;
   velocity?: Vec2;
 }
 
 export interface EntitySpawnedEvent {
   entityId: string;
-  template: string;
+  prefab: string;
   generation: number;
   tags: string[];
   transform: EntityTransform & { scaleX: number; scaleY: number };
@@ -264,7 +264,7 @@ export interface GodotBridge extends EffectsBridge {
 
   // Sectioned loading — independent operations for partial game updates
   setupWorld(world: GameDefinition['world'], background?: GameDefinition['background']): void;
-  registerTemplates(templates: GameDefinition['templates']): void;
+  registerPrefabs(prefabs: GameDefinition['prefabs']): void;
   loadEntities(entities: GameDefinition['entities']): void;
   clearEntities(): void;
 
@@ -284,6 +284,9 @@ export interface GodotBridge extends EffectsBridge {
   // Entity management (high-level)
   spawnEntity(request: SpawnEntityRequest): void;
   destroyEntity(entityId: string): void;
+
+  // Scene-backed prefab instantiation (opt-in Godot-native workflow)
+  instantiateFromScene(scenePath: string, entityId: string, position: Vec2, properties?: Record<string, unknown>): Promise<{ entityId: string }>;
 
   // Transform queries (async - native requires worklet communication)
   getEntityTransform(entityId: string): Promise<EntityTransform | null>;

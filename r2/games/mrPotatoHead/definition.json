@@ -33,7 +33,7 @@
     "type": "fixed",
     "zoom": 1
   },
-  "templates": {
+  "prefabs": {
     "potatoBody": {
       "id": "potatoBody",
       "tags": [
@@ -361,7 +361,7 @@
     {
       "id": "potatoBody",
       "name": "Potato Body",
-      "template": "potatoBody",
+      "prefab": "potatoBody",
       "transform": {
         "x": 0,
         "y": 2.5,
@@ -374,7 +374,7 @@
     {
       "id": "drawer",
       "name": "Drawer",
-      "template": "drawer",
+      "prefab": "drawer",
       "transform": {
         "x": 0,
         "y": -4.5,
@@ -387,7 +387,7 @@
     {
       "id": "leftEye",
       "name": "Left Eye",
-      "template": "leftEye",
+      "prefab": "leftEye",
       "transform": {
         "x": -3.5,
         "y": -3.2,
@@ -400,7 +400,7 @@
     {
       "id": "rightEye",
       "name": "Right Eye",
-      "template": "rightEye",
+      "prefab": "rightEye",
       "transform": {
         "x": -2,
         "y": -3.2,
@@ -413,7 +413,7 @@
     {
       "id": "nose",
       "name": "Nose",
-      "template": "nose",
+      "prefab": "nose",
       "transform": {
         "x": -0.5,
         "y": -3.2,
@@ -426,7 +426,7 @@
     {
       "id": "ears",
       "name": "Ears",
-      "template": "ears",
+      "prefab": "ears",
       "transform": {
         "x": 1.5,
         "y": -3.2,
@@ -439,7 +439,7 @@
     {
       "id": "hat",
       "name": "Hat",
-      "template": "hat",
+      "prefab": "hat",
       "transform": {
         "x": 3.5,
         "y": -3.2,
@@ -452,7 +452,7 @@
     {
       "id": "mouth",
       "name": "Mouth",
-      "template": "mouth",
+      "prefab": "mouth",
       "transform": {
         "x": -3,
         "y": -5.2,
@@ -465,7 +465,7 @@
     {
       "id": "mustache",
       "name": "Mustache",
-      "template": "mustache",
+      "prefab": "mustache",
       "transform": {
         "x": -0.5,
         "y": -5.2,
@@ -478,7 +478,7 @@
     {
       "id": "leftArm",
       "name": "Left Arm",
-      "template": "leftArm",
+      "prefab": "leftArm",
       "transform": {
         "x": 2,
         "y": -5.2,
@@ -491,7 +491,7 @@
     {
       "id": "rightArm",
       "name": "Right Arm",
-      "template": "rightArm",
+      "prefab": "rightArm",
       "transform": {
         "x": 4,
         "y": -5.2,
@@ -504,7 +504,7 @@
     {
       "id": "resetButton",
       "name": "Reset Button",
-      "template": "resetButton",
+      "prefab": "resetButton",
       "transform": {
         "x": 0,
         "y": -7.2,
@@ -517,7 +517,7 @@
     {
       "id": "resetLabel",
       "name": "Reset Label",
-      "template": "resetLabel",
+      "prefab": "resetLabel",
       "transform": {
         "x": 0,
         "y": -7.2,

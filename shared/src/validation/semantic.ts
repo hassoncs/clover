@@ -4,15 +4,15 @@ import type { ValidationError, ValidationWarning } from './gameDefinitionTypes';
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-function collectTemplateRefs(children: unknown): string[] {
+function collectPrefabRefs(children: unknown): string[] {
   if (!Array.isArray(children)) return [];
   const refs: string[] = [];
   for (const child of children) {
     if (!isRecord(child)) continue;
-    if (typeof child.template === 'string') {
-      refs.push(child.template);
+    if (typeof child.prefab === 'string') {
+      refs.push(child.prefab);
     }
-    refs.push(...collectTemplateRefs(child.children));
+    refs.push(...collectPrefabRefs(child.children));
   }
   return refs;
 }
@@ -22,72 +22,72 @@ function collectChildEntityRefs(children: unknown): string[] {
   const refs: string[] = [];
   for (const child of children) {
     if (!isRecord(child)) continue;
-    if (typeof child.template === 'string') {
-      refs.push(child.template);
+    if (typeof child.prefab === 'string') {
+      refs.push(child.prefab);
     }
     refs.push(...collectChildEntityRefs(child.children));
   }
   return refs;
 }
 
-function collectBehaviorTemplateRefs(behaviors: unknown): string[] {
+function collectBehaviorPrefabRefs(behaviors: unknown): string[] {
   if (!Array.isArray(behaviors)) return [];
   const refs: string[] = [];
   for (const behavior of behaviors) {
     if (!isRecord(behavior)) continue;
     if (behavior.type !== 'spawn_on_event') continue;
-    const templates = behavior.entityTemplate;
-    if (Array.isArray(templates)) {
-      for (const template of templates) {
-        if (typeof template === 'string') refs.push(template);
+    const prefabs = behavior.entityTemplate;
+    if (Array.isArray(prefabs)) {
+      for (const prefab of prefabs) {
+        if (typeof prefab === 'string') refs.push(prefab);
       }
-    } else if (typeof templates === 'string') {
-      refs.push(templates);
+    } else if (typeof prefabs === 'string') {
+      refs.push(prefabs);
     }
   }
   return refs;
 }
 
-function collectRuleTemplateRefs(rules: unknown): string[] {
+function collectRulePrefabRefs(rules: unknown): string[] {
   if (!Array.isArray(rules)) return [];
   const refs: string[] = [];
   for (const rule of rules) {
     if (!isRecord(rule) || !Array.isArray(rule.actions)) continue;
     for (const action of rule.actions) {
       if (!isRecord(action) || action.type !== 'spawn') continue;
-      const templates = action.template;
-      if (Array.isArray(templates)) {
-        for (const template of templates) {
-          if (typeof template === 'string') refs.push(template);
+      const prefabs = action.prefab;
+      if (Array.isArray(prefabs)) {
+        for (const prefab of prefabs) {
+          if (typeof prefab === 'string') refs.push(prefab);
         }
-      } else if (typeof templates === 'string') {
-        refs.push(templates);
+      } else if (typeof prefabs === 'string') {
+        refs.push(prefabs);
       }
     }
   }
   return refs;
 }
 
-function detectTemplateCycles(
-  templates: Record<string, unknown>,
+function detectPrefabCycles(
+  prefabs: Record<string, unknown>,
   errors: ValidationError[]
 ): void {
   const visiting = new Set<string>();
   const visited = new Set<string>();
 
   const adjacency = new Map<string, string[]>();
-  for (const [key, template] of Object.entries(templates)) {
-    const children = isRecord(template) ? template.children : undefined;
-    adjacency.set(key, collectTemplateRefs(children));
+  for (const [key, prefab] of Object.entries(prefabs)) {
+    const children = isRecord(prefab) ? prefab.children : undefined;
+    adjacency.set(key, collectPrefabRefs(children));
   }
 
   const visit = (key: string, stack: string[]) => {
     if (visiting.has(key)) {
       const cycle = [...stack, key].join(' -> ');
       errors.push({
-        code: 'TEMPLATE_CYCLE',
-        message: `Template cycle detected: ${cycle}`,
-        path: `templates.${key}`,
+        code: 'PREFAB_CYCLE',
+        message: `Prefab cycle detected: ${cycle}`,
+        path: `prefabs.${key}`,
       });
       return;
     }
@@ -95,7 +95,7 @@ function detectTemplateCycles(
     visiting.add(key);
     const neighbors = adjacency.get(key) ?? [];
     for (const neighbor of neighbors) {
-      if (templates[neighbor]) {
+      if (prefabs[neighbor]) {
         visit(neighbor, [...stack, key]);
       }
     }
@@ -103,7 +103,7 @@ function detectTemplateCycles(
     visited.add(key);
   };
 
-  for (const key of Object.keys(templates)) {
+  for (const key of Object.keys(prefabs)) {
     visit(key, []);
   }
 }
@@ -140,46 +140,46 @@ function walkConstantRefs(
   }
 }
 
-function validateTemplateReferences(
+function validatePrefabReferences(
   game: GameDefinition,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  const templates = isRecord(game.templates) ? game.templates : {};
-  const templateKeys = new Set(Object.keys(templates));
+  const prefabs = isRecord(game.prefabs) ? game.prefabs : {};
+  const prefabKeys = new Set(Object.keys(prefabs));
 
-  const templateIdMap = new Map<string, string>();
-  for (const [key, template] of Object.entries(templates)) {
-    if (!isRecord(template) || typeof template.id !== 'string') continue;
-    const existing = templateIdMap.get(template.id);
+  const prefabIdMap = new Map<string, string>();
+  for (const [key, prefab] of Object.entries(prefabs)) {
+    if (!isRecord(prefab) || typeof prefab.id !== 'string') continue;
+    const existing = prefabIdMap.get(prefab.id);
     if (existing) {
       errors.push({
-        code: 'DUPLICATE_TEMPLATE_ID',
-        message: `Duplicate template id '${template.id}' used by ${existing} and ${key}`,
-        path: `templates.${key}.id`,
+        code: 'DUPLICATE_PREFAB_ID',
+        message: `Duplicate prefab id '${prefab.id}' used by ${existing} and ${key}`,
+        path: `prefabs.${key}.id`,
       });
     } else {
-      templateIdMap.set(template.id, key);
+      prefabIdMap.set(prefab.id, key);
     }
 
-    const childRefs = collectTemplateRefs(template.children);
+    const childRefs = collectPrefabRefs(prefab.children);
     for (const ref of childRefs) {
-      if (!templateKeys.has(ref)) {
+      if (!prefabKeys.has(ref)) {
         errors.push({
-          code: 'UNKNOWN_TEMPLATE_REFERENCE',
-          message: `Template '${key}' references unknown child template '${ref}'`,
-          path: `templates.${key}.children`,
+          code: 'UNKNOWN_PREFAB_REFERENCE',
+          message: `Prefab '${key}' references unknown child prefab '${ref}'`,
+          path: `prefabs.${key}.children`,
         });
       }
     }
 
-    const behaviorRefs = collectBehaviorTemplateRefs(template.behaviors);
+    const behaviorRefs = collectBehaviorPrefabRefs(prefab.behaviors);
     for (const ref of behaviorRefs) {
-      if (!templateKeys.has(ref)) {
+      if (!prefabKeys.has(ref)) {
         warnings.push({
-          code: 'UNKNOWN_TEMPLATE_REFERENCE',
-          message: `Template '${key}' spawns unknown template '${ref}'`,
-          path: `templates.${key}.behaviors`,
+          code: 'UNKNOWN_PREFAB_REFERENCE',
+          message: `Prefab '${key}' spawns unknown prefab '${ref}'`,
+          path: `prefabs.${key}.behaviors`,
         });
       }
     }
@@ -191,21 +191,21 @@ function validateTemplateReferences(
       const entityId = typeof entity.id === 'string' ? entity.id : 'unknown';
       const childRefs = collectChildEntityRefs(entity.children);
     for (const ref of childRefs) {
-      if (!templateKeys.has(ref)) {
+      if (!prefabKeys.has(ref)) {
         errors.push({
-          code: 'UNKNOWN_TEMPLATE_REFERENCE',
-          message: `Entity '${entityId}' references unknown child template '${ref}'`,
+          code: 'UNKNOWN_PREFAB_REFERENCE',
+          message: `Entity '${entityId}' references unknown child prefab '${ref}'`,
           path: `entities.${entityId}.children`,
         });
       }
     }
 
-      const behaviorRefs = collectBehaviorTemplateRefs(entity.behaviors);
+      const behaviorRefs = collectBehaviorPrefabRefs(entity.behaviors);
       for (const ref of behaviorRefs) {
-        if (!templateKeys.has(ref)) {
+        if (!prefabKeys.has(ref)) {
           warnings.push({
-            code: 'UNKNOWN_TEMPLATE_REFERENCE',
-            message: `Entity '${entityId}' spawns unknown template '${ref}'`,
+            code: 'UNKNOWN_PREFAB_REFERENCE',
+            message: `Entity '${entityId}' spawns unknown prefab '${ref}'`,
             path: `entities.${entityId}.behaviors`,
           });
         }
@@ -213,32 +213,32 @@ function validateTemplateReferences(
     }
   }
 
-  const ruleRefs = collectRuleTemplateRefs(game.rules);
+  const ruleRefs = collectRulePrefabRefs(game.rules);
   for (const ref of ruleRefs) {
-    if (!templateKeys.has(ref)) {
+    if (!prefabKeys.has(ref)) {
       warnings.push({
-        code: 'UNKNOWN_TEMPLATE_REFERENCE',
-        message: `Rule spawns unknown template '${ref}'`,
+        code: 'UNKNOWN_PREFAB_REFERENCE',
+        message: `Rule spawns unknown prefab '${ref}'`,
         path: 'rules',
       });
     }
   }
 }
 
-export function validateEntityTemplateRefs(
+export function validateEntityPrefabRefs(
   game: Partial<GameDefinition>,
   errors: ValidationError[]
 ): void {
-  const templateIds = new Set(Object.keys(game.templates ?? {}));
+  const prefabIds = new Set(Object.keys(game.prefabs ?? {}));
 
   for (const entity of game.entities ?? []) {
     if (!isRecord(entity)) continue;
     const id = typeof entity.id === 'string' ? entity.id : 'unknown';
-    if (typeof entity.template === 'string' && !templateIds.has(entity.template)) {
+    if (typeof entity.prefab === 'string' && !prefabIds.has(entity.prefab)) {
       errors.push({
-        code: 'UNKNOWN_TEMPLATE',
-        message: `Entity "${id}" references unknown template "${entity.template}"`,
-        path: `entities.${id}.template`,
+        code: 'UNKNOWN_PREFAB',
+        message: `Entity "${id}" references unknown prefab "${entity.prefab}"`,
+        path: `entities.${id}.prefab`,
       });
     }
   }
@@ -261,7 +261,7 @@ export function validateRuleEntityRefs(
       entityIds.add(entity.id);
     }
   }
-  const templateIds = new Set(Object.keys(game.templates ?? {}));
+  const prefabIds = new Set(Object.keys(game.prefabs ?? {}));
 
   if (!Array.isArray(game.rules)) return;
 
@@ -283,21 +283,21 @@ export function validateRuleEntityRefs(
             path: `${actionPath}.position.entityId`,
           });
         }
-        const templates = action.template;
-        if (typeof templates === 'string' && !templateIds.has(templates)) {
+        const prefabs = action.prefab;
+        if (typeof prefabs === 'string' && !prefabIds.has(prefabs)) {
           errors.push({
-            code: 'UNKNOWN_TEMPLATE',
-            message: `Rule "${ruleId}" spawn action references unknown template "${templates}"`,
-            path: `${actionPath}.template`,
+            code: 'UNKNOWN_PREFAB',
+            message: `Rule "${ruleId}" spawn action references unknown prefab "${prefabs}"`,
+            path: `${actionPath}.prefab`,
           });
         }
-        if (Array.isArray(templates)) {
-          for (const t of templates) {
-            if (typeof t === 'string' && !templateIds.has(t)) {
+        if (Array.isArray(prefabs)) {
+          for (const t of prefabs) {
+            if (typeof t === 'string' && !prefabIds.has(t)) {
               errors.push({
-                code: 'UNKNOWN_TEMPLATE',
-                message: `Rule "${ruleId}" spawn action references unknown template "${t}"`,
-                path: `${actionPath}.template`,
+                code: 'UNKNOWN_PREFAB',
+                message: `Rule "${ruleId}" spawn action references unknown prefab "${t}"`,
+                path: `${actionPath}.prefab`,
               });
             }
           }
@@ -355,12 +355,12 @@ export function validateParentChildCycles(
   game: Partial<GameDefinition>,
   errors: ValidationError[]
 ): void {
-  const templates = (game.templates ?? {}) as Record<string, unknown>;
+  const prefabs = (game.prefabs ?? {}) as Record<string, unknown>;
 
   const adjacency = new Map<string, string[]>();
-  for (const [key, template] of Object.entries(templates)) {
-    const children = isRecord(template) ? template.children : undefined;
-    adjacency.set(key, collectTemplateRefs(children));
+  for (const [key, prefab] of Object.entries(prefabs)) {
+    const children = isRecord(prefab) ? prefab.children : undefined;
+    adjacency.set(key, collectPrefabRefs(children));
   }
 
   const visiting = new Set<string>();
@@ -372,7 +372,7 @@ export function validateParentChildCycles(
       errors.push({
         code: 'PARENT_CHILD_CYCLE',
         message: `Parent/child cycle detected: ${cycle}`,
-        path: `templates.${key}`,
+        path: `prefabs.${key}`,
       });
       return;
     }
@@ -407,10 +407,10 @@ export function validateSemantic(
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  validateTemplateReferences(game, errors, warnings);
-  detectTemplateCycles(game.templates ?? {}, errors);
+  validatePrefabReferences(game, errors, warnings);
+  detectPrefabCycles(game.prefabs ?? {}, errors);
 
-  validateEntityTemplateRefs(game, errors);
+  validateEntityPrefabRefs(game, errors);
   validateRuleEntityRefs(game, errors);
   validateParentChildCycles(game, errors);
 

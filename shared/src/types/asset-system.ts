@@ -56,7 +56,7 @@ export type AssetPlacement = z.infer<typeof AssetPlacementSchema>;
 export const PackEntrySchema = z.object({
   id: z.string(),
   packId: z.string(),
-  templateId: z.string(),
+  prefabId: z.string(),
   assetId: z.string(),
   placement: AssetPlacementSchema.optional(),
 });
@@ -83,7 +83,7 @@ export type GenerationJob = z.infer<typeof GenerationJobSchema>;
 export const GenerationTaskSchema = z.object({
   id: z.string(),
   jobId: z.string(),
-  templateId: z.string(),
+  prefabId: z.string(),
   status: GenerationStatusSchema,
   compiledPrompt: z.string().optional(),
   modelId: z.string().optional(),

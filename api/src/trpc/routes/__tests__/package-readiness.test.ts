@@ -42,7 +42,7 @@ function createValidArtifacts(): TagPayloads {
         {
           id: 'ball-1',
           name: 'Ball 1',
-          template: 'ball-prefab',
+          prefab: 'ball-prefab',
           transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         } as any,
       ],
@@ -94,7 +94,7 @@ describe('Package Readiness Router', () => {
         {
           id: 'e1',
           name: 'E1',
-          template: 'nonexistent',
+          prefab: 'nonexistent',
           transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         } as any,
       ];

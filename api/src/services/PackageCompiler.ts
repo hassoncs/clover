@@ -6,7 +6,7 @@ import type {
   TagPayloads,
   WorldConfig,
   BackgroundConfig,
-  EntityTemplate,
+  EntityPrefab,
   GameEntity,
   GameRule,
 } from '@slopcade/shared';
@@ -33,7 +33,7 @@ export interface CompileResult {
 interface ParsedWorkspace {
   manifest: WorkspaceManifest | null;
   world: { world: WorldConfig; background?: BackgroundConfig } | null;
-  prefabs: Record<string, EntityTemplate>;
+  prefabs: Record<string, EntityPrefab>;
   entities: GameEntity[];
   rules: GameRule[];
   scripts: string;
@@ -79,7 +79,7 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
 
   let manifest: WorkspaceManifest | null = null;
   let world: ParsedWorkspace['world'] = null;
-  const prefabs: Record<string, EntityTemplate> = {};
+  const prefabs: Record<string, EntityPrefab> = {};
   let entities: GameEntity[] = [];
   let rules: GameRule[] = [];
   const scriptParts: string[] = [];
@@ -160,7 +160,7 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
       const parsed = result.data;
       if (Array.isArray(parsed)) {
         for (const item of parsed) {
-          const prefab = item as EntityTemplate;
+          const prefab = item as EntityPrefab;
           if (prefab.id) {
             if (prefabs[prefab.id]) {
               diagnostics.push({
@@ -174,7 +174,7 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
           }
         }
       } else if (parsed && typeof parsed === 'object') {
-        const prefab = parsed as EntityTemplate;
+        const prefab = parsed as EntityPrefab;
         if (prefab.id) {
           if (prefabs[prefab.id]) {
             diagnostics.push({

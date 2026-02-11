@@ -33,7 +33,7 @@ export const GodotSceneNodeSchema = z.object({
   id: z.string(),
   entityId: z.string().optional(),
   type: z.string(),
-  template: z.string().optional(),
+  prefab: z.string().optional(),
   position: GodotVec2Schema,
   angle: z.number(),
   visible: z.boolean().optional(),

@@ -37,4 +37,4 @@ func _on_message(message: String) -> void:
 				"load_game":
 					_bridge.load_game_json(JSON.stringify(data.game))
 				"spawn":
-					_bridge.spawn_entity(data.template, data.x, data.y)
+					_bridge.spawn_entity(data.prefab, data.x, data.y)

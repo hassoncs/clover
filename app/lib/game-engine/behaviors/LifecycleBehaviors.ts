@@ -92,11 +92,11 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
           break;
       }
 
-      const templateId = Array.isArray(spawn.entityTemplate)
-        ? spawn.entityTemplate[Math.floor(Math.random() * spawn.entityTemplate.length)]
-        : spawn.entityTemplate;
+      const prefabId = Array.isArray(spawn.entityPrefab)
+        ? spawn.entityPrefab[Math.floor(Math.random() * spawn.entityPrefab.length)]
+        : spawn.entityPrefab;
 
-      const entityId = ctx.spawnEntity(templateId, x, y);
+      const entityId = ctx.spawnEntity(prefabId, x, y);
       if (entityId && spawn.initialVelocity) {
         const velocity = ctx.resolveVec2(spawn.initialVelocity);
         ctx.setEntityVelocity(entityId, velocity);
@@ -465,8 +465,8 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
 
     const parent = parents[0];
 
-    const parentTemplate = parent.template
-      ? ctx.entityManager.getTemplate(parent.template)
+    const parentPrefab = parent.prefab
+      ? ctx.entityManager.getPrefab(parent.prefab)
       : undefined;
 
     let offsetX = 0;

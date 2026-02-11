@@ -99,7 +99,7 @@ const game: GameDefinition = {
     type: "entity_destroyed",
     tag: "bird",
   },
-  templates: {
+  prefabs: {
     bird: {
       id: "bird",
       tags: ["bird"],
@@ -215,17 +215,17 @@ const game: GameDefinition = {
       children: [
         {
           name: "pipeTop",
-          template: "pipeTop",
+          prefab: "pipeTop",
           localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         },
         {
           name: "pipeBottom",
-          template: "pipeBottom",
+          prefab: "pipeBottom",
           localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         },
         {
           name: "scoreZone",
-          template: "scoreZone",
+          prefab: "scoreZone",
           localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
         }
       ]
@@ -277,25 +277,25 @@ const game: GameDefinition = {
     {
       id: "bird",
       name: "Bird",
-      template: "bird",
+      prefab: "bird",
       transform: { x: cx(3), y: cy(WORLD_HEIGHT / 2), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "ground",
       name: "Ground",
-      template: "ground",
+      prefab: "ground",
       transform: { x: 0, y: cy(WORLD_HEIGHT - GROUND_HEIGHT / 2), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "ceiling",
       name: "Ceiling",
-      template: "ceiling",
+      prefab: "ceiling",
       transform: { x: 0, y: cy(0.25), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "initial_pipe_group",
       name: "Initial Pipe Group",
-      template: "pipeGroup",
+      prefab: "pipeGroup",
       transform: { x: cx(8), y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
@@ -315,7 +315,7 @@ const game: GameDefinition = {
       actions: [
         {
           type: "spawn",
-          template: "pipeGroup",
+          prefab: "pipeGroup",
           position: { type: "fixed", x: SPAWN_X, y: 0 },
         },
       ],

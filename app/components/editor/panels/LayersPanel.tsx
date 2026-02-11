@@ -24,7 +24,7 @@ export function LayersPanel() {
       <ScrollView style={styles.list}>
         {entities.map((entity, index) => {
           const isSelected = entity.id === selectedEntityId;
-          const template = entity.template ? document.templates[entity.template] : null;
+          const template = entity.prefab ? document.prefabs[entity.prefab] : null;
           const displayName = entity.name || entity.template || entity.id;
 
           return (

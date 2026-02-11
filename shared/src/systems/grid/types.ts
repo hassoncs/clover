@@ -60,7 +60,7 @@ export interface GridClearAction {
 export interface GridFillAction {
   type: 'grid_fill';
   gridId: string;
-  template: string | string[];
+  prefab: string | string[];
   direction?: 'top' | 'bottom' | 'left' | 'right';
 }
 

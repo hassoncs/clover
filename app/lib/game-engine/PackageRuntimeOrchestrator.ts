@@ -5,15 +5,19 @@ import type {
   TagPayloads,
   LoadResult,
   PackageLoadState,
+  PrefabInstantiateOpts,
+  PrefabInstantiateResult,
 } from '@slopcade/shared';
 import { TAG_GROUPS } from '@slopcade/shared';
 import type { GodotBridge } from '../godot/types';
+import { PrefabInstantiator } from './PrefabInstantiator';
 
 const TAG_LOAD_ORDER: readonly TagGroup[] = TAG_GROUPS;
 
 export class PackageRuntimeOrchestrator {
   private readonly bridge: GodotBridge;
   private readonly resolver: ArtifactResolver;
+  private readonly prefabInstantiator: PrefabInstantiator;
   private state: PackageLoadState = {
     manifest: null,
     loadedTags: new Set(),
@@ -25,6 +29,7 @@ export class PackageRuntimeOrchestrator {
   constructor(bridge: GodotBridge, resolver: ArtifactResolver) {
     this.bridge = bridge;
     this.resolver = resolver;
+    this.prefabInstantiator = new PrefabInstantiator(bridge);
   }
 
   setTimeMode(mode: 'paused' | 'playing'): void {
@@ -199,6 +204,17 @@ export class PackageRuntimeOrchestrator {
     };
   }
 
+  async instantiatePrefab(
+    prefabId: string,
+    opts?: PrefabInstantiateOpts,
+  ): Promise<PrefabInstantiateResult> {
+    return this.prefabInstantiator.instantiate(prefabId, opts);
+  }
+
+  getPrefabInstantiator(): PrefabInstantiator {
+    return this.prefabInstantiator;
+  }
+
   getState(): Readonly<PackageLoadState> {
     return this.state;
   }
@@ -233,7 +249,16 @@ export class PackageRuntimeOrchestrator {
   private applyPrefabsToBridge(): void {
     const prefabsPayload = this.resolvedArtifacts.prefabs as TagPayloads['prefabs'] | undefined;
     const prefabs = prefabsPayload?.prefabs ?? {};
-    this.bridge.registerTemplates(prefabs);
+    this.bridge.registerPrefabs(prefabs);
+
+    this.prefabInstantiator.clearRegistry();
+    for (const [id, prefab] of Object.entries(prefabs)) {
+      this.prefabInstantiator.registerPrefab(id, {
+        type: 'data',
+        id,
+        prefab,
+      });
+    }
   }
 
   private applyEntitiesToBridge(): void {

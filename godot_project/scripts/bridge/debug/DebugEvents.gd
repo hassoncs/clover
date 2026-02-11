@@ -149,9 +149,9 @@ func _matches_single_condition(event: Dictionary, condition: Dictionary) -> bool
 		if data.get("entityId", "") != target_id and data.get("aId", "") != target_id and data.get("bId", "") != target_id:
 			return false
 	
-	if condition.has("template"):
-		var target_tmpl = condition.template
-		if data.get("template", "") != target_tmpl and data.get("aTemplate", "") != target_tmpl and data.get("bTemplate", "") != target_tmpl:
+	if condition.has("prefab"):
+		var target_tmpl = condition.prefab
+		if data.get("prefab", "") != target_tmpl and data.get("aPrefab", "") != target_tmpl and data.get("bPrefab", "") != target_tmpl:
 			return false
 	
 	if condition.has("tag"):
@@ -175,13 +175,13 @@ func _matches_single_condition(event: Dictionary, condition: Dictionary) -> bool
 
 func _matches_entity_filter(data: Dictionary, prefix: String, filter: Dictionary) -> bool:
 	var entity_id = data.get(prefix + "Id", "")
-	var template = data.get(prefix + "Template", "")
+	var prefab = data.get(prefix + "Prefab", "")
 	var tags = data.get(prefix + "Tags", [])
 	
 	if filter.has("entityId") and entity_id != filter.entityId:
 		return false
 	
-	if filter.has("template") and template != filter.template:
+	if filter.has("prefab") and prefab != filter.prefab:
 		return false
 	
 	if filter.has("tag") and filter.tag not in tags:
@@ -210,13 +210,13 @@ func _emit_event(event_type: String, data: Dictionary) -> void:
 		_event_buffer.pop_front()
 
 func _on_entity_spawned(entity_id: String, node: Node2D) -> void:
-	var template = node.get_meta("template") if node.has_meta("template") else ""
+	var prefab_val = node.get_meta("prefab") if node.has_meta("prefab") else ""
 	var tags = node.get_meta("tags") if node.has_meta("tags") else []
 	var parent_id = _find_entity_id(node.get_parent())
 	
 	_emit_event("entity_spawned", {
 		"entityId": entity_id,
-		"template": template,
+		"prefab": prefab_val,
 		"tags": tags,
 		"parentId": parent_id
 	})
@@ -229,25 +229,25 @@ func _on_entity_destroyed(entity_id: String) -> void:
 func _on_collision(entity_a: String, entity_b: String, impulse: float) -> void:
 	var entities = _game_bridge.entities
 	
-	var a_template = ""
+	var a_prefab = ""
 	var a_tags = []
 	if entities.has(entity_a):
 		var node_a = entities[entity_a]
-		a_template = node_a.get_meta("template") if node_a.has_meta("template") else ""
+		a_prefab = node_a.get_meta("prefab") if node_a.has_meta("prefab") else ""
 		a_tags = node_a.get_meta("tags") if node_a.has_meta("tags") else []
 	
-	var b_template = ""
+	var b_prefab = ""
 	var b_tags = []
 	if entities.has(entity_b):
 		var node_b = entities[entity_b]
-		b_template = node_b.get_meta("template") if node_b.has_meta("template") else ""
+		b_prefab = node_b.get_meta("prefab") if node_b.has_meta("prefab") else ""
 		b_tags = node_b.get_meta("tags") if node_b.has_meta("tags") else []
 	
 	_emit_event("collision_begin", {
 		"aId": entity_a,
 		"bId": entity_b,
-		"aTemplate": a_template,
-		"bTemplate": b_template,
+		"aPrefab": a_prefab,
+		"bPrefab": b_prefab,
 		"aTags": a_tags,
 		"bTags": b_tags,
 		"impulse": impulse

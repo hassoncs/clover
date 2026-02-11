@@ -1,0 +1,47 @@
+Task 2: GraphDomainAdapter Contract - Evidence
+================================================
+
+Files Created:
+- shared/src/graph-adapters/types.ts — Adapter interface definitions
+- shared/src/graph-adapters/registry.ts — AdapterRegistry class
+- shared/src/graph-adapters/index.ts — Barrel exports
+- shared/src/graph-adapters/__tests__/registry.test.ts — 18 tests
+
+Interfaces Defined:
+- GraphDomainAdapter<TDomain> — generic adapter contract with:
+  - id: string (unique identifier)
+  - name: string (human-readable)
+  - toGeneric(domainGraph: TDomain): GraphDocument
+  - fromGeneric(graph: GraphDocument): TDomain
+  - validateDomain(domainGraph: TDomain): DomainValidationResult
+  - getNodeCatalog(): NodeCatalogEntry[]
+  - getInspectorConfig(nodeType: string): InspectorConfig | null
+- DomainValidationResult / DomainValidationError
+- NodeCatalogEntry
+- InspectorConfig / InspectorSection / InspectorFieldConfig
+
+Registry Implementation:
+- register(adapter) — throws on duplicate
+- resolve(id) — returns undefined if not found
+- resolveOrThrow(id) — throws with descriptive error listing available adapters
+- has(id) — boolean check
+- unregister(id) — returns boolean
+- getAll() — returns all registered adapters
+
+Acceptance Criteria:
+[x] Adapter interface supports at least two concrete adapters (tested with mock-effects + mock-narrative)
+[x] Unknown adapter type fails safely with explicit error (resolveOrThrow test)
+[x] Adapter registry unit tests pass (18/18)
+[x] No imports from effects/narrative domains in adapter contract
+[x] Package export added: "./graph-adapters" in shared/package.json
+
+Test Results:
+  Test Files  41 passed (41)
+       Tests  927 passed (927)
+
+LSP Diagnostics: Clean (0 errors across all 4 new files)
+
+TDD Process:
+1. RED: Wrote 18 tests first → confirmed failure (module not found)
+2. GREEN: Implemented types.ts, registry.ts, index.ts → all 927 tests pass
+3. REFACTOR: N/A — minimal implementation, nothing to refactor

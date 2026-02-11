@@ -8,18 +8,18 @@
 import { z } from 'zod';
 
 // =============================================================================
-// TEMPLATE PLAN - Per-template asset design
+// TEMPLATE PLAN - Per-prefab asset design
 // =============================================================================
 
 /**
- * Design plan for a single template within a themed asset pack.
+ * Design plan for a single prefab within a themed asset pack.
  */
-export interface TemplatePlan {
+export interface PrefabPlan {
   /** Template identifier (e.g., "ball", "peg", "bucket") */
-  templateId: string;
+  prefabId: string;
   /** Human-readable concept name (e.g., "jack-o-lantern", "bubbling cauldron") */
   conceptName: string;
-  /** Full image generation prompt for this template */
+  /** Full image generation prompt for this prefab */
   prompt: string;
   /** Optional negative prompt (what to avoid) */
   negativePrompt?: string;
@@ -31,8 +31,8 @@ export interface TemplatePlan {
   skipSilhouette?: boolean;
 }
 
-export const TemplatePlanSchema = z.object({
-  templateId: z.string(),
+export const PrefabPlanSchema = z.object({
+  prefabId: z.string(),
   conceptName: z.string(),
   prompt: z.string(),
   negativePrompt: z.string().optional(),
@@ -46,7 +46,7 @@ export const TemplatePlanSchema = z.object({
 // =============================================================================
 
 /**
- * Anchors that ensure visual coherence across all templates.
+ * Anchors that ensure visual coherence across all prefabs.
  */
 export interface CohesionAnchors {
   /** Shared motif family (e.g., "Halloween decorations", "underwater creatures") */
@@ -80,8 +80,8 @@ export interface ThemePlan {
   style?: string;
   /** Coherent color palette for the entire pack (hex colors) */
   globalPalette: string[];
-  /** Per-template design plans keyed by templateId */
-  templatePlans: Record<string, TemplatePlan>;
+  /** Per-prefab design plans keyed by prefabId */
+  prefabPlans: Record<string, PrefabPlan>;
   /** Coherence anchors for the theme */
   cohesionAnchors: CohesionAnchors;
   /** ISO timestamp of plan generation */
@@ -95,7 +95,7 @@ export const ThemePlanSchema = z.object({
   theme: z.string(),
   style: z.string().optional(),
   globalPalette: z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color')),
-  templatePlans: z.record(z.string(), TemplatePlanSchema),
+  prefabPlans: z.record(z.string(), PrefabPlanSchema),
   cohesionAnchors: CohesionAnchorsSchema,
   generatedAt: z.string().datetime(),
   providerModel: z.string().optional(),
@@ -124,7 +124,7 @@ export interface ValidationResult {
 /**
  * Validate plan coherence beyond schema validation.
  * Checks for:
- * - Unique concept names across templates
+ * - Unique concept names across prefabs
  * - Valid hex colors in silhouettes
  * - No duplicate colors in global palette
  */
@@ -133,15 +133,15 @@ export function validatePlanCoherence(plan: ThemePlan): ValidationResult {
 
   // Check for unique concept names
   const conceptNames = new Set<string>();
-  for (const [templateId, templatePlan] of Object.entries(plan.templatePlans)) {
-    if (conceptNames.has(templatePlan.conceptName)) {
-      errors.push(`Duplicate concept name "${templatePlan.conceptName}" in template "${templateId}"`);
+  for (const [prefabId, prefabPlan] of Object.entries(plan.prefabPlans)) {
+    if (conceptNames.has(prefabPlan.conceptName)) {
+      errors.push(`Duplicate concept name "${prefabPlan.conceptName}" in prefab "${prefabId}"`);
     }
-    conceptNames.add(templatePlan.conceptName);
+    conceptNames.add(prefabPlan.conceptName);
 
     // Validate silhouette color format (redundant with zod, but explicit)
-    if (!/^#[0-9A-Fa-f]{6}$/.test(templatePlan.silhouetteColor)) {
-      errors.push(`Invalid silhouette color "${templatePlan.silhouetteColor}" in template "${templateId}"`);
+    if (!/^#[0-9A-Fa-f]{6}$/.test(prefabPlan.silhouetteColor)) {
+      errors.push(`Invalid silhouette color "${prefabPlan.silhouetteColor}" in prefab "${prefabId}"`);
     }
   }
 

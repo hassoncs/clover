@@ -399,7 +399,7 @@ export class LevelLoader {
 
     // Dynamic elements
     if (overrides.hasBucket !== undefined) {
-      const bucketEntity = game.entities.find(e => e.id === 'bucket' || e.template === 'bucket');
+      const bucketEntity = game.entities.find(e => e.id === 'bucket' || e.prefab === 'bucket');
       if (bucketEntity) {
         (bucketEntity as unknown as Record<string, unknown>).disabled = !overrides.hasBucket;
       }
@@ -455,10 +455,10 @@ export class LevelLoader {
     source: Partial<GameDefinition>,
     warn: (message: string, category: keyof LevelLoadWarnings) => void,
   ): void {
-    // Merge templates (add/replace, don't remove)
-    if (source.templates) {
-      for (const [key, template] of Object.entries(source.templates)) {
-        target.templates[key] = template;
+    // Merge prefabs (add/replace, don't remove)
+    if (source.prefabs) {
+      for (const [key, prefab] of Object.entries(source.prefabs)) {
+        target.prefabs[key] = prefab;
       }
     }
 
@@ -492,8 +492,8 @@ export class LevelLoader {
       warnings.push('Game is missing world.gravity');
     }
 
-    if (!game.templates || Object.keys(game.templates).length === 0) {
-      warnings.push('Game has no entity templates');
+    if (!game.prefabs || Object.keys(game.prefabs).length === 0) {
+      warnings.push('Game has no entity prefabs');
     }
 
     if (!game.entities || game.entities.length === 0) {

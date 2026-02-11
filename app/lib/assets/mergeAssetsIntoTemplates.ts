@@ -1,46 +1,46 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { ResolvedPackEntry } from "./AssetManifest";
 
-export function mergeAssetsIntoTemplates(
+export function mergeAssetsIntoPrefabs(
   definition: GameDefinition,
   assets: Record<string, ResolvedPackEntry> | undefined
 ): GameDefinition {
-  if (!assets || !definition.templates) {
+  if (!assets || !definition.prefabs) {
     return definition;
   }
 
   const cloned = structuredClone(definition);
 
   let mergedCount = 0;
-  for (const [templateId, template] of Object.entries(cloned.templates)) {
-    if (template.visual?.type === "image") {
-      const asset = assets[templateId];
+  for (const [prefabId, prefab] of Object.entries(cloned.prefabs)) {
+    if (prefab.visual?.type === "image") {
+      const asset = assets[prefabId];
       if (asset?.imageUrl) {
-        template.visual.url = asset.imageUrl;
+        prefab.visual.url = asset.imageUrl;
 
         if (asset.placement) {
           if (asset.placement.scale !== undefined) {
-            template.visual.scale = asset.placement.scale;
+            prefab.visual.scale = asset.placement.scale;
           }
           if (asset.placement.offsetX !== undefined) {
-            template.visual.offsetX = asset.placement.offsetX;
+            prefab.visual.offsetX = asset.placement.offsetX;
           }
           if (asset.placement.offsetY !== undefined) {
-            template.visual.offsetY = asset.placement.offsetY;
+            prefab.visual.offsetY = asset.placement.offsetY;
           }
         }
 
         mergedCount++;
       } else {
         console.warn(
-          `[mergeAssetsIntoTemplates] ⚠️  Template ${templateId} has visual.type='image' but no asset found`
+          `[mergeAssetsIntoPrefabs] Prefab ${prefabId} has visual.type='image' but no asset found`
         );
       }
     }
   }
 
   console.log(
-    `[mergeAssetsIntoTemplates] 📦 Merged ${mergedCount} asset URLs into templates`
+    `[mergeAssetsIntoPrefabs] Merged ${mergedCount} asset URLs into prefabs`
   );
   return cloned;
 }

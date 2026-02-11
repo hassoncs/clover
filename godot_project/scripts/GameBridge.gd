@@ -43,7 +43,7 @@ var _pixel_buffer_manager: PixelBufferManager = null
 # ============================================================================
 var game_data: Dictionary = {}
 var entity_registry: Dictionary = {}  # entity_id -> EntityRecord (single source of truth)
-var templates: Dictionary = {}
+var prefabs: Dictionary = {}
 var pixels_per_meter: float = 50.0
 var game_root: Node2D = null
 
@@ -239,7 +239,7 @@ func _build_method_map() -> void:
 		"clear_game": func(_args): clear_game(),
 		# Sectioned loading
 		"setup_world": _js_setup_world,
-		"register_templates": _js_register_templates,
+		"register_prefabs": _js_register_prefabs,
 		"load_entities": _js_load_entities,
 		"clear_entities": _js_clear_entities,
 		"set_inspect_mode": func(args): set_inspect_mode(bool(args[0])) if args.size() >= 1 else null,
@@ -568,7 +568,7 @@ func _get_method_owner(method_name: String) -> String:
 		return "Viewport3D"
 	elif method_name.begins_with("get_all_properties"):
 		return "PropertyCollector"
-	elif method_name == "load_game_json" or method_name == "clear_game" or method_name == "set_inspect_mode" or method_name == "pause_physics" or method_name == "resume_physics" or method_name == "load_custom_scene" or method_name == "setup_world" or method_name == "register_templates" or method_name == "load_entities" or method_name == "clear_entities":
+	elif method_name == "load_game_json" or method_name == "clear_game" or method_name == "set_inspect_mode" or method_name == "pause_physics" or method_name == "resume_physics" or method_name == "load_custom_scene" or method_name == "setup_world" or method_name == "register_prefabs" or method_name == "load_entities" or method_name == "clear_entities":
 		return "GameBridge"
 	else:
 		return "Unknown"
@@ -612,11 +612,11 @@ func load_game_json(json_string: String) -> bool:
 		return false
 	game_data = json.data
 	print("[GameBridge][DIAG] JSON parsed OK. World: ", game_data.get("world", {}))
-	print("[GameBridge][DIAG] Templates: ", game_data.get("templates", {}).keys())
+	print("[GameBridge][DIAG] Prefabs: ", game_data.get("prefabs", {}).keys())
 	print("[GameBridge][DIAG] Entity count: ", game_data.get("entities", []).size())
 	clear_game()
 	setup_world(game_data.get("world", {}), game_data.get("background", {}))
-	register_templates(game_data.get("templates", {}))
+	register_prefabs(game_data.get("prefabs", {}))
 	load_entities(game_data.get("entities", []))
 	# Log post-creation physics state
 	var space = get_viewport().find_world_2d().space
@@ -637,9 +637,9 @@ func setup_world(world_data: Dictionary, background_data: Dictionary = {}) -> vo
 		print("[GameBridge] World setup complete")
 	_visual_renderer.setup_background(background_data)
 
-func register_templates(templates_data: Dictionary) -> void:
-	print("[GameBridge] register_templates called, keys=", templates_data.keys())
-	templates = templates_data
+func register_prefabs(prefabs_data: Dictionary) -> void:
+	print("[GameBridge] register_prefabs called, keys=", prefabs_data.keys())
+	prefabs = prefabs_data
 	_entity_factory.update_state()
 
 func load_entities(entities_data: Array) -> int:
@@ -678,14 +678,14 @@ func _js_setup_world(args: Array) -> void:
 			bg_data = bg_json
 	setup_world(world_json, bg_data)
 
-func _js_register_templates(args: Array) -> void:
+func _js_register_prefabs(args: Array) -> void:
 	if args.size() < 1: return
-	var templates_json = args[0]
-	if templates_json is String:
+	var prefabs_json = args[0]
+	if prefabs_json is String:
 		var json = JSON.new()
-		if json.parse(templates_json) != OK: return
-		templates_json = json.data
-	register_templates(templates_json)
+		if json.parse(prefabs_json) != OK: return
+		prefabs_json = json.data
+	register_prefabs(prefabs_json)
 
 func _js_load_entities(args: Array) -> int:
 	if args.size() < 1: return 0
@@ -707,11 +707,11 @@ func load_custom_scene(scene_path: String) -> bool:
 	game_root.add_child(scene.instantiate())
 	return true
 
-func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
-	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()))
+func spawn_entity(prefab_id: String, x: float, y: float) -> Node2D:
+	return spawn_entity_with_id(prefab_id, x, y, prefab_id + "_" + str(randi()))
 
-func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String) -> Node2D:
-	if _entity_manager: return _entity_manager.spawn_entity(template_id, x, y, entity_id)
+func spawn_entity_with_id(prefab_id: String, x: float, y: float, entity_id: String) -> Node2D:
+	if _entity_manager: return _entity_manager.spawn_entity(prefab_id, x, y, entity_id)
 	return null
 
 func destroy_entity(entity_id: String) -> void: if _entity_manager: _entity_manager.destroy_entity(entity_id)
@@ -721,7 +721,7 @@ func clear_game() -> void:
 	if _joint_manager: _joint_manager.clear_all()
 	if _entity_manager: _entity_manager.clear_all()
 	entity_registry.clear()
-	templates.clear()
+	prefabs.clear()
 
 func _physics_process(delta: float) -> void:
 	_diag_physics_frames += 1

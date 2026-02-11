@@ -104,7 +104,7 @@ const game: GameDefinition = {
     cellsRemaining: GRID_SIZE * GRID_SIZE - MINE_COUNT,
     firstTap: 1,
   },
-  templates: {
+  prefabs: {
     cell: {
       id: "cell",
       tags: ["cell", "covered"],
@@ -169,7 +169,7 @@ const game: GameDefinition = {
       return {
         id: `cell-${row}-${col}`,
         name: `Cell ${row},${col}`,
-        template: "cell",
+        prefab: "cell",
         transform: {
           x: cx(col * CELL_SIZE + GRID_OFFSET_X),
           y: cy(row * CELL_SIZE + GRID_OFFSET_Y),

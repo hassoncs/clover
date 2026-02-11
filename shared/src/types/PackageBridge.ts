@@ -1,6 +1,6 @@
 import type { Vec2 } from './common';
 import type { WorldConfig, BackgroundConfig } from './GameDefinition';
-import type { EntityTemplate, GameEntity } from './entity';
+import type { EntityPrefab, GameEntity } from './entity';
 
 /**
  * Minimal bridge surface required by the package runtime orchestrator.
@@ -8,7 +8,7 @@ import type { EntityTemplate, GameEntity } from './entity';
  */
 export interface PackageBridgeContract {
   setupWorld(world: WorldConfig, background?: BackgroundConfig): void;
-  registerTemplates(templates: Record<string, EntityTemplate>): void;
+  registerPrefabs(prefabs: Record<string, EntityPrefab>): void;
   loadEntities(entities: GameEntity[]): void;
   clearEntities(): void;
   clearGame(): void;
@@ -27,14 +27,14 @@ export interface PackageBridgeContract {
 
 export interface BridgeSpawnRequest {
   entityId: string;
-  templateId: string;
+  prefabId: string;
   position: Vec2;
   velocity?: Vec2;
 }
 
 export type BridgeOperationType =
   | 'setup_world'
-  | 'register_templates'
+  | 'register_prefabs'
   | 'load_entities'
   | 'clear_entities'
   | 'clear_game'
@@ -60,7 +60,7 @@ export interface BridgeOperationResult {
 /** Maps each TagGroup to the bridge method(s) invoked when loading that group. */
 export interface TagGroupBridgeMapping {
   world: ['setupWorld'];
-  prefabs: ['registerTemplates'];
+  prefabs: ['registerPrefabs'];
   entities: ['loadEntities'];
   rules: [];
   scripts: [];
