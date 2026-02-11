@@ -114,10 +114,10 @@ bridge.loadEntities(JSON.stringify(definition.entities));
 Backward compatibility: keep `loadGameJson` as a convenience that calls all three. Zero breaking changes.
 
 ### Acceptance Criteria
-- [ ] `setupWorld`, `registerTemplates`, `loadEntities` exist as separate bridge methods
-- [ ] `loadGameJson` still works (calls the three internally)
-- [ ] All 10 existing games load identically via the new sectioned path
-- [ ] `clearEntities` + `loadEntities` can swap entity sets without re-sending world/templates
+- [x] `setupWorld`, `registerTemplates`, `loadEntities` exist as separate bridge methods
+- [x] `loadGameJson` still works (calls the three internally)
+- [x] All 10 existing games load identically via the new sectioned path
+- [x] `clearEntities` + `loadEntities` can swap entity sets without re-sending world/templates
 
 ---
 
@@ -152,11 +152,11 @@ Source Input (JSON/TS/YAML)
 ```
 
 ### Acceptance Criteria
-- [ ] Single Zod schema in `shared/` is the source of truth for GameDefinition shape
-- [ ] TypeScript types derived from Zod via `z.infer<>`
-- [ ] Imperative validator logic migrated to semantic validator
-- [ ] `api/src/ai/game/schemas.ts` removed or reduced to re-export from shared
-- [ ] AI generation pipeline uses the same validation as the compiler
+- [x] Single Zod schema in `shared/` is the source of truth for GameDefinition shape
+- [x] TypeScript types derived from Zod via `z.infer<>`
+- [x] Imperative validator logic migrated to semantic validator
+- [x] `api/src/ai/game/schemas.ts` removed or reduced to re-export from shared
+- [x] AI generation pipeline uses the same validation as the compiler
 
 ---
 
@@ -237,11 +237,11 @@ The loader sends each section to the bridge independently. This is the same data
 - Custom bundler/minifier. Not needed at current scale.
 
 ### Acceptance Criteria
-- [ ] Modular source directories compile to sectioned bundle
-- [ ] Compile is deterministic (same input → same contentHash)
-- [ ] Semantic validator catches: missing template refs, duplicate IDs, parent/child cycles
-- [ ] At least one existing game migrated to modular source and loads identically
-- [ ] Legacy TS game definitions still work via existing path
+- [x] Modular source directories compile to sectioned bundle
+- [x] Compile is deterministic (same input → same contentHash)
+- [x] Semantic validator catches: missing template refs, duplicate IDs, parent/child cycles
+- [x] At least one existing game migrated to modular source and loads identically
+- [x] Legacy TS game definitions still work via existing path
 
 ---
 
@@ -436,7 +436,7 @@ Wave 4 (After Wave 3 — Polish):
 **Acceptance Criteria:**
 - [x] Loader detects sectioned vs flat input and routes appropriately
 - [x] Sectioned loading calls `setupWorld` → `registerTemplates` → `loadEntities` in order
-- [ ] All 10 games work through both paths
+- [x] All 10 games work through both paths
 
 **Implementation Summary:**
 - Added `loadSectioned(definition)` method that calls bridge sectioned methods in order then does same EntityManager/physics/joints/state setup as `load()`
@@ -469,7 +469,7 @@ Wave 4 (After Wave 3 — Polish):
 **Acceptance Criteria:**
 - [x] ballSort exists as modular source directory
 - [x] Compiles to sectioned bundle
-- [ ] Loads and plays identically to monolithic version
+- [x] Loads and plays identically to monolithic version
 - [x] Build is deterministic
 
 **Recommended Agent Profile:**
