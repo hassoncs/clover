@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import type { ArtifactService } from "@/agent/artifact-service";
+import { getSkillById } from "@/ai/skills";
 
 export interface ChatToolContext {
 	gameId: string;
@@ -108,6 +109,28 @@ export function createChatTools(ctx: ChatToolContext) {
 							size: content?.length ?? 0,
 						};
 					}),
+				};
+			},
+		}),
+
+		readSkill: tool({
+			description: "Read detailed instructions for an active skill by its ID.",
+			inputSchema: z.object({
+				skillId: z
+					.string()
+					.min(1)
+					.describe('The skill ID to read (e.g., "game-design", "scripting")'),
+			}),
+			execute: async ({ skillId }) => {
+				const skill = getSkillById(skillId);
+				if (!skill) {
+					return { ok: false, error: `Unknown skill: ${skillId}` };
+				}
+				return {
+					ok: true,
+					id: skill.id,
+					name: skill.name,
+					content: skill.content,
 				};
 			},
 		}),

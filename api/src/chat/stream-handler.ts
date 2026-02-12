@@ -4,6 +4,7 @@ import { stepCountIs, streamText } from "ai";
 import { nanoid } from "nanoid";
 
 import { CHAT_STAGE_PROMPT } from "@/agent/engine/prompts";
+import { assembleSystemPrompt, getSkills, matchSkill } from "@/ai/skills";
 
 import { AgUiMapper } from "./agui-mapper";
 import type { ChatHandlerContext } from "./chat-handler";
@@ -272,9 +273,27 @@ export async function handleChatStream(
 		generateMessageId: () => nanoid(),
 	});
 
+	let lastUserText = "";
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const msg = messages[i];
+		if (msg.role === "user") {
+			if (typeof msg.content === "string") {
+				lastUserText = msg.content;
+			} else if (Array.isArray(msg.content)) {
+				const textParts = msg.content
+					.filter((part) => typeof part === "object" && part.type === "text")
+					.map((part) => part.text);
+				lastUserText = textParts.join(" ");
+			}
+			break;
+		}
+	}
+
+	const matchedSkill = matchSkill(lastUserText, getSkills());
+
 	const result = streamText({
 		model: ctx.model,
-		system: CHAT_STAGE_PROMPT,
+		system: assembleSystemPrompt(CHAT_STAGE_PROMPT, matchedSkill),
 		messages,
 		tools: createChatTools({
 			gameId: ctx.gameId,
