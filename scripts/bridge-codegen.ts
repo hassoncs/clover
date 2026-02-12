@@ -74,7 +74,25 @@ interface MethodEntry {
 	category: string;
 	tsOnly: boolean;
 	source: "GodotBridge" | "EffectsBridge";
+	dispatchTarget: "bridge" | "effects";
 }
+
+const EFFECTS_BRIDGE_SNAKE_NAMES = new Set([
+	"screen_shake",
+	"zoom_punch",
+	"trigger_shockwave",
+	"flash_screen",
+	"create_dynamic_shader",
+	"apply_dynamic_shader_to_entity",
+	"apply_dynamic_post_shader",
+	"spawn_particle_preset",
+	"apply_sprite_effect",
+	"update_sprite_effect_param",
+	"clear_sprite_effect",
+	"set_post_effect",
+	"update_post_effect_param",
+	"clear_post_effect",
+]);
 
 interface BridgeRegistry {
 	generatedAt: string;
@@ -480,6 +498,11 @@ function extractMethod(
 			: inferCategory(method, interfaceDecl);
 	const tsOnly = isTsOnly(tsName, returnType);
 
+	const dispatchTarget: "bridge" | "effects" =
+		source === "EffectsBridge" || EFFECTS_BRIDGE_SNAKE_NAMES.has(snakeName)
+			? "effects"
+			: "bridge";
+
 	return {
 		tsName,
 		snakeName,
@@ -490,6 +513,7 @@ function extractMethod(
 		category,
 		tsOnly,
 		source,
+		dispatchTarget,
 	};
 }
 
@@ -982,14 +1006,10 @@ ${mockMethods}
 	console.log(`  Methods: ${registry.methods.length}`);
 }
 
-function generateWebTransport(registry: BridgeRegistry): void {
-	const WEB_OUTPUT_PATH = resolve(OUTPUT_DIR, "web-bridge-methods.ts");
+function generateSharedTransport(registry: BridgeRegistry): void {
+	const SHARED_OUTPUT_PATH = resolve(OUTPUT_DIR, "bridge-methods.ts");
 
 	const bridgeMethods = registry.methods.filter((m) => !m.tsOnly);
-
-	function wireBridgeMethodName(m: MethodEntry): string {
-		return godotSnakeToCamel(m.snakeName);
-	}
 
 	function wireDefault(wireType: WireArg["type"]): string {
 		switch (wireType) {
@@ -1028,14 +1048,6 @@ function generateWebTransport(registry: BridgeRegistry): void {
 		return args;
 	}
 
-	function getDefaultFallback(returnType: string): string | null {
-		if (returnType === "void") return null;
-		if (returnType === "boolean") return "false";
-		if (returnType === "number") return "-1";
-		if (returnType === "string") return '""';
-		return null;
-	}
-
 	function getAsyncInnerType(returnType: string): string | null {
 		const match = returnType.match(/^Promise<(.+)>$/s);
 		return match ? match[1].trim() : null;
@@ -1051,6 +1063,14 @@ function generateWebTransport(registry: BridgeRegistry): void {
 		return null;
 	}
 
+	function getDefaultFallback(returnType: string): string | null {
+		if (returnType === "void") return null;
+		if (returnType === "boolean") return "false";
+		if (returnType === "number") return "-1";
+		if (returnType === "string") return '""';
+		return null;
+	}
+
 	function buildParamSignature(m: MethodEntry): string {
 		return m.params
 			.map((p) => {
@@ -1060,15 +1080,15 @@ function generateWebTransport(registry: BridgeRegistry): void {
 			.join(", ");
 	}
 
-	function generateEffectsPipelineBody(m: MethodEntry): string {
+	function generateEffectsAsyncBody(m: MethodEntry): string {
 		const effectsMethod = `effects.${m.tsName}`;
 
 		if (m.tsName === "snapshot") {
-			return `return executeEffects<EffectsPipelineSnapshot>("${effectsMethod}", undefined, normalizeEffectsSnapshot);`;
+			return `return dispatch.effectsAsync<EffectsPipelineSnapshot>("${effectsMethod}", undefined, normalizeEffectsSnapshot);`;
 		}
 
 		if (m.tsName === "restore") {
-			return `return executeEffects("${effectsMethod}", { snapshot: createEffectsSnapshotPayload(snapshot) });`;
+			return `return dispatch.effectsAsync("${effectsMethod}", { snapshot: createEffectsSnapshotPayload(snapshot) });`;
 		}
 
 		const nonCallbackParams = m.wireParams.filter(
@@ -1076,71 +1096,67 @@ function generateWebTransport(registry: BridgeRegistry): void {
 		);
 
 		if (nonCallbackParams.length === 0) {
-			return `return executeEffects("${effectsMethod}");`;
+			return `return dispatch.effectsAsync("${effectsMethod}");`;
 		}
 
 		const paramObj = nonCallbackParams.map((wp) => wp.name).join(", ");
 
-		return `return executeEffects("${effectsMethod}", { ${paramObj} });`;
+		return `return dispatch.effectsAsync("${effectsMethod}", { ${paramObj} });`;
 	}
 
-	function generateQueryAsyncBody(m: MethodEntry): string {
+	function generateEffectsSyncBody(m: MethodEntry): string {
 		const wireArgs = buildWireArgs(m);
-		const methodName = wireBridgeMethodName(m);
+		const argsStr = wireArgs.length > 0 ? `, ${wireArgs.join(", ")}` : "";
+		return `dispatch.effectsSync("${m.snakeName}"${argsStr});`;
+	}
+
+	function generateBridgeAsyncBody(m: MethodEntry): string {
+		const wireArgs = buildWireArgs(m);
 		const innerType = getAsyncInnerType(m.returnType);
 		const fallback = innerType ? getAsyncFallback(innerType) : null;
 
 		const argsArray = wireArgs.length > 0 ? `[${wireArgs.join(", ")}]` : "[]";
 
 		if (fallback !== null) {
-			return `return await queryAsync<${innerType}>("${methodName}", ${argsArray}) ?? ${fallback};`;
+			return `return await dispatch.async<${innerType}>("${m.snakeName}", ${argsArray}) ?? ${fallback};`;
 		}
-		return `return queryAsync<${innerType}>("${methodName}", ${argsArray});`;
+		return `return dispatch.async<${innerType}>("${m.snakeName}", ${argsArray});`;
 	}
 
-	function generateSyncBody(m: MethodEntry): string {
+	function generateBridgeSyncBody(m: MethodEntry): string {
 		const wireArgs = buildWireArgs(m);
-		const methodName = wireBridgeMethodName(m);
-		const argsStr = wireArgs.length > 0 ? wireArgs.join(", ") : "";
+		const argsStr = wireArgs.length > 0 ? `, ${wireArgs.join(", ")}` : "";
 		const fallback = getDefaultFallback(m.returnType);
 
-		// Methods with dot in snakeName route through the query system
-		if (m.snakeName.includes(".")) {
-			const nonCallbackParams = m.params.filter(
-				(p) =>
-					!m.wireParams.find(
-						(wp) => wp.name === p.name && wp.wireKind === WireKind.Callback,
-					),
-			);
-			const queryArgs =
-				nonCallbackParams.length > 0
-					? `JSON.stringify({ ${nonCallbackParams.map((p) => p.name).join(", ")} })`
-					: "'{}'";
-			const requestId = m.snakeName.replace(/\./g, "_");
-			return `getBridge()?.query?.("${requestId}", "${m.snakeName}", ${queryArgs});`;
-		}
-
 		if (m.returnType === "void") {
-			return `getBridge()?.${methodName}(${argsStr});`;
+			return `dispatch.sync("${m.snakeName}"${argsStr});`;
 		}
 
 		if (fallback !== null) {
-			return `return getBridge()?.${methodName}(${argsStr}) ?? ${fallback};`;
+			return `return dispatch.sync("${m.snakeName}"${argsStr}) as ${m.returnType} ?? ${fallback};`;
 		}
 
-		return `return getBridge()?.${methodName}(${argsStr});`;
+		return `return dispatch.sync("${m.snakeName}"${argsStr}) as ${m.returnType};`;
 	}
 
 	function generateMethodBody(m: MethodEntry): string {
+		// EffectsBridge source methods always use effectsAsync (pipeline methods)
 		if (m.source === "EffectsBridge") {
-			return generateEffectsPipelineBody(m);
+			return generateEffectsAsyncBody(m);
 		}
 
+		// GodotBridge methods targeting effects bridge: sync → effectsSync
+		if (m.dispatchTarget === "effects" && !m.async) {
+			return generateEffectsSyncBody(m);
+		}
+
+		// All async methods (including effects-target async like createDynamicShader)
+		// go through dispatch.async — the platform adapter routes to the right bridge
 		if (m.async) {
-			return generateQueryAsyncBody(m);
+			return generateBridgeAsyncBody(m);
 		}
 
-		return generateSyncBody(m);
+		return generateBridgeSyncBody(m);
 	}
 
 	const methodImpls = bridgeMethods
@@ -1214,12 +1230,14 @@ function generateWebTransport(registry: BridgeRegistry): void {
 
 	const baseImports: string[] = [];
 	if (hasEffectsPipeline) {
-		const baseItems: string[] = ["normalizeEffectsResult"];
+		const baseItems: string[] = [];
 		if (hasSnapshot) baseItems.push("normalizeEffectsSnapshot");
 		if (hasRestore) baseItems.push("createEffectsSnapshotPayload");
-		baseImports.push(
-			`import { ${baseItems.join(", ")} } from '../GodotBridgeBase';`,
-		);
+		if (baseItems.length > 0) {
+			baseImports.push(
+				`import { ${baseItems.join(", ")} } from '../GodotBridgeBase';`,
+			);
+		}
 	}
 
 	const sharedImports: string[] = [];
@@ -1243,19 +1261,18 @@ function generateWebTransport(registry: BridgeRegistry): void {
 
 import type { ${typesImports.join(", ")} } from '../types';
 ${sharedImports.length > 0 ? sharedImports.join("\n") + "\n" : ""}${baseImports.length > 0 ? baseImports.join("\n") + "\n" : ""}
-type GetBridgeFn = () => Window['GodotBridge'] | null;
-type QueryAsyncFn = <T>(method: string, args?: unknown[], timeoutMs?: number) => Promise<T>;
-type ExecuteEffectsFn = <T = void>(
-  method: string,
-  params?: Record<string, unknown>,
-  mapData?: (rawData: unknown) => T,
-) => Promise<EffectsResult<T>>;
+export interface PlatformDispatch {
+  sync(snakeName: string, ...args: unknown[]): unknown;
+  async<T>(snakeName: string, ...args: unknown[]): Promise<T>;
+  effectsSync(snakeName: string, ...args: unknown[]): void;
+  effectsAsync<T = void>(
+    method: string,
+    params?: Record<string, unknown>,
+    mapData?: (rawData: unknown) => T,
+  ): Promise<EffectsResult<T>>;
+}
 
-export function createGeneratedMethods(
-  getBridge: GetBridgeFn,
-  queryAsync: QueryAsyncFn,
-  executeEffects: ExecuteEffectsFn,
-): Partial<GodotBridge> {
+export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBridge> {
   return {
 ${methodImpls},
   };
@@ -1264,13 +1281,13 @@ ${methodImpls},
 
 	mkdirSync(OUTPUT_DIR, { recursive: true });
 
-	if (existsSync(WEB_OUTPUT_PATH)) {
-		chmodSync(WEB_OUTPUT_PATH, 0o644);
+	if (existsSync(SHARED_OUTPUT_PATH)) {
+		chmodSync(SHARED_OUTPUT_PATH, 0o644);
 	}
-	writeFileSync(WEB_OUTPUT_PATH, content);
-	chmodSync(WEB_OUTPUT_PATH, 0o444);
+	writeFileSync(SHARED_OUTPUT_PATH, content);
+	chmodSync(SHARED_OUTPUT_PATH, 0o444);
 
-	console.log(`Generated ${WEB_OUTPUT_PATH}`);
+	console.log(`Generated ${SHARED_OUTPUT_PATH}`);
 	console.log(`  Methods: ${bridgeMethods.length}`);
 }
 
@@ -1313,7 +1330,7 @@ ${JSON.stringify(registry, null, 2).slice(2)}`;
 
 	generateWindowDeclaration(registry);
 
-	generateWebTransport(registry);
+	generateSharedTransport(registry);
 }
 
 function main() {

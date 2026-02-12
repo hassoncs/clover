@@ -35,7 +35,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "clearGraph",
@@ -46,7 +47,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "updateParams",
@@ -95,7 +97,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "start",
@@ -106,7 +109,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "pause",
@@ -117,7 +121,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "resume",
@@ -128,7 +133,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "stop",
@@ -139,7 +145,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "reset",
@@ -150,7 +157,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "snapshot",
@@ -161,7 +169,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "restore",
@@ -192,7 +201,8 @@
       "async": true,
       "category": "effects_pipeline",
       "tsOnly": false,
-      "source": "EffectsBridge"
+      "source": "EffectsBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "initialize",
@@ -203,7 +213,8 @@
       "async": true,
       "category": "lifecycle",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "dispose",
@@ -214,7 +225,8 @@
       "async": false,
       "category": "lifecycle",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "effectsUpdateParams",
@@ -263,7 +275,8 @@
       "async": false,
       "category": "effects",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "drawToActiveBuffer",
@@ -312,7 +325,8 @@
       "async": false,
       "category": "drawing",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "loadGame",
@@ -343,7 +357,8 @@
       "async": true,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "clearGame",
@@ -354,7 +369,8 @@
       "async": false,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setupWorld",
@@ -423,7 +439,8 @@
       "async": false,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "registerPrefabs",
@@ -454,7 +471,8 @@
       "async": false,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "loadEntities",
@@ -485,7 +503,8 @@
       "async": false,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "clearEntities",
@@ -496,7 +515,8 @@
       "async": false,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "loadRules",
@@ -527,7 +547,8 @@
       "async": false,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "loadScript",
@@ -558,7 +579,8 @@
       "async": true,
       "category": "game",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "pausePhysics",
@@ -569,7 +591,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "resumePhysics",
@@ -580,7 +603,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setInspectMode",
@@ -611,7 +635,8 @@
       "async": false,
       "category": "debug",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "stepPhysics",
@@ -642,7 +667,8 @@
       "async": true,
       "category": "debug",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "callRpc",
@@ -691,7 +717,8 @@
       "async": true,
       "category": "debug",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "spawnEntity",
@@ -747,7 +774,8 @@
       "async": false,
       "category": "entity",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "destroyEntity",
@@ -778,7 +806,8 @@
       "async": false,
       "category": "entity",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "instantiateFromScene",
@@ -868,7 +897,8 @@
       "async": true,
       "category": "entity",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getEntityTransform",
@@ -899,7 +929,8 @@
       "async": true,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getAllTransforms",
@@ -910,7 +941,8 @@
       "async": true,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setTransform",
@@ -995,7 +1027,8 @@
       "async": false,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setPosition",
@@ -1062,7 +1095,8 @@
       "async": false,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setRotation",
@@ -1111,7 +1145,8 @@
       "async": false,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setScale",
@@ -1178,7 +1213,8 @@
       "async": false,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setOpacity",
@@ -1227,7 +1263,8 @@
       "async": false,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setVisible",
@@ -1276,7 +1313,8 @@
       "async": false,
       "category": "transform",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getLinearVelocity",
@@ -1307,7 +1345,8 @@
       "async": true,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setLinearVelocity",
@@ -1361,7 +1400,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getAngularVelocity",
@@ -1392,7 +1432,8 @@
       "async": true,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setAngularVelocity",
@@ -1441,7 +1482,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "applyImpulse",
@@ -1495,7 +1537,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "applyForce",
@@ -1549,7 +1592,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "applyTorque",
@@ -1598,7 +1642,8 @@
       "async": false,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createRevoluteJoint",
@@ -1679,7 +1724,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createDistanceJoint",
@@ -1755,7 +1801,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createPrismaticJoint",
@@ -1846,7 +1893,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createWeldJoint",
@@ -1907,7 +1955,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createMouseJoint",
@@ -1968,7 +2017,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createMouseJointAsync",
@@ -2029,7 +2079,8 @@
       "async": true,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "destroyJoint",
@@ -2060,7 +2111,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setMotorSpeed",
@@ -2109,7 +2161,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setMouseTarget",
@@ -2163,7 +2216,8 @@
       "async": false,
       "category": "joints",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "screenToWorld",
@@ -2212,7 +2266,8 @@
       "async": true,
       "category": "coordinate",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "queryPoint",
@@ -2248,7 +2303,8 @@
       "async": true,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "queryPointEntity",
@@ -2284,7 +2340,8 @@
       "async": true,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "queryAABB",
@@ -2343,7 +2400,8 @@
       "async": true,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "raycast",
@@ -2420,7 +2478,8 @@
       "async": true,
       "category": "physics",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setUserData",
@@ -2469,7 +2528,8 @@
       "async": false,
       "category": "entity",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getUserData",
@@ -2500,7 +2560,8 @@
       "async": true,
       "category": "entity",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getAllEntities",
@@ -2511,7 +2572,8 @@
       "async": true,
       "category": "entity",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onCollision",
@@ -2536,7 +2598,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onEntityDestroyed",
@@ -2561,7 +2624,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onEntitySpawned",
@@ -2586,7 +2650,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onSensorBegin",
@@ -2611,7 +2676,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onSensorEnd",
@@ -2636,7 +2702,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onTransformSync",
@@ -2661,7 +2728,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onScore",
@@ -2686,7 +2754,8 @@
       "async": false,
       "category": "events",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "getAllProperties",
@@ -2697,7 +2766,8 @@
       "async": true,
       "category": "properties",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onPropertySync",
@@ -2722,7 +2792,8 @@
       "async": false,
       "category": "properties",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setWatchConfig",
@@ -2753,7 +2824,8 @@
       "async": false,
       "category": "properties",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "sendInput",
@@ -2812,7 +2884,8 @@
       "async": false,
       "category": "input",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onInputEvent",
@@ -2837,7 +2910,8 @@
       "async": false,
       "category": "input",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setEntityImage",
@@ -2922,7 +2996,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setEntityAtlasRegion",
@@ -3079,7 +3154,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "clearTextureCache",
@@ -3110,7 +3186,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createPixelBuffer",
@@ -3231,7 +3308,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "pixelBufferDraw",
@@ -3280,7 +3358,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "pixelBufferClear",
@@ -3329,7 +3408,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "destroyPixelBuffer",
@@ -3360,7 +3440,8 @@
       "async": false,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "preloadTextures",
@@ -3403,7 +3484,8 @@
       "async": true,
       "category": "visual",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setDebugShowShapes",
@@ -3434,7 +3516,8 @@
       "async": false,
       "category": "debug",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setDebugSettings",
@@ -3480,7 +3563,8 @@
       "async": false,
       "category": "debug",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setCameraTarget",
@@ -3511,7 +3595,8 @@
       "async": false,
       "category": "camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setCameraPosition",
@@ -3560,7 +3645,8 @@
       "async": false,
       "category": "camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setCameraZoom",
@@ -3591,7 +3677,8 @@
       "async": false,
       "category": "camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "startCamera",
@@ -3658,7 +3745,8 @@
       "async": false,
       "category": "camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "stopCamera",
@@ -3669,7 +3757,8 @@
       "async": false,
       "category": "camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "spawnParticle",
@@ -3736,7 +3825,8 @@
       "async": false,
       "category": "particles",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "playSound",
@@ -3803,7 +3893,8 @@
       "async": false,
       "category": "audio",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "playMusic",
@@ -3870,7 +3961,8 @@
       "async": false,
       "category": "audio",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "stopMusic",
@@ -3881,7 +3973,8 @@
       "async": false,
       "category": "audio",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "applySpriteEffect",
@@ -3948,7 +4041,8 @@
       "async": false,
       "category": "effects_sprite",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "updateSpriteEffectParam",
@@ -4015,7 +4109,8 @@
       "async": false,
       "category": "effects_sprite",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "clearSpriteEffect",
@@ -4046,7 +4141,8 @@
       "async": false,
       "category": "effects_sprite",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "setPostEffect",
@@ -4113,7 +4209,8 @@
       "async": false,
       "category": "effects_post",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "updatePostEffectParam",
@@ -4180,7 +4277,8 @@
       "async": false,
       "category": "effects_post",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "clearPostEffect",
@@ -4211,7 +4309,8 @@
       "async": false,
       "category": "effects_post",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "screenShake",
@@ -4260,7 +4359,8 @@
       "async": false,
       "category": "effects_camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "zoomPunch",
@@ -4309,7 +4409,8 @@
       "async": false,
       "category": "effects_camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "triggerShockwave",
@@ -4376,7 +4477,8 @@
       "async": false,
       "category": "effects_camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "flashScreen",
@@ -4425,7 +4527,8 @@
       "async": false,
       "category": "effects_camera",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "createDynamicShader",
@@ -4474,7 +4577,8 @@
       "async": true,
       "category": "effects_dynamic",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "applyDynamicShader",
@@ -4541,7 +4645,8 @@
       "async": false,
       "category": "effects_dynamic",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "applyDynamicPostShader",
@@ -4590,7 +4695,8 @@
       "async": false,
       "category": "effects_dynamic",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "hotSwapShader",
@@ -4639,7 +4745,8 @@
       "async": false,
       "category": "effects_dynamic",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "spawnParticlePreset",
@@ -4724,7 +4831,8 @@
       "async": false,
       "category": "effects_particles",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "effects"
     },
     {
       "tsName": "getAvailableEffects",
@@ -4735,7 +4843,8 @@
       "async": true,
       "category": "effects_info",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createUIButton",
@@ -4874,7 +4983,8 @@
       "async": false,
       "category": "ui",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "destroyUIButton",
@@ -4905,7 +5015,8 @@
       "async": false,
       "category": "ui",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "onUIButtonEvent",
@@ -4930,7 +5041,8 @@
       "async": false,
       "category": "ui",
       "tsOnly": true,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "createThemedUIComponent",
@@ -5087,7 +5199,8 @@
       "async": false,
       "category": "ui_themed",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "destroyThemedUIComponent",
@@ -5118,7 +5231,8 @@
       "async": false,
       "category": "ui_themed",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "show3DModel",
@@ -5149,7 +5263,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "show3DModelFromUrl",
@@ -5180,7 +5295,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DViewportPosition",
@@ -5229,7 +5345,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DViewportSize",
@@ -5278,7 +5395,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "rotate3DModel",
@@ -5345,7 +5463,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DModelPosition",
@@ -5412,7 +5531,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DCameraDistance",
@@ -5443,7 +5563,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DCameraSize",
@@ -5474,7 +5595,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "clear3DModels",
@@ -5485,7 +5607,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "create3DFloor",
@@ -5552,7 +5675,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "create3DCube",
@@ -5655,7 +5779,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "clear3DCubes",
@@ -5666,7 +5791,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DCameraPosition",
@@ -5733,7 +5859,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "set3DCameraLookAt",
@@ -5800,7 +5927,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setOrbitControls",
@@ -5831,7 +5959,8 @@
       "async": false,
       "category": "3d",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setExternalInput",
@@ -5880,7 +6009,8 @@
       "async": false,
       "category": "effects",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     },
     {
       "tsName": "setScreenInput",
@@ -5911,7 +6041,8 @@
       "async": false,
       "category": "effects",
       "tsOnly": false,
-      "source": "GodotBridge"
+      "source": "GodotBridge",
+      "dispatchTarget": "bridge"
     }
   ],
   "nameMap": {

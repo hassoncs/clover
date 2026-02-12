@@ -7,7 +7,10 @@ import {
 } from "./callback-registry";
 import { injectGodotDebugBridge } from "./debug";
 import { normalizeEffectsResult } from "./GodotBridgeBase";
-import { createGeneratedMethods } from "./generated/web-bridge-methods";
+import {
+	createBridgeMethods,
+	type PlatformDispatch,
+} from "./generated/bridge-methods";
 import {
 	type GodotBridgeBase,
 	getGodotBridge as getSharedGodotBridge,
@@ -189,6 +192,10 @@ function injectCameraHelpers(): void {
 	iframeWin.stopCamera = stopCamera;
 }
 
+function snakeToCamel(snake: string): string {
+	return snake.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
+}
+
 export function createWebGodotBridge(): GodotBridge {
 	const cbs = createCallbackArrays();
 
@@ -229,11 +236,35 @@ export function createWebGodotBridge(): GodotBridge {
 		}
 	};
 
-	const generatedMethods = createGeneratedMethods(
-		getGodotBridge,
-		queryAsync,
-		executeEffects,
-	);
+	const webDispatch: PlatformDispatch = {
+		sync(snakeName: string, ...args: unknown[]) {
+			const camelName = snakeToCamel(snakeName);
+			const bridge = getGodotBridge();
+			if (!bridge) return;
+			if (snakeName.includes(".")) {
+				const requestId = snakeName.replace(/\./g, "_");
+				(bridge as any).query?.(
+					requestId,
+					snakeName,
+					JSON.stringify(args.length > 0 ? args[0] : {}),
+				);
+				return;
+			}
+			return (bridge as any)[camelName]?.(...args);
+		},
+		async async<T>(snakeName: string, ...args: unknown[]): Promise<T> {
+			const camelName = snakeToCamel(snakeName);
+			return queryAsync<T>(camelName, args);
+		},
+		effectsSync(snakeName: string, ...args: unknown[]) {
+			const camelName = snakeToCamel(snakeName);
+			const bridge = getGodotBridge();
+			(bridge as any)?.[camelName]?.(...args);
+		},
+		effectsAsync: executeEffects,
+	};
+
+	const generatedMethods = createBridgeMethods(webDispatch);
 
 	const bridge: GodotBridge = {
 		...generatedMethods,
