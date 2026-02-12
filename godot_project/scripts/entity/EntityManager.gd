@@ -324,12 +324,12 @@ var user_data: Dictionary = {}
 func _js_set_user_data(args: Array) -> void:
 	if args.size() < 2:
 		return
-	var body_id = int(args[0])
-	user_data[body_id] = args[1]
+	var entity_id = str(args[0])
+	user_data[entity_id] = args[1]
 
 
 func _js_get_user_data(args: Array) -> Variant:
 	if args.size() < 1:
 		return null
-	var body_id = int(args[0])
-	return user_data.get(body_id)
+	var entity_id = str(args[0])
+	return user_data.get(entity_id)

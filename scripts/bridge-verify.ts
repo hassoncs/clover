@@ -273,16 +273,7 @@ const EXCLUDED_METHODS = new Set([
 
 // Methods where TS sends args differently than direct positional args
 // (e.g., via callRpc or JSON blob wrapping)
-const KNOWN_MISMATCHES = new Map<string, string>([
-	[
-		"set_user_data",
-		"TS sends entityId as string; Godot reads int(args[0]) as body_id — needs Godot fix to use str(args[0])",
-	],
-	[
-		"get_user_data",
-		"TS sends entityId as string; Godot reads int(args[0]) as body_id — needs Godot fix to use str(args[0])",
-	],
-]);
+const KNOWN_MISMATCHES = new Map<string, string>();
 
 export function verifyBridgeContract(
 	godotHandlers: GodotHandler[],
