@@ -1,12 +1,12 @@
-import type { Vec2 } from './common';
-import type { GameEntity, EntityPrefab } from './entity';
-import type { GameRule, WinCondition, LoseCondition } from './rules';
-import type { TileSheet, TileMap } from './tilemap';
-import type { AssetSystemConfig, AssetSource } from './asset-system';
-import type { Value, ExpressionValueType } from '../expressions/types';
-import type { StateMachineDefinition } from '../systems/state-machine/types';
-import type { ContainerConfig } from './container';
-import type { OverlayConfig } from './overlay';
+import type { ExpressionValueType, Value } from "../expressions/types";
+import type { StateMachineDefinition } from "../systems/state-machine/types";
+import type { AssetSource, AssetSystemConfig } from "./asset-system";
+import type { Vec2 } from "./common";
+import type { ContainerConfig } from "./container";
+import type { EntityPrefab, GameEntity } from "./entity";
+import type { OverlayConfig } from "./overlay";
+import type { GameRule, LoseCondition, WinCondition } from "./rules";
+import type { TileMap, TileSheet } from "./tilemap";
 
 /**
  * Dual-field image reference for backwards compatibility.
@@ -18,219 +18,261 @@ import type { OverlayConfig } from './overlay';
  * will decide precedence.
  */
 export type ImageField = {
-  imageUrl?: string;
-  assetRef?: string;
-  localPath?: string;
+	imageUrl?: string;
+	assetRef?: string;
+	localPath?: string;
 };
 
-export interface WorldConfig {
-  gravity: Vec2;
-  pixelsPerMeter: number;
-  bounds?: {
-    width: number;
-    height: number;
-  };
+export interface EconomyGraphDefinition {
+	id: string;
+	resourceTypes: string[];
+	nodes: Array<{
+		id: string;
+		type: "source" | "drain" | "pool" | "gate" | "converter";
+		label: string;
+		resourceType?: string;
+		inputResourceType?: string;
+		outputResourceType?: string;
+		capacity?: number;
+		initialValue?: number;
+		rate?: number;
+		mode?: "probabilistic" | "conditional";
+		position?: { x: number; y: number };
+	}>;
+	edges: Array<{
+		id: string;
+		type: "resource" | "state";
+		from: string;
+		to: string;
+		formula?: string;
+		probability?: number;
+		condition?: string;
+	}>;
 }
 
-export type CameraType = 'fixed' | 'follow' | 'follow-x' | 'follow-y' | 'auto-scroll';
+export interface WorldConfig {
+	gravity: Vec2;
+	pixelsPerMeter: number;
+	bounds?: {
+		width: number;
+		height: number;
+	};
+}
+
+export type CameraType =
+	| "fixed"
+	| "follow"
+	| "follow-x"
+	| "follow-y"
+	| "auto-scroll";
 
 export interface CameraDeadZone {
-  width: number;
-  height: number;
+	width: number;
+	height: number;
 }
 
 export interface CameraLookAhead {
-  enabled: boolean;
-  distance: number;
-  smoothing?: number;
-  mode?: 'velocity' | 'facing' | 'input';
+	enabled: boolean;
+	distance: number;
+	smoothing?: number;
+	mode?: "velocity" | "facing" | "input";
 }
 
 export interface CameraAutoScroll {
-  direction: Vec2;
-  speed: number;
-  acceleration?: number;
+	direction: Vec2;
+	speed: number;
+	acceleration?: number;
 }
 
 export interface CameraShakeConfig {
-  decay?: number;
-  maxOffset?: number;
-  maxRotation?: number;
+	decay?: number;
+	maxOffset?: number;
+	maxRotation?: number;
 }
 
 export interface CameraConfig {
-  type: CameraType;
-  followTarget?: string;
-  viewHeight?: number;
-  zoom?: number;
-  minZoom?: number;
-  maxZoom?: number;
-  followSmoothing?: number;
-  followOffset?: Vec2;
-  deadZone?: CameraDeadZone;
-  lookAhead?: CameraLookAhead;
-  bounds?: {
-    minX: number;
-    maxX: number;
-    minY: number;
-    maxY: number;
-  };
-  autoScroll?: CameraAutoScroll;
-  shake?: CameraShakeConfig;
+	type: CameraType;
+	followTarget?: string;
+	viewHeight?: number;
+	zoom?: number;
+	minZoom?: number;
+	maxZoom?: number;
+	followSmoothing?: number;
+	followOffset?: Vec2;
+	deadZone?: CameraDeadZone;
+	lookAhead?: CameraLookAhead;
+	bounds?: {
+		minX: number;
+		maxX: number;
+		minY: number;
+		maxY: number;
+	};
+	autoScroll?: CameraAutoScroll;
+	shake?: CameraShakeConfig;
 }
 
 export interface PresentationConfig {
-  aspectRatio?: { width: number; height: number } | number;
-  fit?: 'contain' | 'cover';
-  letterboxColor?: string;
-  orientation?: 'portrait' | 'landscape' | 'any';
+	aspectRatio?: { width: number; height: number } | number;
+	fit?: "contain" | "cover";
+	letterboxColor?: string;
+	orientation?: "portrait" | "landscape" | "any";
 }
 
-
-
 export interface GameMetadata {
-  id: string;
-  slug?: string;
-  title: string;
-  description?: string;
-  instructions?: string;
-  author?: string;
-  version: string;
-  createdAt?: number;
-  updatedAt?: number;
-  /** Legacy: full URL or relative path */
-  thumbnailUrl?: string;
-  /** New: asset UUID reference for `thumbnailUrl` */
-  thumbnailAssetRef?: string;
-  /** Legacy: full URL or relative path */
-  titleHeroImageUrl?: string;
-  /** New: asset UUID reference for `titleHeroImageUrl` */
-  titleHeroAssetRef?: string;
+	id: string;
+	slug?: string;
+	title: string;
+	description?: string;
+	instructions?: string;
+	author?: string;
+	version: string;
+	createdAt?: number;
+	updatedAt?: number;
+	/** Legacy: full URL or relative path */
+	thumbnailUrl?: string;
+	/** New: asset UUID reference for `thumbnailUrl` */
+	thumbnailAssetRef?: string;
+	/** Legacy: full URL or relative path */
+	titleHeroImageUrl?: string;
+	/** New: asset UUID reference for `titleHeroImageUrl` */
+	titleHeroAssetRef?: string;
 }
 
 export interface AssetConfig extends ImageField {
-  source?: AssetSource;
-  localPath?: string;
-  scale?: number;
-  offsetX?: number;
-  offsetY?: number;
-  animations?: Record<string, {
-    frames: string[];
-    fps: number;
-    loop?: boolean;
-  }>;
+	source?: AssetSource;
+	localPath?: string;
+	scale?: number;
+	offsetX?: number;
+	offsetY?: number;
+	animations?: Record<
+		string,
+		{
+			frames: string[];
+			fps: number;
+			loop?: boolean;
+		}
+	>;
 }
 
-export type ParallaxDepth = 'sky' | 'far' | 'mid' | 'near';
+export type ParallaxDepth = "sky" | "far" | "mid" | "near";
 
 export interface ParallaxLayer extends ImageField {
-  id: string;
-  name: string;
-  depth: ParallaxDepth;
-  parallaxFactor: number;
-  scale?: number;
-  offsetX?: number;
-  offsetY?: number;
-  visible?: boolean;
+	id: string;
+	name: string;
+	depth: ParallaxDepth;
+	parallaxFactor: number;
+	scale?: number;
+	offsetX?: number;
+	offsetY?: number;
+	visible?: boolean;
 }
 
 export interface ParallaxBackground {
-  type: 'parallax';
-  layers: ParallaxLayer[];
+	type: "parallax";
+	layers: ParallaxLayer[];
 }
 
 export interface StaticBackground extends ImageField {
-  type: 'static';
-  color?: string;
-  /**
-   * Description of what the background should look like.
-   * Used by the AI asset generation pipeline.
-   */
-  whatDescription?: string;
+	type: "static";
+	color?: string;
+	/**
+	 * Description of what the background should look like.
+	 * Used by the AI asset generation pipeline.
+	 */
+	whatDescription?: string;
 }
 
 export type BackgroundConfig = StaticBackground | ParallaxBackground;
 
 export interface ParallaxConfig {
-  enabled: boolean;
-  layers: ParallaxLayer[];
+	enabled: boolean;
+	layers: ParallaxLayer[];
 }
 
 export interface GameJointBase {
-  id: string;
-  entityA: string;
-  entityB: string;
-  collideConnected?: boolean;
+	id: string;
+	entityA: string;
+	entityB: string;
+	collideConnected?: boolean;
 }
 
 export interface GameRevoluteJoint extends GameJointBase {
-  type: 'revolute';
-  anchor: Vec2;
-  enableLimit?: boolean;
-  lowerAngle?: number;
-  upperAngle?: number;
-  enableMotor?: boolean;
-  motorSpeed?: number;
-  maxMotorTorque?: number;
+	type: "revolute";
+	anchor: Vec2;
+	enableLimit?: boolean;
+	lowerAngle?: number;
+	upperAngle?: number;
+	enableMotor?: boolean;
+	motorSpeed?: number;
+	maxMotorTorque?: number;
 }
 
 export interface GameDistanceJoint extends GameJointBase {
-  type: 'distance';
-  anchorA: Vec2;
-  anchorB: Vec2;
-  length?: number;
-  stiffness?: number;
-  damping?: number;
+	type: "distance";
+	anchorA: Vec2;
+	anchorB: Vec2;
+	length?: number;
+	stiffness?: number;
+	damping?: number;
 }
 
 export interface GameWeldJoint extends GameJointBase {
-  type: 'weld';
-  anchor: Vec2;
-  stiffness?: number;
-  damping?: number;
+	type: "weld";
+	anchor: Vec2;
+	stiffness?: number;
+	damping?: number;
 }
 
 export interface GamePrismaticJoint extends GameJointBase {
-  type: 'prismatic';
-  anchor: Vec2;
-  axis: Vec2;
-  enableLimit?: boolean;
-  lowerTranslation?: number;
-  upperTranslation?: number;
-  enableMotor?: boolean;
-  motorSpeed?: number;
-  maxMotorForce?: number;
+	type: "prismatic";
+	anchor: Vec2;
+	axis: Vec2;
+	enableLimit?: boolean;
+	lowerTranslation?: number;
+	upperTranslation?: number;
+	enableMotor?: boolean;
+	motorSpeed?: number;
+	maxMotorForce?: number;
 }
 
-export type GameJoint = GameRevoluteJoint | GameDistanceJoint | GameWeldJoint | GamePrismaticJoint;
+export type GameJoint =
+	| GameRevoluteJoint
+	| GameDistanceJoint
+	| GameWeldJoint
+	| GamePrismaticJoint;
 
-export type GameVariableValue = number | boolean | string | Vec2 | Value<ExpressionValueType>;
+export type GameVariableValue =
+	| number
+	| boolean
+	| string
+	| Vec2
+	| Value<ExpressionValueType>;
 
 /**
  * Variable with tuning metadata for live editing
  */
 export interface VariableWithTuning {
-  /** Current/default value */
-  value: GameVariableValue;
-  
-  /** Tuning configuration for dev UI (optional) */
-  tuning?: {
-    min: number;
-    max: number;
-    step: number;
-  };
-  
-  /** Category for grouping in UI (optional) */
-  category?: 'physics' | 'gameplay' | 'visuals' | 'economy' | 'ai';
-  
-  /** Human-readable label (optional) */
-  label?: string;
-  
-  /** Tooltip description (optional) */
-  description?: string;
-  
-  /** Show to player in HUD (optional) */
-  display?: boolean;
+	/** Current/default value */
+	value: GameVariableValue;
+
+	/** Tuning configuration for dev UI (optional) */
+	tuning?: {
+		min: number;
+		max: number;
+		step: number;
+	};
+
+	/** Category for grouping in UI (optional) */
+	category?: "physics" | "gameplay" | "visuals" | "economy" | "ai";
+
+	/** Human-readable label (optional) */
+	label?: string;
+
+	/** Tooltip description (optional) */
+	description?: string;
+
+	/** Show to player in HUD (optional) */
+	display?: boolean;
 }
 
 /**
@@ -242,297 +284,323 @@ export type GameVariable = GameVariableValue | VariableWithTuning;
  * Type guard for variables with tuning metadata
  */
 export function isVariableWithTuning(v: GameVariable): v is VariableWithTuning {
-  return typeof v === 'object' && v !== null && 'value' in v && !('x' in v) && !('expr' in v);
+	return (
+		typeof v === "object" &&
+		v !== null &&
+		"value" in v &&
+		!("x" in v) &&
+		!("expr" in v)
+	);
 }
 
 /**
  * Check if a variable has tuning metadata
  */
 export function isTunable(v: GameVariable): boolean {
-  return isVariableWithTuning(v) && v.tuning !== undefined;
+	return isVariableWithTuning(v) && v.tuning !== undefined;
 }
 
 /**
  * Get the actual value from a GameVariable (handles both formats)
  */
 export function getValue(v: GameVariable): GameVariableValue {
-  return isVariableWithTuning(v) ? v.value : v;
+	return isVariableWithTuning(v) ? v.value : v;
 }
 
 /**
  * Get label for a variable (auto-generates from key if not provided)
  */
 export function getLabel(key: string, v: GameVariable): string {
-  if (isVariableWithTuning(v) && v.label) {
-    return v.label;
-  }
-  // Auto-generate label from key: "jumpForce" → "Jump Force"
-  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+	if (isVariableWithTuning(v) && v.label) {
+		return v.label;
+	}
+	// Auto-generate label from key: "jumpForce" → "Jump Force"
+	return key
+		.replace(/([A-Z])/g, " $1")
+		.replace(/^./, (str) => str.toUpperCase())
+		.trim();
 }
 
 export interface MultiplayerConfig {
-  enabled: boolean;
-  maxPlayers: number;
-  syncMode?: 'host-authoritative' | 'peer-to-peer';
-  inputDelay?: number;
-  snapshotRate?: number;
-  deltaRate?: number;
-  interpolationDelay?: number;
+	enabled: boolean;
+	maxPlayers: number;
+	syncMode?: "host-authoritative" | "peer-to-peer";
+	inputDelay?: number;
+	snapshotRate?: number;
+	deltaRate?: number;
+	interpolationDelay?: number;
 }
 
 export interface LoadingScreenConfig {
-  /** Legacy: full URL or relative path */
-  backgroundImageUrl?: string;
-  /** New: asset UUID reference for `backgroundImageUrl` */
-  backgroundAssetRef?: string;
-  /** Legacy: full URL or relative path */
-  progressBarImageUrl?: string;
-  /** New: asset UUID reference for `progressBarImageUrl` */
-  progressBarAssetRef?: string;
-  /** Legacy: full URL or relative path */
-  progressBarFillImageUrl?: string;
-  /** New: asset UUID reference for `progressBarFillImageUrl` */
-  progressBarFillAssetRef?: string;
-  backgroundColor?: string;
-  progressBarColor?: string;
-  textColor?: string;
+	/** Legacy: full URL or relative path */
+	backgroundImageUrl?: string;
+	/** New: asset UUID reference for `backgroundImageUrl` */
+	backgroundAssetRef?: string;
+	/** Legacy: full URL or relative path */
+	progressBarImageUrl?: string;
+	/** New: asset UUID reference for `progressBarImageUrl` */
+	progressBarAssetRef?: string;
+	/** Legacy: full URL or relative path */
+	progressBarFillImageUrl?: string;
+	/** New: asset UUID reference for `progressBarFillImageUrl` */
+	progressBarFillAssetRef?: string;
+	backgroundColor?: string;
+	progressBarColor?: string;
+	textColor?: string;
 }
 
 export interface SoundAsset {
-  url: string;
-  type: 'sfx' | 'music';
-  loop?: boolean;
-  defaultVolume?: number;
+	url: string;
+	type: "sfx" | "music";
+	loop?: boolean;
+	defaultVolume?: number;
 }
 
-export type TapZoneEdge = 'left' | 'right' | 'top' | 'bottom';
-export type TapZoneButton = 'left' | 'right' | 'up' | 'down' | 'jump' | 'action';
+export type TapZoneEdge = "left" | "right" | "top" | "bottom";
+export type TapZoneButton =
+	| "left"
+	| "right"
+	| "up"
+	| "down"
+	| "jump"
+	| "action";
 
 export interface TapZone {
-  id: string;
-  edge: TapZoneEdge;
-  size: number;
-  button: TapZoneButton;
-  debugColor?: string;
+	id: string;
+	edge: TapZoneEdge;
+	size: number;
+	button: TapZoneButton;
+	debugColor?: string;
 }
 
-export type VirtualButtonType = 'jump' | 'action';
+export type VirtualButtonType = "jump" | "action";
 
 export interface VirtualButton {
-  id: string;
-  button: VirtualButtonType;
-  label?: string;
-  size?: number;
-  color?: string;
-  activeColor?: string;
+	id: string;
+	button: VirtualButtonType;
+	label?: string;
+	size?: number;
+	color?: string;
+	activeColor?: string;
 }
 
 export interface VirtualJoystick {
-  id: string;
-  size?: number;
-  knobSize?: number;
-  deadZone?: number;
-  color?: string;
-  knobColor?: string;
+	id: string;
+	size?: number;
+	knobSize?: number;
+	deadZone?: number;
+	color?: string;
+	knobColor?: string;
 }
 
-export type DPadDirection = 'up' | 'down' | 'left' | 'right';
+export type DPadDirection = "up" | "down" | "left" | "right";
 
 export interface VirtualDPad {
-  id: string;
-  size?: number;
-  buttonSize?: number;
-  color?: string;
-  activeColor?: string;
-  showDiagonals?: boolean;
+	id: string;
+	size?: number;
+	buttonSize?: number;
+	color?: string;
+	activeColor?: string;
+	showDiagonals?: boolean;
 }
 
 export interface TiltConfig {
-  enabled: boolean;
-  sensitivity?: number;
-  updateInterval?: number;
+	enabled: boolean;
+	sensitivity?: number;
+	updateInterval?: number;
 }
 
 export interface InputConfig {
-  tapZones?: TapZone[];
-  debugTapZones?: boolean;
-  /** Enable comprehensive input debug overlay showing tap positions, entity targets, drag vectors, etc. */
-  debugInputs?: boolean;
-  virtualButtons?: VirtualButton[];
-  virtualJoystick?: VirtualJoystick;
-  virtualDPad?: VirtualDPad;
-  enableHaptics?: boolean;
-  tilt?: TiltConfig;
+	tapZones?: TapZone[];
+	debugTapZones?: boolean;
+	/** Enable comprehensive input debug overlay showing tap positions, entity targets, drag vectors, etc. */
+	debugInputs?: boolean;
+	virtualButtons?: VirtualButton[];
+	virtualJoystick?: VirtualJoystick;
+	virtualDPad?: VirtualDPad;
+	enableHaptics?: boolean;
+	tilt?: TiltConfig;
 }
 
 export interface VariantSheetConfig {
-  enabled: boolean;
-  groupId: string;
-  /** Legacy: full URL or relative path */
-  atlasUrl: string;
-  /** New: asset UUID reference for `atlasUrl` */
-  atlasAssetRef?: string;
-  /** Legacy: full URL or relative path */
-  metadataUrl?: string;
-  /** New: asset UUID reference for `metadataUrl` */
-  metadataAssetRef?: string;
-  layout: { columns: number; rows: number; cellWidth: number; cellHeight: number };
+	enabled: boolean;
+	groupId: string;
+	/** Legacy: full URL or relative path */
+	atlasUrl: string;
+	/** New: asset UUID reference for `atlasUrl` */
+	atlasAssetRef?: string;
+	/** Legacy: full URL or relative path */
+	metadataUrl?: string;
+	/** New: asset UUID reference for `metadataUrl` */
+	metadataAssetRef?: string;
+	layout: {
+		columns: number;
+		rows: number;
+		cellWidth: number;
+		cellHeight: number;
+	};
 }
 
 export interface Match3Config {
-  gridId: string;
-  rows: number;
-  cols: number;
-  cellSize: number;
-  piecePrefabs: string[];
-  minMatch?: number;
-  swapDuration?: number;
-  fallDuration?: number;
-  clearDelay?: number;
-  variantSheet?: VariantSheetConfig;
-  matchDetection?: string;
-  scoring?: string;
+	gridId: string;
+	rows: number;
+	cols: number;
+	cellSize: number;
+	piecePrefabs: string[];
+	minMatch?: number;
+	swapDuration?: number;
+	fallDuration?: number;
+	clearDelay?: number;
+	variantSheet?: VariantSheetConfig;
+	matchDetection?: string;
+	scoring?: string;
 }
 
 export interface TetrisConfig {
-  gridId: string;
-  boardWidth: number;
-  boardHeight: number;
-  piecePrefabs: string[];
-  initialDropSpeed?: number;
-  levelSpeedMultiplier?: number;
+	gridId: string;
+	boardWidth: number;
+	boardHeight: number;
+	piecePrefabs: string[];
+	initialDropSpeed?: number;
+	levelSpeedMultiplier?: number;
 }
 
 export interface GameDefinition {
-  metadata: GameMetadata;
-  world: WorldConfig;
-  presentation?: PresentationConfig;
-  camera?: CameraConfig;
-  background?: BackgroundConfig;
-  variables?: Record<string, GameVariable>;
-  prefabs: Record<string, EntityPrefab>;
-  entities: GameEntity[];
-  joints?: GameJoint[];
-  rules?: GameRule[];
-  winCondition?: WinCondition;
-  loseCondition?: LoseCondition;
-  assetSystem?: AssetSystemConfig;
-  /** @deprecated Use background with type: 'parallax' instead */
-  parallaxConfig?: ParallaxConfig;
-  tileSheets?: TileSheet[];
-  tileMaps?: TileMap[];
-  multiplayer?: MultiplayerConfig;
-  loadingScreen?: LoadingScreenConfig;
-  sounds?: Record<string, SoundAsset>;
-  input?: InputConfig;
-  match3?: Match3Config;
-  tetris?: TetrisConfig;
-  /**
-   * Game-level state machines for managing game phases, turns, and flow.
-   * Unlike entity-level machines, these have no `owner` field set.
-   */
-  stateMachines?: StateMachineDefinition[];
-  /**
-   * Container definitions for declarative container-based games (Ball Sort, Connect4, etc.).
-   * Containers track entity membership, validate placements, and compute positions.
-   */
-  containers?: ContainerConfig[];
+	metadata: GameMetadata;
+	world: WorldConfig;
+	presentation?: PresentationConfig;
+	camera?: CameraConfig;
+	background?: BackgroundConfig;
+	variables?: Record<string, GameVariable>;
+	prefabs: Record<string, EntityPrefab>;
+	entities: GameEntity[];
+	joints?: GameJoint[];
+	rules?: GameRule[];
+	winCondition?: WinCondition;
+	loseCondition?: LoseCondition;
+	assetSystem?: AssetSystemConfig;
+	/** @deprecated Use background with type: 'parallax' instead */
+	parallaxConfig?: ParallaxConfig;
+	tileSheets?: TileSheet[];
+	tileMaps?: TileMap[];
+	multiplayer?: MultiplayerConfig;
+	loadingScreen?: LoadingScreenConfig;
+	sounds?: Record<string, SoundAsset>;
+	input?: InputConfig;
+	match3?: Match3Config;
+	tetris?: TetrisConfig;
+	/**
+	 * Game-level state machines for managing game phases, turns, and flow.
+	 * Unlike entity-level machines, these have no `owner` field set.
+	 */
+	stateMachines?: StateMachineDefinition[];
+	/**
+	 * Container definitions for declarative container-based games (Ball Sort, Connect4, etc.).
+	 * Containers track entity membership, validate placements, and compute positions.
+	 */
+	containers?: ContainerConfig[];
 
-  /**
-   * Optional persistence configuration for saving/loading game progress.
-   * Games opt-in to persistence by providing this configuration.
-   */
-  persistence?: import('./progress').PersistenceConfig<unknown>;
+	/**
+	 * Optional persistence configuration for saving/loading game progress.
+	 * Games opt-in to persistence by providing this configuration.
+	 */
+	persistence?: import("./progress").PersistenceConfig<unknown>;
 
-  /**
-   * Constants that can be referenced throughout the bundle using { const: "NAME" } syntax.
-   * The compiler resolves these at bundle compile time.
-   * Example: { GRAVITY: 9.8, JUMP_FORCE: 15 }
-   */
-  constants?: Record<string, number | string | boolean>;
+	/**
+	 * Constants that can be referenced throughout the bundle using { const: "NAME" } syntax.
+	 * The compiler resolves these at bundle compile time.
+	 * Example: { GRAVITY: 9.8, JUMP_FORCE: 15 }
+	 */
+	constants?: Record<string, number | string | boolean>;
 
-  /**
-   * Optional JavaScript code for custom game scripting.
-   * Scripts run in a sandboxed QuickJS environment with lifecycle hooks:
-   * - onStart(ctx): Called once when game starts
-   * - onUpdate(ctx, dt): Called every frame
-   * - onInput(ctx, event): Called on input events
-   * - onCollision(ctx, collision): Called on collision events
-   */
-  script?: string;
+	/**
+	 * Optional JavaScript code for custom game scripting.
+	 * Scripts run in a sandboxed QuickJS environment with lifecycle hooks:
+	 * - onStart(ctx): Called once when game starts
+	 * - onUpdate(ctx, dt): Called every frame
+	 * - onInput(ctx, event): Called on input events
+	 * - onCollision(ctx, collision): Called on collision events
+	 */
+	script?: string;
 
-  effects?: {
-    graph?: unknown;
-    shaders?: Record<string, { filename: string; glsl: string }>;
-  };
+	/**
+	 * Machinations-inspired economy graph for resource flow simulation.
+	 * Validated by @slopcade/economy-engine schemas at build/API layer.
+	 */
+	economy?: EconomyGraphDefinition;
 
-  hoverHighlight?: HoverHighlightConfig;
+	effects?: {
+		graph?: unknown;
+		shaders?: Record<string, { filename: string; glsl: string }>;
+	};
 
-  dialogs?: GameDialogsConfig;
+	hoverHighlight?: HoverHighlightConfig;
 
-  overlay?: OverlayConfig;
+	dialogs?: GameDialogsConfig;
+
+	overlay?: OverlayConfig;
 }
 
 export interface HoverHighlightConfig {
-  targetTag: string;
-  highlightEntityId: string;
+	targetTag: string;
+	highlightEntityId: string;
 }
 
 // ============================================================================
 // Game-Defined Dialog System
 // ============================================================================
 
-export type GameButtonVariant = 'primary' | 'secondary';
+export type GameButtonVariant = "primary" | "secondary";
 
 export interface GameButtonDefinition {
-  label: string;
-  eventName: string;
-  data?: Record<string, unknown>;
-  variant?: GameButtonVariant;
+	label: string;
+	eventName: string;
+	data?: Record<string, unknown>;
+	variant?: GameButtonVariant;
 }
 
 export interface GameDialogStatDefinition {
-  label: string;
-  variable: string;
-  format?: string;
-  binding?: string;
+	label: string;
+	variable: string;
+	format?: string;
+	binding?: string;
 }
 
 export interface GameDialogStyle {
-  backgroundColor?: string;
-  titleColor?: string;
-  titleFontSize?: number;
-  backdropColor?: string;
-  width?: number | string;
-  borderRadius?: number;
+	backgroundColor?: string;
+	titleColor?: string;
+	titleFontSize?: number;
+	backdropColor?: string;
+	width?: number | string;
+	borderRadius?: number;
 }
 
 export interface GameDialogDefinition {
-  id: string;
-  title: string;
-  message?: string;
-  stats?: GameDialogStatDefinition[];
-  dismissible?: boolean;
-  dismissEventName?: string;
-  buttons: GameButtonDefinition[];
-  showOnState?: 'ready' | 'won' | 'lost' | 'paused';
-  showWhen?: string;
-  style?: GameDialogStyle;
+	id: string;
+	title: string;
+	message?: string;
+	stats?: GameDialogStatDefinition[];
+	dismissible?: boolean;
+	dismissEventName?: string;
+	buttons: GameButtonDefinition[];
+	showOnState?: "ready" | "won" | "lost" | "paused";
+	showWhen?: string;
+	style?: GameDialogStyle;
 }
 
 export interface GameDialogsConfig {
-  activeDialogVariable?: string;
-  dialogs: GameDialogDefinition[];
-  legacyWinDialogFallback?: boolean;
+	activeDialogVariable?: string;
+	dialogs: GameDialogDefinition[];
+	legacyWinDialogFallback?: boolean;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {
-  gravity: { x: 0, y: 10 },
-  pixelsPerMeter: 50,
-  bounds: { width: 20, height: 12 },
+	gravity: { x: 0, y: 10 },
+	pixelsPerMeter: 50,
+	bounds: { width: 20, height: 12 },
 };
 
 export const DEFAULT_CAMERA_CONFIG: CameraConfig = {
-  type: 'fixed',
-  zoom: 1,
+	type: "fixed",
+	zoom: 1,
 };
