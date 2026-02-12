@@ -1,0 +1,1 @@
+This is a test file for compression. It contains some text that should be compressed using the text mode automatically.

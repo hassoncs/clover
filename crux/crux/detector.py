@@ -1,7 +1,7 @@
 """File type detection for automatic mode selection."""
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 
 # Extension-to-mode mapping
@@ -13,47 +13,40 @@ EXTENSION_MAP = {
     ".adoc": "text",
     ".org": "text",
     
-    # Code - Python
-    ".py": "code",
-    ".pyi": "code",
-    
-    # Code - JavaScript/TypeScript
-    ".js": "code",
-    ".jsx": "code",
-    ".ts": "code",
-    ".tsx": "code",
-    ".mjs": "code",
-    ".cjs": "code",
-    
-    # Code - Web
-    ".html": "code",
-    ".htm": "code",
-    ".css": "code",
-    ".scss": "code",
-    ".sass": "code",
-    ".less": "code",
-    
-    # Code - Systems
-    ".c": "code",
-    ".cpp": "code",
-    ".cc": "code",
-    ".cxx": "code",
-    ".h": "code",
-    ".hpp": "code",
-    ".rs": "code",
-    ".go": "code",
-    ".java": "code",
-    ".kt": "code",
-    ".swift": "code",
-    
-    # Code - Scripting
-    ".sh": "code",
-    ".bash": "code",
-    ".zsh": "code",
-    ".fish": "code",
-    ".rb": "code",
-    ".pl": "code",
-    ".php": "code",
+    # Code - DISABLED (compression breaks syntax)
+    # Use text mode as safer fallback with warning
+    # ".py": "code",
+    # ".pyi": "code",
+    # ".js": "code",
+    # ".jsx": "code",
+    # ".ts": "code",
+    # ".tsx": "code",
+    # ".mjs": "code",
+    # ".cjs": "code",
+    # ".html": "code",
+    # ".htm": "code",
+    # ".css": "code",
+    # ".scss": "code",
+    # ".sass": "code",
+    # ".less": "code",
+    # ".c": "code",
+    # ".cpp": "code",
+    # ".cc": "code",
+    # ".cxx": "code",
+    # ".h": "code",
+    # ".hpp": "code",
+    # ".rs": "code",
+    # ".go": "code",
+    # ".java": "code",
+    # ".kt": "code",
+    # ".swift": "code",
+    # ".sh": "code",
+    # ".bash": "code",
+    # ".zsh": "code",
+    # ".fish": "code",
+    # ".rb": "code",
+    # ".pl": "code",
+    # ".php": "code",
     
     # Structured Data
     ".json": "structured",
@@ -69,6 +62,15 @@ EXTENSION_MAP = {
     ".config": "structured",
 }
 
+# Code file extensions (for warning detection)
+CODE_EXTENSIONS = {
+    ".py", ".pyi", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs",
+    ".html", ".htm", ".css", ".scss", ".sass", ".less",
+    ".c", ".cpp", ".cc", ".cxx", ".h", ".hpp",
+    ".rs", ".go", ".java", ".kt", ".swift",
+    ".sh", ".bash", ".zsh", ".fish", ".rb", ".pl", ".php",
+}
+
 
 def detect_mode(path: Path) -> Literal["text", "code", "structured"]:
     """Detect compression mode based on file extension and content.
@@ -79,17 +81,26 @@ def detect_mode(path: Path) -> Literal["text", "code", "structured"]:
     Returns:
         Detected mode: "text", "code", or "structured"
     """
-    # Check extension first
     ext = path.suffix.lower()
-    if ext in EXTENSION_MAP:
-        return EXTENSION_MAP[ext]
     
-    # Unknown extension - use heuristics
+    if ext in CODE_EXTENSIONS:
+        import sys
+        print(f"⚠️  WARNING: Code file detected ({path.name}). Compression may break syntax.", file=sys.stderr)
+        print(f"⚠️  Using text mode as safer fallback. Consider compressing documentation instead.", file=sys.stderr)
+        return "text"
+    
+    if ext in EXTENSION_MAP:
+        return cast(Literal["text", "code", "structured"], EXTENSION_MAP[ext])
+    
     try:
         content = path.read_text(encoding="utf-8", errors="ignore")
-        return _detect_from_content(content)
+        detected = _detect_from_content(content)
+        if detected == "code":
+            import sys
+            print(f"⚠️  WARNING: Code-like content detected in {path.name}. Using text mode.", file=sys.stderr)
+            return "text"
+        return detected
     except Exception:
-        # If we can't read the file, default to text
         return "text"
 
 

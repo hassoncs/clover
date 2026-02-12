@@ -8,26 +8,38 @@ Crux is a robust prompt compression tool built on LLMLingua with text/code mode 
 
 ### Core Components
 
-1. **`crux/compressor.py`**
+1. **`crux/detector.py`** ✨ NEW
+   - Smart file type detection based on extension and content
+   - 70+ file extensions mapped to modes (text, code, structured)
+   - Heuristic fallback for unknown extensions
+   - Exports: `detect_mode(path) -> Literal["text", "code", "structured"]`
+
+2. **`crux/compressor.py`** ✨ ENHANCED
    - `Compressor` class with LLMLingua-2 integration
-   - Text mode: Protects sentence boundaries (`.`, `!`, `?`, `,`, `\n`)
-   - Code mode: Protects syntax tokens (`{`, `}`, `(`, `)`, `;`, `,`, `[`, `]`, `.`, `:`, `=`, `\n`, `\t`)
+   - **Three compression modes:**
+     - Text mode: Protects sentence boundaries (`.`, `!`, `?`, `,`, `\n`)
+     - Code mode: Protects syntax tokens + LongLLMLingua ranking
+     - Structured mode: Protects JSON/YAML structure tokens
+   - Query-aware compression via `query` parameter
    - Returns `CompressionResult` with statistics
 
-2. **`crux/verifier.py`**
+3. **`crux/verifier.py`**
    - `Verifier` class using LiteLLM for quality auditing
    - Auditor system prompt evaluates semantic preservation
    - Returns `VerificationResult` with verdict (PASS/FAIL/DEGRADED/SKIPPED)
    - Gracefully handles missing API keys
 
-3. **`crux/cli.py`**
+4. **`crux/cli.py`** ✨ ENHANCED
    - Typer-based CLI with rich terminal output
    - Commands: `compress`, `version`
-   - Options: `--mode`, `--ratio`, `--verify`, `--output`
+   - **Smart auto-detection:** `--mode` is optional
+   - **Batch processing:** Compress entire directories
+   - **Flexible output:** stdout, file, or directory mirroring
+   - Options: `--mode`, `--ratio`, `--query`, `--verify`, `--output`
    - Beautiful tables showing compression statistics
 
-4. **`crux/__init__.py`**
-   - Exports: `Compressor`, `CompressionResult`, `Verifier`, `VerificationResult`
+5. **`crux/__init__.py`**
+   - Exports: `Compressor`, `CompressionResult`, `Verifier`, `VerificationResult`, `detect_mode`
 
 ## Installation
 
@@ -43,15 +55,24 @@ pip install -e .
 ### Basic Compression
 
 ```bash
-# Text mode (default)
+# Auto-detect mode (text for .md)
 crux compress AGENTS.md -o AGENTS.compressed.md --ratio 0.5
 
-# Code mode
-crux compress src/main.py -o src/main.compressed.py --mode code --ratio 0.6
+# Auto-detect mode (code for .py)
+crux compress src/main.py -o src/main.compressed.py --ratio 0.6
+
+# Auto-detect mode (structured for .json)
+crux compress config.json -o config.compressed.json
 
 # With verification
 export OPENAI_API_KEY=your-key
 crux compress prompt.txt -o prompt.compressed.txt --verify
+
+# Query-aware compression
+crux compress AGENTS.md --query "authentication setup" -o auth.md
+
+# Batch processing
+crux compress ./docs/ -o ./compressed-docs/
 ```
 
 ### Programmatic Usage
@@ -78,10 +99,28 @@ print(f"Verdict: {verification.verdict}")
 
 ## Key Features
 
+### Smart Auto-Detection
+
+- Automatically detects file type from extension (70+ extensions supported)
+- Falls back to content heuristics for unknown extensions
+- Manual override available via `--mode` flag
+
 ### Mode-Specific Optimization
 
 - **Text Mode**: Preserves document structure, sentence boundaries, and punctuation
-- **Code Mode**: Protects syntax tokens to maintain code validity
+- **Code Mode**: Protects syntax tokens + LongLLMLingua ranking for better code compression
+- **Structured Mode**: Protects JSON/YAML/TOML structure tokens
+
+### Batch Processing
+
+- Compress entire directories with structure mirroring
+- Progress reporting per file
+- Automatic output directory creation
+
+### Query-Aware Compression
+
+- Focus compression on content relevant to a specific query
+- Uses LLMLingua's instruction parameter for targeted compression
 
 ### LLM Verification
 
@@ -142,15 +181,21 @@ This tests:
 
 ```
 crux/
-├── __init__.py           # Package exports
-├── compressor.py         # Core compression logic
-├── verifier.py           # LLM-based verification
-├── cli.py                # Typer CLI
-├── pyproject.toml        # Package metadata
-├── README.md             # User documentation
-├── IMPLEMENTATION.md     # This file
-├── test_crux.py          # Manual test script
-└── test_input.txt        # Sample input for testing
+├── crux/
+│   ├── __init__.py           # Package exports
+│   ├── detector.py           # ✨ NEW: File type detection
+│   ├── compressor.py         # ✨ ENHANCED: 3 modes + query support
+│   ├── verifier.py           # LLM-based verification
+│   ├── cli.py                # ✨ ENHANCED: Auto-detect + batch processing
+│   └── test_crux.py          # Manual test script
+├── pyproject.toml            # Package metadata
+├── README.md                 # ✨ UPDATED: New features documented
+├── IMPLEMENTATION.md         # This file
+├── SMART_AUTO_DETECTION.md   # ✨ NEW: Implementation details
+└── test_input.txt            # Sample input for testing
+
+~/.local/bin/
+└── crux-wrapper              # ✨ NEW: Global wrapper script
 ```
 
 ## Status

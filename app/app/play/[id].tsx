@@ -243,11 +243,19 @@ export default function PlayScreen() {
 		loadGame();
 	}, [id, definitionParam, remixId, getDefinitionActiveRemixId]);
 
+	// Derive whether remix data is still pending — this is synchronous and avoids
+	// the race where the preload effect fires before the remix fetch effect has
+	// had a chance to set isLoadingRemix=true (both run in the same render cycle).
+	const effectiveRemixIdForPreload = remixId ?? activeRemixId;
+	const remixDataPending =
+		!!effectiveRemixIdForPreload && !resolvedAssetEntries;
+
 	useEffect(() => {
 		if (
 			gameDefinition &&
 			!isLoadingDefinition &&
 			!isLoadingRemix &&
+			!remixDataPending &&
 			phase === "idle"
 		) {
 			startPreload();
@@ -256,6 +264,7 @@ export default function PlayScreen() {
 		gameDefinition,
 		isLoadingDefinition,
 		isLoadingRemix,
+		remixDataPending,
 		phase,
 		startPreload,
 	]);

@@ -5,6 +5,21 @@ from typing import Literal, Optional
 from llmlingua import PromptCompressor
 
 
+def _parse_ratio(ratio_str: str) -> float:
+    """Parse LLMLingua ratio string (e.g., '1.7x') to float.
+    
+    Args:
+        ratio_str: Ratio string from LLMLingua (e.g., '1.7x', '2.0x')
+        
+    Returns:
+        Float ratio value
+    """
+    if isinstance(ratio_str, (int, float)):
+        return float(ratio_str)
+    
+    return float(ratio_str.rstrip('x'))
+
+
 @dataclass
 class CompressionResult:
     """Result of compression operation."""
@@ -88,7 +103,7 @@ class Compressor:
             compressed_text=result["compressed_prompt"],
             original_tokens=result["origin_tokens"],
             compressed_tokens=result["compressed_tokens"],
-            compression_ratio=result["ratio"],
+            compression_ratio=_parse_ratio(result["ratio"]),
             mode="text"
         )
     
@@ -107,6 +122,7 @@ class Compressor:
             "use_context_level_filter": True,
             "use_token_level_filter": True,
             "rank_method": "longllmlingua",
+            "reorder_context": "sort",
         }
         
         if query:
@@ -119,7 +135,7 @@ class Compressor:
             compressed_text=result["compressed_prompt"],
             original_tokens=result["origin_tokens"],
             compressed_tokens=result["compressed_tokens"],
-            compression_ratio=result["ratio"],
+            compression_ratio=_parse_ratio(result["ratio"]),
             mode="code"
         )
     
@@ -137,6 +153,8 @@ class Compressor:
             "force_tokens": force_tokens,
             "use_context_level_filter": True,
             "use_token_level_filter": True,
+            "rank_method": "longllmlingua",
+            "reorder_context": "sort",
         }
         
         if query:
@@ -149,6 +167,6 @@ class Compressor:
             compressed_text=result["compressed_prompt"],
             original_tokens=result["origin_tokens"],
             compressed_tokens=result["compressed_tokens"],
-            compression_ratio=result["ratio"],
+            compression_ratio=_parse_ratio(result["ratio"]),
             mode="structured"
         )

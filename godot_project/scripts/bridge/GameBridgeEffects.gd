@@ -529,14 +529,17 @@ func apply_plan(plan_json) -> Dictionary:
 	var scope: String = str(plan_dict.get("scope", ""))
 
 	if scope == "screen":
-		_setup_game_capture_viewport()
-		if _game_capture_viewport != null:
-			_screen_executor.set_source_viewport(_game_capture_viewport)
-		var result = _screen_executor.apply_plan(plan_dict)
-		if bool(result.get("success", false)):
-			_create_screen_overlay()
-			_screen_executor.start()
-		return result
+		# TEMPORARILY DISABLED: Screen effects are being rebuilt step by step
+		# _setup_game_capture_viewport()
+		# if _game_capture_viewport != null:
+		# 	_screen_executor.set_source_viewport(_game_capture_viewport)
+		# var result = _screen_executor.apply_plan(plan_dict)
+		# if bool(result.get("success", false)):
+		# 	_create_screen_overlay()
+		# 	_screen_executor.start()
+		# return result
+		push_warning("[GameBridgeEffects] Screen-scope effects temporarily disabled for debugging")
+		return {"success": true, "warning": "Screen effects disabled for debugging"}
 
 	_current_scope = "entity"
 

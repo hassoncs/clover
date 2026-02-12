@@ -180,7 +180,7 @@ export function useAssetResolution(
 				offlineMode: true,
 				localServerUrl: getServerUrl(),
 			});
-			mergedPacks[dbPack.name] = dbPack;
+			mergedPacks[dbRemixQuery.data.id] = dbPack;
 		}
 
 		if (activeRemixId && mergedPacks[activeRemixId] && definition.prefabs) {
