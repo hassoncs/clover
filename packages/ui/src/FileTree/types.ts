@@ -111,15 +111,17 @@ export function pathsToTree(
 	// Second pass: populate children arrays for folders
 	for (const [folderId, childIds] of folderChildren.entries()) {
 		if (data[folderId]) {
-			data[folderId].children = Array.from(childIds).sort((a, b) => {
-				// Folders first, then files, alphabetically within each group
-				const aNode = data[a];
-				const bNode = data[b];
-				if (aNode.type !== bNode.type) {
-					return aNode.type === "folder" ? -1 : 1;
-				}
-				return aNode.name.localeCompare(bNode.name);
-			});
+			data[folderId].children = Array.from(childIds).sort(
+				(a: string, b: string) => {
+					// Folders first, then files, alphabetically within each group
+					const aNode = data[a];
+					const bNode = data[b];
+					if (aNode.type !== bNode.type) {
+						return aNode.type === "folder" ? -1 : 1;
+					}
+					return aNode.name.localeCompare(bNode.name);
+				},
+			);
 		}
 	}
 

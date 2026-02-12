@@ -18,7 +18,7 @@ cd app && pnpm tsc --noEmit && cd ..
 echo "TypeScript check passed."
 
 echo "Linting GDScript..."
-pnpm lint:gdscript
+npx tsx scripts/lint-gdscript.ts
 echo "GDScript lint passed."
 
 pnpm hush check --only-changed
