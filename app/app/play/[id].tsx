@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { ResolvedAssetEntry } from "@/lib/assets";
 import { mergeAssetsIntoPrefabs } from "@/lib/assets/mergeAssetsIntoTemplates";
+import { resolveAssetIds } from "@/lib/assets/resolveAssetIds";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import {
 	isGameDownloaded,
@@ -194,7 +195,21 @@ export default function PlayScreen() {
 
 			try {
 				if (definitionParam) {
-					const parsed = JSON.parse(definitionParam) as GameDefinition;
+					let parsed = JSON.parse(definitionParam) as GameDefinition;
+
+					try {
+						parsed = await resolveAssetIds(parsed, (hashes) =>
+							trpc.blobAssets.batchResolve
+								.query({ hashes })
+								.then((res) => res.urls),
+						);
+					} catch (e) {
+						console.warn(
+							"[play] Failed to resolve asset IDs from definitionParam",
+							e,
+						);
+					}
+
 					setGameDefinition(parsed);
 					if (!remixId) {
 						setActiveRemixId(getDefinitionActiveRemixId(parsed));
@@ -220,7 +235,18 @@ export default function PlayScreen() {
 					} else {
 						console.log(`[play] Loading game ${id} from API`);
 						const game = await trpc.games.getPublic.query({ id });
-						const parsed = JSON.parse(game.definition) as GameDefinition;
+						let parsed = JSON.parse(game.definition) as GameDefinition;
+
+						try {
+							parsed = await resolveAssetIds(parsed, (hashes) =>
+								trpc.blobAssets.batchResolve
+									.query({ hashes })
+									.then((res) => res.urls),
+							);
+						} catch (e) {
+							console.warn("[play] Failed to resolve asset IDs from API", e);
+						}
+
 						setGameDefinition(parsed);
 						if (!remixId) {
 							setActiveRemixId(getDefinitionActiveRemixId(parsed));
