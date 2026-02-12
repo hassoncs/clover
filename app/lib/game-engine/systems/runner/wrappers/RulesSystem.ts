@@ -35,6 +35,9 @@ import {
 	ComboActionExecutor,
 	ContainerActionExecutor,
 	DestroyActionExecutor,
+	EconomyEmitEventActionExecutor,
+	EconomySetValueActionExecutor,
+	EconomyTransferActionExecutor,
 	EntityActionExecutor,
 	GridActionExecutor,
 	HapticActionExecutor,
@@ -53,6 +56,7 @@ import {
 } from "../../../rules/actions";
 import {
 	ContainerConditionEvaluator,
+	EconomyPoolConditionEvaluator,
 	LogicConditionEvaluator,
 	PhysicsConditionEvaluator,
 } from "../../../rules/conditions";
@@ -123,6 +127,7 @@ export class RulesSystem
 	private logicConditionEvaluator = new LogicConditionEvaluator();
 	private physicsConditionEvaluator = new PhysicsConditionEvaluator();
 	private containerConditionEvaluator!: ContainerConditionEvaluator;
+	private economyPoolConditionEvaluator = new EconomyPoolConditionEvaluator();
 
 	private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
 	private inputTriggerEvaluator = new InputTriggerEvaluator();
@@ -175,6 +180,9 @@ export class RulesSystem
 		const stateMachineActionExecutor = new StateMachineActionExecutor();
 		const waveActionExecutor = new WaveActionExecutor();
 		const ballSortActionExecutor = new BallSortActionExecutor();
+		const economyTransferActionExecutor = new EconomyTransferActionExecutor();
+		const economyEmitEventActionExecutor = new EconomyEmitEventActionExecutor();
+		const economySetValueActionExecutor = new EconomySetValueActionExecutor();
 
 		this.actionRegistry = new ActionRegistry(
 			spawnActionExecutor,
@@ -198,6 +206,9 @@ export class RulesSystem
 			ballSortActionExecutor,
 			containerActionExecutor,
 			this.runScriptActionExecutor,
+			economyTransferActionExecutor,
+			economyEmitEventActionExecutor,
+			economySetValueActionExecutor,
 		);
 
 		this.rules = this.config.rules;
@@ -748,6 +759,10 @@ export class RulesSystem
 				case "container_top_item":
 				case "container_is_occupied":
 					return this.containerConditionEvaluator.evaluate(c, context);
+				case "economy_pool_above":
+				case "economy_pool_below":
+				case "economy_pool_equals":
+					return this.economyPoolConditionEvaluator.evaluate(c, context);
 				default:
 					return true;
 			}

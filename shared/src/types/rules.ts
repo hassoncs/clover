@@ -228,7 +228,10 @@ export type RuleCondition =
 	| ContainerHasItemCondition
 	| ContainerCanAcceptCondition
 	| ContainerTopItemCondition
-	| ContainerIsOccupiedCondition;
+	| ContainerIsOccupiedCondition
+	| EconomyPoolAboveCondition
+	| EconomyPoolBelowCondition
+	| EconomyPoolEqualsCondition;
 
 export type SpawnPositionType =
 	| "fixed"
@@ -580,6 +583,51 @@ export interface RunScriptAction {
 	args?: Record<string, unknown>;
 }
 
+// ============================================================================
+// Economy Actions
+// ============================================================================
+
+export interface EconomyTransferAction {
+	type: "economy_transfer";
+	fromPool: string;
+	toPool: string;
+	amount: number;
+}
+
+export interface EconomyEmitEventAction {
+	type: "economy_emit_event";
+	eventType: string;
+	data?: Record<string, unknown>;
+}
+
+export interface EconomySetValueAction {
+	type: "economy_set_value";
+	poolId: string;
+	value: number;
+}
+
+// ============================================================================
+// Economy Conditions
+// ============================================================================
+
+export interface EconomyPoolAboveCondition {
+	type: "economy_pool_above";
+	poolId: string;
+	threshold: number;
+}
+
+export interface EconomyPoolBelowCondition {
+	type: "economy_pool_below";
+	poolId: string;
+	threshold: number;
+}
+
+export interface EconomyPoolEqualsCondition {
+	type: "economy_pool_equals";
+	poolId: string;
+	threshold: number;
+}
+
 export type RuleAction =
 	| SpawnAction
 	| DestroyAction
@@ -631,7 +679,10 @@ export type RuleAction =
 	| ContainerClearAction
 	| ContainerSelectAction
 	| ContainerDeselectAction
-	| RunScriptAction;
+	| RunScriptAction
+	| EconomyTransferAction
+	| EconomyEmitEventAction
+	| EconomySetValueAction;
 
 export interface GameRule {
 	id: string;

@@ -15,6 +15,13 @@ import type { RuntimeEntity } from "../types";
 
 export type ListValue = (number | string | boolean)[];
 
+export interface IEconomyOps {
+	getPoolValue(poolId: string): number | undefined;
+	setPoolValue(poolId: string, value: number): void;
+	transfer(fromPoolId: string, toPoolId: string, amount: number): boolean;
+	emitEvent(eventType: string, data?: Record<string, unknown>): void;
+}
+
 export interface IGameStateMutator {
 	getElapsed(): number;
 	setGameState(state: GameState["state"]): void;
@@ -64,4 +71,5 @@ export interface RuleContext {
 		y: number,
 		config?: { duration?: number; easing?: string },
 	) => void;
+	economyOps?: IEconomyOps;
 }
