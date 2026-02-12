@@ -1,4 +1,5 @@
 #!/usr/bin/env npx tsx
+import { createHash } from "crypto";
 import {
 	chmodSync,
 	existsSync,
@@ -50,6 +51,10 @@ interface BridgeRegistry {
 	generatedAt: string;
 	sourceFile: string;
 	methods: MethodEntry[];
+	nameMap: {
+		tsToSnake: Record<string, string>;
+		snakeToTs: Record<string, string>;
+	};
 	stats: {
 		total: number;
 		bridgeMethods: number;
@@ -226,7 +231,8 @@ function generateGDScriptValidator(registry: BridgeRegistry): void {
 		.map((m) => {
 			const paramCount = m.params.length;
 			const asyncStr = m.async ? "true" : "false";
-			return `  "${m.snakeName}": {"param_count": ${paramCount}, "async": ${asyncStr}},`;
+			// Use TypeScript name (camelCase) as the primary key for validation
+			return `  "${m.tsName}": {"param_count": ${paramCount}, "async": ${asyncStr}},`;
 		})
 		.join("\n");
 
@@ -270,6 +276,11 @@ static func validate(method_map: Dictionary) -> Array[String]:
 	chmodSync(GDSCRIPT_OUTPUT_PATH, 0o444);
 }
 
+function computeSourceHash(): string {
+	const content = readFileSync(TYPES_PATH, "utf-8");
+	return createHash("sha256").update(content).digest("hex").slice(0, 12);
+}
+
 function generateRegistry(): BridgeRegistry {
 	const project = new Project({ compilerOptions: { strict: true } });
 	project.addSourceFileAtPath(TYPES_PATH);
@@ -290,16 +301,21 @@ function generateRegistry(): BridgeRegistry {
 	}
 
 	const byCategory: Record<string, number> = {};
+	const tsToSnake: Record<string, string> = {};
+	const snakeToTs: Record<string, string> = {};
 	let tsOnlyCount = 0;
 	for (const m of methods) {
 		byCategory[m.category] = (byCategory[m.category] ?? 0) + 1;
 		if (m.tsOnly) tsOnlyCount++;
+		tsToSnake[m.tsName] = m.snakeName;
+		snakeToTs[m.snakeName] = m.tsName;
 	}
 
 	return {
-		generatedAt: new Date().toISOString(),
+		generatedAt: `source:${computeSourceHash()}`,
 		sourceFile: "app/lib/godot/types.ts",
 		methods,
+		nameMap: { tsToSnake, snakeToTs },
 		stats: {
 			total: methods.length,
 			bridgeMethods: methods.length - tsOnlyCount,
@@ -314,6 +330,7 @@ function normalizeRegistry(registry: BridgeRegistry): BridgeRegistry {
 		generatedAt: "",
 		sourceFile: registry.sourceFile,
 		methods: registry.methods,
+		nameMap: registry.nameMap,
 		stats: registry.stats,
 	};
 }

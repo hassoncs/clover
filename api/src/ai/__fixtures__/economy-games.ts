@@ -198,3 +198,111 @@ export const gamblingEconomy: EconomyGraph = {
 		},
 	],
 };
+
+export const allNodeAndEdgeTypesEconomy: EconomyGraph = {
+	id: "all-node-and-edge-types",
+	resourceTypes: ["coins", "energy", "tickets"],
+	nodes: [
+		{
+			id: "coin-source",
+			type: "source",
+			label: "Coin Source",
+			resourceType: "coins",
+		},
+		{
+			id: "coin-pool",
+			type: "pool",
+			label: "Coin Pool",
+			resourceType: "coins",
+			initialValue: 10,
+			capacity: 250,
+		},
+		{
+			id: "energy-gate",
+			type: "gate",
+			label: "Energy Gate",
+			resourceType: "coins",
+			mode: "conditional",
+		},
+		{
+			id: "ticket-converter",
+			type: "converter",
+			label: "Ticket Converter",
+			inputResourceType: "coins",
+			outputResourceType: "tickets",
+			rate: 0.5,
+		},
+		{
+			id: "ticket-drain",
+			type: "drain",
+			label: "Ticket Sink",
+			resourceType: "tickets",
+		},
+	],
+	edges: [
+		{
+			id: "resource-edge",
+			type: "resource",
+			from: "coin-source",
+			to: "coin-pool",
+			formula: "4",
+		},
+		{
+			id: "conditional-state-edge",
+			type: "state",
+			from: "coin-pool",
+			to: "energy-gate",
+			condition: "coins >= 20",
+		},
+		{
+			id: "gated-resource-edge",
+			type: "resource",
+			from: "energy-gate",
+			to: "ticket-converter",
+			formula: "2",
+		},
+		{
+			id: "drain-edge",
+			type: "resource",
+			from: "ticket-converter",
+			to: "ticket-drain",
+			formula: "1",
+		},
+	],
+};
+
+export const malformedEconomyMissingNode = {
+	id: "malformed-missing-node",
+	resourceTypes: ["coins"],
+	nodes: [
+		{
+			id: "coin-source",
+			type: "source",
+			label: "Coin Source",
+			resourceType: "coins",
+		},
+	],
+	edges: [
+		{
+			id: "bad-edge",
+			type: "resource",
+			from: "coin-source",
+			to: "unknown-node",
+			formula: "1",
+		},
+	],
+};
+
+export const malformedEconomyInvalidNodeType = {
+	id: "malformed-invalid-node-type",
+	resourceTypes: ["coins"],
+	nodes: [
+		{
+			id: "coin-source",
+			type: "warehouse",
+			label: "Not Supported",
+			resourceType: "coins",
+		},
+	],
+	edges: [],
+};

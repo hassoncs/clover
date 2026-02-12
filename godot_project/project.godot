@@ -35,6 +35,10 @@ window/stretch/mode="canvas_items"
 2d/default_gravity=980.0
 2d/default_gravity_vector=Vector2(0, 1)
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

@@ -27,9 +27,10 @@
       "layer": -100,
       "whatDescription": "a gradient puzzle game background with subtle patterns and soft lighting",
       "visual": {
-        "type": "image",
-        "imageWidth": 14.4,
-        "imageHeight": 25.6
+        "type": "rect",
+        "color": "#1a1a2e",
+        "width": 14.4,
+        "height": 25.6
       }
     },
     "tube": {
@@ -39,9 +40,10 @@
       ],
       "whatDescription": "a transparent cylindrical container tube",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.68,
-        "imageHeight": 6
+        "type": "rect",
+        "color": "#334455",
+        "width": 2.0,
+        "height": 6.0
       },
       "collider": {
         "shape": "box",
@@ -74,9 +76,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#ff4444",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -136,9 +138,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#44ff44",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -198,9 +200,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#4444ff",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -260,9 +262,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#ffff44",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -322,9 +324,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#ff44ff",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -384,9 +386,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#44ffff",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -446,9 +448,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#ff8844",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -508,9 +510,9 @@
       ],
       "whatDescription": "a small round droppable ball object",
       "visual": {
-        "type": "image",
-        "imageWidth": 1.2,
-        "imageHeight": 1.2
+        "type": "circle",
+        "color": "#8844ff",
+        "radius": 0.3
       },
       "conditionalBehaviors": [
         {
@@ -580,28 +582,18 @@
   },
   "entities": [
     {
-      "id": "background",
-      "name": "Background",
-      "prefab": "background",
-      "transform": {
-        "x": 0,
-        "y": 0,
-        "angle": 0,
-        "scaleX": 1,
-        "scaleY": 1
-      }
-    },
-    {
-      "id": "tube-hover-highlight",
-      "name": "Tube Hover Highlight",
-      "prefab": "tubeHoverHighlight",
-      "visible": false,
-      "transform": {
-        "x": 0,
-        "y": 0,
-        "angle": 0,
-        "scaleX": 1,
-        "scaleY": 1
+      "id": "test-rect",
+      "prefabId": "test-rect",
+      "x": 0,
+      "y": 0,
+      "visual": {
+        "type": "rect",
+        "color": "#ff0000",
+        "width": 5.0,
+        "height": 5.0
+      },
+      "body": {
+        "type": "static"
       }
     }
   ],
@@ -991,91 +983,5 @@
       "12e102fa-b833-4735-82ab-1c609b4a4fa6",
       "865c8006-ab66-4ddb-8ffd-b791beb6780a"
     ]
-  },
-  "effects": {
-    "graph": {
-      "id": "ballSort_wavy_scanlines",
-      "version": "1.0.0",
-      "engineApiVersion": "2.0.0",
-      "scope": "screen",
-      "nodes": [
-        {
-          "id": "wave_node",
-          "type": "underwater",
-          "family": "filter",
-          "inputSlots": [
-            {
-              "name": "input",
-              "dataType": "texture",
-              "connectedTo": null
-            }
-          ],
-          "params": {
-            "intensity": 0.0,
-            "wave_speed": 1.0,
-            "wave_frequency": 6.0,
-            "wave_amplitude": 0.005
-          },
-          "outputTarget": {
-            "bufferId": "wave_buf",
-            "format": "rgba8",
-            "resolution": "full"
-          },
-          "flags": {
-            "stateful": false,
-            "fusible": "conditional"
-          }
-        },
-        {
-          "id": "scanlines_node",
-          "type": "scanlines",
-          "family": "filter",
-          "inputSlots": [
-            {
-              "name": "input",
-              "dataType": "texture",
-              "connectedTo": {
-                "nodeId": "wave_node",
-                "output": "wave_buf"
-              }
-            }
-          ],
-          "params": {
-            "scanline_count": 200,
-            "scanline_opacity": 0.2,
-            "scanline_speed": 0.5,
-            "brightness": 1.0,
-            "flicker": 0.02,
-            "scanline_pattern": 0
-          },
-          "outputTarget": {
-            "bufferId": "scanlines_buf",
-            "format": "rgba8",
-            "resolution": "full"
-          },
-          "flags": {
-            "stateful": false,
-            "fusible": "conditional"
-          }
-        }
-      ],
-      "connections": [
-        {
-          "from": {
-            "nodeId": "wave_node",
-            "output": "wave_buf"
-          },
-          "to": {
-            "nodeId": "scanlines_node",
-            "input": "input"
-          }
-        }
-      ],
-      "feedbackEdges": [],
-      "lifecycle": {
-        "autoStart": true,
-        "stopMode": "clear"
-      }
-    }
   }
 }

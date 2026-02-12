@@ -57,10 +57,10 @@ Implement a deterministic, file-backed skill auto-trigger system for chat stream
 - Deterministic Vitest tests for matcher, registry safety, and stream integration.
 
 ### Definition of Done
-- [ ] Keyword-triggered skill selection works deterministically in chat stream path.
-- [ ] Skill description is injected into `system` prompt only when matched.
-- [ ] `readSkill` can only read allowlisted skill files; traversal attempts fail.
-- [ ] New tests pass in CI-style deterministic execution.
+- [x] Keyword-triggered skill selection works deterministically in chat stream path.
+- [x] Skill description is injected into `system` prompt only when matched.
+- [x] `readSkill` can only read allowlisted skill files; traversal attempts fail.
+- [x] New tests pass in CI-style deterministic execution.
 
 ### Must Have
 - Deterministic keyword scoring + explicit priority tie-break.
@@ -193,9 +193,9 @@ Parallel Speedup: ~30-40% vs sequential
   - `api/src/__fixtures__/test-utils.ts:1` - test fixture idioms for deterministic setup.
 
   **Acceptance Criteria**:
-  - [ ] Registry returns stable ordered skill list with valid parsed metadata.
-  - [ ] Malformed skill files are skipped with explicit error object/log path.
-  - [ ] No filesystem reads outside configured skill directory.
+  - [x] Registry returns stable ordered skill list with valid parsed metadata.
+  - [x] Malformed skill files are skipped with explicit error object/log path.
+  - [x] No filesystem reads outside configured skill directory.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -250,9 +250,9 @@ Parallel Speedup: ~30-40% vs sequential
   - `api/src/agent/engine/prompts.ts:1` - base prompt source contract.
 
   **Acceptance Criteria**:
-  - [ ] Same input always yields same selected skill id.
-  - [ ] Input without keywords yields null match and unchanged prompt.
-  - [ ] Tie behavior proven by unit tests.
+  - [x] Same input always yields same selected skill id.
+  - [x] Input without keywords yields null match and unchanged prompt.
+  - [x] Tie behavior proven by unit tests.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -305,9 +305,9 @@ Parallel Speedup: ~30-40% vs sequential
   - `api/src/chat/chat-handler.ts:289` - tool factory usage in generation.
 
   **Acceptance Criteria**:
-  - [ ] Allowlisted skill read succeeds.
-  - [ ] Unknown skill id returns clear error result.
-  - [ ] Traversal patterns (`..`, absolute path) are rejected.
+  - [x] Allowlisted skill read succeeds.
+  - [x] Unknown skill id returns clear error result.
+  - [x] Traversal patterns (`..`, absolute path) are rejected.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -362,9 +362,9 @@ Parallel Speedup: ~30-40% vs sequential
   - `api/src/chat/agui-mapper.ts:140` - stream semantics to keep intact.
 
   **Acceptance Criteria**:
-  - [ ] Matched skill augments `system` prompt for that turn.
-  - [ ] No-match path uses base prompt and existing tools unchanged.
-  - [ ] Existing stream integration tests still pass.
+  - [x] Matched skill augments `system` prompt for that turn.
+  - [x] No-match path uses base prompt and existing tools unchanged.
+  - [x] Existing stream integration tests still pass.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -422,11 +422,11 @@ Parallel Speedup: ~30-40% vs sequential
   - `api/src/chat/__tests__/stream-integration.test.ts:1` - stream integration test conventions.
 
   **Acceptance Criteria**:
-  - [ ] `pnpm --filter @slopcade/api test:run -- src/ai/skills/__tests__/matcher.test.ts` -> PASS
-  - [ ] `pnpm --filter @slopcade/api test:run -- src/ai/skills/__tests__/registry.test.ts` -> PASS
-  - [ ] `pnpm --filter @slopcade/api test:run -- src/ai/skills/__tests__/read-skill.test.ts` -> PASS
-  - [ ] `pnpm --filter @slopcade/api test:run -- src/chat/__tests__/stream-skills.integration.test.ts` -> PASS
-  - [ ] `pnpm --filter @slopcade/api type-check` -> PASS
+  - [x] `pnpm --filter @slopcade/api test:run -- src/ai/skills/__tests__/matcher.test.ts` -> PASS
+  - [x] `pnpm --filter @slopcade/api test:run -- src/ai/skills/__tests__/registry.test.ts` -> PASS
+  - [x] `pnpm --filter @slopcade/api test:run -- src/ai/skills/__tests__/read-skill.test.ts` -> PASS
+  - [x] `pnpm --filter @slopcade/api test:run -- src/chat/__tests__/stream-skills.integration.test.ts` -> PASS
+  - [x] `pnpm --filter @slopcade/api type-check` -> PASS
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -473,8 +473,8 @@ pnpm --filter @slopcade/api type-check
 ```
 
 ### Final Checklist
-- [ ] Deterministic skill routing implemented.
-- [ ] Runtime skill description injection implemented.
-- [ ] `readSkill` path safety enforced.
-- [ ] No-skill behavior unchanged.
-- [ ] Tests deterministic and CI-safe (no VCR/network snapshot dependencies).
+- [x] Deterministic skill routing implemented.
+- [x] Runtime skill description injection implemented.
+- [x] `readSkill` path safety enforced.
+- [x] No-skill behavior unchanged.
+- [x] Tests deterministic and CI-safe (no VCR/network snapshot dependencies).

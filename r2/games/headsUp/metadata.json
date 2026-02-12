@@ -1,10 +1,11 @@
 {
-	"id": "headsUp",
-	"title": "Heads Up",
-	"description": "Hold the phone to your forehead and guess the word! Tilt down for correct, tilt up to pass.",
-	"instructions": "1. Hold phone to forehead\n2. Friends give clues\n3. Tilt DOWN if you guess correctly\n4. Tilt UP to pass",
-	"thumbnail": "headsUp.png",
-	"tags": ["party", "word", "tilt", "accelerometer"],
-	"difficulty": "easy",
-	"players": "2+"
+  "id": "unnamed-game",
+  "slug": "headsUp",
+  "title": "Heads Up",
+  "description": "A classic party game where you guess the word on your forehead!",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activeRemixId": null,
+  "updatedAt": 1770870815248
 }

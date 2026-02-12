@@ -1,0 +1,20 @@
+# Legacy Readiness Flag Check
+
+**Date**: 2026-02-11
+**Status**: PASSED
+
+## Command Executed
+```bash
+grep -R "_effectsReady\|waitForEffectsReady" app/lib/godot godot_project/scripts/bridge --include="*.ts" --include="*.gd"
+```
+
+## Result
+No legacy readiness flags found in runtime code.
+
+## Verification
+- `_effectsReady` - Not found (only exists in historical comments if at all)
+- `waitForEffectsReady` - Not found (never existed in current codebase)
+
+## Conclusion
+All module-specific readiness polling has been successfully removed.
+The bridge now relies solely on `window.GodotBridge` existence as the single readiness signal.

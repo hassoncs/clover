@@ -152,3 +152,6 @@ godot_project/addons/camera-texture/.sconsign.dblite
 godot_project/addons/camera-texture/src/*.os
 godot_project/addons/camera-texture/src/*.o
 .worktrees
+
+# gdUnit4 reports
+godot_project/reports/

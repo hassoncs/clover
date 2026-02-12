@@ -175,3 +175,21 @@ api/debug-output/{gameId}/{assetId}/
 ```
 
 This enables visual inspection at each pipeline stage.
+
+---
+
+## Learned Patterns & Gotchas
+
+### Chat Streaming
+- **SSE streaming endpoints need CORS headers on the streaming response itself**, not just the initial request. The `text/event-stream` response must include proper CORS headers or the browser will block it.
+- **AG-UI event mapping**: `finish` chunks from `streamText()` fire per step in multi-step mode. The mapper must not emit `RUN_FINISHED` from `finish` events or the UI exits streaming early. Emit a single `RUN_FINISHED` only after consuming the full `result.fullStream`.
+
+### Agent Run Billing
+- **Reservation/Settlement/Finalize pattern**: 
+  - `reserveBudget`: Creates wallet transaction `agent_reservation_hold` with idempotency key `agent-reserve:{runId}`
+  - Step settlement: Uses idempotency key `agent-step-settle:{runId}:{stepIndex}`, writes to `agent_costs` table (no wallet transaction)
+  - Finalization: Credits back unspent reservation with key `agent-release:{runId}`
+- **Recovery**: Resume from checkpoint uses D1 `agent_checkpoints` ordered by `step_index DESC`, filtered to successful states only.
+
+### Template → Prefab Migration
+- The codebase has completed a big-bang rename from `template` to `prefab`. All core types (`EntityTemplate` → `EntityPrefab`, `GameDefinition.templates` → `GameDefinition.prefabs`) have been updated. Legacy references may still exist in non-critical paths.

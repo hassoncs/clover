@@ -44,10 +44,10 @@ Establish a single, deterministic bridge readiness contract that removes module-
 - Validation gates proving no drift in generated contract artifacts.
 
 ### Definition of Done
-- [ ] Bridge readiness is governed by one signal only (`window.GodotBridge` exposure point).
-- [ ] No module-specific readiness polling remains in handwritten bridge runtime code.
-- [ ] `pnpm generate:bridge` + `pnpm tsc --noEmit` + `./godot_project/run_tests.sh` all pass.
-- [ ] CI includes deterministic gate for bridge init + contract drift regressions.
+- [x] Bridge readiness is governed by one signal only (`window.GodotBridge` exposure point).
+- [x] No module-specific readiness polling remains in handwritten bridge runtime code.
+- [x] `pnpm generate:bridge` + `pnpm tsc --noEmit` + `./godot_project/run_tests.sh` all pass.
+- [x] CI includes deterministic gate for bridge init + contract drift regressions.
 
 ### Must Have
 - Type-safe codegen remains source of truth for bridge API surface.
@@ -144,7 +144,7 @@ Wave 3 (Validation + enforcement)
 
 ## TODOs
 
-- [ ] 1. Verify baseline and lock exact delta
+- [x] 1. Verify baseline and lock exact delta
 
   **What to do**:
   - Capture current behavior of `GameBridge._ready`, `_finalize_js_bridge`, and bridge exposure timing.
@@ -173,7 +173,7 @@ Wave 3 (Validation + enforcement)
   - [ ] Baseline report created under `.sisyphus/evidence/bridge-init/baseline.md`.
   - [ ] Report explicitly lists what still needs change vs already-clean state.
 
-- [ ] 2. Codify single readiness contract
+- [x] 2. Codify single readiness contract
 
   **What to do**:
   - Document readiness invariant: JS may call bridge methods only after `window.GodotBridge` is exposed.
@@ -200,7 +200,7 @@ Wave 3 (Validation + enforcement)
   **Acceptance Criteria**:
   - [ ] Readiness contract documented in repo docs or code comments with explicit invariant.
 
-- [ ] 3. Normalize Godot-side bridge exposure timing
+- [x] 3. Normalize Godot-side bridge exposure timing
 
   **What to do**:
   - Ensure `_setup_js_bridge()` is only called through deferred finalization path.
@@ -227,7 +227,7 @@ Wave 3 (Validation + enforcement)
   - [ ] No direct early bridge exposure path remains in `_ready`.
   - [ ] Deferred path is single source of bridge exposure.
 
-- [ ] 4. Remove JS module-specific readiness polling
+- [x] 4. Remove JS module-specific readiness polling
 
   **What to do**:
   - Remove `waitForEffectsReady` style helper if present.
@@ -254,7 +254,7 @@ Wave 3 (Validation + enforcement)
   - [ ] No runtime polling helper remains for per-module readiness.
   - [ ] Effects methods execute through same readiness contract as other bridge calls.
 
-- [ ] 5. Remove stale effects readiness plumbing
+- [x] 5. Remove stale effects readiness plumbing
 
   **What to do**:
   - Remove `_effectsReady` assignments/evals that are no longer needed.
@@ -280,7 +280,7 @@ Wave 3 (Validation + enforcement)
   **Acceptance Criteria**:
   - [ ] Legacy readiness flag writes removed from runtime code paths.
 
-- [ ] 6. Preserve type-safe codegen invariants
+- [x] 6. Preserve type-safe codegen invariants
 
   **What to do**:
   - Run bridge generator and validate generated artifacts are consistent.
@@ -309,7 +309,7 @@ Wave 3 (Validation + enforcement)
   - [ ] `pnpm generate:bridge` passes.
   - [ ] `pnpm tsc --noEmit` passes.
 
-- [ ] 7. Add regression tests for initialization contract
+- [x] 7. Add regression tests for initialization contract
 
   **What to do**:
   - Add/adjust tests to assert no unknown-method race at startup.
@@ -337,7 +337,7 @@ Wave 3 (Validation + enforcement)
   - [ ] Regression test fails against old race pattern and passes on cleaned flow.
   - [ ] `./godot_project/run_tests.sh` passes.
 
-- [ ] 8. Enforce and evidence in CI
+- [x] 8. Enforce and evidence in CI
 
   **What to do**:
   - Add/update CI job to run generation, typecheck, and Godot contract tests.
@@ -387,8 +387,8 @@ grep -R "_effectsReady\|waitForEffectsReady" app/lib/godot godot_project/scripts
 ```
 
 ### Final Checklist
-- [ ] Single readiness contract implemented and documented.
-- [ ] No module-specific readiness polling logic in runtime code.
-- [ ] Typed codegen artifacts and typecheck remain green.
-- [ ] Godot bridge contract tests pass with no startup race regressions.
-- [ ] CI blocks regressions deterministically.
+- [x] Single readiness contract implemented and documented.
+- [x] No module-specific readiness polling logic in runtime code.
+- [x] Typed codegen artifacts and typecheck remain green.
+- [x] Godot bridge contract tests pass with no startup race regressions.
+- [x] CI blocks regressions deterministically.

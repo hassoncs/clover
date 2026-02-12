@@ -602,6 +602,8 @@ export const AssetSystemConfigSchema = z.object({
 	activeRemixId: z.string().optional(),
 });
 
+export const AIEconomyGraphSchema = EconomyGraphSchema;
+
 export const GameDefinitionSchema = z.object({
 	metadata: GameMetadataSchema,
 	world: WorldConfigSchema,
@@ -616,7 +618,7 @@ export const GameDefinitionSchema = z.object({
 	parallaxConfig: ParallaxConfigSchema.optional(),
 	tileSheets: z.array(TileSheetSchema).optional(),
 	tileMaps: z.array(TileMapSchema).optional(),
-	economy: EconomyGraphSchema.optional(),
+	economy: AIEconomyGraphSchema.optional(),
 });
 
 export type GameDefinitionGenerated = z.infer<typeof GameDefinitionSchema>;

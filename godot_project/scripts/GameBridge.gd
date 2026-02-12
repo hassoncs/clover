@@ -101,7 +101,8 @@ func _ready() -> void:
 	_build_method_map()
 	# Defer JS bridge exposure to end of frame so ALL autoload _ready() calls
 	# complete first (e.g., GameBridgeEffects registers its query handlers).
-	# window.GodotBridge appearing IS the "fully ready" signal for JS.
+	# window.GodotBridge appearing IS the single "fully ready" signal for JS.
+	# See docs/godot-migration/bridge-initialization.md for the full contract.
 	call_deferred("_finalize_js_bridge")
 	_log_physics_diagnostics()
 	_log_bridge_registry()
