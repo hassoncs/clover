@@ -7,7 +7,6 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import { trpc as api } from "@/lib/trpc/client";
 
 interface Variant {
 	id: string;
@@ -32,7 +31,7 @@ export function VariantGroupEditor({
 	const [variants, setVariants] = useState<Variant[]>([
 		{ id: "1", key: "default", description: "" },
 	]);
-	const [isGenerating, setIsGenerating] = useState(false);
+	const [isGenerating] = useState(false);
 
 	const addVariant = () => {
 		setVariants([
@@ -73,39 +72,10 @@ export function VariantGroupEditor({
 			return;
 		}
 
-		setIsGenerating(true);
-		try {
-			const result = await api.assetSystem.createSheetGenerationJob.mutate({
-				gameId,
-				remixId,
-				sheetSpec: {
-					id: sheetId,
-					kind: "variation",
-					layout: {
-						type: "grid",
-						columns: 4,
-						rows: Math.ceil(variants.length / 4),
-						cellWidth: 512,
-						cellHeight: 512,
-					},
-					promptConfig: {
-						basePrompt,
-					},
-					variants: variants.map((v) => ({
-						key: v.key,
-						description: v.description || undefined,
-					})),
-				},
-			});
-
-			Alert.alert("Success", "Generation job started");
-			onGenerate?.(result.jobId);
-		} catch (error) {
-			console.error("Generation failed:", error);
-			Alert.alert("Error", "Failed to start generation job");
-		} finally {
-			setIsGenerating(false);
-		}
+		Alert.alert(
+			"Not Available",
+			"Variant sheet generation is being migrated to the new asset system.",
+		);
 	};
 
 	return (

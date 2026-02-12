@@ -8,7 +8,6 @@ import type {
 	GameAssetRow,
 	GenerationJobRow,
 	GenerationTaskRow,
-	RemixRow,
 	ThemeRow,
 } from "./types";
 
@@ -91,7 +90,6 @@ export function toClientJob(row: GenerationJobRow) {
 	return {
 		id: row.id,
 		gameId: row.game_id,
-		remixId: row.remix_id,
 		themeId: row.theme_id,
 		status: row.status as
 			| "queued"
@@ -253,71 +251,5 @@ export function buildPlannerInput(
 		theme,
 		style,
 		gameTitle,
-	};
-}
-
-export interface ParsedAssetOverride {
-	assetId: string;
-	assetUrl: string;
-	placement?: {
-		scale?: number;
-		offsetX?: number;
-		offsetY?: number;
-	};
-}
-
-export function parseAssetOverrides(
-	json: string,
-	assetHost: string | undefined,
-): Record<string, ParsedAssetOverride> {
-	const raw: Record<
-		string,
-		{
-			assetId: string;
-			assetUrl: string;
-			placement?: { scale?: number; offsetX?: number; offsetY?: number };
-		}
-	> = JSON.parse(json);
-	const result: Record<string, ParsedAssetOverride> = {};
-
-	for (const [templateId, entry] of Object.entries(raw)) {
-		result[templateId] = {
-			assetId: entry.assetId,
-			assetUrl: resolveAssetUrl(entry.assetUrl, assetHost),
-			placement: entry.placement,
-		};
-	}
-
-	return result;
-}
-
-export function toClientRemix(row: RemixRow, assetHost: string | undefined) {
-	return {
-		id: row.id,
-		baseGameId: row.base_game_id,
-		name: row.name,
-		description: row.description,
-		creatorUserId: row.creator_user_id,
-		overrides: {
-			variables: row.variable_overrides_json
-				? JSON.parse(row.variable_overrides_json)
-				: undefined,
-			assets: row.asset_overrides_json
-				? parseAssetOverrides(row.asset_overrides_json, assetHost)
-				: undefined,
-			shaderParams: row.shader_param_overrides_json
-				? JSON.parse(row.shader_param_overrides_json)
-				: undefined,
-			sounds: row.sound_overrides_json
-				? JSON.parse(row.sound_overrides_json)
-				: undefined,
-		},
-		themeId: row.theme_id,
-		themeName: row.theme_prompt,
-		style: row.style,
-		isComplete: row.is_complete === 1,
-		thumbnailUrl: row.thumbnail_url,
-		createdAt: row.created_at,
-		updatedAt: row.updated_at,
 	};
 }

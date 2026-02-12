@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS games (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  -- Lineage tracking for forks and remixes
+  -- Lineage tracking for forks
   base_game_id TEXT REFERENCES games(id),  -- Points to root game; self-referential for originals
   forked_from_id TEXT REFERENCES games(id), -- Immediate parent; NULL for originals
   validation_report TEXT,
@@ -107,38 +107,10 @@ CREATE INDEX IF NOT EXISTS idx_assets_creator ON assets(creator_user_id) WHERE d
 CREATE INDEX IF NOT EXISTS idx_assets_r2_key ON assets(r2_key) WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_assets_content_hash ON assets(content_hash) WHERE content_hash IS NOT NULL;
 
--- Remixes - Fork-level customization bundles (variables, assets, shaders, sounds)
--- A remix is a complete "skin" for a base game
-CREATE TABLE IF NOT EXISTS remixes (
-  id TEXT PRIMARY KEY,
-  base_game_id TEXT NOT NULL REFERENCES games(id),
-  name TEXT NOT NULL,
-  description TEXT,
-  creator_user_id TEXT REFERENCES users(id),
-  variable_overrides_json TEXT,        -- JSON: Record<variablePath, value>
-  asset_overrides_json TEXT,           -- JSON: Record<templateId, { assetId, assetUrl, placement? }>
-  shader_param_overrides_json TEXT,    -- JSON: Record<shaderId, Record<param, value>>
-  sound_overrides_json TEXT,           -- JSON: Record<soundId, { url, volume? }>
-  theme_id TEXT REFERENCES themes(id),
-  theme_prompt TEXT,
-  style TEXT,
-  is_complete INTEGER DEFAULT 0,
-  thumbnail_url TEXT,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER,
-  deleted_at INTEGER,
-  UNIQUE(base_game_id, name)
-);
-
-CREATE INDEX IF NOT EXISTS idx_remixes_base_game ON remixes(base_game_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_remixes_creator ON remixes(creator_user_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_remixes_theme ON remixes(theme_id) WHERE deleted_at IS NULL;
-
 -- Generation jobs - Batch generation requests
 CREATE TABLE IF NOT EXISTS generation_jobs (
   id TEXT PRIMARY KEY,
   game_id TEXT NOT NULL REFERENCES games(id),
-  remix_id TEXT,
   theme_id TEXT REFERENCES themes(id),
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
   style TEXT,
@@ -148,7 +120,6 @@ CREATE TABLE IF NOT EXISTS generation_jobs (
   finished_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_generation_jobs_remix ON generation_jobs(remix_id);
 CREATE INDEX IF NOT EXISTS idx_generation_jobs_status ON generation_jobs(status) WHERE status IN ('queued', 'running');
 
 -- Generation tasks - Per-template generation tracking

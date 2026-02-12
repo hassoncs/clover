@@ -35,7 +35,6 @@ export interface GameRowForAssets {
 export interface GenerationJobRow {
 	id: string;
 	game_id: string;
-	remix_id: string | null;
 	theme_id: string | null;
 	status: string;
 	style: string | null;
@@ -60,26 +59,6 @@ export interface GenerationTaskRow {
 	created_at: number;
 	started_at: number | null;
 	finished_at: number | null;
-}
-
-export interface RemixRow {
-	id: string;
-	base_game_id: string;
-	name: string;
-	description: string | null;
-	creator_user_id: string | null;
-	variable_overrides_json: string | null;
-	asset_overrides_json: string | null;
-	shader_param_overrides_json: string | null;
-	sound_overrides_json: string | null;
-	theme_id: string | null;
-	theme_prompt: string | null;
-	style: string | null;
-	is_complete: number;
-	thumbnail_url: string | null;
-	created_at: number;
-	updated_at: number | null;
-	deleted_at: number | null;
 }
 
 export const assetSourceSchema = z.enum(["generated", "uploaded"]);

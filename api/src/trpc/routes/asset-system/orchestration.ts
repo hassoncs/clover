@@ -80,29 +80,7 @@ export const orchestrationRouter = router({
 				throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
 			}
 
-			const baseGameId = gameRow.base_game_id ?? gameRow.id;
-
-			const remixId = crypto.randomUUID();
 			const now = Date.now();
-
-			const themeName = input.newTheme?.name ?? themeId;
-			await ctx.env.DB.prepare(
-				`INSERT INTO remixes (id, base_game_id, name, description, creator_user_id, theme_id, theme_prompt, style, is_complete, asset_overrides_json, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '{}', ?, ?)`,
-			)
-				.bind(
-					remixId,
-					baseGameId,
-					`Theme: ${themeName}`,
-					`Auto-generated remix for theme`,
-					ctx.user.id,
-					themeId,
-					input.newTheme?.promptModifier ?? null,
-					input.styleOverride ?? null,
-					now,
-					now,
-				)
-				.run();
 
 			const walletService = new WalletService(ctx.env.DB);
 
@@ -173,17 +151,10 @@ export const orchestrationRouter = router({
 
 			try {
 				await ctx.env.DB.prepare(
-					`INSERT INTO generation_jobs (id, game_id, remix_id, theme_id, status, style, created_at)
-           VALUES (?, ?, ?, ?, 'queued', ?, ?)`,
+					`INSERT INTO generation_jobs (id, game_id, theme_id, status, style, created_at)
+           VALUES (?, ?, ?, 'queued', ?, ?)`,
 				)
-					.bind(
-						jobId,
-						input.gameId,
-						remixId,
-						themeId,
-						input.styleOverride ?? null,
-						now,
-					)
+					.bind(jobId, input.gameId, themeId, input.styleOverride ?? null, now)
 					.run();
 
 				let themePlan: ThemePlan | null = null;
@@ -304,7 +275,7 @@ export const orchestrationRouter = router({
 						.run();
 				}
 
-				return { themeId, remixId, jobId, taskCount: prefabIds.length };
+				return { themeId, jobId, taskCount: prefabIds.length };
 			} catch (jobCreationError) {
 				await walletService.credit({
 					userId: ctx.user.id,

@@ -84,23 +84,13 @@ export function useAssetGeneration({
 					return stillGenerating;
 				});
 
-				if (completed > lastCompletedCountRef.current && remixId) {
-					lastCompletedCountRef.current = completed;
-					await utils.assetSystem.remixes.getRemix.invalidate({ id: remixId });
-				}
+				lastCompletedCountRef.current = completed;
 
 				if (job.status === "succeeded" || job.status === "failed") {
 					stopPolling();
 					setCurrentJobId(null);
 					setStatus(job.status);
 					lastCompletedCountRef.current = 0;
-
-					if (remixId) {
-						await utils.assetSystem.remixes.getRemix.invalidate({
-							id: remixId,
-						});
-					}
-					await utils.assetSystem.remixes.listRemixes.invalidate({ gameId });
 					setCurrentRemixId(null);
 					setGeneratingPrefabs(new Set());
 
@@ -126,7 +116,6 @@ export function useAssetGeneration({
 
 	const generateAll = useCallback(
 		async (params: {
-			remixId?: string;
 			prefabIds: string[];
 			themePrompt?: string;
 			style?: string;
@@ -139,14 +128,13 @@ export function useAssetGeneration({
 
 			setError(null);
 			setGeneratingPrefabs(new Set(params.prefabIds));
-			setCurrentRemixId(params.remixId ?? null);
+			setCurrentRemixId(null);
 			setStatus("creating-job");
 			setProgress({ total: params.prefabIds.length, completed: 0, failed: 0 });
 
 			try {
 				const { jobId } = await createJobMutation.mutateAsync({
 					gameId,
-					remixId: params.remixId,
 					prefabIds: params.prefabIds,
 					promptDefaults: {
 						themePrompt: params.themePrompt,
@@ -162,11 +150,11 @@ export function useAssetGeneration({
 
 				stopPolling();
 				pollIntervalRef.current = setInterval(() => {
-					pollJobStatus(jobId, params.remixId ?? null);
+					pollJobStatus(jobId, null);
 				}, POLL_INTERVAL_MS);
 
 				setTimeout(() => {
-					pollJobStatus(jobId, params.remixId ?? null);
+					pollJobStatus(jobId, null);
 				}, 500);
 			} catch (err) {
 				setGeneratingPrefabs(new Set());
@@ -210,45 +198,4 @@ export function useAssetGeneration({
 		generateAll,
 		reset,
 	};
-}
-
-export function useRemixes(gameId: string) {
-	return trpcReact.assetSystem.remixes.listRemixes.useQuery({ gameId });
-}
-
-export function useRemix(gameId: string, remixId?: string) {
-	return trpcReact.assetSystem.remixes.getResolvedRemix.useQuery(
-		{ gameId, remixId: remixId! },
-		{ enabled: !!remixId },
-	);
-}
-
-export function useCreateRemix() {
-	const utils = trpcReact.useUtils();
-	return trpcReact.assetSystem.remixes.createRemix.useMutation({
-		onSuccess: (data, variables) => {
-			utils.assetSystem.remixes.listRemixes.invalidate({
-				gameId: variables.gameId,
-			});
-		},
-	});
-}
-
-export function useDeleteRemix() {
-	const utils = trpcReact.useUtils();
-	return trpcReact.assetSystem.remixes.deleteRemix.useMutation({
-		onSuccess: () => {
-			utils.assetSystem.remixes.listRemixes.invalidate();
-		},
-	});
-}
-
-export function useUpdateRemix() {
-	const utils = trpcReact.useUtils();
-	return trpcReact.assetSystem.remixes.updateRemix.useMutation({
-		onSuccess: (data, variables) => {
-			utils.assetSystem.remixes.getResolvedRemix.invalidate();
-			utils.assetSystem.remixes.listRemixes.invalidate();
-		},
-	});
 }
