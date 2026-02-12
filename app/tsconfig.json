@@ -1,19 +1,17 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"],
-      "@slopcade/shared/*": ["../shared/src/*"]
-    },
-    "jsx": "react-jsx",
-    "skipLibCheck": true
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "nativewind-env.d.ts"
-  ],
-  "exclude": ["node_modules"]
+	"extends": "expo/tsconfig.base",
+	"compilerOptions": {
+		"strict": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"],
+			"@slopcade/shared/*": ["../shared/src/*"],
+			"@slopcade/economy-engine": ["../packages/economy-engine/src/index.ts"],
+			"@slopcade/economy-engine/*": ["../packages/economy-engine/src/*"]
+		},
+		"jsx": "react-jsx",
+		"skipLibCheck": true
+	},
+	"include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"],
+	"exclude": ["node_modules"]
 }

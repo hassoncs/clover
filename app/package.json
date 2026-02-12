@@ -49,6 +49,7 @@
 		"@shopify/flash-list": "^2.2.2",
 		"@slopcade/api": "workspace:*",
 		"@slopcade/codemirror-lang-glsl": "workspace:^",
+		"@slopcade/economy-engine": "workspace:*",
 		"@slopcade/game-bundler": "workspace:*",
 		"@slopcade/shared": "workspace:*",
 		"@supabase/supabase-js": "^2.90.1",

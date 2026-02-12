@@ -66,6 +66,8 @@ import {
 	CameraRuntimeSystem,
 	ComputedValuesRuntimeSystem,
 	ContainerRuntimeSystem,
+	EconomyRuntimeSystem,
+	type EconomySystemConfig,
 	EntityManagerRuntimeSystem,
 	HoverHighlightRuntimeSystem,
 	InputRuntimeSystem,
@@ -884,6 +886,14 @@ export function GameRuntimeGodot({
 					}),
 				);
 
+				if (definition.economy) {
+					runner.register(
+						new EconomyRuntimeSystem({
+							economyGraph:
+								definition.economy as EconomySystemConfig["economyGraph"],
+						}),
+					);
+				}
 				if (definition.match3) {
 					runner.register(
 						new Match3RuntimeSystem(definition.match3 as Match3Config),
