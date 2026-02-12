@@ -563,7 +563,12 @@ function godotSnakeToCamel(snake: string): string {
 }
 
 function generateGDScriptMethodMap(registry: BridgeRegistry): void {
-	const bridgeMethods = registry.methods.filter((m) => !m.tsOnly);
+	const bridgeMethods = registry.methods.filter(
+		(m) =>
+			!m.tsOnly &&
+			m.source !== "EffectsBridge" &&
+			!m.snakeName.startsWith("effects."),
+	);
 
 	const entries = bridgeMethods
 		.map((m) => {

@@ -12,17 +12,6 @@ class_name BridgeMethodMap
 # Map of bridge name (camelCase as used by JS) -> expected snake_case Godot method
 # The snake_case name corresponds to a _js_{snake_case} method on one of the bridge modules
 const EXPECTED_REGISTRATIONS: Dictionary = {
-  "applyGraph": "apply_graph",
-  "clearGraph": "clear_graph",
-  "updateParams": "update_params",
-  "start": "start",
-  "pause": "pause",
-  "resume": "resume",
-  "stop": "stop",
-  "reset": "reset",
-  "snapshot": "snapshot",
-  "restore": "restore",
-  "effects.updateParams": "effects.updateParams",
   "drawToActiveBuffer": "draw_to_active_buffer",
   "loadGameJson": "load_game_json",
   "clearGame": "clear_game",
