@@ -184,3 +184,12 @@ From app dependencies and `shared/src/expressions/`:
 - API package.json needed explicit `"@slopcade/economy-engine": "workspace:*"` dependency since it wasn't previously listed.
 - Standalone `economyGraph.validateGraph` and `economyGraph.simulate` procedures use `protectedProcedure` for auth, zod `EconomyGraphSchema` for input validation, and return structured error responses.
 - Simulation endpoint validates graph before running simulator, throwing TRPCError for invalid graphs. Max 1000 ticks enforced via zod schema constraint.
+
+## Task 7: Rules/Actions/Triggers Bridge
+
+- Economy actions access EconomyRuntimeSystem state through `IEconomyOps` interface on `RuleContext.economyOps`
+- Pattern follows same approach as `IGameStateMutator` for game state and `ContainerSystem` for containers
+- ActionRegistry takes executor instances in constructor - must add new params and register in `registerAll()`
+- RulesSystem.evaluateConditions uses a switch/case dispatch - economy conditions added alongside container conditions
+- RulesSystem.test.ts tests were pre-existing failures (missing worldOps in SystemContext) - not caused by economy changes
+- EconomyRuntimeSystem doesn't expose its simulator directly; `IEconomyOps` will need to be wired up by whoever constructs the RuleContext (likely in RulesSystem.update when economy system is present)
