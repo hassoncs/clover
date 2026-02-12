@@ -3,7 +3,9 @@
     "id": "shader-multi-demo",
     "title": "Shader Multi",
     "description": "Multiple different shaders applied to different entities simultaneously",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "instructions": "Watch different shader effects on each entity. Tap to add more!",
+    "slug": "shaderMulti"
   },
   "world": {
     "gravity": {
@@ -347,5 +349,13 @@
         "glsl": "shader_type canvas_item;\n\nuniform float scan_speed : hint_range(0.0, 5.0) = 1.0;\nuniform float scan_line_count : hint_range(10.0, 100.0) = 40.0;\nuniform float color_shift_speed : hint_range(0.0, 5.0) = 0.5;\nuniform float hologram_alpha : hint_range(0.0, 1.0) = 0.8;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat scan = sin((UV.y + TIME * scan_speed) * scan_line_count * 3.14159) * 0.5 + 0.5;\n\tfloat hue = fract(UV.y * 0.5 + TIME * color_shift_speed);\n\tvec3 holo_color = hsv2rgb(vec3(hue, 0.7, 1.0));\n\tvec3 result = mix(tex.rgb, holo_color, 0.6) * (0.8 + 0.2 * scan);\n\tCOLOR = vec4(result, tex.a * hologram_alpha);\n}"
       }
     }
+  },
+  "background": {
+    "type": "static",
+    "color": "#0f0f1e"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
   }
 }

@@ -57,5 +57,6 @@
   },
   "winCondition": {
     "expr": "allBoxesOnTargets == 1"
-  }
+  },
+  "slug": "sokoban"
 }

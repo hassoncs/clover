@@ -147,5 +147,6 @@
   "loseCondition": {
     "type": "custom",
     "expr": "lives <= 0"
-  }
+  },
+  "slug": "slopeggle"
 }

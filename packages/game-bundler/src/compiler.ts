@@ -865,6 +865,40 @@ export function compileBundle(
 		gameDefinition.effects = rawData.effects;
 	}
 
+	if (rawData.manifest) {
+		const manifest = rawData.manifest as Record<string, unknown>;
+		const MANIFEST_PASSTHROUGH_KEYS: Array<keyof GameDefinition> = [
+			"background",
+			"camera",
+			"overlay",
+			"variables",
+			"joints",
+			"winCondition",
+			"loseCondition",
+			"sounds",
+			"input",
+			"presentation",
+			"stateMachines",
+			"persistence",
+			"hoverHighlight",
+			"dialogs",
+			"assetSystem",
+		];
+		for (const key of MANIFEST_PASSTHROUGH_KEYS) {
+			const systems = manifest.systems as Record<string, unknown> | undefined;
+			const value = manifest[key] ?? systems?.[key];
+			if (value != null && gameDefinition[key] == null) {
+				(gameDefinition as any)[key] = value;
+			}
+		}
+		if (manifest.instructions && gameDefinition.metadata) {
+			gameDefinition.metadata.instructions = manifest.instructions as string;
+		}
+		if (manifest.slug && gameDefinition.metadata) {
+			gameDefinition.metadata.slug = manifest.slug as string;
+		}
+	}
+
 	return {
 		success: errors.length === 0,
 		gameDefinition,

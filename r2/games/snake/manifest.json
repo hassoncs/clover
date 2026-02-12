@@ -65,5 +65,6 @@
   "loseCondition": {
     "type": "custom",
     "expr": "gameOver == 1"
-  }
+  },
+  "slug": "snake"
 }

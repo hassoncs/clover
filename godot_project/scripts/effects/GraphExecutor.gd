@@ -412,6 +412,12 @@ func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader
 	_resource_graph.bind_pass_inputs(pass_data, material)
 	_apply_material_params(material, pass_data.get("params", {}))
 
+	# For screen-scope passes in SubViewports, bind the input texture to
+	# SCREEN_TEXTURE uniform (since we rewrote the shader to not use
+	# hint_screen_texture, the uniform needs an explicit texture).
+	if str(_plan.get("scope", "")) == "screen":
+		_bind_screen_texture_uniform(pass_data, material)
+
 	rect.material = material
 	viewport.add_child(rect)
 
@@ -421,6 +427,20 @@ func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader
 
 	_resource_graph.register_pass_output(str(pass_data.get("id", "")), viewport, pass_data.get("provides", []))
 	return true
+
+func _bind_screen_texture_uniform(pass_data: Dictionary, material: ShaderMaterial) -> void:
+	# Find the first required texture and bind it to SCREEN_TEXTURE uniform
+	var requires: Array = pass_data.get("requires", [])
+	for ref in requires:
+		if not (ref is Dictionary):
+			continue
+		var resource_id = str(ref.get("id", ""))
+		if resource_id == "":
+			continue
+		var tex = _resource_graph.get_texture(resource_id)
+		if tex != null:
+			material.set_shader_parameter("SCREEN_TEXTURE", tex)
+			return
 
 func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader) -> bool:
 	var pass_id: String = str(pass_data.get("id", ""))
@@ -509,21 +529,34 @@ func _resolve_shader(pass_data: Dictionary) -> Shader:
 	if not (shader_source is Dictionary):
 		return null
 
-	var source_type: String = str(shader_source.get("type", ""))
-	if source_type == "custom":
-		var glsl: String = str(shader_source.get("glsl", ""))
-		if glsl == "":
-			return null
-		return _build_custom_shader(glsl)
+	var glsl: String = str(shader_source.get("glsl", ""))
+	if glsl == "":
+		return null
 
-	if source_type == "builtin":
-		var glsl: String = str(shader_source.get("glsl", ""))
-		if glsl == "":
-			push_error("[EffectsGraphExecutor] Builtin shader missing GLSL code")
-			return null
-		return _build_custom_shader(glsl)
+	# For screen-scope effects running in SubViewports, SCREEN_TEXTURE
+	# refers to the SubViewport's own backbuffer (empty), not the game
+	# screen. Rewrite the shader to use an explicit sampler uniform that
+	# the ResourceGraph will bind to the actual input texture.
+	if str(_plan.get("scope", "")) == "screen" and glsl.contains("hint_screen_texture"):
+		glsl = _rewrite_screen_texture_for_subviewport(glsl)
 
-	return null
+	return _build_custom_shader(glsl)
+
+func _rewrite_screen_texture_for_subviewport(glsl: String) -> String:
+	# Replace the SCREEN_TEXTURE declaration with a regular sampler2D.
+	# The uniform name stays "SCREEN_TEXTURE" so existing texture()
+	# calls keep working — we just remove the hint_screen_texture hint
+	# so Godot treats it as a normal sampler that we bind manually.
+	var result := glsl
+	# Match variations: hint_screen_texture with optional filter hints
+	var regex := RegEx.new()
+	regex.compile("uniform\\s+sampler2D\\s+SCREEN_TEXTURE\\s*:[^;]*;")
+	var m := regex.search(result)
+	if m != null:
+		result = result.replace(m.get_string(), "uniform sampler2D SCREEN_TEXTURE : filter_linear_mipmap;")
+	# Replace SCREEN_UV with UV since we're now in a SubViewport ColorRect
+	result = result.replace("SCREEN_UV", "UV")
+	return result
 
 func _build_custom_shader(glsl: String) -> Shader:
 	# Use shader warmer if available for custom shaders (caches by hash)

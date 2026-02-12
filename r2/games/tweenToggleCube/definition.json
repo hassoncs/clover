@@ -3,7 +3,9 @@
     "id": "9da2e0ff-6cb6-4ecb-a827-3c7a7c312f09",
     "title": "Tween Toggle Cube",
     "description": "Tap a button to tween a cube between two positions.",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "instructions": "Tap Animate to move the cube. Tap again to move it back.",
+    "slug": "tweenToggleCube"
   },
   "world": {
     "gravity": {
@@ -128,5 +130,19 @@
       ]
     }
   ],
-  "script": "// --- main ---\n\nexports.toggleCubeTween = function(ctx) {\n  if (ctx.isSequenceRunning('cube_toggle')) return;\n\n  var pos = ctx.getEntityPosition('cube');\n  var targetX = pos && pos.x > 0 ? -2 : 2;\n\n  ctx.startSequence('cube_toggle', async function(world) {\n    await world.animate('cube', { x: targetX, y: 1 }, { duration: 450, easing: 'ease-in-out' });\n  });\n};\n"
+  "script": "// --- main ---\n\nexports.toggleCubeTween = function(ctx) {\n  if (ctx.isSequenceRunning('cube_toggle')) return;\n\n  var pos = ctx.getEntityPosition('cube');\n  var targetX = pos && pos.x > 0 ? -2 : 2;\n\n  ctx.startSequence('cube_toggle', async function(world) {\n    await world.animate('cube', { x: targetX, y: 1 }, { duration: 450, easing: 'ease-in-out' });\n  });\n};\n",
+  "background": {
+    "type": "static",
+    "color": "#0f172a"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": []
+  },
+  "assetSystem": {
+    "activePackId": "default"
+  }
 }

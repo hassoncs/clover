@@ -136,6 +136,33 @@ CREATE TABLE IF NOT EXISTS pack_entries (
 CREATE INDEX IF NOT EXISTS idx_pack_entries_pack ON pack_entries(pack_id);
 CREATE INDEX IF NOT EXISTS idx_pack_entries_asset ON pack_entries(asset_id);
 
+-- Remixes - Fork-level customization bundles (variables, assets, shaders, sounds)
+-- Successor to asset_packs: a remix is a complete "skin" for a base game
+CREATE TABLE IF NOT EXISTS remixes (
+  id TEXT PRIMARY KEY,
+  base_game_id TEXT NOT NULL REFERENCES games(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  creator_user_id TEXT REFERENCES users(id),
+  variable_overrides_json TEXT,        -- JSON: Record<variablePath, value>
+  asset_overrides_json TEXT,           -- JSON: Record<templateId, { assetId, assetUrl, placement? }>
+  shader_param_overrides_json TEXT,    -- JSON: Record<shaderId, Record<param, value>>
+  sound_overrides_json TEXT,           -- JSON: Record<soundId, { url, volume? }>
+  theme_id TEXT REFERENCES themes(id),
+  theme_prompt TEXT,
+  style TEXT,
+  is_complete INTEGER DEFAULT 0,
+  thumbnail_url TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER,
+  deleted_at INTEGER,
+  UNIQUE(base_game_id, name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_remixes_base_game ON remixes(base_game_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_remixes_creator ON remixes(creator_user_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_remixes_theme ON remixes(theme_id) WHERE deleted_at IS NULL;
+
 -- Generation jobs - Batch generation requests
 CREATE TABLE IF NOT EXISTS generation_jobs (
   id TEXT PRIMARY KEY,

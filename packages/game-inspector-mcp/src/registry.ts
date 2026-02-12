@@ -1,110 +1,115 @@
-import { readdirSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync, readdirSync } from "fs";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function findProjectRoot(): string {
-  let dir = __dirname;
-  for (let i = 0; i < 10; i++) {
-    if (existsSync(join(dir, "package.json")) && existsSync(join(dir, "app"))) {
-      return dir;
-    }
-    dir = dirname(dir);
-  }
-  throw new Error("Could not find project root");
+	let dir = __dirname;
+	for (let i = 0; i < 10; i++) {
+		if (existsSync(join(dir, "package.json")) && existsSync(join(dir, "app"))) {
+			return dir;
+		}
+		dir = dirname(dir);
+	}
+	throw new Error("Could not find project root");
 }
 
 const PROJECT_ROOT = findProjectRoot();
 
 export interface GameInfo {
-  id: string;
-  path: string;
-  type: "game" | "example";
+	id: string;
+	path: string;
+	type: "game" | "example";
 }
 
 export function discoverTestGames(): GameInfo[] {
-  const gamesDir = join(PROJECT_ROOT, "r2", "games");
-  
-  if (!existsSync(gamesDir)) {
-    console.error(`[registry] Games directory not found: ${gamesDir}`);
-    return [];
-  }
-  
-  const entries = readdirSync(gamesDir, { withFileTypes: true });
-  const games: GameInfo[] = [];
-  
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      const gameFile = join(gamesDir, entry.name, "src", "game.ts");
-      if (existsSync(gameFile)) {
-        games.push({
-          id: entry.name,
-          path: `/game/${entry.name}`,
-          type: "game",
-        });
-      }
-    }
-  }
-  
-  return games.sort((a, b) => a.id.localeCompare(b.id));
+	const gamesDir = join(PROJECT_ROOT, "r2", "games");
+
+	if (!existsSync(gamesDir)) {
+		console.error(`[registry] Games directory not found: ${gamesDir}`);
+		return [];
+	}
+
+	const entries = readdirSync(gamesDir, { withFileTypes: true });
+	const games: GameInfo[] = [];
+
+	for (const entry of entries) {
+		if (entry.isDirectory()) {
+			const manifestFile = join(gamesDir, entry.name, "manifest.json");
+			if (existsSync(manifestFile)) {
+				games.push({
+					id: entry.name,
+					path: `/game/${entry.name}`,
+					type: "game",
+				});
+			}
+		}
+	}
+
+	return games.sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export function discoverExamples(): GameInfo[] {
-  const examplesDir = join(PROJECT_ROOT, "app/app/examples");
-  
-  if (!existsSync(examplesDir)) {
-    console.error(`[registry] Examples directory not found: ${examplesDir}`);
-    return [];
-  }
-  
-  const entries = readdirSync(examplesDir, { withFileTypes: true });
-  const examples: GameInfo[] = [];
-  
-  for (const entry of entries) {
-    if (entry.isFile() && entry.name.endsWith(".tsx") && !entry.name.startsWith("_") && !entry.name.startsWith("[")) {
-      const id = entry.name.replace(".tsx", "");
-      examples.push({
-        id,
-        path: `/examples/${id}`,
-        type: "example",
-      });
-    }
-  }
-  
-  return examples.sort((a, b) => a.id.localeCompare(b.id));
+	const examplesDir = join(PROJECT_ROOT, "app/app/examples");
+
+	if (!existsSync(examplesDir)) {
+		console.error(`[registry] Examples directory not found: ${examplesDir}`);
+		return [];
+	}
+
+	const entries = readdirSync(examplesDir, { withFileTypes: true });
+	const examples: GameInfo[] = [];
+
+	for (const entry of entries) {
+		if (
+			entry.isFile() &&
+			entry.name.endsWith(".tsx") &&
+			!entry.name.startsWith("_") &&
+			!entry.name.startsWith("[")
+		) {
+			const id = entry.name.replace(".tsx", "");
+			examples.push({
+				id,
+				path: `/examples/${id}`,
+				type: "example",
+			});
+		}
+	}
+
+	return examples.sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export function getAvailableGames(): GameInfo[] {
-  // Always discover fresh - games may be added/removed during development
-  return discoverTestGames();
+	// Always discover fresh - games may be added/removed during development
+	return discoverTestGames();
 }
 
 export function getAvailableExamples(): GameInfo[] {
-  // Always discover fresh - examples may be added/removed during development
-  return discoverExamples();
+	// Always discover fresh - examples may be added/removed during development
+	return discoverExamples();
 }
 
 export function getAllAvailable(): GameInfo[] {
-  return [...getAvailableGames(), ...getAvailableExamples()];
+	return [...getAvailableGames(), ...getAvailableExamples()];
 }
 
 export function isValidGame(id: string): boolean {
-  return getAvailableGames().some((g) => g.id === id);
+	return getAvailableGames().some((g) => g.id === id);
 }
 
 export function isValidExample(id: string): boolean {
-  return getAvailableExamples().some((e) => e.id === id);
+	return getAvailableExamples().some((e) => e.id === id);
 }
 
 export function findByIdOrPath(input: string): GameInfo | undefined {
-  const all = getAllAvailable();
-  
-  const byId = all.find((g) => g.id === input);
-  if (byId) return byId;
-  
-  const normalizedInput = input.toLowerCase().replace(/[-_\s]/g, "");
-  return all.find((g) => g.id.toLowerCase().replace(/[-_\s]/g, "") === normalizedInput);
+	const all = getAllAvailable();
+
+	const byId = all.find((g) => g.id === input);
+	if (byId) return byId;
+
+	const normalizedInput = input.toLowerCase().replace(/[-_\s]/g, "");
+	return all.find(
+		(g) => g.id.toLowerCase().replace(/[-_\s]/g, "") === normalizedInput,
+	);
 }
-
-

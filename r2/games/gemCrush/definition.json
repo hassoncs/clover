@@ -3,7 +3,9 @@
     "id": "955c4c55-24e8-49a4-8e73-b65bbd85d8e7",
     "title": "Gem Crush",
     "description": "Match 3 or more gems to clear them!",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "instructions": "Tap two adjacent gems to swap them. Match 3 or more of the same color to clear!",
+    "slug": "gemCrush"
   },
   "world": {
     "gravity": {
@@ -1071,5 +1073,69 @@
         "cellHeight": 64
       }
     }
+  },
+  "background": {
+    "type": "static",
+    "whatDescription": "a mystical treasure cave background with glowing crystals"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": [
+      {
+        "id": "timer",
+        "type": "text",
+        "anchor": "top-center",
+        "offset": {
+          "x": 0,
+          "y": 16
+        },
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "{{formatTime(elapsed)}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-score",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": {
+          "x": 16,
+          "y": 16
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "SCORE\n{{variables.score}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      }
+    ]
+  },
+  "winCondition": {
+    "expr": "score >= 1000"
+  },
+  "loseCondition": {
+    "type": "time_up",
+    "time": 120
+  },
+  "assetSystem": {
+    "activePackId": "default"
   }
 }

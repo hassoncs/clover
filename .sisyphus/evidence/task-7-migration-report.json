@@ -1,0 +1,94 @@
+{
+	"timestamp": "2026-02-12T02:30:17.211Z",
+	"mode": "live",
+	"sourcePackCount": 6,
+	"activePackCount": 6,
+	"createdRemixCount": 6,
+	"totalRemixesAfter": 6,
+	"totalEntries": 59,
+	"skipped": [],
+	"sampleMappings": [
+		{
+			"packId": "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+			"packName": "halloween (12e102fa)",
+			"remixId": "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+			"assetOverrideCount": 10
+		},
+		{
+			"packId": "63b1b662-2eb6-4262-b937-405de7be5515",
+			"packName": "default (63b1b662)",
+			"remixId": "63b1b662-2eb6-4262-b937-405de7be5515",
+			"assetOverrideCount": 7
+		},
+		{
+			"packId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+			"packName": "default (7f789206)",
+			"remixId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+			"assetOverrideCount": 11
+		},
+		{
+			"packId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+			"packName": "halloween (865c8006)",
+			"remixId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+			"assetOverrideCount": 10
+		},
+		{
+			"packId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+			"packName": "default (a1d20e15)",
+			"remixId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+			"assetOverrideCount": 10
+		}
+	],
+	"entryVsOverrideComparison": [
+		{
+			"packId": "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+			"packName": "halloween (12e102fa)",
+			"packEntryCount": 10,
+			"remixOverrideCount": 10,
+			"match": true
+		},
+		{
+			"packId": "63b1b662-2eb6-4262-b937-405de7be5515",
+			"packName": "default (63b1b662)",
+			"packEntryCount": 7,
+			"remixOverrideCount": 7,
+			"match": true
+		},
+		{
+			"packId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+			"packName": "default (7f789206)",
+			"packEntryCount": 11,
+			"remixOverrideCount": 11,
+			"match": true
+		},
+		{
+			"packId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+			"packName": "halloween (865c8006)",
+			"packEntryCount": 10,
+			"remixOverrideCount": 10,
+			"match": true
+		},
+		{
+			"packId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+			"packName": "default (a1d20e15)",
+			"packEntryCount": 10,
+			"remixOverrideCount": 10,
+			"match": true
+		},
+		{
+			"packId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+			"packName": "default (f661beb6)",
+			"packEntryCount": 11,
+			"remixOverrideCount": 11,
+			"match": true
+		}
+	],
+	"verificationStatus": {
+		"countMatch": true,
+		"allPacksMigrated": true,
+		"idempotencyVerified": true,
+		"legacyTablesIntact": true,
+		"migrationTestsPassing": "18/18 pass (bun test)",
+		"remixApiTestsPassing": "18/18 pass (vitest)"
+	}
+}

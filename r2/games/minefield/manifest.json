@@ -106,5 +106,6 @@
   "loseCondition": {
     "type": "custom",
     "expr": "hasLost == 1"
-  }
+  },
+  "slug": "minefield"
 }

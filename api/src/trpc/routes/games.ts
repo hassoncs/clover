@@ -12,6 +12,7 @@ import {
 	validateGameDefinition,
 } from "@/ai";
 import { ArtifactManager } from "@/ai/agent/artifact-manager";
+import { WorkspaceCopyService } from "@/services/WorkspaceCopyService";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
 import {
 	getValidationReportJson,
@@ -856,6 +857,16 @@ export const gamesRouter = router({
 				description: existing.description,
 				thumbnailUrl: existing.thumbnail_url,
 				updatedAt: now,
+			});
+
+			const workspaceCopier = new WorkspaceCopyService(ctx.env.ASSETS);
+			await workspaceCopier.copyWorkspace({
+				sourcePrefix: existing.r2_prefix,
+				destPrefix: newR2Prefix,
+				metadataOverrides: {
+					id: newId,
+					title: `${existing.title} (Fork)`,
+				},
 			});
 
 			const parentBaseGameId = existing.base_game_id ?? existing.id;

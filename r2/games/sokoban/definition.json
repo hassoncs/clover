@@ -3,7 +3,9 @@
     "id": "3c6616ac-d60b-4ff5-b85b-1a6aae5c6725",
     "title": "Sokoban",
     "description": "Push boxes onto target spots to win!",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "instructions": "Swipe up/down/left/right to move. Push all boxes onto the glowing targets!",
+    "slug": "sokoban"
   },
   "world": {
     "gravity": {
@@ -1025,5 +1027,48 @@
       ]
     }
   ],
-  "script": "// --- main ---\n\nconst TILE_SIZE = 1.2;\nconst GRID_SIZE = 8;\nconst GRID_OFFSET_X = 0.6;\nconst GRID_OFFSET_Y = 2.4;\nconst WORLD_WIDTH = 12;\nconst WORLD_HEIGHT = 12;\nconst HALF_W = WORLD_WIDTH / 2;\nconst HALF_H = WORLD_HEIGHT / 2;\nconst cx = (x) => x - HALF_W;\nconst cy = (y) => HALF_H - y;\n\n// Grid state: 0 = empty, 1 = wall, 2 = box\nlet grid = [];\nlet playerRow = 6;\nlet playerCol = 3;\nlet targetPositions = [];\n\nfunction initGrid() {\n  // Initialize grid\n  grid = [];\n  for (let row = 0; row < GRID_SIZE; row++) {\n    grid[row] = [];\n    for (let col = 0; col < GRID_SIZE; col++) {\n      grid[row][col] = 0;\n    }\n  }\n  \n  // Set walls (border)\n  for (let i = 0; i < GRID_SIZE; i++) {\n    grid[0][i] = 1;\n    grid[7][i] = 1;\n    grid[i][0] = 1;\n    grid[i][7] = 1;\n  }\n  \n  // Set initial boxes\n  grid[2][3] = 2;\n  grid[5][4] = 2;\n  \n  // Set target positions\n  targetPositions = [\n    { row: 2, col: 6 },\n    { row: 5, col: 2 },\n  ];\n  \n  // Player position\n  playerRow = 6;\n  playerCol = 3;\n}\n\nfunction getPosition(row, col) {\n  return {\n    x: cx(col * TILE_SIZE + GRID_OFFSET_X),\n    y: cy(row * TILE_SIZE + GRID_OFFSET_Y),\n  };\n}\n\nfunction isWall(row, col) {\n  if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n    return true;\n  }\n  return grid[row][col] === 1;\n}\n\nfunction isBox(row, col) {\n  if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n    return false;\n  }\n  return grid[row][col] === 2;\n}\n\nfunction movePlayer(ctx, deltaRow, deltaCol) {\n  const newRow = playerRow + deltaRow;\n  const newCol = playerCol + deltaCol;\n  \n  // Check if moving into a wall\n  if (isWall(newRow, newCol)) {\n    return false;\n  }\n  \n  // Check if pushing a box\n  if (isBox(newRow, newCol)) {\n    const boxNewRow = newRow + deltaRow;\n    const boxNewCol = newCol + deltaCol;\n    \n    // Can't push box into wall or another box\n    if (isWall(boxNewRow, boxNewCol) || isBox(boxNewRow, boxNewCol)) {\n      return false;\n    }\n    \n    // Move the box\n    grid[newRow][newCol] = 0;\n    grid[boxNewRow][boxNewCol] = 2;\n    \n    // Find and move the box entity\n    const boxId = findBoxAtPosition(ctx, newRow, newCol);\n    if (boxId) {\n      const boxPos = getPosition(boxNewRow, boxNewCol);\n      ctx.setEntityPosition(boxId, { x: boxPos.x, y: boxPos.y });\n    }\n  }\n  \n  // Move player\n  playerRow = newRow;\n  playerCol = newCol;\n  \n  const playerPos = getPosition(playerRow, playerCol);\n  const playerEntity = ctx.queryEntities({ tag: 'player' })[0];\n  if (playerEntity) {\n    ctx.setEntityPosition(playerEntity, { x: playerPos.x, y: playerPos.y });\n  }\n  \n  // Increment moves\n  const currentMoves = ctx.getVariable('moves') || 0;\n  ctx.setVariable('moves', currentMoves + 1);\n  \n  // Check win condition\n  checkWinCondition(ctx);\n  \n  return true;\n}\n\nfunction findBoxAtPosition(ctx, row, col) {\n  const pos = getPosition(row, col);\n  const boxes = ctx.queryEntities({ tag: 'box' });\n  \n  for (const box of boxes) {\n    const boxPos = ctx.getEntityPosition(box);\n    if (boxPos && Math.abs(boxPos.x - pos.x) < 0.1 && Math.abs(boxPos.y - pos.y) < 0.1) {\n      return box;\n    }\n  }\n  \n  return null;\n}\n\nfunction checkWinCondition(ctx) {\n  let allOnTargets = true;\n  \n  for (const target of targetPositions) {\n    if (!isBox(target.row, target.col)) {\n      allOnTargets = false;\n      break;\n    }\n  }\n  \n  ctx.setVariable('allBoxesOnTargets', allOnTargets ? 1 : 0);\n}\n\nexports.onStart = function(ctx) {\n  initGrid();\n  ctx.setVariable('moves', 0);\n  ctx.setVariable('allBoxesOnTargets', 0);\n};\n\nexports.onInput = function(ctx, event) {\n  if (ctx.getVariable('allBoxesOnTargets') === 1) {\n    return;\n  }\n  \n  if (event.type !== 'swipe') return;\n  \n  if (event.direction === 'up') {\n    movePlayer(ctx, -1, 0);\n  } else if (event.direction === 'down') {\n    movePlayer(ctx, 1, 0);\n  } else if (event.direction === 'left') {\n    movePlayer(ctx, 0, -1);\n  } else if (event.direction === 'right') {\n    movePlayer(ctx, 0, 1);\n  }\n};\n"
+  "script": "// --- main ---\n\nconst TILE_SIZE = 1.2;\nconst GRID_SIZE = 8;\nconst GRID_OFFSET_X = 0.6;\nconst GRID_OFFSET_Y = 2.4;\nconst WORLD_WIDTH = 12;\nconst WORLD_HEIGHT = 12;\nconst HALF_W = WORLD_WIDTH / 2;\nconst HALF_H = WORLD_HEIGHT / 2;\nconst cx = (x) => x - HALF_W;\nconst cy = (y) => HALF_H - y;\n\n// Grid state: 0 = empty, 1 = wall, 2 = box\nlet grid = [];\nlet playerRow = 6;\nlet playerCol = 3;\nlet targetPositions = [];\n\nfunction initGrid() {\n  // Initialize grid\n  grid = [];\n  for (let row = 0; row < GRID_SIZE; row++) {\n    grid[row] = [];\n    for (let col = 0; col < GRID_SIZE; col++) {\n      grid[row][col] = 0;\n    }\n  }\n  \n  // Set walls (border)\n  for (let i = 0; i < GRID_SIZE; i++) {\n    grid[0][i] = 1;\n    grid[7][i] = 1;\n    grid[i][0] = 1;\n    grid[i][7] = 1;\n  }\n  \n  // Set initial boxes\n  grid[2][3] = 2;\n  grid[5][4] = 2;\n  \n  // Set target positions\n  targetPositions = [\n    { row: 2, col: 6 },\n    { row: 5, col: 2 },\n  ];\n  \n  // Player position\n  playerRow = 6;\n  playerCol = 3;\n}\n\nfunction getPosition(row, col) {\n  return {\n    x: cx(col * TILE_SIZE + GRID_OFFSET_X),\n    y: cy(row * TILE_SIZE + GRID_OFFSET_Y),\n  };\n}\n\nfunction isWall(row, col) {\n  if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n    return true;\n  }\n  return grid[row][col] === 1;\n}\n\nfunction isBox(row, col) {\n  if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n    return false;\n  }\n  return grid[row][col] === 2;\n}\n\nfunction movePlayer(ctx, deltaRow, deltaCol) {\n  const newRow = playerRow + deltaRow;\n  const newCol = playerCol + deltaCol;\n  \n  // Check if moving into a wall\n  if (isWall(newRow, newCol)) {\n    return false;\n  }\n  \n  // Check if pushing a box\n  if (isBox(newRow, newCol)) {\n    const boxNewRow = newRow + deltaRow;\n    const boxNewCol = newCol + deltaCol;\n    \n    // Can't push box into wall or another box\n    if (isWall(boxNewRow, boxNewCol) || isBox(boxNewRow, boxNewCol)) {\n      return false;\n    }\n    \n    // Move the box\n    grid[newRow][newCol] = 0;\n    grid[boxNewRow][boxNewCol] = 2;\n    \n    // Find and move the box entity\n    const boxId = findBoxAtPosition(ctx, newRow, newCol);\n    if (boxId) {\n      const boxPos = getPosition(boxNewRow, boxNewCol);\n      ctx.setEntityPosition(boxId, { x: boxPos.x, y: boxPos.y });\n    }\n  }\n  \n  // Move player\n  playerRow = newRow;\n  playerCol = newCol;\n  \n  const playerPos = getPosition(playerRow, playerCol);\n  const playerEntity = ctx.queryEntities({ tag: 'player' })[0];\n  if (playerEntity) {\n    ctx.setEntityPosition(playerEntity, { x: playerPos.x, y: playerPos.y });\n  }\n  \n  // Increment moves\n  const currentMoves = ctx.getVariable('moves') || 0;\n  ctx.setVariable('moves', currentMoves + 1);\n  \n  // Check win condition\n  checkWinCondition(ctx);\n  \n  return true;\n}\n\nfunction findBoxAtPosition(ctx, row, col) {\n  const pos = getPosition(row, col);\n  const boxes = ctx.queryEntities({ tag: 'box' });\n  \n  for (const box of boxes) {\n    const boxPos = ctx.getEntityPosition(box);\n    if (boxPos && Math.abs(boxPos.x - pos.x) < 0.1 && Math.abs(boxPos.y - pos.y) < 0.1) {\n      return box;\n    }\n  }\n  \n  return null;\n}\n\nfunction checkWinCondition(ctx) {\n  let allOnTargets = true;\n  \n  for (const target of targetPositions) {\n    if (!isBox(target.row, target.col)) {\n      allOnTargets = false;\n      break;\n    }\n  }\n  \n  ctx.setVariable('allBoxesOnTargets', allOnTargets ? 1 : 0);\n}\n\nexports.onStart = function(ctx) {\n  initGrid();\n  ctx.setVariable('moves', 0);\n  ctx.setVariable('allBoxesOnTargets', 0);\n};\n\nexports.onInput = function(ctx, event) {\n  if (ctx.getVariable('allBoxesOnTargets') === 1) {\n    return;\n  }\n  \n  if (event.type !== 'swipe') return;\n  \n  if (event.direction === 'up') {\n    movePlayer(ctx, -1, 0);\n  } else if (event.direction === 'down') {\n    movePlayer(ctx, 1, 0);\n  } else if (event.direction === 'left') {\n    movePlayer(ctx, 0, -1);\n  } else if (event.direction === 'right') {\n    movePlayer(ctx, 0, 1);\n  }\n};\n",
+  "background": {
+    "type": "static",
+    "color": "#2c3e50"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": [
+      {
+        "id": "var-moves",
+        "type": "text",
+        "anchor": "top-center",
+        "offset": {
+          "x": 0,
+          "y": 16
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "MOVES\n{{variables.moves}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      }
+    ]
+  },
+  "variables": {
+    "moves": 0,
+    "allBoxesOnTargets": 0
+  },
+  "winCondition": {
+    "expr": "allBoxesOnTargets == 1"
+  },
+  "assetSystem": {
+    "activePackId": "default"
+  }
 }

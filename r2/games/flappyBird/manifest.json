@@ -93,5 +93,6 @@
       "onGameLose": true,
       "onBackground": true
     }
-  }
+  },
+  "slug": "flappyBird"
 }

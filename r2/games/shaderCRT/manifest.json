@@ -1,34 +1,52 @@
 {
-	"name": "shader-crt-demo",
-	"version": "1.0.0",
-	"title": "Shader CRT",
-	"description": "A retro CRT post-process effect applied to a simple scene",
-	"instructions": "Watch the CRT scanline effect. Tap to bounce the ball!",
-	"world": {
-		"gravity": { "x": 0, "y": -10 },
-		"pixelsPerMeter": 50,
-		"bounds": { "width": 12, "height": 16 }
-	},
-	"background": { "type": "static", "color": "#0d1117" },
-	"camera": { "type": "fixed", "zoom": 1 },
-	"overlay": {
-		"elements": [
-			{
-				"id": "title",
-				"type": "text",
-				"anchor": "top-center",
-				"offset": { "x": 0, "y": 16 },
-				"fontSize": 16,
-				"fontWeight": "bold",
-				"color": "#00ff88",
-				"bindings": { "text": "CRT SHADER TEST" },
-				"style": {
-					"backgroundColor": "rgba(0,0,0,0.5)",
-					"borderRadius": 6,
-					"paddingHorizontal": 12,
-					"paddingVertical": 4
-				}
-			}
-		]
-	}
+  "name": "shader-crt-demo",
+  "version": "1.0.0",
+  "title": "Shader CRT",
+  "description": "A retro CRT post-process effect applied to a simple scene",
+  "instructions": "Watch the CRT scanline effect. Tap to bounce the ball!",
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": -10
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "background": {
+    "type": "static",
+    "color": "#0d1117"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": [
+      {
+        "id": "title",
+        "type": "text",
+        "anchor": "top-center",
+        "offset": {
+          "x": 0,
+          "y": 16
+        },
+        "fontSize": 16,
+        "fontWeight": "bold",
+        "color": "#00ff88",
+        "bindings": {
+          "text": "CRT SHADER TEST"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.5)",
+          "borderRadius": 6,
+          "paddingHorizontal": 12,
+          "paddingVertical": 4
+        }
+      }
+    ]
+  },
+  "slug": "shaderCRT"
 }

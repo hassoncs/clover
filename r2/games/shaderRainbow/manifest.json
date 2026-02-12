@@ -1,14 +1,27 @@
 {
-	"name": "shader-rainbow-demo",
-	"version": "1.0.0",
-	"title": "Shader Rainbow",
-	"description": "A visual demo showcasing a rainbow sine wave shader on entities",
-	"instructions": "Watch the rainbow wave animation. Tap to spawn more cubes!",
-	"world": {
-		"gravity": { "x": 0, "y": -5 },
-		"pixelsPerMeter": 50,
-		"bounds": { "width": 12, "height": 16 }
-	},
-	"background": { "type": "static", "color": "#0a0a1a" },
-	"camera": { "type": "fixed", "zoom": 1 }
+  "name": "shader-rainbow-demo",
+  "version": "1.0.0",
+  "title": "Shader Rainbow",
+  "description": "A visual demo showcasing a rainbow sine wave shader on entities",
+  "instructions": "Watch the rainbow wave animation. Tap to spawn more cubes!",
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": -5
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "background": {
+    "type": "static",
+    "color": "#0a0a1a"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "slug": "shaderRainbow"
 }

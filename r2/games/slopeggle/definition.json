@@ -3,7 +3,9 @@
     "id": "23a42f3b-04a4-4c35-bcc6-4ea9b4e18247",
     "title": "Slopeggle",
     "description": "Clear all orange pegs by bouncing a ball through the board",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "instructions": "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
+    "slug": "slopeggle"
   },
   "world": {
     "gravity": {
@@ -2162,5 +2164,138 @@
         }
       ]
     }
-  ]
+  ],
+  "background": {
+    "type": "static",
+    "whatDescription": "a colorful peggle-style background with soft lighting and geometric patterns"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": [
+      {
+        "id": "count-orange-peg",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": {
+          "x": 16,
+          "y": 16
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#F97316",
+        "bindings": {
+          "text": "ORANGE PEGS\n{{entityCount('orange-peg')}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-multiplier",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": {
+          "x": 16,
+          "y": 72
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FBBF24",
+        "bindings": {
+          "text": "MULTIPLIER\n{{variables.multiplier}}"
+        },
+        "visibleWhen": "variables.multiplier != 1",
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-turn",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": {
+          "x": 16,
+          "y": 128
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#94A3B8",
+        "bindings": {
+          "text": "SHOT\n{{variables.turn}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-score",
+        "type": "text",
+        "anchor": "top-right",
+        "offset": {
+          "x": 16,
+          "y": 16
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "SCORE\n{{variables.score}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-lives",
+        "type": "text",
+        "anchor": "top-right",
+        "offset": {
+          "x": 16,
+          "y": 72
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "BALLS\n{{variables.lives}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      }
+    ]
+  },
+  "variables": {
+    "lives": 10,
+    "multiplier": 1,
+    "turn": 0
+  },
+  "winCondition": {
+    "expr": "entityCount('orange-peg') == 0"
+  },
+  "loseCondition": {
+    "type": "custom",
+    "expr": "lives <= 0"
+  },
+  "assetSystem": {
+    "activePackId": "default"
+  }
 }

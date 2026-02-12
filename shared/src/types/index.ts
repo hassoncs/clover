@@ -31,6 +31,7 @@ export * from "./Prefab";
 export * from "./particles";
 export * from "./physics";
 export * from "./progress";
+export * from "./remix";
 export * from "./rules";
 export * from "./schemas";
 export * from "./style-presets";

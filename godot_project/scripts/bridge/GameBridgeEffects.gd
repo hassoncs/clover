@@ -6,6 +6,7 @@ extends Node
 
 var particle_factory: ParticleFactory
 var graph_executor: EffectsGraphExecutor
+var _screen_executor: EffectsGraphExecutor
 var _game_bridge: Node = null
 var _entity_sprite: Sprite2D = null
 var _entity_original_texture: Texture2D = null
@@ -17,6 +18,9 @@ var _brush_cache: Dictionary = {}
 var _stroke_overlay_img: Image = null
 var _stroke_overlay_tex: ImageTexture = null
 var _stroke_overlay_dirty: bool = false
+var _screen_overlay_layer: CanvasLayer = null
+var _screen_overlay_rect: TextureRect = null
+var _current_scope: String = ""
 
 func _ready() -> void:
 	# Create subsystems
@@ -27,6 +31,10 @@ func _ready() -> void:
 	graph_executor = EffectsGraphExecutor.new()
 	graph_executor.name = "GraphExecutor"
 	add_child(graph_executor)
+
+	_screen_executor = EffectsGraphExecutor.new()
+	_screen_executor.name = "ScreenGraphExecutor"
+	add_child(_screen_executor)
 
 	# Find GameBridge
 	_game_bridge = get_node_or_null("/root/GameBridge")
@@ -39,24 +47,38 @@ func _ready() -> void:
 		_setup_js_effects_bridge()
 
 func _process(_delta: float) -> void:
-	if graph_executor == null or _entity_sprite == null or _entity_original_texture == null:
+	# Update screen overlay from dedicated screen executor
+	if _screen_executor != null and _screen_executor._state == EffectsGraphExecutor.State.RUNNING:
+		if _screen_overlay_rect != null:
+			var screen_tex: Texture2D = _screen_executor.get_output_texture()
+			if screen_tex != null and _screen_overlay_rect.texture != screen_tex:
+				_screen_overlay_rect.texture = screen_tex
+
+	# Update entity effects from entity executor
+	if graph_executor == null:
 		return
-	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
-		_frames_since_start += 1
-		if _display_swap_delay > 0:
-			_display_swap_delay -= 1
-			return
-		if _pending_inject_commands.size() > 0:
-			_render_overlay_from_pending()
-		elif _stroke_overlay_dirty:
-			_clear_stroke_overlay()
-		var output_tex: Texture2D = graph_executor.get_output_texture()
-		if output_tex != null and _entity_sprite.texture != output_tex:
-			_entity_sprite.texture = output_tex
-			var orig_size: Vector2 = _entity_original_texture.get_size()
-			var out_size: Vector2 = output_tex.get_size()
-			if out_size.x > 0 and out_size.y > 0:
-				_entity_sprite.scale = _entity_original_scale * (orig_size / out_size)
+	if graph_executor._state != EffectsGraphExecutor.State.RUNNING:
+		return
+
+	_frames_since_start += 1
+
+	if _entity_sprite == null or _entity_original_texture == null:
+		return
+
+	if _display_swap_delay > 0:
+		_display_swap_delay -= 1
+		return
+	if _pending_inject_commands.size() > 0:
+		_render_overlay_from_pending()
+	elif _stroke_overlay_dirty:
+		_clear_stroke_overlay()
+	var output_tex: Texture2D = graph_executor.get_output_texture()
+	if output_tex != null and _entity_sprite.texture != output_tex:
+		_entity_sprite.texture = output_tex
+		var orig_size: Vector2 = _entity_original_texture.get_size()
+		var out_size: Vector2 = output_tex.get_size()
+		if out_size.x > 0 and out_size.y > 0:
+			_entity_sprite.scale = _entity_original_scale * (orig_size / out_size)
 
 var _method_map: Dictionary = {}
 
@@ -646,18 +668,55 @@ func apply_plan(plan_json) -> Dictionary:
 	else:
 		return {"success": false, "error": "Invalid plan format"}
 
-	if str(plan_dict.get("scope", "")) == "entity":
-		var entity_tex: Texture2D = _find_entity_texture()
-		if entity_tex != null:
-			graph_executor.set_input_buffer("pixelBuffer", entity_tex)
+	var scope: String = str(plan_dict.get("scope", ""))
+
+	if scope == "screen":
+		var result = _screen_executor.apply_plan(plan_dict)
+		if bool(result.get("success", false)):
+			_create_screen_overlay()
+			_screen_executor.start()
+		return result
+
+	_current_scope = "entity"
+
+	var entity_tex: Texture2D = _find_entity_texture()
+	if entity_tex != null:
+		graph_executor.set_input_buffer("pixelBuffer", entity_tex)
 
 	var result = graph_executor.apply_plan(plan_dict)
 
-	if bool(result.get("success", false)) and str(plan_dict.get("scope", "")) == "entity":
+	if bool(result.get("success", false)):
 		_store_entity_sprite_reference()
 		_init_stroke_overlay()
 
 	return result
+
+func _create_screen_overlay() -> void:
+	_destroy_screen_overlay()
+
+	if _screen_executor == null or _screen_executor._pass_entries.size() == 0:
+		return
+
+	# For single-pass screen effects, we can use the shader directly on a
+	# ColorRect so SCREEN_TEXTURE works. For multi-pass, we must use a
+	# TextureRect fed by the executor's output viewport.
+	_screen_overlay_layer = CanvasLayer.new()
+	_screen_overlay_layer.name = "ScreenEffectsOverlay"
+	_screen_overlay_layer.layer = 100
+	add_child(_screen_overlay_layer)
+
+	_screen_overlay_rect = TextureRect.new()
+	_screen_overlay_rect.name = "ScreenEffectsRect"
+	_screen_overlay_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_screen_overlay_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_screen_overlay_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_screen_overlay_layer.add_child(_screen_overlay_rect)
+
+func _destroy_screen_overlay() -> void:
+	if _screen_overlay_layer != null and is_instance_valid(_screen_overlay_layer):
+		_screen_overlay_layer.queue_free()
+	_screen_overlay_layer = null
+	_screen_overlay_rect = null
 
 func _render_overlay_from_pending() -> void:
 	if _stroke_overlay_img == null or _stroke_overlay_tex == null:
@@ -736,8 +795,14 @@ func _init_stroke_overlay() -> void:
 
 func clear_plan() -> void:
 	_restore_entity_display()
+	_current_scope = ""
 	if graph_executor:
 		graph_executor.clear()
+
+func clear_screen_plan() -> void:
+	_destroy_screen_overlay()
+	if _screen_executor:
+		_screen_executor.clear()
 
 func update_params(pass_id: String, params: Dictionary) -> Dictionary:
 	if graph_executor:

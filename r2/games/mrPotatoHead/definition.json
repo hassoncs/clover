@@ -3,7 +3,9 @@
     "id": "02b87353-0c1f-45a3-8868-f75ea5362778",
     "title": "Mr. Potato Head",
     "description": "Drag and drop pieces onto the potato to build your own Mr. Potato Head!",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "instructions": "Drag pieces from the drawer onto the potato. Tap Reset to start over!",
+    "slug": "mrPotatoHead"
   },
   "world": {
     "gravity": {
@@ -527,5 +529,20 @@
       ]
     }
   ],
-  "script": "// --- main ---\n\nvar INITIAL_POSITIONS = {\n  leftEye:   { x: -3.5, y: -3.2 },\n  rightEye:  { x: -2.0, y: -3.2 },\n  nose:      { x: -0.5, y: -3.2 },\n  ears:      { x:  1.5, y: -3.2 },\n  hat:       { x:  3.5, y: -3.2 },\n  mouth:     { x: -3.0, y: -5.2 },\n  mustache:  { x: -0.5, y: -5.2 },\n  leftArm:   { x:  2.0, y: -5.2 },\n  rightArm:  { x:  4.0, y: -5.2 },\n};\n\nexports.resetPieces = function(ctx) {\n  if (ctx.isSequenceRunning('reset')) return;\n\n  ctx.startSequence('reset', async function(world) {\n    var keys = Object.keys(INITIAL_POSITIONS);\n    var animations = [];\n    for (var i = 0; i < keys.length; i++) {\n      var id = keys[i];\n      var target = INITIAL_POSITIONS[id];\n      animations.push(\n        world.animate(id, { x: target.x, y: target.y }, { duration: 500, easing: 'ease-in-out' })\n      );\n    }\n    await Promise.all(animations);\n  });\n};\n"
+  "script": "// --- main ---\n\nvar INITIAL_POSITIONS = {\n  leftEye:   { x: -3.5, y: -3.2 },\n  rightEye:  { x: -2.0, y: -3.2 },\n  nose:      { x: -0.5, y: -3.2 },\n  ears:      { x:  1.5, y: -3.2 },\n  hat:       { x:  3.5, y: -3.2 },\n  mouth:     { x: -3.0, y: -5.2 },\n  mustache:  { x: -0.5, y: -5.2 },\n  leftArm:   { x:  2.0, y: -5.2 },\n  rightArm:  { x:  4.0, y: -5.2 },\n};\n\nexports.resetPieces = function(ctx) {\n  if (ctx.isSequenceRunning('reset')) return;\n\n  ctx.startSequence('reset', async function(world) {\n    var keys = Object.keys(INITIAL_POSITIONS);\n    var animations = [];\n    for (var i = 0; i < keys.length; i++) {\n      var id = keys[i];\n      var target = INITIAL_POSITIONS[id];\n      animations.push(\n        world.animate(id, { x: target.x, y: target.y }, { duration: 500, easing: 'ease-in-out' })\n      );\n    }\n    await Promise.all(animations);\n  });\n};\n",
+  "background": {
+    "type": "static",
+    "whatDescription": "A soft, blurry, colorful children's bedroom background with warm lighting, toys on shelves, pastel walls, and a cozy playful atmosphere, out of focus bokeh effect"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "assetSystem": {
+    "activePackId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+    "packIds": [
+      "63b1b662-2eb6-4262-b937-405de7be5515",
+      "7f789206-4ced-462e-8c96-e9774c9e7553"
+    ]
+  }
 }

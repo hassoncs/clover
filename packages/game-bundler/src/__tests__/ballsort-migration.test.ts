@@ -98,11 +98,9 @@ describe("Ball Sort Migration", () => {
 		const result = compileBundle(BUNDLE_PATH, { fileReader });
 		const def = result.gameDefinition!;
 
-		expect(def.stateMachines).toBeUndefined();
-
-		const rawSystems = (result.rawData.manifest as Record<string, unknown>)
-			?.systems as Record<string, unknown> | undefined;
-		expect(rawSystems?.stateMachines).toBeDefined();
+		expect(def.stateMachines).toBeDefined();
+		expect(def.stateMachines).toHaveLength(1);
+		expect(def.stateMachines![0].id).toBe("gameFlow");
 	});
 
 	it("compileSectioned succeeds", () => {

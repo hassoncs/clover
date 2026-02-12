@@ -5,7 +5,18 @@
   "description": "Drag and drop pieces onto the potato to build your own Mr. Potato Head!",
   "version": "1.0.0",
   "thumbnailUrl": null,
-  "packs": [],
-  "activePackId": null,
-  "updatedAt": 1770856821614
+  "packs": [
+    {
+      "name": "default",
+      "packId": "63b1b662-2eb6-4262-b937-405de7be5515",
+      "assetCount": 7
+    },
+    {
+      "name": "default",
+      "packId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+      "assetCount": 11
+    }
+  ],
+  "activePackId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+  "updatedAt": 1770858943589
 }

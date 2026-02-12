@@ -28,5 +28,6 @@
   },
   "assetSystem": {
     "activePackId": "default"
-  }
+  },
+  "slug": "tweenToggleCube"
 }

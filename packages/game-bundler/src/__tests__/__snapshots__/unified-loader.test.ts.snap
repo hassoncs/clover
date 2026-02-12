@@ -83,6 +83,9 @@ exports[`bundle compilation snapshots > produces consistent output for a simple 
       },
     },
   ],
+  "variables": {
+    "score": 0,
+  },
   "world": {
     "bounds": {
       "height": 16,

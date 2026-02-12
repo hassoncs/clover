@@ -5,7 +5,28 @@
   "description": "Sort colored balls into tubes - each tube should contain only one color",
   "version": "2.0.0",
   "thumbnailUrl": null,
-  "packs": [],
-  "activePackId": null,
-  "updatedAt": 1770856821603
+  "packs": [
+    {
+      "name": "default",
+      "packId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+      "assetCount": 11
+    },
+    {
+      "name": "default",
+      "packId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+      "assetCount": 10
+    },
+    {
+      "name": "halloween",
+      "packId": "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+      "assetCount": 10
+    },
+    {
+      "name": "halloween",
+      "packId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+      "assetCount": 10
+    }
+  ],
+  "activePackId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+  "updatedAt": 1770858943555
 }
