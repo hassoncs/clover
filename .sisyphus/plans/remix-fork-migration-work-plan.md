@@ -460,7 +460,7 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
     Evidence: .sisyphus/evidence/task-7-migration-report.json
   ```
 
-- [ ] 8. Rollout hardening and deprecation controls
+- [x] 8. Rollout hardening and deprecation controls
 
   **What to do**:
   - Add feature flags/cutover controls for Remix default behavior.
