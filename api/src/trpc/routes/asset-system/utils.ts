@@ -5,11 +5,9 @@ import type { ThemePlan } from "@/ai/pipeline/theme-plan";
 import type { ThemePlannerInput } from "@/ai/pipeline/theme-planner";
 import type { Env } from "../../context";
 import type {
-	AssetPackRow,
 	GameAssetRow,
 	GenerationJobRow,
 	GenerationTaskRow,
-	PackEntryRow,
 	RemixRow,
 	ThemeRow,
 } from "./types";
@@ -89,36 +87,11 @@ export function toClientAsset(
 	};
 }
 
-export function toClientPack(row: AssetPackRow) {
-	return {
-		id: row.id,
-		baseGameId: row.base_game_id,
-		name: row.name,
-		description: row.description,
-		themeId: row.theme_id,
-		creatorUserId: row.creator_user_id,
-		isComplete: row.is_complete === 1,
-		createdAt: row.created_at,
-		updatedAt: row.updated_at,
-		deletedAt: row.deleted_at,
-	};
-}
-
-export function toClientEntry(row: PackEntryRow) {
-	return {
-		id: row.id,
-		packId: row.pack_id,
-		prefabId: row.template_id,
-		assetId: row.asset_id,
-		placement: row.placement_json ? JSON.parse(row.placement_json) : undefined,
-	};
-}
-
 export function toClientJob(row: GenerationJobRow) {
 	return {
 		id: row.id,
 		gameId: row.game_id,
-		packId: row.pack_id,
+		remixId: row.remix_id,
 		themeId: row.theme_id,
 		status: row.status as
 			| "queued"

@@ -85,7 +85,7 @@ export const DEFAULT_ASSET_PLACEMENT: AssetPlacement = {
 };
 
 export const AssetSystemConfigSchema = z.object({
-	activePackId: z.string().optional(),
+	activeRemixId: z.string().optional(),
 });
 
 export type AssetSystemConfig = z.infer<typeof AssetSystemConfigSchema>;

@@ -63,8 +63,8 @@ export function EditorTopBar({
 		try {
 			if (isEphemeral) {
 				const result = await trpc.games.create.mutate({
-					title: document.metadata.title,
-					description: document.metadata.description,
+					title: document?.metadata?.title ?? "Untitled",
+					description: document?.metadata?.description,
 					definition: JSON.stringify(document),
 					isPublic: false,
 				});
@@ -72,8 +72,8 @@ export function EditorTopBar({
 			} else if (gameId !== "preview") {
 				await trpc.games.update.mutate({
 					id: gameId,
-					title: document.metadata.title,
-					description: document.metadata.description,
+					title: document?.metadata?.title ?? "Untitled",
+					description: document?.metadata?.description,
 					definition: JSON.stringify(document),
 				});
 			}
@@ -139,7 +139,7 @@ export function EditorTopBar({
 					className="text-white font-semibold text-base text-center"
 					numberOfLines={1}
 				>
-					{document.metadata.title}
+					{document?.metadata?.title ?? "Untitled"}
 					{isDirty && <Text className="text-yellow-500"> •</Text>}
 				</Text>
 			</View>

@@ -26,37 +26,16 @@ export interface GameAssetRow {
 	deleted_at: number | null;
 }
 
-export interface AssetPackRow {
-	id: string;
-	base_game_id: string;
-	name: string;
-	description: string | null;
-	theme_id: string | null;
-	creator_user_id: string | null;
-	is_complete: number;
-	created_at: number;
-	updated_at: number | null;
-	deleted_at: number | null;
-}
-
 export interface GameRowForAssets {
 	id: string;
 	base_game_id: string | null;
 	definition: string;
 }
 
-export interface PackEntryRow {
-	id: string;
-	pack_id: string;
-	template_id: string;
-	asset_id: string;
-	placement_json: string | null;
-}
-
 export interface GenerationJobRow {
 	id: string;
 	game_id: string;
-	pack_id: string;
+	remix_id: string | null;
 	theme_id: string | null;
 	status: string;
 	style: string | null;

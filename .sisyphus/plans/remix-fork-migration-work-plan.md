@@ -55,11 +55,11 @@ Introduce a Remix abstraction that generalizes asset packs for modern game types
 - Fork mutation upgraded to full workspace copy semantics.
 
 ### Definition of Done
-- [ ] Existing pack-based gameplay still works via compatibility routes.
-- [ ] Remix-based gameplay works with assets + variables + shader params.
-- [ ] Asset-pack historical data is migrated without loss.
-- [ ] Fork copies full workspace tree and remains lineage-correct.
-- [ ] Automated tests and runtime QA scenarios pass.
+- [x] Existing pack-based gameplay still works via compatibility routes.
+- [x] Remix-based gameplay works with assets + variables + shader params.
+- [x] Asset-pack historical data is migrated without loss.
+- [x] Fork copies full workspace tree and remains lineage-correct.
+- [x] Automated tests and runtime QA scenarios pass.
 
 ### Must Have
 - Backward compatibility during migration window.
@@ -161,9 +161,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `shared/src/types/schemas.ts` - schema conventions to mirror for Remix validation.
 
   **Acceptance Criteria**:
-  - [ ] New Remix type/schema tests pass: `bun test shared/src/types`
-  - [ ] Validation rejects constants overrides in Remix v1.
-  - [ ] Validation rejects out-of-range variable overrides against tuning bounds.
+   - [x] New Remix type/schema tests pass: `bun test shared/src/types`
+   - [x] Validation rejects constants overrides in Remix v1.
+   - [x] Validation rejects out-of-range variable overrides against tuning bounds.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -214,9 +214,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `api/src/trpc/routes/asset-system/generation-jobs.ts` - job linkage expectations.
 
   **Acceptance Criteria**:
-  - [ ] Dry-run command outputs total packs, mapped remixes, skipped/failed rows.
-  - [ ] Re-running dry-run produces identical report for same dataset.
-  - [ ] Rollback instructions verified in staging script docs.
+   - [x] Dry-run command outputs total packs, mapped remixes, skipped/failed rows.
+   - [x] Re-running dry-run produces identical report for same dataset.
+   - [x] Rollback instructions verified in staging script docs.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -257,9 +257,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `api/src/trpc/routes/asset-system/utils.ts` - row-to-client shape helpers.
 
   **Acceptance Criteria**:
-  - [ ] Remix API tests pass for create/get/list/update/delete.
-  - [ ] Legacy pack route calls return compatible payload or redirect mapping.
-  - [ ] `base_game_id` lineage access rules preserved.
+   - [x] Remix API tests pass for create/get/list/update/delete.
+   - [x] Legacy pack route calls return compatible payload or redirect mapping.
+   - [x] `base_game_id` lineage access rules preserved.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -300,9 +300,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `packages/game-bundler/src/compiler.ts` - required file expectations for compilable bundles.
 
   **Acceptance Criteria**:
-  - [ ] Forked game contains copied workspace files (manifest, constants, prefabs, entities, rules, scripts, assets).
-  - [ ] Forked game compiles/loads successfully.
-  - [ ] Lineage fields are correct in DB row.
+   - [x] Forked game contains copied workspace files (manifest, constants, prefabs, entities, rules, scripts, assets).
+   - [x] Forked game compiles/loads successfully.
+   - [x] Lineage fields are correct in DB row.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -344,9 +344,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `app/lib/hooks/useGamePreloader.ts` - preloading/resolution behavior.
 
   **Acceptance Criteria**:
-  - [ ] `?remixId=` applies overrides to gameplay session.
-  - [ ] Invalid override keys do not crash play flow.
-  - [ ] Existing `packId` behavior remains functional during compatibility period.
+   - [x] `?remixId=` applies overrides to gameplay session.
+   - [x] Invalid override keys do not crash play flow.
+   - [x] Existing `packId` behavior remains functional during compatibility period.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -399,9 +399,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `app/app/play/[id].tsx` - in-game asset/remix selector modal integration.
 
   **Acceptance Criteria**:
-  - [ ] Game detail displays Remix cards and play actions.
-  - [ ] Remix selection navigates correctly to play flow.
-  - [ ] Legacy-theme sourced data still renders during migration.
+   - [x] Game detail displays Remix cards and play actions.
+   - [x] Remix selection navigates correctly to play flow.
+   - [x] Legacy-theme sourced data still renders during migration.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -443,9 +443,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `api/src/trpc/routes/asset-system` - new remix route surface.
 
   **Acceptance Criteria**:
-  - [ ] Migration report shows expected remixes created from packs.
-  - [ ] Sampled migrated remixes preserve all pack entry mappings.
-  - [ ] No blocking API regressions in staging smoke tests.
+   - [x] Migration report shows expected remixes created from packs.
+   - [x] Sampled migrated remixes preserve all pack entry mappings.
+   - [x] No blocking API regressions in staging smoke tests.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -486,9 +486,9 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 8
   - `app/app/play/[id].tsx` - runtime cutover path validation point.
 
   **Acceptance Criteria**:
-  - [ ] Rollout checklist and rollback checklist committed.
-  - [ ] Production cutover gate requires passing migration/API/runtime checks.
-  - [ ] Legacy deprecation date and monitoring KPIs documented.
+   - [x] Rollout checklist and rollback checklist committed.
+   - [x] Production cutover gate requires passing migration/API/runtime checks.
+   - [x] Legacy deprecation date and monitoring KPIs documented.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -527,8 +527,8 @@ pnpm --filter @slopcade/app test
 ```
 
 ### Final Checklist
-- [ ] All Must Have items are present.
-- [ ] All Must NOT Have guardrails are respected.
-- [ ] Legacy compatibility works during transition window.
-- [ ] Remix flow works end-to-end for asset + variable + shader param overrides.
-- [ ] Fork deep-copy behavior verified with workspace-level evidence.
+- [x] All Must Have items are present.
+- [x] All Must NOT Have guardrails are respected.
+- [x] Legacy compatibility works during transition window.
+- [x] Remix flow works end-to-end for asset + variable + shader param overrides.
+- [x] Fork deep-copy behavior verified with workspace-level evidence.

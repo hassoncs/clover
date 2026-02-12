@@ -46,18 +46,6 @@ export default function GameDetailScreen() {
 	const [showReport, setShowReport] = useState(false);
 	const [isOffline, setIsOffline] = useState(false);
 
-	const [packsData, setPacksData] = useState<{
-		packs: {
-			id: string;
-			name: string;
-			description: string | null;
-			isComplete: boolean;
-			coveredCount: number;
-			totalPrefabs: number;
-		}[];
-	} | null>(null);
-	const [isLoadingPacks, setIsLoadingPacks] = useState(false);
-
 	const [remixesData, setRemixesData] = useState<
 		Array<{
 			id: string;
@@ -93,22 +81,7 @@ export default function GameDetailScreen() {
 		}
 	}, [gameInfo?.id, isOffline]);
 
-	useEffect(() => {
-		if (gameInfo?.id && !isOffline) {
-			setIsLoadingPacks(true);
-			trpc.assetSystem.getCompatiblePacks
-				.query({ gameId: gameInfo.id })
-				.then((data) => {
-					setPacksData(data);
-				})
-				.catch((err) => {
-					console.error("Failed to load packs:", err);
-				})
-				.finally(() => {
-					setIsLoadingPacks(false);
-				});
-		}
-	}, [gameInfo?.id, isOffline]);
+	// Legacy pack loading removed - packs are deprecated in favor of remixes
 
 	useEffect(() => {
 		const loadGameInfo = async () => {
@@ -399,10 +372,9 @@ export default function GameDetailScreen() {
 
 					{!isOffline && (
 						<View>
-							{isLoadingRemixes || isLoadingPacks ? (
+							{isLoadingRemixes ? (
 								<ActivityIndicator color="#4CAF50" />
-							) : (remixesData && remixesData.length > 0) ||
-								(packsData?.packs && packsData.packs.length > 0) ? (
+							) : remixesData && remixesData.length > 0 ? (
 								<View>
 									<Text className="text-white text-xl font-bold mb-4">
 										Remixes
@@ -479,51 +451,6 @@ export default function GameDetailScreen() {
 												</Pressable>
 											);
 										})}
-										{packsData?.packs.map((pack) => (
-											<Pressable
-												key={pack.id}
-												className="bg-gray-800 p-4 rounded-xl flex-row items-center justify-between active:bg-gray-700"
-												onPress={() =>
-													router.push({
-														pathname: "/play/[id]",
-														params: { id: gameInfo.id, packId: pack.id },
-													})
-												}
-											>
-												<View className="flex-1 mr-4">
-													<View className="flex-row items-center gap-2 mb-1">
-														<Text
-															className="text-white font-semibold text-lg"
-															numberOfLines={1}
-														>
-															{pack.name}
-														</Text>
-														{pack.isComplete && (
-															<View className="bg-green-900/50 px-2 py-0.5 rounded text-xs">
-																<Text className="text-green-400 text-xs font-bold">
-																	COMPLETE
-																</Text>
-															</View>
-														)}
-													</View>
-													<Text
-														className="text-gray-400 text-sm mb-1"
-														numberOfLines={2}
-													>
-														{pack.description || "No description"}
-													</Text>
-													<Text className="text-gray-500 text-xs">
-														Includes: assets ({pack.coveredCount}/
-														{pack.totalPrefabs})
-													</Text>
-												</View>
-												<View className="bg-blue-600/20 p-2 rounded-full">
-													<Text className="text-blue-400 font-bold text-xs">
-														PLAY
-													</Text>
-												</View>
-											</Pressable>
-										))}
 									</View>
 								</View>
 							) : (

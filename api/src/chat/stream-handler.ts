@@ -231,7 +231,14 @@ function toErrorMessage(error: unknown): string {
 	if (error instanceof Error) {
 		return error.message;
 	}
-	return String(error);
+	if (error === undefined || error === null) {
+		return "Unknown error (undefined/null thrown)";
+	}
+	try {
+		return String(error);
+	} catch {
+		return "Unknown error (could not stringify)";
+	}
 }
 
 export async function handleChatStream(
@@ -282,18 +289,33 @@ export async function handleChatStream(
 
 	const streamingPromise = (async () => {
 		try {
+			console.log("[stream-handler] Starting stream for thread:", threadId);
 			await emit({ type: "RUN_STARTED", threadId, runId });
 
+			console.log("[stream-handler] Beginning fullStream iteration");
 			for await (const part of result.fullStream) {
+				console.log("[stream-handler] Received stream part:", part.type);
 				const event = mapper.map(part);
 				if (event) {
-					await emit(event);
+					try {
+						await emit(event);
+					} catch (emitError) {
+						console.error(
+							"[stream-handler] Emit error (client likely disconnected):",
+							emitError,
+						);
+						// Don't throw - client disconnect is not a fatal error
+						break;
+					}
 				}
 			}
+			console.log("[stream-handler] fullStream iteration complete");
 
 			await emit({ type: "RUN_FINISHED", threadId, runId });
 
+			console.log("[stream-handler] Waiting for response...");
 			const response = await result.response;
+			console.log("[stream-handler] Got response");
 			await persistGenerationResults(
 				ctx.db,
 				threadId,
@@ -301,7 +323,9 @@ export async function handleChatStream(
 				response.messages as ReadonlyArray<ResponseMessage>,
 			);
 
+			console.log("[stream-handler] Getting usage...");
 			const totalUsage = await result.totalUsage;
+			console.log("[stream-handler] Got usage:", totalUsage);
 			await billForUsage(
 				ctx,
 				threadId,
@@ -309,7 +333,9 @@ export async function handleChatStream(
 				totalUsage.outputTokens ?? 0,
 			);
 
+			console.log("[stream-handler] Getting steps...");
 			const steps = await result.steps;
+			console.log("[stream-handler] Got steps:", steps.length);
 			const pending = findPendingAskUser(steps as unknown[]);
 			if (pending) {
 				await updateThread(ctx.db, threadId, {
@@ -325,8 +351,18 @@ export async function handleChatStream(
 					status_message: null,
 				});
 			}
+			console.log("[stream-handler] Stream completed successfully");
 		} catch (error) {
 			console.error("[stream-handler] Stream error:", error);
+			console.error("[stream-handler] Error type:", typeof error);
+			console.error(
+				"[stream-handler] Error constructor:",
+				error?.constructor?.name,
+			);
+			console.error(
+				"[stream-handler] Error stack:",
+				error instanceof Error ? error.stack : "N/A",
+			);
 			const errorMessage = toErrorMessage(error);
 			await emit({ type: "RUN_ERROR", message: errorMessage });
 

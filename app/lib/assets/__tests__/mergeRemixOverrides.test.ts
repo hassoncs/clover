@@ -3,7 +3,7 @@ import type { EntityPrefab } from "@slopcade/shared/types/entity";
 import { applyVariableOverrides } from "@slopcade/shared/types/remix";
 import type { ImageVisualComponent } from "@slopcade/shared/types/visual";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ResolvedPackEntry } from "../AssetManifest";
+import type { ResolvedAssetEntry } from "../AssetManifest";
 import { mergeAssetsIntoPrefabs } from "../mergeAssetsIntoTemplates";
 
 function makeDefinition(
@@ -97,7 +97,7 @@ describe("mergeRemixOverrides", () => {
 			const def = makeDefinition({
 				prefabs: { player: makeImagePrefab("original.png") },
 			});
-			const entries: Record<string, ResolvedPackEntry> = {
+			const entries: Record<string, ResolvedAssetEntry> = {
 				player: { imageUrl: "remix-player.png" },
 			};
 
@@ -110,7 +110,7 @@ describe("mergeRemixOverrides", () => {
 			const def = makeDefinition({
 				prefabs: { ball: makeImagePrefab("ball.png") },
 			});
-			const entries: Record<string, ResolvedPackEntry> = {
+			const entries: Record<string, ResolvedAssetEntry> = {
 				ball: {
 					imageUrl: "remix-ball.png",
 					placement: { scale: 1.5, offsetX: 10, offsetY: -5 },
@@ -131,7 +131,7 @@ describe("mergeRemixOverrides", () => {
 			const def = makeDefinition({
 				prefabs: { player: makeImagePrefab("original.png") },
 			});
-			const entries: Record<string, ResolvedPackEntry> = {
+			const entries: Record<string, ResolvedAssetEntry> = {
 				deletedPrefab: { imageUrl: "stale.png" },
 			};
 
@@ -167,7 +167,7 @@ describe("mergeRemixOverrides", () => {
 			});
 
 			const variableOverrides = { gravity: 20, speed: 15 };
-			const assetEntries: Record<string, ResolvedPackEntry> = {
+			const assetEntries: Record<string, ResolvedAssetEntry> = {
 				player: { imageUrl: "remix-player.png" },
 			};
 

@@ -4,6 +4,7 @@ extends RefCounted
 var _bridge: Node
 var _ui_buttons: Dictionary = {}
 var _audio_cache: Dictionary = {}
+var _current_music_player: AudioStreamPlayer = null
 
 func _init(bridge: Node) -> void:
 	_bridge = bridge
@@ -47,9 +48,29 @@ func _js_play_sound(args: Array) -> void:
 		push_error("[UIManager] playSound requires 1 arg: resource_path")
 		return
 	var volume = 1.0
+	var pitch = 1.0
 	if args.size() >= 2:
 		volume = float(args[1])
-	play_sound(str(args[0]), volume)
+	if args.size() >= 3:
+		pitch = float(args[2])
+	play_sound(str(args[0]), volume, pitch)
+
+
+func _js_play_music(args: Array) -> void:
+	if args.size() < 1:
+		push_error("[UIManager] playMusic requires 1 arg: resource_path")
+		return
+	var volume = 0.7
+	var loop = true
+	if args.size() >= 2:
+		volume = float(args[1])
+	if args.size() >= 3:
+		loop = bool(args[2])
+	play_music(str(args[0]), volume, loop)
+
+
+func _js_stop_music(_args: Array) -> void:
+	stop_music()
 
 
 # =============================================================================
@@ -149,9 +170,12 @@ func _create_placeholder_texture(url: String, width: int, height: int) -> ImageT
 # AUDIO SYSTEM
 # =============================================================================
 
-func play_sound(resource_path: String, volume: float = 1.0) -> void:
+func play_sound(resource_path: String, volume: float = 1.0, pitch: float = 1.0) -> void:
+	pitch = clampf(pitch, 0.1, 4.0)
+	print("[UIManager] Playing sound '%s' volume=%s pitch=%s" % [resource_path, volume, pitch])
+
 	if _audio_cache.has(resource_path):
-		_play_cached_audio(_audio_cache[resource_path], volume)
+		_play_cached_audio(_audio_cache[resource_path], volume, pitch)
 		return
 
 	var resource = load(resource_path)
@@ -160,16 +184,52 @@ func play_sound(resource_path: String, volume: float = 1.0) -> void:
 		return
 
 	_audio_cache[resource_path] = resource
-	_play_cached_audio(resource, volume)
+	_play_cached_audio(resource, volume, pitch)
 
 
-func _play_cached_audio(audio_stream: AudioStream, volume: float) -> void:
+func _play_cached_audio(audio_stream: AudioStream, volume: float, pitch: float = 1.0) -> void:
 	var player = AudioStreamPlayer.new()
 	player.stream = audio_stream
 	player.volume_db = linear_to_db(volume)
+	player.pitch_scale = pitch
 	_bridge.add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)
+
+
+func play_music(resource_path: String, volume: float = 0.7, loop: bool = true) -> void:
+	print("[UIManager] Starting music '%s' volume=%s loop=%s" % [resource_path, volume, loop])
+
+	if _current_music_player != null:
+		stop_music()
+
+	var resource = load(resource_path)
+	if resource == null or not (resource is AudioStream):
+		push_error("[UIManager] play_music: failed to load audio resource: " + resource_path)
+		return
+
+	if loop:
+		if resource is AudioStreamWAV:
+			resource.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		elif resource is AudioStreamOggVorbis:
+			resource.loop = true
+		elif resource is AudioStreamMP3:
+			resource.loop = true
+
+	var player = AudioStreamPlayer.new()
+	player.stream = resource
+	player.volume_db = linear_to_db(volume)
+	_bridge.add_child(player)
+	player.play()
+	_current_music_player = player
+
+
+func stop_music() -> void:
+	print("[UIManager] Stopping music")
+	if _current_music_player != null:
+		_current_music_player.stop()
+		_current_music_player.queue_free()
+		_current_music_player = null
 
 
 # =============================================================================

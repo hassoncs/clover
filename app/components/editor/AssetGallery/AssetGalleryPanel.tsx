@@ -1,4 +1,4 @@
-import type { AssetPlacement, EntityPrefab } from "@slopcade/shared";
+import type { AssetPlacement } from "@slopcade/shared";
 import { STYLE_PRESET_OPTIONS } from "@slopcade/shared/types/style-presets";
 import { tokens } from "@slopcade/theme";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -11,30 +11,13 @@ import {
 	View,
 } from "react-native";
 import { trpcReact } from "@/lib/trpc/react";
-import { AssetAlignmentEditor } from "../AssetAlignment/AssetAlignmentEditor";
-import { type ResolvedPackEntry, useEditor } from "../EditorProvider";
-import { AssetPackSelector } from "./AssetPackSelector";
+import { type ResolvedAssetEntry, useEditor } from "../EditorProvider";
 import { PrefabGrid } from "./PrefabGrid";
 import { QuickGenerationForm } from "./QuickGenerationForm";
-import {
-	useAssetGeneration,
-	useAssetPacks,
-	useAssetPackWithEntries,
-	useCreateAssetPack,
-	useDeleteAssetPack,
-	useUpdatePlacement,
-} from "./useAssetGeneration";
+import { useAssetGeneration } from "./useAssetGeneration";
 
 interface AssetGalleryPanelProps {
 	onPrefabPress?: (prefabId: string) => void;
-}
-
-interface AlignmentEditorState {
-	visible: boolean;
-	prefabId: string;
-	prefab: EntityPrefab | null;
-	imageUrl?: string;
-	placement?: AssetPlacement;
 }
 
 type Mode = "entities" | "ui-components";
@@ -88,26 +71,19 @@ const UI_STATES: { id: UIState; label: string }[] = [
 ];
 
 export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
-	const { gameId, document, setActiveAssetPack } = useEditor();
+	const { gameId, document, setActiveAssets } = useEditor();
 	const isPreviewMode = gameId === "preview";
 
-	const [selectedPackId, setSelectedPackId] = useState<string | undefined>(
-		document.assetSystem?.activePackId,
+	const [selectedRemixId, setSelectedRemixId] = useState<string | undefined>(
+		undefined,
 	);
-	const [packSelectorVisible, setPackSelectorVisible] = useState(false);
-	const [alignmentEditor, setAlignmentEditor] = useState<AlignmentEditorState>({
-		visible: false,
-		prefabId: "",
-		prefab: null,
-	});
 
 	const [quickCreateTheme, setQuickCreateTheme] = useState("");
 	const [quickCreateStyle, setQuickCreateStyle] = useState<string>("pixel");
 	const [removeBackground, setRemoveBackground] = useState(true);
 	const [isQuickCreating, setIsQuickCreating] = useState(false);
 
-	// UI Component mode state
-	const [selectedUIPackId, setSelectedUIPackId] = useState<
+	const [selectedUIRemixId, setSelectedUIRemixId] = useState<
 		string | undefined
 	>();
 	const [uiComponentType, setUiComponentType] =
@@ -126,102 +102,103 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 		}));
 	}, [document.prefabs]);
 
-	const { data: assetPacks, isLoading: isLoadingPacks } = useAssetPacks(gameId);
-	const { data: activePack, isLoading: isLoadingActivePack } =
-		useAssetPackWithEntries(selectedPackId);
+	const {
+		data: remixes,
+		isLoading: isLoadingRemixes,
+		refetch: refetchRemixes,
+	} = trpcReact.assetSystem.remixes.listRemixes.useQuery({ gameId });
 
-	// UI Component packs query
-	const { data: uiPacks, isLoading: isLoadingUIPacks } =
-		trpcReact.uiComponents.listUIComponentPacks.useQuery(
-			{ gameId },
-			{ enabled: false },
+	const { data: activeRemix, isLoading: isLoadingActiveRemix } =
+		trpcReact.assetSystem.remixes.getResolvedRemix.useQuery(
+			{ gameId, remixId: selectedRemixId! },
+			{ enabled: !!selectedRemixId },
 		);
 
-	// Generate UI component mutation
+	const deleteRemixMutation =
+		trpcReact.assetSystem.remixes.deleteRemix.useMutation();
+
+	const applyThemeMutation =
+		trpcReact.assetSystem.applyThemeToGame.useMutation();
+
 	const generateUIComponent =
 		trpcReact.uiComponents.generateUIComponent.useMutation();
 
-	// Asset system job mutations
 	const createJobMutation =
 		trpcReact.assetSystem.createGenerationJob.useMutation();
 	const processJobMutation =
 		trpcReact.assetSystem.processGenerationJob.useMutation();
 
+	const resolvedEntries = useMemo(() => {
+		const remixOverrides = activeRemix?.overrides as
+			| {
+					assets?: Record<
+						string,
+						{ assetUrl?: string; placement?: AssetPlacement }
+					>;
+			  }
+			| undefined;
+
+		if (!remixOverrides?.assets) {
+			return {};
+		}
+
+		const entries: Record<
+			string,
+			{ imageUrl: string; placement?: AssetPlacement }
+		> = {};
+
+		for (const [prefabId, override] of Object.entries(remixOverrides.assets)) {
+			if (!override?.assetUrl) {
+				continue;
+			}
+
+			entries[prefabId] = {
+				imageUrl: override.assetUrl,
+				placement: override.placement ?? undefined,
+			};
+		}
+
+		return entries;
+	}, [activeRemix?.overrides]);
+
 	const entriesByPrefabId = useMemo(() => {
-		if (!activePack?.entries)
-			return new Map<
-				string,
-				{ imageUrl?: string; placement?: AssetPlacement }
-			>();
 		const map = new Map<
 			string,
 			{ imageUrl?: string; placement?: AssetPlacement }
 		>();
-		for (const entry of activePack.entries) {
-			map.set(entry.prefabId, {
-				imageUrl: entry.imageUrl ?? undefined,
+
+		for (const [prefabId, entry] of Object.entries(resolvedEntries)) {
+			map.set(prefabId, {
+				imageUrl: entry.imageUrl,
 				placement: entry.placement,
 			});
 		}
+
 		return map;
-	}, [activePack?.entries]);
+	}, [resolvedEntries]);
 
 	useEffect(() => {
-		console.log("[AssetGalleryPanel] Pack selection effect triggered", {
-			selectedPackId,
-			isLoadingActivePack,
-			hasEntries: !!activePack?.entries,
-			entryCount: activePack?.entries?.length ?? 0,
-		});
-
-		if (!selectedPackId) {
-			console.log("[AssetGalleryPanel] No pack selected, clearing active pack");
-			setActiveAssetPack(undefined, {});
+		if (!selectedRemixId) {
+			setActiveAssets({});
 			return;
 		}
 
-		if (isLoadingActivePack) {
-			console.log("[AssetGalleryPanel] Still loading pack entries, waiting...");
+		if (isLoadingActiveRemix) {
 			return;
 		}
 
-		if (!activePack?.entries) {
-			console.log("[AssetGalleryPanel] No entries in active pack");
-			return;
-		}
+		setActiveAssets(resolvedEntries);
+	}, [selectedRemixId, isLoadingActiveRemix, resolvedEntries, setActiveAssets]);
 
-		const resolvedEntries: Record<string, ResolvedPackEntry> = {};
-		for (const entry of activePack.entries) {
-			if (entry.imageUrl) {
-				resolvedEntries[entry.prefabId] = {
-					imageUrl: entry.imageUrl,
-					placement: entry.placement ?? undefined,
-				};
-			}
-		}
-
-		console.log("[AssetGalleryPanel] Calling setActiveAssetPack", {
-			packId: selectedPackId,
-			resolvedEntriesCount: Object.keys(resolvedEntries).length,
-		});
-
-		setActiveAssetPack(selectedPackId, resolvedEntries);
-	}, [
-		selectedPackId,
-		isLoadingActivePack,
-		activePack?.entries,
-		setActiveAssetPack,
-	]);
-
-	const packList = useMemo(() => {
-		if (!assetPacks) return [];
-		return assetPacks.map((pack) => ({
-			id: pack.id,
-			name: pack.name,
+	const remixList = useMemo(() => {
+		if (!remixes) return [];
+		return remixes.map((remix) => ({
+			id: remix.id,
+			name: remix.name,
 			assetCount: 0,
 			totalPrefabs: prefabs.length,
 		}));
-	}, [assetPacks, prefabs.length]);
+	}, [remixes, prefabs.length]);
 
 	const coverage = useMemo(() => {
 		const covered = prefabs.filter(
@@ -230,9 +207,6 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 		).length;
 		return { covered, total: prefabs.length };
 	}, [entriesByPrefabId, prefabs]);
-
-	const { createPack, isCreating: isCreatingPack } = useCreateAssetPack(gameId);
-	const { deletePack, isDeleting: isDeletingPack } = useDeleteAssetPack(gameId);
 
 	const { isGenerating, generatingTemplates, progress, generateAll } =
 		useAssetGeneration({
@@ -250,51 +224,41 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 			},
 		});
 
-	const handleCreatePack = useCallback(
-		async (params: { name: string; style?: string; themePrompt?: string }) => {
-			try {
-				const result = await createPack(params);
-				setSelectedPackId(result.id);
-				setPackSelectorVisible(false);
-				return result;
-			} catch (error) {
-				Alert.alert(
-					"Error",
-					error instanceof Error
-						? error.message
-						: "Failed to create asset pack",
-				);
-				throw error;
-			}
-		},
-		[createPack],
-	);
+	const handleDeleteRemix = useCallback(() => {
+		if (!selectedRemixId) {
+			Alert.alert("No Remix Selected", "Please select a remix to delete.");
+			return;
+		}
 
-	const handleDeletePack = useCallback(
-		async (packId: string) => {
-			try {
-				await deletePack(packId);
-				if (selectedPackId === packId) {
-					setSelectedPackId(undefined);
-				}
-			} catch (error) {
-				Alert.alert(
-					"Error",
-					error instanceof Error
-						? error.message
-						: "Failed to delete asset pack",
-				);
-			}
-		},
-		[deletePack, selectedPackId],
-	);
+		Alert.alert(
+			"Delete Remix",
+			"This will remove the selected remix and its overrides.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Delete",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							await deleteRemixMutation.mutateAsync({ id: selectedRemixId });
+							setSelectedRemixId(undefined);
+							setActiveAssets({});
+							await refetchRemixes();
+						} catch (error) {
+							Alert.alert(
+								"Delete Failed",
+								error instanceof Error
+									? error.message
+									: "Failed to delete remix",
+							);
+						}
+					},
+				},
+			],
+		);
+	}, [selectedRemixId, deleteRemixMutation, setActiveAssets, refetchRemixes]);
 
 	const handleQuickGenerate = useCallback(async () => {
-		console.log("[AssetGallery] handleQuickGenerate called");
-		console.log("[AssetGallery] isPreviewMode:", isPreviewMode);
-		console.log("[AssetGallery] gameId:", gameId);
-		console.log("[AssetGallery] prefabs.length:", prefabs.length);
-
 		if (isPreviewMode) {
 			Alert.alert(
 				"Save Game First",
@@ -314,111 +278,70 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 			const styleName =
 				STYLE_PRESET_OPTIONS.find((s) => s.id === quickCreateStyle)?.label ??
 				"Custom";
-			const packName = quickCreateTheme.trim()
+			const themeName = quickCreateTheme.trim()
 				? `${quickCreateTheme.trim().slice(0, 20)} (${styleName})`
 				: `${styleName} Style`;
 
-			console.log("[AssetGallery] Creating pack:", {
-				packName,
-				style: quickCreateStyle,
+			const result = await applyThemeMutation.mutateAsync({
 				gameId,
+				newTheme: {
+					name: themeName,
+					promptModifier:
+						quickCreateTheme.trim() ||
+						document.metadata?.description ||
+						themeName,
+				},
+				styleOverride: quickCreateStyle,
+				setAsActive: true,
 			});
-			const pack = await createPack({
-				name: packName,
-				style: quickCreateStyle,
-				themePrompt: quickCreateTheme.trim() || undefined,
-			});
-			console.log("[AssetGallery] Pack created:", pack);
 
-			setSelectedPackId(pack.id);
+			setSelectedRemixId(result.remixId);
+			await refetchRemixes();
 
-			console.log("[AssetGallery] Starting generateAll with packId:", pack.id);
-			generateAll({
-				packId: pack.id,
-				prefabIds: prefabs.map((p) => p.id),
-				themePrompt: quickCreateTheme.trim() || document.metadata?.description,
-				style: quickCreateStyle,
-				removeBackground,
-			});
+			Alert.alert(
+				"Generation Started",
+				"Your remix has been created and generation is running.",
+			);
 		} catch (error) {
 			console.error("[AssetGallery] Quick generate failed:", error);
 			Alert.alert(
 				"Error",
-				error instanceof Error ? error.message : "Failed to create asset pack",
+				error instanceof Error ? error.message : "Failed to create remix",
 			);
+		} finally {
 			setIsQuickCreating(false);
 		}
 	}, [
 		isPreviewMode,
-		gameId,
 		prefabs,
-		quickCreateTheme,
 		quickCreateStyle,
-		removeBackground,
-		createPack,
-		generateAll,
+		quickCreateTheme,
+		applyThemeMutation,
+		gameId,
 		document.metadata?.description,
+		refetchRemixes,
 	]);
 
 	const handleGenerateAll = useCallback(() => {
-		if (!selectedPackId) {
-			Alert.alert(
-				"No Pack Selected",
-				"Please select or create an asset pack first",
-			);
+		if (!selectedRemixId) {
+			Alert.alert("No Remix Selected", "Please select or create a remix first");
 			return;
 		}
 
 		const prefabIds = prefabs.map((t) => t.id);
 
 		generateAll({
-			packId: selectedPackId,
+			remixId: selectedRemixId,
 			prefabIds,
 			themePrompt: document.metadata?.description,
 		});
-	}, [selectedPackId, prefabs, document.metadata?.description, generateAll]);
-
-	const updatePlacementMutation = useUpdatePlacement();
+	}, [selectedRemixId, prefabs, document.metadata?.description, generateAll]);
 
 	const handlePrefabPress = useCallback(
 		(prefabId: string) => {
-			const prefab = document.prefabs[prefabId];
-			const entryData = entriesByPrefabId.get(prefabId);
-
-			if (entryData?.imageUrl) {
-				setAlignmentEditor({
-					visible: true,
-					prefabId,
-					prefab,
-					imageUrl: entryData.imageUrl,
-					placement: entryData.placement ?? {
-						scale: 1,
-						offsetX: 0,
-						offsetY: 0,
-					},
-				});
-			} else {
-				onPrefabPress?.(prefabId);
-			}
+			onPrefabPress?.(prefabId);
 		},
-		[document.prefabs, entriesByPrefabId, onPrefabPress],
-	);
-
-	const handleSavePlacement = useCallback(
-		async (placement: AssetPlacement) => {
-			if (!selectedPackId || !alignmentEditor.prefabId) return;
-
-			try {
-				await updatePlacementMutation.mutateAsync({
-					packId: selectedPackId,
-					prefabId: alignmentEditor.prefabId,
-					placement,
-				});
-			} catch {
-				Alert.alert("Error", "Failed to save alignment");
-			}
-		},
-		[selectedPackId, alignmentEditor.prefabId, updatePlacementMutation],
+		[onPrefabPress],
 	);
 
 	const toggleState = useCallback((state: UIState) => {
@@ -455,22 +378,26 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 		setIsGeneratingUI(true);
 
 		try {
-			// Create UI component pack
 			const componentTypeLabel =
 				COMPONENT_TYPES.find((c) => c.id === uiComponentType)?.label ??
 				"Component";
 
-			const packResult = await generateUIComponent.mutateAsync({
+			const remixResult = (await generateUIComponent.mutateAsync({
 				gameId,
 				componentType: uiComponentType,
 				theme: uiTheme.trim(),
 				states: selectedStates,
-			});
+			})) as { remixId?: string };
 
-			// Create generation job for the pack
+			const remixId = remixResult.remixId;
+
+			if (!remixId) {
+				throw new Error("UI generation did not return a remix ID");
+			}
+
 			const jobResult = await createJobMutation.mutateAsync({
 				gameId,
-				packId: packResult.packId,
+				remixId,
 				prefabIds: [],
 				promptDefaults: {
 					componentType: uiComponentType,
@@ -479,7 +406,6 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 				},
 			});
 
-			// Process the job
 			await processJobMutation.mutateAsync({ jobId: jobResult.jobId });
 
 			Alert.alert(
@@ -487,8 +413,7 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 				`Generated ${selectedStates.length} state${selectedStates.length > 1 ? "s" : ""} for ${componentTypeLabel.toLowerCase()}.`,
 			);
 
-			// Refresh UI packs
-			setSelectedUIPackId(packResult.packId);
+			setSelectedUIRemixId(remixId);
 		} catch (error) {
 			Alert.alert(
 				"Generation Failed",
@@ -510,9 +435,9 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 		processJobMutation,
 	]);
 
-	const isLoading = isLoadingPacks || isLoadingActivePack;
-	const hasNoPacks = !isLoadingPacks && packList.length === 0;
-	const showQuickCreate = hasNoPacks && !isPreviewMode;
+	const isLoading = isLoadingRemixes || isLoadingActiveRemix;
+	const hasNoRemixes = !isLoadingRemixes && remixList.length === 0;
+	const showQuickCreate = hasNoRemixes && !isPreviewMode;
 
 	if (isPreviewMode) {
 		return (
@@ -527,7 +452,7 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 					</Text>
 					<Text className="text-theme-text-muted text-base text-center leading-6">
 						To generate AI assets, you need to save your game first. This allows
-						us to store and manage your asset packs.
+						us to store and manage your remixes.
 					</Text>
 				</View>
 			</ScrollView>
@@ -556,7 +481,7 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 					removeBackground={removeBackground}
 					onRemoveBackgroundToggle={() => setRemoveBackground((prev) => !prev)}
 					templateCount={prefabs.length}
-					isGenerating={isGenerating}
+					isGenerating={isGenerating || isQuickCreating}
 					isQuickCreating={isQuickCreating}
 					progress={progress}
 					onGenerate={handleQuickGenerate}
@@ -566,24 +491,25 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 					<View className="mb-4">
 						<View className="flex-row justify-between items-center mb-2">
 							<Text className="text-theme-text-muted text-[11px] font-semibold tracking-widest mb-2">
-								ASSET PACKS
+								MANAGE REMIXES
 							</Text>
 							<Pressable
-								className="px-3 py-1 bg-theme-surface-elevated rounded-xl"
-								onPress={() => setPackSelectorVisible(true)}
-								accessibilityRole="button"
-								accessibilityLabel={
-									packList.length > 0
-										? "Manage asset packs"
-										: "Create asset pack"
+								className={`px-3 py-2 rounded-full ${selectedRemixId ? "bg-theme-surface-elevated" : "bg-theme-surface"}`}
+								onPress={handleDeleteRemix}
+								disabled={
+									!selectedRemixId ||
+									deleteRemixMutation.isPending ||
+									isQuickCreating
 								}
 							>
-								<Text className="text-theme-text-muted text-xs font-medium">
-									{packList.length > 0 ? "Manage" : "+ Create Pack"}
+								<Text className="text-theme-text-secondary text-xs font-medium">
+									{deleteRemixMutation.isPending
+										? "Deleting..."
+										: "Delete remix"}
 								</Text>
 							</Pressable>
 						</View>
-						{isLoadingPacks ? (
+						{isLoadingRemixes ? (
 							<View className="p-5 items-center">
 								<ActivityIndicator
 									size="small"
@@ -596,21 +522,21 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 								showsHorizontalScrollIndicator={false}
 								className="flex-row"
 							>
-								{packList.map((pack) => (
+								{remixList.map((remix) => (
 									<Pressable
-										key={pack.id}
-										className={`bg-theme-surface-elevated px-3 py-2 rounded-full mr-2 flex-row items-center ${selectedPackId === pack.id ? "bg-theme-primary" : ""}`}
-										onPress={() => setSelectedPackId(pack.id)}
+										key={remix.id}
+										className={`bg-theme-surface-elevated px-3 py-2 rounded-full mr-2 flex-row items-center ${selectedRemixId === remix.id ? "bg-theme-primary" : ""}`}
+										onPress={() => setSelectedRemixId(remix.id)}
 										accessibilityRole="button"
-										accessibilityLabel={`Select pack ${pack.name}`}
+										accessibilityLabel={`Select remix ${remix.name}`}
 										accessibilityState={{
-											selected: selectedPackId === pack.id,
+											selected: selectedRemixId === remix.id,
 										}}
 									>
 										<Text
-											className={`text-sm ${selectedPackId === pack.id ? "text-theme-text-inverse" : "text-theme-text-secondary"}`}
+											className={`text-sm ${selectedRemixId === remix.id ? "text-theme-text-inverse" : "text-theme-text-secondary"}`}
 										>
-											{pack.name}
+											{remix.name}
 										</Text>
 									</Pressable>
 								))}
@@ -620,14 +546,18 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 
 					<View className="mb-4">
 						<Pressable
-							className={`bg-theme-primary py-3 px-4 rounded-lg items-center ${isGenerating || !selectedPackId ? "opacity-70" : ""}`}
+							className={`bg-theme-primary py-3 px-4 rounded-lg items-center ${isGenerating || !selectedRemixId ? "opacity-70" : ""}`}
 							onPress={handleGenerateAll}
-							disabled={isGenerating || !selectedPackId}
+							disabled={isGenerating || !selectedRemixId}
 							accessibilityRole="button"
 							accessibilityLabel={
-								selectedPackId ? "Regenerate all assets" : "Select a pack first"
+								selectedRemixId
+									? "Regenerate all assets"
+									: "Select a remix first"
 							}
-							accessibilityState={{ disabled: isGenerating || !selectedPackId }}
+							accessibilityState={{
+								disabled: isGenerating || !selectedRemixId,
+							}}
 						>
 							{isGenerating ? (
 								<View className="flex-row items-center gap-2">
@@ -638,9 +568,9 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 								</View>
 							) : (
 								<Text className="text-theme-text-inverse text-sm font-semibold">
-									{selectedPackId
+									{selectedRemixId
 										? "Regenerate All Assets"
-										: "Select a Pack First"}
+										: "Select a Remix First"}
 								</Text>
 							)}
 						</Pressable>
@@ -660,31 +590,6 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 				generatingPrefabs={generatingTemplates}
 				isLoading={isLoading}
 				onPrefabPress={handlePrefabPress}
-			/>
-
-			<AssetPackSelector
-				visible={packSelectorVisible}
-				onClose={() => setPackSelectorVisible(false)}
-				packs={assetPacks ?? []}
-				selectedPackId={selectedPackId}
-				totalTemplates={prefabs.length}
-				onSelectPack={setSelectedPackId}
-				onCreatePack={handleCreatePack}
-				onDeletePack={handleDeletePack}
-				isCreating={isCreatingPack}
-				isDeleting={isDeletingPack}
-			/>
-
-			<AssetAlignmentEditor
-				visible={alignmentEditor.visible}
-				onClose={() =>
-					setAlignmentEditor((prev) => ({ ...prev, visible: false }))
-				}
-				prefabId={alignmentEditor.prefabId}
-				physics={alignmentEditor.prefab?.physics}
-				imageUrl={alignmentEditor.imageUrl}
-				initialPlacement={alignmentEditor.placement}
-				onSave={handleSavePlacement}
 			/>
 		</ScrollView>
 	);

@@ -1,339 +1,254 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { trpcReact } from '@/lib/trpc/react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { trpcReact } from "@/lib/trpc/react";
 
-export type GenerationStatus = 'idle' | 'creating-job' | 'generating' | 'succeeded' | 'failed';
+export type GenerationStatus =
+	| "idle"
+	| "creating-job"
+	| "generating"
+	| "succeeded"
+	| "failed";
 
 interface UseAssetGenerationOptions {
-  gameId: string;
-  onComplete?: (result: { successCount: number; failCount: number }) => void;
-  onError?: (error: string) => void;
+	gameId: string;
+	onComplete?: (result: { successCount: number; failCount: number }) => void;
+	onError?: (error: string) => void;
 }
 
 const POLL_INTERVAL_MS = 3000;
 
-export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGenerationOptions) {
-  const [generatingTemplates, setGeneratingPrefabs] = useState<Set<string>>(new Set());
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
-  const [currentPackId, setCurrentPackId] = useState<string | null>(null);
-  const [status, setStatus] = useState<GenerationStatus>('idle');
-  const [progress, setProgress] = useState({ total: 0, completed: 0, failed: 0 });
-  const [error, setError] = useState<string | null>(null);
-  
-  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const utils = trpcReact.useUtils();
+export function useAssetGeneration({
+	gameId,
+	onComplete,
+	onError,
+}: UseAssetGenerationOptions) {
+	const [generatingTemplates, setGeneratingPrefabs] = useState<Set<string>>(
+		new Set(),
+	);
+	const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+	const [currentRemixId, setCurrentRemixId] = useState<string | null>(null);
+	const [status, setStatus] = useState<GenerationStatus>("idle");
+	const [progress, setProgress] = useState({
+		total: 0,
+		completed: 0,
+		failed: 0,
+	});
+	const [error, setError] = useState<string | null>(null);
 
-  const createJobMutation = trpcReact.assetSystem.createGenerationJob.useMutation({
-    onError: (err) => {
-      setGeneratingPrefabs(new Set());
-      setStatus('failed');
-      setError(err.message);
-      onError?.(err.message);
-    },
-  });
+	const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const utils = trpcReact.useUtils();
 
-  const processJobMutation = trpcReact.assetSystem.processGenerationJob.useMutation();
+	const createJobMutation =
+		trpcReact.assetSystem.createGenerationJob.useMutation({
+			onError: (err) => {
+				setGeneratingPrefabs(new Set());
+				setStatus("failed");
+				setError(err.message);
+				onError?.(err.message);
+			},
+		});
 
-  const stopPolling = useCallback(() => {
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = null;
-    }
-  }, []);
+	const processJobMutation =
+		trpcReact.assetSystem.processGenerationJob.useMutation();
 
-  const lastCompletedCountRef = useRef(0);
+	const stopPolling = useCallback(() => {
+		if (pollIntervalRef.current) {
+			clearInterval(pollIntervalRef.current);
+			pollIntervalRef.current = null;
+		}
+	}, []);
 
-  const pollJobStatus = useCallback(async (jobId: string, packId: string | null) => {
-    try {
-      const job = await utils.assetSystem.getJob.fetch({ id: jobId });
-      
-      const tasks = job.tasks ?? [];
-      const completed = tasks.filter(t => t.status === 'succeeded').length;
-      const failed = tasks.filter(t => t.status === 'failed').length;
-      const total = tasks.length;
-      
-      setProgress({ total, completed, failed });
-      
-      const completedTemplateIds = new Set(
-        tasks.filter(t => t.status === 'succeeded').map(t => t.prefabId)
-      );
-      setGeneratingPrefabs(prev => {
-        const stillGenerating = new Set<string>();
-        prev.forEach(id => {
-          if (!completedTemplateIds.has(id)) {
-            stillGenerating.add(id);
-          }
-        });
-        return stillGenerating;
-      });
+	const lastCompletedCountRef = useRef(0);
 
-      if (completed > lastCompletedCountRef.current && packId) {
-        lastCompletedCountRef.current = completed;
-        await utils.assetSystem.getPack.invalidate({ id: packId });
-      }
+	const pollJobStatus = useCallback(
+		async (jobId: string, remixId: string | null) => {
+			try {
+				const job = await utils.assetSystem.getJob.fetch({ id: jobId });
 
-      if (job.status === 'succeeded' || job.status === 'failed') {
-        stopPolling();
-        setCurrentJobId(null);
-        setStatus(job.status);
-        lastCompletedCountRef.current = 0;
-        
-        if (packId) {
-          await utils.assetSystem.getPack.invalidate({ id: packId });
-        }
-        await utils.assetSystem.listPacks.invalidate({ gameId });
-        setCurrentPackId(null);
-        setGeneratingPrefabs(new Set());
-        
-        if (job.status === 'succeeded') {
-          onComplete?.({ successCount: completed, failCount: failed });
-        } else {
-          const failedTask = tasks.find(t => t.status === 'failed');
-          onError?.(failedTask?.errorMessage ?? 'Generation failed');
-        }
-      }
-    } catch (err) {
-      console.error('[useAssetGeneration] Poll error:', err);
-    }
-  }, [utils, gameId, stopPolling, onComplete, onError]);
+				const tasks = job.tasks ?? [];
+				const completed = tasks.filter((t) => t.status === "succeeded").length;
+				const failed = tasks.filter((t) => t.status === "failed").length;
+				const total = tasks.length;
 
-  useEffect(() => {
-    return () => {
-      stopPolling();
-    };
-  }, [stopPolling]);
+				setProgress({ total, completed, failed });
 
-  const generateAll = useCallback(async (params: {
-    packId?: string;
-    prefabIds: string[];
-    themePrompt?: string;
-    style?: string;
-    removeBackground?: boolean;
-  }) => {
-    if (params.prefabIds.length === 0) {
-      onError?.('No templates to generate');
-      return;
-    }
+				const completedTemplateIds = new Set(
+					tasks.filter((t) => t.status === "succeeded").map((t) => t.prefabId),
+				);
+				setGeneratingPrefabs((prev) => {
+					const stillGenerating = new Set<string>();
+					prev.forEach((id) => {
+						if (!completedTemplateIds.has(id)) {
+							stillGenerating.add(id);
+						}
+					});
+					return stillGenerating;
+				});
 
-    setError(null);
-    setGeneratingPrefabs(new Set(params.prefabIds));
-    setCurrentPackId(params.packId ?? null);
-    setStatus('creating-job');
-    setProgress({ total: params.prefabIds.length, completed: 0, failed: 0 });
+				if (completed > lastCompletedCountRef.current && remixId) {
+					lastCompletedCountRef.current = completed;
+					await utils.assetSystem.remixes.getRemix.invalidate({ id: remixId });
+				}
 
-    try {
-      const { jobId } = await createJobMutation.mutateAsync({
-        gameId,
-        packId: params.packId,
-        prefabIds: params.prefabIds,
-        promptDefaults: {
-          themePrompt: params.themePrompt,
-          styleOverride: params.style,
-          removeBackground: params.removeBackground,
-        },
-      });
+				if (job.status === "succeeded" || job.status === "failed") {
+					stopPolling();
+					setCurrentJobId(null);
+					setStatus(job.status);
+					lastCompletedCountRef.current = 0;
 
-      setCurrentJobId(jobId);
-      setStatus('generating');
+					if (remixId) {
+						await utils.assetSystem.remixes.getRemix.invalidate({
+							id: remixId,
+						});
+					}
+					await utils.assetSystem.remixes.listRemixes.invalidate({ gameId });
+					setCurrentRemixId(null);
+					setGeneratingPrefabs(new Set());
 
-      processJobMutation.mutate({ jobId });
+					if (job.status === "succeeded") {
+						onComplete?.({ successCount: completed, failCount: failed });
+					} else {
+						const failedTask = tasks.find((t) => t.status === "failed");
+						onError?.(failedTask?.errorMessage ?? "Generation failed");
+					}
+				}
+			} catch (err) {
+				console.error("[useAssetGeneration] Poll error:", err);
+			}
+		},
+		[utils, gameId, stopPolling, onComplete, onError],
+	);
 
-      stopPolling();
-      pollIntervalRef.current = setInterval(() => {
-        pollJobStatus(jobId, params.packId ?? null);
-      }, POLL_INTERVAL_MS);
+	useEffect(() => {
+		return () => {
+			stopPolling();
+		};
+	}, [stopPolling]);
 
-      setTimeout(() => {
-        pollJobStatus(jobId, params.packId ?? null);
-      }, 500);
+	const generateAll = useCallback(
+		async (params: {
+			remixId?: string;
+			prefabIds: string[];
+			themePrompt?: string;
+			style?: string;
+			removeBackground?: boolean;
+		}) => {
+			if (params.prefabIds.length === 0) {
+				onError?.("No templates to generate");
+				return;
+			}
 
-    } catch (err) {
-      setGeneratingPrefabs(new Set());
-      setCurrentPackId(null);
-      setStatus('failed');
-      const message = err instanceof Error ? err.message : 'Failed to create job';
-      setError(message);
-      onError?.(message);
-    }
-  }, [gameId, createJobMutation, processJobMutation, stopPolling, pollJobStatus, onError]);
+			setError(null);
+			setGeneratingPrefabs(new Set(params.prefabIds));
+			setCurrentRemixId(params.remixId ?? null);
+			setStatus("creating-job");
+			setProgress({ total: params.prefabIds.length, completed: 0, failed: 0 });
 
-  const reset = useCallback(() => {
-    stopPolling();
-    setGeneratingPrefabs(new Set());
-    setCurrentJobId(null);
-    setCurrentPackId(null);
-    setStatus('idle');
-    setProgress({ total: 0, completed: 0, failed: 0 });
-    setError(null);
-    createJobMutation.reset();
-    processJobMutation.reset();
-  }, [stopPolling, createJobMutation, processJobMutation]);
+			try {
+				const { jobId } = await createJobMutation.mutateAsync({
+					gameId,
+					remixId: params.remixId,
+					prefabIds: params.prefabIds,
+					promptDefaults: {
+						themePrompt: params.themePrompt,
+						styleOverride: params.style,
+						removeBackground: params.removeBackground,
+					},
+				});
 
-  return {
-    status,
-    jobId: currentJobId,
-    progress,
-    error,
-    generatingTemplates,
-    isGenerating: status === 'creating-job' || status === 'generating',
-    generateAll,
-    reset,
-  };
+				setCurrentJobId(jobId);
+				setStatus("generating");
+
+				processJobMutation.mutate({ jobId });
+
+				stopPolling();
+				pollIntervalRef.current = setInterval(() => {
+					pollJobStatus(jobId, params.remixId ?? null);
+				}, POLL_INTERVAL_MS);
+
+				setTimeout(() => {
+					pollJobStatus(jobId, params.remixId ?? null);
+				}, 500);
+			} catch (err) {
+				setGeneratingPrefabs(new Set());
+				setCurrentRemixId(null);
+				setStatus("failed");
+				const message =
+					err instanceof Error ? err.message : "Failed to create job";
+				setError(message);
+				onError?.(message);
+			}
+		},
+		[
+			gameId,
+			createJobMutation,
+			processJobMutation,
+			stopPolling,
+			pollJobStatus,
+			onError,
+		],
+	);
+
+	const reset = useCallback(() => {
+		stopPolling();
+		setGeneratingPrefabs(new Set());
+		setCurrentJobId(null);
+		setCurrentRemixId(null);
+		setStatus("idle");
+		setProgress({ total: 0, completed: 0, failed: 0 });
+		setError(null);
+		createJobMutation.reset();
+		processJobMutation.reset();
+	}, [stopPolling, createJobMutation, processJobMutation]);
+
+	return {
+		status,
+		jobId: currentJobId,
+		progress,
+		error,
+		generatingTemplates,
+		isGenerating: status === "creating-job" || status === "generating",
+		generateAll,
+		reset,
+	};
 }
 
-export function useCreateAssetPack(gameId: string) {
-  const utils = trpcReact.useUtils();
-  const mutation = trpcReact.assetSystem.createPack.useMutation({
-    onSuccess: () => {
-      utils.assetSystem.listPacks.invalidate({ gameId });
-    },
-  });
-
-  const createPack = useCallback(async (params: {
-    name: string;
-    description?: string;
-    style?: string;
-    themePrompt?: string;
-  }) => {
-    return mutation.mutateAsync({
-      gameId,
-      name: params.name,
-      description: params.description,
-    });
-  }, [gameId, mutation]);
-
-  return {
-    createPack,
-    isCreating: mutation.isPending,
-    error: mutation.error?.message ?? null,
-  };
+export function useRemixes(gameId: string) {
+	return trpcReact.assetSystem.remixes.listRemixes.useQuery({ gameId });
 }
 
-export function useAssetPacks(gameId: string) {
-  return trpcReact.assetSystem.listPacks.useQuery({ gameId });
+export function useRemix(gameId: string, remixId?: string) {
+	return trpcReact.assetSystem.remixes.getResolvedRemix.useQuery(
+		{ gameId, remixId: remixId! },
+		{ enabled: !!remixId },
+	);
 }
 
-export function useAssetPackWithEntries(packId: string | undefined) {
-  return trpcReact.assetSystem.getPack.useQuery(
-    { id: packId! },
-    { enabled: !!packId }
-  );
+export function useCreateRemix() {
+	const utils = trpcReact.useUtils();
+	return trpcReact.assetSystem.remixes.createRemix.useMutation({
+		onSuccess: (data, variables) => {
+			utils.assetSystem.remixes.listRemixes.invalidate({
+				gameId: variables.gameId,
+			});
+		},
+	});
 }
 
-export function useUpdatePlacement() {
-  const utils = trpcReact.useUtils();
-
-  return trpcReact.assetSystem.updateEntryPlacement.useMutation({
-    onSuccess: (_, variables) => {
-      utils.assetSystem.getPack.invalidate({ id: variables.packId });
-    },
-  });
+export function useDeleteRemix() {
+	const utils = trpcReact.useUtils();
+	return trpcReact.assetSystem.remixes.deleteRemix.useMutation({
+		onSuccess: () => {
+			utils.assetSystem.remixes.listRemixes.invalidate();
+		},
+	});
 }
 
-export function useDeleteAssetPack(gameId: string) {
-  const utils = trpcReact.useUtils();
-  const mutation = trpcReact.assetSystem.deletePack.useMutation({
-    onSuccess: () => {
-      utils.assetSystem.listPacks.invalidate({ gameId });
-    },
-  });
-
-  const deletePack = useCallback(async (packId: string) => {
-    return mutation.mutateAsync({ id: packId });
-  }, [mutation]);
-
-  return {
-    deletePack,
-    isDeleting: mutation.isPending,
-    error: mutation.error?.message ?? null,
-  };
-}
-
-export function useRegenerateAssetPack(gameId: string) {
-  const utils = trpcReact.useUtils();
-  const mutation = trpcReact.assetSystem.regeneratePack.useMutation({
-    onSuccess: (_, variables) => {
-      utils.assetSystem.listPacks.invalidate({ gameId });
-      utils.assetSystem.getPack.invalidate({ id: variables.packId });
-    },
-  });
-
-  const regeneratePack = useCallback(async (params: {
-    packId: string;
-    newTheme: string;
-    newStyle: string;
-  }) => {
-    return mutation.mutateAsync(params);
-  }, [mutation]);
-
-  return {
-    regeneratePack,
-    isRegenerating: mutation.isPending,
-    error: mutation.error?.message ?? null,
-  };
-}
-
-export function useRegenerateAssets(gameId: string) {
-  const utils = trpcReact.useUtils();
-  const mutation = trpcReact.assetSystem.regenerateAssets.useMutation({
-    onSuccess: (_, variables) => {
-      utils.assetSystem.listPacks.invalidate({ gameId });
-      utils.assetSystem.getPack.invalidate({ id: variables.packId });
-    },
-  });
-
-  const regenerateAssets = useCallback(async (params: {
-    packId: string;
-    prefabIds: string[];
-    newTheme?: string;
-    newStyle?: string;
-    customPrompts?: Record<string, string>;
-  }) => {
-    return mutation.mutateAsync(params);
-  }, [mutation]);
-
-  return {
-    regenerateAssets,
-    isRegenerating: mutation.isPending,
-    error: mutation.error?.message ?? null,
-  };
-}
-
-export function useApplyThemeToPack(gameId: string) {
-  const utils = trpcReact.useUtils();
-  const { regenerateAssets, isRegenerating, error } = useRegenerateAssets(gameId);
-
-  const applyTheme = useCallback(async (packId: string, newTheme: string) => {
-    const pack = await utils.assetSystem.getPack.fetch({ id: packId });
-    const prefabIds = pack?.entries?.map(e => e.prefabId) ?? [];
-    if (prefabIds.length === 0) {
-      throw new Error('Pack has no entries');
-    }
-    return regenerateAssets({ packId, prefabIds, newTheme });
-  }, [utils, regenerateAssets]);
-
-  return {
-    applyTheme,
-    isApplying: isRegenerating,
-    error,
-  };
-}
-
-export function useApplyStyleToPack(gameId: string) {
-  const utils = trpcReact.useUtils();
-  const { regenerateAssets, isRegenerating, error } = useRegenerateAssets(gameId);
-
-  const applyStyle = useCallback(async (packId: string, newStyle: string) => {
-    const pack = await utils.assetSystem.getPack.fetch({ id: packId });
-    const prefabIds = pack?.entries?.map(e => e.prefabId) ?? [];
-    if (prefabIds.length === 0) {
-      throw new Error('Pack has no entries');
-    }
-    return regenerateAssets({ packId, prefabIds, newStyle });
-  }, [utils, regenerateAssets]);
-
-  return {
-    applyStyle,
-    isApplying: isRegenerating,
-    error,
-  };
+export function useUpdateRemix() {
+	const utils = trpcReact.useUtils();
+	return trpcReact.assetSystem.remixes.updateRemix.useMutation({
+		onSuccess: (data, variables) => {
+			utils.assetSystem.remixes.getResolvedRemix.invalidate();
+			utils.assetSystem.remixes.listRemixes.invalidate();
+		},
+	});
 }

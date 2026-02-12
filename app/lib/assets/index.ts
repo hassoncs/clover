@@ -1,12 +1,11 @@
-export { extractAssetManifest, sortManifestByPriority } from './AssetManifest';
 export type {
-  AssetManifest,
-  AssetManifestItem,
-  AssetType,
-  AssetPriority,
-  ResolvedPackEntry,
-  ExtractManifestOptions,
-} from './AssetManifest';
-
-export { AssetPreloader, preloadSingleAsset } from './AssetPreloader';
-export type { PreloadProgress, PreloadResult } from './AssetPreloader';
+	AssetManifest,
+	AssetManifestItem,
+	AssetPriority,
+	AssetType,
+	ExtractManifestOptions,
+	ResolvedAssetEntry,
+} from "./AssetManifest";
+export { extractAssetManifest, sortManifestByPriority } from "./AssetManifest";
+export type { PreloadProgress, PreloadResult } from "./AssetPreloader";
+export { AssetPreloader, preloadSingleAsset } from "./AssetPreloader";

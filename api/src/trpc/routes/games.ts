@@ -138,7 +138,7 @@ async function writeMetadataToR2(
 		version: "1.0.0",
 		thumbnailUrl: meta.thumbnailUrl,
 		packs: [],
-		activePackId: null,
+		activeRemixId: null,
 		updatedAt: meta.updatedAt,
 	};
 	await assets.put(`${r2Prefix}/metadata.json`, JSON.stringify(metadata), {
@@ -683,6 +683,17 @@ export const gamesRouter = router({
 				};
 			}
 
+			let economyValidation = null;
+			if (result.game.economy) {
+				const economyResult = validateEconomyGraph(
+					result.game.economy as Parameters<typeof validateEconomyGraph>[0],
+				);
+				economyValidation = {
+					valid: economyResult.valid,
+					errors: economyResult.errors,
+				};
+			}
+
 			return {
 				game: result.game,
 				intent: result.intent,
@@ -694,6 +705,7 @@ export const gamesRouter = router({
 							summary: getValidationSummary(result.validationResult),
 						}
 					: null,
+				economyValidation,
 				savedGame,
 				retryCount: result.retryCount,
 			};
@@ -740,6 +752,17 @@ export const gamesRouter = router({
 				});
 			}
 
+			let economyValidation = null;
+			if (result.game.economy) {
+				const economyResult = validateEconomyGraph(
+					result.game.economy as Parameters<typeof validateEconomyGraph>[0],
+				);
+				economyValidation = {
+					valid: economyResult.valid,
+					errors: economyResult.errors,
+				};
+			}
+
 			return {
 				game: result.game,
 				validation: result.validationResult
@@ -750,6 +773,7 @@ export const gamesRouter = router({
 							summary: getValidationSummary(result.validationResult),
 						}
 					: null,
+				economyValidation,
 			};
 		}),
 

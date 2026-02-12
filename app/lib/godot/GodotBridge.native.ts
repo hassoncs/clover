@@ -1276,8 +1276,16 @@ export function createNativeGodotBridge(): GodotBridge {
 			callGameBridge("spawn_particle", type, x, y);
 		},
 
-		playSound(resourcePath: string) {
-			callGameBridge("play_sound", resourcePath);
+		playSound(resourcePath: string, volume?: number, pitch?: number) {
+			callGameBridge("play_sound", resourcePath, volume ?? 1.0, pitch ?? 1.0);
+		},
+
+		playMusic(resourcePath: string, volume?: number, loop?: boolean) {
+			callGameBridge("play_music", resourcePath, volume ?? 1.0, loop ?? true);
+		},
+
+		stopMusic() {
+			callGameBridge("stop_music");
 		},
 
 		screenShake(intensity: number, duration?: number) {

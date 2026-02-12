@@ -20,7 +20,7 @@ export interface ResolvedAsset {
 }
 
 export interface AssetResolutionContext {
-	activePackId?: string;
+	activeRemixId?: string;
 	assetPacks?: Record<string, any>;
 	entityAssetOverrides?: Record<
 		string,
@@ -34,39 +34,36 @@ const DEFAULT_PLACEMENT: AssetPlacement = {
 	offsetY: 0,
 };
 
-interface DatabasePack {
-	id: string;
-	name: string;
-	description?: string | null;
-	entries: Array<{
-		prefabId: string;
-		r2Key: string | null;
-		placement?: AssetPlacement | null;
-	}>;
-}
-
-function useAssetPackFromDatabase(packName: string | undefined) {
-	return trpcReact.assetSystem.getPackByName.useQuery(
-		{ name: packName! },
+function useRemixFromDatabase(remixId: string | undefined) {
+	return trpcReact.assetSystem.remixes.getRemix.useQuery(
+		{ id: remixId! },
 		{
-			enabled: !!packName,
+			enabled: !!remixId,
 			staleTime: 5 * 60 * 1000,
 			gcTime: 30 * 60 * 1000,
 		},
 	);
 }
 
-function convertDbPackToEmbedded(
-	dbPack: DatabasePack,
-	config?: AssetUrlConfig,
+function convertRemixToEmbedded(
+	remix: {
+		id: string;
+		name: string;
+		overrides: {
+			assets?: Record<
+				string,
+				{ assetUrl: string; placement?: Partial<AssetPlacement> }
+			>;
+		};
+	},
+	_config?: AssetUrlConfig,
 ): any {
 	const assets: Record<string, AssetConfig> = {};
-	for (const entry of dbPack.entries) {
-		if (entry.r2Key) {
-			const fullUrl = getAssetUrl(entry.r2Key, env.assetCdnUrl, config);
-			assets[entry.prefabId] = {
-				imageUrl: fullUrl,
-				assetRef: entry.r2Key,
+	const assetOverrides = remix.overrides.assets;
+	if (assetOverrides) {
+		for (const [prefabId, entry] of Object.entries(assetOverrides)) {
+			assets[prefabId] = {
+				imageUrl: entry.assetUrl,
 				source: "generated" as const,
 				scale: entry.placement?.scale ?? 1,
 				offsetX: entry.placement?.offsetX ?? 0,
@@ -74,7 +71,7 @@ function convertDbPackToEmbedded(
 			};
 		}
 	}
-	return { ...dbPack, assets };
+	return { ...remix, assets };
 }
 
 function validatePackCoverage(
@@ -116,7 +113,7 @@ export function resolveAssetForEntity(
 	entity: RuntimeEntity,
 	context: AssetResolutionContext,
 ): ResolvedAsset | null {
-	const { activePackId, assetPacks, entityAssetOverrides } = context;
+	const { activeRemixId, assetPacks, entityAssetOverrides } = context;
 
 	if (entityAssetOverrides?.[entity.id]) {
 		const override = entityAssetOverrides[entity.id];
@@ -140,12 +137,12 @@ export function resolveAssetForEntity(
 		}
 	}
 
-	const packIdToUse = entity.assetPackId ?? activePackId;
-	if (!packIdToUse || !assetPacks?.[packIdToUse]) {
+	const remixIdToUse = entity.assetPackId ?? activeRemixId;
+	if (!remixIdToUse || !assetPacks?.[remixIdToUse]) {
 		return null;
 	}
 
-	const pack = assetPacks[packIdToUse];
+	const pack = assetPacks[remixIdToUse];
 	const prefabId = entity.prefab;
 
 	if (!prefabId || !pack.assets[prefabId]) {
@@ -171,24 +168,24 @@ export function useAssetResolution(
 	entities: RuntimeEntity[],
 	definition: GameDefinition,
 ): Map<string, ResolvedAsset | null> {
-	const activePackId = definition.assetSystem?.activePackId;
+	const activeRemixId = definition.assetSystem?.activeRemixId;
 
-	const dbPackQuery = useAssetPackFromDatabase(activePackId);
+	const dbRemixQuery = useRemixFromDatabase(activeRemixId);
 
 	return useMemo(() => {
 		const mergedPacks: Record<string, any> = {};
 
-		if (dbPackQuery.data) {
-			const dbPack = convertDbPackToEmbedded(dbPackQuery.data, {
+		if (dbRemixQuery.data) {
+			const dbPack = convertRemixToEmbedded(dbRemixQuery.data, {
 				offlineMode: true,
 				localServerUrl: getServerUrl(),
 			});
 			mergedPacks[dbPack.name] = dbPack;
 		}
 
-		if (activePackId && mergedPacks[activePackId] && definition.prefabs) {
+		if (activeRemixId && mergedPacks[activeRemixId] && definition.prefabs) {
 			try {
-				validatePackCoverage(definition.prefabs, mergedPacks[activePackId]);
+				validatePackCoverage(definition.prefabs, mergedPacks[activeRemixId]);
 			} catch (error) {
 				console.error("[useAssetResolution]", error);
 				throw error;
@@ -196,7 +193,7 @@ export function useAssetResolution(
 		}
 
 		const context: AssetResolutionContext = {
-			activePackId,
+			activeRemixId,
 			assetPacks: mergedPacks,
 			entityAssetOverrides: (definition.assetSystem as any)
 				?.entityAssetOverrides,
@@ -211,19 +208,19 @@ export function useAssetResolution(
 		return resolutionMap;
 	}, [
 		entities,
-		activePackId,
+		activeRemixId,
 		definition.assetSystem,
 		definition.prefabs,
-		dbPackQuery.data,
+		dbRemixQuery.data,
 	]);
 }
 
-export function getAssetOverridesFromPack(
-	packId: string | undefined,
+export function getAssetOverridesFromRemix(
+	remixId: string | undefined,
 	assetPacks: Record<string, any> | undefined,
 ): Record<string, AssetConfig> | undefined {
-	if (!packId || !assetPacks?.[packId]) {
+	if (!remixId || !assetPacks?.[remixId]) {
 		return undefined;
 	}
-	return assetPacks[packId].assets;
+	return assetPacks[remixId].assets;
 }

@@ -330,6 +330,10 @@ export function useStreamingChat(
 				sseRef.current = null;
 				currentStreamUrlRef.current = null;
 				isConnectingRef.current = false;
+				if (isSendingRef.current) {
+					setStreamError("Connection closed unexpectedly");
+					setIsSending(false);
+				}
 			},
 		});
 	}, []);

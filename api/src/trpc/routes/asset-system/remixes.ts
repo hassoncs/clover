@@ -336,6 +336,9 @@ export const remixesRouter = router({
 					variables: remixRow.variable_overrides_json
 						? JSON.parse(remixRow.variable_overrides_json)
 						: undefined,
+					assets: remixRow.asset_overrides_json
+						? JSON.parse(remixRow.asset_overrides_json)
+						: undefined,
 					shaderParams: remixRow.shader_param_overrides_json
 						? JSON.parse(remixRow.shader_param_overrides_json)
 						: undefined,

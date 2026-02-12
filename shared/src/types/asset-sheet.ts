@@ -1,6 +1,6 @@
 /**
  * Asset Sheet Types
- * 
+ *
  * Unified model for sprite sheets, tile sheets, and variation sheets.
  * All share: atlas PNG + layout + entries + per-kind semantics + prompt overrides.
  */
@@ -9,36 +9,36 @@
 // SHEET KINDS
 // =============================================================================
 
-export type AssetSheetKind = 'sprite' | 'tile' | 'variation';
+export type AssetSheetKind = "sprite" | "tile" | "variation";
 
 // =============================================================================
 // LAYOUT TYPES
 // =============================================================================
 
 export type SheetLayout =
-  | {
-      type: 'grid';
-      columns: number;
-      rows: number;
-      cellWidth: number;
-      cellHeight: number;
-      spacing?: number; // pixels between cells
-      margin?: number;  // pixels around grid
-      origin?: 'top-left';
-    }
-  | {
-      type: 'strip';
-      direction: 'horizontal' | 'vertical';
-      frameCount: number;
-      cellWidth: number;
-      cellHeight: number;
-      spacing?: number;
-      margin?: number;
-    }
-  | {
-      type: 'manual';
-      // entries must provide explicit rects
-    };
+	| {
+			type: "grid";
+			columns: number;
+			rows: number;
+			cellWidth: number;
+			cellHeight: number;
+			spacing?: number; // pixels between cells
+			margin?: number; // pixels around grid
+			origin?: "top-left";
+	  }
+	| {
+			type: "strip";
+			direction: "horizontal" | "vertical";
+			frameCount: number;
+			cellWidth: number;
+			cellHeight: number;
+			spacing?: number;
+			margin?: number;
+	  }
+	| {
+			type: "manual";
+			// entries must provide explicit rects
+	  };
 
 // =============================================================================
 // REGION TYPES
@@ -47,8 +47,8 @@ export type SheetLayout =
 export type SheetRegion = { x: number; y: number; w: number; h: number };
 
 export interface SheetPivot {
-  x: number; // pixels relative to the entry rect
-  y: number;
+	x: number; // pixels relative to the entry rect
+	y: number;
 }
 
 // =============================================================================
@@ -56,15 +56,14 @@ export interface SheetPivot {
 // =============================================================================
 
 export interface SheetPromptConfig {
-  // The base prompt applied to ALL entries (unless overridden)
-  basePrompt: string;
-  
-  // Optional: modifiers appended to all prompts
-  commonModifiers?: string[];
-  
-  // Optional: style preset (can affect model selection)
-  stylePreset?: string;
-  
+	// The base prompt applied to ALL entries (unless overridden)
+	basePrompt: string;
+
+	// Optional: modifiers appended to all prompts
+	commonModifiers?: string[];
+
+	// Optional: style preset (can affect model selection)
+	stylePreset?: string;
 }
 
 // =============================================================================
@@ -72,14 +71,14 @@ export interface SheetPromptConfig {
 // =============================================================================
 
 export interface AssetSheetEntry {
-  id: string;              // stable key (e.g. "run_0", "brick/red", "tile:17")
-  region: SheetRegion;
-  pivot?: SheetPivot;
-  tags?: string[];
-  
-  // Per-entry prompt override (supports long-form descriptions)
-  // If present, this completely replaces the base prompt for this entry
-  promptOverride?: string;
+	id: string; // stable key (e.g. "run_0", "brick/red", "tile:17")
+	region: SheetRegion;
+	pivot?: SheetPivot;
+	tags?: string[];
+
+	// Per-entry prompt override (supports long-form descriptions)
+	// If present, this completely replaces the base prompt for this entry
+	promptOverride?: string;
 }
 
 // =============================================================================
@@ -87,10 +86,10 @@ export interface AssetSheetEntry {
 // =============================================================================
 
 export interface SheetAnimation {
-  id: string;              // "idle", "run", "explode"
-  frames: string[];        // array of AssetSheetEntry.id
-  fps: number;
-  loop?: boolean;
+	id: string; // "idle", "run", "explode"
+	frames: string[]; // array of AssetSheetEntry.id
+	fps: number;
+	loop?: boolean;
 }
 
 // =============================================================================
@@ -98,23 +97,23 @@ export interface SheetAnimation {
 // =============================================================================
 
 export interface SheetTileCollision {
-  type: 'none' | 'full' | 'platform';
-  polygon?: { x: number; y: number }[];
+	type: "none" | "full" | "platform";
+	polygon?: { x: number; y: number }[];
 }
 
 export interface SheetTileAnimation {
-  frames: number[]; // grid indices
-  fps: number;
-  loop?: boolean;
+	frames: number[]; // grid indices
+	fps: number;
+	loop?: boolean;
 }
 
 export interface SheetTileMetadata {
-  name?: string;
-  tags?: string[];
-  collision?: SheetTileCollision;
-  animation?: SheetTileAnimation;
-  
-  promptOverride?: string;
+	name?: string;
+	tags?: string[];
+	collision?: SheetTileCollision;
+	animation?: SheetTileAnimation;
+
+	promptOverride?: string;
 }
 
 // =============================================================================
@@ -122,18 +121,18 @@ export interface SheetTileMetadata {
 // =============================================================================
 
 export interface VariationVariant {
-  entryId: string;
-  tags?: string[];
-  weight?: number;  // for random selection
-  
-  // Per-variant prompt override (supports long-form descriptions)
-  promptOverride?: string;
+	entryId: string;
+	tags?: string[];
+	weight?: number; // for random selection
+
+	// Per-variant prompt override (supports long-form descriptions)
+	promptOverride?: string;
 }
 
 export interface VariationGroup {
-  id: string; // usually the semantic "thing": "brick", "peg", "gem"
-  variants: Record<string, VariationVariant>;
-  order?: string[];
+	id: string; // usually the semantic "thing": "brick", "peg", "gem"
+	variants: Record<string, VariationVariant>;
+	order?: string[];
 }
 
 // =============================================================================
@@ -141,18 +140,18 @@ export interface VariationGroup {
 // =============================================================================
 
 export interface AssetSheetBase {
-  id: string;
-  packId: string;          // owned by AssetPackV2
-  source: 'generated' | 'uploaded' | 'none';
-  imageAssetId?: string;   // references GameAsset.id (optional for pre-uploaded)
-  imageUrl: string;
-  imageWidth: number;
-  imageHeight: number;
-  layout: SheetLayout;
-  entries: Record<string, AssetSheetEntry>;
-  promptConfig?: SheetPromptConfig;  // Base prompt + overrides for entries
-  createdAt: number;
-  deletedAt?: number;
+	id: string;
+	remixId: string;
+	source: "generated" | "uploaded" | "none";
+	imageAssetId?: string; // references GameAsset.id (optional for pre-uploaded)
+	imageUrl: string;
+	imageWidth: number;
+	imageHeight: number;
+	layout: SheetLayout;
+	entries: Record<string, AssetSheetEntry>;
+	promptConfig?: SheetPromptConfig; // Base prompt + overrides for entries
+	createdAt: number;
+	deletedAt?: number;
 }
 
 // =============================================================================
@@ -160,23 +159,23 @@ export interface AssetSheetBase {
 // =============================================================================
 
 export type AssetSheet =
-  | (AssetSheetBase & {
-      kind: 'sprite';
-      animations?: Record<string, SheetAnimation>;
-      defaultAnimationId?: string;
-    })
-  | (AssetSheetBase & {
-      kind: 'tile';
-      tileWidth: number;
-      tileHeight: number;
-      tiles?: Record<number, SheetTileMetadata>;
-    })
-  | (AssetSheetBase & {
-      kind: 'variation';
-      groups?: Record<string, VariationGroup>;
-      defaultGroupId?: string;
-      defaultVariantKey?: string;
-    });
+	| (AssetSheetBase & {
+			kind: "sprite";
+			animations?: Record<string, SheetAnimation>;
+			defaultAnimationId?: string;
+	  })
+	| (AssetSheetBase & {
+			kind: "tile";
+			tileWidth: number;
+			tileHeight: number;
+			tiles?: Record<number, SheetTileMetadata>;
+	  })
+	| (AssetSheetBase & {
+			kind: "variation";
+			groups?: Record<string, VariationGroup>;
+			defaultGroupId?: string;
+			defaultVariantKey?: string;
+	  });
 
 // =============================================================================
 // UTILITY FUNCTIONS
@@ -185,65 +184,86 @@ export type AssetSheet =
 /**
  * Calculate the total image dimensions from a layout
  */
-export function calculateSheetDimensions(layout: SheetLayout): { width: number; height: number } {
-  if (layout.type === 'grid') {
-    const margin = layout.margin ?? 0;
-    const spacing = layout.spacing ?? 0;
-    const width = margin * 2 + layout.columns * layout.cellWidth + (layout.columns - 1) * spacing;
-    const height = margin * 2 + layout.rows * layout.cellHeight + (layout.rows - 1) * spacing;
-    return { width, height };
-  }
-  
-  if (layout.type === 'strip') {
-    const margin = layout.margin ?? 0;
-    const spacing = layout.spacing ?? 0;
-    if (layout.direction === 'horizontal') {
-      const width = margin * 2 + layout.frameCount * layout.cellWidth + (layout.frameCount - 1) * spacing;
-      const height = margin * 2 + layout.cellHeight;
-      return { width, height };
-    } else {
-      const width = margin * 2 + layout.cellWidth;
-      const height = margin * 2 + layout.frameCount * layout.cellHeight + (layout.frameCount - 1) * spacing;
-      return { width, height };
-    }
-  }
-  
-  return { width: 0, height: 0 };
+export function calculateSheetDimensions(layout: SheetLayout): {
+	width: number;
+	height: number;
+} {
+	if (layout.type === "grid") {
+		const margin = layout.margin ?? 0;
+		const spacing = layout.spacing ?? 0;
+		const width =
+			margin * 2 +
+			layout.columns * layout.cellWidth +
+			(layout.columns - 1) * spacing;
+		const height =
+			margin * 2 +
+			layout.rows * layout.cellHeight +
+			(layout.rows - 1) * spacing;
+		return { width, height };
+	}
+
+	if (layout.type === "strip") {
+		const margin = layout.margin ?? 0;
+		const spacing = layout.spacing ?? 0;
+		if (layout.direction === "horizontal") {
+			const width =
+				margin * 2 +
+				layout.frameCount * layout.cellWidth +
+				(layout.frameCount - 1) * spacing;
+			const height = margin * 2 + layout.cellHeight;
+			return { width, height };
+		} else {
+			const width = margin * 2 + layout.cellWidth;
+			const height =
+				margin * 2 +
+				layout.frameCount * layout.cellHeight +
+				(layout.frameCount - 1) * spacing;
+			return { width, height };
+		}
+	}
+
+	return { width: 0, height: 0 };
 }
 
 /**
  * Get the region rect for a given entry
  */
-export function getEntryRegionRect(entry: AssetSheetEntry, _layout: SheetLayout): SheetRegion {
-  return entry.region;
+export function getEntryRegionRect(
+	entry: AssetSheetEntry,
+	_layout: SheetLayout,
+): SheetRegion {
+	return entry.region;
 }
 
 /**
  * Get the effective prompt for an entry (base + override resolution)
  */
-export function getEntryPrompt(entry: AssetSheetEntry, promptConfig?: SheetPromptConfig): string | null {
-  if (!promptConfig) {
-    return null;
-  }
-  
-  // If entry has an override, use it
-  if (entry.promptOverride) {
-    return entry.promptOverride;
-  }
-  
-  // Otherwise use base prompt
-  return promptConfig.basePrompt;
+export function getEntryPrompt(
+	entry: AssetSheetEntry,
+	promptConfig?: SheetPromptConfig,
+): string | null {
+	if (!promptConfig) {
+		return null;
+	}
+
+	// If entry has an override, use it
+	if (entry.promptOverride) {
+		return entry.promptOverride;
+	}
+
+	// Otherwise use base prompt
+	return promptConfig.basePrompt;
 }
 
 /**
  * Resolve a variant to its entry ID given a variant key
  */
 export function resolveVariantEntryId(
-  group: VariationGroup,
-  variantKey: string
+	group: VariationGroup,
+	variantKey: string,
 ): string | null {
-  const variant = group.variants[variantKey];
-  return variant?.entryId ?? null;
+	const variant = group.variants[variantKey];
+	return variant?.entryId ?? null;
 }
 
 /**
@@ -251,28 +271,32 @@ export function resolveVariantEntryId(
  * Uses group.order if available, else falls back to sorted keys
  */
 export function selectVariantByIndex(
-  sheet: AssetSheet,
-  groupId: string,
-  index: number
-): { entryId: string; region: { x: number; y: number; w: number; h: number } } | null {
-  if (sheet.kind !== 'variation' || !sheet.groups) return null;
+	sheet: AssetSheet,
+	groupId: string,
+	index: number,
+): {
+	entryId: string;
+	region: { x: number; y: number; w: number; h: number };
+} | null {
+	if (sheet.kind !== "variation" || !sheet.groups) return null;
 
-  const group = sheet.groups[groupId] ?? sheet.groups[sheet.defaultGroupId ?? 'default'];
-  if (!group) return null;
+	const group =
+		sheet.groups[groupId] ?? sheet.groups[sheet.defaultGroupId ?? "default"];
+	if (!group) return null;
 
-  const variantKeys = group.order ?? Object.keys(group.variants).sort();
-  const variantKey = variantKeys[index];
-  if (!variantKey) return null;
+	const variantKeys = group.order ?? Object.keys(group.variants).sort();
+	const variantKey = variantKeys[index];
+	if (!variantKey) return null;
 
-  const variant = group.variants[variantKey];
-  if (!variant) return null;
+	const variant = group.variants[variantKey];
+	if (!variant) return null;
 
-  const entry = sheet.entries[variant.entryId];
-  if (!entry) return null;
+	const entry = sheet.entries[variant.entryId];
+	if (!entry) return null;
 
-  // Get region rect
-  const rect = getEntryRegionRect(entry, sheet.layout);
-  if (!rect) return null;
+	// Get region rect
+	const rect = getEntryRegionRect(entry, sheet.layout);
+	if (!rect) return null;
 
-  return { entryId: variant.entryId, region: rect };
+	return { entryId: variant.entryId, region: rect };
 }

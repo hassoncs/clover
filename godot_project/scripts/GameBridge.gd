@@ -325,6 +325,8 @@ func _build_method_map() -> void:
 		# UI
 		"spawn_particle": _ui_manager._js_spawn_particle,
 		"play_sound": _ui_manager._js_play_sound,
+		"play_music": _ui_manager._js_play_music,
+		"stop_music": _ui_manager._js_stop_music,
 		"create_ui_button": _ui_manager._js_create_ui_button,
 		"destroy_ui_button": _ui_manager._js_destroy_ui_button,
 		"on_ui_button_event": _ui_manager._js_on_ui_button_event,
@@ -562,7 +564,7 @@ func _get_method_owner(method_name: String) -> String:
 		return "EventEmitter/InputRouter"
 	elif method_name.begins_with("set_camera") or method_name.begins_with("start_camera") or method_name.begins_with("stop_camera"):
 		return "CameraController"
-	elif method_name.begins_with("spawn_particle") or method_name.begins_with("play_sound") or method_name.begins_with("create_ui") or method_name.begins_with("destroy_ui") or method_name.begins_with("on_ui_button_event") or method_name.begins_with("create_themed_ui") or method_name.begins_with("destroy_themed_ui"):
+	elif method_name.begins_with("spawn_particle") or method_name.begins_with("play_sound") or method_name.begins_with("play_music") or method_name.begins_with("stop_music") or method_name.begins_with("create_ui") or method_name.begins_with("destroy_ui") or method_name.begins_with("on_ui_button_event") or method_name.begins_with("create_themed_ui") or method_name.begins_with("destroy_themed_ui"):
 		return "UIManager"
 	elif method_name.begins_with("show_3d") or method_name.begins_with("set_3d") or method_name.begins_with("rotate_3d") or method_name.begins_with("clear_3d"):
 		return "Viewport3D"

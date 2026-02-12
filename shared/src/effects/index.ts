@@ -1,156 +1,148 @@
+export type { AuthoringOptions, AuthoringResult } from "./authoring";
+export { authorGraph } from "./authoring";
 export type {
-  NodeFamily,
-  BufferFormat,
-  ResolutionMode,
-  FusibilityFlag,
-  InputSlot,
-  OutputTarget,
-  ParamValue,
-  EffectParamSchema,
-  EffectNode,
-  Connection,
-  FeedbackEdge,
-  FeedbackPolicy,
-  EffectGraphSpec,
-  ResourceRef,
-  CompiledPass,
-  CompiledPlan,
-  ShaderSource,
-  UniformDeclaration,
-  QualityTier,
-  PersistenceMode,
-  PlatformTier,
-  BudgetTierPolicy,
-  EffectType,
-} from './types';
-
-export type { EffectCategory, EffectMetadata } from './metadata';
-export { EFFECT_METADATA } from './metadata';
-
+	BudgetCheckResult,
+	BudgetMetrics,
+	BudgetViolation,
+	BudgetViolationCode,
+	PerformanceMetrics,
+} from "./budget";
+export { BUDGET_TIER_PRESETS, checkBudget, PerformanceHarness } from "./budget";
 export type {
-  ParamSummary,
-  PackageManifest as EffectPackageManifest,
-  NodeTypeRegistration,
-  SearchQuery,
-  SearchResult,
-} from './registry';
-export { ManifestRegistry } from './registry';
-
-export type {
-  GraphValidationErrorCode,
-  GraphValidationError,
-  GraphValidationResult,
-} from './errors';
-
-export type { ValidatorOptions } from './validator';
-export { validateGraph } from './validator';
-
-export type {
-  ScopeTarget,
-  ResourceKind,
-  ResourceNode,
-  ResourceBinding,
-  ResourceGraph,
-  ResourceResolutionErrorCode,
-  ResourceResolutionError,
-  ResourceResolutionResult,
-} from './resources';
+	CatalogAPI,
+	CatalogListQuery,
+	CatalogListResult,
+	CatalogSearchQuery,
+	CreateDraftInput,
+	ModerationStatus,
+	ModerationTransition,
+	PackageFetchPolicy,
+	PackageFetchResult,
+	PublishInput,
+	R2PathResolver,
+	SeedEntry,
+	ShaderPackageSummary,
+	UpdateDraftInput,
+} from "./catalog-api";
 export {
-  areFormatsCompatible,
-  areResolutionsCompatible,
-  resolveEffectiveResolution,
-  buildResourceGraph,
-} from './resources';
-
-export type { FeedbackBufferState } from './feedback';
-export { FeedbackManager } from './feedback';
-
+	createR2PathResolver,
+	isValidModerationTransition,
+	seedBuiltInNodes,
+	VALID_MODERATION_TRANSITIONS,
+} from "./catalog-api";
 export type {
-  OrderingConstraints,
-  CompilerOptions,
-  CompileError,
-  CompileResult,
-} from './compiler';
-export { compileGraph } from './compiler';
-
+	CompileError,
+	CompileResult,
+	CompilerOptions,
+	OrderingConstraints,
+} from "./compiler";
+export { compileGraph } from "./compiler";
 export type {
-  FeedbackSnapshotState,
-  EffectsSnapshot,
-  SnapshotCompatibilityErrorCode,
-  SnapshotCompatibilityError,
-  SnapshotCompatibility,
-  RestoreResult,
-} from './snapshot';
-export { SnapshotManager } from './snapshot';
-
+	GraphValidationError,
+	GraphValidationErrorCode,
+	GraphValidationResult,
+} from "./errors";
+export type { FeedbackBufferState } from "./feedback";
+export { FeedbackManager } from "./feedback";
+export type { EffectCategory, EffectMetadata } from "./metadata";
+export { EFFECT_METADATA } from "./metadata";
 export type {
-  BudgetViolationCode,
-  BudgetViolation,
-  BudgetMetrics,
-  BudgetCheckResult,
-  PerformanceMetrics,
-} from './budget';
-export { checkBudget, PerformanceHarness, BUDGET_TIER_PRESETS } from './budget';
-
+	NormalizationError,
+	NormalizationErrorCode,
+	NormalizationResult,
+} from "./normalizer";
+export { normalizeAIOutput } from "./normalizer";
 export type {
-  PackageStatus,
-  SourceType,
-  LicenseType,
-  ShaderPackage,
-  ShaderPackageVersion,
-  PackageProvenance,
-  CompatibilityResult,
-  CompatibilityError,
-} from './package';
-export { ShaderPackageManager } from './package';
-
+	CompatibilityError,
+	CompatibilityResult,
+	LicenseType,
+	PackageProvenance,
+	PackageStatus,
+	ShaderPackage,
+	ShaderPackageVersion,
+	SourceType,
+} from "./package";
+export { ShaderPackageManager } from "./package";
 export type {
-  NormalizationErrorCode,
-  NormalizationError,
-  NormalizationResult,
-} from './normalizer';
-export { normalizeAIOutput } from './normalizer';
-
-export type { AuthoringOptions, AuthoringResult } from './authoring';
-export { authorGraph } from './authoring';
-
+	NodeTypeRegistration,
+	PackageManifest as EffectPackageManifest,
+	ParamSummary,
+	SearchQuery,
+	SearchResult,
+} from "./registry";
+export { ManifestRegistry } from "./registry";
 export type {
-  ModerationStatus,
-  ModerationTransition,
-  CatalogListQuery,
-  CatalogSearchQuery,
-  CatalogListResult,
-  ShaderPackageSummary,
-  R2PathResolver,
-  PackageFetchPolicy,
-  PackageFetchResult,
-  CatalogAPI,
-  CreateDraftInput,
-  UpdateDraftInput,
-  PublishInput,
-  SeedEntry,
-} from './catalog-api';
+	ResourceBinding,
+	ResourceGraph,
+	ResourceKind,
+	ResourceNode,
+	ResourceResolutionError,
+	ResourceResolutionErrorCode,
+	ResourceResolutionResult,
+	ScopeTarget,
+} from "./resources";
 export {
-  VALID_MODERATION_TRANSITIONS,
-  isValidModerationTransition,
-  createR2PathResolver,
-  seedBuiltInNodes,
-} from './catalog-api';
-
-export { getBuiltInSeeds, registerBuiltInSeeds } from './seeds/index';
-
-export { SHADER_LIBRARY, getShaderGlsl, getShaderGlslStrict, getAvailableShaderKeys } from './shaderLibrary';
-
-export type { ShaderCategory, ShaderLibraryEntry } from './shaderRegistry';
+	areFormatsCompatible,
+	areResolutionsCompatible,
+	buildResourceGraph,
+	resolveEffectiveResolution,
+} from "./resources";
+export { getBuiltInSeeds, registerBuiltInSeeds } from "./seeds/index";
 export {
-  SHADER_REGISTRY,
-  getShaderEntry,
-  listShadersByCategory,
-  searchShaders,
-  getCombinableShaders,
-  getAllShaderCategories,
-  getShaderCount,
-} from './shaderRegistry';
-
+	getAvailableShaderKeys,
+	getShaderGlsl,
+	getShaderGlslStrict,
+	SHADER_LIBRARY,
+} from "./shaderLibrary";
+export type { ShaderCategory, ShaderLibraryEntry } from "./shaderRegistry";
+export {
+	getAllShaderCategories,
+	getCombinableShaders,
+	getShaderCount,
+	getShaderEntry,
+	listShadersByCategory,
+	SHADER_REGISTRY,
+	searchShaders,
+} from "./shaderRegistry";
+export {
+	needsScreenTextureRewrite,
+	rewriteScreenShaderForSubViewport,
+} from "./shaderRewrite";
+export type {
+	EffectsSnapshot,
+	FeedbackSnapshotState,
+	RestoreResult,
+	SnapshotCompatibility,
+	SnapshotCompatibilityError,
+	SnapshotCompatibilityErrorCode,
+} from "./snapshot";
+export { SnapshotManager } from "./snapshot";
 // Text Effects
-export * from './text/index';
+export * from "./text/index";
+export type {
+	BudgetTierPolicy,
+	BufferFormat,
+	CompiledPass,
+	CompiledPlan,
+	Connection,
+	EffectGraphSpec,
+	EffectNode,
+	EffectParamSchema,
+	EffectType,
+	FeedbackEdge,
+	FeedbackPolicy,
+	FusibilityFlag,
+	InputSlot,
+	NodeFamily,
+	OutputTarget,
+	ParamValue,
+	PersistenceMode,
+	PlatformTier,
+	QualityTier,
+	ResolutionMode,
+	ResourceRef,
+	ShaderSource,
+	UniformDeclaration,
+} from "./types";
+export type { ValidatorOptions } from "./validator";
+export { validateGraph } from "./validator";

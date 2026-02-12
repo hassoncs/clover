@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS games (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  -- Lineage tracking for fork/asset pack sharing
+  -- Lineage tracking for forks and remixes
   base_game_id TEXT REFERENCES games(id),  -- Points to root game; self-referential for originals
   forked_from_id TEXT REFERENCES games(id), -- Immediate parent; NULL for originals
   validation_report TEXT,
@@ -105,39 +105,8 @@ CREATE INDEX IF NOT EXISTS idx_assets_theme ON assets(theme_id) WHERE deleted_at
 CREATE INDEX IF NOT EXISTS idx_assets_creator ON assets(creator_user_id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_assets_r2_key ON assets(r2_key) WHERE deleted_at IS NULL;
 
--- Asset packs - Named collections of assets shared across a game family
-CREATE TABLE IF NOT EXISTS asset_packs (
-  id TEXT PRIMARY KEY,
-  base_game_id TEXT NOT NULL REFERENCES games(id),
-  name TEXT NOT NULL,
-  description TEXT,
-  theme_id TEXT REFERENCES themes(id),
-  creator_user_id TEXT REFERENCES users(id),
-  is_complete INTEGER DEFAULT 0,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER,
-  deleted_at INTEGER,
-  UNIQUE(base_game_id, name)
-);
-
-CREATE INDEX IF NOT EXISTS idx_asset_packs_game ON asset_packs(base_game_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_asset_packs_theme ON asset_packs(theme_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_asset_packs_creator ON asset_packs(creator_user_id) WHERE deleted_at IS NULL;
-
-CREATE TABLE IF NOT EXISTS pack_entries (
-  id TEXT PRIMARY KEY,
-  pack_id TEXT NOT NULL REFERENCES asset_packs(id) ON DELETE CASCADE,
-  template_id TEXT NOT NULL,
-  asset_id TEXT NOT NULL REFERENCES assets(id),
-  placement_json TEXT,
-  UNIQUE(pack_id, template_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_pack_entries_pack ON pack_entries(pack_id);
-CREATE INDEX IF NOT EXISTS idx_pack_entries_asset ON pack_entries(asset_id);
-
 -- Remixes - Fork-level customization bundles (variables, assets, shaders, sounds)
--- Successor to asset_packs: a remix is a complete "skin" for a base game
+-- A remix is a complete "skin" for a base game
 CREATE TABLE IF NOT EXISTS remixes (
   id TEXT PRIMARY KEY,
   base_game_id TEXT NOT NULL REFERENCES games(id),
@@ -167,7 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_remixes_theme ON remixes(theme_id) WHERE deleted_
 CREATE TABLE IF NOT EXISTS generation_jobs (
   id TEXT PRIMARY KEY,
   game_id TEXT NOT NULL REFERENCES games(id),
-  pack_id TEXT NOT NULL REFERENCES asset_packs(id),
+  remix_id TEXT,
   theme_id TEXT REFERENCES themes(id),
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
   style TEXT,
@@ -177,7 +146,7 @@ CREATE TABLE IF NOT EXISTS generation_jobs (
   finished_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_generation_jobs_pack ON generation_jobs(pack_id);
+CREATE INDEX IF NOT EXISTS idx_generation_jobs_remix ON generation_jobs(remix_id);
 CREATE INDEX IF NOT EXISTS idx_generation_jobs_status ON generation_jobs(status) WHERE status IN ('queued', 'running');
 
 -- Generation tasks - Per-template generation tracking

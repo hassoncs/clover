@@ -1,27 +1,29 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "lib": ["ES2022"],
-    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
-    "noEmit": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@slopcade/shared/*": ["../shared/src/*"]
-    }
-  },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"],
-  "exclude": [
-    "node_modules",
-    "**/*.test.ts",
-    "**/__tests__/**",
-    "**/__fixtures__/**",
-    "src/__fixtures__/**"
-  ]
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"lib": ["ES2022"],
+		"types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@slopcade/shared/*": ["../shared/src/*"],
+			"@slopcade/economy-engine": ["../packages/economy-engine/src/index.ts"],
+			"@slopcade/economy-engine/*": ["../packages/economy-engine/src/*"]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.d.ts"],
+	"exclude": [
+		"node_modules",
+		"**/*.test.ts",
+		"**/__tests__/**",
+		"**/__fixtures__/**",
+		"src/__fixtures__/**"
+	]
 }

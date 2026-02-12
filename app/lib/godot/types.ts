@@ -476,7 +476,9 @@ export interface GodotBridge extends EffectsBridge {
 	spawnParticle(type: string, x: number, y: number): void;
 
 	// Audio
-	playSound(resourcePath: string): void;
+	playSound(resourcePath: string, volume?: number, pitch?: number): void;
+	playMusic(resourcePath: string, volume?: number, loop?: boolean): void;
+	stopMusic(): void;
 
 	// Visual Effects - Sprite Effects
 	applySpriteEffect(

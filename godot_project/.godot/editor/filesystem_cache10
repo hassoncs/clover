@@ -64,7 +64,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769538422::0::1::::<><><>0<
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1770841275
-GameBridge.gd::GDScript::3857439177254699610::1770841275::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::3857439177254699610::1770865348::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1770054883::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1770414104::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769982447::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -85,7 +85,7 @@ JSBridge.gd::GDScript::5302051703392798855::1770841275::0::1::::JSBridge<>RefCou
 PixelBufferManager.gd::GDScript::2938485955495645595::1770692657::0::1::::PixelBufferManager<>RefCounted<><>0<>0<><>::
 QuerySystem.gd::GDScript::4794659130339010814::1770054186::0::1::::QuerySystem<>RefCounted<><>0<>0<><>::
 SyncSystem.gd::GDScript::3903644578941350245::1769981414::0::1::::SyncSystem<>RefCounted<><>0<>0<><>::
-UIManager.gd::GDScript::2938340039645018513::1770158499::0::1::::UIManager<>RefCounted<><>0<>0<><>::
+UIManager.gd::GDScript::2938340039645018513::1770865329::0::1::::UIManager<>RefCounted<><>0<>0<><>::
 VisualRenderer.gd::GDScript::3033702139520954300::1770413208::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
 WebSocketSystem.gd::GDScript::6579444550606019435::1770841275::0::1::::WebSocketSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/debug/::1770841275
@@ -97,7 +97,7 @@ DebugProps.gd::GDScript::4891004605017099441::1770841275::0::1::::DebugProps<>Re
 DebugSelector.gd::GDScript::4146464479291421755::1770841275::0::1::::DebugSelector<>RefCounted<><>0<>0<><>::
 DebugTime.gd::GDScript::5403663126197881566::1769719248::0::1::::DebugTime<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/generated/::1770841275
-BridgeValidation.gd::GDScript::5204360596113440431::1770854459::0::1::::BridgeValidation<>RefCounted<><>0<>0<><>::
+BridgeValidation.gd::GDScript::5204360596113440431::1770865290::0::1::::BridgeValidation<>RefCounted<><>0<>0<><>::
 ::res://scripts/camera/::1770588068
 CameraEffects.gd::GDScript::5294655921117142126::1769538422::0::1::::<>Camera2D<><>0<>0<><>::
 CameraManager.gd::GDScript::5736649760931255875::1770499166::0::1::::<>Node<><>0<>0<><>::
@@ -107,7 +107,7 @@ CollisionLayers.gd::GDScript::4352411344212624997::1769972729::0::1::::Collision
 ::res://scripts/debug/::1769538422
 DebugOverlay.gd::GDScript::2525373150256143966::1770054919::0::1::::DebugOverlay<>CanvasLayer<><>0<>0<><>::
 ::res://scripts/effects/::1770697975
-GraphExecutor.gd::GDScript::4523063860599030749::1770863393::0::1::::EffectsGraphExecutor<>Node<><>0<>0<><>::
+GraphExecutor.gd::GDScript::4523063860599030749::1770864051::0::1::::EffectsGraphExecutor<>Node<><>0<>0<><>::
 PingPongManager.gd::GDScript::6707934407586062479::1770697975::0::1::::EffectsPingPongManager<>RefCounted<><>0<>0<><>::
 ResourceGraph.gd::GDScript::2261484931766872069::1770683411::0::1::::EffectsResourceGraph<>RefCounted<><>0<>0<><>::
 ShaderWarmer.gd::GDScript::7504162738635207200::1770685305::0::1::::ShaderWarmer<>RefCounted<><>0<>0<><>::

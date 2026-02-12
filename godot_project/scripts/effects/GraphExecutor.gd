@@ -412,11 +412,9 @@ func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader
 	_resource_graph.bind_pass_inputs(pass_data, material)
 	_apply_material_params(material, pass_data.get("params", {}))
 
-	# For screen-scope passes in SubViewports, bind the input texture to
-	# SCREEN_TEXTURE uniform (since we rewrote the shader to not use
-	# hint_screen_texture, the uniform needs an explicit texture).
 	if str(_plan.get("scope", "")) == "screen":
-		_bind_screen_texture_uniform(pass_data, material)
+		var vp_size := _resolve_base_size()
+		material.set_shader_parameter("screen_pixel_size", Vector2(1.0 / float(vp_size.x), 1.0 / float(vp_size.y)))
 
 	rect.material = material
 	viewport.add_child(rect)
@@ -427,20 +425,6 @@ func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader
 
 	_resource_graph.register_pass_output(str(pass_data.get("id", "")), viewport, pass_data.get("provides", []))
 	return true
-
-func _bind_screen_texture_uniform(pass_data: Dictionary, material: ShaderMaterial) -> void:
-	# Find the first required texture and bind it to SCREEN_TEXTURE uniform
-	var requires: Array = pass_data.get("requires", [])
-	for ref in requires:
-		if not (ref is Dictionary):
-			continue
-		var resource_id = str(ref.get("id", ""))
-		if resource_id == "":
-			continue
-		var tex = _resource_graph.get_texture(resource_id)
-		if tex != null:
-			material.set_shader_parameter("SCREEN_TEXTURE", tex)
-			return
 
 func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader) -> bool:
 	var pass_id: String = str(pass_data.get("id", ""))
@@ -543,19 +527,22 @@ func _resolve_shader(pass_data: Dictionary) -> Shader:
 	return _build_custom_shader(glsl)
 
 func _rewrite_screen_texture_for_subviewport(glsl: String) -> String:
-	# Replace the SCREEN_TEXTURE declaration with a regular sampler2D.
-	# The uniform name stays "SCREEN_TEXTURE" so existing texture()
-	# calls keep working — we just remove the hint_screen_texture hint
-	# so Godot treats it as a normal sampler that we bind manually.
 	var result := glsl
-	# Match variations: hint_screen_texture with optional filter hints
 	var regex := RegEx.new()
 	regex.compile("uniform\\s+sampler2D\\s+SCREEN_TEXTURE\\s*:[^;]*;")
 	var m := regex.search(result)
+	var has_screen_pixel_size := result.contains("SCREEN_PIXEL_SIZE")
 	if m != null:
-		result = result.replace(m.get_string(), "uniform sampler2D SCREEN_TEXTURE : filter_linear_mipmap;")
-	# Replace SCREEN_UV with UV since we're now in a SubViewport ColorRect
+		var declaration := "uniform sampler2D input : filter_linear_mipmap;"
+		if has_screen_pixel_size:
+			declaration += "\nuniform vec2 screen_pixel_size;"
+		result = result.replace(m.get_string(), declaration)
+	elif has_screen_pixel_size and not result.contains("uniform vec2 screen_pixel_size"):
+		result = "uniform vec2 screen_pixel_size;\n" + result
+
+	result = result.replace("SCREEN_TEXTURE", "input")
 	result = result.replace("SCREEN_UV", "UV")
+	result = result.replace("SCREEN_PIXEL_SIZE", "screen_pixel_size")
 	return result
 
 func _build_custom_shader(glsl: String) -> Shader:

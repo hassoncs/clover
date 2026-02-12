@@ -15,11 +15,10 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { ResolvedPackEntry } from "@/lib/assets";
+import type { ResolvedAssetEntry } from "@/lib/assets";
 import { mergeAssetsIntoPrefabs } from "@/lib/assets/mergeAssetsIntoTemplates";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import {
-	getLocalResolvedPackEntries,
 	isGameDownloaded,
 	loadLocalGameDefinition,
 } from "@/lib/offline/download-manager";
@@ -34,12 +33,10 @@ export default function PlayScreen() {
 	const {
 		id,
 		definition: definitionParam,
-		packId,
 		remixId,
 	} = useLocalSearchParams<{
 		id: string;
 		definition?: string;
-		packId?: string;
 		remixId?: string;
 	}>();
 
@@ -59,9 +56,9 @@ export default function PlayScreen() {
 	const [generatingLayer, setGeneratingLayer] = useState<
 		"sky" | "far" | "mid" | "near" | "all" | undefined
 	>(undefined);
-	const [activeAssetPackId, setActiveAssetPackId] = useState<
-		string | undefined
-	>(undefined);
+	const [activeRemixId, setActiveRemixId] = useState<string | undefined>(
+		undefined,
+	);
 	const [isForking, setIsForking] = useState(false);
 
 	const [remixVariableOverrides, setRemixVariableOverrides] = useState<
@@ -69,26 +66,29 @@ export default function PlayScreen() {
 	>(undefined);
 	const [isLoadingRemix, setIsLoadingRemix] = useState(false);
 
-	const [resolvedPackEntries, setResolvedPackEntries] = useState<
-		Record<string, ResolvedPackEntry> | undefined
+	const [resolvedAssetEntries, setResolvedPackEntries] = useState<
+		Record<string, ResolvedAssetEntry> | undefined
 	>(undefined);
-	const [availablePacks, setAvailablePacks] = useState<
-		{ id: string; name: string; isComplete: boolean }[]
-	>([]);
 	const [availableRemixes, setAvailableRemixes] = useState<
 		{ id: string; name: string; isComplete: boolean }[]
 	>([]);
-	const [isLoadingPack, setIsLoadingPack] = useState(false);
 	const [godotReady, setGodotReady] = useState(false);
 	const [loadingDismissed, setLoadingDismissed] = useState(false);
 	const loadingOpacity = useRef(new Animated.Value(1)).current;
 
+	const getDefinitionActiveRemixId = useCallback(
+		(definition: GameDefinition) =>
+			(definition.assetSystem as { activeRemixId?: string } | undefined)
+				?.activeRemixId,
+		[],
+	);
+
 	const enrichedDefinition = useMemo(() => {
 		if (!gameDefinition) return null;
 		console.log("[play] Merging assets into game definition...", {
-			hasAssets: !!resolvedPackEntries,
-			assetCount: resolvedPackEntries
-				? Object.keys(resolvedPackEntries).length
+			hasAssets: !!resolvedAssetEntries,
+			assetCount: resolvedAssetEntries
+				? Object.keys(resolvedAssetEntries).length
 				: 0,
 			hasVariableOverrides: !!remixVariableOverrides,
 		});
@@ -105,25 +105,16 @@ export default function PlayScreen() {
 			};
 		}
 
-		return mergeAssetsIntoPrefabs(def, resolvedPackEntries);
-	}, [gameDefinition, resolvedPackEntries, remixVariableOverrides]);
+		return mergeAssetsIntoPrefabs(def, resolvedAssetEntries);
+	}, [gameDefinition, resolvedAssetEntries, remixVariableOverrides]);
 
 	const { phase, progress, imageUrls, startPreload, skipPreload, reset } =
 		useGamePreloader(enrichedDefinition, {
-			resolvedPackEntries,
+			resolvedAssetEntries,
 		});
 
 	useEffect(() => {
 		if (id && id !== "preview") {
-			trpc.assetSystem.getCompatiblePacks
-				.query({ gameId: id })
-				.then((result) => {
-					setAvailablePacks(result.packs);
-				})
-				.catch((err) =>
-					console.error("Failed to fetch compatible packs:", err),
-				);
-
 			trpc.assetSystem.remixes.listRemixes
 				.query({ gameId: id })
 				.then((result) => {
@@ -140,8 +131,10 @@ export default function PlayScreen() {
 	}, [id]);
 
 	useEffect(() => {
-		if (!remixId || !id || id === "preview") {
+		const effectiveRemixId = remixId ?? activeRemixId;
+		if (!effectiveRemixId || !id || id === "preview") {
 			setRemixVariableOverrides(undefined);
+			setResolvedPackEntries(undefined);
 			return;
 		}
 
@@ -149,15 +142,16 @@ export default function PlayScreen() {
 		setIsLoadingRemix(true);
 
 		trpc.assetSystem.remixes.getResolvedRemix
-			.query({ gameId: id, remixId })
+			.query({ gameId: id, remixId: effectiveRemixId })
 			.then((result) => {
 				if (cancelled) return;
+				setActiveRemixId(effectiveRemixId);
 
 				if (result.overrides.variables) {
 					setRemixVariableOverrides(result.overrides.variables);
 				}
 
-				const entries: Record<string, ResolvedPackEntry> = {};
+				const entries: Record<string, ResolvedAssetEntry> = {};
 				for (const [prefabId, entry] of Object.entries(
 					result.entriesByPrefabId,
 				)) {
@@ -191,70 +185,7 @@ export default function PlayScreen() {
 		return () => {
 			cancelled = true;
 		};
-	}, [id, remixId]);
-
-	useEffect(() => {
-		if (remixId) return;
-
-		const effectivePackId = packId || activeAssetPackId;
-
-		const loadPack = async () => {
-			if (!id || id === "preview" || !effectivePackId) {
-				setResolvedPackEntries(undefined);
-				return;
-			}
-
-			setIsLoadingPack(true);
-			try {
-				const isDownloaded = await isGameDownloaded(id);
-
-				if (isDownloaded) {
-					const localEntries = await getLocalResolvedPackEntries(
-						id,
-						effectivePackId,
-					);
-					if (localEntries) {
-						setResolvedPackEntries(localEntries);
-						setActiveAssetPackId(effectivePackId);
-					} else {
-						console.warn(
-							`[play] Pack ${effectivePackId} not found locally, falling back to API`,
-						);
-						await loadPackFromApi(id, effectivePackId);
-					}
-				} else {
-					await loadPackFromApi(id, effectivePackId);
-				}
-			} catch (err) {
-				console.error("Failed to load asset pack:", err);
-				setResolvedPackEntries(undefined);
-			} finally {
-				setIsLoadingPack(false);
-			}
-		};
-
-		const loadPackFromApi = async (gameId: string, pid: string) => {
-			const result = await trpc.assetSystem.getResolvedForGame.query({
-				gameId,
-				packId: pid,
-			});
-
-			const entries: Record<string, ResolvedPackEntry> = {};
-			Object.entries(result.entriesByPrefabId).forEach(([prefabId, entry]) => {
-				if (entry.imageUrl) {
-					entries[prefabId] = {
-						imageUrl: entry.imageUrl,
-						placement: entry.placement || undefined,
-					};
-				}
-			});
-
-			setResolvedPackEntries(entries);
-			setActiveAssetPackId(pid);
-		};
-
-		loadPack();
-	}, [id, packId, activeAssetPackId, remixId]);
+	}, [id, remixId, activeRemixId]);
 
 	useEffect(() => {
 		const loadGame = async () => {
@@ -265,8 +196,8 @@ export default function PlayScreen() {
 				if (definitionParam) {
 					const parsed = JSON.parse(definitionParam) as GameDefinition;
 					setGameDefinition(parsed);
-					if (!packId) {
-						setActiveAssetPackId(parsed.assetSystem?.activePackId);
+					if (!remixId) {
+						setActiveRemixId(getDefinitionActiveRemixId(parsed));
 					}
 				} else if (id && id !== "preview") {
 					const isDownloaded = await isGameDownloaded(id);
@@ -278,8 +209,8 @@ export default function PlayScreen() {
 						const localDefinition = await loadLocalGameDefinition(id);
 						if (localDefinition) {
 							setGameDefinition(localDefinition);
-							if (!packId) {
-								setActiveAssetPackId(localDefinition.assetSystem?.activePackId);
+							if (!remixId) {
+								setActiveRemixId(getDefinitionActiveRemixId(localDefinition));
 							}
 						} else {
 							throw new Error(
@@ -291,8 +222,8 @@ export default function PlayScreen() {
 						const game = await trpc.games.getPublic.query({ id });
 						const parsed = JSON.parse(game.definition) as GameDefinition;
 						setGameDefinition(parsed);
-						if (!packId) {
-							setActiveAssetPackId(parsed.assetSystem?.activePackId);
+						if (!remixId) {
+							setActiveRemixId(getDefinitionActiveRemixId(parsed));
 						}
 
 						await trpc.games.incrementPlayCount.mutate({ id });
@@ -310,13 +241,12 @@ export default function PlayScreen() {
 		};
 
 		loadGame();
-	}, [id, definitionParam, packId]);
+	}, [id, definitionParam, remixId, getDefinitionActiveRemixId]);
 
 	useEffect(() => {
 		if (
 			gameDefinition &&
 			!isLoadingDefinition &&
-			!isLoadingPack &&
 			!isLoadingRemix &&
 			phase === "idle"
 		) {
@@ -325,7 +255,6 @@ export default function PlayScreen() {
 	}, [
 		gameDefinition,
 		isLoadingDefinition,
-		isLoadingPack,
 		isLoadingRemix,
 		phase,
 		startPreload,
@@ -355,19 +284,14 @@ export default function PlayScreen() {
 		startPreload();
 	}, [reset, startPreload, loadingOpacity]);
 
-	const handleRemixSelect = (
-		itemId: string,
-		type: "pack" | "remix" = "pack",
-	) => {
-		if (type === "pack" && itemId === activeAssetPackId) return;
-		if (type === "remix" && itemId === remixId) return;
-
-		const params: any = { id: id! };
-		if (type === "remix") {
-			params.remixId = itemId;
-		} else {
-			params.packId = itemId;
+	const handleRemixSelect = (itemId: string, type: "remix" = "remix") => {
+		if (type === "remix" && (itemId === remixId || itemId === activeRemixId)) {
+			return;
 		}
+
+		const params: Record<string, string> = { id: id! };
+		params.remixId = itemId;
+		setActiveRemixId(itemId);
 
 		router.replace({
 			pathname: "/play/[id]",
@@ -411,12 +335,11 @@ export default function PlayScreen() {
 			});
 
 			if (result.jobId) {
-				// Refresh available packs and select the new one
-				const packsResult = await trpc.assetSystem.getCompatiblePacks.query({
+				const remixesResult = await trpc.assetSystem.remixes.listRemixes.query({
 					gameId: id,
 				});
-				setAvailablePacks(packsResult.packs);
-				handleRemixSelect(result.packId, "pack");
+				setAvailableRemixes(remixesResult);
+				handleRemixSelect(result.remixId, "remix");
 			}
 		} catch (e) {
 			console.error("Asset generation failed", e);
@@ -430,31 +353,39 @@ export default function PlayScreen() {
 	};
 
 	const handleRegenerateAsset = async (prefabId: string) => {
-		if (!id || id === "preview" || !gameDefinition || !activeAssetPackId)
-			return;
+		if (!id || id === "preview" || !gameDefinition || !activeRemixId) return;
 
 		setRegeneratingPrefabId(prefabId);
 		try {
 			const result = await trpc.assetSystem.regenerateAssets.mutate({
-				packId: activeAssetPackId,
+				remixId: activeRemixId,
 				prefabIds: [prefabId],
 				newStyle: selectedStyle,
 			});
 
 			if (result.jobId) {
-				const pack = await trpc.assetSystem.getPack.query({
-					id: activeAssetPackId,
+				const remix = await trpc.assetSystem.remixes.getResolvedRemix.query({
+					gameId: id,
+					remixId: activeRemixId,
 				});
-				if (pack?.entries) {
-					const entries: Record<string, ResolvedPackEntry> = {};
-					pack.entries.forEach((entry) => {
-						if (entry.imageUrl) {
-							entries[entry.prefabId] = {
-								imageUrl: entry.imageUrl,
-								placement: entry.placement,
-							};
-						}
-					});
+				if (remix?.entriesByPrefabId) {
+					const entries: Record<string, ResolvedAssetEntry> = {};
+					Object.entries(remix.entriesByPrefabId).forEach(
+						([entryPrefabId, entry]) => {
+							if (entry.imageUrl) {
+								entries[entryPrefabId] = {
+									imageUrl: entry.imageUrl,
+									placement: entry.placement
+										? {
+												scale: entry.placement.scale ?? 1,
+												offsetX: entry.placement.offsetX ?? 0,
+												offsetY: entry.placement.offsetY ?? 0,
+											}
+										: undefined,
+								};
+							}
+						},
+					);
 					setResolvedPackEntries(entries);
 				}
 			}
@@ -470,13 +401,22 @@ export default function PlayScreen() {
 	};
 
 	const handleClearAsset = async (prefabId: string) => {
-		if (!id || id === "preview" || !gameDefinition || !activeAssetPackId)
-			return;
+		if (!id || id === "preview" || !gameDefinition || !activeRemixId) return;
 
 		try {
-			await trpc.assetSystem.removePackEntry.mutate({
-				packId: activeAssetPackId,
-				prefabId,
+			const currentRemix = await trpc.assetSystem.remixes.getRemix.query({
+				id: activeRemixId,
+			});
+
+			const nextAssets = { ...(currentRemix.overrides.assets ?? {}) };
+			delete nextAssets[prefabId];
+
+			await trpc.assetSystem.remixes.updateRemix.mutate({
+				id: activeRemixId,
+				overrides: {
+					...currentRemix.overrides,
+					assets: nextAssets,
+				},
 			});
 
 			setResolvedPackEntries((prev) => {
@@ -489,26 +429,6 @@ export default function PlayScreen() {
 			console.error("Clear asset failed", e);
 			alert(
 				"Failed to clear asset: " +
-					(e instanceof Error ? e.message : String(e)),
-			);
-		}
-	};
-
-	const handleDeletePack = async (packId: string) => {
-		if (!id || id === "preview" || !gameDefinition) return;
-
-		try {
-			await trpc.assetSystem.deletePack.mutate({ id: packId });
-
-			setAvailablePacks((prev) => prev.filter((p) => p.id !== packId));
-			if (activeAssetPackId === packId) {
-				setActiveAssetPackId(undefined);
-				setResolvedPackEntries(undefined);
-			}
-		} catch (e) {
-			console.error("Delete pack failed", e);
-			alert(
-				"Failed to delete pack: " +
 					(e instanceof Error ? e.message : String(e)),
 			);
 		}
@@ -654,7 +574,7 @@ export default function PlayScreen() {
 							</Pressable>
 						)}
 
-						{(availablePacks.length > 0 || availableRemixes.length > 0) && (
+						{availableRemixes.length > 0 && (
 							<View className="mb-6">
 								<Text className="text-gray-400 mb-2">Select Remix</Text>
 								<ScrollView
@@ -676,26 +596,6 @@ export default function PlayScreen() {
 												{remix.name}
 											</Text>
 											{!remix.isComplete && (
-												<Text className="text-xs text-yellow-400 mt-1">
-													Generating...
-												</Text>
-											)}
-										</Pressable>
-									))}
-									{availablePacks.map((pack) => (
-										<Pressable
-											key={pack.id}
-											className={`p-3 rounded-lg mr-2 border ${
-												activeAssetPackId === pack.id
-													? "bg-indigo-600 border-indigo-400"
-													: "bg-gray-700 border-gray-600"
-											} ${!pack.isComplete ? "opacity-50" : ""}`}
-											onPress={() => handleRemixSelect(pack.id, "pack")}
-										>
-											<Text className="text-white font-semibold">
-												{pack.name}
-											</Text>
-											{!pack.isComplete && (
 												<Text className="text-xs text-yellow-400 mt-1">
 													Generating...
 												</Text>
@@ -755,11 +655,11 @@ export default function PlayScreen() {
 							/>
 						)}
 
-						{activeAssetPackId && (
+						{activeRemixId && (
 							<View className="mb-4">
 								<EntityAssetList
 									gameDefinition={gameDefinition}
-									assets={resolvedPackEntries || null}
+									assets={resolvedAssetEntries || null}
 									onRegenerateAsset={handleRegenerateAsset}
 									onClearAsset={handleClearAsset}
 									regeneratingPrefabId={regeneratingPrefabId}

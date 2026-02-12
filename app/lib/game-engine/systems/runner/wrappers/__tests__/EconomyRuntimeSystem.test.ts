@@ -101,8 +101,8 @@ describe("EconomyRuntimeSystem", () => {
 
 			const state = system.getState();
 			expect(state.simulatorState).toBeDefined();
-			expect(state.simulatorState.tick).toBe(0);
-			expect(state.simulatorState.nodeValues["wallet"]).toBe(10);
+			expect(state.simulatorState?.tick).toBe(0);
+			expect(state.simulatorState?.nodeValues["wallet"]).toBe(10);
 		});
 
 		it("should handle empty config (no economy)", () => {

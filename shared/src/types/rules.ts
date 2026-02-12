@@ -293,6 +293,7 @@ export interface SoundAction {
 	type: "sound";
 	soundId: string;
 	volume?: number;
+	pitch?: number;
 }
 
 export type HapticStyle = "Light" | "Medium" | "Heavy" | "Rigid" | "Soft";

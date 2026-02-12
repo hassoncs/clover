@@ -198,7 +198,17 @@ declare global {
 			startCamera: (entityId: string, width?: number, height?: number) => void;
 			stopCamera: () => void;
 			spawnParticle: (type: string, x: number, y: number) => void;
-			playSound: (resourcePath: string) => void;
+			playSound: (
+				resourcePath: string,
+				volume?: number,
+				pitch?: number,
+			) => void;
+			playMusic: (
+				resourcePath: string,
+				volume?: number,
+				loop?: boolean,
+			) => void;
+			stopMusic: () => void;
 
 			screenShake: (intensity: number, duration?: number) => void;
 			zoomPunch: (intensity?: number, duration?: number) => void;
@@ -1101,8 +1111,16 @@ export function createWebGodotBridge(): GodotBridge {
 			getGodotBridge()?.spawnParticle(type, x, y);
 		},
 
-		playSound(resourcePath: string) {
-			getGodotBridge()?.playSound(resourcePath);
+		playSound(resourcePath: string, volume?: number, pitch?: number) {
+			getGodotBridge()?.playSound(resourcePath, volume, pitch);
+		},
+
+		playMusic(resourcePath: string, volume?: number, loop?: boolean) {
+			getGodotBridge()?.playMusic(resourcePath, volume, loop);
+		},
+
+		stopMusic() {
+			getGodotBridge()?.stopMusic();
 		},
 
 		screenShake(intensity: number, duration?: number) {
