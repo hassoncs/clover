@@ -7,7 +7,7 @@
 // Source: app/lib/godot/types.ts (GodotBridge + EffectsBridge interfaces)
 // Generated: source:af323eab5f30
 
-import type { DistanceJointDef, DrawCommand, DynamicShaderResult, EffectsPipelineSnapshot, EffectsResult, EntityTransform, GameDefinition, GameRule, GodotBridge, JsonParam, MouseJointDef, NormalizedDrawCommand, PrismaticJointDef, PropertySyncPayload, RaycastHit, RevoluteJointDef, SpawnEntityRequest, Vec2, WeldJointDef } from '../types';
+import type { DistanceJointDef, DrawCommand, DynamicShaderResult, EffectsPipelineSnapshot, EffectsResult, EntityTransform, GameDefinition, GodotBridge, JsonParam, MouseJointDef, NormalizedDrawCommand, PrismaticJointDef, PropertySyncPayload, RaycastHit, RevoluteJointDef, SpawnEntityRequest, Vec2, WeldJointDef } from '../types';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 import { normalizeEffectsSnapshot, createEffectsSnapshotPayload } from '../GodotBridgeBase';
 
@@ -96,14 +96,6 @@ export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBr
     dispatch.sync("clear_entities");
   },
 
-  loadRules(rules: GameRule[]): void {
-    dispatch.sync("load_rules", JSON.stringify(rules));
-  },
-
-  async loadScript(source: string): Promise<{ ok: boolean; error?: string }> {
-    return dispatch.async<{ ok: boolean; error?: string }>("load_script", [source]);
-  },
-
   pausePhysics(): void {
     dispatch.sync("pause_physics");
   },
@@ -116,24 +108,12 @@ export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBr
     dispatch.sync("set_inspect_mode", enabled);
   },
 
-  async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
-    return dispatch.async<{ ok: boolean; framesAdvanced: number; endFrame: number }>("step", [frames]);
-  },
-
-  async callRpc(method: string, params?: unknown): Promise<any> {
-    return await dispatch.async<any>("call_rpc", [method, JSON.stringify(params)]) ?? undefined;
-  },
-
   spawnEntity(request: SpawnEntityRequest): void {
     dispatch.sync("spawn_entity", request?.prefabId ?? "", request?.position?.x ?? 0, request?.position?.y ?? 0, request?.entityId ?? "");
   },
 
   destroyEntity(entityId: string): void {
     dispatch.sync("destroy_entity", entityId);
-  },
-
-  async instantiateFromScene(scenePath: string, entityId: string, position: Vec2, properties?: Record<string, unknown>): Promise<{ entityId: string }> {
-    return dispatch.async<{ entityId: string }>("instantiate_from_scene", [scenePath, entityId, position?.x ?? 0, position?.y ?? 0, JSON.stringify(properties)]);
   },
 
   async getEntityTransform(entityId: string): Promise<EntityTransform | null> {
@@ -216,10 +196,6 @@ export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBr
     return dispatch.sync("create_mouse_joint", def?.body ?? "", def?.target?.x ?? 0, def?.target?.y ?? 0, def?.maxForce ?? 0, def?.stiffness ?? 0, def?.damping ?? 0) as number ?? -1;
   },
 
-  async createMouseJointAsync(def: MouseJointDef): Promise<number> {
-    return await dispatch.async<number>("create_mouse_joint_async", [def?.body ?? "", def?.target?.x ?? 0, def?.target?.y ?? 0, def?.maxForce ?? 0, def?.stiffness ?? 0, def?.damping ?? 0]) ?? 0;
-  },
-
   destroyJoint(jointId: number): void {
     dispatch.sync("destroy_joint", jointId);
   },
@@ -258,10 +234,6 @@ export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBr
 
   async getUserData(entityId: string): Promise<unknown> {
     return dispatch.async<unknown>("get_user_data", [entityId]);
-  },
-
-  async getAllEntities(): Promise<string[]> {
-    return dispatch.async<string[]>("get_all_entities", []);
   },
 
   async getAllProperties(): Promise<PropertySyncPayload> {

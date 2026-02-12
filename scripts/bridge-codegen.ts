@@ -112,6 +112,16 @@ interface BridgeRegistry {
 
 const LIFECYCLE_METHODS = new Set(["initialize", "dispose"]);
 
+const RPC_DISPATCHED_METHODS = new Set([
+	"loadRules",
+	"loadScript",
+	"stepPhysics",
+	"callRpc",
+	"instantiateFromScene",
+	"createMouseJointAsync",
+	"getAllEntities",
+]);
+
 const EVENT_CALLBACK_PATTERN = /^on[A-Z]/;
 
 const BRIDGE_NAME_OVERRIDES: Record<string, string> = {
@@ -152,6 +162,7 @@ function camelToSnake(name: string): string {
 
 function isTsOnly(name: string, returnType: string): boolean {
 	if (LIFECYCLE_METHODS.has(name)) return true;
+	if (RPC_DISPATCHED_METHODS.has(name)) return true;
 	if (EVENT_CALLBACK_PATTERN.test(name) && returnType.includes("() => void"))
 		return true;
 	return false;
@@ -730,7 +741,7 @@ function normalizeRegistry(registry: BridgeRegistry): BridgeRegistry {
 	};
 }
 
-function checkMode(): void {
+async function checkMode(): Promise<void> {
 	if (!existsSync(OUTPUT_PATH)) {
 		console.error(`ERROR: Registry not found at ${OUTPUT_PATH}`);
 		console.error('Run "pnpm generate:bridge" first to generate the registry.');
@@ -765,6 +776,15 @@ function checkMode(): void {
 	console.log(`  Total methods: ${freshRegistry.stats.total}`);
 	console.log(`  Bridge methods: ${freshRegistry.stats.bridgeMethods}`);
 	console.log(`  TS-only methods: ${freshRegistry.stats.tsOnlyMethods}`);
+
+	const { runVerification } = await import("./bridge-verify.js");
+	const { success, output } = runVerification();
+	console.log("");
+	console.log(output);
+	if (!success) {
+		process.exit(1);
+	}
+	console.log("✓ Bridge contract verification passed");
 }
 
 function generateTypedBridgeClient(registry: BridgeRegistry): void {
@@ -1343,12 +1363,12 @@ ${JSON.stringify(registry, null, 2).slice(2)}`;
 	generateSharedTransport(registry);
 }
 
-function main() {
+async function main() {
 	const args = process.argv.slice(2);
 	const isCheckMode = args.includes("--check");
 
 	if (isCheckMode) {
-		checkMode();
+		await checkMode();
 	} else {
 		generateMode();
 	}

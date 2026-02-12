@@ -37,16 +37,11 @@ declare global {
 			registerPrefabs(prefabs: string): void;
 			loadEntities(entities: string): void;
 			clearEntities(): void;
-			loadRules(rules: string): void;
-			loadScript(source: string): void;
 			pausePhysics(): void;
 			resumePhysics(): void;
 			setInspectMode(enabled: boolean): void;
-			stepPhysics(frames: number): void;
-			callRpc(method: string, params?: string): void;
 			spawnEntity(prefabId: string, position_x: number, position_y: number, entityId: string): void;
 			destroyEntity(entityId: string): void;
-			instantiateFromScene(scenePath: string, entityId: string, x: number, y: number, properties?: string): void;
 			getEntityTransform(entityId: string): void;
 			getAllTransforms(): void;
 			setTransform(entityId: string, x: number, y: number, angle: number): void;
@@ -67,7 +62,6 @@ declare global {
 			createPrismaticJoint(bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, axis_x: number, axis_y: number, enableLimit: boolean, lowerTranslation: number, upperTranslation: number, enableMotor: boolean, motorSpeed: number, maxMotorForce: number): void;
 			createWeldJoint(bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, stiffness: number, damping: number): void;
 			createMouseJoint(body: string, target_x: number, target_y: number, maxForce: number, stiffness: number, damping: number): void;
-			createMouseJointAsync(body: string, target_x: number, target_y: number, maxForce: number, stiffness: number, damping: number): void;
 			destroyJoint(jointId: number): void;
 			setMotorSpeed(jointId: number, speed: number): void;
 			setMouseTarget(jointId: number, x: number, y: number): void;
@@ -78,7 +72,6 @@ declare global {
 			raycast(origin_x: number, origin_y: number, direction_x: number, direction_y: number, maxDistance: number): void;
 			setUserData(entityId: string, data: string): void;
 			getUserData(entityId: string): void;
-			getAllEntities(): void;
 			getAllProperties(): void;
 			setWatchConfig(config: string): void;
 			sendInput(type: string, x: number, y: number, entityId: string): void;

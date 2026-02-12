@@ -526,7 +526,7 @@
       "returnType": "void",
       "async": false,
       "category": "game",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -558,7 +558,7 @@
       "returnType": "Promise<{ ok: boolean; error?: string }>",
       "async": true,
       "category": "game",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -646,7 +646,7 @@
       "returnType": "Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }>",
       "async": true,
       "category": "debug",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -696,7 +696,7 @@
       "returnType": "Promise<any>",
       "async": true,
       "category": "debug",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -866,7 +866,7 @@
       "returnType": "Promise<{ entityId: string }>",
       "async": true,
       "category": "entity",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -2018,7 +2018,7 @@
       "returnType": "Promise<number>",
       "async": true,
       "category": "joints",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -2511,7 +2511,7 @@
       "returnType": "Promise<string[]>",
       "async": true,
       "category": "entity",
-      "tsOnly": false,
+      "tsOnly": true,
       "source": "GodotBridge",
       "dispatchTarget": "bridge"
     },
@@ -6240,8 +6240,8 @@
   },
   "stats": {
     "total": 131,
-    "bridgeMethods": 119,
-    "tsOnlyMethods": 12,
+    "bridgeMethods": 112,
+    "tsOnlyMethods": 19,
     "byCategory": {
       "effects_pipeline": 10,
       "lifecycle": 2,

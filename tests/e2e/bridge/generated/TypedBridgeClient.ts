@@ -101,14 +101,6 @@ export class TypedBridgeClient {
     return this.driver.call("clear_entities", []);
   }
 
-  async loadRules(rules: GameRule[]): Promise<void> {
-    return this.driver.call("load_rules", [rules]);
-  }
-
-  async loadScript(source: string): Promise<{ ok: boolean; error?: string }> {
-    return this.driver.call("load_script", [source]);
-  }
-
   async pausePhysics(): Promise<void> {
     return this.driver.call("pause_physics", []);
   }
@@ -121,24 +113,12 @@ export class TypedBridgeClient {
     return this.driver.call("set_inspect_mode", [enabled]);
   }
 
-  async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
-    return this.driver.call("step", [frames]);
-  }
-
-  async callRpc(method: string, params?: unknown): Promise<any> {
-    return this.driver.call("call_rpc", [method, params]);
-  }
-
   async spawnEntity(request: SpawnEntityRequest): Promise<void> {
     return this.driver.call("spawn_entity", [request]);
   }
 
   async destroyEntity(entityId: string): Promise<void> {
     return this.driver.call("destroy_entity", [entityId]);
-  }
-
-  async instantiateFromScene(scenePath: string, entityId: string, position: Vec2, properties?: Record<string, unknown>): Promise<{ entityId: string }> {
-    return this.driver.call("instantiate_from_scene", [scenePath, entityId, position, properties]);
   }
 
   async getEntityTransform(entityId: string): Promise<EntityTransform | null> {
@@ -221,10 +201,6 @@ export class TypedBridgeClient {
     return this.driver.call("create_mouse_joint", [def]);
   }
 
-  async createMouseJointAsync(def: MouseJointDef): Promise<number> {
-    return this.driver.call("create_mouse_joint_async", [def]);
-  }
-
   async destroyJoint(jointId: number): Promise<void> {
     return this.driver.call("destroy_joint", [jointId]);
   }
@@ -263,10 +239,6 @@ export class TypedBridgeClient {
 
   async getUserData(entityId: string): Promise<unknown> {
     return this.driver.call("get_user_data", [entityId]);
-  }
-
-  async getAllEntities(): Promise<string[]> {
-    return this.driver.call("get_all_entities", []);
   }
 
   async getAllProperties(): Promise<PropertySyncPayload> {
