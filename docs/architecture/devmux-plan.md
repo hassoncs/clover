@@ -1,81 +1,81 @@
-# Devmux Integration Plan: Bridging the Gap
+Devmux Integration Plan Bridging Gap
 
-## 1. Problem Statement
-The current agent environment has a capability mismatch:
-- **User Intent**: "Start Storybook" (high-level)
-- **Tooling**: `interactive_bash` (low-level tmux primitives)
-- **Middleware**: `devmux` (service orchestration)
+. Problem Statement
+ current agent environment capability mismatch
+ "Start Storybook-level
+ `interactive_bash (low tmux
+ `devmux` (service orchestration
 
-The agent tries to use `interactive_bash` directly or standard `pnpm` commands, often missing the `devmux` abstraction layer that handles session management, port checking, and persistence.
+ agent use `interactive_bash `pnpm commands, missing `devmux abstraction layer session management, port checking, persistence.
 
-## 2. Solution Strategy
-We will implement a **Knowledge Injection Strategy** using a specialized Skill (`devmux`) and explicit System Prompt context.
+. Solution Strategy
+ **Knowledge Injection Strategy** specialized Skill`devmux System Prompt context.
 
-### A. The `/devmux` Skill
-A new skill file that serves as the definitive reference for service management.
+./devmux` Skill
+ new skill file reference service management.
 
-**Location**: `.opencode/skills/devmux.skill`
+. opencode/skills/devmux.
 
-**Content Structure**:
-1.  **Trigger Phrases**: "start storybook", "run api", "check services", "devmux", "fix port lock".
-2.  **Core Concept**: Explain that `devmux` is the *exclusive* way to run long-running services in this repo.
-3.  **Command Mapping**:
-    *   Start/Ensure: `devmux ensure [service]`
-    *   Status: `devmux status` (or `pnpm svc:status`)
-    *   Logs: `devmux attach [service]` (conceptually) or reading logs
-    *   Stop: `devmux stop [service]`
-4.  **Troubleshooting**: Specific steps for the "locked by another process" error (finding and killing the PID).
 
-### B. `AGENTS.md` Updates
-Update the project-specific `AGENTS.md` to mandate the use of the `devmux` skill for any service-related request.
+. "start storybook, api, services, "devmux, "fix port lock.
+. `devmux` *exclusive way run long-running services.
+.
+ Start/Ensure `devmux
+ Status `devmux
+ Logs `devmux attach [service
+ Stop `devmux stop [service
+. steps "locked by another process" error PID.
 
-**Add Section**:
-```markdown
-## Service Management (Devmux)
-- **ALWAYS** use the `devmux` skill for starting, stopping, or debugging services (api, metro, storybook).
-- **NEVER** run `pnpm start` or `node server.js` directly for long-running processes.
-- **NEVER** try to construct raw `tmux` commands manually. Use `devmux` abstraction.
-```
+.. Updates
+ project-specific. mandate use `devmux` skill service-related request.
 
-### C. Prompt Engineering (System Prompt)
-We don't need to change the global system prompt if the `AGENTS.md` and Skill are strong enough. The existing intent classification should pick up "start X" and route it to the skill.
 
-## 3. Implementation Steps
 
-### Step 1: Create `.opencode/skills/devmux.skill`
-This file will contain the "brain" for handling services.
+ Service Management (Devmux
+ use `devmux skill starting, stopping, debugging services,,.
+ run `pnpm start `node server. js long-running processes.
+ construct `tmux commands manually. Use `devmux abstraction.
 
-```xml
-<skill>
-  <name>devmux</name>
-  <description>Orchestrate background services (Storybook, Metro, API) using devmux. Handles starting, stopping, and fixing lock files.</description>
-  <triggers>
-    <trigger>start storybook</trigger>
-    <trigger>run api</trigger>
-    <trigger>check status</trigger>
-    <trigger>devmux</trigger>
-    <trigger>service locked</trigger>
-  </triggers>
-  <instructions>
-    1. **Status Check**: Run `pnpm svc:status` first to see what's running.
-    2. **Start Service**: Use `pnpm [service-name]` (e.g., `pnpm storybook`) which maps to `devmux ensure`.
-    3. **Locked Port Fix**:
-       - If you see "locked by another process":
-       - Find PID: `lsof -i :[port] -t`
-       - Kill PID: `kill -9 [PID]`
-       - Retry start command.
-    4. **Logs**: Don't attach to tmux. Check output of the ensure command or log files.
-  </instructions>
-</skill>
-```
 
-### Step 2: Update `AGENTS.md`
-Explicitly link service requests to this workflow.
+. Prompt Engineering Prompt
+ don't need change global system prompt if `AGENTS. md Skill strong. existing intent classification pick up "start X" route to skill.
 
-### Step 3: Verify `package.json` scripts
-Ensure `pnpm svc:status` and other helpers exist or suggest adding them if missing (we saw `svc:status` in the analysis).
+. Implementation Steps
 
-## 4. Verification Plan
-1.  **Test Start**: Ask agent to "Start Storybook". It should invoke `devmux ensure storybook`.
-2.  **Test Status**: Ask "What's running?". It should use `pnpm svc:status`.
-3.  **Test Failure**: Simulate a port lock (start node on 6006 manually) and ask agent to fix it. It should find and kill the PID.
+ Create. opencode/skills/devmux. skill
+ "brain handling services.
+
+
+
+
+ background services (Storybook, Metro, API using devmux. starting, stopping, fixing lock files.
+
+
+
+
+
+
+
+
+. Run `pnpm svc:status` see what running.
+. Use `pnpm [service.., storybook maps to `devmux.
+. **Locked Port
+ "locked by another process
+ Find PID
+ Kill PID
+ Retry start command.
+.Don't attach tmux. Check ensure command log files.
+
+
+
+
+Step Update `AGENTS.
+ link service requests workflow.
+
+ Verify. json scripts
+ Ensure `pnpm svc:status helpers exist suggest adding missing.
+
+. Verification Plan
+. Ask agent Storybook. invoke `devmux ensure storybook.
+. Ask's running?". use `pnpm svc:status`.
+. Simulate port lock node 6006 ask agent fix. find kill PID.
