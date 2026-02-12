@@ -99,13 +99,14 @@ The game maker uses a unified thread and message model for AI orchestration, rep
 
 - **Data Model**: All interactions are stored in `threads` and `messages` tables in D1.
 - **Chat Flow**: 
-  1. User sends message via tRPC `chatThreads.sendMessage`.
-  2. Backend calls `advanceThread()` in `api/src/chat/chat-handler.ts`.
-  3. AI generates text and calls tools (readFile, writeFile, askUser) via `generateText`.
-  4. Messages and tool results are persisted to D1.
-- **Human-in-the-Loop (HITL)**: The `askUser` tool triggers a suspension. The user submits answers via `chatThreads.submitToolAnswer`, which calls `resumeThread()` to continue generation.
+  1. User sends message via tRPC `chatThreads.sendMessage`, which returns `{ threadId, streamUrl }`.
+  2. Frontend connects to SSE stream at `/api/chat/stream`.
+  3. Backend uses `streamText()` (Vercel AI SDK) and maps chunks to AG-UI protocol events.
+  4. Frontend accumulates events via `chatReducer` from `@slopcade/shared/chat`.
+  5. Messages and billing are persisted in `onFinish` callback.
+- **Human-in-the-Loop (HITL)**: The `askUser` tool causes a `RUN_FINISHED` event with `finishReason: 'tool-calls'`. The user submits answers via `chatThreads.submitToolAnswer`, which returns a new `streamUrl` for resumed generation.
 - **Billing**: Settled per message turn via `AgentBillingService.settleMessage()`.
-- **Frontend**: The `useEditorChat.ts` hook manages the chat state, polling for updates and handling tool interactions.
+- **Frontend**: The `useStreamingChat` hook (`app/lib/chat/useStreamingChat.ts`) manages chat state via SSE streaming. The `useEditorChatSession` hook wraps it for the editor context.
 - **Durable Objects**: Only `RealtimeRelayDO` remains for voice/STT. Chat orchestration is handled by standard async functions in the Worker.
 
 ## Secrets Management (Hush)

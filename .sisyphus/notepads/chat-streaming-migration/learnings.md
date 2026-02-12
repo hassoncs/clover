@@ -12,3 +12,33 @@
 
 - For non-blocking chat mutations, keep thread creation/workspace seeding in tRPC, then persist only the new user/tool message and hand off generation to `/api/chat/stream` by returning a prebuilt `streamUrl`.
 - A small `insertUserMessage`/`insertToolResult` export in `chat-handler.ts` lets tRPC persist message history without invoking `generateText`, while preserving existing `advanceThread`/`resumeThread` blocking paths.
+
+- Frontend streaming can bridge AG-UI reducer output to legacy chat UI by converting `ChatThread.messages` into old `ChatMessage` cards while keeping persisted history from `chatThreads.getMessages` as a non-polling baseline.
+- `sendMessage` now returns the authoritative `threadId` from tRPC so `useEditorChatSession` can set local thread state without pre-creating threads.
+- SSE parsing is most reliable with `fetch` + `ReadableStream` by splitting on event boundaries (`\n\n`) and reassembling `data:` lines, which works across React Native environments where `EventSource` is inconsistent.
+
+## 2026-02-12 Task: Plan Status Reconciliation
+- Phase 0 (types, accumulator, tests): ALL files exist and 9/9 tests pass. Plan checkboxes not updated but work is done.
+- Phase 1 (backend): 7/7 tasks checked, agui-mapper 9/9 tests pass. Integration test deferred (needs live Workers).
+- Phase 2 (frontend): sse-client.ts, useStreamingChat.ts, useEditorChatSession.ts ALL implemented. ChatMessageList works via legacy adapter. useEditorChat.ts is DEAD CODE.
+- Phase 3 (cleanup): useEditorChat.ts contains all polling. Deleting it removes ALL chat polling. Non-chat polling correctly kept.
+
+## Key Decision: ChatMessageList adapter pattern
+- useStreamingChat.ts converts ContentBlock[] to legacy ChatMessage format via toLegacyMessages()
+- Old ChatMessage type from types.ts retained as adapter target — used by ChatMessage.tsx, ChatMessageList.tsx, useStreamingChat.ts
+- convertToChatMessage function removed by deleting useEditorChat.ts
+
+
+## 2026-02-11: AGENTS.md Updated
+- Updated root AGENTS.md to reflect the new SSE streaming architecture.
+- Removed references to polling and blocking generateText in the Project Context section.
+
+## 2026-02-12 Task: Final Cleanup & Verification
+- Deleted useEditorChat.ts (dead code, zero imports). All chat polling removed.
+- Updated AGENTS.md Project Context section with new SSE streaming architecture.
+- tsc --noEmit passes clean. 22/22 tests pass.
+- Browser verification: app loads at localhost:8085 with no JS errors after deletion.
+- Code path verification for streaming: SSE events → dispatch → reducer → state → re-render confirmed token-by-token rendering.
+- Tool call status tracked via accumulator (streaming → calling → complete) but only askUser rendered in UI (non-askUser tools tracked but not displayed — matches pre-migration behavior).
+- askUser HITL: suspension via hasPendingAskUser() → waiting state → UserQuestionCard → submitToolAnswer → reconnect SSE. Full round-trip wired.
+- Integration test deferred by design (needs live Workers env). Covered by 22 unit tests + code path tracing.

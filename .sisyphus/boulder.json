@@ -1,10 +1,7 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/live-workspace-editor.md",
-  "started_at": "2026-02-11T22:02:42.727Z",
-  "session_ids": [
-    "ses_3b15a034effeuZRqaN4gzfh21e",
-    "ses_3b13a9e15ffeGd74Z8CBCJKBtA"
-  ],
-  "plan_name": "live-workspace-editor",
-  "agent": "atlas"
+	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/chat-streaming-migration.md",
+	"started_at": "2026-02-12T00:11:44.567Z",
+	"session_ids": ["ses_3b0cf7fe6ffePI8VX2eGhzi3DL"],
+	"plan_name": "chat-streaming-migration",
+	"agent": "atlas"
 }
