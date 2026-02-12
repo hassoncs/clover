@@ -74,10 +74,35 @@ jobs:
       - name: Type-level verification
         run: pnpm tsc --noEmit
 
+  legacy-seam-detection:
+    name: Legacy Seam Detection
+    runs-on: ubuntu-latest
+    needs: typescript-contract-validation
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for legacy seams
+        run: |
+          echo "Checking for legacy manual seams..."
+          
+          # Check for structural_aliases in tests
+          if grep -rn "structural_aliases" godot_project/tests/ --include="*.gd"; then
+            echo "ERROR: Found legacy structural_aliases in tests"
+            exit 1
+          fi
+          
+          # Check for manual overrides in GameBridge.gd
+          if grep -rn "var overrides = {" godot_project/scripts/GameBridge.gd; then
+            echo "ERROR: Found legacy manual overrides in GameBridge.gd"
+            exit 1
+          fi
+          
+          echo "✓ No legacy seams detected"
+
   godot-contract-tests:
     name: Godot Contract Tests
     runs-on: ubuntu-latest
-    needs: typescript-contract-validation
+    needs: legacy-seam-detection
     steps:
       - uses: actions/checkout@v4
       
