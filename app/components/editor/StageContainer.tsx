@@ -56,14 +56,13 @@ export function StageContainer({ onLivePreviewChange }: StageContainerProps) {
 		);
 	}
 
-	const activeRemixId = document.assetSystem?.activeRemixId;
 	const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
 	const pixelsPerMeter = document.world.pixelsPerMeter ?? 50;
 
 	return (
 		<View className="flex-1 bg-gray-800">
 			<WithGodot
-				key={`${runtimeKey}-${activeRemixId ?? "none"}`}
+				key={runtimeKey}
 				getComponent={() =>
 					import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
 						default: () => (

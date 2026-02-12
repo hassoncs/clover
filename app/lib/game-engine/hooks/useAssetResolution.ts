@@ -20,7 +20,6 @@ export interface ResolvedAsset {
 }
 
 export interface AssetResolutionContext {
-	activeRemixId?: string;
 	assetPacks?: Record<string, any>;
 	entityAssetOverrides?: Record<
 		string,
@@ -113,7 +112,7 @@ export function resolveAssetForEntity(
 	entity: RuntimeEntity,
 	context: AssetResolutionContext,
 ): ResolvedAsset | null {
-	const { activeRemixId, assetPacks, entityAssetOverrides } = context;
+	const { assetPacks, entityAssetOverrides } = context;
 
 	if (entityAssetOverrides?.[entity.id]) {
 		const override = entityAssetOverrides[entity.id];
@@ -137,7 +136,7 @@ export function resolveAssetForEntity(
 		}
 	}
 
-	const remixIdToUse = entity.assetPackId ?? activeRemixId;
+	const remixIdToUse = undefined;
 	if (!remixIdToUse || !assetPacks?.[remixIdToUse]) {
 		return null;
 	}
@@ -168,9 +167,7 @@ export function useAssetResolution(
 	entities: RuntimeEntity[],
 	definition: GameDefinition,
 ): Map<string, ResolvedAsset | null> {
-	const activeRemixId = definition.assetSystem?.activeRemixId;
-
-	const dbRemixQuery = useRemixFromDatabase(activeRemixId);
+	const dbRemixQuery = useRemixFromDatabase(undefined);
 
 	return useMemo(() => {
 		const mergedPacks: Record<string, any> = {};
@@ -183,17 +180,7 @@ export function useAssetResolution(
 			mergedPacks[dbRemixQuery.data.id] = dbPack;
 		}
 
-		if (activeRemixId && mergedPacks[activeRemixId] && definition.prefabs) {
-			try {
-				validatePackCoverage(definition.prefabs, mergedPacks[activeRemixId]);
-			} catch (error) {
-				console.error("[useAssetResolution]", error);
-				throw error;
-			}
-		}
-
 		const context: AssetResolutionContext = {
-			activeRemixId,
 			assetPacks: mergedPacks,
 			entityAssetOverrides: (definition.assetSystem as any)
 				?.entityAssetOverrides,
@@ -206,13 +193,7 @@ export function useAssetResolution(
 		}
 
 		return resolutionMap;
-	}, [
-		entities,
-		activeRemixId,
-		definition.assetSystem,
-		definition.prefabs,
-		dbRemixQuery.data,
-	]);
+	}, [entities, definition.assetSystem, definition.prefabs, dbRemixQuery.data]);
 }
 
 export function getAssetOverridesFromRemix(

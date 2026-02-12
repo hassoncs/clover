@@ -142,7 +142,6 @@ async function writeMetadataToR2(
 		version: "1.0.0",
 		thumbnailUrl: meta.thumbnailUrl,
 		packs: [],
-		activeRemixId: null,
 		updatedAt: meta.updatedAt,
 	};
 	await assets.put(`${r2Prefix}/metadata.json`, JSON.stringify(metadata), {

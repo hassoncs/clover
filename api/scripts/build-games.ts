@@ -403,8 +403,6 @@ async function build(): Promise<void> {
 					"1.0.0",
 				thumbnailUrl: null,
 				packs: packEntries,
-				activeRemixId:
-					(entry.definition.assetSystem as any)?.activeRemixId ?? null,
 				updatedAt: Date.now(),
 			};
 			writeFileSync(

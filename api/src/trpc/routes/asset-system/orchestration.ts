@@ -25,7 +25,7 @@ export const orchestrationRouter = router({
 					})
 					.optional(),
 				styleOverride: z.string().optional(),
-				setAsActive: z.boolean().default(true),
+				setAsActive: z.boolean().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -301,17 +301,6 @@ export const orchestrationRouter = router({
 							dimensions.height,
 							now,
 						)
-						.run();
-				}
-
-				if (input.setAsActive) {
-					definition.assetSystem = definition.assetSystem || {};
-					definition.assetSystem.activeRemixId = remixId;
-
-					await ctx.env.DB.prepare(
-						"UPDATE games SET definition = ?, updated_at = ? WHERE id = ?",
-					)
-						.bind(JSON.stringify(definition), now, input.gameId)
 						.run();
 				}
 

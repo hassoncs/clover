@@ -499,38 +499,6 @@ async function main() {
 			if (existsSync(gameSourcePath)) {
 				let source = readFileSync(gameSourcePath, "utf-8");
 
-				let activePackUpdated = false;
-
-				if (/activeRemixId:\s*"[^"]*"/.test(source)) {
-					source = source.replace(
-						/activeRemixId:\s*"[^"]*"/,
-						`activeRemixId: "${packId}"`,
-					);
-					activePackUpdated = true;
-				}
-
-				if (!activePackUpdated) {
-					const varRefMatch = source.match(
-						/activeRemixId:\s*([A-Z_][A-Z_0-9]*)/,
-					);
-					if (varRefMatch) {
-						const varName = varRefMatch[1];
-						const constPattern = new RegExp(
-							`(const\\s+${varName}\\s*=\\s*)"[^"]*"`,
-						);
-						if (constPattern.test(source)) {
-							source = source.replace(constPattern, `$1"${packId}"`);
-							activePackUpdated = true;
-						}
-					}
-				}
-
-				if (!activePackUpdated) {
-					console.warn(
-						`\n⚠️  Could not update activeRemixId in ${gameSourcePath} — update manually`,
-					);
-				}
-
 				const packIdsMatch = source.match(/packIds:\s*\[([\s\S]*?)\]/);
 				if (packIdsMatch) {
 					const existingIds = [...packIdsMatch[1].matchAll(/"([^"]+)"/g)].map(

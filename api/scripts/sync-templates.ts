@@ -81,7 +81,6 @@ async function main() {
 					version: "1.0.0",
 					thumbnailUrl: null,
 					packs: [],
-					activeRemixId: null,
 					updatedAt: now,
 				}),
 			);

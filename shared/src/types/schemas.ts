@@ -1350,7 +1350,6 @@ export const ChildEntityDefinitionSchema: z.ZodType<any> = z.lazy(() =>
 		conditionalBehaviors: z.array(ConditionalBehaviorSchema).optional(),
 		tags: z.array(z.string()).optional(),
 		visible: z.boolean().optional(),
-		assetPackId: z.string().optional(),
 		children: z.array(ChildEntityDefinitionSchema).optional(),
 	}),
 );
@@ -1408,7 +1407,6 @@ export const GameEntitySchema = z
 		layer: z.number().optional(),
 		visible: z.boolean().optional(),
 		active: z.boolean().optional(),
-		assetPackId: z.string().optional(),
 		children: z.array(ChildEntityDefinitionSchema).optional(),
 	})
 	.describe("Game entity");

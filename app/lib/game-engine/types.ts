@@ -1,101 +1,100 @@
 import type {
-  GameEntity,
-  TransformComponent,
-  VisualComponent,
-  PhysicsComponent,
-  Behavior,
-  EntityPrefab,
-  EventBus,
-  ConditionalBehavior,
-} from '@slopcade/shared';
-import type { GodotBridge } from '../godot/types';
+	Behavior,
+	ConditionalBehavior,
+	EntityPrefab,
+	EventBus,
+	GameEntity,
+	PhysicsComponent,
+	TransformComponent,
+	VisualComponent,
+} from "@slopcade/shared";
+import type { GodotBridge } from "../godot/types";
 
 /**
  * EngineServices - Core primitives available to all game systems.
  * Part of the 5 core engine primitives (Unity-validated architecture).
  */
 export interface EngineServices {
-  /** System-to-system decoupled communication */
-  eventBus: EventBus;
-  // Future primitives will be added here:
-  // entityManager: EntityManager;
-  // tagManager: TagManager;
-  // clock: Clock;
+	/** System-to-system decoupled communication */
+	eventBus: EventBus;
+	// Future primitives will be added here:
+	// entityManager: EntityManager;
+	// tagManager: TagManager;
+	// clock: Clock;
 }
 
-export type MarkedEffect = 'glow' | 'pulse' | 'fade_partial';
+export type MarkedEffect = "glow" | "pulse" | "fade_partial";
 
 export interface MovementTarget {
-  x: number;
-  y: number;
-  startX: number;
-  startY: number;
-  startTime: number;
-  duration: number;
-  easing: string;
+	x: number;
+	y: number;
+	startX: number;
+	startY: number;
+	startTime: number;
+	duration: number;
+	easing: string;
 }
 
 export interface PendingLifecycleTransition {
-  oldGroupId: number;
-  newGroupId: number;
+	oldGroupId: number;
+	newGroupId: number;
 }
 
 export interface RuntimeEntity {
-  id: string;
-  name: string;
-  prefab?: string;
-  // Hierarchy tracking
-  /** Parent entity ID (undefined if root entity) */
-  parentId?: string;
-  /** Child entity IDs */
-  children: string[];
-  // Dual transforms for hierarchy
-  /** Transform relative to parent (or world if no parent) */
-  localTransform: TransformComponent;
-  /** Computed world transform (cached) */
-  worldTransform: TransformComponent;
-  transform: TransformComponent;
-  visual?: VisualComponent;
-  physics?: PhysicsComponent;
-  collider?: {
-    shape: 'circle' | 'box' | 'polygon' | 'capsule';
-    width?: number;
-    height?: number;
-    radius?: number;
-    friction?: number;
-    restitution?: number;
-    vertices?: { x: number; y: number }[];
-  };
+	id: string;
+	name: string;
+	prefab?: string;
+	// Hierarchy tracking
+	/** Parent entity ID (undefined if root entity) */
+	parentId?: string;
+	/** Child entity IDs */
+	children: string[];
+	// Dual transforms for hierarchy
+	/** Transform relative to parent (or world if no parent) */
+	localTransform: TransformComponent;
+	/** Computed world transform (cached) */
+	worldTransform: TransformComponent;
+	transform: TransformComponent;
+	visual?: VisualComponent;
+	physics?: PhysicsComponent;
+	collider?: {
+		shape: "circle" | "box" | "polygon" | "capsule";
+		width?: number;
+		height?: number;
+		radius?: number;
+		friction?: number;
+		restitution?: number;
+		vertices?: { x: number; y: number }[];
+	};
 
-  behaviors: RuntimeBehavior[];
-  tags: string[];
-  /** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */
-  tagBits: Set<number>;
-  /** Tag-driven conditional behavior groups */
-  conditionalBehaviors: ConditionalBehavior[];
-  /** Index of the currently active conditional behavior group (-1 if none) */
-  activeConditionalGroupId: number;
-  /** Pending lifecycle transition to process in BehaviorExecutor */
-  pendingLifecycleTransition?: PendingLifecycleTransition;
-  layer: number;
-  visible: boolean;
-  active: boolean;
-  colliderId: number | null;
-  assetPackId?: string;
-  markedForDestruction?: boolean;
-  markedEffect?: MarkedEffect;
-  markedColor?: string;
-  markedAt?: number;
-  movementTarget?: MovementTarget;
+	behaviors: RuntimeBehavior[];
+	tags: string[];
+	/** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */
+	tagBits: Set<number>;
+	/** Tag-driven conditional behavior groups */
+	conditionalBehaviors: ConditionalBehavior[];
+	/** Index of the currently active conditional behavior group (-1 if none) */
+	activeConditionalGroupId: number;
+	/** Pending lifecycle transition to process in BehaviorExecutor */
+	pendingLifecycleTransition?: PendingLifecycleTransition;
+	layer: number;
+	visible: boolean;
+	active: boolean;
+	colliderId: number | null;
+	markedForDestruction?: boolean;
+	markedEffect?: MarkedEffect;
+	markedColor?: string;
+	markedAt?: number;
+	movementTarget?: MovementTarget;
 }
 
 export interface RuntimeBehavior {
-  definition: Behavior;
-  enabled: boolean;
-  state: Record<string, unknown>;
+	definition: Behavior;
+	enabled: boolean;
+	state: Record<string, unknown>;
 }
 
 export interface EntityManagerOptions {
-  prefabs?: Record<string, EntityPrefab>;
-  bridge?: GodotBridge;
+	prefabs?: Record<string, EntityPrefab>;
+	bridge?: GodotBridge;
 }

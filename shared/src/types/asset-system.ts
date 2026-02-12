@@ -84,8 +84,6 @@ export const DEFAULT_ASSET_PLACEMENT: AssetPlacement = {
 	offsetY: 0,
 };
 
-export const AssetSystemConfigSchema = z.object({
-	activeRemixId: z.string().optional(),
-});
+export const AssetSystemConfigSchema = z.object({});
 
 export type AssetSystemConfig = z.infer<typeof AssetSystemConfigSchema>;
