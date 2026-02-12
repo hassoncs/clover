@@ -75,6 +75,9 @@ export default function PlayScreen() {
 	const [availablePacks, setAvailablePacks] = useState<
 		{ id: string; name: string; isComplete: boolean }[]
 	>([]);
+	const [availableRemixes, setAvailableRemixes] = useState<
+		{ id: string; name: string; isComplete: boolean }[]
+	>([]);
 	const [isLoadingPack, setIsLoadingPack] = useState(false);
 	const [godotReady, setGodotReady] = useState(false);
 	const [loadingDismissed, setLoadingDismissed] = useState(false);
@@ -120,6 +123,19 @@ export default function PlayScreen() {
 				.catch((err) =>
 					console.error("Failed to fetch compatible packs:", err),
 				);
+
+			trpc.assetSystem.remixes.listRemixes
+				.query({ gameId: id })
+				.then((result) => {
+					setAvailableRemixes(
+						result.map((r) => ({
+							id: r.id,
+							name: r.name,
+							isComplete: r.isComplete,
+						})),
+					);
+				})
+				.catch((err) => console.error("Failed to fetch remixes:", err));
 		}
 	}, [id]);
 
@@ -339,12 +355,23 @@ export default function PlayScreen() {
 		startPreload();
 	}, [reset, startPreload, loadingOpacity]);
 
-	const handlePackSelect = (newPackId: string) => {
-		if (newPackId === activeAssetPackId) return;
+	const handleRemixSelect = (
+		itemId: string,
+		type: "pack" | "remix" = "pack",
+	) => {
+		if (type === "pack" && itemId === activeAssetPackId) return;
+		if (type === "remix" && itemId === remixId) return;
+
+		const params: any = { id: id! };
+		if (type === "remix") {
+			params.remixId = itemId;
+		} else {
+			params.packId = itemId;
+		}
 
 		router.replace({
 			pathname: "/play/[id]",
-			params: { id: id!, packId: newPackId },
+			params,
 		});
 
 		reset();
@@ -389,7 +416,7 @@ export default function PlayScreen() {
 					gameId: id,
 				});
 				setAvailablePacks(packsResult.packs);
-				handlePackSelect(result.packId);
+				handleRemixSelect(result.packId, "pack");
 			}
 		} catch (e) {
 			console.error("Asset generation failed", e);
@@ -627,7 +654,7 @@ export default function PlayScreen() {
 							</Pressable>
 						)}
 
-						{availablePacks.length > 0 && (
+						{(availablePacks.length > 0 || availableRemixes.length > 0) && (
 							<View className="mb-6">
 								<Text className="text-gray-400 mb-2">Select Remix</Text>
 								<ScrollView
@@ -635,6 +662,26 @@ export default function PlayScreen() {
 									showsHorizontalScrollIndicator={false}
 									className="flex-row gap-2"
 								>
+									{availableRemixes.map((remix) => (
+										<Pressable
+											key={remix.id}
+											className={`p-3 rounded-lg mr-2 border ${
+												remixId === remix.id
+													? "bg-indigo-600 border-indigo-400"
+													: "bg-gray-700 border-gray-600"
+											} ${!remix.isComplete ? "opacity-50" : ""}`}
+											onPress={() => handleRemixSelect(remix.id, "remix")}
+										>
+											<Text className="text-white font-semibold">
+												{remix.name}
+											</Text>
+											{!remix.isComplete && (
+												<Text className="text-xs text-yellow-400 mt-1">
+													Generating...
+												</Text>
+											)}
+										</Pressable>
+									))}
 									{availablePacks.map((pack) => (
 										<Pressable
 											key={pack.id}
@@ -643,7 +690,7 @@ export default function PlayScreen() {
 													? "bg-indigo-600 border-indigo-400"
 													: "bg-gray-700 border-gray-600"
 											} ${!pack.isComplete ? "opacity-50" : ""}`}
-											onPress={() => handlePackSelect(pack.id)}
+											onPress={() => handleRemixSelect(pack.id, "pack")}
 										>
 											<Text className="text-white font-semibold">
 												{pack.name}

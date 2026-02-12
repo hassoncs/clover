@@ -401,7 +401,8 @@ export default function GameDetailScreen() {
 						<View>
 							{isLoadingRemixes || isLoadingPacks ? (
 								<ActivityIndicator color="#4CAF50" />
-							) : remixesData && remixesData.length > 0 ? (
+							) : (remixesData && remixesData.length > 0) ||
+								(packsData?.packs && packsData.packs.length > 0) ? (
 								<View>
 									<Text className="text-white text-xl font-bold mb-4">
 										Remixes
@@ -478,15 +479,7 @@ export default function GameDetailScreen() {
 												</Pressable>
 											);
 										})}
-									</View>
-								</View>
-							) : packsData?.packs && packsData.packs.length > 0 ? (
-								<View>
-									<Text className="text-white text-xl font-bold mb-4">
-										Themes
-									</Text>
-									<View className="gap-3">
-										{packsData.packs.map((pack) => (
+										{packsData?.packs.map((pack) => (
 											<Pressable
 												key={pack.id}
 												className="bg-gray-800 p-4 rounded-xl flex-row items-center justify-between active:bg-gray-700"
@@ -514,11 +507,14 @@ export default function GameDetailScreen() {
 														)}
 													</View>
 													<Text
-														className="text-gray-400 text-sm"
+														className="text-gray-400 text-sm mb-1"
 														numberOfLines={2}
 													>
-														{pack.description || "No description"} •{" "}
-														{pack.coveredCount}/{pack.totalPrefabs} assets
+														{pack.description || "No description"}
+													</Text>
+													<Text className="text-gray-500 text-xs">
+														Includes: assets ({pack.coveredCount}/
+														{pack.totalPrefabs})
 													</Text>
 												</View>
 												<View className="bg-blue-600/20 p-2 rounded-full">
