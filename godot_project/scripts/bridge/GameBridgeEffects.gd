@@ -21,8 +21,8 @@ var _stroke_overlay_dirty: bool = false
 var _screen_overlay_layer: CanvasLayer = null
 var _screen_overlay_rect: TextureRect = null
 var _current_scope: String = ""
-var _game_capture_viewport: SubViewport = null
-var _game_capture_container: SubViewportContainer = null
+var _game_capture_viewport = null
+var _game_capture_container = null
 
 func _ready() -> void:
 	# Create subsystems
@@ -38,15 +38,14 @@ func _ready() -> void:
 	_screen_executor.name = "ScreenGraphExecutor"
 	add_child(_screen_executor)
 
-	# Find GameBridge
+	# Find GameBridge autoload
 	_game_bridge = get_node_or_null("/root/GameBridge")
 
 	_build_effects_method_map()
 	_register_query_handlers()
+	# Registration must happen in _ready() to ensure it completes before 
+	# GameBridge exposes window.GodotBridge in its deferred finalization.
 	_register_methods_with_game_bridge()
-
-	if OS.has_feature("web"):
-		_setup_js_effects_bridge()
 
 func _process(_delta: float) -> void:
 	# Update screen overlay from dedicated screen executor
@@ -233,150 +232,6 @@ func native_dispatch(method_name: String, args_json: String) -> Variant:
 		if json.parse(args_json) == OK:
 			args = json.data if json.data is Array else [json.data]
 	return _method_map[method_name].call(args)
-
-func _setup_js_effects_bridge() -> void:
-	var window = JavaScriptBridge.get_interface("window")
-	if window == null:
-		return
-	
-	var bridge = window.GodotBridge
-	if bridge == null:
-		# Wait for GameBridge to set up first
-		await get_tree().create_timer(0.1).timeout
-		_setup_js_effects_bridge()
-		return
-	
-	# Store callbacks to prevent GC
-	var callbacks = []
-	
-	# Sprite effects
-	var apply_sprite_effect_cb = JavaScriptBridge.create_callback(_js_apply_sprite_effect)
-	callbacks.append(apply_sprite_effect_cb)
-	bridge["applySpriteEffect"] = apply_sprite_effect_cb
-	
-	var update_sprite_effect_cb = JavaScriptBridge.create_callback(_js_update_sprite_effect_param)
-	callbacks.append(update_sprite_effect_cb)
-	bridge["updateSpriteEffectParam"] = update_sprite_effect_cb
-	
-	var clear_sprite_effect_cb = JavaScriptBridge.create_callback(_js_clear_sprite_effect)
-	callbacks.append(clear_sprite_effect_cb)
-	bridge["clearSpriteEffect"] = clear_sprite_effect_cb
-	
-	# Post-processing effects
-	var set_post_effect_cb = JavaScriptBridge.create_callback(_js_set_post_effect)
-	callbacks.append(set_post_effect_cb)
-	bridge["setPostEffect"] = set_post_effect_cb
-	
-	var update_post_effect_cb = JavaScriptBridge.create_callback(_js_update_post_effect_param)
-	callbacks.append(update_post_effect_cb)
-	bridge["updatePostEffectParam"] = update_post_effect_cb
-	
-	var clear_post_effect_cb = JavaScriptBridge.create_callback(_js_clear_post_effect)
-	callbacks.append(clear_post_effect_cb)
-	bridge["clearPostEffect"] = clear_post_effect_cb
-	
-	# Camera effects
-	var screen_shake_cb = JavaScriptBridge.create_callback(_js_screen_shake)
-	callbacks.append(screen_shake_cb)
-	bridge["screenShake"] = screen_shake_cb
-	
-	var zoom_punch_cb = JavaScriptBridge.create_callback(_js_zoom_punch)
-	callbacks.append(zoom_punch_cb)
-	bridge["zoomPunch"] = zoom_punch_cb
-	
-	var trigger_shockwave_cb = JavaScriptBridge.create_callback(_js_trigger_shockwave)
-	callbacks.append(trigger_shockwave_cb)
-	bridge["triggerShockwave"] = trigger_shockwave_cb
-	
-	var flash_screen_cb = JavaScriptBridge.create_callback(_js_flash_screen)
-	callbacks.append(flash_screen_cb)
-	bridge["flashScreen"] = flash_screen_cb
-	
-	# Dynamic shaders
-	var create_dynamic_shader_cb = JavaScriptBridge.create_callback(_js_create_dynamic_shader)
-	callbacks.append(create_dynamic_shader_cb)
-	bridge["createDynamicShader"] = create_dynamic_shader_cb
-	
-	var apply_dynamic_shader_cb = JavaScriptBridge.create_callback(_js_apply_dynamic_shader)
-	callbacks.append(apply_dynamic_shader_cb)
-	bridge["applyDynamicShader"] = apply_dynamic_shader_cb
-	
-	var apply_dynamic_post_shader_cb = JavaScriptBridge.create_callback(_js_apply_dynamic_post_shader)
-	callbacks.append(apply_dynamic_post_shader_cb)
-	bridge["applyDynamicPostShader"] = apply_dynamic_post_shader_cb
-
-	var apply_plan_cb = JavaScriptBridge.create_callback(_js_apply_plan)
-	callbacks.append(apply_plan_cb)
-	bridge["applyPlan"] = apply_plan_cb
-
-	var clear_plan_cb = JavaScriptBridge.create_callback(_js_clear_plan)
-	callbacks.append(clear_plan_cb)
-	bridge["clearPlan"] = clear_plan_cb
-
-	var update_params_cb = JavaScriptBridge.create_callback(_js_update_params)
-	callbacks.append(update_params_cb)
-	bridge["updateParams"] = update_params_cb
-
-	var start_graph_cb = JavaScriptBridge.create_callback(_js_start_graph)
-	callbacks.append(start_graph_cb)
-	bridge["startGraph"] = start_graph_cb
-
-	var pause_graph_cb = JavaScriptBridge.create_callback(_js_pause_graph)
-	callbacks.append(pause_graph_cb)
-	bridge["pauseGraph"] = pause_graph_cb
-
-	var resume_graph_cb = JavaScriptBridge.create_callback(_js_resume_graph)
-	callbacks.append(resume_graph_cb)
-	bridge["resumeGraph"] = resume_graph_cb
-
-	var stop_graph_cb = JavaScriptBridge.create_callback(_js_stop_graph)
-	callbacks.append(stop_graph_cb)
-	bridge["stopGraph"] = stop_graph_cb
-
-	var reset_graph_cb = JavaScriptBridge.create_callback(_js_reset_graph)
-	callbacks.append(reset_graph_cb)
-	bridge["resetGraph"] = reset_graph_cb
-
-	var get_snapshot_cb = JavaScriptBridge.create_callback(_js_get_snapshot)
-	callbacks.append(get_snapshot_cb)
-	bridge["getSnapshot"] = get_snapshot_cb
-
-	var restore_snapshot_cb = JavaScriptBridge.create_callback(_js_restore_snapshot)
-	callbacks.append(restore_snapshot_cb)
-	bridge["restoreSnapshot"] = restore_snapshot_cb
-
-	var draw_to_active_buffer_cb = JavaScriptBridge.create_callback(_js_draw_to_active_buffer)
-	callbacks.append(draw_to_active_buffer_cb)
-	bridge["drawToActiveBuffer"] = draw_to_active_buffer_cb
-
-	var set_external_input_cb = JavaScriptBridge.create_callback(_js_set_external_input)
-	callbacks.append(set_external_input_cb)
-	bridge["setExternalInput"] = set_external_input_cb
-
-	var set_screen_input_cb = JavaScriptBridge.create_callback(_js_set_screen_input)
-	callbacks.append(set_screen_input_cb)
-	bridge["setScreenInput"] = set_screen_input_cb
-
-	var hot_swap_shader_cb = JavaScriptBridge.create_callback(_js_hot_swap_shader)
-	callbacks.append(hot_swap_shader_cb)
-	bridge["hotSwapShader"] = hot_swap_shader_cb
-
-	# Particles
-	var spawn_particle_preset_cb = JavaScriptBridge.create_callback(_js_spawn_particle_preset)
-	callbacks.append(spawn_particle_preset_cb)
-	bridge["spawnParticlePreset"] = spawn_particle_preset_cb
-	
-	# Effect info
-	var get_available_effects_cb = JavaScriptBridge.create_callback(_js_get_available_effects)
-	callbacks.append(get_available_effects_cb)
-	bridge["getAvailableEffects"] = get_available_effects_cb
-	
-	# Store callbacks to prevent garbage collection
-	set_meta("_js_callbacks", callbacks)
-
-	# Note: No _effectsReady flag needed. GameBridge defers exposing
-	# window.GodotBridge until all autoload _ready() calls complete,
-	# so effects handlers are guaranteed to be registered.
 
 # ============================================================
 # JS CALLBACK IMPLEMENTATIONS
@@ -703,19 +558,23 @@ func _setup_game_capture_viewport() -> void:
 	if _game_bridge == null or _game_bridge.game_root == null:
 		return
 
-	var game_root: Node2D = _game_bridge.game_root
-	var main_node: Node = game_root.get_parent()
+	var game_root = _game_bridge.game_root
+	var main_node = game_root.get_parent()
 	if main_node == null:
 		return
 
-	var win_size := game_root.get_viewport().size
+	var win_size = game_root.get_viewport().size
 
-	_game_capture_container = SubViewportContainer.new()
+	# Use ClassDB to instantiate SubViewportContainer without type annotation
+	var vp_container_class = ClassDB.instantiate("SubViewportContainer")
+	_game_capture_container = vp_container_class
 	_game_capture_container.name = "GameCaptureContainer"
 	_game_capture_container.stretch = true
 	_game_capture_container.size = Vector2(win_size)
 
-	_game_capture_viewport = SubViewport.new()
+	# Use ClassDB to instantiate SubViewport without type annotation
+	var viewport_class = ClassDB.instantiate("SubViewport")
+	_game_capture_viewport = viewport_class
 	_game_capture_viewport.name = "GameCaptureViewport"
 	_game_capture_viewport.handle_input_locally = false
 	_game_capture_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -732,8 +591,8 @@ func _teardown_game_capture_viewport() -> void:
 	if _game_bridge == null or _game_bridge.game_root == null:
 		return
 
-	var game_root: Node2D = _game_bridge.game_root
-	var main_node: Node = _game_capture_container.get_parent()
+	var game_root = _game_bridge.game_root
+	var main_node = _game_capture_container.get_parent()
 
 	_game_capture_viewport.remove_child(game_root)
 	main_node.remove_child(_game_capture_container)
