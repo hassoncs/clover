@@ -99,10 +99,16 @@ func _ready() -> void:
 	_camera_controller.setup_camera()
 	print("[GameBridge] Camera setup complete")
 	_build_method_map()
-	_setup_js_bridge()
-	print("[GameBridge] JS Bridge setup complete")
+	# Defer JS bridge exposure to end of frame so ALL autoload _ready() calls
+	# complete first (e.g., GameBridgeEffects registers its query handlers).
+	# window.GodotBridge appearing IS the "fully ready" signal for JS.
+	call_deferred("_finalize_js_bridge")
 	_log_physics_diagnostics()
 	_log_bridge_registry()
+
+func _finalize_js_bridge() -> void:
+	_setup_js_bridge()
+	print("[GameBridge] JS Bridge setup complete (deferred)")
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)

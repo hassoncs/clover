@@ -374,9 +374,9 @@ func _setup_js_effects_bridge() -> void:
 	# Store callbacks to prevent garbage collection
 	set_meta("_js_callbacks", callbacks)
 
-	# Signal that effects bridge is ready
-	bridge["_effectsReady"] = true
-	JavaScriptBridge.eval("window.GodotBridge._effectsReady = true;")
+	# Note: No _effectsReady flag needed. GameBridge defers exposing
+	# window.GodotBridge until all autoload _ready() calls complete,
+	# so effects handlers are guaranteed to be registered.
 
 # ============================================================
 # JS CALLBACK IMPLEMENTATIONS
