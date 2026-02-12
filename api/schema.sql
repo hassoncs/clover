@@ -90,6 +90,7 @@ CREATE INDEX IF NOT EXISTS idx_themes_public ON themes(is_public) WHERE deleted_
 CREATE TABLE IF NOT EXISTS assets (
   id TEXT PRIMARY KEY,
   r2_key TEXT NOT NULL UNIQUE,
+  content_hash TEXT,
   width INTEGER,
   height INTEGER,
   creator_user_id TEXT REFERENCES users(id),
@@ -104,6 +105,7 @@ CREATE TABLE IF NOT EXISTS assets (
 CREATE INDEX IF NOT EXISTS idx_assets_theme ON assets(theme_id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_assets_creator ON assets(creator_user_id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_assets_r2_key ON assets(r2_key) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_assets_content_hash ON assets(content_hash) WHERE content_hash IS NOT NULL;
 
 -- Remixes - Fork-level customization bundles (variables, assets, shaders, sounds)
 -- A remix is a complete "skin" for a base game

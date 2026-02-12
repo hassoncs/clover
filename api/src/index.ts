@@ -9,6 +9,7 @@ import { resolveChatModel } from "@/ai/chat-model-config";
 import { createModel } from "@/ai/model-factory";
 import type { MessageRow } from "@/chat/chat-handler";
 import { handleChatStream } from "@/chat/stream-handler";
+import { GameRepoDO } from "@/durable-objects/GameRepoDO";
 import { WalletService } from "@/economy/wallet-service";
 import textGridRouter from "@/routes/text-grid";
 import revenuecatWebhookRouter from "@/routes/webhooks/revenuecat";
@@ -247,4 +248,4 @@ app.use(
 );
 
 export default app;
-export { RealtimeRelayDO };
+export { RealtimeRelayDO, GameRepoDO };

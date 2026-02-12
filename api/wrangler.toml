@@ -24,6 +24,10 @@ preview_bucket_name = "slopcade-assets-dev"
 name = "REALTIME_RELAY"
 class_name = "RealtimeRelayDO"
 
+[[durable_objects.bindings]]
+name = "GAME_REPO"
+class_name = "GameRepoDO"
+
 [[migrations]]
 tag = "v2"
 new_classes = ["RunCoordinatorDO", "RunStepWorkerDO"]
@@ -35,6 +39,10 @@ new_classes = ["RealtimeRelayDO"]
 [[migrations]]
 tag = "v4"
 deleted_classes = ["RunCoordinatorDO", "RunStepWorkerDO"]
+
+[[migrations]]
+tag = "v5"
+new_classes = ["GameRepoDO"]
 
 # TODO: Configure custom domain
 # [[routes]]

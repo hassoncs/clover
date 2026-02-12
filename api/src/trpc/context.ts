@@ -2,47 +2,49 @@ import type { Context as HonoContext } from "hono";
 
 type D1Database = import("@cloudflare/workers-types").D1Database;
 type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
-type DurableObjectNamespace = import("@cloudflare/workers-types").DurableObjectNamespace;
+type DurableObjectNamespace =
+	import("@cloudflare/workers-types").DurableObjectNamespace;
 
 export interface Env {
-  DB: D1Database;
-  ASSETS: R2Bucket;
-  REALTIME_RELAY: DurableObjectNamespace;
+	DB: D1Database;
+	ASSETS: R2Bucket;
+	REALTIME_RELAY: DurableObjectNamespace;
+	GAME_REPO: DurableObjectNamespace;
 
-  SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
-  SUPABASE_ANON_KEY: string;
+	SUPABASE_URL: string;
+	SUPABASE_SERVICE_ROLE_KEY: string;
+	SUPABASE_ANON_KEY: string;
 
-  APP_URL: string;
+	APP_URL: string;
 
-  AI_PROVIDER?: string;
-  OPENAI_API_KEY?: string;
-  OPENROUTER_API_KEY?: string;
-  ANTHROPIC_API_KEY?: string;
-  AI_MODEL?: string;
-  AI_BASE_URL?: string;
+	AI_PROVIDER?: string;
+	OPENAI_API_KEY?: string;
+	OPENROUTER_API_KEY?: string;
+	ANTHROPIC_API_KEY?: string;
+	AI_MODEL?: string;
+	AI_BASE_URL?: string;
 
-  THEME_PLANNER_ENABLED?: string;
+	THEME_PLANNER_ENABLED?: string;
 
-  // Image generation provider selection
-  IMAGE_GENERATION_PROVIDER?: 'modal' | 'scenario';
+	// Image generation provider selection
+	IMAGE_GENERATION_PROVIDER?: "modal" | "scenario";
 
-  // Modal ComfyUI endpoint (optional, defaults to deployed endpoint)
-  MODAL_ENDPOINT?: string;
+	// Modal ComfyUI endpoint (optional, defaults to deployed endpoint)
+	MODAL_ENDPOINT?: string;
 
-  // Scenario.com credentials (only needed if using scenario provider)
-  SCENARIO_API_KEY?: string;
-  SCENARIO_SECRET_API_KEY?: string;
-  SCENARIO_API_URL?: string;
+	// Scenario.com credentials (only needed if using scenario provider)
+	SCENARIO_API_KEY?: string;
+	SCENARIO_SECRET_API_KEY?: string;
+	SCENARIO_API_URL?: string;
 
-  ASSET_HOST?: string;
+	ASSET_HOST?: string;
 
-  DEBUG_ASSET_GENERATION?: string;
+	DEBUG_ASSET_GENERATION?: string;
 
-  REVENUECAT_WEBHOOK_SECRET?: string;
+	REVENUECAT_WEBHOOK_SECRET?: string;
 
-  AI_EDITING_ENABLED?: string;
-  AI_EDITING_ALLOWED_USERS?: string;
+	AI_EDITING_ENABLED?: string;
+	AI_EDITING_ALLOWED_USERS?: string;
 	AI_EDITING_MAX_CONCURRENT_RUNS?: string;
 	AI_EDITING_MAX_RUNS_PER_DAY?: string;
 
@@ -50,33 +52,33 @@ export interface Env {
 }
 
 export interface User {
-  id: string;
-  email: string;
-  displayName?: string;
+	id: string;
+	email: string;
+	displayName?: string;
 }
 
 export interface Context {
-  env: Env;
-  authToken: string | null;
-  [key: string]: unknown;
+	env: Env;
+	authToken: string | null;
+	[key: string]: unknown;
 }
 
 export interface AuthenticatedContext extends Context {
-  user: User;
-  [key: string]: unknown;
+	user: User;
+	[key: string]: unknown;
 }
 
 export async function createContext(
-  _opts: { req: Request; resHeaders: Headers },
-  honoContext: HonoContext<{ Bindings: Env }>
+	_opts: { req: Request; resHeaders: Headers },
+	honoContext: HonoContext<{ Bindings: Env }>,
 ): Promise<Context> {
-  const authHeader = honoContext.req.header("Authorization");
-  const authToken = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : null;
+	const authHeader = honoContext.req.header("Authorization");
+	const authToken = authHeader?.startsWith("Bearer ")
+		? authHeader.slice(7)
+		: null;
 
-  return {
-    env: honoContext.env,
-    authToken,
-  };
+	return {
+		env: honoContext.env,
+		authToken,
+	};
 }
