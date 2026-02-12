@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crux"
+version = "0.1.0"
+description = "Intelligent prompt compression for LLMs"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Crux Team"}
+]
+dependencies = [
+    "llmlingua>=0.2.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "litellm>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+crux = "crux.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["crux*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
