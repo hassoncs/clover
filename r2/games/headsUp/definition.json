@@ -1,0 +1,169 @@
+{
+	"metadata": {
+		"id": "headsUp",
+		"title": "Heads Up",
+		"version": "1.0.0",
+		"description": "Guess the word on your forehead!",
+		"instructions": "Tilt down for correct, tilt up to pass.",
+		"slug": "headsUp"
+	},
+	"world": {
+		"gravity": { "x": 0, "y": 0 },
+		"bounds": { "width": 10, "height": 20 }
+	},
+	"variables": {
+		"deck": [
+			"Elephant",
+			"Pizza",
+			"Beach",
+			"Guitar",
+			"Superman",
+			"Banana",
+			"Moon",
+			"Robot",
+			"Ninja",
+			"Dragon"
+		],
+		"score": 0,
+		"pass": 0,
+		"currentCardIndex": 0,
+		"timer": 60,
+		"gameState": "playing",
+		"currentCard": "Elephant",
+		"lastTiltTime": 0,
+		"tiltCooldown": 500,
+		"tiltArmed": true,
+		"lastTiltDirection": ""
+	},
+	"overlay": {
+		"elements": [
+			{
+				"id": "card-text",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": 0 },
+				"fontSize": 48,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "{{variables.currentCard}}"
+				},
+				"style": {
+					"textAlign": "center",
+					"width": 300
+				}
+			},
+			{
+				"id": "timer-text",
+				"type": "text",
+				"anchor": "top-right",
+				"offset": { "x": 20, "y": 20 },
+				"fontSize": 32,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "{{variables.timer}}"
+				}
+			},
+			{
+				"id": "score-text",
+				"type": "text",
+				"anchor": "bottom-left",
+				"offset": { "x": 20, "y": 20 },
+				"fontSize": 24,
+				"fontWeight": "bold",
+				"color": "#00FF00",
+				"bindings": {
+					"text": "Score: {{variables.score}}"
+				}
+			},
+			{
+				"id": "pass-text",
+				"type": "text",
+				"anchor": "bottom-right",
+				"offset": { "x": 20, "y": 20 },
+				"fontSize": 24,
+				"fontWeight": "bold",
+				"color": "#FF0000",
+				"bindings": {
+					"text": "Pass: {{variables.pass}}"
+				}
+			}
+		]
+	},
+	"rules": [
+		{
+			"id": "tilt_correct",
+			"trigger": {
+				"type": "tilt",
+				"axis": "y",
+				"direction": "positive",
+				"threshold": 0.3
+			},
+			"conditions": [
+				{ "type": "expression", "expr": "variables.gameState == 'playing'" }
+			],
+			"actions": [{ "type": "run_script", "export": "handleCorrect" }]
+		},
+		{
+			"id": "tilt_pass",
+			"trigger": {
+				"type": "tilt",
+				"axis": "y",
+				"direction": "negative",
+				"threshold": 0.3
+			},
+			"conditions": [
+				{ "type": "expression", "expr": "variables.gameState == 'playing'" }
+			],
+			"actions": [{ "type": "run_script", "export": "handlePass" }]
+		},
+		{
+			"id": "tilt_rearm_after_correct",
+			"trigger": {
+				"type": "tilt",
+				"axis": "y",
+				"direction": "negative",
+				"threshold": 0.1
+			},
+			"conditions": [
+				{ "type": "expression", "expr": "variables.gameState == 'playing'" },
+				{ "type": "expression", "expr": "variables.tiltArmed == false" },
+				{
+					"type": "expression",
+					"expr": "variables.lastTiltDirection == 'correct'"
+				}
+			],
+			"actions": [{ "type": "run_script", "export": "rearmTilt" }],
+			"cooldown": 0.3
+		},
+		{
+			"id": "tilt_rearm_after_pass",
+			"trigger": {
+				"type": "tilt",
+				"axis": "y",
+				"direction": "positive",
+				"threshold": 0.1
+			},
+			"conditions": [
+				{ "type": "expression", "expr": "variables.gameState == 'playing'" },
+				{ "type": "expression", "expr": "variables.tiltArmed == false" },
+				{
+					"type": "expression",
+					"expr": "variables.lastTiltDirection == 'pass'"
+				}
+			],
+			"actions": [{ "type": "run_script", "export": "rearmTilt" }],
+			"cooldown": 0.3
+		},
+		{
+			"id": "timer_tick",
+			"trigger": { "type": "interval", "interval": 1000 },
+			"conditions": [
+				{ "type": "expression", "expr": "variables.gameState == 'playing'" }
+			],
+			"actions": [{ "type": "run_script", "export": "tickTimer" }]
+		}
+	],
+	"script": "function getCurrentTime(ctx) {\n  return ctx.elapsed * 1000;\n}\n\nfunction isCooldownActive(ctx) {\n  const now = getCurrentTime(ctx);\n  const last = ctx.variables.lastTiltTime;\n  return (now - last) < ctx.variables.tiltCooldown;\n}\n\nexport function handleCorrect(ctx) {\n  const { variables } = ctx;\n  if (isCooldownActive(ctx)) return;\n  if (!variables.tiltArmed) return;\n\n  variables.score++;\n  variables.lastTiltTime = getCurrentTime(ctx);\n  variables.tiltArmed = false;\n  variables.lastTiltDirection = 'correct';\n  nextCard(ctx);\n}\n\nexport function handlePass(ctx) {\n  const { variables } = ctx;\n  if (isCooldownActive(ctx)) return;\n  if (!variables.tiltArmed) return;\n\n  variables.pass++;\n  variables.lastTiltTime = getCurrentTime(ctx);\n  variables.tiltArmed = false;\n  variables.lastTiltDirection = 'pass';\n  nextCard(ctx);\n}\n\nexport function rearmTilt(ctx) {\n  ctx.variables.tiltArmed = true;\n  ctx.variables.lastTiltDirection = '';\n}\n\nfunction nextCard(ctx) {\n  const { variables } = ctx;\n  variables.currentCardIndex++;\n  if (variables.currentCardIndex >= variables.deck.length) {\n    variables.gameState = 'finished';\n    variables.currentCard = 'GAME OVER';\n  } else {\n    variables.currentCard = variables.deck[variables.currentCardIndex];\n  }\n}\n\nexport function tickTimer(ctx) {\n  const { variables } = ctx;\n  variables.timer--;\n  if (variables.timer <= 0) {\n    variables.gameState = 'finished';\n    variables.currentCard = 'TIME UP!';\n  }\n}"
+}

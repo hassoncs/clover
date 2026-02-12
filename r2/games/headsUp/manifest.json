@@ -1,0 +1,8 @@
+{
+	"id": "headsUp",
+	"title": "Heads Up",
+	"version": "1.0.0",
+	"description": "A classic party game where you guess the word on your forehead!",
+	"author": "Slopcade",
+	"license": "MIT"
+}

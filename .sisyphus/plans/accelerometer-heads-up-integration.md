@@ -50,9 +50,9 @@ Ship a practical, forkable Heads-Up template with reliable native tilt controls 
 - Verification evidence showing one round can be played with score/pass tracking.
 
 ### Definition of Done
-- [ ] Tilt signal from native device drives rule triggers reliably.
-- [ ] Heads-Up template supports 10 cards, score, pass, and round end.
-- [ ] Existing tilt games still behave as before.
+- [x] Tilt signal from native device drives rule triggers reliably.
+- [x] Heads-Up template supports 10 cards, score, pass, and round end.
+- [x] Existing tilt games still behave as before.
 
 ### Must Have
 - Native-only tilt gameplay (iOS/Android).
@@ -106,7 +106,7 @@ Critical Path: Task 1 -> Task 2 -> Task 4
 
 ## TODOs
 
-- [ ] 1. Confirm and minimally patch tilt trigger direction semantics
+- [x] 1. Confirm and minimally patch tilt trigger direction semantics
 
   **What to do**:
   - Validate current `tilt` trigger behavior in evaluator.
@@ -159,7 +159,7 @@ Critical Path: Task 1 -> Task 2 -> Task 4
     Evidence: .sisyphus/evidence/task-1-directional.txt
   ```
 
-- [ ] 2. Add simple, robust Heads-Up tilt gesture handling
+- [x] 2. Add simple, robust Heads-Up tilt gesture handling
 
   **What to do**:
   - In template gameplay logic, enforce one trigger per gesture (edge-trigger), cooldown, and return-to-neutral before next trigger.
@@ -213,7 +213,7 @@ Critical Path: Task 1 -> Task 2 -> Task 4
     Evidence: .sisyphus/evidence/task-2-rearm.txt
   ```
 
-- [ ] 3. Ship a forkable Heads-Up template game (`r2/games/headsUp/`)
+- [x] 3. Ship a forkable Heads-Up template game (`r2/games/headsUp/`)
 
   **What to do**:
   - Create template game files (manifest/definition/rules/script) with:
@@ -274,7 +274,7 @@ Critical Path: Task 1 -> Task 2 -> Task 4
     Evidence: .sisyphus/evidence/task-3-empty-deck.json
   ```
 
-- [ ] 4. Run full verification and prepare handoff evidence
+- [x] 4. Run full verification and prepare handoff evidence
 
   **What to do**:
   - Run tests/type-check on touched workspaces.
@@ -348,7 +348,7 @@ pnpm tsc --noEmit
 ```
 
 ### Final Checklist
-- [ ] Accelerometer tilt signal is usable in rules for pass/correct.
-- [ ] Heads-Up template is simple, playable, and fork-friendly.
-- [ ] No unnecessary AI-system complexity introduced.
-- [ ] Existing tilt games remain stable.
+- [x] Accelerometer tilt signal is usable in rules for pass/correct.
+- [x] Heads-Up template is simple, playable, and fork-friendly.
+- [x] No unnecessary AI-system complexity introduced.
+- [x] Existing tilt games remain stable.
