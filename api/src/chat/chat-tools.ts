@@ -3,10 +3,12 @@ import { z } from "zod";
 
 import type { ArtifactService } from "@/agent/artifact-service";
 import { getSkillById } from "@/ai/skills";
+import type { GitService } from "@/services/git/GitService";
 
 export interface ChatToolContext {
 	gameId: string;
 	artifactService: ArtifactService;
+	gitService?: GitService;
 }
 
 export function createChatTools(ctx: ChatToolContext) {
@@ -21,6 +23,15 @@ export function createChatTools(ctx: ChatToolContext) {
 					.describe('The filename to read (e.g., "document.md", "notes.txt")'),
 			}),
 			execute: async ({ filename }) => {
+				if (ctx.gitService) {
+					const data = await ctx.gitService.readFile(ctx.gameId, filename);
+					if (!data) {
+						return { ok: true, exists: false, content: null };
+					}
+					const content = new TextDecoder().decode(data);
+					return { ok: true, exists: true, content };
+				}
+
 				const result = await ctx.artifactService.readWorkspaceFile({
 					gameId: ctx.gameId,
 					filename,
@@ -34,7 +45,7 @@ export function createChatTools(ctx: ChatToolContext) {
 
 		writeFile: tool({
 			description:
-				"Write content to a file in the workspace. Creates or overwrites the file.",
+				"Write content to a file in the workspace. Creates or overwrites the file. Each write is automatically committed.",
 			inputSchema: z.object({
 				filename: z
 					.string()
@@ -43,6 +54,16 @@ export function createChatTools(ctx: ChatToolContext) {
 				content: z.string().describe("The full content to write to the file"),
 			}),
 			execute: async ({ filename, content }) => {
+				if (ctx.gitService) {
+					const sha = await ctx.gitService.commitFiles(
+						ctx.gameId,
+						[{ path: filename, content }],
+						`AI: Update ${filename}`,
+						{ name: "AI Assistant", email: "ai@slopcade.app" },
+					);
+					return { ok: true, commitSha: sha, bytesWritten: content.length };
+				}
+
 				const { key } = await ctx.artifactService.storeWorkspaceFile({
 					gameId: ctx.gameId,
 					filename,
@@ -65,6 +86,17 @@ export function createChatTools(ctx: ChatToolContext) {
 					),
 			}),
 			execute: async ({ prefix }) => {
+				if (ctx.gitService) {
+					const allFiles = await ctx.gitService.listFiles(ctx.gameId);
+					const filtered = prefix
+						? allFiles.filter((f) => f.startsWith(prefix))
+						: allFiles;
+					return {
+						ok: true,
+						files: filtered.map((f) => ({ filename: f })),
+					};
+				}
+
 				const files = await ctx.artifactService.listWorkspaceFileMeta(
 					ctx.gameId,
 				);
@@ -93,6 +125,25 @@ export function createChatTools(ctx: ChatToolContext) {
 					.describe("Array of filenames to read"),
 			}),
 			execute: async ({ filenames }) => {
+				if (ctx.gitService) {
+					const fileResults = await Promise.all(
+						filenames.map(async (filename) => {
+							const data = await ctx.gitService!.readFile(ctx.gameId, filename);
+							if (!data) {
+								return { filename, exists: false, content: null, size: 0 };
+							}
+							const content = new TextDecoder().decode(data);
+							return {
+								filename,
+								exists: true,
+								content,
+								size: content.length,
+							};
+						}),
+					);
+					return { ok: true, files: fileResults };
+				}
+
 				const results = await ctx.artifactService.readWorkspaceFiles(
 					ctx.gameId,
 					filenames,
@@ -110,6 +161,25 @@ export function createChatTools(ctx: ChatToolContext) {
 						};
 					}),
 				};
+			},
+		}),
+
+		viewHistory: tool({
+			description:
+				"View recent commit history for this game's workspace. Shows what changes have been made.",
+			inputSchema: z.object({
+				depth: z
+					.number()
+					.optional()
+					.default(10)
+					.describe("Number of commits to show"),
+			}),
+			execute: async ({ depth }) => {
+				if (!ctx.gitService) {
+					return { ok: false, error: "Git history not available" };
+				}
+				const commits = await ctx.gitService.log(ctx.gameId, depth);
+				return { ok: true, commits };
 			},
 		}),
 

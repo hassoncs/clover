@@ -21,6 +21,7 @@ export type ImageField = {
 	imageUrl?: string;
 	assetRef?: string;
 	localPath?: string;
+	assetId?: string;
 };
 
 export interface EconomyGraphDefinition {
@@ -351,6 +352,7 @@ export interface LoadingScreenConfig {
 
 export interface SoundAsset {
 	url: string;
+	assetId?: string;
 	type: "sfx" | "music";
 	loop?: boolean;
 	defaultVolume?: number;

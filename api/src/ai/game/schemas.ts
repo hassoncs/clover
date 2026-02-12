@@ -53,6 +53,7 @@ export const PolygonSpriteSchema = z.object({
 export const ImageSpriteSchema = z.object({
 	type: z.literal("image"),
 	imageUrl: z.string(),
+	assetId: z.string().optional(),
 	imageWidth: z.number().positive(),
 	imageHeight: z.number().positive(),
 	color: z.string().optional(),
@@ -493,6 +494,7 @@ export const AssetSourceSchema = z.enum(["generated", "uploaded", "none"]);
 
 export const AssetConfigSchema = z.object({
 	imageUrl: z.string().optional(),
+	assetId: z.string().optional(),
 	source: AssetSourceSchema.optional(),
 	scale: z.number().optional(),
 	offsetX: z.number().optional(),
@@ -522,6 +524,7 @@ export const ParallaxLayerSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	imageUrl: z.string().optional(),
+	assetId: z.string().optional(),
 	depth: ParallaxDepthSchema,
 	parallaxFactor: z.number().min(0).max(1),
 	scale: z.number().optional(),

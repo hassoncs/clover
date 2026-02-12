@@ -298,6 +298,7 @@ export async function handleChatStream(
 		tools: createChatTools({
 			gameId: ctx.gameId,
 			artifactService: ctx.artifactService,
+			gitService: ctx.gitService,
 		}),
 		stopWhen: stepCountIs(MAX_STEPS),
 	});

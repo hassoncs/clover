@@ -1,17 +1,17 @@
 type DurableObjectNamespace =
 	import("@cloudflare/workers-types").DurableObjectNamespace;
 
-interface FileChange {
+export interface FileChange {
 	path: string;
 	content: string;
 }
 
-interface Author {
+export interface Author {
 	name: string;
 	email: string;
 }
 
-interface Commit {
+export interface Commit {
 	oid: string;
 	message: string;
 	author: { name: string; email: string; timestamp: number };
@@ -20,7 +20,7 @@ interface Commit {
 	tree?: string;
 }
 
-interface FileDiff {
+export interface FileDiff {
 	path: string;
 	type: "add" | "modify" | "delete";
 }

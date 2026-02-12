@@ -98,6 +98,7 @@ export const ImageVisualSchema = BaseVisualSchema.extend({
 	imageWidth: z.number().optional(),
 	imageHeight: z.number().optional(),
 	url: z.string().optional(),
+	assetId: z.string().optional(),
 	scale: z.number().optional(),
 });
 
@@ -1840,6 +1841,7 @@ export const ImageFieldSchema = z.object({
 	imageUrl: z.string().optional(),
 	assetRef: z.string().optional(),
 	localPath: z.string().optional(),
+	assetId: z.string().optional(),
 });
 
 export const StaticBackgroundSchema = ImageFieldSchema.extend({
@@ -1929,6 +1931,7 @@ export const LoadingScreenConfigSchema = z.object({
 
 export const SoundAssetSchema = z.object({
 	url: z.string(),
+	assetId: z.string().optional(),
 	type: z.enum(["sfx", "music"]),
 	loop: z.boolean().optional(),
 	defaultVolume: z.number().optional(),

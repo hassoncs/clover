@@ -13,6 +13,7 @@ import { GameRepoDO } from "@/durable-objects/GameRepoDO";
 import { WalletService } from "@/economy/wallet-service";
 import textGridRouter from "@/routes/text-grid";
 import revenuecatWebhookRouter from "@/routes/webhooks/revenuecat";
+import { GitService } from "@/services/git/GitService";
 import { createContext, type Env } from "@/trpc/context";
 import { appRouter } from "@/trpc/router";
 
@@ -139,6 +140,9 @@ app.get("/api/chat/stream", async (c) => {
 	const model = createModel({ apiKey, model: chatModel.id });
 	const artifactService = new ArtifactService(c.env.ASSETS, c.env.DB);
 	const walletService = new WalletService(c.env.DB);
+	const gitService = c.env.GAME_REPO
+		? new GitService(c.env.GAME_REPO)
+		: undefined;
 
 	const history = await c.env.DB.prepare(
 		"SELECT * FROM messages WHERE thread_id = ? ORDER BY seq ASC",
@@ -206,6 +210,7 @@ app.get("/api/chat/stream", async (c) => {
 			gameId: thread.game_id,
 			artifactService,
 			walletService,
+			gitService,
 		},
 		threadId,
 		modelMessages,

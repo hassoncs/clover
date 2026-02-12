@@ -27,8 +27,15 @@ Generated: 2026-02-12
 ### Testing
 - [testing-patterns](testing-patterns.md) - Vitest, GDUnit4, tRPC testing, D1/R2 mocking, E2E bridge
 
+### Economy
+- [economy-iap](economy-iap.md) - Sparks/Gems currency, wallet transactions, RevenueCat IAP, pricing
+
 ### Assets & Generation
 - [asset-pack-generation](asset-pack-generation.md) - Image generation, pipelines, silhouettes
+- [sound-generation](sound-generation.md) - ElevenLabs SFX, audio assets, Godot AudioManager
+
+### Voice & Real-time
+- [transcription-do](transcription-do.md) - STT/Whisper, RealtimeRelayDO, GameRepoDO, voice input
 
 ## Recently Updated
 
@@ -55,20 +62,20 @@ Generated: 2026-02-12
 | Godot & Bridge | 5 | ✅ godot-engine + physics + bridge + input + inspector |
 | Game Systems | 4 | ✅ ECS + authoring + economy + effects |
 | Storage & Infra | 2 | ✅ storage-ops + native-infrastructure |
+| Economy | 1 | ✅ economy-iap covers Sparks/Gems/RevenueCat |
 | Testing | 1 | ✅ Vitest/GDUnit4/E2E covered |
-| Assets | 1 | ⚠️ Needs sound-generation |
+| Assets & Audio | 2 | ✅ asset-pack-generation + sound-generation |
+| Voice & Real-time | 1 | ✅ transcription-do covers STT/DOs |
 
 ## Remaining Gaps
 
-1. `economy-iap.md` - Stripe/Apple/Google IAP, credit system
-2. `transcription-do.md` - Whisper STT, Durable Objects
-3. `sound-generation.md` - Audio asset pipeline
+No critical gaps remaining. All major domains covered.
 
 ## Skill Quality Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Total skills | 15-25 | 13 |
+| Total skills | 15-25 | 16 |
 | Avg code examples per skill | 3+ | 4+ ✅ |
 | Avg gotchas per skill | 2+ | 3+ ✅ |
 | Skills with quick reference | 100% | 100% ✅ |
