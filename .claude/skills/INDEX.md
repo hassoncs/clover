@@ -7,7 +7,9 @@ Generated: 2026-02-12
 ### Chat & AI
 - [agent-orchestration](agent-orchestration.md) - Chat streaming, SSE, AG-UI protocol, HITL, billing
 
-### Bridge & Engine
+### Godot & Bridge
+- [godot-engine](godot-engine.md) - GDScript patterns, scene composition, exports, coordinate system
+- [physics](physics.md) - Physics bodies, collision, joints, world settings, PPM
 - [bridge-development](bridge-development.md) - Godot-TypeScript bridge, method registration, dispatch
 - [input-handling](input-handling.md) - Web/native input, touch, drag, gestures
 - [game-inspector](game-inspector.md) - MCP tools, debugging, entity inspection
@@ -20,6 +22,7 @@ Generated: 2026-02-12
 
 ### Storage & Infrastructure
 - [storage-ops](storage-ops.md) - D1, R2, Supabase auth, migrations, BlobStore
+- [native-infrastructure](native-infrastructure.md) - Metro port 8085, CocoaPods, Expo plugins, preflight
 
 ### Testing
 - [testing-patterns](testing-patterns.md) - Vitest, GDUnit4, tRPC testing, D1/R2 mocking, E2E bridge
@@ -31,6 +34,9 @@ Generated: 2026-02-12
 
 | Skill | Date | Changes |
 |-------|------|---------|
+| godot-engine | 2026-02-12 | Created — GDScript, scenes, bridge, coordinates |
+| physics | 2026-02-12 | Created — bodies, collision, joints, PPM |
+| native-infrastructure | 2026-02-12 | Created — Metro 8085, CocoaPods, Expo plugins |
 | agent-orchestration | 2026-02-12 | Created — covers chat streaming, HITL, billing |
 | storage-ops | 2026-02-12 | Created — covers D1, R2, Supabase, migrations |
 | testing-patterns | 2026-02-12 | Created — covers Vitest, GDUnit4, bridge E2E |
@@ -46,31 +52,23 @@ Generated: 2026-02-12
 | Category | Skills | Status |
 |----------|--------|--------|
 | Chat & AI | 1 | ✅ agent-orchestration covers streaming + billing |
-| Bridge & Engine | 3 | ⚠️ 50% - Needs coordinate-systems, native-image-loading |
-| Game Systems | 4 | ✅ 80% - ECS + authoring + economy + effects |
-| Storage | 1 | ✅ D1/R2/Supabase covered |
+| Godot & Bridge | 5 | ✅ godot-engine + physics + bridge + input + inspector |
+| Game Systems | 4 | ✅ ECS + authoring + economy + effects |
+| Storage & Infra | 2 | ✅ storage-ops + native-infrastructure |
 | Testing | 1 | ✅ Vitest/GDUnit4/E2E covered |
-| Assets | 1 | ⚠️ 25% - Needs sound-generation |
-| Expo/Native | 0 | 🔴 0% - Needs expo-native, cocoapods |
+| Assets | 1 | ⚠️ Needs sound-generation |
 
-## Remaining Gaps (P1/P2)
+## Remaining Gaps
 
-P1 (High):
-1. `godot-engine.md` - GDScript patterns, scene composition, signals
-2. `physics-rapier.md` - Collision layers, body types, constraints
-3. `rules-behaviors.md` - Declarative rules, behavior overrides (partially in ecs-architecture)
-
-P2 (Medium):
-4. `native-infrastructure.md` - CocoaPods, Metro port 8085, Android Gradle
-5. `economy-iap.md` - Stripe/Apple/Google IAP, credit system
-6. `transcription-do.md` - Whisper STT, Durable Objects
-7. `sound-generation.md` - Audio asset pipeline
+1. `economy-iap.md` - Stripe/Apple/Google IAP, credit system
+2. `transcription-do.md` - Whisper STT, Durable Objects
+3. `sound-generation.md` - Audio asset pipeline
 
 ## Skill Quality Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Total skills | 15-25 | 10 |
+| Total skills | 15-25 | 13 |
 | Avg code examples per skill | 3+ | 4+ ✅ |
 | Avg gotchas per skill | 2+ | 3+ ✅ |
 | Skills with quick reference | 100% | 100% ✅ |

@@ -103,12 +103,15 @@ For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
 | Database/Storage | `storage-ops` | D1, R2, Supabase, migrations |
 | Testing | `testing-patterns` | Vitest, GDUnit4, mocking, E2E |
 | Entities/Games | `ecs-architecture` | Prefabs, GameDefinition, rules, behaviors |
+| Godot Engine | `godot-engine` | GDScript, scenes, coordinates, exports |
+| Physics | `physics` | Bodies, collision, joints, PPM |
 | Godot Bridge | `bridge-development` | TS↔Godot communication |
 | Visual Effects | `effects-system` | Shaders, feedback, particles |
 | Economy | `economy-engine` | Resource graphs, pools |
 | Input | `input-handling` | Touch, drag, gestures |
 | Game Inspector | `game-inspector` | MCP tools, debugging |
 | Asset Generation | `asset-pack-generation` | Image pipelines, silhouettes |
+| Native/Build | `native-infrastructure` | Metro 8085, CocoaPods, Expo plugins |
 
 Full skill index: `.claude/skills/INDEX.md`
 

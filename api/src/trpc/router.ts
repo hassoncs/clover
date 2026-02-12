@@ -1,5 +1,6 @@
 import { publicProcedure, router } from "./index";
 import { assetSystemRouter } from "./routes/asset-system";
+import { blobAssetsRouter } from "./routes/blob-assets";
 import { chatThreadsRouter } from "./routes/chat-threads";
 import { economyRouter } from "./routes/economy";
 import { economyGraphRouter } from "./routes/economy-graph";
@@ -19,6 +20,7 @@ export const appRouter = router({
 	games: gamesRouter,
 	users: usersRouter,
 	assetSystem: assetSystemRouter,
+	blobAssets: blobAssetsRouter,
 	uiComponents: uiComponentsRouter,
 	economy: economyRouter,
 	economyGraph: economyGraphRouter,
