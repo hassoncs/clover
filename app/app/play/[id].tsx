@@ -1,4 +1,6 @@
 import type { GameDefinition } from "@slopcade/shared";
+import type { GameVariableValue } from "@slopcade/shared/types/GameDefinition";
+import { applyVariableOverrides } from "@slopcade/shared/types/remix";
 import { STYLE_PRESET_OPTIONS } from "@slopcade/shared/types/style-presets";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -33,10 +35,12 @@ export default function PlayScreen() {
 		id,
 		definition: definitionParam,
 		packId,
+		remixId,
 	} = useLocalSearchParams<{
 		id: string;
 		definition?: string;
 		packId?: string;
+		remixId?: string;
 	}>();
 
 	const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(
@@ -60,6 +64,11 @@ export default function PlayScreen() {
 	>(undefined);
 	const [isForking, setIsForking] = useState(false);
 
+	const [remixVariableOverrides, setRemixVariableOverrides] = useState<
+		Record<string, GameVariableValue> | undefined
+	>(undefined);
+	const [isLoadingRemix, setIsLoadingRemix] = useState(false);
+
 	const [resolvedPackEntries, setResolvedPackEntries] = useState<
 		Record<string, ResolvedPackEntry> | undefined
 	>(undefined);
@@ -73,14 +82,28 @@ export default function PlayScreen() {
 
 	const enrichedDefinition = useMemo(() => {
 		if (!gameDefinition) return null;
-		console.log("[play] 🔄 Merging assets into game definition...", {
+		console.log("[play] Merging assets into game definition...", {
 			hasAssets: !!resolvedPackEntries,
 			assetCount: resolvedPackEntries
 				? Object.keys(resolvedPackEntries).length
 				: 0,
+			hasVariableOverrides: !!remixVariableOverrides,
 		});
-		return mergeAssetsIntoPrefabs(gameDefinition, resolvedPackEntries);
-	}, [gameDefinition, resolvedPackEntries]);
+
+		let def = gameDefinition;
+
+		if (remixVariableOverrides && def.variables) {
+			def = {
+				...def,
+				variables: applyVariableOverrides(
+					def.variables,
+					remixVariableOverrides,
+				),
+			};
+		}
+
+		return mergeAssetsIntoPrefabs(def, resolvedPackEntries);
+	}, [gameDefinition, resolvedPackEntries, remixVariableOverrides]);
 
 	const { phase, progress, imageUrls, startPreload, skipPreload, reset } =
 		useGamePreloader(enrichedDefinition, {
@@ -101,8 +124,66 @@ export default function PlayScreen() {
 	}, [id]);
 
 	useEffect(() => {
+		if (!remixId || !id || id === "preview") {
+			setRemixVariableOverrides(undefined);
+			return;
+		}
+
+		let cancelled = false;
+		setIsLoadingRemix(true);
+
+		trpc.assetSystem.remixes.getResolvedRemix
+			.query({ gameId: id, remixId })
+			.then((result) => {
+				if (cancelled) return;
+
+				if (result.overrides.variables) {
+					setRemixVariableOverrides(result.overrides.variables);
+				}
+
+				const entries: Record<string, ResolvedPackEntry> = {};
+				for (const [prefabId, entry] of Object.entries(
+					result.entriesByPrefabId,
+				)) {
+					if (entry.imageUrl) {
+						entries[prefabId] = {
+							imageUrl: entry.imageUrl,
+							placement: entry.placement
+								? {
+										scale: entry.placement.scale ?? 1,
+										offsetX: entry.placement.offsetX ?? 0,
+										offsetY: entry.placement.offsetY ?? 0,
+									}
+								: undefined,
+						};
+					}
+				}
+				if (Object.keys(entries).length > 0) {
+					setResolvedPackEntries(entries);
+				}
+			})
+			.catch((err) => {
+				if (cancelled) return;
+				console.error("[play] Failed to load remix:", err);
+			})
+			.finally(() => {
+				if (!cancelled) {
+					setIsLoadingRemix(false);
+				}
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [id, remixId]);
+
+	useEffect(() => {
+		if (remixId) return;
+
+		const effectivePackId = packId || activeAssetPackId;
+
 		const loadPack = async () => {
-			if (!id || id === "preview" || !packId) {
+			if (!id || id === "preview" || !effectivePackId) {
 				setResolvedPackEntries(undefined);
 				return;
 			}
@@ -112,18 +193,21 @@ export default function PlayScreen() {
 				const isDownloaded = await isGameDownloaded(id);
 
 				if (isDownloaded) {
-					const localEntries = await getLocalResolvedPackEntries(id, packId);
+					const localEntries = await getLocalResolvedPackEntries(
+						id,
+						effectivePackId,
+					);
 					if (localEntries) {
 						setResolvedPackEntries(localEntries);
-						setActiveAssetPackId(packId);
+						setActiveAssetPackId(effectivePackId);
 					} else {
 						console.warn(
-							`[play] Pack ${packId} not found locally, falling back to API`,
+							`[play] Pack ${effectivePackId} not found locally, falling back to API`,
 						);
-						await loadPackFromApi(id, packId);
+						await loadPackFromApi(id, effectivePackId);
 					}
 				} else {
-					await loadPackFromApi(id, packId);
+					await loadPackFromApi(id, effectivePackId);
 				}
 			} catch (err) {
 				console.error("Failed to load asset pack:", err);
@@ -133,10 +217,10 @@ export default function PlayScreen() {
 			}
 		};
 
-		const loadPackFromApi = async (gameId: string, packId: string) => {
+		const loadPackFromApi = async (gameId: string, pid: string) => {
 			const result = await trpc.assetSystem.getResolvedForGame.query({
 				gameId,
-				packId,
+				packId: pid,
 			});
 
 			const entries: Record<string, ResolvedPackEntry> = {};
@@ -150,11 +234,11 @@ export default function PlayScreen() {
 			});
 
 			setResolvedPackEntries(entries);
-			setActiveAssetPackId(packId);
+			setActiveAssetPackId(pid);
 		};
 
 		loadPack();
-	}, [id, packId]);
+	}, [id, packId, activeAssetPackId, remixId]);
 
 	useEffect(() => {
 		const loadGame = async () => {
@@ -188,7 +272,7 @@ export default function PlayScreen() {
 						}
 					} else {
 						console.log(`[play] Loading game ${id} from API`);
-						const game = await trpc.games.get.query({ id });
+						const game = await trpc.games.getPublic.query({ id });
 						const parsed = JSON.parse(game.definition) as GameDefinition;
 						setGameDefinition(parsed);
 						if (!packId) {
@@ -217,11 +301,19 @@ export default function PlayScreen() {
 			gameDefinition &&
 			!isLoadingDefinition &&
 			!isLoadingPack &&
+			!isLoadingRemix &&
 			phase === "idle"
 		) {
 			startPreload();
 		}
-	}, [gameDefinition, isLoadingDefinition, isLoadingPack, phase, startPreload]);
+	}, [
+		gameDefinition,
+		isLoadingDefinition,
+		isLoadingPack,
+		isLoadingRemix,
+		phase,
+		startPreload,
+	]);
 
 	const handleGameEnd = useCallback((state: "won" | "lost") => {
 		console.log(`Game ended: ${state}`);
@@ -513,7 +605,7 @@ export default function PlayScreen() {
 				<View className="flex-1 bg-black/80 justify-center items-center p-4">
 					<View className="bg-gray-800 w-full max-w-sm rounded-xl p-6">
 						<Text className="text-white text-xl font-bold mb-4">
-							Generate Asset Pack
+							Generate Remix
 						</Text>
 
 						{id && id !== "preview" && (
@@ -537,7 +629,7 @@ export default function PlayScreen() {
 
 						{availablePacks.length > 0 && (
 							<View className="mb-6">
-								<Text className="text-gray-400 mb-2">Select Asset Pack</Text>
+								<Text className="text-gray-400 mb-2">Select Remix</Text>
 								<ScrollView
 									horizontal
 									showsHorizontalScrollIndicator={false}
@@ -567,7 +659,7 @@ export default function PlayScreen() {
 							</View>
 						)}
 
-						<Text className="text-gray-400 mb-2">Theme Prompt</Text>
+						<Text className="text-gray-400 mb-2">Remix Prompt</Text>
 						<TextInput
 							className="bg-gray-700 text-white p-3 rounded-lg mb-4"
 							placeholder={

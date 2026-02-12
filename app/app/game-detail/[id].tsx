@@ -58,6 +58,41 @@ export default function GameDetailScreen() {
 	} | null>(null);
 	const [isLoadingPacks, setIsLoadingPacks] = useState(false);
 
+	const [remixesData, setRemixesData] = useState<
+		Array<{
+			id: string;
+			name: string;
+			description: string | null;
+			isComplete: boolean;
+			thumbnailUrl: string | null;
+			style: string | null;
+			overrides: {
+				variables?: Record<string, unknown>;
+				assets?: Record<string, unknown>;
+				shaderParams?: Record<string, unknown>;
+				sounds?: Record<string, unknown>;
+			};
+		}>
+	>([]);
+	const [isLoadingRemixes, setIsLoadingRemixes] = useState(false);
+
+	useEffect(() => {
+		if (gameInfo?.id && !isOffline) {
+			setIsLoadingRemixes(true);
+			trpc.assetSystem.remixes.listRemixes
+				.query({ gameId: gameInfo.id })
+				.then((data) => {
+					setRemixesData(data);
+				})
+				.catch((err) => {
+					console.error("Failed to load remixes:", err);
+				})
+				.finally(() => {
+					setIsLoadingRemixes(false);
+				});
+		}
+	}, [gameInfo?.id, isOffline]);
+
 	useEffect(() => {
 		if (gameInfo?.id && !isOffline) {
 			setIsLoadingPacks(true);
@@ -103,7 +138,7 @@ export default function GameDetailScreen() {
 						throw new Error("Downloaded game not found locally");
 					}
 				} else {
-					const game = await trpc.games.get.query({ id });
+					const game = await trpc.games.getPublic.query({ id });
 					setGameInfo({
 						id: game.id,
 						title: game.title,
@@ -364,67 +399,155 @@ export default function GameDetailScreen() {
 
 					{!isOffline && (
 						<View>
-							<Text className="text-white text-xl font-bold mb-4">Themes</Text>
-							{isLoadingPacks ? (
+							{isLoadingRemixes || isLoadingPacks ? (
 								<ActivityIndicator color="#4CAF50" />
-							) : packsData?.packs && packsData.packs.length > 0 ? (
-								<View className="gap-3">
-									{packsData.packs.map((pack) => (
-										<Pressable
-											key={pack.id}
-											className="bg-gray-800 p-4 rounded-xl flex-row items-center justify-between active:bg-gray-700"
-											onPress={() =>
-												router.push({
-													pathname: "/play/[id]",
-													params: { id: gameInfo.id, packId: pack.id },
-												})
-											}
-										>
-											<View className="flex-1 mr-4">
-												<View className="flex-row items-center gap-2 mb-1">
-													<Text
-														className="text-white font-semibold text-lg"
-														numberOfLines={1}
-													>
-														{pack.name}
-													</Text>
-													{pack.isComplete && (
-														<View className="bg-green-900/50 px-2 py-0.5 rounded text-xs">
-															<Text className="text-green-400 text-xs font-bold">
-																COMPLETE
-															</Text>
-														</View>
-													)}
-												</View>
-												<Text
-													className="text-gray-400 text-sm"
-													numberOfLines={2}
+							) : remixesData && remixesData.length > 0 ? (
+								<View>
+									<Text className="text-white text-xl font-bold mb-4">
+										Remixes
+									</Text>
+									<View className="gap-3">
+										{remixesData.map((remix) => {
+											const overrideTypes = [];
+											if (remix.overrides.assets) overrideTypes.push("assets");
+											if (remix.overrides.variables)
+												overrideTypes.push("variables");
+											if (remix.overrides.sounds) overrideTypes.push("sounds");
+											if (remix.overrides.shaderParams)
+												overrideTypes.push("shaders");
+
+											return (
+												<Pressable
+													key={remix.id}
+													className="bg-gray-800 p-4 rounded-xl flex-row items-center justify-between active:bg-gray-700"
+													onPress={() =>
+														router.push({
+															pathname: "/play/[id]",
+															params: { id: gameInfo.id, remixId: remix.id },
+														})
+													}
 												>
-													{pack.description || "No description"} •{" "}
-													{pack.coveredCount}/{pack.totalPrefabs} assets
-												</Text>
-											</View>
-											<View className="bg-blue-600/20 p-2 rounded-full">
-												<Text className="text-blue-400 font-bold text-xs">
-													PLAY
-												</Text>
-											</View>
-										</Pressable>
-									))}
+													<View className="flex-row items-center flex-1 mr-4">
+														{remix.thumbnailUrl && (
+															<Image
+																source={{ uri: remix.thumbnailUrl }}
+																className="w-12 h-12 rounded-lg mr-3 bg-gray-700"
+															/>
+														)}
+														<View className="flex-1">
+															<View className="flex-row items-center gap-2 mb-1 flex-wrap">
+																<Text
+																	className="text-white font-semibold text-lg"
+																	numberOfLines={1}
+																>
+																	{remix.name}
+																</Text>
+																{remix.isComplete && (
+																	<View className="bg-green-900/50 px-2 py-0.5 rounded">
+																		<Text className="text-green-400 text-[10px] font-bold">
+																			COMPLETE
+																		</Text>
+																	</View>
+																)}
+																{remix.style && (
+																	<View className="bg-purple-900/50 px-2 py-0.5 rounded">
+																		<Text className="text-purple-300 text-[10px] font-bold uppercase">
+																			{remix.style}
+																		</Text>
+																	</View>
+																)}
+															</View>
+															<Text
+																className="text-gray-400 text-sm mb-1"
+																numberOfLines={2}
+															>
+																{remix.description || "No description"}
+															</Text>
+															{overrideTypes.length > 0 && (
+																<Text className="text-gray-500 text-xs">
+																	Includes: {overrideTypes.join(" + ")}
+																</Text>
+															)}
+														</View>
+													</View>
+													<View className="bg-blue-600/20 p-2 rounded-full">
+														<Text className="text-blue-400 font-bold text-xs">
+															PLAY
+														</Text>
+													</View>
+												</Pressable>
+											);
+										})}
+									</View>
+								</View>
+							) : packsData?.packs && packsData.packs.length > 0 ? (
+								<View>
+									<Text className="text-white text-xl font-bold mb-4">
+										Themes
+									</Text>
+									<View className="gap-3">
+										{packsData.packs.map((pack) => (
+											<Pressable
+												key={pack.id}
+												className="bg-gray-800 p-4 rounded-xl flex-row items-center justify-between active:bg-gray-700"
+												onPress={() =>
+													router.push({
+														pathname: "/play/[id]",
+														params: { id: gameInfo.id, packId: pack.id },
+													})
+												}
+											>
+												<View className="flex-1 mr-4">
+													<View className="flex-row items-center gap-2 mb-1">
+														<Text
+															className="text-white font-semibold text-lg"
+															numberOfLines={1}
+														>
+															{pack.name}
+														</Text>
+														{pack.isComplete && (
+															<View className="bg-green-900/50 px-2 py-0.5 rounded text-xs">
+																<Text className="text-green-400 text-xs font-bold">
+																	COMPLETE
+																</Text>
+															</View>
+														)}
+													</View>
+													<Text
+														className="text-gray-400 text-sm"
+														numberOfLines={2}
+													>
+														{pack.description || "No description"} •{" "}
+														{pack.coveredCount}/{pack.totalPrefabs} assets
+													</Text>
+												</View>
+												<View className="bg-blue-600/20 p-2 rounded-full">
+													<Text className="text-blue-400 font-bold text-xs">
+														PLAY
+													</Text>
+												</View>
+											</Pressable>
+										))}
+									</View>
 								</View>
 							) : (
-								<View className="bg-gray-800/50 p-6 rounded-xl items-center">
-									<Text className="text-gray-400 mb-3 text-center">
-										No custom themes created for this game yet.
+								<View>
+									<Text className="text-white text-xl font-bold mb-4">
+										Remixes
 									</Text>
-									<Pressable
-										onPress={() => router.push(`/editor/${gameInfo.id}`)}
-										className="bg-gray-700 px-4 py-2 rounded-lg"
-									>
-										<Text className="text-white font-semibold">
-											Open Editor to Create Theme
+									<View className="bg-gray-800/50 p-6 rounded-xl items-center">
+										<Text className="text-gray-400 mb-3 text-center">
+											No remixes created for this game yet.
 										</Text>
-									</Pressable>
+										<Pressable
+											onPress={() => router.push(`/editor/${gameInfo.id}`)}
+											className="bg-gray-700 px-4 py-2 rounded-lg"
+										>
+											<Text className="text-white font-semibold">
+												Open Editor to Create Remix
+											</Text>
+										</Pressable>
+									</View>
 								</View>
 							)}
 						</View>
