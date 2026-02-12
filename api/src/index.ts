@@ -208,6 +208,7 @@ app.get("/api/chat/stream", async (c) => {
 		},
 		threadId,
 		modelMessages,
+		(p) => c.executionCtx.waitUntil(p),
 	);
 });
 

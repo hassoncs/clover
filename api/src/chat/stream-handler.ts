@@ -238,6 +238,7 @@ export async function handleChatStream(
 	ctx: ChatHandlerContext,
 	threadId: string,
 	messages: ModelMessage[],
+	waitUntil: (promise: Promise<unknown>) => void,
 ): Promise<Response> {
 	const encoder = new TextEncoder();
 	const { readable, writable } = new TransformStream();
@@ -247,32 +248,41 @@ export async function handleChatStream(
 		await writer.write(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
 	};
 
-	void (async () => {
+	const keepalive = async () => {
+		await writer.write(encoder.encode(": keepalive\n\n"));
+	};
+
+	await updateThread(ctx.db, threadId, {
+		generation_stage: "generating",
+		status_message: "Thinking...",
+	});
+
+	const runId = nanoid();
+
+	const mapper = new AgUiMapper({
+		threadId,
+		runId,
+		generateMessageId: () => nanoid(),
+	});
+
+	const result = streamText({
+		model: ctx.model,
+		system: CHAT_STAGE_PROMPT,
+		messages,
+		tools: createChatTools({
+			gameId: ctx.gameId,
+			artifactService: ctx.artifactService,
+		}),
+		stopWhen: stepCountIs(MAX_STEPS),
+	});
+
+	const keepaliveInterval = setInterval(() => {
+		keepalive().catch(() => {});
+	}, 5_000);
+
+	const streamingPromise = (async () => {
 		try {
-			await updateThread(ctx.db, threadId, {
-				generation_stage: "generating",
-				status_message: "Thinking...",
-			});
-
-			const runId = nanoid();
 			await emit({ type: "RUN_STARTED", threadId, runId });
-
-			const mapper = new AgUiMapper({
-				threadId,
-				runId,
-				generateMessageId: () => nanoid(),
-			});
-
-			const result = streamText({
-				model: ctx.model,
-				system: CHAT_STAGE_PROMPT,
-				messages,
-				tools: createChatTools({
-					gameId: ctx.gameId,
-					artifactService: ctx.artifactService,
-				}),
-				stopWhen: stepCountIs(MAX_STEPS),
-			});
 
 			for await (const part of result.fullStream) {
 				const event = mapper.map(part);
@@ -316,6 +326,7 @@ export async function handleChatStream(
 				});
 			}
 		} catch (error) {
+			console.error("[stream-handler] Stream error:", error);
 			const errorMessage = toErrorMessage(error);
 			await emit({ type: "RUN_ERROR", message: errorMessage });
 
@@ -335,9 +346,12 @@ export async function handleChatStream(
 				status_message: errorMessage,
 			});
 		} finally {
+			clearInterval(keepaliveInterval);
 			await writer.close();
 		}
 	})();
+
+	waitUntil(streamingPromise);
 
 	return new Response(readable, {
 		headers: {
