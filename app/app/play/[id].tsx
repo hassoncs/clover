@@ -1,22 +1,14 @@
 import type { GameDefinition } from "@slopcade/shared";
-import type { GameVariableValue } from "@slopcade/shared/types/GameDefinition";
-import { applyVariableOverrides } from "@slopcade/shared/types/remix";
-import { STYLE_PRESET_OPTIONS } from "@slopcade/shared/types/style-presets";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Animated,
-	Modal,
 	Pressable,
-	ScrollView,
 	Text,
-	TextInput,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { ResolvedAssetEntry } from "@/lib/assets";
-import { mergeAssetsIntoPrefabs } from "@/lib/assets/mergeAssetsIntoTemplates";
 import { resolveAssetIds } from "@/lib/assets/resolveAssetIds";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import {
@@ -24,21 +16,15 @@ import {
 	loadLocalGameDefinition,
 } from "@/lib/offline/download-manager";
 import { trpc } from "@/lib/trpc/client";
-import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { AssetLoadingScreen } from "../../components/game";
 import { WithGodot } from "../../components/WithGodot";
 
 export default function PlayScreen() {
 	const router = useRouter();
-	const {
-		id,
-		definition: definitionParam,
-		remixId,
-	} = useLocalSearchParams<{
+	const { id, definition: definitionParam } = useLocalSearchParams<{
 		id: string;
 		definition?: string;
-		remixId?: string;
 	}>();
 
 	const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(
@@ -47,146 +33,12 @@ export default function PlayScreen() {
 	const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [runtimeKey, setRuntimeKey] = useState(0);
-	const [showAssetMenu, setShowAssetMenu] = useState(false);
-	const [genPrompt, setGenPrompt] = useState("");
-	const [selectedStyle, setSelectedStyle] = useState<string>("pixel");
-	const [isGenerating, setIsGenerating] = useState(false);
-	const [regeneratingPrefabId, setRegeneratingPrefabId] = useState<
-		string | undefined
-	>(undefined);
-	const [generatingLayer, setGeneratingLayer] = useState<
-		"sky" | "far" | "mid" | "near" | "all" | undefined
-	>(undefined);
-	const [activeRemixId, setActiveRemixId] = useState<string | undefined>(
-		undefined,
-	);
-	const [isForking, setIsForking] = useState(false);
-
-	const [remixVariableOverrides, setRemixVariableOverrides] = useState<
-		Record<string, GameVariableValue> | undefined
-	>(undefined);
-	const [isLoadingRemix, setIsLoadingRemix] = useState(false);
-
-	const [resolvedAssetEntries, setResolvedPackEntries] = useState<
-		Record<string, ResolvedAssetEntry> | undefined
-	>(undefined);
-	const [availableRemixes, setAvailableRemixes] = useState<
-		{ id: string; name: string; isComplete: boolean }[]
-	>([]);
 	const [godotReady, setGodotReady] = useState(false);
 	const [loadingDismissed, setLoadingDismissed] = useState(false);
 	const loadingOpacity = useRef(new Animated.Value(1)).current;
 
-	const getDefinitionActiveRemixId = useCallback(
-		(definition: GameDefinition) =>
-			(definition.assetSystem as { activeRemixId?: string } | undefined)
-				?.activeRemixId,
-		[],
-	);
-
-	const enrichedDefinition = useMemo(() => {
-		if (!gameDefinition) return null;
-		console.log("[play] Merging assets into game definition...", {
-			hasAssets: !!resolvedAssetEntries,
-			assetCount: resolvedAssetEntries
-				? Object.keys(resolvedAssetEntries).length
-				: 0,
-			hasVariableOverrides: !!remixVariableOverrides,
-		});
-
-		let def = gameDefinition;
-
-		if (remixVariableOverrides && def.variables) {
-			def = {
-				...def,
-				variables: applyVariableOverrides(
-					def.variables,
-					remixVariableOverrides,
-				),
-			};
-		}
-
-		return mergeAssetsIntoPrefabs(def, resolvedAssetEntries);
-	}, [gameDefinition, resolvedAssetEntries, remixVariableOverrides]);
-
 	const { phase, progress, imageUrls, startPreload, skipPreload, reset } =
-		useGamePreloader(enrichedDefinition, {
-			resolvedAssetEntries,
-		});
-
-	useEffect(() => {
-		if (id && id !== "preview") {
-			trpc.assetSystem.remixes.listRemixes
-				.query({ gameId: id })
-				.then((result) => {
-					setAvailableRemixes(
-						result.map((r) => ({
-							id: r.id,
-							name: r.name,
-							isComplete: r.isComplete,
-						})),
-					);
-				})
-				.catch((err) => console.error("Failed to fetch remixes:", err));
-		}
-	}, [id]);
-
-	useEffect(() => {
-		const effectiveRemixId = remixId ?? activeRemixId;
-		if (!effectiveRemixId || !id || id === "preview") {
-			setRemixVariableOverrides(undefined);
-			setResolvedPackEntries(undefined);
-			return;
-		}
-
-		let cancelled = false;
-		setIsLoadingRemix(true);
-
-		trpc.assetSystem.remixes.getResolvedRemix
-			.query({ gameId: id, remixId: effectiveRemixId })
-			.then((result) => {
-				if (cancelled) return;
-				setActiveRemixId(effectiveRemixId);
-
-				if (result.overrides.variables) {
-					setRemixVariableOverrides(result.overrides.variables);
-				}
-
-				const entries: Record<string, ResolvedAssetEntry> = {};
-				for (const [prefabId, entry] of Object.entries(
-					result.entriesByPrefabId,
-				)) {
-					if (entry.imageUrl) {
-						entries[prefabId] = {
-							imageUrl: entry.imageUrl,
-							placement: entry.placement
-								? {
-										scale: entry.placement.scale ?? 1,
-										offsetX: entry.placement.offsetX ?? 0,
-										offsetY: entry.placement.offsetY ?? 0,
-									}
-								: undefined,
-						};
-					}
-				}
-				if (Object.keys(entries).length > 0) {
-					setResolvedPackEntries(entries);
-				}
-			})
-			.catch((err) => {
-				if (cancelled) return;
-				console.error("[play] Failed to load remix:", err);
-			})
-			.finally(() => {
-				if (!cancelled) {
-					setIsLoadingRemix(false);
-				}
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [id, remixId, activeRemixId]);
+		useGamePreloader(gameDefinition);
 
 	useEffect(() => {
 		const loadGame = async () => {
@@ -211,9 +63,6 @@ export default function PlayScreen() {
 					}
 
 					setGameDefinition(parsed);
-					if (!remixId) {
-						setActiveRemixId(getDefinitionActiveRemixId(parsed));
-					}
 				} else if (id && id !== "preview") {
 					const isDownloaded = await isGameDownloaded(id);
 
@@ -224,9 +73,6 @@ export default function PlayScreen() {
 						const localDefinition = await loadLocalGameDefinition(id);
 						if (localDefinition) {
 							setGameDefinition(localDefinition);
-							if (!remixId) {
-								setActiveRemixId(getDefinitionActiveRemixId(localDefinition));
-							}
 						} else {
 							throw new Error(
 								`Game ${id} is marked as downloaded but definition not found`,
@@ -248,9 +94,6 @@ export default function PlayScreen() {
 						}
 
 						setGameDefinition(parsed);
-						if (!remixId) {
-							setActiveRemixId(getDefinitionActiveRemixId(parsed));
-						}
 
 						await trpc.games.incrementPlayCount.mutate({ id });
 					}
@@ -267,33 +110,13 @@ export default function PlayScreen() {
 		};
 
 		loadGame();
-	}, [id, definitionParam, remixId, getDefinitionActiveRemixId]);
-
-	// Derive whether remix data is still pending — this is synchronous and avoids
-	// the race where the preload effect fires before the remix fetch effect has
-	// had a chance to set isLoadingRemix=true (both run in the same render cycle).
-	const effectiveRemixIdForPreload = remixId ?? activeRemixId;
-	const remixDataPending =
-		!!effectiveRemixIdForPreload && !resolvedAssetEntries;
+	}, [id, definitionParam]);
 
 	useEffect(() => {
-		if (
-			gameDefinition &&
-			!isLoadingDefinition &&
-			!isLoadingRemix &&
-			!remixDataPending &&
-			phase === "idle"
-		) {
+		if (gameDefinition && !isLoadingDefinition && phase === "idle") {
 			startPreload();
 		}
-	}, [
-		gameDefinition,
-		isLoadingDefinition,
-		isLoadingRemix,
-		remixDataPending,
-		phase,
-		startPreload,
-	]);
+	}, [gameDefinition, isLoadingDefinition, phase, startPreload]);
 
 	const handleGameEnd = useCallback((state: "won" | "lost") => {
 		console.log(`Game ended: ${state}`);
@@ -319,232 +142,9 @@ export default function PlayScreen() {
 		startPreload();
 	}, [reset, startPreload, loadingOpacity]);
 
-	const handleRemixSelect = (itemId: string, type: "remix" = "remix") => {
-		if (type === "remix" && (itemId === remixId || itemId === activeRemixId)) {
-			return;
-		}
-
-		const params: Record<string, string> = { id: id! };
-		params.remixId = itemId;
-		setActiveRemixId(itemId);
-
-		router.replace({
-			pathname: "/play/[id]",
-			params,
-		});
-
-		reset();
-		setRuntimeKey((k) => k + 1);
-		setShowAssetMenu(false);
-	};
-
 	const handleBack = useCallback(() => {
 		router.back();
 	}, [router]);
-
-	const handleFork = useCallback(async () => {
-		if (!id || id === "preview") return;
-
-		setIsForking(true);
-		try {
-			const result = await trpc.games.fork.mutate({ id });
-			router.replace(`/editor/${result.id}`);
-		} catch (err) {
-			console.error("Failed to fork game:", err);
-			setIsForking(false);
-		}
-	}, [id, router]);
-
-	const generateAssets = async () => {
-		if (!id || id === "preview" || !gameDefinition) return;
-
-		setIsGenerating(true);
-		try {
-			const result = await trpc.assetSystem.applyThemeToGame.mutate({
-				gameId: id,
-				newTheme: {
-					name: genPrompt || gameDefinition.metadata.title,
-					promptModifier: genPrompt || gameDefinition.metadata.title,
-				},
-				setAsActive: true,
-			});
-
-			if (result.jobId) {
-				const remixesResult = await trpc.assetSystem.remixes.listRemixes.query({
-					gameId: id,
-				});
-				setAvailableRemixes(remixesResult);
-				handleRemixSelect(result.remixId, "remix");
-			}
-		} catch (e) {
-			console.error("Asset generation failed", e);
-			alert(
-				"Failed to generate assets: " +
-					(e instanceof Error ? e.message : String(e)),
-			);
-		} finally {
-			setIsGenerating(false);
-		}
-	};
-
-	const handleRegenerateAsset = async (prefabId: string) => {
-		if (!id || id === "preview" || !gameDefinition || !activeRemixId) return;
-
-		setRegeneratingPrefabId(prefabId);
-		try {
-			const result = await trpc.assetSystem.regenerateAssets.mutate({
-				remixId: activeRemixId,
-				prefabIds: [prefabId],
-				newStyle: selectedStyle,
-			});
-
-			if (result.jobId) {
-				const remix = await trpc.assetSystem.remixes.getResolvedRemix.query({
-					gameId: id,
-					remixId: activeRemixId,
-				});
-				if (remix?.entriesByPrefabId) {
-					const entries: Record<string, ResolvedAssetEntry> = {};
-					Object.entries(remix.entriesByPrefabId).forEach(
-						([entryPrefabId, entry]) => {
-							if (entry.imageUrl) {
-								entries[entryPrefabId] = {
-									imageUrl: entry.imageUrl,
-									placement: entry.placement
-										? {
-												scale: entry.placement.scale ?? 1,
-												offsetX: entry.placement.offsetX ?? 0,
-												offsetY: entry.placement.offsetY ?? 0,
-											}
-										: undefined,
-								};
-							}
-						},
-					);
-					setResolvedPackEntries(entries);
-				}
-			}
-		} catch (e) {
-			console.error("Asset regeneration failed", e);
-			alert(
-				"Failed to regenerate asset: " +
-					(e instanceof Error ? e.message : String(e)),
-			);
-		} finally {
-			setRegeneratingPrefabId(undefined);
-		}
-	};
-
-	const handleClearAsset = async (prefabId: string) => {
-		if (!id || id === "preview" || !gameDefinition || !activeRemixId) return;
-
-		try {
-			const currentRemix = await trpc.assetSystem.remixes.getRemix.query({
-				id: activeRemixId,
-			});
-
-			const nextAssets = { ...(currentRemix.overrides.assets ?? {}) };
-			delete nextAssets[prefabId];
-
-			await trpc.assetSystem.remixes.updateRemix.mutate({
-				id: activeRemixId,
-				overrides: {
-					...currentRemix.overrides,
-					assets: nextAssets,
-				},
-			});
-
-			setResolvedPackEntries((prev) => {
-				if (!prev) return prev;
-				const updated = { ...prev };
-				delete updated[prefabId];
-				return updated;
-			});
-		} catch (e) {
-			console.error("Clear asset failed", e);
-			alert(
-				"Failed to clear asset: " +
-					(e instanceof Error ? e.message : String(e)),
-			);
-		}
-	};
-
-	const handleToggleParallax = async (enabled: boolean) => {
-		if (!id || id === "preview" || !gameDefinition) return;
-
-		try {
-			// Note: trpc.assets.updateParallaxConfig removed in V3
-			const newDef = { ...gameDefinition };
-			if (!newDef.parallaxConfig) {
-				newDef.parallaxConfig = { enabled, layers: [] };
-			} else {
-				newDef.parallaxConfig.enabled = enabled;
-			}
-			setGameDefinition(newDef);
-		} catch (e) {
-			console.error("Toggle parallax failed", e);
-		}
-	};
-
-	const handleGenerateLayer = async (depth: "sky" | "far" | "mid" | "near") => {
-		if (!id || id === "preview" || !gameDefinition) return;
-
-		setGeneratingLayer(depth);
-		try {
-			// Note: trpc.assets.generateBackgroundLayer removed in V3
-			alert("Background layer generation is not yet supported in V3");
-		} catch (e) {
-			console.error("Generate layer failed", e);
-			alert(
-				"Failed to generate layer: " +
-					(e instanceof Error ? e.message : String(e)),
-			);
-		} finally {
-			setGeneratingLayer(undefined);
-		}
-	};
-
-	const handleGenerateAllLayers = async () => {
-		if (!id || id === "preview" || !gameDefinition) return;
-
-		setGeneratingLayer("all");
-		const depths: ("sky" | "far" | "mid" | "near")[] = [
-			"sky",
-			"far",
-			"mid",
-			"near",
-		];
-
-		try {
-			for (const depth of depths) {
-				await handleGenerateLayer(depth);
-			}
-		} finally {
-			setGeneratingLayer(undefined);
-		}
-	};
-
-	const handleLayerVisibilityChange = async (
-		depth: "sky" | "far" | "mid" | "near",
-		visible: boolean,
-	) => {
-		if (!id || id === "preview" || !gameDefinition) return;
-
-		const newDef = { ...gameDefinition };
-		if (!newDef.parallaxConfig?.layers) return;
-
-		const layer = newDef.parallaxConfig.layers.find((l) => l.depth === depth);
-		if (layer) {
-			layer.visible = visible;
-
-			try {
-				// Note: trpc.assets.updateParallaxConfig removed in V3
-				setGameDefinition(newDef);
-			} catch (e) {
-				console.error("Update layer visibility failed", e);
-			}
-		}
-	};
 
 	if (isLoadingDefinition) {
 		return (
@@ -578,164 +178,6 @@ export default function PlayScreen() {
 		<View className="flex-1 bg-gray-900">
 			<FullScreenHeader onBack={handleBack} />
 
-			<Modal
-				visible={showAssetMenu}
-				transparent={true}
-				animationType="slide"
-				onRequestClose={() => setShowAssetMenu(false)}
-			>
-				<View className="flex-1 bg-black/80 justify-center items-center p-4">
-					<View className="bg-gray-800 w-full max-w-sm rounded-xl p-6">
-						<Text className="text-white text-xl font-bold mb-4">
-							Generate Remix
-						</Text>
-
-						{id && id !== "preview" && (
-							<Pressable
-								className={`mb-4 py-2 rounded-lg items-center ${isForking ? "bg-gray-600" : "bg-green-600"}`}
-								onPress={handleFork}
-								disabled={isForking}
-							>
-								{isForking ? (
-									<View className="flex-row items-center">
-										<ActivityIndicator size="small" color="#FFFFFF" />
-										<Text className="text-white font-semibold ml-2">
-											Forking...
-										</Text>
-									</View>
-								) : (
-									<Text className="text-white font-semibold">✂️ Fork Game</Text>
-								)}
-							</Pressable>
-						)}
-
-						{availableRemixes.length > 0 && (
-							<View className="mb-6">
-								<Text className="text-gray-400 mb-2">Select Remix</Text>
-								<ScrollView
-									horizontal
-									showsHorizontalScrollIndicator={false}
-									className="flex-row gap-2"
-								>
-									{availableRemixes.map((remix) => (
-										<Pressable
-											key={remix.id}
-											className={`p-3 rounded-lg mr-2 border ${
-												remixId === remix.id
-													? "bg-indigo-600 border-indigo-400"
-													: "bg-gray-700 border-gray-600"
-											} ${!remix.isComplete ? "opacity-50" : ""}`}
-											onPress={() => handleRemixSelect(remix.id, "remix")}
-										>
-											<Text className="text-white font-semibold">
-												{remix.name}
-											</Text>
-											{!remix.isComplete && (
-												<Text className="text-xs text-yellow-400 mt-1">
-													Generating...
-												</Text>
-											)}
-										</Pressable>
-									))}
-								</ScrollView>
-							</View>
-						)}
-
-						<Text className="text-gray-400 mb-2">Remix Prompt</Text>
-						<TextInput
-							className="bg-gray-700 text-white p-3 rounded-lg mb-4"
-							placeholder={
-								gameDefinition?.metadata.title || "e.g. Space Station"
-							}
-							placeholderTextColor="#666"
-							value={genPrompt}
-							onChangeText={setGenPrompt}
-						/>
-
-						<Text className="text-gray-400 mb-2">Art Style</Text>
-						<View className="flex-row flex-wrap gap-2 mb-4">
-							{STYLE_PRESET_OPTIONS.map((style) => (
-								<Pressable
-									key={style.id}
-									className={`py-2 px-3 rounded-lg items-center ${selectedStyle === style.id ? "bg-indigo-600" : "bg-gray-700"}`}
-									onPress={() => setSelectedStyle(style.id)}
-								>
-									<Text className="text-white text-xs font-medium capitalize">
-										{style.emoji} {style.label}
-									</Text>
-								</Pressable>
-							))}
-							<Pressable
-								className={`py-2 px-3 rounded-lg items-center ${!STYLE_PRESET_OPTIONS.some((s) => s.id === selectedStyle) ? "bg-indigo-600" : "bg-gray-700"}`}
-								onPress={() => {
-									if (
-										STYLE_PRESET_OPTIONS.some((s) => s.id === selectedStyle)
-									) {
-										setSelectedStyle("");
-									}
-								}}
-							>
-								<Text className="text-white text-xs font-medium capitalize">
-									✨ Custom
-								</Text>
-							</Pressable>
-						</View>
-						{!STYLE_PRESET_OPTIONS.some((s) => s.id === selectedStyle) && (
-							<TextInput
-								className="bg-gray-700 text-white p-3 rounded-lg mb-4"
-								placeholder="e.g. Cyberpunk Neon"
-								placeholderTextColor="#666"
-								value={selectedStyle}
-								onChangeText={setSelectedStyle}
-							/>
-						)}
-
-						{activeRemixId && (
-							<View className="mb-4">
-								<EntityAssetList
-									gameDefinition={gameDefinition}
-									assets={resolvedAssetEntries || null}
-									onRegenerateAsset={handleRegenerateAsset}
-									onClearAsset={handleClearAsset}
-									regeneratingPrefabId={regeneratingPrefabId}
-								/>
-							</View>
-						)}
-
-						<ParallaxAssetPanel
-							parallaxConfig={gameDefinition?.parallaxConfig}
-							onToggleEnabled={handleToggleParallax}
-							onGenerateLayer={handleGenerateLayer}
-							onGenerateAllLayers={handleGenerateAllLayers}
-							onLayerVisibilityChange={handleLayerVisibilityChange}
-							generatingLayer={generatingLayer}
-							selectedStyle={selectedStyle}
-						/>
-
-						<View className="flex-row gap-3 mt-4">
-							<Pressable
-								className="flex-1 py-3 bg-gray-600 rounded-lg items-center"
-								onPress={() => setShowAssetMenu(false)}
-							>
-								<Text className="text-white font-semibold">Cancel</Text>
-							</Pressable>
-
-							<Pressable
-								className={`flex-1 py-3 rounded-lg items-center ${isGenerating ? "bg-indigo-800" : "bg-indigo-600"}`}
-								onPress={generateAssets}
-								disabled={isGenerating}
-							>
-								{isGenerating ? (
-									<ActivityIndicator color="white" size="small" />
-								) : (
-									<Text className="text-white font-semibold">Generate New</Text>
-								)}
-							</Pressable>
-						</View>
-					</View>
-				</View>
-			</Modal>
-
 			{canMountGame && (
 				<WithGodot
 					key={runtimeKey}
@@ -743,7 +185,7 @@ export default function PlayScreen() {
 						import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
 							default: () => (
 								<mod.GameRuntimeGodotWithDevTools
-									definition={enrichedDefinition!}
+									definition={gameDefinition}
 									onGameEnd={handleGameEnd}
 									onRequestRestart={handleRequestRestart}
 									showHUD
