@@ -1,24 +1,13 @@
+import type { ChatMessage as ChatMessageModel } from "@slopcade/shared/chat";
 import { useCallback, useEffect, useRef } from "react";
 import {
 	FlatList,
-	LayoutAnimation,
 	type NativeScrollEvent,
 	type NativeSyntheticEvent,
-	Platform,
 	StyleSheet,
 	Text,
-	UIManager,
 	View,
 } from "react-native";
-
-if (
-	Platform.OS === "android" &&
-	UIManager.setLayoutAnimationEnabledExperimental
-) {
-	UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-import type { ChatMessage as ChatMessageModel } from "@slopcade/shared/chat";
 import { ShimmerText } from "@/components/ui/ShimmerText";
 import { ChatMessage } from "./ChatMessage";
 
@@ -59,10 +48,7 @@ export function ChatMessageList({
 	const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
-		if (messages.length !== prevMessageCount.current) {
-			LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-			prevMessageCount.current = messages.length;
-		}
+		prevMessageCount.current = messages.length;
 	}, [messages.length]);
 
 	const handleScroll = useCallback(

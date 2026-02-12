@@ -85,7 +85,7 @@ export function StageContainer({ onLivePreviewChange }: StageContainerProps) {
 			/>
 
 			{mode === "edit" && (
-				<View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+				<View style={[StyleSheet.absoluteFill, { pointerEvents: "box-none" }]}>
 					<InteractionLayer
 						pixelsPerMeter={pixelsPerMeter}
 						worldBounds={worldBounds}

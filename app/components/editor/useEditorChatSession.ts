@@ -1,7 +1,12 @@
 import type { ChatMessage, ContentBlock } from "@slopcade/shared/chat";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useThreads } from "@/components/create-game/useThreads";
-import { useStreamingChat } from "@/lib/chat/useStreamingChat";
+import {
+	useStreamState,
+	useThreadManagement,
+} from "@/lib/chat/ChatStreamProvider";
+import { useChatMessages } from "@/lib/chat/useChatMessages";
+import { useSendMessage } from "@/lib/chat/useSendMessage";
 import { useEditor } from "./EditorProvider";
 
 type PendingAskUserPayload = {
@@ -119,10 +124,16 @@ function findPendingQuestions(
 
 export function useEditorChatSession() {
 	const { gameId } = useEditor();
-
 	const effectiveGameId = gameId !== "preview" ? gameId : null;
+
 	const { threads, initForGame } = useThreads();
-	const [threadId, setThreadId] = useState<string | null>(null);
+	const streamState = useStreamState();
+	const { switchThread } = useThreadManagement();
+	const currentThreadId = streamState.currentThreadId;
+
+	const { messages, isStreaming } = useChatMessages(currentThreadId);
+	const { sendMessage, submitAnswer, submitUserAnswer, isSending } =
+		useSendMessage();
 
 	useEffect(() => {
 		if (effectiveGameId) {
@@ -131,40 +142,26 @@ export function useEditorChatSession() {
 	}, [effectiveGameId, initForGame]);
 
 	useEffect(() => {
-		if (!threadId && threads.length > 0) {
-			setThreadId(threads[0].id);
+		if (threads.length > 0 && currentThreadId === "pending") {
+			switchThread(threads[0].id);
 		}
-	}, [threads, threadId]);
+	}, [threads, currentThreadId, switchThread]);
 
-	const {
-		messages,
-		thread,
-		sendMessage,
-		isRunning,
-		isSending,
-		submitAnswer,
-		submitUserAnswer,
-	} = useStreamingChat(threadId, effectiveGameId);
+	const pendingQuestions = useMemo(
+		() => findPendingQuestions(messages),
+		[messages],
+	);
 
-	const pendingQuestions = findPendingQuestions(thread?.messages ?? messages);
+	const isRunning = isStreaming || isSending;
 
 	const handleSendMessage = useCallback(
 		async (text: string) => {
 			if (!effectiveGameId) {
 				return;
 			}
-
-			const resolvedThreadId = await sendMessage(
-				text,
-				threadId ?? undefined,
-				effectiveGameId,
-			);
-
-			if (!threadId && resolvedThreadId) {
-				setThreadId(resolvedThreadId);
-			}
+			await sendMessage(text, effectiveGameId);
 		},
-		[threadId, effectiveGameId, sendMessage],
+		[effectiveGameId, sendMessage],
 	);
 
 	return {

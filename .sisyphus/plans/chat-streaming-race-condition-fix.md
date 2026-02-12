@@ -1,183 +1,175 @@
-# Chat Streaming Race Condition Fix
+# Chat Streaming — Tambo Architecture Migration
 
 ## Problem
 
-Two bugs in the editor chat:
-
-### Bug #1: First message on new game requires two sends
-**Root cause:** When `useEditorChatSession` sends the first message on a new game:
-1. `sendMessage()` calls the API → gets `{ threadId, streamUrl }`
-2. `connectToStream(streamUrl)` opens the SSE connection
-3. `setThreadId(resolvedThreadId)` fires in `useEditorChatSession`
-4. The `useEffect` watching `threadId` in `useStreamingChat` fires, calling `dispatch({ type: "RESET" })` and `sseRef.current?.close()` — **killing the active SSE stream**
-
-Network trace confirms: `api/chat/stream?threadId=... => [FAILED] net::ERR_ABORTED` (twice).
-
-### Bug #2: Tool calls render outside assistant message grouping
-Tool call blocks (`otherToolBlocks`) render with `systemWrapper` style (centered, width 100%) instead of being wrapped inside the assistant's left-border container. They appear as siblings of the message rather than children.
+Three bugs in the editor chat:
+1. **First message on new game requires two sends** — threadId null→UUID transition kills active SSE stream
+2. **Duplicate user messages** — optimistic message + persisted query = two sources of truth
+3. **Tool calls render outside assistant message grouping** — wrong CSS styling
 
 ## Architecture Decision
 
-**Adopt Tambo's placeholder thread pattern** — minimal diff from current code, same `useReducer` + AG-UI event model.
+**Adopt Tambo's complete streaming architecture.** Their patterns are battle-tested and solve all three bugs structurally, not with band-aids.
 
-Key insight from Tambo: **Don't change `threadId` during an active stream.** Instead:
-- Start with a placeholder/pending thread ID
-- Accumulate events into the pending thread's state
-- When `RUN_STARTED` arrives with the real threadId, the **reducer** atomically migrates messages from pending → real thread
-- The component-level `threadId` only changes when the mutation completes and the stream is done
+### Key Tambo Patterns to Adopt:
+- **Single source of truth**: Reducer owns ALL messages. No separate useQuery + merge.
+- **PLACEHOLDER_THREAD_ID**: New threads start as "placeholder". RUN_STARTED atomically migrates messages to real thread.
+- **LOAD_THREAD_MESSAGES**: Persisted messages loaded INTO the reducer (with skipIfStreaming guard).
+- **Split contexts**: Separate State/Dispatch/ThreadManagement contexts for render optimization.
+- **Synthetic AG-UI events**: User messages dispatched as TEXT_MESSAGE_START/CONTENT/END events (not a custom ADD_USER_MESSAGE).
+- **threadMap**: Multi-thread support in state (`Record<string, ThreadState>`).
 
-## Implementation Plan
+### What NOT to Copy from Tambo:
+- Component rendering (tambo.component.* events) — Tambo-specific
+- Tool schema unstrictification — Tambo-specific  
+- Tool executor / throttled streamable — we use server-side tool execution
+- Auth state hooks — we have our own auth
+- Thread name auto-generation — not needed yet
 
-### Phase 1: Fix Bug #1 — threadId race condition
+## File Plan
 
-#### 1a. Update `useStreamingChat` to not tear down on first threadId assignment
+### New Files
 
-The simplest fix: `sendMessage()` already returns the real threadId. The problem is that `useEditorChatSession` calls `setThreadId()` which triggers the `useEffect` reset. 
+| File | Purpose | Tambo Equivalent |
+|------|---------|-----------------|
+| `app/lib/chat/ChatStreamProvider.tsx` | Provider with split contexts, reducer, ThreadSyncManager | `tambo-v1-stream-context.tsx` |
+| `app/lib/chat/stream-reducer.ts` | StreamState, threadMap, all actions, event accumulation | `event-accumulator.ts` |
+| `app/lib/chat/useSendMessage.ts` | React Query mutation for sending + SSE consumption | `use-tambo-v1-send-message.ts` |
+| `app/lib/chat/useChatMessages.ts` | Read messages from context (no merge) | `use-tambo-v1-messages.ts` |
 
-**Change in `useStreamingChat.ts`:**
-- Track previous threadId in a ref
-- In the `useEffect` on `[threadId]`, detect "null/pending → real UUID" transition
-- When an SSE connection is active during this transition, just update the thread ID in the reducer state (via a new `MIGRATE_THREAD` action) without closing the SSE connection
-- Only do full teardown when switching between two real thread IDs
-
-```typescript
-// New action type
-type StreamAction =
-  | AgUiEvent
-  | { type: "RESET"; threadId: string }
-  | { type: "ADD_USER_MESSAGE"; message: ChatMessage }
-  | { type: "MIGRATE_THREAD"; fromThreadId: string; toThreadId: string };
-```
-
-**Change in `streamStateReducer`:**
-- Handle `MIGRATE_THREAD`: Copy current messages from pending thread into a new thread with the real ID
-- This mirrors Tambo's `RUN_STARTED` → placeholder migration logic
-
-**Change in the `useEffect([threadId])`:**
-```typescript
-useEffect(() => {
-  const prevId = prevThreadIdRef.current;
-  prevThreadIdRef.current = threadId;
-
-  // First thread assignment while streaming — migrate, don't tear down
-  const isFirstAssignment = 
-    (prevId === null || prevId === "pending") && 
-    threadId !== null && 
-    threadId !== "pending";
-
-  if (isFirstAssignment && sseRef.current) {
-    // Just update the thread ID in state, keep SSE alive
-    dispatch({ type: "MIGRATE_THREAD", fromThreadId: prevId ?? "pending", toThreadId: threadId });
-    return;
-  }
-
-  // Normal thread switch — full teardown
-  dispatch({ type: "RESET", threadId: threadId ?? "pending" });
-  setIsSending(false);
-  setStreamError(null);
-  sseRef.current?.close();
-  sseRef.current = null;
-  currentStreamUrlRef.current = null;
-  isConnectingRef.current = false;
-}, [threadId]);
-```
-
-#### 1b. Update reducer to handle MIGRATE_THREAD
-
-In `streamStateReducer`:
-```typescript
-if (action.type === "MIGRATE_THREAD") {
-  return {
-    ...state,
-    thread: {
-      ...state.thread,
-      id: action.toThreadId,
-    },
-  };
-}
-```
-
-Simple — just update the thread ID. Messages are already accumulated correctly.
-
-### Phase 2: Fix Bug #2 — Tool call rendering
-
-#### 2a. Wrap tool blocks inside the agent container
-
-In `ChatMessage.tsx`, lines 690-708, the `otherToolBlocks` use `systemWrapper` style. Change to render them inside the agent container with the left-border styling:
-
-**Before:**
-```tsx
-{!isUser &&
-  otherToolBlocks.map((block) => (
-    <View key={...} style={styles.systemWrapper}>
-      <View style={styles.systemContainer}>
-        <Ionicons name="construct-outline" ... />
-        <Text style={styles.systemText}>
-          {getToolStatusLabel(block.toolName, block.status)}
-        </Text>
-      </View>
-    </View>
-  ))}
-```
-
-**After:**
-```tsx
-{!isUser &&
-  otherToolBlocks.map((block) => (
-    <View key={...} style={styles.toolCallRow}>
-      <Ionicons name="construct-outline" ... />
-      <Text style={styles.toolCallText}>
-        {getToolStatusLabel(block.toolName, block.status)}
-      </Text>
-    </View>
-  ))}
-```
-
-Add new styles:
-```typescript
-toolCallRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingLeft: 12,
-  paddingVertical: 4,
-  borderLeftWidth: 2,
-  borderLeftColor: "#3F3F46",
-  marginTop: 4,
-},
-toolCallText: {
-  fontSize: 13,
-  color: "#71717A",
-  marginLeft: 6,
-},
-```
-
-This groups tool calls visually under the same left-border as the assistant text bubble.
-
-### Phase 3: Verification
-
-1. Create a new game via Playwright
-2. Send first message — verify SSE stream is NOT aborted
-3. Verify AI response appears without needing a second message
-4. Verify tool calls appear grouped under assistant message
-5. Send a second message on the same thread — verify it still works
-6. Repeat 3 times for consistency
-
-## Files to Change
+### Modified Files
 
 | File | Change |
 |------|--------|
-| `app/lib/chat/useStreamingChat.ts` | Add `MIGRATE_THREAD` action, ref tracking, conditional teardown |
-| `app/components/create-game/ChatMessage.tsx` | Restyle tool call blocks to group under agent container |
+| `app/components/editor/useEditorChatSession.ts` | Use new hooks from ChatStreamProvider instead of useStreamingChat |
+| `app/components/editor/ChatSidebar.tsx` | Wrap with ChatStreamProvider |
+| `app/components/create-game/ChatMessage.tsx` | Fix tool call rendering styles |
 
-## Files NOT Changed (minimal diff)
+### Deleted/Deprecated Files
 
-- `shared/src/chat/accumulator.ts` — No changes needed to the shared reducer
-- `app/components/editor/useEditorChatSession.ts` — No changes, the `setThreadId` call is fine now
-- `app/lib/chat/sse-client.ts` — No changes needed
-- `app/components/create-game/ChatMessageList.tsx` — No changes needed
+| File | Reason |
+|------|--------|
+| `app/lib/chat/useStreamingChat.ts` | Replaced by ChatStreamProvider + useSendMessage + useChatMessages |
 
-## Risk Assessment
+### Unchanged Files
 
-- **Low risk**: The `MIGRATE_THREAD` action is a simple ID rename on an existing state object
-- **Low risk**: The tool call restyling is purely visual
-- **Testing**: Existing integration tests should still pass since the shared `chatReducer` is untouched
+| File | Reason |
+|------|--------|
+| `shared/src/chat/accumulator.ts` | Keep shared chatReducer — wrap at app level |
+| `app/lib/chat/sse-client.ts` | Keep fetch-based SSE — just dispatch through new context |
+| `app/components/create-game/ChatMessageList.tsx` | No changes needed |
+| `app/components/create-game/ChatConversation.tsx` | No changes needed |
+
+## Implementation Order
+
+### Phase 1: stream-reducer.ts (no dependencies)
+
+Port Tambo's event-accumulator.ts adapted for our types:
+
+```typescript
+// State shape
+interface ThreadState {
+  thread: ChatThread;  // from shared/chat/types
+  streaming: { status: 'idle' | 'streaming'; runId?: string };
+}
+
+interface StreamState {
+  threadMap: Record<string, ThreadState>;
+  currentThreadId: string;
+}
+
+// Actions
+type StreamAction =
+  | { type: 'EVENT'; event: AgUiEvent; threadId: string }
+  | { type: 'INIT_THREAD'; threadId: string }
+  | { type: 'SET_CURRENT_THREAD'; threadId: string }
+  | { type: 'START_NEW_THREAD'; threadId: string }
+  | { type: 'LOAD_THREAD_MESSAGES'; threadId: string; messages: ChatMessage[]; skipIfStreaming?: boolean }
+  | { type: 'RESET_THREAD'; threadId: string }
+  | { type: 'ADD_USER_MESSAGE'; threadId: string; message: ChatMessage };
+
+const PLACEHOLDER_THREAD_ID = 'pending';
+```
+
+Key: the EVENT handler checks for RUN_STARTED and migrates placeholder messages atomically.
+Wrap existing `chatReducer` from shared for AG-UI event processing.
+
+### Phase 2: ChatStreamProvider.tsx (depends on Phase 1)
+
+```typescript
+// Split contexts
+const StreamStateContext = createContext<StreamState | null>(null);
+const StreamDispatchContext = createContext<Dispatch<StreamAction> | null>(null);
+const ThreadManagementContext = createContext<ThreadManagement | null>(null);
+
+// Provider
+function ChatStreamProvider({ gameId, children }) {
+  const [state, dispatch] = useReducer(streamReducer, createInitialState());
+  // ThreadSyncManager fetches persisted messages via LOAD_THREAD_MESSAGES
+  // Thread management functions: initThread, switchThread, startNewThread
+}
+
+// Export hooks
+export function useStreamState(): StreamState { ... }
+export function useStreamDispatch(): Dispatch<StreamAction> { ... }  
+export function useThreadManagement(): ThreadManagement { ... }
+```
+
+### Phase 3: useSendMessage.ts (depends on Phase 2)
+
+```typescript
+export function useSendMessage(threadId: string) {
+  const dispatch = useStreamDispatch();
+  const state = useStreamState();
+  
+  const sendMessageMutation = trpc.chatThreads.sendMessage.useMutation();
+  
+  return useCallback(async (text: string, gameId: string) => {
+    // 1. Dispatch optimistic user message as ADD_USER_MESSAGE
+    // 2. Call sendMessage mutation → get { threadId, streamUrl }
+    // 3. Connect SSE, dispatch events through context
+    // 4. On RUN_STARTED: reducer migrates placeholder → real thread
+    // 5. On error: dispatch RUN_ERROR
+  }, [dispatch, ...]);
+}
+```
+
+### Phase 4: useChatMessages.ts (depends on Phase 2)
+
+```typescript
+export function useChatMessages(threadId: string) {
+  const state = useStreamState();
+  const threadState = state.threadMap[threadId];
+  return useMemo(() => ({
+    messages: threadState?.thread.messages ?? [],
+    isStreaming: threadState?.streaming.status === 'streaming',
+    // ... derived state
+  }), [threadState]);
+}
+```
+
+### Phase 5: Wire up useEditorChatSession + ChatSidebar
+
+- ChatSidebar wraps children in `<ChatStreamProvider gameId={gameId}>`
+- useEditorChatSession uses useThreadManagement, useSendMessage, useChatMessages
+- Remove threadId useState — it lives in the context now (currentThreadId)
+- Remove the `setThreadId(resolvedThreadId)` call — reducer handles it atomically
+
+### Phase 6: Fix tool call rendering in ChatMessage.tsx (independent)
+
+Already done — just keep the toolCallRow/toolCallText styles.
+
+### Phase 7: Delete useStreamingChat.ts
+
+Only after everything is wired up and verified.
+
+## Verification Plan
+
+1. Playwright: Create new game → send first message → verify SSE not aborted
+2. Playwright: Verify AI responds on first message (no second send needed)
+3. Playwright: Verify NO duplicate user messages
+4. Playwright: Verify tool calls grouped under assistant with left-border
+5. Playwright: Send second message on same thread → verify works
+6. Playwright: Navigate to existing game with history → verify messages load
+7. Run existing integration tests
+8. Repeat Playwright tests 3x for consistency

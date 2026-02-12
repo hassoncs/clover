@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EditorProvider } from "@/components/editor/EditorProvider";
 import { EditorTopBar } from "@/components/editor/EditorTopBar";
 import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayout";
+import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
 import { LivePreviewController } from "@/lib/game-engine/live/LivePreviewController";
 import { trpc } from "@/lib/trpc/client";
@@ -115,12 +116,16 @@ export default function EditorScreen() {
 							: undefined
 					}
 				>
-					<EditorTopBar
-						livePreviewEnabled={livePreviewEnabled}
-						onResetPreview={handleResetPreview}
-						setPreviewMode={setPreviewMode}
-					/>
-					<ResponsiveEditorLayout onLivePreviewChange={setLivePreviewEnabled} />
+					<ChatStreamProvider>
+						<EditorTopBar
+							livePreviewEnabled={livePreviewEnabled}
+							onResetPreview={handleResetPreview}
+							setPreviewMode={setPreviewMode}
+						/>
+						<ResponsiveEditorLayout
+							onLivePreviewChange={setLivePreviewEnabled}
+						/>
+					</ChatStreamProvider>
 				</EditorProvider>
 			</View>
 		</GestureHandlerRootView>

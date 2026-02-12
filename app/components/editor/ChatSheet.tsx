@@ -85,11 +85,8 @@ export function ChatSheet({
 
 const styles = StyleSheet.create({
 	sheetShadow: {
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: -3 },
-		shadowOpacity: 0.125,
-		shadowRadius: 12,
 		elevation: 10,
+		boxShadow: "0px -3px 12px rgba(0, 0, 0, 0.125)",
 	},
 	sheetBackground: {
 		backgroundColor: "#1F2937",
