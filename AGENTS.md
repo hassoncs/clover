@@ -95,19 +95,22 @@ agent-browser screenshot --full result.png
 
 ## Project Context
 
-The game maker uses a unified thread and message model for AI orchestration, replacing the legacy stage-based system.
+For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
 
-- **Data Model**: All interactions are stored in `threads` and `messages` tables in D1.
-- **Chat Flow**: 
-  1. User sends message via tRPC `chatThreads.sendMessage`, which returns `{ threadId, streamUrl }`.
-  2. Frontend connects to SSE stream at `/api/chat/stream`.
-  3. Backend uses `streamText()` (Vercel AI SDK) and maps chunks to AG-UI protocol events.
-  4. Frontend accumulates events via `chatReducer` from `@slopcade/shared/chat`.
-  5. Messages and billing are persisted in `onFinish` callback.
-- **Human-in-the-Loop (HITL)**: The `askUser` tool causes a `RUN_FINISHED` event with `finishReason: 'tool-calls'`. The user submits answers via `chatThreads.submitToolAnswer`, which returns a new `streamUrl` for resumed generation.
-- **Billing**: Settled per message turn via `AgentBillingService.settleMessage()`.
-- **Frontend**: The `useStreamingChat` hook (`app/lib/chat/useStreamingChat.ts`) manages chat state via SSE streaming. The `useEditorChatSession` hook wraps it for the editor context.
-- **Durable Objects**: Only `RealtimeRelayDO` remains for voice/STT. Chat orchestration is handled by standard async functions in the Worker.
+| Domain | Skill | Covers |
+|--------|-------|--------|
+| Chat/AI | `agent-orchestration` | SSE streaming, AG-UI, HITL, billing |
+| Database/Storage | `storage-ops` | D1, R2, Supabase, migrations |
+| Testing | `testing-patterns` | Vitest, GDUnit4, mocking, E2E |
+| Entities/Games | `ecs-architecture` | Prefabs, GameDefinition, rules, behaviors |
+| Godot Bridge | `bridge-development` | TS↔Godot communication |
+| Visual Effects | `effects-system` | Shaders, feedback, particles |
+| Economy | `economy-engine` | Resource graphs, pools |
+| Input | `input-handling` | Touch, drag, gestures |
+| Game Inspector | `game-inspector` | MCP tools, debugging |
+| Asset Generation | `asset-pack-generation` | Image pipelines, silhouettes |
+
+Full skill index: `.claude/skills/INDEX.md`
 
 ## Secrets Management (Hush)
 
@@ -180,16 +183,24 @@ This enables visual inspection at each pipeline stage.
 
 ## Learned Patterns & Gotchas
 
-### Chat Streaming
-- **SSE streaming endpoints need CORS headers on the streaming response itself**, not just the initial request. The `text/event-stream` response must include proper CORS headers or the browser will block it.
-- **AG-UI event mapping**: `finish` chunks from `streamText()` fire per step in multi-step mode. The mapper must not emit `RUN_FINISHED` from `finish` events or the UI exits streaming early. Emit a single `RUN_FINISHED` only after consuming the full `result.fullStream`.
-
-### Agent Run Billing
-- **Reservation/Settlement/Finalize pattern**: 
-  - `reserveBudget`: Creates wallet transaction `agent_reservation_hold` with idempotency key `agent-reserve:{runId}`
-  - Step settlement: Uses idempotency key `agent-step-settle:{runId}:{stepIndex}`, writes to `agent_costs` table (no wallet transaction)
-  - Finalization: Credits back unspent reservation with key `agent-release:{runId}`
-- **Recovery**: Resume from checkpoint uses D1 `agent_checkpoints` ordered by `step_index DESC`, filtered to successful states only.
+Domain-specific gotchas live in their respective skills (see Project Context table above). This section is for cross-cutting patterns that don't fit in a single skill.
 
 ### Template → Prefab Migration
 - The codebase has completed a big-bang rename from `template` to `prefab`. All core types (`EntityTemplate` → `EntityPrefab`, `GameDefinition.templates` → `GameDefinition.prefabs`) have been updated. Legacy references may still exist in non-critical paths.
+
+---
+
+## Skill Self-Improvement
+
+When the user corrects you about something that a skill should have known:
+
+1. **Identify the relevant skill** — check `.claude/skills/INDEX.md` for the matching domain
+2. **Update the skill** — add the correction to the "Gotchas" section of that skill file
+3. **If no matching skill exists** — add a new entry to "Learned Patterns & Gotchas" above
+4. **Commit the update** — `git add .claude/skills/ && git commit -m "docs: update {skill} with learned pattern"`
+
+Triggers for this behavior:
+- User says "no, that's wrong", "actually it works like...", "you should have known..."
+- User corrects a project-specific behavior or convention
+- You discover through trial-and-error that a pattern works differently than documented
+- A skill's file reference points to a file that no longer exists
