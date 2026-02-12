@@ -50,3 +50,8 @@
 - `useStreamingChat` can safely merge persisted DB messages and reducer messages as shared `ChatMessage[]` with normalized `content` blocks.
 - Ask-user pending detection is most robust when derived from `tool-use` + absence of matching `tool-result` by `toolCallId`.
 - Duplicate SSE sessions can be suppressed by guarding `connectToStream` with `isConnecting` + `currentStreamUrl` refs.
+
+## 2026-02-11 Task: First-turn workspace context injection
+- Injecting workspace files in `api/src/index.ts` before `handleChatStream` is sufficient because `modelMessages` already contains ordered persisted history for the thread.
+- `modelMessages.length === 1` cleanly identifies the first user turn and prevents repeated context injection on later turns.
+- `ArtifactService.listWorkspaceFileMeta()` + `ArtifactService.readWorkspaceFiles()` allows one metadata read plus batched content reads without changing chat tools or stream handler.

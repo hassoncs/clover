@@ -7,3 +7,7 @@
 - `RUN_FINISHED` is now emitted exactly once in `stream-handler` after full stream completion; `agui-mapper` returns `null` for `finish`.
 - `useEditorChatSession` owns pending askUser derivation from content blocks instead of legacy `message.pending` fields.
 - Deleted `app/components/create-game/types.ts` to eliminate old chat message model usage.
+
+## 2026-02-11 Task: First-turn workspace context injection
+- Implemented injection in the `/api/chat/stream` route (`api/src/index.ts`) instead of `stream-handler` so only request assembly changes and SSE behavior remains untouched.
+- Used a synthetic prepended `user` text message that embeds current workspace file contents, then left the real user prompt as the next message.
