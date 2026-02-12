@@ -210,6 +210,9 @@ importers:
       '@jitl/quickjs-singlefile-browser-release-sync':
         specifier: 0.31.0
         version: 0.31.0
+      '@mgcrea/react-native-dnd':
+        specifier: ^2.5.3
+        version: 2.5.3(react-native-gesture-handler@2.30.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.2.1(react-native-worklets@0.7.2(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))
@@ -683,28 +686,6 @@ importers:
         specifier: ~5.9.3
         version: 5.9.3
 
-  packages/mcp-operations:
-    dependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.0.0
-        version: 1.26.0(zod@3.25.76)
-      esbuild:
-        specifier: ^0.25.0
-        version: 0.25.12
-      zod:
-        specifier: ^3.24.2
-        version: 3.25.76
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.19.8
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ~5.9.3
-        version: 5.9.3
-
   packages/reggie:
     dependencies:
       glob:
@@ -742,6 +723,12 @@ importers:
       '@expo/vector-icons':
         specifier: ^14.0.0
         version: 14.1.0(expo-font@14.0.11(expo@54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native-webview@13.15.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@headless-tree/core':
+        specifier: ^1.0.0
+        version: 1.6.3
+      '@headless-tree/react':
+        specifier: ^1.0.0
+        version: 1.6.3(@headless-tree/core@1.6.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../../shared
@@ -2602,6 +2589,16 @@ packages:
       react: '*'
       react-native: '*'
 
+  '@headless-tree/core@1.6.3':
+    resolution: {integrity: sha512-en0EOaZfiCRF2B8DEnhGhSaUf3hVr9Bauye8G8aswPbHOKSyhJiN4bsczz1GvqF4Xb7Ga3LP0vLA6Zih7YLoyw==}
+
+  '@headless-tree/react@1.6.3':
+    resolution: {integrity: sha512-aiRwG6e2EPBSec9uLLy9GlTvAuCtSTouU30Nwcr5ZTsYjG/i7B/ouC8f8Zu4unzo/v1h5ztbemp+EH2TPTKh+g==}
+    peerDependencies:
+      '@headless-tree/core': '*'
+      react: '*'
+      react-dom: '*'
+
   '@hono/node-server@1.19.9':
     resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
     engines: {node: '>=18.14.1'}
@@ -2996,6 +2993,14 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
+
+  '@mgcrea/react-native-dnd@2.5.3':
+    resolution: {integrity: sha512-Qi2OOfZFyrV7p9q80DLX60pavHfqpxqMrahZxz2S6Y+xwmgfwBAVVHv/GIO3CTs3OIMuXdQ5OFfFgbjpZGAZMw==}
+    peerDependencies:
+      react: '>=17'
+      react-native: '>=0.70'
+      react-native-gesture-handler: '>=2'
+      react-native-reanimated: '>=3'
 
   '@modelcontextprotocol/sdk@1.26.0':
     resolution: {integrity: sha512-Y5RmPncpiDtTXDbLKswIJzTqu2hyBKxTNsgKqKclDbhIgg1wgtf1fRuvxgTnRfcnxtvvgbIEcqUOzZrJ6iSReg==}
@@ -11993,6 +11998,14 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
 
+  '@headless-tree/core@1.6.3': {}
+
+  '@headless-tree/react@1.6.3(@headless-tree/core@1.6.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@headless-tree/core': 1.6.3
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
   '@hono/node-server@1.19.9(hono@4.11.7)':
     dependencies:
       hono: 4.11.7
@@ -12364,6 +12377,13 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.17
       react: 19.1.0
+
+  '@mgcrea/react-native-dnd@2.5.3(react-native-gesture-handler@2.30.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.2.1(react-native-worklets@0.7.2(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+      react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
+      react-native-gesture-handler: 2.30.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react-native-reanimated: 4.2.1(react-native-worklets@0.7.2(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
   '@modelcontextprotocol/sdk@1.26.0(zod@3.25.76)':
     dependencies:
