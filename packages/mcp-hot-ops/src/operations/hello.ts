@@ -4,6 +4,7 @@ const operation: Operation = {
 	name: "hello",
 	description:
 		"Returns a greeting message. Use this to verify the MCP is working.",
+	category: "utility",
 	parameters: {
 		name: { type: "string", description: "Name to greet", required: false },
 	},

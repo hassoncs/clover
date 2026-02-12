@@ -3,6 +3,7 @@ import type { Operation } from "./_types";
 const operation: Operation = {
 	name: "add_numbers",
 	description: "Add two numbers together. A simple math operation for testing.",
+	category: "utility",
 	parameters: {
 		a: { type: "number", description: "First number", required: true },
 		b: { type: "number", description: "Second number", required: true },

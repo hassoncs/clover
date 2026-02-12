@@ -5,6 +5,8 @@ export interface OperationMeta {
 		string,
 		{ type: string; description: string; required?: boolean }
 	>;
+	category?: string;
+	docs?: string;
 }
 
 export interface Operation extends OperationMeta {

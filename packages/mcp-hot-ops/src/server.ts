@@ -6,7 +6,7 @@ import {
 	ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { type BuildFailure, build, type Message } from "esbuild";
-import { existsSync, readdirSync, watch } from "fs";
+import { existsSync, readdirSync, watch, writeFileSync } from "fs";
 import { createRequire } from "module";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -55,6 +55,8 @@ export interface OperationMeta {
 		string,
 		{ type: string; description: string; required?: boolean }
 	>;
+	category?: string;
+	docs?: string;
 }
 
 export interface Operation extends OperationMeta {
@@ -145,6 +147,8 @@ async function bundleAndLoad(
 				name: op.name,
 				description: op.description,
 				parameters: op.parameters,
+				category: op.category,
+				docs: op.docs,
 			},
 			execute: op.execute,
 		};
@@ -234,6 +238,71 @@ function operationParamsToJsonSchema(
 	};
 }
 
+function generateSkillMarkdown(serverName: string, header?: string): string {
+	const ops = Array.from(operationCache.values()).map((op) => op.meta);
+	const categories = new Map<string, OperationMeta[]>();
+
+	for (const op of ops) {
+		const cat = op.category || "uncategorized";
+		if (!categories.has(cat)) categories.set(cat, []);
+		categories.get(cat)!.push(op);
+	}
+
+	const lines: string[] = [];
+	lines.push(`# ${serverName}`);
+	lines.push("");
+	lines.push(
+		`> Auto-generated from operation metadata. ${new Date().toISOString().split("T")[0]}`,
+	);
+	lines.push("");
+
+	if (header) {
+		lines.push(header);
+		lines.push("");
+	}
+
+	lines.push("## How to Call");
+	lines.push("");
+	lines.push("```");
+	lines.push(`${serverName}_call_op(operation: "name", args: { ... })`);
+	lines.push("```");
+	lines.push("");
+	lines.push(
+		`Only call \`${serverName}_list_ops\` if you need to check for newly added operations.`,
+	);
+	lines.push("");
+
+	lines.push("## Operations");
+	lines.push("");
+
+	for (const [category, catOps] of categories) {
+		lines.push(`### ${category}`);
+		lines.push("");
+		lines.push("| Operation | Args | Description |");
+		lines.push("|-----------|------|-------------|");
+
+		for (const op of catOps) {
+			const args = Object.entries(op.parameters)
+				.map(([k, v]) => `\`${k}\`${v.required ? "" : "?"}`)
+				.join(", ");
+			lines.push(`| \`${op.name}\` | ${args || "—"} | ${op.description} |`);
+		}
+
+		lines.push("");
+
+		for (const op of catOps) {
+			if (op.docs) {
+				lines.push(`#### ${op.name}`);
+				lines.push("");
+				lines.push(op.docs.trim());
+				lines.push("");
+			}
+		}
+	}
+
+	return lines.join("\n");
+}
+
 const server = new Server(
 	{ name: "mcp-hot-ops", version: "0.1.0" },
 	{ capabilities: { tools: {} } },
@@ -293,6 +362,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 			error: err.error,
 		}));
 
+		operations.push({
+			name: "generate_skill_docs",
+			description:
+				"Generate a skill markdown file from all loaded operations. Operations can include category and docs fields for richer output.",
+			category: "built-in",
+			parameters: {
+				output: {
+					type: "string",
+					description:
+						"File path to write markdown to (omit to return as text)",
+					required: false,
+				},
+				serverName: {
+					type: "string",
+					description: "MCP server name for headings (default: mcp-hot-ops)",
+					required: false,
+				},
+				header: {
+					type: "string",
+					description: "Optional prose to include at the top of the skill file",
+					required: false,
+				},
+			},
+		});
+
 		const result: Record<string, unknown> = { operations };
 		if (errors.length > 0) result.compilationErrors = errors;
 
@@ -321,6 +415,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		}
 
 		await ensureCache();
+
+		if (operationName === "generate_skill_docs") {
+			const outputPath = args.output as string | undefined;
+			const serverName = (args.serverName as string) || "mcp-hot-ops";
+			const header = args.header as string | undefined;
+
+			const markdown = generateSkillMarkdown(serverName, header);
+
+			if (outputPath) {
+				writeFileSync(outputPath, markdown, "utf-8");
+				return {
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify({
+								written: outputPath,
+								operations: operationCache.size,
+								categories: new Set(
+									Array.from(operationCache.values()).map(
+										(op) => op.meta.category || "uncategorized",
+									),
+								).size,
+							}),
+						},
+					],
+				};
+			}
+
+			return {
+				content: [{ type: "text" as const, text: markdown }],
+			};
+		}
 
 		const op = operationCache.get(operationName);
 		if (!op) {

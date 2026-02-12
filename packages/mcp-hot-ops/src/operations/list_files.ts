@@ -5,6 +5,8 @@ const operation: Operation = {
 	name: "list_files",
 	description:
 		"List files in a directory. Useful for verifying filesystem access.",
+	category: "filesystem",
+	docs: `Lists directory contents with file/directory type info. Defaults to cwd if no path given.`,
 	parameters: {
 		path: {
 			type: "string",
