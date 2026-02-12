@@ -190,7 +190,7 @@ Wave 4 (After Wave 3):
 
 ## TODOs
 
-- [ ] 1. Install Dependencies
+- [x] 1. Install Dependencies
 
   **What to do**:
   - Install `@headless-tree/core` and `@headless-tree/react` in `packages/ui`
@@ -260,7 +260,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 2. Define Shared Types & Data Model
+- [x] 2. Define Shared Types & Data Model
 
   **What to do**:
   - Create `packages/ui/src/FileTree/types.ts` with:
@@ -334,7 +334,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 3. API Endpoint — Hierarchical Workspace File Data
+- [x] 3. API Endpoint — Hierarchical Workspace File Data
 
   **What to do**:
   - Update the `chatThreads.listWorkspaceFiles` tRPC endpoint to return hierarchical tree data
@@ -412,7 +412,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 4. Native DnD Spike — Validate @mgcrea/react-native-dnd with Reanimated v4
+- [x] 4. Native DnD Spike — Validate @mgcrea/react-native-dnd with Reanimated v4
 
   **What to do**:
   - Create a minimal prototype in `packages/ui/src/FileTree/__spike__/` to validate:
@@ -481,7 +481,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 5. Web Renderer — FileTree.web.tsx
+- [x] 5. Web Renderer — FileTree.web.tsx
 
   **What to do**:
   - Create `packages/ui/src/FileTree/FileTree.web.tsx` using `@headless-tree/react`
@@ -612,7 +612,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 6. Native Renderer — Core Tree (FileTree.native.tsx)
+- [x] 6. Native Renderer — Core Tree (FileTree.native.tsx)
 
   **What to do**:
   - Create `packages/ui/src/FileTree/FileTree.native.tsx` with:
@@ -715,7 +715,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 7. Native DnD Integration (Based on Spike Results)
+- [x] 7. Native DnD Integration (Based on Spike Results)
 
   **What to do**:
   - Read spike results from `.sisyphus/drafts/native-dnd-spike-results.md` (Task 4 output)
@@ -797,7 +797,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 8. useFileTree State Hook + Multi-Root Support
+- [x] 8. useFileTree State Hook + Multi-Root Support
 
   **What to do**:
   - Create `packages/ui/src/FileTree/useFileTreeState.ts`:
@@ -874,7 +874,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 9. Editor Sidebar Integration
+- [x] 9. Editor Sidebar Integration
 
   **What to do**:
   - Create `app/components/editor/sidebar/ExplorerPanel.tsx`:

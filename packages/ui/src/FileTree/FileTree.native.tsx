@@ -8,6 +8,13 @@ import {
 	syncDataLoaderFeature,
 	type TreeState,
 } from "@headless-tree/core";
+import type { ItemOptions } from "@mgcrea/react-native-dnd";
+import {
+	DndProvider,
+	Draggable,
+	Droppable,
+	useActiveDropReaction,
+} from "@mgcrea/react-native-dnd";
 import { FlashList } from "@shopify/flash-list";
 import { clsx } from "clsx";
 import React, {
@@ -30,9 +37,10 @@ import Animated, {
 	FadeInDown,
 	FadeOutUp,
 	LinearTransition,
+	runOnJS,
 } from "react-native-reanimated";
 import { twMerge } from "tailwind-merge";
-import type { FileTreeNode, FileTreeProps } from "./types";
+import type { FileTreeData, FileTreeNode, FileTreeProps } from "./types";
 
 if (
 	Platform.OS === "android" &&
@@ -48,6 +56,40 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 const VIRTUAL_ROOT_ID = "__virtual_root__";
 const FlashListAny = FlashList as any;
 
+function isDescendant(
+	treeData: FileTreeData,
+	nodeId: string,
+	potentialAncestorId: string,
+): boolean {
+	let current = treeData[nodeId];
+	while (current) {
+		if (current.parentId === potentialAncestorId) return true;
+		if (!current.parentId) return false;
+		current = treeData[current.parentId];
+	}
+	return false;
+}
+
+function DroppableFolderWrapper({
+	id,
+	children,
+}: {
+	id: string;
+	children: (isDropTarget: boolean) => React.ReactNode;
+}) {
+	const [isDropTarget, setIsDropTarget] = useState(false);
+
+	useActiveDropReaction(id, (isActive) => {
+		runOnJS(setIsDropTarget)(isActive);
+	});
+
+	return (
+		<Droppable id={id} style={styles.droppableWrapper}>
+			{children(isDropTarget)}
+		</Droppable>
+	);
+}
+
 interface FileTreeItemProps {
 	item: ItemInstance<FileTreeNode>;
 	depth: number;
@@ -58,6 +100,7 @@ interface FileTreeItemProps {
 	onRename: (newName: string) => void;
 	isRenaming: boolean;
 	searchMatch?: boolean;
+	isDragActive: boolean;
 }
 
 const FileTreeItem = React.memo(
@@ -71,6 +114,7 @@ const FileTreeItem = React.memo(
 		onRename,
 		isRenaming,
 		searchMatch,
+		isDragActive,
 	}: FileTreeItemProps) => {
 		const [renameValue, setRenameValue] = useState(item.getItemData().name);
 		const inputRef = useRef<TextInput>(null);
@@ -86,11 +130,11 @@ const FileTreeItem = React.memo(
 		};
 
 		const getIcon = () => {
-			const data = item.getItemData();
-			if (data.type === "folder") {
+			const nodeData = item.getItemData();
+			if (nodeData.type === "folder") {
 				return expanded ? "folder-open" : "folder";
 			}
-			const ext = data.name.split(".").pop()?.toLowerCase();
+			const ext = nodeData.name.split(".").pop()?.toLowerCase();
 			switch (ext) {
 				case "ts":
 				case "tsx":
@@ -112,65 +156,94 @@ const FileTreeItem = React.memo(
 			}
 		};
 
-		const data = item.getItemData();
+		const nodeData = item.getItemData();
 
-		return (
+		const rowContent = (isDropTarget = false) => (
 			<Animated.View
 				layout={LinearTransition}
 				entering={FadeInDown}
 				exiting={FadeOutUp}
 				style={{ paddingLeft: Math.max(0, (depth - 1) * 20) }}
 			>
-				<TouchableOpacity
-					onPress={onPress}
-					onLongPress={onLongPress}
+				<View
 					style={[
 						styles.itemContainer,
 						selected && styles.itemSelected,
 						searchMatch && styles.itemSearchMatch,
+						isDropTarget && styles.itemDropTarget,
 					]}
-					activeOpacity={0.7}
 				>
-					<Ionicons
-						name={getIcon() as any}
-						size={20}
-						color={
-							selected
-								? "#FFFFFF"
-								: data.type === "folder"
-									? "#6366F1"
-									: "#9CA3AF"
-						}
-						style={styles.icon}
-					/>
-
-					{isRenaming ? (
-						<TextInput
-							ref={inputRef}
-							style={styles.renameInput}
-							value={renameValue}
-							onChangeText={setRenameValue}
-							onBlur={handleSubmit}
-							onSubmitEditing={handleSubmit}
-							returnKeyType="done"
-							autoCorrect={false}
-							autoCapitalize="none"
+					<Draggable
+						id={item.getId()}
+						activationDelay={200}
+						activationTolerance={5}
+						disabled={isRenaming}
+						style={styles.dragHandle}
+					>
+						<Ionicons
+							name="reorder-two"
+							size={16}
+							color={isDragActive ? "#6366F1" : "#4B5563"}
 						/>
-					) : (
-						<Text
-							style={[
-								styles.itemText,
-								selected && styles.itemTextSelected,
-								data.type === "folder" && styles.folderText,
-							]}
-							numberOfLines={1}
-						>
-							{data.name}
-						</Text>
-					)}
-				</TouchableOpacity>
+					</Draggable>
+
+					<TouchableOpacity
+						onPress={onPress}
+						onLongPress={onLongPress}
+						style={styles.itemContent}
+						activeOpacity={0.7}
+					>
+						<Ionicons
+							name={getIcon() as any}
+							size={20}
+							color={
+								selected
+									? "#FFFFFF"
+									: nodeData.type === "folder"
+										? "#6366F1"
+										: "#9CA3AF"
+							}
+							style={styles.icon}
+						/>
+
+						{isRenaming ? (
+							<TextInput
+								ref={inputRef}
+								style={styles.renameInput}
+								value={renameValue}
+								onChangeText={setRenameValue}
+								onBlur={handleSubmit}
+								onSubmitEditing={handleSubmit}
+								returnKeyType="done"
+								autoCorrect={false}
+								autoCapitalize="none"
+							/>
+						) : (
+							<Text
+								style={[
+									styles.itemText,
+									selected && styles.itemTextSelected,
+									nodeData.type === "folder" && styles.folderText,
+								]}
+								numberOfLines={1}
+							>
+								{nodeData.name}
+							</Text>
+						)}
+					</TouchableOpacity>
+				</View>
 			</Animated.View>
 		);
+
+		if (nodeData.type === "folder") {
+			return (
+				<DroppableFolderWrapper id={item.getId()}>
+					{(isDropTarget) => rowContent(isDropTarget)}
+				</DroppableFolderWrapper>
+			);
+		}
+
+		return rowContent();
 	},
 );
 
@@ -179,12 +252,14 @@ export const FileTreeNative = ({
 	roots,
 	onSelectFile,
 	onRenameFile,
+	onMoveFile,
 	selectedIds,
 	expandedIds,
 	onExpandedChange,
 	searchQuery,
 }: FileTreeProps) => {
 	const [state, setState] = useState<Partial<TreeState<FileTreeNode>>>({});
+	const [dragActiveId, setDragActiveId] = useState<string | null>(null);
 
 	const tree = useMemo(() => {
 		return createTree<FileTreeNode>({
@@ -291,6 +366,45 @@ export const FileTreeNative = ({
 		}
 	}, [state.selectedItems, onSelectFile]);
 
+	const dataRef = useRef(data);
+	dataRef.current = data;
+
+	const handleDragEnd = useCallback(
+		(ev: { active: ItemOptions; over: ItemOptions | null }) => {
+			"worklet";
+			if (!ev.over) {
+				runOnJS(setDragActiveId)(null);
+				return;
+			}
+
+			const draggedId = String(ev.active.id);
+			const targetId = String(ev.over.id);
+
+			const performMove = (dId: string, tId: string) => {
+				setDragActiveId(null);
+				const currentData = dataRef.current;
+				const draggedNode = currentData[dId];
+				const targetNode = currentData[tId];
+
+				if (!draggedNode || !targetNode) return;
+				if (targetNode.type !== "folder") return;
+				if (draggedNode.parentId === tId) return;
+				if (dId === tId) return;
+				if (isDescendant(currentData, tId, dId)) return;
+
+				const targetChildren = targetNode.children ?? [];
+				onMoveFile?.(dId, tId, targetChildren.length);
+			};
+
+			runOnJS(performMove)(draggedId, targetId);
+		},
+		[onMoveFile],
+	);
+
+	const handleActivation = useCallback((next: string | number | null) => {
+		setDragActiveId(next ? String(next) : null);
+	}, []);
+
 	const visibleItems = useMemo(() => {
 		void data;
 		void roots;
@@ -328,7 +442,6 @@ export const FileTreeNative = ({
 			item: { item: ItemInstance<FileTreeNode>; depth: number };
 		}) => {
 			const treeItem = item.item;
-			const data = treeItem.getItemData();
 
 			return (
 				<FileTreeItem
@@ -352,28 +465,36 @@ export const FileTreeNative = ({
 							treeItem.startRenaming();
 						}
 					}}
-					onRename={(newName) => {
+					onRename={() => {
 						tree.completeRenaming();
 					}}
 					isRenaming={treeItem.isRenaming()}
 					searchMatch={treeItem.isMatchingSearch()}
+					isDragActive={dragActiveId === treeItem.getId()}
 				/>
 			);
 		},
-		[tree],
+		[tree, dragActiveId],
 	);
 
 	return (
-		<View style={styles.container}>
-			<FlashListAny
-				data={visibleItems}
-				renderItem={renderItem}
-				estimatedItemSize={44}
-				keyExtractor={(item: any) => item.item.getId()}
-				extraData={state}
-				keyboardShouldPersistTaps="always"
-			/>
-		</View>
+		<DndProvider
+			onDragEnd={handleDragEnd}
+			onActivation={handleActivation}
+			activationDelay={200}
+			minDistance={5}
+		>
+			<View style={styles.container}>
+				<FlashListAny
+					data={visibleItems}
+					renderItem={renderItem}
+					estimatedItemSize={44}
+					keyExtractor={(item: any) => item.item.getId()}
+					extraData={{ ...state, dragActiveId }}
+					keyboardShouldPersistTaps="always"
+				/>
+			</View>
+		</DndProvider>
 	);
 };
 
@@ -382,21 +503,42 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#111827",
 	},
+	droppableWrapper: {
+		flexShrink: 0,
+	},
+	dragHandle: {
+		paddingHorizontal: 4,
+		paddingVertical: 8,
+		justifyContent: "center",
+		alignItems: "center",
+	},
 	itemContainer: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 10,
-		paddingHorizontal: 12,
+		paddingVertical: 6,
+		paddingRight: 12,
+		paddingLeft: 4,
 		minHeight: 44,
+	},
+	itemContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		flex: 1,
 	},
 	itemSelected: {
 		backgroundColor: "#374151",
 		borderLeftWidth: 2,
 		borderLeftColor: "#6366F1",
-		paddingLeft: 10,
+		paddingLeft: 2,
 	},
 	itemSearchMatch: {
 		backgroundColor: "rgba(99, 102, 241, 0.1)",
+	},
+	itemDropTarget: {
+		backgroundColor: "rgba(99, 102, 241, 0.2)",
+		borderWidth: 1,
+		borderColor: "#6366F1",
+		borderRadius: 6,
 	},
 	icon: {
 		marginRight: 8,

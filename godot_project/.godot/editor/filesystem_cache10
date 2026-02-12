@@ -722,9 +722,9 @@ DebugPhysics.gd::GDScript::2325521010436117967::1769981004::0::1::::DebugPhysics
 DebugProps.gd::GDScript::4891004605017099441::1770841275::0::1::::DebugProps<>RefCounted<><>0<>0<><>::
 DebugSelector.gd::GDScript::4146464479291421755::1770841275::0::1::::DebugSelector<>RefCounted<><>0<>0<><>::
 DebugTime.gd::GDScript::5403663126197881566::1769719248::0::1::::DebugTime<>RefCounted<><>0<>0<><>::
-::res://scripts/bridge/generated/::1770932339
-BridgeMethodMap.gd::GDScript::2770292968964236121::1770932333::0::1::::BridgeMethodMap<>RefCounted<><>0<>0<><>::
-BridgeValidation.gd::GDScript::5204360596113440431::1770878747::0::1::::BridgeValidation<>RefCounted<><>0<>0<><>::
+::res://scripts/bridge/generated/::1770935251
+BridgeMethodMap.gd::GDScript::2770292968964236121::1770936789::0::1::::BridgeMethodMap<>RefCounted<><>0<>0<><>::
+BridgeValidation.gd::GDScript::5204360596113440431::1770936789::0::1::::BridgeValidation<>RefCounted<><>0<>0<><>::
 ::res://scripts/camera/::1770588068
 CameraEffects.gd::GDScript::5294655921117142126::1769538422::0::1::::<>Camera2D<><>0<>0<><>::
 CameraManager.gd::GDScript::5736649760931255875::1770499166::0::1::::<>Node<><>0<>0<><>::

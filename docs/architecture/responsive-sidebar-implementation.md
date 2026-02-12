@@ -31,7 +31,7 @@ Editor Layout
 │   └── Mobile: StageContainer + BottomSheetHost
 ├── Sidebar (web/desktop only)
 │   ├── ResizablePanels (react-native-resizable-panels)
-│   │   ├── HierarchyPanel (react-complex-tree)
+│   │   ├── HierarchyPanel (headless-tree)
 │   │   ├── PropertiesPanel (rich property editor)
 │   │   └── DebugPanel (enhanced debug tools)
 │   └── InspectorOverlay (hover highlights)
@@ -171,8 +171,7 @@ export default function EditorScreen() {
 ```bash
 cd app
 npm install react-native-resizable-panels
-npm install react-complex-tree
-npm install -D @types/react-complex-tree
+npm install headless-tree
 ```
 
 #### 2.2 Create Sidebar Component
@@ -282,7 +281,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-**Note**: For Phase 2, use a simple FlatList-based tree. In Phase 3, integrate react-complex-tree.
+**Note**: For Phase 2, use a simple FlatList-based tree. In Phase 3, integrate headless-tree.
 
 #### 2.4 Create Properties Panel (Web Only)
 
@@ -324,23 +323,18 @@ export function PropertiesPanel() {
 
 ---
 
-### Phase 3: Web Inspector with react-complex-tree (Week 3)
+### Phase 3: Web Inspector with headless-tree (Week 3)
 
-**Goal**: Replace simple tree with full-featured react-complex-tree
+**Goal**: Replace simple tree with full-featured headless-tree
 
-#### 3.1 Set Up react-complex-tree
+#### 3.1 Set Up headless-tree
 
 **File**: `app/components/editor/sidebar/TreeView.tsx`
 
 ```typescript
 import { View } from 'react-native';
 import { useState } from 'react';
-import {
-  ControlledTreeEnvironment,
-  Tree,
-  StaticTreeDataProvider,
-} from 'react-complex-tree';
-import 'react-complex-tree/lib/style.css'; // Import styles
+import { useHeadlessTree } from 'headless-tree';
 
 interface TreeViewProps {
   data: EntityNode[];
@@ -528,7 +522,7 @@ app/components/editor/
 │   ├── HierarchyPanel.tsx           # Entity tree view
 │   ├── PropertiesPanel.tsx          # Property editor
 │   ├── DebugPanel.tsx               # Debug tools
-│   └── TreeView.tsx                 # react-complex-tree wrapper
+│   └── TreeView.tsx                 # headless-tree wrapper
 ├── inspector/                       # NEW: Inspector state
 │   ├── InspectorProvider.tsx        # Inspector context
 │   ├── useInspector.ts              # Inspector hook
@@ -550,7 +544,7 @@ Use `.web.tsx` and `.native.tsx` extensions for platform-specific implementation
 
 **HierarchyPanel.web.tsx** (rich tree):
 ```typescript
-import { TreeView } from 'react-complex-tree';
+import { useHeadlessTree } from 'headless-tree';
 // Full-featured tree with drag-drop, multi-select
 ```
 
@@ -654,7 +648,7 @@ react-native-resizable-panels handles smooth resize animations automatically.
 - [ ] Sidebar appears on left
 - [ ] Sidebar width is 320px
 - [ ] Resizable panels work
-- [ ] react-complex-tree renders
+- [ ] headless-tree renders
 - [ ] Hover states work
 - [ ] Multi-select works
 
@@ -700,11 +694,8 @@ Resize browser window and verify layout switches smoothly.
 {
   "dependencies": {
     "react-native-resizable-panels": "^0.0.3",
-    "react-complex-tree": "^latest",
+    "headless-tree": "^latest",
     "@shopify/flash-list": "^1.0.0"
-  },
-  "devDependencies": {
-    "@types/react-complex-tree": "^latest"
   }
 }
 ```
@@ -723,7 +714,7 @@ Resize browser window and verify layout switches smoothly.
    - Simple entity list
    - Basic properties
 
-3. **Week 3**: Add react-complex-tree (web only)
+3. **Week 3**: Add headless-tree (web only)
    - Rich hierarchy view
    - Inspect mode
    - Advanced features
