@@ -376,6 +376,7 @@ func _setup_js_effects_bridge() -> void:
 
 	# Signal that effects bridge is ready
 	bridge["_effectsReady"] = true
+	JavaScriptBridge.eval("window.GodotBridge._effectsReady = true;")
 
 # ============================================================
 # JS CALLBACK IMPLEMENTATIONS

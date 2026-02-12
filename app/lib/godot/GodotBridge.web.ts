@@ -461,12 +461,27 @@ export function createWebGodotBridge(): GodotBridge {
 		return sharedQueryAsync<T>(bridge, method, args, { timeoutMs });
 	};
 
+	const waitForEffectsReady = (): Promise<void> => {
+		return new Promise((resolve) => {
+			const check = () => {
+				const bridge = getGodotBridge();
+				if (bridge && (bridge as Record<string, unknown>)._effectsReady) {
+					resolve();
+				} else {
+					setTimeout(check, 50);
+				}
+			};
+			check();
+		});
+	};
+
 	const executeEffects = async <T = void>(
 		method: string,
 		params?: Record<string, unknown>,
 		mapData?: (rawData: unknown) => T,
 	): Promise<EffectsResult<T>> => {
 		try {
+			await waitForEffectsReady();
 			const raw = await queryAsync<unknown>(method, params ? [params] : []);
 			return normalizeEffectsResult<T>(raw, mapData);
 		} catch (error) {
