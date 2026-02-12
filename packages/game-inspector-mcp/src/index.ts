@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import "./http-server.js";
+import "./stdio-server.js";

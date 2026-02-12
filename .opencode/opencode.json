@@ -13,6 +13,10 @@
 		"mcp-hot-ops": {
 			"type": "local",
 			"command": ["node_modules/.bin/tsx", "packages/mcp-hot-ops/src/server.ts"]
+		},
+		"game-inspector": {
+			"type": "local",
+			"command": ["node", "packages/game-inspector-mcp/dist/index.js"]
 		}
 	}
 }
