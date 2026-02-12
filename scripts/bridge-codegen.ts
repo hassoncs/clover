@@ -1,162 +1,236 @@
 #!/usr/bin/env npx tsx
-import { Project, type MethodSignature, type InterfaceDeclaration } from 'ts-morph';
-import { writeFileSync, mkdirSync, readFileSync, existsSync, chmodSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import {
+	chmodSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	writeFileSync,
+} from "fs";
+import { dirname, resolve } from "path";
+import {
+	type InterfaceDeclaration,
+	type MethodSignature,
+	Project,
+} from "ts-morph";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const ROOT = resolve(__dirname, '..');
-const TYPES_PATH = resolve(ROOT, 'app/lib/godot/types.ts');
-const OUTPUT_DIR = resolve(ROOT, 'app/lib/godot/generated');
-const OUTPUT_PATH = resolve(OUTPUT_DIR, 'bridge-registry.json');
-const GDSCRIPT_OUTPUT_DIR = resolve(ROOT, 'godot_project/scripts/bridge/generated');
-const GDSCRIPT_OUTPUT_PATH = resolve(GDSCRIPT_OUTPUT_DIR, 'BridgeValidation.gd');
+const ROOT = resolve(__dirname, "..");
+const TYPES_PATH = resolve(ROOT, "app/lib/godot/types.ts");
+const OUTPUT_DIR = resolve(ROOT, "app/lib/godot/generated");
+const OUTPUT_PATH = resolve(OUTPUT_DIR, "bridge-registry.json");
+const GDSCRIPT_OUTPUT_DIR = resolve(
+	ROOT,
+	"godot_project/scripts/bridge/generated",
+);
+const GDSCRIPT_OUTPUT_PATH = resolve(
+	GDSCRIPT_OUTPUT_DIR,
+	"BridgeValidation.gd",
+);
 
 interface MethodParam {
-  name: string;
-  type: string;
-  optional: boolean;
+	name: string;
+	type: string;
+	optional: boolean;
 }
 
 interface MethodEntry {
-  tsName: string;
-  snakeName: string;
-  params: MethodParam[];
-  returnType: string;
-  async: boolean;
-  category: string;
-  tsOnly: boolean;
-  source: 'GodotBridge' | 'EffectsBridge';
+	tsName: string;
+	snakeName: string;
+	params: MethodParam[];
+	returnType: string;
+	async: boolean;
+	category: string;
+	tsOnly: boolean;
+	source: "GodotBridge" | "EffectsBridge";
 }
 
 interface BridgeRegistry {
-  generatedAt: string;
-  sourceFile: string;
-  methods: MethodEntry[];
-  stats: {
-    total: number;
-    bridgeMethods: number;
-    tsOnlyMethods: number;
-    byCategory: Record<string, number>;
-  };
+	generatedAt: string;
+	sourceFile: string;
+	methods: MethodEntry[];
+	stats: {
+		total: number;
+		bridgeMethods: number;
+		tsOnlyMethods: number;
+		byCategory: Record<string, number>;
+	};
 }
 
-const LIFECYCLE_METHODS = new Set([
-  'initialize',
-  'dispose',
-]);
+const LIFECYCLE_METHODS = new Set(["initialize", "dispose"]);
 
 const EVENT_CALLBACK_PATTERN = /^on[A-Z]/;
 
 function camelToSnake(name: string): string {
-  return name
-    .replace(/([23])D(?=[A-Z]|$)/g, '_$1d_')
-    .replace(/([a-z])(\d)/g, '$1_$2')
-    .replace(/(\d)([A-Z])/g, '$1_$2')
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '')
-    .toLowerCase();
+	return name
+		.replace(/([23])D(?=[A-Z]|$)/g, "_$1d_")
+		.replace(/([a-z])(\d)/g, "$1_$2")
+		.replace(/(\d)([A-Z])/g, "$1_$2")
+		.replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+		.replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
+		.replace(/_+/g, "_")
+		.replace(/^_|_$/g, "")
+		.toLowerCase();
 }
 
 function isTsOnly(name: string, returnType: string): boolean {
-  if (LIFECYCLE_METHODS.has(name)) return true;
-  if (EVENT_CALLBACK_PATTERN.test(name) && returnType.includes('() => void')) return true;
-  return false;
+	if (LIFECYCLE_METHODS.has(name)) return true;
+	if (EVENT_CALLBACK_PATTERN.test(name) && returnType.includes("() => void"))
+		return true;
+	return false;
 }
 
-function inferCategory(method: MethodSignature, interfaceDecl: InterfaceDeclaration): string {
-  const sourceFile = interfaceDecl.getSourceFile();
-  const methodStart = method.getStart();
+function inferCategory(
+	method: MethodSignature,
+	interfaceDecl: InterfaceDeclaration,
+): string {
+	const sourceFile = interfaceDecl.getSourceFile();
+	const methodStart = method.getStart();
 
-  const fullText = sourceFile.getFullText();
-  const textBefore = fullText.slice(0, methodStart);
+	const fullText = sourceFile.getFullText();
+	const textBefore = fullText.slice(0, methodStart);
 
-  const commentLines = textBefore.split('\n');
-  let lastCategory = 'uncategorized';
+	const commentLines = textBefore.split("\n");
+	let lastCategory = "uncategorized";
 
-  for (const line of commentLines) {
-    const match = line.match(/\/\/\s*(.+)/);
-    if (match) {
-      const comment = match[1].trim();
-      if (comment.startsWith('Lifecycle')) lastCategory = 'lifecycle';
-      else if (comment.startsWith('Effects hot-path') || comment.startsWith('Effects -') || comment.includes('effect graph')) lastCategory = 'effects';
-      else if (comment.startsWith('Normalized coordinate')) lastCategory = 'drawing';
-      else if (comment.startsWith('Game management')) lastCategory = 'game';
-      else if (comment.startsWith('Physics control') || comment.startsWith('Physics queries')) lastCategory = 'physics';
-      else if (comment.startsWith('Inspect mode') || comment.startsWith('Debug stepping') || comment.startsWith('Generic RPC') || comment.startsWith('Debug mode')) lastCategory = 'debug';
-      else if (comment.startsWith('Entity management') || comment.startsWith('Entity data')) lastCategory = 'entity';
-      else if (comment.startsWith('Transform queries') || comment.startsWith('Transform control')) lastCategory = 'transform';
-      else if (comment.startsWith('Velocity control') || comment.startsWith('Force/impulse')) lastCategory = 'physics';
-      else if (comment.startsWith('Joints')) lastCategory = 'joints';
-      else if (comment.startsWith('Coordinate conversion')) lastCategory = 'coordinate';
-      else if (comment.startsWith('Events')) lastCategory = 'events';
-      else if (comment.startsWith('Property sync')) lastCategory = 'properties';
-      else if (comment.startsWith('Input')) lastCategory = 'input';
-      else if (comment.startsWith('Dynamic image') || comment.startsWith('Pixel Buffer')) lastCategory = 'visual';
-      else if (comment.startsWith('Camera control')) lastCategory = 'camera';
-      else if (comment.startsWith('Particle effects')) lastCategory = 'particles';
-      else if (comment.startsWith('Audio')) lastCategory = 'audio';
-      else if (comment.startsWith('Visual Effects - Sprite')) lastCategory = 'effects_sprite';
-      else if (comment.startsWith('Visual Effects - Post')) lastCategory = 'effects_post';
-      else if (comment.startsWith('Visual Effects - Camera')) lastCategory = 'effects_camera';
-      else if (comment.startsWith('Visual Effects - Dynamic')) lastCategory = 'effects_dynamic';
-      else if (comment.startsWith('Visual Effects - Particles')) lastCategory = 'effects_particles';
-      else if (comment.startsWith('Visual Effects - Info')) lastCategory = 'effects_info';
-      else if (comment.startsWith('UI Buttons')) lastCategory = 'ui';
-      else if (comment.startsWith('Themed UI')) lastCategory = 'ui_themed';
-      else if (comment.startsWith('3D Model') || comment.startsWith('3D Primitives') || comment.startsWith('3D Camera')) lastCategory = '3d';
-      else if (comment.startsWith('External Input')) lastCategory = 'external_input';
-    }
-  }
+	for (const line of commentLines) {
+		const match = line.match(/\/\/\s*(.+)/);
+		if (match) {
+			const comment = match[1].trim();
+			if (comment.startsWith("Lifecycle")) lastCategory = "lifecycle";
+			else if (
+				comment.startsWith("Effects hot-path") ||
+				comment.startsWith("Effects -") ||
+				comment.includes("effect graph")
+			)
+				lastCategory = "effects";
+			else if (comment.startsWith("Normalized coordinate"))
+				lastCategory = "drawing";
+			else if (comment.startsWith("Game management")) lastCategory = "game";
+			else if (
+				comment.startsWith("Physics control") ||
+				comment.startsWith("Physics queries")
+			)
+				lastCategory = "physics";
+			else if (
+				comment.startsWith("Inspect mode") ||
+				comment.startsWith("Debug stepping") ||
+				comment.startsWith("Generic RPC") ||
+				comment.startsWith("Debug mode")
+			)
+				lastCategory = "debug";
+			else if (
+				comment.startsWith("Entity management") ||
+				comment.startsWith("Entity data")
+			)
+				lastCategory = "entity";
+			else if (
+				comment.startsWith("Transform queries") ||
+				comment.startsWith("Transform control")
+			)
+				lastCategory = "transform";
+			else if (
+				comment.startsWith("Velocity control") ||
+				comment.startsWith("Force/impulse")
+			)
+				lastCategory = "physics";
+			else if (comment.startsWith("Joints")) lastCategory = "joints";
+			else if (comment.startsWith("Coordinate conversion"))
+				lastCategory = "coordinate";
+			else if (comment.startsWith("Events")) lastCategory = "events";
+			else if (comment.startsWith("Property sync")) lastCategory = "properties";
+			else if (comment.startsWith("Input")) lastCategory = "input";
+			else if (
+				comment.startsWith("Dynamic image") ||
+				comment.startsWith("Pixel Buffer")
+			)
+				lastCategory = "visual";
+			else if (comment.startsWith("Camera control")) lastCategory = "camera";
+			else if (comment.startsWith("Particle effects"))
+				lastCategory = "particles";
+			else if (comment.startsWith("Audio")) lastCategory = "audio";
+			else if (comment.startsWith("Visual Effects - Sprite"))
+				lastCategory = "effects_sprite";
+			else if (comment.startsWith("Visual Effects - Post"))
+				lastCategory = "effects_post";
+			else if (comment.startsWith("Visual Effects - Camera"))
+				lastCategory = "effects_camera";
+			else if (comment.startsWith("Visual Effects - Dynamic"))
+				lastCategory = "effects_dynamic";
+			else if (comment.startsWith("Visual Effects - Particles"))
+				lastCategory = "effects_particles";
+			else if (comment.startsWith("Visual Effects - Info"))
+				lastCategory = "effects_info";
+			else if (comment.startsWith("UI Buttons")) lastCategory = "ui";
+			else if (comment.startsWith("Themed UI")) lastCategory = "ui_themed";
+			else if (
+				comment.startsWith("3D Model") ||
+				comment.startsWith("3D Primitives") ||
+				comment.startsWith("3D Camera")
+			)
+				lastCategory = "3d";
+			else if (comment.startsWith("External Input"))
+				lastCategory = "external_input";
+		}
+	}
 
-  return lastCategory;
+	return lastCategory;
 }
 
-function extractMethod(method: MethodSignature, interfaceDecl: InterfaceDeclaration, source: 'GodotBridge' | 'EffectsBridge'): MethodEntry {
-  const tsName = method.getName();
-  const snakeName = camelToSnake(tsName);
-  const returnTypeNode = method.getReturnTypeNode();
-  const returnType = returnTypeNode ? returnTypeNode.getText() : method.getReturnType().getText(method);
-  const isAsync = returnType.startsWith('Promise<');
+function extractMethod(
+	method: MethodSignature,
+	interfaceDecl: InterfaceDeclaration,
+	source: "GodotBridge" | "EffectsBridge",
+): MethodEntry {
+	const tsName = method.getName();
+	const snakeName = camelToSnake(tsName);
+	const returnTypeNode = method.getReturnTypeNode();
+	const returnType = returnTypeNode
+		? returnTypeNode.getText()
+		: method.getReturnType().getText(method);
+	const isAsync = returnType.startsWith("Promise<");
 
-  const params: MethodParam[] = method.getParameters().map(p => {
-    const typeNode = p.getTypeNode();
-    const typeText = typeNode ? typeNode.getText() : p.getType().getText(p);
-    return {
-      name: p.getName(),
-      type: typeText,
-      optional: p.isOptional(),
-    };
-  });
+	const params: MethodParam[] = method.getParameters().map((p) => {
+		const typeNode = p.getTypeNode();
+		const typeText = typeNode ? typeNode.getText() : p.getType().getText(p);
+		return {
+			name: p.getName(),
+			type: typeText,
+			optional: p.isOptional(),
+		};
+	});
 
-  const category = source === 'EffectsBridge' ? 'effects_pipeline' : inferCategory(method, interfaceDecl);
-  const tsOnly = isTsOnly(tsName, returnType);
+	const category =
+		source === "EffectsBridge"
+			? "effects_pipeline"
+			: inferCategory(method, interfaceDecl);
+	const tsOnly = isTsOnly(tsName, returnType);
 
-  return {
-    tsName,
-    snakeName,
-    params,
-    returnType,
-    async: isAsync,
-    category,
-    tsOnly,
-    source,
-  };
+	return {
+		tsName,
+		snakeName,
+		params,
+		returnType,
+		async: isAsync,
+		category,
+		tsOnly,
+		source,
+	};
 }
 
 function generateGDScriptValidator(registry: BridgeRegistry): void {
-  const bridgeMethods = registry.methods.filter(m => !m.tsOnly);
-  
-  const methodEntries = bridgeMethods.map(m => {
-    const paramCount = m.params.length;
-    const asyncStr = m.async ? 'true' : 'false';
-    return `  "${m.snakeName}": {"param_count": ${paramCount}, "async": ${asyncStr}},`;
-  }).join('\n');
+	const bridgeMethods = registry.methods.filter((m) => !m.tsOnly);
 
-  const gdscript = `# ⚠️ AUTO-GENERATED - DO NOT EDIT
+	const methodEntries = bridgeMethods
+		.map((m) => {
+			const paramCount = m.params.length;
+			const asyncStr = m.async ? "true" : "false";
+			return `  "${m.snakeName}": {"param_count": ${paramCount}, "async": ${asyncStr}},`;
+		})
+		.join("\n");
+
+	const gdscript = `# ⚠️ AUTO-GENERATED - DO NOT EDIT
 # This file is automatically generated from types.ts
 # Any changes will be overwritten on next generation
 # To modify: update app/lib/godot/types.ts and run pnpm generate:bridge
@@ -187,122 +261,128 @@ static func validate(method_map: Dictionary) -> Array[String]:
   return errors
 `;
 
-  mkdirSync(GDSCRIPT_OUTPUT_DIR, { recursive: true });
-  
-  if (existsSync(GDSCRIPT_OUTPUT_PATH)) {
-    chmodSync(GDSCRIPT_OUTPUT_PATH, 0o644);
-  }
-  writeFileSync(GDSCRIPT_OUTPUT_PATH, gdscript);
-  chmodSync(GDSCRIPT_OUTPUT_PATH, 0o444);
+	mkdirSync(GDSCRIPT_OUTPUT_DIR, { recursive: true });
+
+	if (existsSync(GDSCRIPT_OUTPUT_PATH)) {
+		chmodSync(GDSCRIPT_OUTPUT_PATH, 0o644);
+	}
+	writeFileSync(GDSCRIPT_OUTPUT_PATH, gdscript);
+	chmodSync(GDSCRIPT_OUTPUT_PATH, 0o444);
 }
 
 function generateRegistry(): BridgeRegistry {
-  const project = new Project({ compilerOptions: { strict: true } });
-  project.addSourceFileAtPath(TYPES_PATH);
+	const project = new Project({ compilerOptions: { strict: true } });
+	project.addSourceFileAtPath(TYPES_PATH);
 
-  const sourceFile = project.getSourceFileOrThrow(TYPES_PATH);
+	const sourceFile = project.getSourceFileOrThrow(TYPES_PATH);
 
-  const godotBridge = sourceFile.getInterfaceOrThrow('GodotBridge');
-  const effectsBridge = sourceFile.getInterfaceOrThrow('EffectsBridge');
+	const godotBridge = sourceFile.getInterfaceOrThrow("GodotBridge");
+	const effectsBridge = sourceFile.getInterfaceOrThrow("EffectsBridge");
 
-  const methods: MethodEntry[] = [];
+	const methods: MethodEntry[] = [];
 
-  for (const method of effectsBridge.getMethods()) {
-    methods.push(extractMethod(method, effectsBridge, 'EffectsBridge'));
-  }
+	for (const method of effectsBridge.getMethods()) {
+		methods.push(extractMethod(method, effectsBridge, "EffectsBridge"));
+	}
 
-  for (const method of godotBridge.getMethods()) {
-    methods.push(extractMethod(method, godotBridge, 'GodotBridge'));
-  }
+	for (const method of godotBridge.getMethods()) {
+		methods.push(extractMethod(method, godotBridge, "GodotBridge"));
+	}
 
-  const byCategory: Record<string, number> = {};
-  let tsOnlyCount = 0;
-  for (const m of methods) {
-    byCategory[m.category] = (byCategory[m.category] ?? 0) + 1;
-    if (m.tsOnly) tsOnlyCount++;
-  }
+	const byCategory: Record<string, number> = {};
+	let tsOnlyCount = 0;
+	for (const m of methods) {
+		byCategory[m.category] = (byCategory[m.category] ?? 0) + 1;
+		if (m.tsOnly) tsOnlyCount++;
+	}
 
-  return {
-    generatedAt: new Date().toISOString(),
-    sourceFile: 'app/lib/godot/types.ts',
-    methods,
-    stats: {
-      total: methods.length,
-      bridgeMethods: methods.length - tsOnlyCount,
-      tsOnlyMethods: tsOnlyCount,
-      byCategory,
-    },
-  };
+	return {
+		generatedAt: new Date().toISOString(),
+		sourceFile: "app/lib/godot/types.ts",
+		methods,
+		stats: {
+			total: methods.length,
+			bridgeMethods: methods.length - tsOnlyCount,
+			tsOnlyMethods: tsOnlyCount,
+			byCategory,
+		},
+	};
 }
 
 function normalizeRegistry(registry: BridgeRegistry): BridgeRegistry {
-  return {
-    generatedAt: '',
-    sourceFile: registry.sourceFile,
-    methods: registry.methods,
-    stats: registry.stats,
-  };
+	return {
+		generatedAt: "",
+		sourceFile: registry.sourceFile,
+		methods: registry.methods,
+		stats: registry.stats,
+	};
 }
 
 function checkMode(): void {
-  if (!existsSync(OUTPUT_PATH)) {
-    console.error(`ERROR: Registry not found at ${OUTPUT_PATH}`);
-    console.error('Run "pnpm generate:bridge" first to generate the registry.');
-    process.exit(1);
-  }
+	if (!existsSync(OUTPUT_PATH)) {
+		console.error(`ERROR: Registry not found at ${OUTPUT_PATH}`);
+		console.error('Run "pnpm generate:bridge" first to generate the registry.');
+		process.exit(1);
+	}
 
-  const committedContent = readFileSync(OUTPUT_PATH, 'utf-8');
-  const committedRegistry = JSON.parse(committedContent) as BridgeRegistry;
+	const committedContent = readFileSync(OUTPUT_PATH, "utf-8");
+	const committedRegistry = JSON.parse(committedContent) as BridgeRegistry;
 
-  const freshRegistry = generateRegistry();
+	const freshRegistry = generateRegistry();
 
-  const normalizedCommitted = normalizeRegistry(committedRegistry);
-  const normalizedFresh = normalizeRegistry(freshRegistry);
+	const normalizedCommitted = normalizeRegistry(committedRegistry);
+	const normalizedFresh = normalizeRegistry(freshRegistry);
 
-  const committedJson = JSON.stringify(normalizedCommitted, null, 2);
-  const freshJson = JSON.stringify(normalizedFresh, null, 2);
+	const committedJson = JSON.stringify(normalizedCommitted, null, 2);
+	const freshJson = JSON.stringify(normalizedFresh, null, 2);
 
-  if (committedJson !== freshJson) {
-    console.error('ERROR: Bridge registry is out of date!');
-    console.error('');
-    console.error('The committed registry does not match the current TypeScript definitions.');
-    console.error('Run "pnpm generate:bridge" to update it.');
-    console.error('');
-    console.error(`Committed: ${committedRegistry.stats.total} methods`);
-    console.error(`Current:   ${freshRegistry.stats.total} methods`);
-    process.exit(1);
-  }
+	if (committedJson !== freshJson) {
+		console.error("ERROR: Bridge registry is out of date!");
+		console.error("");
+		console.error(
+			"The committed registry does not match the current TypeScript definitions.",
+		);
+		console.error('Run "pnpm generate:bridge" to update it.');
+		console.error("");
+		console.error(`Committed: ${committedRegistry.stats.total} methods`);
+		console.error(`Current:   ${freshRegistry.stats.total} methods`);
+		process.exit(1);
+	}
 
-  console.log('✓ Bridge registry is up to date');
-  console.log(`  Total methods: ${freshRegistry.stats.total}`);
-  console.log(`  Bridge methods: ${freshRegistry.stats.bridgeMethods}`);
-  console.log(`  TS-only methods: ${freshRegistry.stats.tsOnlyMethods}`);
+	console.log("✓ Bridge registry is up to date");
+	console.log(`  Total methods: ${freshRegistry.stats.total}`);
+	console.log(`  Bridge methods: ${freshRegistry.stats.bridgeMethods}`);
+	console.log(`  TS-only methods: ${freshRegistry.stats.tsOnlyMethods}`);
 }
 
 function generateTypedBridgeClient(registry: BridgeRegistry): void {
-  const E2E_OUTPUT_DIR = resolve(ROOT, 'tests/e2e/bridge/generated');
-  const E2E_OUTPUT_PATH = resolve(E2E_OUTPUT_DIR, 'TypedBridgeClient.ts');
+	const E2E_OUTPUT_DIR = resolve(ROOT, "tests/e2e/bridge/generated");
+	const E2E_OUTPUT_PATH = resolve(E2E_OUTPUT_DIR, "TypedBridgeClient.ts");
 
-  const bridgeMethods = registry.methods.filter(m => !m.tsOnly);
+	const bridgeMethods = registry.methods.filter((m) => !m.tsOnly);
 
-  // Generate method implementations
-  const methodImpls = bridgeMethods.map(m => {
-    const params = m.params.map(p => {
-      const optionalMark = p.optional ? '?' : '';
-      return `${p.name}${optionalMark}: ${p.type}`;
-    }).join(', ');
+	// Generate method implementations
+	const methodImpls = bridgeMethods
+		.map((m) => {
+			const params = m.params
+				.map((p) => {
+					const optionalMark = p.optional ? "?" : "";
+					return `${p.name}${optionalMark}: ${p.type}`;
+				})
+				.join(", ");
 
-    const paramNames = m.params.map(p => p.name).join(', ');
-    const paramsArray = m.params.length > 0 ? `[${paramNames}]` : '[]';
+			const paramNames = m.params.map((p) => p.name).join(", ");
+			const paramsArray = m.params.length > 0 ? `[${paramNames}]` : "[]";
 
-    const returnType = m.async ? m.returnType : `Promise<${m.returnType}>`;
+			const returnType = m.async ? m.returnType : `Promise<${m.returnType}>`;
 
-    return `  async ${m.tsName}(${params}): ${returnType} {
+			return `  async ${m.tsName}(${params}): ${returnType} {
     return this.driver.call("${m.snakeName}", ${paramsArray});
   }`;
-  }).join('\n\n');
+		})
+		.join("\n\n");
 
-  const content = `// ⚠️ AUTO-GENERATED - DO NOT EDIT
+	const content = `// ⚠️ AUTO-GENERATED - DO NOT EDIT
 // This file is automatically generated from types.ts
 // Any changes will be overwritten on next generation
 // To modify: update app/lib/godot/types.ts and run pnpm generate:bridge
@@ -313,6 +393,7 @@ function generateTypedBridgeClient(registry: BridgeRegistry): void {
 
 import type {
   GameDefinition,
+  GameRule,
   PropertySyncPayload,
   Vec2,
   EntityTransform,
@@ -335,33 +416,37 @@ ${methodImpls}
 }
 `;
 
-  mkdirSync(E2E_OUTPUT_DIR, { recursive: true });
+	mkdirSync(E2E_OUTPUT_DIR, { recursive: true });
 
-  if (existsSync(E2E_OUTPUT_PATH)) {
-    chmodSync(E2E_OUTPUT_PATH, 0o644);
-  }
-  writeFileSync(E2E_OUTPUT_PATH, content);
-  chmodSync(E2E_OUTPUT_PATH, 0o444);
+	if (existsSync(E2E_OUTPUT_PATH)) {
+		chmodSync(E2E_OUTPUT_PATH, 0o644);
+	}
+	writeFileSync(E2E_OUTPUT_PATH, content);
+	chmodSync(E2E_OUTPUT_PATH, 0o444);
 
-  console.log(`Generated ${E2E_OUTPUT_PATH}`);
-  console.log(`  Methods: ${bridgeMethods.length}`);
+	console.log(`Generated ${E2E_OUTPUT_PATH}`);
+	console.log(`  Methods: ${bridgeMethods.length}`);
 }
 
 function generateMockGodotBridge(registry: BridgeRegistry): void {
-  const MOCK_OUTPUT_DIR = resolve(ROOT, 'app/lib/godot/__tests__/generated');
-  const MOCK_OUTPUT_PATH = resolve(MOCK_OUTPUT_DIR, 'MockGodotBridge.ts');
+	const MOCK_OUTPUT_DIR = resolve(ROOT, "app/lib/godot/__tests__/generated");
+	const MOCK_OUTPUT_PATH = resolve(MOCK_OUTPUT_DIR, "MockGodotBridge.ts");
 
-  // Generate mock method implementations
-  const mockMethods = registry.methods.map(m => {
-    const params = m.params.map(p => {
-      const optionalMark = p.optional ? '?' : '';
-      return `${p.name}${optionalMark}: ${p.type}`;
-    }).join(', ');
+	// Generate mock method implementations
+	const mockMethods = registry.methods
+		.map((m) => {
+			const params = m.params
+				.map((p) => {
+					const optionalMark = p.optional ? "?" : "";
+					return `${p.name}${optionalMark}: ${p.type}`;
+				})
+				.join(", ");
 
-    return `  ${m.tsName} = vi.fn<(${params}) => ${m.returnType}>();`;
-  }).join('\n');
+			return `  ${m.tsName} = vi.fn<(${params}) => ${m.returnType}>();`;
+		})
+		.join("\n");
 
-  const content = `// ⚠️ AUTO-GENERATED - DO NOT EDIT
+	const content = `// ⚠️ AUTO-GENERATED - DO NOT EDIT
 // This file is automatically generated from types.ts
 // Any changes will be overwritten on next generation
 // To modify: update app/lib/godot/types.ts and run pnpm generate:bridge
@@ -374,6 +459,7 @@ import { vi } from 'vitest';
 import type {
   GodotBridge,
   GameDefinition,
+  GameRule,
   PropertySyncPayload,
   Vec2,
   EntityTransform,
@@ -400,60 +486,62 @@ ${mockMethods}
 }
 `;
 
-  mkdirSync(MOCK_OUTPUT_DIR, { recursive: true });
+	mkdirSync(MOCK_OUTPUT_DIR, { recursive: true });
 
-  if (existsSync(MOCK_OUTPUT_PATH)) {
-    chmodSync(MOCK_OUTPUT_PATH, 0o644);
-  }
-  writeFileSync(MOCK_OUTPUT_PATH, content);
-  chmodSync(MOCK_OUTPUT_PATH, 0o444);
+	if (existsSync(MOCK_OUTPUT_PATH)) {
+		chmodSync(MOCK_OUTPUT_PATH, 0o644);
+	}
+	writeFileSync(MOCK_OUTPUT_PATH, content);
+	chmodSync(MOCK_OUTPUT_PATH, 0o444);
 
-  console.log(`Generated ${MOCK_OUTPUT_PATH}`);
-  console.log(`  Methods: ${registry.methods.length}`);
+	console.log(`Generated ${MOCK_OUTPUT_PATH}`);
+	console.log(`  Methods: ${registry.methods.length}`);
 }
 
 function generateMode(): void {
-  const registry = generateRegistry();
+	const registry = generateRegistry();
 
-  // Add AI protection header to JSON
-  const jsonContent = `{
+	// Add AI protection header to JSON
+	const jsonContent = `{
   "_comment": "⚠️ AUTO-GENERATED - DO NOT EDIT",
   "_warning": "This file is automatically generated from types.ts",
   "_instructions": "Any changes will be overwritten on next generation",
   "_howToModify": "To modify: update app/lib/godot/types.ts and run pnpm generate:bridge",
 ${JSON.stringify(registry, null, 2).slice(2)}`;
 
-  mkdirSync(OUTPUT_DIR, { recursive: true });
-  
-  if (existsSync(OUTPUT_PATH)) {
-    chmodSync(OUTPUT_PATH, 0o644);
-  }
-  writeFileSync(OUTPUT_PATH, jsonContent);
-  chmodSync(OUTPUT_PATH, 0o444);
+	mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  console.log(`Generated ${OUTPUT_PATH}`);
-  console.log(`  Total methods: ${registry.stats.total}`);
-  console.log(`  Bridge methods: ${registry.stats.bridgeMethods}`);
-  console.log(`  TS-only methods: ${registry.stats.tsOnlyMethods}`);
-  console.log(`  Categories: ${Object.keys(registry.stats.byCategory).join(', ')}`);
+	if (existsSync(OUTPUT_PATH)) {
+		chmodSync(OUTPUT_PATH, 0o644);
+	}
+	writeFileSync(OUTPUT_PATH, jsonContent);
+	chmodSync(OUTPUT_PATH, 0o444);
 
-  generateGDScriptValidator(registry);
-  console.log(`Generated ${GDSCRIPT_OUTPUT_PATH}`);
+	console.log(`Generated ${OUTPUT_PATH}`);
+	console.log(`  Total methods: ${registry.stats.total}`);
+	console.log(`  Bridge methods: ${registry.stats.bridgeMethods}`);
+	console.log(`  TS-only methods: ${registry.stats.tsOnlyMethods}`);
+	console.log(
+		`  Categories: ${Object.keys(registry.stats.byCategory).join(", ")}`,
+	);
 
-  generateTypedBridgeClient(registry);
-  
-  generateMockGodotBridge(registry);
+	generateGDScriptValidator(registry);
+	console.log(`Generated ${GDSCRIPT_OUTPUT_PATH}`);
+
+	generateTypedBridgeClient(registry);
+
+	generateMockGodotBridge(registry);
 }
 
 function main() {
-  const args = process.argv.slice(2);
-  const isCheckMode = args.includes('--check');
+	const args = process.argv.slice(2);
+	const isCheckMode = args.includes("--check");
 
-  if (isCheckMode) {
-    checkMode();
-  } else {
-    generateMode();
-  }
+	if (isCheckMode) {
+		checkMode();
+	} else {
+		generateMode();
+	}
 }
 
 main();

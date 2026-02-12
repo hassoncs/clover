@@ -9,10 +9,10 @@ import { ArtifactService } from "@/agent/artifact-service";
 import { resolveChatModel } from "@/ai/chat-model-config";
 import { createModel } from "@/ai/model-factory";
 import {
-	advanceThread,
 	type ChatHandlerContext,
+	insertToolResult,
+	insertUserMessage,
 	type MessageRow,
-	resumeThread,
 	type ThreadRow,
 } from "@/chat/chat-handler";
 import { WalletService } from "@/economy/wallet-service";
@@ -259,15 +259,24 @@ export const chatThreadsRouter = router({
 			const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
 			await scaffoldService.seedIfMissing({ gameId: input.gameId });
 
-			const chatCtx = buildChatContext(ctx.env, ctx.user, input.gameId);
-			const result = await advanceThread(threadId, input.text, chatCtx);
+			if (!ctx.authToken) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Authentication required",
+				});
+			}
+
+			await insertUserMessage(ctx.env.DB, threadId, input.text);
+
+			const streamUrl = `/api/chat/stream?threadId=${encodeURIComponent(threadId)}&token=${encodeURIComponent(ctx.authToken)}`;
 
 			return {
 				threadId,
-				status: result.status,
-				text: result.text ?? null,
-				pendingAskUser: result.pendingAskUser ?? null,
-				error: result.error ?? null,
+				streamUrl,
+				status: null,
+				text: null,
+				pendingAskUser: null,
+				error: null,
 			};
 		}),
 
@@ -303,20 +312,29 @@ export const chatThreadsRouter = router({
 				});
 			}
 
-			const chatCtx = buildChatContext(ctx.env, ctx.user, thread.game_id);
-			const result = await resumeThread(
+			if (!ctx.authToken) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Authentication required",
+				});
+			}
+
+			await insertToolResult(
+				ctx.env.DB,
 				input.threadId,
 				input.toolCallId,
 				input.answer,
-				chatCtx,
 			);
+
+			const streamUrl = `/api/chat/stream?threadId=${encodeURIComponent(input.threadId)}&token=${encodeURIComponent(ctx.authToken)}`;
 
 			return {
 				threadId: input.threadId,
-				status: result.status,
-				text: result.text ?? null,
-				pendingAskUser: result.pendingAskUser ?? null,
-				error: result.error ?? null,
+				streamUrl,
+				status: null,
+				text: null,
+				pendingAskUser: null,
+				error: null,
 			};
 		}),
 

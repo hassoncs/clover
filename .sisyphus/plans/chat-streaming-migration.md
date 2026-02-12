@@ -283,14 +283,14 @@ export function mapStreamPartToAgUi(
 - `runGeneration` moves to `stream-handler.ts`
 
 ### Tasks
-- [ ] Create `api/src/chat/agui-mapper.ts` with unit tests
-- [ ] Create `api/src/chat/stream-handler.ts`
-- [ ] Add Hono SSE route `GET /api/chat/stream/:threadId`
-- [ ] Modify `sendMessage` tRPC to return `{ threadId, streamUrl }` (non-blocking)
-- [ ] Modify `submitToolAnswer` tRPC to return `{ threadId, streamUrl }`
-- [ ] Move persistence + billing to `onFinish` callback
-- [ ] Handle askUser suspension (detect tool-call with no execute → RUN_FINISHED)
-- [ ] Integration test: send message → receive AG-UI event stream → verify events
+- [x] Create `api/src/chat/agui-mapper.ts` with unit tests (9/9 passing)
+- [x] Create `api/src/chat/stream-handler.ts`
+- [x] Add Hono SSE route `GET /api/chat/stream` (query params: token, threadId)
+- [x] Modify `sendMessage` tRPC to return `{ threadId, streamUrl }` (non-blocking)
+- [x] Modify `submitToolAnswer` tRPC to return `{ threadId, streamUrl }`
+- [x] Move persistence + billing to `onFinish` callback (in stream-handler.ts)
+- [x] Handle askUser suspension (detect tool-call with no execute → RUN_FINISHED)
+- [ ] Integration test: send message → receive AG-UI event stream → verify events (deferred — requires live Workers env)
 
 ---
 

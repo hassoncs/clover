@@ -351,10 +351,7 @@ export async function advanceThread(
   userText: string,
   ctx: ChatHandlerContext,
 ): Promise<AdvanceResult> {
-  await insertMessage(ctx.db, threadId, {
-    role: 'user',
-    contentJson: JSON.stringify([{ type: 'text', text: userText }]),
-  });
+  await insertUserMessage(ctx.db, threadId, userText);
 
   const history = await loadThreadMessages(ctx.db, threadId);
   const messages = toAIMessages(history);
@@ -368,20 +365,42 @@ export async function resumeThread(
   answerText: string,
   ctx: ChatHandlerContext,
 ): Promise<AdvanceResult> {
-  await insertMessage(ctx.db, threadId, {
-    role: 'tool',
-    contentJson: JSON.stringify([{
-      type: 'tool-result',
-      toolCallId,
-      toolName: 'askUser',
-      result: answerText,
-    }]),
-    toolCallId,
-    toolName: 'askUser',
-  });
+  await insertToolResult(ctx.db, threadId, toolCallId, answerText);
 
   const history = await loadThreadMessages(ctx.db, threadId);
   const messages = toAIMessages(history);
 
   return runGeneration(ctx, threadId, messages);
+}
+
+export async function insertUserMessage(
+  db: D1Database,
+  threadId: string,
+  userText: string,
+): Promise<MessageRow> {
+  return insertMessage(db, threadId, {
+    role: 'user',
+    contentJson: JSON.stringify([{ type: 'text', text: userText }]),
+  });
+}
+
+export async function insertToolResult(
+  db: D1Database,
+  threadId: string,
+  toolCallId: string,
+  answerText: string,
+): Promise<MessageRow> {
+  return insertMessage(db, threadId, {
+    role: 'tool',
+    contentJson: JSON.stringify([
+      {
+        type: 'tool-result',
+        toolCallId,
+        toolName: 'askUser',
+        result: answerText,
+      },
+    ]),
+    toolCallId,
+    toolName: 'askUser',
+  });
 }

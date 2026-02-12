@@ -1,11 +1,12 @@
-import { chatReducer, initialStreamState } from '../accumulator';
-import type { AgUiEvent } from '../events';
+import { chatReducer, initialStreamState } from '../accumulator.ts';
+import type { AgUiEvent } from '../events.ts';
 import type {
 	ChatMessage,
 	ContentBlock,
 	ToolResultContent,
 	ToolUseContent,
-} from '../types';
+} from '../types.ts';
+import { describe, expect, it } from 'vitest';
 
 function reduceEvents(threadId: string, events: AgUiEvent[]) {
 	return events.reduce(chatReducer, initialStreamState(threadId));
@@ -252,7 +253,7 @@ describe('chatReducer contract', () => {
 			},
 			{ type: 'text', text: 'Thanks for your answer!' },
 		]);
-		expect(getToolUse(initial.thread.messages[0].content, 'ask-2').status).toBe('complete');
+		expect(getToolUse(state.thread.messages[0].content, 'ask-2').status).toBe('complete');
 		expect(state.thread.status).toBe('idle');
 		expect(getToolResult(resumedMessage.content, 'ask-2').toolName).toBe('askUser');
 	});
