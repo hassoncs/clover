@@ -491,7 +491,7 @@ Parallel Speedup: ~35-45% versus strict sequential execution.
   - Files: `api/src/trpc/routes/games.ts`, validator wiring, tests
   - Pre-commit: `pnpm --filter @slopcade/api test:run -- games`
 
-- [ ] 6. Extend AI generation schemas/prompts for economy-aware output
+- [x] 6. Extend AI generation schemas/prompts for economy-aware output
 
   **What to do**:
   - Extend `api/src/ai/game/schemas.ts` with economy section.
@@ -540,7 +540,7 @@ Parallel Speedup: ~35-45% versus strict sequential execution.
   - Files: generator + schemas + tests
   - Pre-commit: `pnpm --filter @slopcade/api test:run -- generator`
 
-- [ ] 7. Bridge rules/actions/triggers with economy system
+- [x] 7. Bridge rules/actions/triggers with economy system
 
   **What to do**:
   - Add rule actions/triggers for economy interaction (e.g., `economy_transfer`, `economy_emit_event`, `economy_condition`).
@@ -650,7 +650,7 @@ Parallel Speedup: ~35-45% versus strict sequential execution.
   - Files: economy routes/job handlers/tests
   - Pre-commit: `pnpm --filter @slopcade/api test:run -- economy-jobs`
 
-- [ ] 9. Build full integration test harness and evidence capture pipeline
+- [x] 9. Build full integration test harness and evidence capture pipeline
 
   **What to do**:
   - Add end-to-end tests covering: generation -> validation -> runtime tick -> job analysis.
@@ -702,7 +702,7 @@ Parallel Speedup: ~35-45% versus strict sequential execution.
   - Files: cross-workspace tests + fixtures
   - Pre-commit: `pnpm test`
 
-- [ ] 10. Final docs, rollout flags, and operational guardrails
+- [x] 10. Final docs, rollout flags, and operational guardrails
 
   **What to do**:
   - Document architecture and feature flags for economy enablement.
