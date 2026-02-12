@@ -1,3 +1,4 @@
+import { validateEconomyGraph } from "@slopcade/economy-engine";
 import type { GameDefinition } from "@slopcade/shared/types/GameDefinition";
 import type { GameValidationReport } from "@slopcade/shared/validation";
 import { TRPCError } from "@trpc/server";
@@ -776,6 +777,7 @@ export const gamesRouter = router({
 					errors: [{ code: "INVALID_JSON", message: "Invalid JSON" }],
 					warnings: [],
 					summary: "Invalid JSON - could not parse game definition",
+					economyValidation: null,
 				};
 			}
 
@@ -783,11 +785,31 @@ export const gamesRouter = router({
 				game as Parameters<typeof validateGameDefinition>[0],
 			);
 
+			let economyValidation = null;
+			const gameDef = game as {
+				economy?: {
+					id: string;
+					resourceTypes: string[];
+					nodes: unknown[];
+					edges: unknown[];
+				};
+			};
+			if (gameDef.economy) {
+				const economyResult = validateEconomyGraph(
+					gameDef.economy as Parameters<typeof validateEconomyGraph>[0],
+				);
+				economyValidation = {
+					valid: economyResult.valid,
+					errors: economyResult.errors,
+				};
+			}
+
 			return {
 				valid: result.valid,
 				errors: result.errors,
 				warnings: result.warnings,
 				summary: getValidationSummary(result),
+				economyValidation,
 			};
 		}),
 
