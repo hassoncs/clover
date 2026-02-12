@@ -69,7 +69,7 @@ export class TypedBridgeClient {
   }
 
   async effectsUpdateParams(passId: string, params: Record<string, number | boolean | string>): Promise<void> {
-    return this.driver.call("effects_update_params", [passId, params]);
+    return this.driver.call("effects.updateParams", [passId, params]);
   }
 
   async drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]): Promise<void> {
@@ -77,7 +77,7 @@ export class TypedBridgeClient {
   }
 
   async loadGame(definition: GameDefinition): Promise<void> {
-    return this.driver.call("load_game", [definition]);
+    return this.driver.call("load_game_json", [definition]);
   }
 
   async clearGame(): Promise<void> {
@@ -121,7 +121,7 @@ export class TypedBridgeClient {
   }
 
   async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
-    return this.driver.call("step_physics", [frames]);
+    return this.driver.call("step", [frames]);
   }
 
   async callRpc(method: string, params?: unknown): Promise<any> {
@@ -406,7 +406,7 @@ export class TypedBridgeClient {
   }
 
   async applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): Promise<void> {
-    return this.driver.call("apply_dynamic_shader", [entityId, shaderId, params]);
+    return this.driver.call("apply_dynamic_shader_to_entity", [entityId, shaderId, params]);
   }
 
   async applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): Promise<void> {

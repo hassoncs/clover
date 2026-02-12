@@ -16,6 +16,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "plan",
+          "tsType": "CompiledPlan",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "plan",
+              "type": "json",
+              "accessor": "JSON.stringify(plan)"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -26,6 +41,7 @@
       "tsName": "clearGraph",
       "snakeName": "clear_graph",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -47,6 +63,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "passId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "passId",
+              "type": "string",
+              "accessor": "passId"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -57,6 +101,7 @@
       "tsName": "start",
       "snakeName": "start",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -67,6 +112,7 @@
       "tsName": "pause",
       "snakeName": "pause",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -77,6 +123,7 @@
       "tsName": "resume",
       "snakeName": "resume",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -87,6 +134,7 @@
       "tsName": "stop",
       "snakeName": "stop",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -97,6 +145,7 @@
       "tsName": "reset",
       "snakeName": "reset",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -107,6 +156,7 @@
       "tsName": "snapshot",
       "snakeName": "snapshot",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<EffectsResult<EffectsPipelineSnapshot>>",
       "async": true,
       "category": "effects_pipeline",
@@ -123,6 +173,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "snapshot",
+          "tsType": "EffectsPipelineSnapshot",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "snapshot",
+              "type": "json",
+              "accessor": "JSON.stringify(snapshot)"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<EffectsResult>",
       "async": true,
       "category": "effects_pipeline",
@@ -133,6 +198,7 @@
       "tsName": "initialize",
       "snakeName": "initialize",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<void>",
       "async": true,
       "category": "lifecycle",
@@ -143,6 +209,7 @@
       "tsName": "dispose",
       "snakeName": "dispose",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "lifecycle",
@@ -151,7 +218,7 @@
     },
     {
       "tsName": "effectsUpdateParams",
-      "snakeName": "effects_update_params",
+      "snakeName": "effects.updateParams",
       "params": [
         {
           "name": "passId",
@@ -162,6 +229,34 @@
           "name": "params",
           "type": "Record<string, number | boolean | string>",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "passId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "passId",
+              "type": "string",
+              "accessor": "passId"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, number | boolean | string>",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -185,6 +280,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "commands",
+          "tsType": "NormalizedDrawCommand[]",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "commands",
+              "type": "json",
+              "accessor": "JSON.stringify(commands)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "drawing",
@@ -193,12 +316,27 @@
     },
     {
       "tsName": "loadGame",
-      "snakeName": "load_game",
+      "snakeName": "load_game_json",
       "params": [
         {
           "name": "definition",
           "type": "GameDefinition",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "definition",
+          "tsType": "GameDefinition",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "definition",
+              "type": "json",
+              "accessor": "JSON.stringify(definition)"
+            }
+          ]
         }
       ],
       "returnType": "Promise<void>",
@@ -211,6 +349,7 @@
       "tsName": "clearGame",
       "snakeName": "clear_game",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "game",
@@ -232,6 +371,54 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "world",
+          "tsType": "GameDefinition[\"world\"]",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "gravity_x",
+              "type": "number",
+              "accessor": "world.gravity.x"
+            },
+            {
+              "name": "gravity_y",
+              "type": "number",
+              "accessor": "world.gravity.y"
+            },
+            {
+              "name": "pixelsPerMeter",
+              "type": "number",
+              "accessor": "world.pixelsPerMeter"
+            },
+            {
+              "name": "bounds_width",
+              "type": "number",
+              "accessor": "world.bounds.width"
+            },
+            {
+              "name": "bounds_height",
+              "type": "number",
+              "accessor": "world.bounds.height"
+            }
+          ]
+        },
+        {
+          "name": "background",
+          "tsType": "GameDefinition[\"background\"]",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "background",
+              "type": "json",
+              "accessor": "JSON.stringify(background)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "game",
@@ -246,6 +433,21 @@
           "name": "prefabs",
           "type": "GameDefinition[\"prefabs\"]",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "prefabs",
+          "tsType": "GameDefinition[\"prefabs\"]",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "prefabs",
+              "type": "json",
+              "accessor": "JSON.stringify(prefabs)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -264,6 +466,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entities",
+          "tsType": "GameDefinition[\"entities\"]",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "entities",
+              "type": "json",
+              "accessor": "JSON.stringify(entities)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "game",
@@ -274,6 +491,7 @@
       "tsName": "clearEntities",
       "snakeName": "clear_entities",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "game",
@@ -288,6 +506,21 @@
           "name": "rules",
           "type": "GameRule[]",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "rules",
+          "tsType": "GameRule[]",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "rules",
+              "type": "json",
+              "accessor": "JSON.stringify(rules)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -306,6 +539,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "source",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "source",
+              "type": "string",
+              "accessor": "source"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<{ ok: boolean; error?: string }>",
       "async": true,
       "category": "game",
@@ -316,6 +564,7 @@
       "tsName": "pausePhysics",
       "snakeName": "pause_physics",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "physics",
@@ -326,6 +575,7 @@
       "tsName": "resumePhysics",
       "snakeName": "resume_physics",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "physics",
@@ -342,6 +592,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "enabled",
+          "tsType": "boolean",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "enabled",
+              "type": "boolean",
+              "accessor": "enabled"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "debug",
@@ -350,12 +615,27 @@
     },
     {
       "tsName": "stepPhysics",
-      "snakeName": "step_physics",
+      "snakeName": "step",
       "params": [
         {
           "name": "frames",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "frames",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "frames",
+              "type": "number",
+              "accessor": "frames"
+            }
+          ]
         }
       ],
       "returnType": "Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }>",
@@ -379,6 +659,34 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "method",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "method",
+              "type": "string",
+              "accessor": "method"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "unknown",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<any>",
       "async": true,
       "category": "debug",
@@ -395,6 +703,46 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "request",
+          "tsType": "SpawnEntityRequest",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "request.entityId"
+            },
+            {
+              "name": "prefabId",
+              "type": "string",
+              "accessor": "request.prefabId"
+            },
+            {
+              "name": "position_x",
+              "type": "number",
+              "accessor": "request.position.x"
+            },
+            {
+              "name": "position_y",
+              "type": "number",
+              "accessor": "request.position.y"
+            },
+            {
+              "name": "velocity_x",
+              "type": "number",
+              "accessor": "request.velocity.x"
+            },
+            {
+              "name": "velocity_y",
+              "type": "number",
+              "accessor": "request.velocity.y"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "entity",
@@ -409,6 +757,21 @@
           "name": "entityId",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -442,6 +805,65 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "scenePath",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "scenePath",
+              "type": "string",
+              "accessor": "scenePath"
+            }
+          ]
+        },
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "position",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "position.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "position.y"
+            }
+          ]
+        },
+        {
+          "name": "properties",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "properties",
+              "type": "json",
+              "accessor": "JSON.stringify(properties)"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<{ entityId: string }>",
       "async": true,
       "category": "entity",
@@ -458,6 +880,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<EntityTransform | null>",
       "async": true,
       "category": "transform",
@@ -468,6 +905,7 @@
       "tsName": "getAllTransforms",
       "snakeName": "get_all_transforms",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<Record<string, EntityTransform>>",
       "async": true,
       "category": "transform",
@@ -499,6 +937,60 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "angle",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "angle",
+              "type": "number",
+              "accessor": "angle"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "transform",
@@ -525,6 +1017,47 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "transform",
@@ -544,6 +1077,34 @@
           "name": "angle",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "angle",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "angle",
+              "type": "number",
+              "accessor": "angle"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -572,6 +1133,47 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "scaleX",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "scaleX",
+              "type": "number",
+              "accessor": "scaleX"
+            }
+          ]
+        },
+        {
+          "name": "scaleY",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "scaleY",
+              "type": "number",
+              "accessor": "scaleY"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "transform",
@@ -591,6 +1193,34 @@
           "name": "opacity",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "opacity",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "opacity",
+              "type": "number",
+              "accessor": "opacity"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -614,6 +1244,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "visible",
+          "tsType": "boolean",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "visible",
+              "type": "boolean",
+              "accessor": "visible"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "transform",
@@ -628,6 +1286,21 @@
           "name": "entityId",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
         }
       ],
       "returnType": "Promise<Vec2 | null>",
@@ -651,6 +1324,39 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "velocity",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "velocity.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "velocity.y"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "physics",
@@ -665,6 +1371,21 @@
           "name": "entityId",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
         }
       ],
       "returnType": "Promise<number | null>",
@@ -688,6 +1409,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "velocity",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "velocity",
+              "type": "number",
+              "accessor": "velocity"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "physics",
@@ -707,6 +1456,39 @@
           "name": "impulse",
           "type": "Vec2",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "impulse",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "impulse.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "impulse.y"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -730,6 +1512,39 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "force",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "force.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "force.y"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "physics",
@@ -751,6 +1566,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "torque",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "torque",
+              "type": "number",
+              "accessor": "torque"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "physics",
@@ -765,6 +1608,71 @@
           "name": "def",
           "type": "RevoluteJointDef",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "def",
+          "tsType": "RevoluteJointDef",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "def.type"
+            },
+            {
+              "name": "bodyA",
+              "type": "string",
+              "accessor": "def.bodyA"
+            },
+            {
+              "name": "bodyB",
+              "type": "string",
+              "accessor": "def.bodyB"
+            },
+            {
+              "name": "anchor_x",
+              "type": "number",
+              "accessor": "def.anchor.x"
+            },
+            {
+              "name": "anchor_y",
+              "type": "number",
+              "accessor": "def.anchor.y"
+            },
+            {
+              "name": "enableLimit",
+              "type": "boolean",
+              "accessor": "def.enableLimit"
+            },
+            {
+              "name": "lowerAngle",
+              "type": "number",
+              "accessor": "def.lowerAngle"
+            },
+            {
+              "name": "upperAngle",
+              "type": "number",
+              "accessor": "def.upperAngle"
+            },
+            {
+              "name": "enableMotor",
+              "type": "boolean",
+              "accessor": "def.enableMotor"
+            },
+            {
+              "name": "motorSpeed",
+              "type": "number",
+              "accessor": "def.motorSpeed"
+            },
+            {
+              "name": "maxMotorTorque",
+              "type": "number",
+              "accessor": "def.maxMotorTorque"
+            }
+          ]
         }
       ],
       "returnType": "number",
@@ -783,6 +1691,66 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "def",
+          "tsType": "DistanceJointDef",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "def.type"
+            },
+            {
+              "name": "bodyA",
+              "type": "string",
+              "accessor": "def.bodyA"
+            },
+            {
+              "name": "bodyB",
+              "type": "string",
+              "accessor": "def.bodyB"
+            },
+            {
+              "name": "anchorA_x",
+              "type": "number",
+              "accessor": "def.anchorA.x"
+            },
+            {
+              "name": "anchorA_y",
+              "type": "number",
+              "accessor": "def.anchorA.y"
+            },
+            {
+              "name": "anchorB_x",
+              "type": "number",
+              "accessor": "def.anchorB.x"
+            },
+            {
+              "name": "anchorB_y",
+              "type": "number",
+              "accessor": "def.anchorB.y"
+            },
+            {
+              "name": "length",
+              "type": "number",
+              "accessor": "def.length"
+            },
+            {
+              "name": "stiffness",
+              "type": "number",
+              "accessor": "def.stiffness"
+            },
+            {
+              "name": "damping",
+              "type": "number",
+              "accessor": "def.damping"
+            }
+          ]
+        }
+      ],
       "returnType": "number",
       "async": false,
       "category": "joints",
@@ -797,6 +1765,81 @@
           "name": "def",
           "type": "PrismaticJointDef",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "def",
+          "tsType": "PrismaticJointDef",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "def.type"
+            },
+            {
+              "name": "bodyA",
+              "type": "string",
+              "accessor": "def.bodyA"
+            },
+            {
+              "name": "bodyB",
+              "type": "string",
+              "accessor": "def.bodyB"
+            },
+            {
+              "name": "anchor_x",
+              "type": "number",
+              "accessor": "def.anchor.x"
+            },
+            {
+              "name": "anchor_y",
+              "type": "number",
+              "accessor": "def.anchor.y"
+            },
+            {
+              "name": "axis_x",
+              "type": "number",
+              "accessor": "def.axis.x"
+            },
+            {
+              "name": "axis_y",
+              "type": "number",
+              "accessor": "def.axis.y"
+            },
+            {
+              "name": "enableLimit",
+              "type": "boolean",
+              "accessor": "def.enableLimit"
+            },
+            {
+              "name": "lowerTranslation",
+              "type": "number",
+              "accessor": "def.lowerTranslation"
+            },
+            {
+              "name": "upperTranslation",
+              "type": "number",
+              "accessor": "def.upperTranslation"
+            },
+            {
+              "name": "enableMotor",
+              "type": "boolean",
+              "accessor": "def.enableMotor"
+            },
+            {
+              "name": "motorSpeed",
+              "type": "number",
+              "accessor": "def.motorSpeed"
+            },
+            {
+              "name": "maxMotorForce",
+              "type": "number",
+              "accessor": "def.maxMotorForce"
+            }
+          ]
         }
       ],
       "returnType": "number",
@@ -815,6 +1858,51 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "def",
+          "tsType": "WeldJointDef",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "def.type"
+            },
+            {
+              "name": "bodyA",
+              "type": "string",
+              "accessor": "def.bodyA"
+            },
+            {
+              "name": "bodyB",
+              "type": "string",
+              "accessor": "def.bodyB"
+            },
+            {
+              "name": "anchor_x",
+              "type": "number",
+              "accessor": "def.anchor.x"
+            },
+            {
+              "name": "anchor_y",
+              "type": "number",
+              "accessor": "def.anchor.y"
+            },
+            {
+              "name": "stiffness",
+              "type": "number",
+              "accessor": "def.stiffness"
+            },
+            {
+              "name": "damping",
+              "type": "number",
+              "accessor": "def.damping"
+            }
+          ]
+        }
+      ],
       "returnType": "number",
       "async": false,
       "category": "joints",
@@ -829,6 +1917,51 @@
           "name": "def",
           "type": "MouseJointDef",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "def",
+          "tsType": "MouseJointDef",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "def.type"
+            },
+            {
+              "name": "body",
+              "type": "string",
+              "accessor": "def.body"
+            },
+            {
+              "name": "target_x",
+              "type": "number",
+              "accessor": "def.target.x"
+            },
+            {
+              "name": "target_y",
+              "type": "number",
+              "accessor": "def.target.y"
+            },
+            {
+              "name": "maxForce",
+              "type": "number",
+              "accessor": "def.maxForce"
+            },
+            {
+              "name": "stiffness",
+              "type": "number",
+              "accessor": "def.stiffness"
+            },
+            {
+              "name": "damping",
+              "type": "number",
+              "accessor": "def.damping"
+            }
+          ]
         }
       ],
       "returnType": "number",
@@ -847,6 +1980,51 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "def",
+          "tsType": "MouseJointDef",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "def.type"
+            },
+            {
+              "name": "body",
+              "type": "string",
+              "accessor": "def.body"
+            },
+            {
+              "name": "target_x",
+              "type": "number",
+              "accessor": "def.target.x"
+            },
+            {
+              "name": "target_y",
+              "type": "number",
+              "accessor": "def.target.y"
+            },
+            {
+              "name": "maxForce",
+              "type": "number",
+              "accessor": "def.maxForce"
+            },
+            {
+              "name": "stiffness",
+              "type": "number",
+              "accessor": "def.stiffness"
+            },
+            {
+              "name": "damping",
+              "type": "number",
+              "accessor": "def.damping"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<number>",
       "async": true,
       "category": "joints",
@@ -861,6 +2039,21 @@
           "name": "jointId",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "jointId",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "jointId",
+              "type": "number",
+              "accessor": "jointId"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -884,6 +2077,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "jointId",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "jointId",
+              "type": "number",
+              "accessor": "jointId"
+            }
+          ]
+        },
+        {
+          "name": "speed",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "speed",
+              "type": "number",
+              "accessor": "speed"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "joints",
@@ -903,6 +2124,39 @@
           "name": "target",
           "type": "Vec2",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "jointId",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "jointId",
+              "type": "number",
+              "accessor": "jointId"
+            }
+          ]
+        },
+        {
+          "name": "target",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "target.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "target.y"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -926,6 +2180,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "screenX",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "screenX",
+              "type": "number",
+              "accessor": "screenX"
+            }
+          ]
+        },
+        {
+          "name": "screenY",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "screenY",
+              "type": "number",
+              "accessor": "screenY"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<Vec2>",
       "async": true,
       "category": "coordinate",
@@ -942,6 +2224,26 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "point",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "point.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "point.y"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<number | null>",
       "async": true,
       "category": "physics",
@@ -956,6 +2258,26 @@
           "name": "point",
           "type": "Vec2",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "point",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "point.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "point.y"
+            }
+          ]
         }
       ],
       "returnType": "Promise<string | null>",
@@ -977,6 +2299,44 @@
           "name": "max",
           "type": "Vec2",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "min",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "min.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "min.y"
+            }
+          ]
+        },
+        {
+          "name": "max",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "max.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "max.y"
+            }
+          ]
         }
       ],
       "returnType": "Promise<number[]>",
@@ -1005,6 +2365,57 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "origin",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "origin.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "origin.y"
+            }
+          ]
+        },
+        {
+          "name": "direction",
+          "tsType": "Vec2",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "direction.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "direction.y"
+            }
+          ]
+        },
+        {
+          "name": "maxDistance",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "maxDistance",
+              "type": "number",
+              "accessor": "maxDistance"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<RaycastHit | null>",
       "async": true,
       "category": "physics",
@@ -1026,6 +2437,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "data",
+          "tsType": "unknown",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "data",
+              "type": "json",
+              "accessor": "JSON.stringify(data)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "entity",
@@ -1042,6 +2481,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<unknown>",
       "async": true,
       "category": "entity",
@@ -1052,6 +2506,7 @@
       "tsName": "getAllEntities",
       "snakeName": "get_all_entities",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<string[]>",
       "async": true,
       "category": "entity",
@@ -1066,6 +2521,15 @@
           "name": "callback",
           "type": "(event: CollisionEvent) => void",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(event: CollisionEvent) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
         }
       ],
       "returnType": "() => void",
@@ -1084,6 +2548,15 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(entityId: string) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
+        }
+      ],
       "returnType": "() => void",
       "async": false,
       "category": "events",
@@ -1098,6 +2571,15 @@
           "name": "callback",
           "type": "(event: EntitySpawnedEvent) => void",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(event: EntitySpawnedEvent) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
         }
       ],
       "returnType": "() => void",
@@ -1116,6 +2598,15 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(event: SensorEvent) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
+        }
+      ],
       "returnType": "() => void",
       "async": false,
       "category": "events",
@@ -1130,6 +2621,15 @@
           "name": "callback",
           "type": "(event: SensorEvent) => void",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(event: SensorEvent) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
         }
       ],
       "returnType": "() => void",
@@ -1148,6 +2648,15 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(transforms: Record<string, EntityTransform>) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
+        }
+      ],
       "returnType": "() => void",
       "async": false,
       "category": "events",
@@ -1164,6 +2673,15 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(points: number, entityId: string) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
+        }
+      ],
       "returnType": "() => void",
       "async": false,
       "category": "events",
@@ -1174,6 +2692,7 @@
       "tsName": "getAllProperties",
       "snakeName": "get_all_properties",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<PropertySyncPayload>",
       "async": true,
       "category": "properties",
@@ -1190,6 +2709,15 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(properties: PropertySyncPayload) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
+        }
+      ],
       "returnType": "() => void",
       "async": false,
       "category": "properties",
@@ -1204,6 +2732,21 @@
           "name": "config",
           "type": "unknown",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "config",
+          "tsType": "unknown",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "config",
+              "type": "json",
+              "accessor": "JSON.stringify(config)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1227,6 +2770,44 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "type",
+          "tsType": "\"tap\" | \"drag_start\" | \"drag_move\" | \"drag_end\"",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "type"
+            }
+          ]
+        },
+        {
+          "name": "data",
+          "tsType": "{ x: number; y: number; entityId?: string }",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "data.x"
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "data.y"
+            },
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "data.entityId"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "input",
@@ -1241,6 +2822,15 @@
           "name": "callback",
           "type": "(\n\t\t\ttype: string,\n\t\t\tx: number,\n\t\t\ty: number,\n\t\t\tentityId: string | null,\n\t\t) => void",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(\n\t\t\ttype: string,\n\t\t\tx: number,\n\t\t\ty: number,\n\t\t\tentityId: string | null,\n\t\t) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
         }
       ],
       "returnType": "() => void",
@@ -1272,6 +2862,60 @@
           "name": "height",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "url",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "url",
+              "type": "string",
+              "accessor": "url"
+            }
+          ]
+        },
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1325,6 +2969,112 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "atlasUrl",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "atlasUrl",
+              "type": "string",
+              "accessor": "atlasUrl"
+            }
+          ]
+        },
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "w",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "w",
+              "type": "number",
+              "accessor": "w"
+            }
+          ]
+        },
+        {
+          "name": "h",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "h",
+              "type": "number",
+              "accessor": "h"
+            }
+          ]
+        },
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "visual",
@@ -1339,6 +3089,21 @@
           "name": "url",
           "type": "string",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "url",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "url",
+              "type": "string",
+              "accessor": "url"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1382,6 +3147,86 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
+        },
+        {
+          "name": "clearColor",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "clearColor",
+              "type": "string",
+              "accessor": "clearColor"
+            }
+          ]
+        },
+        {
+          "name": "worldWidth",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "worldWidth",
+              "type": "number",
+              "accessor": "worldWidth"
+            }
+          ]
+        },
+        {
+          "name": "worldHeight",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "worldHeight",
+              "type": "number",
+              "accessor": "worldHeight"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "visual",
@@ -1401,6 +3246,34 @@
           "name": "commands",
           "type": "DrawCommand[]",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "commands",
+          "tsType": "DrawCommand[]",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "commands",
+              "type": "json",
+              "accessor": "JSON.stringify(commands)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1424,6 +3297,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "color",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "color",
+              "type": "string",
+              "accessor": "color"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "visual",
@@ -1438,6 +3339,21 @@
           "name": "entityId",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1461,6 +3377,28 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "urls",
+          "tsType": "string[]",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "urls",
+              "type": "json",
+              "accessor": "JSON.stringify(urls)"
+            }
+          ]
+        },
+        {
+          "name": "onProgress",
+          "tsType": "(percent: number, completed: number, failed: number) => void",
+          "wireKind": "Callback",
+          "optional": true,
+          "args": []
+        }
+      ],
       "returnType": "Promise<{ completed: number; failed: number }>",
       "async": true,
       "category": "visual",
@@ -1475,6 +3413,21 @@
           "name": "show",
           "type": "boolean",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "show",
+          "tsType": "boolean",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "show",
+              "type": "boolean",
+              "accessor": "show"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1493,6 +3446,36 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "settings",
+          "tsType": "{\n\t\tshowInputDebug: boolean;\n\t\tshowPhysicsShapes: boolean;\n\t\tshowZones: boolean;\n\t\tshowFPS: boolean;\n\t}",
+          "wireKind": "FlatStruct",
+          "optional": false,
+          "args": [
+            {
+              "name": "showInputDebug",
+              "type": "boolean",
+              "accessor": "settings.showInputDebug"
+            },
+            {
+              "name": "showPhysicsShapes",
+              "type": "boolean",
+              "accessor": "settings.showPhysicsShapes"
+            },
+            {
+              "name": "showZones",
+              "type": "boolean",
+              "accessor": "settings.showZones"
+            },
+            {
+              "name": "showFPS",
+              "type": "boolean",
+              "accessor": "settings.showFPS"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "debug",
@@ -1507,6 +3490,21 @@
           "name": "entityId",
           "type": "string | null",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string | null",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1530,6 +3528,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "camera",
@@ -1544,6 +3570,21 @@
           "name": "zoom",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "zoom",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "zoom",
+              "type": "number",
+              "accessor": "zoom"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1572,6 +3613,47 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "camera",
@@ -1582,6 +3664,7 @@
       "tsName": "stopCamera",
       "snakeName": "stop_camera",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "camera",
@@ -1606,6 +3689,47 @@
           "name": "y",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "type",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "type",
+              "type": "string",
+              "accessor": "type"
+            }
+          ]
+        },
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1634,6 +3758,47 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "resourcePath",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "resourcePath",
+              "type": "string",
+              "accessor": "resourcePath"
+            }
+          ]
+        },
+        {
+          "name": "volume",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "volume",
+              "type": "number",
+              "accessor": "volume"
+            }
+          ]
+        },
+        {
+          "name": "pitch",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "pitch",
+              "type": "number",
+              "accessor": "pitch"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "audio",
@@ -1660,6 +3825,47 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "resourcePath",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "resourcePath",
+              "type": "string",
+              "accessor": "resourcePath"
+            }
+          ]
+        },
+        {
+          "name": "volume",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "volume",
+              "type": "number",
+              "accessor": "volume"
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "tsType": "boolean",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "loop",
+              "type": "boolean",
+              "accessor": "loop"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "audio",
@@ -1670,6 +3876,7 @@
       "tsName": "stopMusic",
       "snakeName": "stop_music",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "audio",
@@ -1694,6 +3901,47 @@
           "name": "params",
           "type": "Record<string, unknown>",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "effectName",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "effectName",
+              "type": "string",
+              "accessor": "effectName"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1722,6 +3970,47 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "paramName",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "paramName",
+              "type": "string",
+              "accessor": "paramName"
+            }
+          ]
+        },
+        {
+          "name": "value",
+          "tsType": "unknown",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "value",
+              "type": "json",
+              "accessor": "JSON.stringify(value)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_sprite",
@@ -1736,6 +4025,21 @@
           "name": "entityId",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1764,6 +4068,47 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "effectName",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "effectName",
+              "type": "string",
+              "accessor": "effectName"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
+        },
+        {
+          "name": "layer",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "layer",
+              "type": "string",
+              "accessor": "layer"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_post",
@@ -1790,6 +4135,47 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "paramName",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "paramName",
+              "type": "string",
+              "accessor": "paramName"
+            }
+          ]
+        },
+        {
+          "name": "value",
+          "tsType": "unknown",
+          "wireKind": "JsonBlob",
+          "optional": false,
+          "args": [
+            {
+              "name": "value",
+              "type": "json",
+              "accessor": "JSON.stringify(value)"
+            }
+          ]
+        },
+        {
+          "name": "layer",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "layer",
+              "type": "string",
+              "accessor": "layer"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_post",
@@ -1804,6 +4190,21 @@
           "name": "layer",
           "type": "string",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "layer",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "layer",
+              "type": "string",
+              "accessor": "layer"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1827,6 +4228,34 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "intensity",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "intensity",
+              "type": "number",
+              "accessor": "intensity"
+            }
+          ]
+        },
+        {
+          "name": "duration",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "duration",
+              "type": "number",
+              "accessor": "duration"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_camera",
@@ -1846,6 +4275,34 @@
           "name": "duration",
           "type": "number",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "intensity",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "intensity",
+              "type": "number",
+              "accessor": "intensity"
+            }
+          ]
+        },
+        {
+          "name": "duration",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "duration",
+              "type": "number",
+              "accessor": "duration"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1874,6 +4331,47 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "worldX",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "worldX",
+              "type": "number",
+              "accessor": "worldX"
+            }
+          ]
+        },
+        {
+          "name": "worldY",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "worldY",
+              "type": "number",
+              "accessor": "worldY"
+            }
+          ]
+        },
+        {
+          "name": "duration",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "duration",
+              "type": "number",
+              "accessor": "duration"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_camera",
@@ -1893,6 +4391,34 @@
           "name": "duration",
           "type": "number",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "color",
+          "tsType": "[number, number, number, number?]",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "color",
+              "type": "json",
+              "accessor": "JSON.stringify(color)"
+            }
+          ]
+        },
+        {
+          "name": "duration",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "duration",
+              "type": "number",
+              "accessor": "duration"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1916,6 +4442,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "shaderId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "shaderId",
+              "type": "string",
+              "accessor": "shaderId"
+            }
+          ]
+        },
+        {
+          "name": "shaderCode",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "shaderCode",
+              "type": "string",
+              "accessor": "shaderCode"
+            }
+          ]
+        }
+      ],
       "returnType": "Promise<DynamicShaderResult>",
       "async": true,
       "category": "effects_dynamic",
@@ -1924,7 +4478,7 @@
     },
     {
       "tsName": "applyDynamicShader",
-      "snakeName": "apply_dynamic_shader",
+      "snakeName": "apply_dynamic_shader_to_entity",
       "params": [
         {
           "name": "entityId",
@@ -1940,6 +4494,47 @@
           "name": "params",
           "type": "Record<string, unknown>",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "entityId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "entityId",
+              "type": "string",
+              "accessor": "entityId"
+            }
+          ]
+        },
+        {
+          "name": "shaderId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "shaderId",
+              "type": "string",
+              "accessor": "shaderId"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -1963,6 +4558,34 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "shaderCode",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "shaderCode",
+              "type": "string",
+              "accessor": "shaderCode"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_dynamic",
@@ -1982,6 +4605,34 @@
           "name": "source",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "shaderId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "shaderId",
+              "type": "string",
+              "accessor": "shaderId"
+            }
+          ]
+        },
+        {
+          "name": "source",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "source",
+              "type": "string",
+              "accessor": "source"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2015,6 +4666,60 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "presetName",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "presetName",
+              "type": "string",
+              "accessor": "presetName"
+            }
+          ]
+        },
+        {
+          "name": "worldX",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "worldX",
+              "type": "number",
+              "accessor": "worldX"
+            }
+          ]
+        },
+        {
+          "name": "worldY",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "worldY",
+              "type": "number",
+              "accessor": "worldY"
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "tsType": "Record<string, unknown>",
+          "wireKind": "JsonBlob",
+          "optional": true,
+          "args": [
+            {
+              "name": "params",
+              "type": "json",
+              "accessor": "JSON.stringify(params)"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects_particles",
@@ -2025,6 +4730,7 @@
       "tsName": "getAvailableEffects",
       "snakeName": "get_available_effects",
       "params": [],
+      "wireParams": [],
       "returnType": "Promise<{\n\t\tsprite: string[];\n\t\tpost: string[];\n\t\tparticles: string[];\n\t}>",
       "async": true,
       "category": "effects_info",
@@ -2071,6 +4777,99 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "buttonId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "buttonId",
+              "type": "string",
+              "accessor": "buttonId"
+            }
+          ]
+        },
+        {
+          "name": "normalImageUrl",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "normalImageUrl",
+              "type": "string",
+              "accessor": "normalImageUrl"
+            }
+          ]
+        },
+        {
+          "name": "pressedImageUrl",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "pressedImageUrl",
+              "type": "string",
+              "accessor": "pressedImageUrl"
+            }
+          ]
+        },
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "ui",
@@ -2087,6 +4886,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "buttonId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "buttonId",
+              "type": "string",
+              "accessor": "buttonId"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "ui",
@@ -2101,6 +4915,15 @@
           "name": "callback",
           "type": "(\n\t\t\teventType: \"button_down\" | \"button_up\" | \"button_pressed\",\n\t\t\tbuttonId: string,\n\t\t) => void",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "callback",
+          "tsType": "(\n\t\t\teventType: \"button_down\" | \"button_up\" | \"button_pressed\",\n\t\t\tbuttonId: string,\n\t\t) => void",
+          "wireKind": "Callback",
+          "optional": false,
+          "args": []
         }
       ],
       "returnType": "() => void",
@@ -2154,6 +4977,112 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "componentId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "componentId",
+              "type": "string",
+              "accessor": "componentId"
+            }
+          ]
+        },
+        {
+          "name": "componentType",
+          "tsType": "0 | 1 | 2 | 3 | 4 | 5 | 6",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "componentType",
+              "type": "number",
+              "accessor": "componentType"
+            }
+          ]
+        },
+        {
+          "name": "metadataUrl",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "metadataUrl",
+              "type": "string",
+              "accessor": "metadataUrl"
+            }
+          ]
+        },
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
+        },
+        {
+          "name": "labelText",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "labelText",
+              "type": "string",
+              "accessor": "labelText"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "ui_themed",
@@ -2168,6 +5097,21 @@
           "name": "componentId",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "componentId",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "componentId",
+              "type": "string",
+              "accessor": "componentId"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2186,6 +5130,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "path",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "accessor": "path"
+            }
+          ]
+        }
+      ],
       "returnType": "boolean",
       "async": false,
       "category": "3d",
@@ -2200,6 +5159,21 @@
           "name": "url",
           "type": "string",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "url",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "url",
+              "type": "string",
+              "accessor": "url"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2223,6 +5197,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2242,6 +5244,34 @@
           "name": "height",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "width",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "width",
+              "type": "number",
+              "accessor": "width"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "height",
+              "type": "number",
+              "accessor": "height"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2270,6 +5300,47 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "z",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "z",
+              "type": "number",
+              "accessor": "z"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2296,6 +5367,47 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "z",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "z",
+              "type": "number",
+              "accessor": "z"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2310,6 +5422,21 @@
           "name": "distance",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "distance",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "distance",
+              "type": "number",
+              "accessor": "distance"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2328,6 +5455,21 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "size",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "size",
+              "type": "number",
+              "accessor": "size"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2338,6 +5480,7 @@
       "tsName": "clear3DModels",
       "snakeName": "clear_3d_models",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2362,6 +5505,47 @@
           "name": "style",
           "type": "\"plain\" | \"grid\"",
           "optional": true
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "size",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "size",
+              "type": "number",
+              "accessor": "size"
+            }
+          ]
+        },
+        {
+          "name": "colorHex",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "colorHex",
+              "type": "string",
+              "accessor": "colorHex"
+            }
+          ]
+        },
+        {
+          "name": "style",
+          "tsType": "\"plain\" | \"grid\"",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "style",
+              "type": "string",
+              "accessor": "style"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2400,6 +5584,73 @@
           "optional": true
         }
       ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "z",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "z",
+              "type": "number",
+              "accessor": "z"
+            }
+          ]
+        },
+        {
+          "name": "size",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "size",
+              "type": "number",
+              "accessor": "size"
+            }
+          ]
+        },
+        {
+          "name": "colorHex",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": true,
+          "args": [
+            {
+              "name": "colorHex",
+              "type": "string",
+              "accessor": "colorHex"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2410,6 +5661,7 @@
       "tsName": "clear3DCubes",
       "snakeName": "clear_3d_cubes",
       "params": [],
+      "wireParams": [],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2434,6 +5686,47 @@
           "name": "z",
           "type": "number",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "z",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "z",
+              "type": "number",
+              "accessor": "z"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2462,6 +5755,47 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "x",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "x",
+              "type": "number",
+              "accessor": "x"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "y",
+              "type": "number",
+              "accessor": "y"
+            }
+          ]
+        },
+        {
+          "name": "z",
+          "tsType": "number",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "z",
+              "type": "number",
+              "accessor": "z"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "3d",
@@ -2476,6 +5810,21 @@
           "name": "enabled",
           "type": "boolean",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "enabled",
+          "tsType": "boolean",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "enabled",
+              "type": "boolean",
+              "accessor": "enabled"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2499,6 +5848,34 @@
           "optional": false
         }
       ],
+      "wireParams": [
+        {
+          "name": "name",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "name",
+              "type": "string",
+              "accessor": "name"
+            }
+          ]
+        },
+        {
+          "name": "imageData",
+          "tsType": "string",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "imageData",
+              "type": "string",
+              "accessor": "imageData"
+            }
+          ]
+        }
+      ],
       "returnType": "void",
       "async": false,
       "category": "effects",
@@ -2513,6 +5890,21 @@
           "name": "enable",
           "type": "boolean",
           "optional": false
+        }
+      ],
+      "wireParams": [
+        {
+          "name": "enable",
+          "tsType": "boolean",
+          "wireKind": "Primitive",
+          "optional": false,
+          "args": [
+            {
+              "name": "enable",
+              "type": "boolean",
+              "accessor": "enable"
+            }
+          ]
         }
       ],
       "returnType": "void",
@@ -2536,9 +5928,9 @@
       "restore": "restore",
       "initialize": "initialize",
       "dispose": "dispose",
-      "effectsUpdateParams": "effects_update_params",
+      "effectsUpdateParams": "effects.updateParams",
       "drawToActiveBuffer": "draw_to_active_buffer",
-      "loadGame": "load_game",
+      "loadGame": "load_game_json",
       "clearGame": "clear_game",
       "setupWorld": "setup_world",
       "registerPrefabs": "register_prefabs",
@@ -2549,7 +5941,7 @@
       "pausePhysics": "pause_physics",
       "resumePhysics": "resume_physics",
       "setInspectMode": "set_inspect_mode",
-      "stepPhysics": "step_physics",
+      "stepPhysics": "step",
       "callRpc": "call_rpc",
       "spawnEntity": "spawn_entity",
       "destroyEntity": "destroy_entity",
@@ -2628,7 +6020,7 @@
       "triggerShockwave": "trigger_shockwave",
       "flashScreen": "flash_screen",
       "createDynamicShader": "create_dynamic_shader",
-      "applyDynamicShader": "apply_dynamic_shader",
+      "applyDynamicShader": "apply_dynamic_shader_to_entity",
       "applyDynamicPostShader": "apply_dynamic_post_shader",
       "hotSwapShader": "hot_swap_shader",
       "spawnParticlePreset": "spawn_particle_preset",
@@ -2669,9 +6061,9 @@
       "restore": "restore",
       "initialize": "initialize",
       "dispose": "dispose",
-      "effects_update_params": "effectsUpdateParams",
+      "effects.updateParams": "effectsUpdateParams",
       "draw_to_active_buffer": "drawToActiveBuffer",
-      "load_game": "loadGame",
+      "load_game_json": "loadGame",
       "clear_game": "clearGame",
       "setup_world": "setupWorld",
       "register_prefabs": "registerPrefabs",
@@ -2682,7 +6074,7 @@
       "pause_physics": "pausePhysics",
       "resume_physics": "resumePhysics",
       "set_inspect_mode": "setInspectMode",
-      "step_physics": "stepPhysics",
+      "step": "stepPhysics",
       "call_rpc": "callRpc",
       "spawn_entity": "spawnEntity",
       "destroy_entity": "destroyEntity",
@@ -2761,7 +6153,7 @@
       "trigger_shockwave": "triggerShockwave",
       "flash_screen": "flashScreen",
       "create_dynamic_shader": "createDynamicShader",
-      "apply_dynamic_shader": "applyDynamicShader",
+      "apply_dynamic_shader_to_entity": "applyDynamicShader",
       "apply_dynamic_post_shader": "applyDynamicPostShader",
       "hot_swap_shader": "hotSwapShader",
       "spawn_particle_preset": "spawnParticlePreset",

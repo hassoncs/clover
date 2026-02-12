@@ -11,7 +11,9 @@ import { dirname, resolve } from "path";
 import {
 	type InterfaceDeclaration,
 	type MethodSignature,
+	type ParameterDeclaration,
 	Project,
+	type Type,
 } from "ts-morph";
 import { fileURLToPath } from "url";
 
@@ -19,6 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, "..");
 const TYPES_PATH = resolve(ROOT, "app/lib/godot/types.ts");
+const SHARED_TYPES_DIR = resolve(ROOT, "shared/src/types");
 const OUTPUT_DIR = resolve(ROOT, "app/lib/godot/generated");
 const OUTPUT_PATH = resolve(OUTPUT_DIR, "bridge-registry.json");
 const GDSCRIPT_OUTPUT_DIR = resolve(
@@ -36,10 +39,32 @@ interface MethodParam {
 	optional: boolean;
 }
 
+enum WireKind {
+	Primitive = "Primitive",
+	FlatStruct = "FlatStruct",
+	JsonBlob = "JsonBlob",
+	Callback = "Callback",
+}
+
+interface WireArg {
+	name: string;
+	type: "string" | "number" | "boolean" | "json";
+	accessor: string;
+}
+
+interface WireParam {
+	name: string;
+	tsType: string;
+	wireKind: WireKind;
+	optional: boolean;
+	args: WireArg[];
+}
+
 interface MethodEntry {
 	tsName: string;
 	snakeName: string;
 	params: MethodParam[];
+	wireParams: WireParam[];
 	returnType: string;
 	async: boolean;
 	category: string;
@@ -67,16 +92,36 @@ const LIFECYCLE_METHODS = new Set(["initialize", "dispose"]);
 
 const EVENT_CALLBACK_PATTERN = /^on[A-Z]/;
 
+const BRIDGE_NAME_OVERRIDES: Record<string, string> = {
+	loadGame: "load_game_json",
+	applyDynamicShader: "apply_dynamic_shader_to_entity",
+	stepPhysics: "step",
+	effectsUpdateParams: "effects.updateParams",
+};
+
 function camelToSnake(name: string): string {
-	return name
-		.replace(/([23])D(?=[A-Z]|$)/g, "_$1d_")
-		.replace(/([a-z])(\d)/g, "$1_$2")
-		.replace(/(\d)([A-Z])/g, "$1_$2")
-		.replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-		.replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
-		.replace(/_+/g, "_")
-		.replace(/^_|_$/g, "")
-		.toLowerCase();
+	return (
+		name
+			// Handle leading digits: "3dViewport" -> "3d_viewport", "2dPosition" -> "2d_position"
+			.replace(/^([23])d/i, "_$1d_")
+			// Handle all-caps sequences: "AABB" -> "aabb", "UI" -> "ui"
+			.replace(/^([A-Z]+)(?=[A-Z][a-z]|$)/g, (match) => match.toLowerCase())
+			// Handle "3D" and "2D" in middle/end: "create3D" -> "create_3d"
+			.replace(/([23])D(?=[A-Z]|$)/g, "_$1d_")
+			// Letter followed by digit: "test2" -> "test_2"
+			.replace(/([a-z])(\d)/g, "$1_$2")
+			// Digit followed by uppercase: "2D" -> "2_d"
+			.replace(/(\d)([A-Z])/g, "$1_$2")
+			// Lowercase/digit followed by uppercase: "camelCase" -> "camel_case"
+			.replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+			// Uppercase followed by uppercase then lowercase: "XMLParser" -> "xml_parser"
+			.replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
+			// Collapse multiple underscores
+			.replace(/_+/g, "_")
+			// Remove leading/trailing underscores
+			.replace(/^_|_$/g, "")
+			.toLowerCase()
+	);
 }
 
 function isTsOnly(name: string, returnType: string): boolean {
@@ -84,6 +129,219 @@ function isTsOnly(name: string, returnType: string): boolean {
 	if (EVENT_CALLBACK_PATTERN.test(name) && returnType.includes("() => void"))
 		return true;
 	return false;
+}
+
+function isStringLiteralUnion(type: Type): boolean {
+	if (!type.isUnion()) return false;
+	return type.getUnionTypes().every((t) => t.isStringLiteral());
+}
+
+function isNumberLiteralUnion(type: Type): boolean {
+	if (!type.isUnion()) return false;
+	return type.getUnionTypes().every((t) => t.isNumberLiteral());
+}
+
+function getNonNullishUnionMembers(type: Type): Type[] | null {
+	if (!type.isUnion()) return null;
+	const nonNullish = type
+		.getUnionTypes()
+		.filter((t) => !t.isUndefined() && !t.isNull());
+	if (nonNullish.length === type.getUnionTypes().length) return null;
+	return nonNullish;
+}
+
+function isBooleanLikeUnion(types: Type[]): boolean {
+	return types.length <= 2 && types.every((t) => t.isBooleanLiteral());
+}
+
+function getPrimitiveWireType(type: Type): WireArg["type"] | null {
+	if (type.isString() || type.isStringLiteral()) return "string";
+	if (type.isNumber() || type.isNumberLiteral()) return "number";
+	if (type.isBoolean() || type.isBooleanLiteral()) return "boolean";
+	if (isStringLiteralUnion(type)) return "string";
+	if (isNumberLiteralUnion(type)) return "number";
+
+	const stripped = getNonNullishUnionMembers(type);
+	if (!stripped || stripped.length === 0) return null;
+	if (stripped.length === 1) return getPrimitiveWireType(stripped[0]);
+	if (isBooleanLikeUnion(stripped)) return "boolean";
+	if (stripped.every((t) => t.isStringLiteral())) return "string";
+	if (stripped.every((t) => t.isNumberLiteral())) return "number";
+
+	return null;
+}
+
+function isCallbackType(type: Type): boolean {
+	if (type.getCallSignatures().length > 0) return true;
+	if (type.isUnion()) {
+		return type
+			.getUnionTypes()
+			.some(
+				(t) =>
+					!t.isUndefined() && !t.isNull() && t.getCallSignatures().length > 0,
+			);
+	}
+	return false;
+}
+
+function flattenStructType(
+	type: Type,
+	prefix: string,
+	accessorPrefix: string,
+	visited: Set<string>,
+): WireArg[] | null {
+	const typeName = type.getSymbol()?.getName() ?? type.getText();
+	if (visited.has(typeName)) return null;
+	visited.add(typeName);
+
+	const properties = type.getProperties();
+	if (properties.length === 0) return null;
+
+	const args: WireArg[] = [];
+
+	for (const prop of properties) {
+		const propName = prop.getName();
+		const decls = prop.getDeclarations();
+		if (decls.length === 0) continue;
+
+		const rawPropType = prop.getTypeAtLocation(decls[0]);
+		const wireName = prefix ? `${prefix}_${propName}` : propName;
+		const accessor = accessorPrefix
+			? `${accessorPrefix}.${propName}`
+			: propName;
+
+		const primitiveType = getPrimitiveWireType(rawPropType);
+		if (primitiveType) {
+			args.push({ name: wireName, type: primitiveType, accessor });
+			continue;
+		}
+
+		const stripped = getNonNullishUnionMembers(rawPropType);
+		const resolvedType =
+			stripped && stripped.length === 1 ? stripped[0] : rawPropType;
+
+		const nestedArgs = flattenStructType(
+			resolvedType,
+			wireName,
+			accessor,
+			new Set(visited),
+		);
+		if (nestedArgs) {
+			args.push(...nestedArgs);
+			continue;
+		}
+
+		return null;
+	}
+
+	return args;
+}
+
+function isFlattenableStruct(type: Type): boolean {
+	// Must have properties (interface/object type)
+	const properties = type.getProperties();
+	if (properties.length === 0) return false;
+
+	// Must not be an array
+	if (type.isArray()) return false;
+
+	// Must not have call signatures (not a function)
+	if (type.getCallSignatures().length > 0) return false;
+
+	// Must not have index signatures (Record<K,V> types)
+	if (type.getNumberIndexType() || type.getStringIndexType()) return false;
+
+	// Try to flatten — if all properties resolve to primitives or nested flat structs, it's flattenable
+	return flattenStructType(type, "", "", new Set()) !== null;
+}
+
+function resolveWireParam(param: ParameterDeclaration): WireParam {
+	const name = param.getName();
+	const type = param.getType();
+	const optional = param.isOptional();
+	const typeNode = param.getTypeNode();
+	const tsType = typeNode ? typeNode.getText() : type.getText(param);
+
+	// 1. Callback/function type
+	if (isCallbackType(type)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Callback,
+			optional,
+			args: [],
+		};
+	}
+
+	// 2. Primitive types (string, number, boolean, void)
+	const primitiveType = getPrimitiveWireType(type);
+	if (primitiveType) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [{ name, type: primitiveType, accessor: name }],
+		};
+	}
+
+	// 3. String/number literal unions → treat as primitive
+	if (isStringLiteralUnion(type)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [{ name, type: "string", accessor: name }],
+		};
+	}
+	if (isNumberLiteralUnion(type)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [{ name, type: "number", accessor: name }],
+		};
+	}
+
+	// 4. Void type
+	if (type.isVoid() || type.isUndefined() || type.isNull()) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [],
+		};
+	}
+
+	// 5. Flattenable struct (all properties are primitives or nested flat structs)
+	if (isFlattenableStruct(type)) {
+		const flatArgs = flattenStructType(type, "", name, new Set());
+		if (flatArgs) {
+			return {
+				name,
+				tsType,
+				wireKind: WireKind.FlatStruct,
+				optional,
+				args: flatArgs,
+			};
+		}
+	}
+
+	// 6. Everything else → JsonBlob
+	return {
+		name,
+		tsType,
+		wireKind: WireKind.JsonBlob,
+		optional,
+		args: [{ name, type: "json", accessor: `JSON.stringify(${name})` }],
+	};
+}
+
+function resolveWireParams(method: MethodSignature): WireParam[] {
+	return method.getParameters().map(resolveWireParam);
 }
 
 function inferCategory(
@@ -189,7 +447,7 @@ function extractMethod(
 	source: "GodotBridge" | "EffectsBridge",
 ): MethodEntry {
 	const tsName = method.getName();
-	const snakeName = camelToSnake(tsName);
+	const snakeName = BRIDGE_NAME_OVERRIDES[tsName] ?? camelToSnake(tsName);
 	const returnTypeNode = method.getReturnTypeNode();
 	const returnType = returnTypeNode
 		? returnTypeNode.getText()
@@ -206,6 +464,8 @@ function extractMethod(
 		};
 	});
 
+	const wireParams = resolveWireParams(method);
+
 	const category =
 		source === "EffectsBridge"
 			? "effects_pipeline"
@@ -216,6 +476,7 @@ function extractMethod(
 		tsName,
 		snakeName,
 		params,
+		wireParams,
 		returnType,
 		async: isAsync,
 		category,
@@ -282,8 +543,23 @@ function computeSourceHash(): string {
 }
 
 function generateRegistry(): BridgeRegistry {
-	const project = new Project({ compilerOptions: { strict: true } });
-	project.addSourceFileAtPath(TYPES_PATH);
+	const project = new Project({
+		compilerOptions: {
+			strict: true,
+			baseUrl: resolve(ROOT, "app"),
+			paths: {
+				"@slopcade/shared": [resolve(ROOT, "shared/src/types/index.ts")],
+				"@slopcade/shared/*": [resolve(ROOT, "shared/src/*")],
+				"@slopcade/shared/effects": [
+					resolve(ROOT, "shared/src/types/index.ts"),
+				],
+			},
+		},
+	});
+	project.addSourceFilesAtPaths([
+		TYPES_PATH,
+		resolve(SHARED_TYPES_DIR, "**/*.ts"),
+	]);
 
 	const sourceFile = project.getSourceFileOrThrow(TYPES_PATH);
 
@@ -298,6 +574,16 @@ function generateRegistry(): BridgeRegistry {
 
 	for (const method of godotBridge.getMethods()) {
 		methods.push(extractMethod(method, godotBridge, "GodotBridge"));
+	}
+
+	// Validate that all override keys reference actual methods
+	const allTsNames = new Set(methods.map((m) => m.tsName));
+	for (const overrideKey of Object.keys(BRIDGE_NAME_OVERRIDES)) {
+		if (!allTsNames.has(overrideKey)) {
+			throw new Error(
+				`BRIDGE_NAME_OVERRIDES references non-existent method: "${overrideKey}"`,
+			);
+		}
 	}
 
 	const byCategory: Record<string, number> = {};
