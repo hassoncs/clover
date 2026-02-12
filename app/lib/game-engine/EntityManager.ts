@@ -137,10 +137,9 @@ export class EntityManager {
 
 		if (this.bridge) {
 			this.bridge.spawnEntity({
-				entityId,
 				prefabId: opts.prefabId,
 				position: opts.position,
-				velocity: opts.velocity,
+				entityId,
 			});
 		}
 

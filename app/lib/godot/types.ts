@@ -9,6 +9,8 @@ import type { CompiledPlan } from "@slopcade/shared/effects";
 export type { GameDefinition, GameRule, PropertySyncPayload, CompiledPlan };
 export type Vec2 = SharedVec2;
 
+export type JsonParam<T> = T;
+
 export interface EntityTransform {
 	x: number;
 	y: number;
@@ -35,10 +37,9 @@ export interface SensorEvent {
 }
 
 export interface SpawnEntityRequest {
-	entityId: string;
 	prefabId: string;
 	position: Vec2;
-	velocity?: Vec2;
+	entityId: string;
 }
 
 export interface EntitySpawnedEvent {
@@ -291,8 +292,8 @@ export interface GodotBridge extends EffectsBridge {
 
 	// Sectioned loading — independent operations for partial game updates
 	setupWorld(
-		world: GameDefinition["world"],
-		background?: GameDefinition["background"],
+		world: JsonParam<GameDefinition["world"]>,
+		background?: JsonParam<GameDefinition["background"]>,
 	): void;
 	registerPrefabs(prefabs: GameDefinition["prefabs"]): void;
 	loadEntities(entities: GameDefinition["entities"]): void;
@@ -458,12 +459,14 @@ export interface GodotBridge extends EffectsBridge {
 	// Debug mode
 
 	setDebugShowShapes(show: boolean): void;
-	setDebugSettings(settings: {
-		showInputDebug: boolean;
-		showPhysicsShapes: boolean;
-		showZones: boolean;
-		showFPS: boolean;
-	}): void;
+	setDebugSettings(
+		settings: JsonParam<{
+			showInputDebug: boolean;
+			showPhysicsShapes: boolean;
+			showZones: boolean;
+			showFPS: boolean;
+		}>,
+	): void;
 
 	// Camera control
 	setCameraTarget(entityId: string | null): void;

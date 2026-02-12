@@ -43,7 +43,7 @@ interface MethodParam {
 	optional: boolean;
 }
 
-enum WireKind {
+export enum WireKind {
 	Primitive = "Primitive",
 	FlatStruct = "FlatStruct",
 	JsonBlob = "JsonBlob",
@@ -120,23 +120,6 @@ const BRIDGE_NAME_OVERRIDES: Record<string, string> = {
 	stepPhysics: "step",
 	effectsUpdateParams: "effects.updateParams",
 };
-
-interface WireOverride {
-	forceSync?: boolean;
-	argOrder?: string[];
-	forceJson?: string[];
-}
-
-const WIRE_OVERRIDES: Record<string, WireOverride> = {
-	load_game_json: { forceSync: true },
-	spawn_entity: {
-		argOrder: ["prefabId", "position.x", "position.y", "entityId"],
-	},
-	setup_world: { forceJson: ["world"] },
-	set_debug_settings: { forceJson: ["settings"] },
-};
-
-const FLATTEN_SKIP_FIELDS = new Set(["type"]);
 
 function snakeToCamel(name: string): string {
 	return name.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
@@ -227,12 +210,15 @@ function isCallbackType(type: Type): boolean {
 	return false;
 }
 
+function isStringLiteralDiscriminator(type: Type): boolean {
+	return type.isStringLiteral();
+}
+
 function flattenStructType(
 	type: Type,
 	prefix: string,
 	accessorPrefix: string,
 	visited: Set<string>,
-	skipFields?: Set<string>,
 ): WireArg[] | null {
 	const typeName = type.getSymbol()?.getName() ?? type.getText();
 	if (visited.has(typeName)) return null;
@@ -245,11 +231,13 @@ function flattenStructType(
 
 	for (const prop of properties) {
 		const propName = prop.getName();
-		if (skipFields?.has(propName)) continue;
 		const decls = prop.getDeclarations();
 		if (decls.length === 0) continue;
 
 		const rawPropType = prop.getTypeAtLocation(decls[0]);
+
+		if (isStringLiteralDiscriminator(rawPropType)) continue;
+
 		const wireName = prefix ? `${prefix}_${propName}` : propName;
 		const accessor = accessorPrefix
 			? `${accessorPrefix}.${propName}`
@@ -270,7 +258,6 @@ function flattenStructType(
 			wireName,
 			accessor,
 			new Set(visited),
-			skipFields,
 		);
 		if (nestedArgs) {
 			args.push(...nestedArgs);
@@ -283,36 +270,29 @@ function flattenStructType(
 	return args;
 }
 
-function isFlattenableStruct(type: Type, skipFields?: Set<string>): boolean {
-	// Must have properties (interface/object type)
+function isFlattenableStruct(type: Type): boolean {
 	const properties = type.getProperties();
 	if (properties.length === 0) return false;
-
-	// Must not be an array
 	if (type.isArray()) return false;
-
-	// Must not have call signatures (not a function)
 	if (type.getCallSignatures().length > 0) return false;
-
-	// Must not have index signatures (Record<K,V> types)
 	if (type.getNumberIndexType() || type.getStringIndexType()) return false;
 
-	// Try to flatten — if all properties resolve to primitives or nested flat structs, it's flattenable
-	return flattenStructType(type, "", "", new Set(), skipFields) !== null;
+	return flattenStructType(type, "", "", new Set()) !== null;
 }
 
-function resolveWireParam(
-	param: ParameterDeclaration,
-	forceJsonParams?: Set<string>,
-): WireParam {
+function isJsonParamAnnotated(param: ParameterDeclaration): boolean {
+	const typeNodeText = param.getTypeNode()?.getText() ?? "";
+	return typeNodeText.startsWith("JsonParam<");
+}
+
+function resolveWireParam(param: ParameterDeclaration): WireParam {
 	const name = param.getName();
 	const type = param.getType();
 	const optional = param.isOptional();
 	const typeNode = param.getTypeNode();
 	const tsType = typeNode ? typeNode.getText() : type.getText(param);
 
-	// 0. Force JSON override — method-specific params that must be serialized as JSON
-	if (forceJsonParams?.has(name)) {
+	if (isJsonParamAnnotated(param)) {
 		return {
 			name,
 			tsType,
@@ -322,7 +302,6 @@ function resolveWireParam(
 		};
 	}
 
-	// 1. Callback/function type
 	if (isCallbackType(type)) {
 		return {
 			name,
@@ -333,7 +312,6 @@ function resolveWireParam(
 		};
 	}
 
-	// 2. Primitive types (string, number, boolean, void)
 	const primitiveType = getPrimitiveWireType(type);
 	if (primitiveType) {
 		return {
@@ -345,7 +323,6 @@ function resolveWireParam(
 		};
 	}
 
-	// 3. String/number literal unions → treat as primitive
 	if (isStringLiteralUnion(type)) {
 		return {
 			name,
@@ -365,7 +342,6 @@ function resolveWireParam(
 		};
 	}
 
-	// 4. Void type
 	if (type.isVoid() || type.isUndefined() || type.isNull()) {
 		return {
 			name,
@@ -376,16 +352,8 @@ function resolveWireParam(
 		};
 	}
 
-	// 5. Flattenable struct (all properties are primitives or nested flat structs)
-	//    Skip discriminator fields (like `type` on joint defs)
-	if (isFlattenableStruct(type, FLATTEN_SKIP_FIELDS)) {
-		const flatArgs = flattenStructType(
-			type,
-			"",
-			name,
-			new Set(),
-			FLATTEN_SKIP_FIELDS,
-		);
+	if (isFlattenableStruct(type)) {
+		const flatArgs = flattenStructType(type, "", name, new Set());
 		if (flatArgs) {
 			return {
 				name,
@@ -397,7 +365,6 @@ function resolveWireParam(
 		}
 	}
 
-	// 6. Everything else → JsonBlob
 	return {
 		name,
 		tsType,
@@ -407,13 +374,8 @@ function resolveWireParam(
 	};
 }
 
-function resolveWireParams(
-	method: MethodSignature,
-	forceJsonParams?: Set<string>,
-): WireParam[] {
-	return method
-		.getParameters()
-		.map((p) => resolveWireParam(p, forceJsonParams));
+function resolveWireParams(method: MethodSignature): WireParam[] {
+	return method.getParameters().map((p) => resolveWireParam(p));
 }
 
 function inferCategory(
@@ -513,7 +475,7 @@ function inferCategory(
 	return lastCategory;
 }
 
-function extractMethod(
+export function extractMethod(
 	method: MethodSignature,
 	interfaceDecl: InterfaceDeclaration,
 	source: "GodotBridge" | "EffectsBridge",
@@ -536,11 +498,7 @@ function extractMethod(
 		};
 	});
 
-	const override = WIRE_OVERRIDES[snakeName];
-	const forceJsonParams = override?.forceJson
-		? new Set(override.forceJson)
-		: undefined;
-	const wireParams = resolveWireParams(method, forceJsonParams);
+	const wireParams = resolveWireParams(method);
 
 	const category =
 		source === "EffectsBridge"
@@ -737,15 +695,6 @@ function generateRegistry(): BridgeRegistry {
 		}
 	}
 
-	const allSnakeNames = new Set(methods.map((m) => m.snakeName));
-	for (const overrideKey of Object.keys(WIRE_OVERRIDES)) {
-		if (!allSnakeNames.has(overrideKey)) {
-			throw new Error(
-				`WIRE_OVERRIDES references non-existent method: "${overrideKey}"`,
-			);
-		}
-	}
-
 	const byCategory: Record<string, number> = {};
 	const tsToSnake: Record<string, string> = {};
 	const snakeToTs: Record<string, string> = {};
@@ -868,6 +817,7 @@ import type {
   DynamicShaderResult,
   EffectsResult,
   EffectsPipelineSnapshot,
+  JsonParam,
 } from '../../../app/lib/godot/types.js';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 import type GodotHeadlessDriver from './GodotHeadlessDriver.js';
@@ -1044,6 +994,7 @@ import type {
   MouseJointDef,
   NormalizedDrawCommand,
   DrawCommand,
+  JsonParam,
 } from '../../types.js';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 
@@ -1096,44 +1047,6 @@ function generateSharedTransport(registry: BridgeRegistry): void {
 	}
 
 	function buildWireArgs(m: MethodEntry): string[] {
-		const override = WIRE_OVERRIDES[m.snakeName];
-		if (override?.argOrder) {
-			const allArgs = new Map<string, { arg: WireArg; wp: WireParam }>();
-			for (const wp of m.wireParams) {
-				if (wp.wireKind === WireKind.Callback) continue;
-				for (const a of wp.args) {
-					allArgs.set(a.accessor, { arg: a, wp });
-				}
-			}
-
-			return override.argOrder.map((path) => {
-				const firstParam = m.wireParams[0];
-				const paramPrefix = firstParam?.name ?? "";
-
-				const candidates = [
-					path,
-					`${paramPrefix}.${path}`,
-					`${paramPrefix}?.${path.replace(/\./g, "?.")}`,
-				];
-
-				for (const candidate of candidates) {
-					const match = allArgs.get(candidate);
-					if (match) return safeAccessor(match.arg, match.wp);
-				}
-
-				for (const [accessor, entry] of allArgs) {
-					if (accessor.endsWith(`.${path}`) || accessor.endsWith(`?.${path}`)) {
-						return safeAccessor(entry.arg, entry.wp);
-					}
-				}
-
-				const leafName = path.split(".").pop() ?? path;
-				const wireType: WireArg["type"] =
-					leafName === "x" || leafName === "y" ? "number" : "string";
-				return `${paramPrefix}?.${path.replace(/\./g, "?.")} ?? ${wireDefault(wireType)}`;
-			});
-		}
-
 		const args: string[] = [];
 		for (const wp of m.wireParams) {
 			if (wp.wireKind === WireKind.Callback) continue;
@@ -1244,12 +1157,11 @@ function generateSharedTransport(registry: BridgeRegistry): void {
 			return generateEffectsSyncBody(m);
 		}
 
-		const override = WIRE_OVERRIDES[m.snakeName];
-		if (override?.forceSync) {
-			return generateBridgeSyncBody(m);
-		}
-
 		if (m.async) {
+			const innerType = getAsyncInnerType(m.returnType);
+			if (innerType === "void") {
+				return generateBridgeSyncBody(m);
+			}
 			return generateBridgeAsyncBody(m);
 		}
 
@@ -1292,6 +1204,7 @@ function generateSharedTransport(registry: BridgeRegistry): void {
 				"MouseJointDef",
 				"NormalizedDrawCommand",
 				"DrawCommand",
+				"JsonParam",
 			];
 			for (const tn of typeNames) {
 				if (typeStr.includes(tn)) importTypes.add(tn);
@@ -1441,4 +1354,9 @@ function main() {
 	}
 }
 
-main();
+const isDirectExecution =
+	process.argv[1]?.endsWith("bridge-codegen.ts") ||
+	process.argv[1]?.endsWith("bridge-codegen");
+if (isDirectExecution) {
+	main();
+}
