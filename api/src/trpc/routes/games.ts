@@ -13,6 +13,7 @@ import {
 	validateGameDefinition,
 } from "@/ai";
 import { ArtifactManager } from "@/ai/agent/artifact-manager";
+import { GitService } from "@/services/git/GitService";
 import { WorkspaceCopyService } from "@/services/WorkspaceCopyService";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
 import {
@@ -22,6 +23,8 @@ import {
 import { protectedProcedure, publicProcedure, router } from "../index";
 
 type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
+type DurableObjectNamespace =
+	import("@cloudflare/workers-types").DurableObjectNamespace;
 
 interface GameRow {
 	id: string;
@@ -144,6 +147,51 @@ async function writeMetadataToR2(
 	await assets.put(`${r2Prefix}/metadata.json`, JSON.stringify(metadata), {
 		httpMetadata: { contentType: "application/json" },
 	});
+}
+
+async function initGitRepoWithWorkspace(
+	gameId: string,
+	assets: R2Bucket,
+	gameRepoNamespace: DurableObjectNamespace | undefined,
+): Promise<void> {
+	if (!gameRepoNamespace) {
+		console.warn(
+			`[Game ${gameId}] GAME_REPO binding unavailable, skipping Git init`,
+		);
+		return;
+	}
+
+	try {
+		const gitService = new GitService(gameRepoNamespace);
+		await gitService.initRepo(gameId);
+
+		const workspacePrefix = `games/${gameId}/workspace/`;
+		const workspaceFiles = await assets.list({ prefix: workspacePrefix });
+
+		const files = await Promise.all(
+			workspaceFiles.objects.map(async (obj) => {
+				const content = await assets.get(obj.key);
+				if (!content) {
+					throw new Error(`Failed to read ${obj.key} from R2`);
+				}
+				const text = await content.text();
+				const path = obj.key.replace(workspacePrefix, "");
+				return { path, content: text };
+			}),
+		);
+
+		if (files.length > 0) {
+			await gitService.commitFiles(gameId, files, "Initialize game", {
+				name: "System",
+				email: "system@slopcade.app",
+			});
+		}
+	} catch (error) {
+		console.error(
+			`[Game ${gameId}] Failed to initialize Git repo:`,
+			error instanceof Error ? error.message : String(error),
+		);
+	}
 }
 
 export const gamesRouter = router({
@@ -292,6 +340,8 @@ export const gamesRouter = router({
 				gameId: id,
 				gameTitle: input.title,
 			});
+
+			await initGitRepoWithWorkspace(id, ctx.env.ASSETS, ctx.env.GAME_REPO);
 
 			await ctx.env.DB.prepare(
 				`INSERT INTO games (
@@ -645,6 +695,14 @@ export const gamesRouter = router({
 					thumbnailUrl: null,
 					updatedAt: now,
 				});
+
+				const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
+				await scaffoldService.seedIfMissing({
+					gameId: id,
+					gameTitle: result.game.metadata.title,
+				});
+
+				await initGitRepoWithWorkspace(id, ctx.env.ASSETS, ctx.env.GAME_REPO);
 
 				await ctx.env.DB.prepare(
 					`INSERT INTO games (
