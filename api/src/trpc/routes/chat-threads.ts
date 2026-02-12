@@ -16,6 +16,7 @@ import {
 	type ThreadRow,
 } from "@/chat/chat-handler";
 import { WalletService } from "@/economy/wallet-service";
+import { GitService } from "@/services/git/GitService";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
 import type { Env, User } from "../context";
 import { protectedProcedure, router } from "../index";
@@ -103,6 +104,87 @@ function toMessage(row: MessageRow) {
 		createdAt: row.created_at,
 		seq: row.seq,
 	};
+}
+
+async function getWorkspaceSnapshotFromGit(
+	gitService: GitService,
+	gameId: string,
+	sinceRevision: string | undefined,
+) {
+	const commits = await gitService.log(gameId, 1);
+	const revision = commits.length > 0 ? commits[0].oid : "";
+
+	if (!revision || (sinceRevision && sinceRevision === revision)) {
+		return { changed: false as const };
+	}
+
+	const filenames = await gitService.listFiles(gameId);
+	const snapshotFiles: WorkspaceSnapshotFile[] = await Promise.all(
+		filenames.map(async (filename) => {
+			const bytes = await gitService.readFile(gameId, filename);
+			const content = bytes ? new TextDecoder().decode(bytes) : "";
+			return {
+				filename,
+				content,
+				contentHash: hashStringFNV1a64(content),
+				size: new TextEncoder().encode(content).byteLength,
+				uploaded: 0,
+			};
+		}),
+	);
+
+	const snapshot: WorkspaceSnapshot = {
+		gameId,
+		revision,
+		generatedAt: Date.now(),
+		files: snapshotFiles,
+	};
+
+	return { changed: true as const, snapshot };
+}
+
+async function getWorkspaceSnapshotFromArtifacts(
+	env: Env,
+	gameId: string,
+	sinceRevision: string | undefined,
+) {
+	const artifactService = new ArtifactService(env.ASSETS, env.DB);
+	const fileMetas = await artifactService.listWorkspaceFileMeta(gameId);
+	const filenames = fileMetas.map((f) => f.filename);
+	const contentMap = await artifactService.readWorkspaceFiles(
+		gameId,
+		filenames,
+	);
+
+	const filesForRevision = fileMetas.map((f) => ({
+		filename: f.filename,
+		content: contentMap.get(f.filename) ?? "",
+		size: f.size,
+		uploaded: f.uploaded,
+	}));
+
+	const revision = computeWorkspaceRevision(filesForRevision);
+
+	if (sinceRevision === revision) {
+		return { changed: false as const };
+	}
+
+	const snapshotFiles: WorkspaceSnapshotFile[] = filesForRevision.map((f) => ({
+		filename: f.filename,
+		content: f.content,
+		contentHash: hashStringFNV1a64(f.content),
+		size: f.size,
+		uploaded: f.uploaded,
+	}));
+
+	const snapshot: WorkspaceSnapshot = {
+		gameId,
+		revision,
+		generatedAt: Date.now(),
+		files: snapshotFiles,
+	};
+
+	return { changed: true as const, snapshot };
 }
 
 export const chatThreadsRouter = router({
@@ -356,47 +438,23 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			const artifactService = new ArtifactService(ctx.env.ASSETS, ctx.env.DB);
-			const fileMetas = await artifactService.listWorkspaceFileMeta(
-				input.gameId,
-			);
-			const filenames = fileMetas.map((f) => f.filename);
-			const contentMap = await artifactService.readWorkspaceFiles(
-				input.gameId,
-				filenames,
-			);
+			const gitService = ctx.env.GAME_REPO
+				? new GitService(ctx.env.GAME_REPO)
+				: null;
 
-			const filesForRevision = fileMetas.map((f) => ({
-				filename: f.filename,
-				content: contentMap.get(f.filename) ?? "",
-				size: f.size,
-				uploaded: f.uploaded,
-			}));
-
-			const revision = computeWorkspaceRevision(filesForRevision);
-
-			if (input.sinceRevision === revision) {
-				return { changed: false as const };
+			if (gitService) {
+				return getWorkspaceSnapshotFromGit(
+					gitService,
+					input.gameId,
+					input.sinceRevision,
+				);
 			}
 
-			const snapshotFiles: WorkspaceSnapshotFile[] = filesForRevision.map(
-				(f) => ({
-					filename: f.filename,
-					content: f.content,
-					contentHash: hashStringFNV1a64(f.content),
-					size: f.size,
-					uploaded: f.uploaded,
-				}),
+			return getWorkspaceSnapshotFromArtifacts(
+				ctx.env,
+				input.gameId,
+				input.sinceRevision,
 			);
-
-			const snapshot: WorkspaceSnapshot = {
-				gameId: input.gameId,
-				revision,
-				generatedAt: Date.now(),
-				files: snapshotFiles,
-			};
-
-			return { changed: true as const, snapshot };
 		}),
 
 	listWorkspaceFiles: protectedProcedure
