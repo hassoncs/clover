@@ -10,9 +10,9 @@
 			"type": "local",
 			"command": ["node_modules/.bin/backlog", "mcp", "start"]
 		},
-		"mcp-hot-ops": {
+		"game-inspector": {
 			"type": "local",
-			"command": ["node_modules/.bin/tsx", "packages/mcp-hot-ops/src/server.ts"]
+			"command": ["node", "packages/game-inspector-mcp/dist/index.js"]
 		}
 	}
 }

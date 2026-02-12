@@ -50,6 +50,9 @@ importers:
       '@types/node':
         specifier: ^25.0.10
         version: 25.2.0
+      backlog.md:
+        specifier: ^1.35.7
+        version: 1.35.7
       chokidar:
         specifier: ^5.0.0
         version: 5.0.0
@@ -651,6 +654,28 @@ importers:
       '@types/node':
         specifier: ^22.10.5
         version: 22.19.8
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+
+  packages/mcp-operations:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.0.0
+        version: 1.26.0(zod@3.25.76)
+      esbuild:
+        specifier: ^0.25.0
+        version: 0.25.12
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.19.8
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
@@ -4843,6 +4868,35 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     peerDependencies:
       '@babel/core': ^7.0.0
+
+  backlog.md-darwin-arm64@1.35.7:
+    resolution: {integrity: sha512-Wweg+6WnAgVEtUZLHz0no2EJSJ/54U01uEZbw8APWwmz4ociHCp8qcNrZODufSswNtXqwUqsogtzb6HfighlfQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  backlog.md-darwin-x64@1.35.7:
+    resolution: {integrity: sha512-Cw6k5Y5gu2RMCRETMjR+Ru70fT3R3p8VPG/eYKpof1Q2/lJMtJjioM285zFEgCMvGresyJhbAaRgVNslkOkY6Q==}
+    cpu: [x64]
+    os: [darwin]
+
+  backlog.md-linux-arm64@1.35.7:
+    resolution: {integrity: sha512-waIVB4CW2mrKBOKBKU+MxsCVuqMyHiUVkjRGggWlIwANJgWpyWMYXPNyrLlBRBfo4fqhN6GEaylKwbgNVWiKFg==}
+    cpu: [arm64]
+    os: [linux]
+
+  backlog.md-linux-x64@1.35.7:
+    resolution: {integrity: sha512-zGdua5/xKOkYpf2VJTnCwbmXj5Lslm1ajObUzZhOkL8NyMfa1ITVKG3xUgcPWgmBMqPPKafmVx2fFn9iYMH6kw==}
+    cpu: [x64]
+    os: [linux]
+
+  backlog.md-windows-x64@1.35.7:
+    resolution: {integrity: sha512-zzsJIE98wWi2aSL8sv6Vhq/V47qVOxto7/o2+5DzzGfInjA42JsFxy+fBu6Bx6rCPgIU7fQRwmE6s7mewTL1lw==}
+    cpu: [x64]
+    os: [win32]
+
+  backlog.md@1.35.7:
+    resolution: {integrity: sha512-YbTUtm0jSs7XzM6RC4lWgYbQB9xb9TfnGbgj0TH6Owk973AWbPMGvFNOg+l1+hBkZgGPfiFCy24tezyQbIdzcg==}
+    hasBin: true
 
   badgin@1.2.3:
     resolution: {integrity: sha512-NQGA7LcfCpSzIbGRbkgjgdWkjy7HI+Th5VLxTJfW5EeaAf3fnS+xWQaQOCYiny+q6QSvxqoSO04vCx+4u++EJw==}
@@ -14608,6 +14662,29 @@ snapshots:
       '@babel/core': 7.29.0
       babel-plugin-jest-hoist: 29.6.3
       babel-preset-current-node-syntax: 1.2.0(@babel/core@7.29.0)
+
+  backlog.md-darwin-arm64@1.35.7:
+    optional: true
+
+  backlog.md-darwin-x64@1.35.7:
+    optional: true
+
+  backlog.md-linux-arm64@1.35.7:
+    optional: true
+
+  backlog.md-linux-x64@1.35.7:
+    optional: true
+
+  backlog.md-windows-x64@1.35.7:
+    optional: true
+
+  backlog.md@1.35.7:
+    optionalDependencies:
+      backlog.md-darwin-arm64: 1.35.7
+      backlog.md-darwin-x64: 1.35.7
+      backlog.md-linux-arm64: 1.35.7
+      backlog.md-linux-x64: 1.35.7
+      backlog.md-windows-x64: 1.35.7
 
   badgin@1.2.3: {}
 

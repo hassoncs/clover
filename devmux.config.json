@@ -1,54 +1,73 @@
 {
-  "version": 1,
-  "project": "slopcade",
-  "services": {
-    "game-inspector": {
-      "cwd": "packages/game-inspector-mcp",
-      "command": "pnpm build && node dist/index.js",
-      "health": { "type": "port", "port": 3100 }
-    },
-    "game-inspector-tsc": {
-      "cwd": "packages/game-inspector-mcp",
-      "command": "pnpm build && tsc --watch --preserveWatchOutput"
-    },
-    "bridge-watch": {
-      "cwd": ".",
-      "command": "npx tsx scripts/watch-bridge.ts"
-    },
-    "games-watcher": {
-      "cwd": "api",
-      "command": "pnpm watch:games"
-    },
-    "api": {
-      "cwd": ".",
-      "command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
-      "health": { "type": "port", "port": 8789 },
-      "dependsOn": ["games-watcher"]
-    },
-    "godot": {
-      "cwd": ".",
-      "command": "node scripts/export-godot.mjs --watch"
-    },
-    "registry": {
-      "cwd": "app",
-      "command": "npx reggie --watch"
-    },
-    "metro": {
-      "cwd": "app",
-      "command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
-      "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc", "bridge-watch"]
-    },
-    "web": {
-      "cwd": "app",
-      "command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
-      "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc", "bridge-watch"]
-    },
-    "storybook": {
-      "cwd": "apps/storybook",
-      "command": "npx hush run -t app -- pnpm storybook",
-      "health": { "type": "port", "port": 6006 }
-    }
-  }
+	"version": 1,
+	"project": "slopcade",
+	"services": {
+		"game-inspector": {
+			"cwd": "packages/game-inspector-mcp",
+			"command": "pnpm build && node dist/index.js",
+			"health": { "type": "port", "port": 3100 }
+		},
+		"game-inspector-tsc": {
+			"cwd": "packages/game-inspector-mcp",
+			"command": "pnpm build && tsc --watch --preserveWatchOutput"
+		},
+		"bridge-watch": {
+			"cwd": ".",
+			"command": "npx tsx scripts/watch-bridge.ts"
+		},
+		"games-watcher": {
+			"cwd": "api",
+			"command": "pnpm watch:games"
+		},
+		"api": {
+			"cwd": ".",
+			"command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
+			"health": { "type": "port", "port": 8789 },
+			"dependsOn": ["games-watcher"]
+		},
+		"godot": {
+			"cwd": ".",
+			"command": "node scripts/export-godot.mjs --watch"
+		},
+		"registry": {
+			"cwd": "app",
+			"command": "npx reggie --watch"
+		},
+		"metro": {
+			"cwd": "app",
+			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
+			"health": { "type": "port", "port": 8085 },
+			"dependsOn": [
+				"api",
+				"godot",
+				"registry",
+				"game-inspector",
+				"game-inspector-tsc",
+				"bridge-watch"
+			]
+		},
+		"web": {
+			"cwd": "app",
+			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
+			"health": { "type": "port", "port": 8085 },
+			"dependsOn": [
+				"api",
+				"godot",
+				"registry",
+				"game-inspector",
+				"game-inspector-tsc",
+				"bridge-watch"
+			]
+		},
+		"backlog": {
+			"cwd": ".",
+			"command": "backlog browser --no-open",
+			"health": { "type": "port", "port": 6420 }
+		},
+		"storybook": {
+			"cwd": "apps/storybook",
+			"command": "npx hush run -t app -- pnpm storybook",
+			"health": { "type": "port", "port": 6006 }
+		}
+	}
 }
