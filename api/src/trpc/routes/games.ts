@@ -13,6 +13,7 @@ import {
 	validateGameDefinition,
 } from "@/ai";
 import { ArtifactManager } from "@/ai/agent/artifact-manager";
+import { ForkService } from "@/services/ForkService";
 import { GitService } from "@/services/git/GitService";
 import { WorkspaceCopyService } from "@/services/WorkspaceCopyService";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
@@ -975,33 +976,27 @@ export const gamesRouter = router({
 
 			const parentBaseGameId = existing.base_game_id ?? existing.id;
 
-			await ctx.env.DB.prepare(
-				`INSERT INTO games (
-          id, user_id, title, description, r2_prefix, is_public, play_count,
-          created_at, updated_at, base_game_id, forked_from_id,
-          validation_report, validation_score, validation_critical_count,
-          validation_warning_count, validation_valid, validation_updated_at, validator_version
-        ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			)
-				.bind(
-					newId,
-					ctx.user.id,
-					`${existing.title} (Fork)`,
-					existing.description,
-					newR2Prefix,
-					now,
-					now,
-					parentBaseGameId,
-					existing.id,
-					getValidationReportJson(validationReport),
-					validationReport.summary.score,
-					validationReport.summary.criticalCount,
-					validationReport.summary.warningCount,
-					validationReport.valid ? 1 : 0,
-					now,
-					validationReport.validatorVersion,
-				)
-				.run();
+			const forkService = new ForkService(
+				ctx.env.ASSETS,
+				ctx.env.DB,
+				ctx.env.GAME_REPO,
+			);
+
+			await forkService.forkGame({
+				sourceGameId: existing.id,
+				newGameId: newId,
+				userId: ctx.user.id,
+				title: `${existing.title} (Fork)`,
+				description: existing.description,
+				r2Prefix: newR2Prefix,
+				baseGameId: parentBaseGameId,
+				validationReport: getValidationReportJson(validationReport),
+				validationScore: validationReport.summary.score,
+				validationCriticalCount: validationReport.summary.criticalCount,
+				validationWarningCount: validationReport.summary.warningCount,
+				validationValid: validationReport.valid ? 1 : 0,
+				validatorVersion: validationReport.validatorVersion,
+			});
 
 			return {
 				id: newId,
