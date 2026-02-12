@@ -14,6 +14,7 @@ var _seed_feedback_on_next_frame: bool = false
 var _viewport_pool: ViewportPool = null
 var _shader_warmer: ShaderWarmer = null
 var _buffer_registry: Dictionary = {}  # name -> texture
+var _source_viewport: Viewport = null
 
 func _ready() -> void:
 	set_process(false)
@@ -517,33 +518,7 @@ func _resolve_shader(pass_data: Dictionary) -> Shader:
 	if glsl == "":
 		return null
 
-	# For screen-scope effects running in SubViewports, SCREEN_TEXTURE
-	# refers to the SubViewport's own backbuffer (empty), not the game
-	# screen. Rewrite the shader to use an explicit sampler uniform that
-	# the ResourceGraph will bind to the actual input texture.
-	if str(_plan.get("scope", "")) == "screen" and glsl.contains("hint_screen_texture"):
-		glsl = _rewrite_screen_texture_for_subviewport(glsl)
-
 	return _build_custom_shader(glsl)
-
-func _rewrite_screen_texture_for_subviewport(glsl: String) -> String:
-	var result := glsl
-	var regex := RegEx.new()
-	regex.compile("uniform\\s+sampler2D\\s+SCREEN_TEXTURE\\s*:[^;]*;")
-	var m := regex.search(result)
-	var has_screen_pixel_size := result.contains("SCREEN_PIXEL_SIZE")
-	if m != null:
-		var declaration := "uniform sampler2D input : filter_linear_mipmap;"
-		if has_screen_pixel_size:
-			declaration += "\nuniform vec2 screen_pixel_size;"
-		result = result.replace(m.get_string(), declaration)
-	elif has_screen_pixel_size and not result.contains("uniform vec2 screen_pixel_size"):
-		result = "uniform vec2 screen_pixel_size;\n" + result
-
-	result = result.replace("SCREEN_TEXTURE", "input")
-	result = result.replace("SCREEN_UV", "UV")
-	result = result.replace("SCREEN_PIXEL_SIZE", "screen_pixel_size")
-	return result
 
 func _build_custom_shader(glsl: String) -> Shader:
 	# Use shader warmer if available for custom shaders (caches by hash)
@@ -588,11 +563,14 @@ func _resolve_base_size() -> Vector2i:
 			return size
 	return Vector2i(800, 600)
 
+func set_source_viewport(vp: Viewport) -> void:
+	_source_viewport = vp
+
 func _bind_implicit_inputs() -> void:
-	var viewport = get_viewport()
-	if viewport == null:
+	var src_vp := _source_viewport if _source_viewport != null else get_viewport()
+	if src_vp == null:
 		return
-	var screen_tex: Texture2D = viewport.get_texture()
+	var screen_tex: Texture2D = src_vp.get_texture()
 	if screen_tex != null:
 		_resource_graph.set_external_texture("__screenColor", screen_tex)
 

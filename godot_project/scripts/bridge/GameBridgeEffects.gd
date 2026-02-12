@@ -21,6 +21,8 @@ var _stroke_overlay_dirty: bool = false
 var _screen_overlay_layer: CanvasLayer = null
 var _screen_overlay_rect: TextureRect = null
 var _current_scope: String = ""
+var _game_capture_viewport: SubViewport = null
+var _game_capture_container: SubViewportContainer = null
 
 func _ready() -> void:
 	# Create subsystems
@@ -671,6 +673,9 @@ func apply_plan(plan_json) -> Dictionary:
 	var scope: String = str(plan_dict.get("scope", ""))
 
 	if scope == "screen":
+		_setup_game_capture_viewport()
+		if _game_capture_viewport != null:
+			_screen_executor.set_source_viewport(_game_capture_viewport)
 		var result = _screen_executor.apply_plan(plan_dict)
 		if bool(result.get("success", false)):
 			_create_screen_overlay()
@@ -690,6 +695,52 @@ func apply_plan(plan_json) -> Dictionary:
 		_init_stroke_overlay()
 
 	return result
+
+func _setup_game_capture_viewport() -> void:
+	if _game_capture_viewport != null:
+		return
+	if _game_bridge == null or _game_bridge.game_root == null:
+		return
+
+	var game_root: Node2D = _game_bridge.game_root
+	var main_node: Node = game_root.get_parent()
+	if main_node == null:
+		return
+
+	var win_size := game_root.get_viewport().size
+
+	_game_capture_container = SubViewportContainer.new()
+	_game_capture_container.name = "GameCaptureContainer"
+	_game_capture_container.stretch = true
+	_game_capture_container.size = Vector2(win_size)
+
+	_game_capture_viewport = SubViewport.new()
+	_game_capture_viewport.name = "GameCaptureViewport"
+	_game_capture_viewport.handle_input_locally = false
+	_game_capture_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_game_capture_viewport.size = win_size
+
+	main_node.remove_child(game_root)
+	_game_capture_container.add_child(_game_capture_viewport)
+	_game_capture_viewport.add_child(game_root)
+	main_node.add_child(_game_capture_container)
+
+func _teardown_game_capture_viewport() -> void:
+	if _game_capture_viewport == null:
+		return
+	if _game_bridge == null or _game_bridge.game_root == null:
+		return
+
+	var game_root: Node2D = _game_bridge.game_root
+	var main_node: Node = _game_capture_container.get_parent()
+
+	_game_capture_viewport.remove_child(game_root)
+	main_node.remove_child(_game_capture_container)
+	main_node.add_child(game_root)
+
+	_game_capture_container.queue_free()
+	_game_capture_container = null
+	_game_capture_viewport = null
 
 func _create_screen_overlay() -> void:
 	_destroy_screen_overlay()
@@ -800,6 +851,7 @@ func clear_plan() -> void:
 		graph_executor.clear()
 
 func clear_screen_plan() -> void:
+	_teardown_game_capture_viewport()
 	_destroy_screen_overlay()
 	if _screen_executor:
 		_screen_executor.clear()

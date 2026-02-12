@@ -905,7 +905,7 @@ describe("screen-scope shader rewrite contract", () => {
 		return [...matches].map((m) => m[1]);
 	}
 
-	it('rewritten underwater shader has "input" uniform matching inputBindings key', () => {
+	it("screen-scope underwater shader is pre-rewritten with 'input' uniform matching inputBindings", () => {
 		const graph: EffectGraphSpec = {
 			id: "test",
 			version: "1.0.0",
@@ -945,11 +945,10 @@ describe("screen-scope shader rewrite contract", () => {
 		const bindings = pass.params.inputBindings as Record<string, string>;
 		expect(bindings).toHaveProperty("input");
 
-		const originalGlsl = pass.shaderSource.glsl;
-		expect(needsScreenTextureRewrite(originalGlsl)).toBe(true);
+		const glsl = pass.shaderSource.glsl;
+		expect(needsScreenTextureRewrite(glsl)).toBe(false);
 
-		const rewritten = rewriteScreenShaderForSubViewport(originalGlsl);
-		const uniforms = extractSamplerUniforms(rewritten);
+		const uniforms = extractSamplerUniforms(glsl);
 		expect(uniforms).toContain("input");
 		expect(uniforms).not.toContain("SCREEN_TEXTURE");
 
@@ -1040,18 +1039,14 @@ describe("screen-scope shader rewrite contract", () => {
 
 		for (const pass of result.plan!.passes) {
 			const bindings = pass.params.inputBindings as Record<string, string>;
-			const originalGlsl = pass.shaderSource.glsl;
+			const glsl = pass.shaderSource.glsl;
 
-			if (needsScreenTextureRewrite(originalGlsl)) {
-				const rewritten = rewriteScreenShaderForSubViewport(originalGlsl);
-				const uniforms = extractSamplerUniforms(rewritten);
+			expect(glsl).not.toContain("SCREEN_TEXTURE");
+			expect(glsl).not.toContain("hint_screen_texture");
 
-				for (const uniformName of Object.keys(bindings)) {
-					expect(uniforms).toContain(uniformName);
-				}
-
-				expect(rewritten).not.toContain("SCREEN_TEXTURE");
-				expect(rewritten).not.toContain("hint_screen_texture");
+			const uniforms = extractSamplerUniforms(glsl);
+			for (const uniformName of Object.keys(bindings)) {
+				expect(uniforms).toContain(uniformName);
 			}
 		}
 	});
@@ -1139,13 +1134,12 @@ describe("screen-scope shader rewrite contract", () => {
 			const bindings = pass.params.inputBindings as Record<string, string>;
 			const glsl = pass.shaderSource.glsl;
 
-			if (needsScreenTextureRewrite(glsl)) {
-				const rewritten = rewriteScreenShaderForSubViewport(glsl);
-				const uniforms = extractSamplerUniforms(rewritten);
+			expect(glsl).not.toContain("SCREEN_TEXTURE");
+			expect(glsl).not.toContain("hint_screen_texture");
 
-				for (const key of Object.keys(bindings)) {
-					expect(uniforms).toContain(key);
-				}
+			const uniforms = extractSamplerUniforms(glsl);
+			for (const key of Object.keys(bindings)) {
+				expect(uniforms).toContain(key);
 			}
 		}
 	});
@@ -1160,5 +1154,164 @@ describe("screen-scope shader rewrite contract", () => {
 		const once = rewriteScreenShaderForSubViewport(glsl);
 		const twice = rewriteScreenShaderForSubViewport(once);
 		expect(twice).toBe(once);
+	});
+});
+
+describe("screen-scope compiler pre-rewrites GLSL (single source of truth)", () => {
+	it("screen-scope plan contains pre-rewritten GLSL with no SCREEN_TEXTURE", () => {
+		const graph: EffectGraphSpec = {
+			id: "screen-prerewrite",
+			version: "1.0.0",
+			engineApiVersion: "2.0.0",
+			scope: "screen",
+			nodes: [
+				{
+					id: "wave",
+					type: "underwater",
+					family: "filter",
+					inputSlots: [
+						{ name: "input", dataType: "texture", connectedTo: null },
+					],
+					params: {},
+					outputTarget: {
+						bufferId: "wave_buf",
+						format: "rgba8",
+						resolution: "full",
+					},
+					flags: { stateful: false, fusible: "conditional" },
+				},
+			],
+			connections: [],
+			feedbackEdges: [],
+			lifecycle: { autoStart: true, stopMode: "clear" },
+		};
+
+		const result = compileGraph(graph);
+		expect(result.success).toBe(true);
+
+		const pass = result.plan!.passes[0];
+		expect(pass.shaderSource.glsl).not.toContain("SCREEN_TEXTURE");
+		expect(pass.shaderSource.glsl).not.toContain("hint_screen_texture");
+		expect(pass.shaderSource.glsl).not.toContain("SCREEN_UV");
+		expect(pass.shaderSource.glsl).toContain("uniform sampler2D input");
+	});
+
+	it("entity-scope plan keeps original GLSL unchanged", () => {
+		const graph: EffectGraphSpec = {
+			id: "entity-no-rewrite",
+			version: "1.0.0",
+			engineApiVersion: "2.0.0",
+			scope: "entity",
+			nodes: [
+				{
+					id: "glow_node",
+					type: "glow",
+					family: "filter",
+					inputSlots: [
+						{ name: "input", dataType: "texture", connectedTo: null },
+					],
+					params: {},
+					outputTarget: {
+						bufferId: "glow_buf",
+						format: "rgba8",
+						resolution: "full",
+					},
+					flags: { stateful: false, fusible: "conditional" },
+				},
+			],
+			connections: [],
+			feedbackEdges: [],
+			lifecycle: { autoStart: true, stopMode: "clear" },
+		};
+
+		const result = compileGraph(graph);
+		expect(result.success).toBe(true);
+
+		const pass = result.plan!.passes[0];
+		const originalGlsl = getShaderGlslStrict("glow");
+		expect(pass.shaderSource.glsl).toBe(originalGlsl);
+	});
+
+	it("ballSort 2-pass screen graph: both passes have pre-rewritten GLSL and correct inputBindings", () => {
+		const graph: EffectGraphSpec = {
+			id: "ballSort_wavy_scanlines",
+			version: "1.0.0",
+			engineApiVersion: "2.0.0",
+			scope: "screen",
+			nodes: [
+				{
+					id: "wave_node",
+					type: "underwater",
+					family: "filter",
+					inputSlots: [
+						{ name: "input", dataType: "texture", connectedTo: null },
+					],
+					params: { intensity: 0.0, wave_speed: 1.0 },
+					outputTarget: {
+						bufferId: "wave_buf",
+						format: "rgba8",
+						resolution: "full",
+					},
+					flags: { stateful: false, fusible: "conditional" },
+				},
+				{
+					id: "scanlines_node",
+					type: "scanlines",
+					family: "filter",
+					inputSlots: [
+						{
+							name: "input",
+							dataType: "texture",
+							connectedTo: {
+								nodeId: "wave_node",
+								output: "wave_buf",
+							},
+						},
+					],
+					params: { scanline_count: 200 },
+					outputTarget: {
+						bufferId: "scanlines_buf",
+						format: "rgba8",
+						resolution: "full",
+					},
+					flags: { stateful: false, fusible: "conditional" },
+				},
+			],
+			connections: [
+				{
+					from: { nodeId: "wave_node", output: "wave_buf" },
+					to: { nodeId: "scanlines_node", input: "input" },
+				},
+			],
+			feedbackEdges: [],
+			lifecycle: { autoStart: true, stopMode: "clear" },
+		};
+
+		const result = compileGraph(graph);
+		expect(result.success).toBe(true);
+		expect(result.plan!.passes).toHaveLength(2);
+
+		for (const pass of result.plan!.passes) {
+			expect(pass.shaderSource.glsl).not.toContain("SCREEN_TEXTURE");
+			expect(pass.shaderSource.glsl).not.toContain("hint_screen_texture");
+			expect(pass.shaderSource.glsl).toContain("uniform sampler2D input");
+		}
+
+		const wavePass = result.plan!.passes.find((p) => p.id === "wave_node")!;
+		const scanPass = result.plan!.passes.find(
+			(p) => p.id === "scanlines_node",
+		)!;
+
+		const waveBindings = wavePass.params.inputBindings as Record<
+			string,
+			string
+		>;
+		expect(waveBindings.input).toBe("__screenColor");
+
+		const scanBindings = scanPass.params.inputBindings as Record<
+			string,
+			string
+		>;
+		expect(scanBindings.input).toBe("wave_node:wave_buf");
 	});
 });
