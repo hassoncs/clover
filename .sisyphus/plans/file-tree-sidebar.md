@@ -970,7 +970,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 10. Tests — Unit + Integration
+- [x] 10. Tests — Unit + Integration
 
   **What to do**:
   - Write tests for:
@@ -1035,7 +1035,7 @@ Wave 4 (After Wave 3):
 
 ---
 
-- [ ] 11. Cleanup + Final Verification
+- [x] 11. Cleanup + Final Verification
 
   **What to do**:
   - Delete orphaned `app/components/editor/FileTree.tsx` (if not already deleted in Task 9)
