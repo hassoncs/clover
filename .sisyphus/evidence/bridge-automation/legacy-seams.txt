@@ -1,0 +1,24 @@
+=== Legacy Seam Detection ===
+
+Check 1: structural_aliases in tests
+Exit code: 1
+
+Check 2: var overrides in GameBridge.gd
+Exit code: 1
+
+Check 3: MANUAL_OVERRIDES in GameBridge.gd
+Exit code: 1
+
+Check 4: STRUCTURAL_ALIASES in GameBridge.gd
+Exit code: 1
+
+Check 5: manual_overrides in tests
+Exit code: 1
+
+Check 6: _apply_manual_overrides in GameBridge.gd
+Exit code: 1
+
+Check 7: _apply_structural_aliases in GameBridge.gd
+Exit code: 1
+
+=== All Checks Complete ===

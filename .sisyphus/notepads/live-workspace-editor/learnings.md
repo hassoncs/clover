@@ -40,3 +40,26 @@ All 13 Definition of Done criteria verified:
 - `PrefabDiff` contract for Phase 5 uses only three categories (`visual`, `physics`, `structural`) and `diffAllPrefabs` should return entries for the full key union (not only changed prefabs).
 - Structural comparison for prefab diffs should exclude `visual` and `physics` first; otherwise visual-only edits are misclassified and break `isVisualOnly` behavior.
 - `PrefabReconciler` behavior is strategy-driven: skip when no instances, `registerPrefabs` only for visual-only updates, and recreate flow should preserve position via `getEntityTransform` then `destroyEntity` + `spawnEntity` + index refresh.
+
+## Git Initialization on Game Creation
+
+**Pattern**: Initialize Git repo and commit scaffolded workspace files as initial commit
+
+**Implementation** (in `api/src/trpc/routes/games.ts`):
+1. Created `initGitRepoWithWorkspace()` helper function
+2. Checks if `ctx.env.GAME_REPO` binding is available (backward compatible)
+3. Initializes Git repo via `GitService.initRepo(gameId)`
+4. Lists all workspace files from R2 using `assets.list({ prefix: workspacePrefix })`
+5. Reads each file content and commits all files as "Initialize game"
+6. Wrapped in try/catch — Git failures don't prevent game creation (logs warning)
+
+**Applied to**:
+- `create` mutation: After workspace scaffolding
+- `generate` mutation: After workspace scaffolding (when `saveToLibrary=true`)
+
+**Key decisions**:
+- System author: `{ name: "System", email: "system@slopcade.app" }`
+- Commit message: "Initialize game"
+- Graceful degradation: Works even if GAME_REPO binding unavailable
+- Error handling: Logs error but doesn't throw (game creation succeeds)
+

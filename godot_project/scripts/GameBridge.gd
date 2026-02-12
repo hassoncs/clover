@@ -165,6 +165,7 @@ func _init_modules() -> void:
 	_viewport_3d.name = "Viewport3D"
 	_viewport_3d.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_viewport_3d)
+	_viewport_3d.set_bridge(self)
 	_property_collector = PropertyCollector.new(self)
 	_physics_queries = PhysicsQueries.new(self)
 	_query_system = QuerySystem.new()
@@ -231,7 +232,7 @@ func _build_method_map() -> void:
 		self, _entity_manager, _transform_system, _physics_controller, _joint_manager,
 		_visual_renderer, _ui_manager, _camera_controller, _input_router,
 		_sync_system, _property_collector, _event_emitter, _physics_queries,
-		_pixel_buffer_manager, _debug_bridge,
+		_pixel_buffer_manager, _debug_bridge, _viewport_3d,
 	])
 	# Validate against generated contract (uses camelCase keys)
 	var camel_map: Dictionary = {}
@@ -376,35 +377,6 @@ func _js_disable_debug(_args: Array) -> Dictionary: return disable_debug()
 func _js_is_debug_enabled(_args: Array) -> bool: return is_debug_enabled()
 func _js_get_bridge_methods(_args: Array) -> Dictionary: return get_bridge_methods()
 func _js_screen_to_world(args: Array) -> Dictionary: return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else {"x": 0, "y": 0}
-
-# 3D Viewport wrappers (delegated through GameBridge for coordinate conversion)
-func _js_show_3d_model(args: Array) -> bool: return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false
-func _js_show_3d_model_from_url(args: Array) -> void:
-	if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0]))
-func _js_set_3d_viewport_position(args: Array) -> void:
-	if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
-func _js_set_3d_viewport_size(args: Array) -> void:
-	if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1]))
-func _js_rotate_3d_model(args: Array) -> void:
-	if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2])))
-func _js_set_3d_model_position(args: Array) -> void:
-	if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_position(float(args[0]), float(args[1]), float(args[2]))
-func _js_set_3d_camera_distance(args: Array) -> void:
-	if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0]))
-func _js_set_3d_camera_size(args: Array) -> void:
-	if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0]))
-func _js_set_3d_camera_position(args: Array) -> void:
-	if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_position(float(args[0]), float(args[1]), float(args[2]))
-func _js_set_3d_camera_look_at(args: Array) -> void:
-	if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_look_at(float(args[0]), float(args[1]), float(args[2]))
-func _js_clear_3d_models(_args: Array) -> void:
-	if _viewport_3d: _viewport_3d.clear_models()
-func _js_create_3d_floor(args: Array) -> void:
-	if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain")
-func _js_create_3d_cube(args: Array) -> void:
-	if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000")
-func _js_clear_3d_cubes(_args: Array) -> void:
-	if _viewport_3d: _viewport_3d.clear_cubes()
 
 func _log_physics_diagnostics() -> void:
 	print("[GameBridge][DIAG] === PHYSICS DIAGNOSTICS ===")

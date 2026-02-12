@@ -8,6 +8,10 @@ var light: DirectionalLight3D
 var model_container: Node3D
 var glb_model_container: Node3D  # Separate container for GLB models
 var glb_loader: GLBLoader
+var _bridge: Node = null  # Reference to GameBridge for coordinate conversion
+
+func set_bridge(bridge: Node) -> void:
+	_bridge = bridge
 
 signal model_loaded(model: Node3D)
 
@@ -261,6 +265,72 @@ func clear_cubes() -> void:
 func clear_all_primitives() -> void:
 	clear_cubes()
 	clear_models()
+
+# ============================================================================
+# BRIDGE METHODS (_js_ prefix for auto-registration)
+# ============================================================================
+
+func _js_show_3d_model(args: Array) -> Variant:
+	if args.size() < 1: return false
+	return load_glb(str(args[0])) != null
+
+func _js_show_3d_model_from_url(args: Array) -> void:
+	if args.size() < 1: return
+	load_glb_async(str(args[0]))
+
+func _js_set_3d_viewport_position(args: Array) -> void:
+	if args.size() < 2 or not _bridge: return
+	position = _bridge.game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
+
+func _js_set_3d_viewport_size(args: Array) -> void:
+	if args.size() < 2: return
+	set_viewport_size(int(args[0]), int(args[1]))
+
+func _js_rotate_3d_model(args: Array) -> void:
+	if args.size() < 3: return
+	set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2])))
+
+func _js_set_3d_model_position(args: Array) -> void:
+	if args.size() < 3: return
+	set_model_position(float(args[0]), float(args[1]), float(args[2]))
+
+func _js_set_3d_camera_distance(args: Array) -> void:
+	if args.size() < 1: return
+	set_camera_distance(float(args[0]))
+
+func _js_set_3d_camera_size(args: Array) -> void:
+	if args.size() < 1: return
+	set_camera_size(float(args[0]))
+
+func _js_set_3d_camera_position(args: Array) -> void:
+	if args.size() < 3: return
+	set_camera_position(float(args[0]), float(args[1]), float(args[2]))
+
+func _js_set_3d_camera_look_at(args: Array) -> void:
+	if args.size() < 3: return
+	set_camera_look_at(float(args[0]), float(args[1]), float(args[2]))
+
+func _js_clear_3d_models(args: Array) -> void:
+	clear_models()
+
+func _js_create_3d_floor(args: Array) -> void:
+	var size_val = float(args[0]) if args.size() > 0 else 10.0
+	var color = str(args[1]) if args.size() > 1 else "555555"
+	var style = str(args[2]) if args.size() > 2 else "plain"
+	create_floor(size_val, color, style)
+
+func _js_create_3d_cube(args: Array) -> void:
+	if args.size() < 3: return
+	var size_val = float(args[3]) if args.size() > 3 else 0.5
+	var color = str(args[4]) if args.size() > 4 else "ff0000"
+	create_cube(float(args[0]), float(args[1]), float(args[2]), size_val, color)
+
+func _js_clear_3d_cubes(args: Array) -> void:
+	clear_cubes()
+
+func _js_set_orbit_controls(args: Array) -> void:
+	if args.size() < 1: return
+	set_orbit_controls(bool(args[0]))
 
 # Orbit Controls
 var _orbit_enabled: bool = false

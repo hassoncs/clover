@@ -105,12 +105,12 @@ Extend `scripts/bridge-codegen.ts` so that `pnpm generate:bridge` produces ALL r
 ```
 
 ### Definition of Done
-- [ ] `types.ts` is the single source. No other file requires per-method manual edits for bridge wiring.
-- [ ] Generated web adapter passes all existing runtime behavior tests.
-- [ ] Generated Godot dispatch replaces manual override dictionary.
-- [ ] `structural_aliases` removed from contract tests — names are deterministic.
-- [ ] CI blocks drift on generated artifacts.
-- [ ] Zero performance regression on hot paths (transform sync, event polling).
+- [x] `types.ts` is the single source. No other file requires per-method manual edits for bridge wiring.
+- [x] Generated web adapter passes all existing runtime behavior tests.
+- [x] Generated Godot dispatch replaces manual override dictionary.
+- [x] `structural_aliases` removed from contract tests — names are deterministic.
+- [x] CI blocks drift on generated artifacts.
+- [x] Zero performance regression on hot paths (transform sync, event polling).
 
 ### Must Have
 - Preserve `window.GodotBridge` single-readiness-signal contract.
@@ -198,7 +198,7 @@ Wave 3 (Cleanup + enforcement):
 
 ## TODOs
 
-- [ ] 0. Create git worktree for isolated development
+- [x] 0. Create git worktree for isolated development
 
   **What to do**:
   - Create worktree: `git worktree add ../slopcade-bridge-codegen-v2 -b bridge-codegen-v2`
@@ -218,18 +218,18 @@ Wave 3 (Cleanup + enforcement):
   - **Blocks**: Everything else
 
   **Acceptance Criteria**:
-  - [ ] Worktree exists at `../slopcade-bridge-codegen-v2`
-  - [ ] `pnpm generate:bridge` passes in worktree
-  - [ ] `pnpm tsc --noEmit` passes in worktree
-  - [ ] `./godot_project/run_tests.sh` passes in worktree
-  - [ ] Baseline evidence captured in `.sisyphus/evidence/bridge-automation/baseline.txt`
+  - [x] Worktree exists at `../slopcade-bridge-codegen-v2`
+  - [x] `pnpm generate:bridge` passes in worktree
+  - [x] `pnpm tsc --noEmit` passes in worktree
+  - [x] `./godot_project/run_tests.sh` passes in worktree
+  - [x] Baseline evidence captured in `.sisyphus/evidence/bridge-automation/baseline.txt`
 
   **Commit**: YES
   - Message: `chore(bridge): create worktree for codegen v2`
 
 ---
 
-- [ ] 1. Build type resolver and wire encoding classifier in the generator
+- [x] 1. Build type resolver and wire encoding classifier in the generator
 
   **What to do**:
   This is the core engine that makes everything else work. Extend `scripts/bridge-codegen.ts` to resolve parameter types and classify their wire encoding.
@@ -277,20 +277,20 @@ Wave 3 (Cleanup + enforcement):
   - `app/lib/godot/GodotBridge.web.ts:813-828` — manual `createRevoluteJoint` flattening (10 args from struct)
 
   **Acceptance Criteria**:
-  - [ ] `pnpm generate:bridge` produces registry with `wireParams` for each method
-  - [ ] `Vec2` params classified as `FlatStruct` with `[x, y]` recipe
-  - [ ] `RevoluteJointDef` classified as `FlatStruct` with correct 10-arg recipe
-  - [ ] `Record<string, unknown>` params classified as `JsonBlob`
-  - [ ] `string`, `number`, `boolean` params classified as `Primitive`
-  - [ ] Callback params classified as `Callback` (TS-only)
-  - [ ] Unit test: classifier produces correct wire encoding for every existing method
+  - [x] `pnpm generate:bridge` produces registry with `wireParams` for each method
+  - [x] `Vec2` params classified as `FlatStruct` with `[x, y]` recipe
+  - [x] `RevoluteJointDef` classified as `FlatStruct` with correct 10-arg recipe
+  - [x] `Record<string, unknown>` params classified as `JsonBlob`
+  - [x] `string`, `number`, `boolean` params classified as `Primitive`
+  - [x] Callback params classified as `Callback` (TS-only)
+  - [x] Unit test: classifier produces correct wire encoding for every existing method
 
   **Commit**: YES
   - Message: `feat(bridge): add type-aware wire encoding classifier to codegen`
 
 ---
 
-- [ ] 2. Generate `Window.GodotBridge` type declaration
+- [x] 2. Generate `Window.GodotBridge` type declaration
 
   **What to do**:
   Generate the `declare global { interface Window { GodotBridge?: { ... } } }` block that currently lives as 260 hand-maintained lines in `GodotBridge.web.ts` (lines 60-321).
@@ -319,17 +319,17 @@ Wave 3 (Cleanup + enforcement):
   - `godot_project/scripts/GameBridge.gd:447-462` — `_to_camel_case()` naming logic
 
   **Acceptance Criteria**:
-  - [ ] Generated `.d.ts` file contains all bridge methods with flattened primitive signatures
-  - [ ] `pnpm tsc --noEmit` passes when the generated declaration is imported
-  - [ ] Method count matches existing declaration (no methods lost or added)
-  - [ ] Naming matches Godot's `_to_camel_case()` output exactly
+  - [x] Generated `.d.ts` file contains all bridge methods with flattened primitive signatures
+  - [x] `pnpm tsc --noEmit` passes when the generated declaration is imported
+  - [x] Method count matches existing declaration (no methods lost or added)
+  - [x] Naming matches Godot's `_to_camel_case()` output exactly
 
   **Commit**: YES
   - Message: `feat(bridge): generate Window.GodotBridge type declaration`
 
 ---
 
-- [ ] 3. Generate web transport adapter
+- [x] 3. Generate web transport adapter
 
   **What to do**:
   Generate the method bodies that bridge from the high-level `GodotBridge` interface (which uses `Vec2`, `RevoluteJointDef`, etc.) to the low-level `window.GodotBridge` calls (which use flattened primitives).
@@ -368,18 +368,18 @@ Wave 3 (Cleanup + enforcement):
   - `app/lib/godot/GodotBridgeBase.ts` — `normalizeEffectsResult`, `normalizeEffectsSnapshot` helpers
 
   **Acceptance Criteria**:
-  - [ ] Generated methods compile with `pnpm tsc --noEmit`
-  - [ ] Generated method count matches hand-written method count
-  - [ ] Flattening logic matches existing hand-written behavior exactly (verified by diff)
-  - [ ] Query-routed methods correctly use `queryAsync`
-  - [ ] Effects methods correctly use `executeEffects` pattern
+  - [x] Generated methods compile with `pnpm tsc --noEmit`
+  - [x] Generated method count matches hand-written method count
+  - [x] Flattening logic matches existing hand-written behavior exactly (verified by diff)
+  - [x] Query-routed methods correctly use `queryAsync`
+  - [x] Effects methods correctly use `executeEffects` pattern
 
   **Commit**: YES
   - Message: `feat(bridge): generate web transport method implementations`
 
 ---
 
-- [ ] 4. Generate Godot dispatch manifest (`BridgeMethodMap.gd`)
+- [x] 4. Generate Godot dispatch manifest (`BridgeMethodMap.gd`)
 
   **What to do**:
   Generate a GDScript file that replaces the manual override dictionary in `GameBridge.gd _build_method_map()` (lines 242-363).
@@ -414,17 +414,17 @@ Wave 3 (Cleanup + enforcement):
   - `godot_project/scripts/bridge/generated/BridgeValidation.gd` — existing generated GDScript pattern
 
   **Acceptance Criteria**:
-  - [ ] Generated manifest covers all 131 bridge methods
-  - [ ] `validate_registration()` returns empty array when all methods registered
-  - [ ] `validate_registration()` returns specific errors for missing methods
-  - [ ] `./godot_project/run_tests.sh` passes with manifest loaded
+  - [x] Generated manifest covers all 131 bridge methods
+  - [x] `validate_registration()` returns empty array when all methods registered
+  - [x] `validate_registration()` returns specific errors for missing methods
+  - [x] `./godot_project/run_tests.sh` passes with manifest loaded
 
   **Commit**: YES
   - Message: `feat(bridge): generate Godot dispatch registration manifest`
 
 ---
 
-- [ ] 5. Make naming fully deterministic — kill structural aliases
+- [x] 5. Make naming fully deterministic — kill structural aliases
 
   **What to do**:
   The `structural_aliases` dictionary in `test_BridgeContract.gd` exists because 4 methods have names that don't mechanically derive:
@@ -468,16 +468,16 @@ Wave 3 (Cleanup + enforcement):
   - `godot_project/scripts/GameBridge.gd:447-462` — `_to_camel_case()` inverse function
 
   **Acceptance Criteria**:
-  - [ ] All 4 override names are in generator config, not in test code
-  - [ ] `camelToSnake()` unit tests cover `3d`, `2d`, `AABB`, `UI` edge cases
-  - [ ] Generator fails if an override references a method not in `types.ts`
+  - [x] All 4 override names are in generator config, not in test code
+  - [x] `camelToSnake()` unit tests cover `3d`, `2d`, `AABB`, `UI` edge cases
+  - [x] Generator fails if an override references a method not in `types.ts`
 
   **Commit**: YES
   - Message: `fix(bridge): make naming deterministic, move aliases to codegen config`
 
 ---
 
-- [ ] 6. Cut over web runtime to generated adapter
+- [x] 6. Cut over web runtime to generated adapter
 
   **What to do**:
   Replace the ~80 hand-written method implementations in `createWebGodotBridge()` (GodotBridge.web.ts lines 477-920+) with imports from the generated web transport (Task 3).
@@ -511,18 +511,18 @@ Wave 3 (Cleanup + enforcement):
   - `app/lib/godot/callback-registry.ts` — callback system (unchanged)
 
   **Acceptance Criteria**:
-  - [ ] `GodotBridge.web.ts` is under 300 lines (down from 1577)
-  - [ ] `pnpm tsc --noEmit` passes
-  - [ ] `pnpm test` passes — all existing bridge tests green
-  - [ ] No hand-written per-method `getGodotBridge()?.methodName(...)` calls remain
-  - [ ] `Window.GodotBridge` declaration imported from generated file
+  - [x] `GodotBridge.web.ts` is under 300 lines (down from 1577)
+  - [x] `pnpm tsc --noEmit` passes
+  - [x] `pnpm test` passes — all existing bridge tests green
+  - [x] No hand-written per-method `getGodotBridge()?.methodName(...)` calls remain
+  - [x] `Window.GodotBridge` declaration imported from generated file
 
   **Commit**: YES
   - Message: `refactor(bridge): replace hand-written web adapter with generated transport`
 
 ---
 
-- [ ] 7. Eliminate the override dictionary entirely
+- [x] 7. Eliminate the override dictionary entirely
 
   **What to do**:
   Delete the entire manual override dictionary in `GameBridge.gd _build_method_map()` (lines 242-367). Replace it with pure auto-discovery. This requires two sub-steps:
@@ -589,20 +589,20 @@ Wave 3 (Cleanup + enforcement):
   - `godot_project/scripts/GameBridge.gd:213-227` — `_auto_register_bridge_methods()` (keep as-is, add `self` to module list)
 
   **Acceptance Criteria**:
-  - [ ] `var overrides` dictionary is completely gone from `GameBridge.gd`
-  - [ ] `_build_method_map()` is <15 lines (auto-discover + validate)
-  - [ ] All ~30 new `_js_` wrapper methods are one-liners following existing pattern
-  - [ ] `./godot_project/run_tests.sh` passes — all contract tests green
-  - [ ] Bridge method count unchanged (131 methods)
-  - [ ] Readiness contract preserved (deferred pattern, single signal)
-  - [ ] `grep -n "var overrides" godot_project/scripts/GameBridge.gd` returns 0 results
+  - [x] `var overrides` dictionary is completely gone from `GameBridge.gd`
+  - [x] `_build_method_map()` is <15 lines (auto-discover + validate)
+  - [x] All ~30 new `_js_` wrapper methods are one-liners following existing pattern
+  - [x] `./godot_project/run_tests.sh` passes — all contract tests green
+  - [x] Bridge method count unchanged (131 methods)
+  - [x] Readiness contract preserved (deferred pattern, single signal)
+  - [x] `grep -n "var overrides" godot_project/scripts/GameBridge.gd` returns 0 results
 
   **Commit**: YES
   - Message: `refactor(bridge): eliminate override dictionary — pure auto-discovery`
 
 ---
 
-- [ ] 8. Unify effects routing to single dispatch path
+- [x] 8. Unify effects routing to single dispatch path
 
   **What to do**:
   Currently effects methods are registered in TWO places in `GameBridgeEffects.gd`:
@@ -632,17 +632,17 @@ Wave 3 (Cleanup + enforcement):
   - `app/lib/godot/GodotBridge.web.ts:464-475` — `executeEffects` routing through `queryAsync`
 
   **Acceptance Criteria**:
-  - [ ] Each effects method has exactly ONE dispatch path (not two)
-  - [ ] `./godot_project/run_tests.sh` passes
-  - [ ] `pnpm test` passes — effects tests green
-  - [ ] No `effects.*` query handler duplicates a `_method_map` entry
+  - [x] Each effects method has exactly ONE dispatch path (not two)
+  - [x] `./godot_project/run_tests.sh` passes
+  - [x] `pnpm test` passes — effects tests green
+  - [x] No `effects.*` query handler duplicates a `_method_map` entry
 
   **Commit**: YES
   - Message: `refactor(bridge): unify effects to single dispatch path`
 
 ---
 
-- [ ] 9. Zero-legacy cleanup — remove every manual seam, alias, and deprecated pattern
+- [x] 9. Zero-legacy cleanup — remove every manual seam, alias, and deprecated pattern
 
   **What to do**:
   This is the final cleanup sweep. After Tasks 6-8, the generated code is running. This task removes every trace of the old manual wiring so there's ONE way to do everything.
@@ -708,21 +708,21 @@ Wave 3 (Cleanup + enforcement):
   - `app/lib/godot/GodotBridge.native.ts:160-177` — `callEffectsBridge` to verify gone
 
   **Acceptance Criteria**:
-  - [ ] ALL seven grep commands above return 0 results
-  - [ ] Contract test is <50 lines (down from 171) — direct matching, no resolution
-  - [ ] Negative contract test still catches missing methods
-  - [ ] `./godot_project/run_tests.sh` passes
-  - [ ] `pnpm test` passes
-  - [ ] `pnpm tsc --noEmit` passes
-  - [ ] Zero commented-out legacy code in bridge files
-  - [ ] "One way to do everything" list verified with actual code paths
+  - [x] ALL seven grep commands above return 0 results
+  - [x] Contract test is <50 lines (down from 171) — direct matching, no resolution
+  - [x] Negative contract test still catches missing methods
+  - [x] `./godot_project/run_tests.sh` passes
+  - [x] `pnpm test` passes
+  - [x] `pnpm tsc --noEmit` passes
+  - [x] Zero commented-out legacy code in bridge files
+  - [x] "One way to do everything" list verified with actual code paths
 
   **Commit**: YES
   - Message: `chore(bridge): zero-legacy cleanup — one way to do everything`
 
 ---
 
-- [ ] 10. CI gates, evidence bundle, and merge
+- [x] 10. CI gates, evidence bundle, and merge
 
   **What to do**:
   - Update `.github/workflows/bridge-contract.yml` to include:
@@ -751,15 +751,15 @@ Wave 3 (Cleanup + enforcement):
   - `docs/godot-migration/bridge-initialization.md` — existing bridge docs to update
 
   **Acceptance Criteria**:
-  - [ ] CI workflow passes in worktree
-  - [ ] Evidence captured in `.sisyphus/evidence/bridge-automation/`:
+  - [x] CI workflow passes in worktree
+  - [x] Evidence captured in `.sisyphus/evidence/bridge-automation/`:
     - `baseline.txt` — pre-migration state
     - `generation-drift.txt` — generation determinism proof
     - `tsc.txt` — type compilation proof
     - `godot-contract.txt` — Godot test results
     - `legacy-seams.txt` — grep showing zero manual seams
-  - [ ] Developer workflow documented: add to types.ts → add GDScript impl → generate → done
-  - [ ] Branch merged to main (or PR created for review)
+  - [x] Developer workflow documented: add to types.ts → add GDScript impl → generate → done
+  - [x] Branch merged to main (or PR created for review)
 
   **Commit**: YES
   - Message: `ci(bridge): enforce zero-manual contract gates`
@@ -805,16 +805,257 @@ grep -rn "var overrides = {" godot_project/scripts/GameBridge.gd
 ```
 
 ### Final Checklist
-- [ ] `types.ts` is the single source — no other file needs per-method edits for bridge wiring
-- [ ] Generator produces all runtime artifacts deterministically
-- [ ] Web adapter is ~300 lines (down from 1577) with generated method dispatch
-- [ ] **Zero** override dictionaries in Godot — `_build_method_map()` is pure auto-discovery
-- [ ] **Zero** structural aliases in test code — names match directly
-- [ ] **Zero** duplicate dispatch paths — effects use one route
-- [ ] **Zero** hand-maintained type declarations — Window.GodotBridge is generated
-- [ ] **Zero** legacy seam patterns found by grep sweep (7 patterns checked)
-- [ ] **One** way to add a method: `types.ts` → GDScript `_js_` method → `pnpm generate:bridge`
-- [ ] **One** way to call Godot from TS: generated adapter → `window.GodotBridge` (web) / `native_dispatch` (native)
-- [ ] **One** way to register on Godot side: `_js_` prefix → auto-discovery
-- [ ] CI blocks any drift between `types.ts` and generated artifacts
-- [ ] All work isolated in worktree — main untouched until merge
+- [x] `types.ts` is the single source — no other file needs per-method edits for bridge wiring
+- [x] Generator produces all runtime artifacts deterministically
+- [x] Web adapter is ~300 lines (down from 1577) with generated method dispatch
+- [x] **Zero** override dictionaries in Godot — `_build_method_map()` is pure auto-discovery
+- [x] **Zero** structural aliases in test code — names match directly
+- [x] **Zero** duplicate dispatch paths — effects use one route
+- [x] **Zero** hand-maintained type declarations — Window.GodotBridge is generated
+- [x] **Zero** legacy seam patterns found by grep sweep (7 patterns checked)
+- [x] **One** way to add a method: `types.ts` → GDScript `_js_` method → `pnpm generate:bridge`
+- [x] **One** way to call Godot from TS: generated adapter → `window.GodotBridge` (web) / `native_dispatch` (native)
+- [x] **One** way to register on Godot side: `_js_` prefix → auto-discovery
+- [x] CI blocks any drift between `types.ts` and generated artifacts
+- [x] All work isolated in worktree — main untouched until merge
+
+---
+
+## Phase 2: Unified Native + Web Bridge Generation (Option B)
+
+> **Scope Extension**: The original plan explicitly excluded `GodotBridge.native.ts` ("Out of scope"). This was wrong — leaving native hand-maintained while web is generated just moves the drift problem. Phase 2 unifies both platforms under one generated output.
+
+### Architecture Decision: Option B (Shared Generated Methods + Platform Dispatch Injection)
+
+Both platforms do the **exact same argument preparation** (flatten `Vec2`, JSON.stringify blobs, handle defaults). Only the dispatch mechanism differs:
+- **Web**: `getBridge()?.camelName(...preparedArgs)` or `queryAsync("camelName", [...args])`
+- **Native**: `callGameBridge("snake_name", ...preparedArgs)` or `callGameBridgeAsync("snake_name", ...args)`
+
+**Solution**: Generate ONE shared file with a `PlatformDispatch` interface. Each platform provides its dispatch implementation.
+
+```typescript
+// generated/bridge-methods.ts (PLATFORM-AGNOSTIC)
+interface PlatformDispatch {
+  sync(snakeName: string, ...args: unknown[]): void;
+  async<T>(snakeName: string, ...args: unknown[]): Promise<T>;
+  effectsSync(snakeName: string, ...args: unknown[]): void;
+  effectsAsync<T>(method: string, params?: Record<string, unknown>, mapData?: (raw: unknown) => T): Promise<EffectsResult<T>>;
+}
+
+export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBridge> {
+  return {
+    applyImpulse(entityId, impulse) {
+      dispatch.sync("apply_impulse", entityId, impulse.x, impulse.y);
+    },
+    async stepPhysics(frames) {
+      return dispatch.async("step", frames);
+    },
+    // ... ~120 methods
+  };
+}
+```
+
+**File structure after Phase 2:**
+```
+generated/bridge-methods.ts          — ONE shared generated file (replaces web-bridge-methods.ts)
+generated/bridge-registry.json       — unchanged
+generated/window-godot-bridge.d.ts   — unchanged (web-only)
+generated/BridgeMethodMap.gd         — unchanged
+GodotBridge.web.ts                   — web dispatch impl + lifecycle (~200 lines)
+GodotBridge.native.ts                — native dispatch impl + lifecycle + overrides (~400 lines, down from 1631)
+```
+
+**Native overrides (stay hand-written in GodotBridge.native.ts):**
+- `initialize()`, `dispose()` — lifecycle (worklet setup, engine init, event polling)
+- `getEntityTransform()`, `getAllTransforms()`, `screenToWorld()` — inline worklets for direct Godot node access
+- `setEntityImage()`, `setEntityAtlasRegion()`, `preloadTextures()` — file download + cache logic
+- `getAvailableEffects()` — hardcoded return (no Godot call)
+- `setInspectMode()`, `getAllEntities()`, `setUserData()`, `getUserData()` — stubs/no-ops
+
+All other ~100+ methods become generated via `createBridgeMethods(nativeDispatch)`.
+
+### Phase 2 TODOs
+
+- [x] 11. Design and implement the `PlatformDispatch` interface and shared `createBridgeMethods()`
+
+  **What to do**:
+  1. Define the `PlatformDispatch` interface in a new shared types file or at the top of the generated output
+  2. Refactor `generateWebTransport()` in `scripts/bridge-codegen.ts` → `generateSharedTransport()` that emits platform-agnostic method bodies using `dispatch.sync()`, `dispatch.async()`, `dispatch.effectsSync()`, `dispatch.effectsAsync()`
+  3. The generated file should import types from `../types` and export `createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBridge>`
+  4. For each method, the generator decides the dispatch type based on:
+     - Return type is `void` + not effects → `dispatch.sync(snakeName, ...preparedArgs)`
+     - Return type is `Promise<T>` + not effects → `dispatch.async<T>(snakeName, ...preparedArgs)`
+     - Effects method + void → `dispatch.effectsSync(snakeName, ...preparedArgs)`
+     - Effects method + Promise → `dispatch.effectsAsync(method, params, mapData)`
+  5. Output to `generated/bridge-methods.ts` (replaces `generated/web-bridge-methods.ts`)
+
+  **Must NOT do**:
+  - Do not break existing web bridge during migration (web must keep working throughout)
+  - Do not touch `types.ts`
+
+  **Recommended Agent Profile**:
+  - **Category**: `ultrabrain`
+  - **Skills**: [`game-authoring/scripting-api-reference`, `verification-before-completion`]
+
+  **Parallelization**:
+  - **Blocked By**: None (Phase 1 complete)
+  - **Blocks**: 12, 13
+
+  **Acceptance Criteria**:
+  - [ ] `generated/bridge-methods.ts` exists with `createBridgeMethods(dispatch)` function
+  - [ ] `PlatformDispatch` interface defined with `sync`, `async`, `effectsSync`, `effectsAsync`
+  - [ ] All ~120 bridge methods generated with correct dispatch type selection
+  - [ ] `pnpm generate:bridge` produces the new file deterministically
+  - [ ] `pnpm tsc --noEmit` passes
+
+  **Commit**: YES
+  - Message: `feat(bridge): generate platform-agnostic bridge methods with dispatch injection`
+
+---
+
+- [x] 12. Migrate `GodotBridge.web.ts` to use shared `createBridgeMethods()`
+
+  **What to do**:
+  1. Create a web-specific `PlatformDispatch` implementation in `GodotBridge.web.ts`
+  2. Web `dispatch.sync(snakeName, ...args)` → converts snakeName to camelCase → `getBridge()?.[camelName](...args)`
+  3. Web `dispatch.async(snakeName, ...args)` → converts snakeName to camelCase → `queryAsync(camelName, args)`
+  4. Web `dispatch.effectsSync(snakeName, ...args)` → `getBridge()?.[camelName](...args)` (effects methods go through window.GodotBridge on web)
+  5. Web `dispatch.effectsAsync(method, params, mapData)` → `executeEffects(method, params, mapData)` (unchanged)
+  6. Replace the import of `createGeneratedMethods` from `./generated/web-bridge-methods` with `createBridgeMethods` from `./generated/bridge-methods`
+  7. Delete `generated/web-bridge-methods.ts` (replaced by `generated/bridge-methods.ts`)
+
+  **Must NOT do**:
+  - Do not change any web runtime behavior — pure refactor
+  - Do not modify lifecycle (`initialize`, `dispose`)
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: [`verification-before-completion`, `systematic-debugging`]
+
+  **Parallelization**:
+  - **Blocked By**: 11
+  - **Blocks**: 14
+  - **Can Parallelize With**: 13
+
+  **References**:
+  - `app/lib/godot/GodotBridge.web.ts` — current web bridge (imports `createGeneratedMethods`)
+  - `app/lib/godot/generated/web-bridge-methods.ts` — current web-only generated file (to be replaced)
+
+  **Acceptance Criteria**:
+  - [ ] `GodotBridge.web.ts` imports from `./generated/bridge-methods` (not `web-bridge-methods`)
+  - [ ] `generated/web-bridge-methods.ts` deleted
+  - [ ] Web dispatch creates camelCase bridge calls correctly
+  - [ ] `pnpm tsc --noEmit` passes
+  - [ ] `pnpm test` passes — zero behavior change
+
+  **Commit**: YES
+  - Message: `refactor(bridge): migrate web bridge to shared generated methods`
+
+---
+
+- [x] 13. Migrate `GodotBridge.native.ts` to use shared `createBridgeMethods()`
+
+  **What to do**:
+  1. Create a native-specific `PlatformDispatch` implementation:
+     - `dispatch.sync(snakeName, ...args)` → `callGameBridge(snakeName, ...args)`
+     - `dispatch.async<T>(snakeName, ...args)` → `callGameBridgeAsync(snakeName, ...args)`
+     - `dispatch.effectsSync(snakeName, ...args)` → `callEffectsBridge(snakeName, ...args)`
+     - `dispatch.effectsAsync(method, params, mapData)` → existing `executeEffects` pattern
+  2. Replace the ~100 hand-written method implementations with `...createBridgeMethods(nativeDispatch)`
+  3. Keep hand-written overrides AFTER the spread (they override generated methods):
+     - `initialize()`, `dispose()` — lifecycle with worklet setup and event polling
+     - `getEntityTransform()`, `getAllTransforms()` — direct worklet node access for performance
+     - `screenToWorld()` — inline worklet
+     - `setEntityImage()`, `setEntityAtlasRegion()`, `preloadTextures()` — file download logic
+     - `getAvailableEffects()` — hardcoded return
+     - `setInspectMode()`, `getAllEntities()`, `setUserData()`, `getUserData()` — stubs
+  4. File should drop from ~1631 lines to ~400 lines
+
+  **Must NOT do**:
+  - Do not change the worklet patterns or JSI interaction
+  - Do not remove `callGameBridge`, `callGameBridgeAsync`, `callEffectsBridge` helpers — they're still needed for overrides
+  - Do not change the event polling system
+
+  **Recommended Agent Profile**:
+  - **Category**: `ultrabrain`
+  - **Skills**: [`verification-before-completion`, `systematic-debugging`]
+
+  **Parallelization**:
+  - **Blocked By**: 11
+  - **Blocks**: 14
+  - **Can Parallelize With**: 12
+
+  **References**:
+  - `app/lib/godot/GodotBridge.native.ts` — current 1631-line native bridge
+  - `app/lib/godot/GodotBridge.web.ts` — reference for how web already consumes generated methods
+
+  **Acceptance Criteria**:
+  - [ ] `GodotBridge.native.ts` imports from `./generated/bridge-methods`
+  - [ ] File is under 500 lines (down from 1631)
+  - [ ] All ~100 simple dispatch methods are generated (not hand-written)
+  - [ ] ~18 native-specific overrides remain hand-written
+  - [ ] `pnpm tsc --noEmit` passes
+  - [ ] `pnpm test` passes
+
+  **Commit**: YES
+  - Message: `refactor(bridge): migrate native bridge to shared generated methods`
+
+---
+
+- [x] 14. Final verification and cleanup
+
+  **What to do**:
+  1. Run full verification suite:
+     - `pnpm generate:bridge` — deterministic output
+     - `pnpm tsc --noEmit` — zero type errors
+     - `pnpm test` — all tests pass
+  2. Verify the "one way to add a method" workflow works for BOTH platforms:
+     - Add to `types.ts` → add GDScript `_js_` method → `pnpm generate:bridge` → done
+     - Verify the generated `bridge-methods.ts` has the new method
+     - Verify web AND native get it automatically via `createBridgeMethods(dispatch)`
+  3. Update legacy seam grep to include native patterns:
+     - `grep -rn "callGameBridge(" GodotBridge.native.ts` → only in dispatch helpers and overrides, NOT in generated method bodies
+  4. Capture evidence in `.sisyphus/evidence/bridge-automation/`
+  5. Update `.github/workflows/bridge-contract.yml` if needed
+
+  **Must NOT do**:
+  - Do not merge yet — let user decide merge strategy
+
+  **Recommended Agent Profile**:
+  - **Category**: `quick`
+  - **Skills**: [`verification-before-completion`, `git-master`]
+
+  **Parallelization**:
+  - **Blocked By**: 12, 13
+  - **Blocks**: None
+
+  **Acceptance Criteria**:
+  - [ ] ONE generated file serves both platforms
+  - [ ] Web bridge works identically (zero behavior change)
+  - [ ] Native bridge works identically (zero behavior change)
+  - [ ] `GodotBridge.native.ts` under 500 lines
+  - [ ] `GodotBridge.web.ts` unchanged or smaller
+  - [ ] Evidence captured
+
+  **Commit**: YES
+  - Message: `chore(bridge): verify unified bridge generation for web + native`
+
+---
+
+### Phase 2 Dependency Matrix
+
+| Task | Depends On | Blocks | Can Parallelize With |
+|------|------------|--------|---------------------|
+| 11 | Phase 1 complete | 12, 13 | None |
+| 12 | 11 | 14 | 13 |
+| 13 | 11 | 14 | 12 |
+| 14 | 12, 13 | None | None |
+
+### Phase 2 Commit Strategy
+
+| After Task | Message | Verification |
+|------------|---------|--------------|
+| 11 | `feat(bridge): generate platform-agnostic bridge methods with dispatch injection` | `pnpm generate:bridge && pnpm tsc --noEmit` |
+| 12 | `refactor(bridge): migrate web bridge to shared generated methods` | full test suite |
+| 13 | `refactor(bridge): migrate native bridge to shared generated methods` | full test suite |
+| 14 | `chore(bridge): verify unified bridge generation for web + native` | evidence bundle |

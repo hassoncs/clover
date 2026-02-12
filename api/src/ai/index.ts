@@ -1,59 +1,56 @@
 export {
-  classifyPrompt,
-  getClassificationConfidence,
-  type GameIntent,
-} from '@/ai/game/classifier'
+	type AssetGenerationRequest,
+	type AssetGenerationResult,
+	AssetService,
+	type EntityType,
+} from "@/ai/assets";
 
 export {
-  generateGame,
-  refineGame,
-  getAIConfigFromEnv,
-  type AIConfig,
-  type AIProvider,
-  type GenerationOptions,
-  type GenerationResult,
-  type RefinementResult,
-} from '@/ai/game/generator'
-
-export { GameDefinitionSchema } from '@/ai/game/schemas'
+	classifyPrompt,
+	type GameIntent,
+	getClassificationConfidence,
+} from "@/ai/game/classifier";
 
 export {
-  validateGameDefinition,
-  getValidationSummary,
-  type GameDefinitionValidationResult,
-  type ValidationError,
-  type ValidationWarning,
-} from '@/ai/game/validator'
+	type AIConfig,
+	type AIProvider,
+	type GenerationOptions,
+	type GenerationResult,
+	generateGame,
+	getAIConfigFromEnv,
+	type RefinementResult,
+	refineGame,
+} from "@/ai/game/generator";
+
+export { GameDefinitionSchema } from "@/ai/game/schemas";
 
 export {
-  ScenarioClient,
-  createScenarioClient,
-} from '@/ai/providers/scenario/client'
+	type GameDefinitionValidationResult,
+	getValidationSummary,
+	type ValidationError,
+	type ValidationWarning,
+	validateGameDefinition,
+} from "@/ai/game/validator";
+export { generateTitle } from "@/ai/generate-title";
 
 export {
-  ComfyUIClient,
-  createComfyUIClient,
-} from '@/ai/providers/comfyui/client'
-
-export {
-  AssetService,
-  type EntityType,
-  type AssetGenerationRequest,
-  type AssetGenerationResult,
-} from '@/ai/assets'
-
+	ComfyUIClient,
+	createComfyUIClient,
+} from "@/ai/providers/comfyui/client";
 export type {
-  ScenarioConfig,
-  GenerationParams,
-  GenerationResult as ScenarioGenerationResult,
-} from '@/ai/providers/scenario/types'
-
+	ComfyGenerateLayeredParams,
+	ComfyImg2ImgParams,
+	ComfyLayeredResult,
+	ComfyTxt2ImgParams,
+	ComfyUIConfig,
+	ParallaxLayerConfig,
+} from "@/ai/providers/comfyui/types";
+export {
+	createScenarioClient,
+	ScenarioClient,
+} from "@/ai/providers/scenario/client";
 export type {
-  ComfyUIConfig,
-  ComfyTxt2ImgParams,
-  ComfyImg2ImgParams,
-  ComfyGenerateLayeredParams,
-  ParallaxLayerConfig,
-  ComfyLayeredResult,
-} from '@/ai/providers/comfyui/types'
-
+	GenerationParams,
+	GenerationResult as ScenarioGenerationResult,
+	ScenarioConfig,
+} from "@/ai/providers/scenario/types";
