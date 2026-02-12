@@ -1,0 +1,52 @@
+{
+	"id": "simple-economy",
+	"description": "Basic source -> pool -> drain flow. Tests linear resource generation and consumption.",
+	"resourceTypes": ["gold"],
+	"nodes": [
+		{
+			"id": "gold-mine",
+			"type": "source",
+			"label": "Gold Mine",
+			"resourceType": "gold"
+		},
+		{
+			"id": "treasury",
+			"type": "pool",
+			"label": "Treasury",
+			"resourceType": "gold",
+			"capacity": 100,
+			"initialValue": 0
+		},
+		{
+			"id": "shop",
+			"type": "drain",
+			"label": "Shop",
+			"resourceType": "gold"
+		}
+	],
+	"edges": [
+		{
+			"id": "mine-to-treasury",
+			"type": "resource",
+			"from": "gold-mine",
+			"to": "treasury",
+			"formula": "5"
+		},
+		{
+			"id": "treasury-to-shop",
+			"type": "resource",
+			"from": "treasury",
+			"to": "shop",
+			"formula": "2"
+		}
+	],
+	"expectedBehavior": {
+		"seed": 42,
+		"ticks": 20,
+		"assertions": {
+			"treasuryCapRespected": true,
+			"shopReceivesResources": true,
+			"deterministic": true
+		}
+	}
+}

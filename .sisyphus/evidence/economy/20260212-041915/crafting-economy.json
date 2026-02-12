@@ -1,0 +1,121 @@
+{
+	"id": "crafting-economy",
+	"description": "Multi-resource economy with converters. Tests ore->ingot and wood->plank transformation pipelines.",
+	"resourceTypes": ["ore", "wood", "ingot", "plank"],
+	"nodes": [
+		{
+			"id": "ore-vein",
+			"type": "source",
+			"label": "Ore Vein",
+			"resourceType": "ore"
+		},
+		{
+			"id": "wood-grove",
+			"type": "source",
+			"label": "Wood Grove",
+			"resourceType": "wood"
+		},
+		{
+			"id": "ore-stock",
+			"type": "pool",
+			"label": "Ore Stock",
+			"resourceType": "ore",
+			"capacity": 50,
+			"initialValue": 0
+		},
+		{
+			"id": "wood-stock",
+			"type": "pool",
+			"label": "Wood Stock",
+			"resourceType": "wood",
+			"capacity": 50,
+			"initialValue": 0
+		},
+		{
+			"id": "forge",
+			"type": "converter",
+			"label": "Forge",
+			"inputResourceType": "ore",
+			"outputResourceType": "ingot",
+			"rate": 2
+		},
+		{
+			"id": "ingot-stock",
+			"type": "pool",
+			"label": "Ingot Stock",
+			"resourceType": "ingot",
+			"capacity": 30,
+			"initialValue": 0
+		},
+		{
+			"id": "workshop",
+			"type": "converter",
+			"label": "Workshop",
+			"inputResourceType": "wood",
+			"outputResourceType": "plank",
+			"rate": 3
+		},
+		{
+			"id": "plank-stock",
+			"type": "pool",
+			"label": "Plank Stock",
+			"resourceType": "plank",
+			"capacity": 40,
+			"initialValue": 0
+		}
+	],
+	"edges": [
+		{
+			"id": "ore-gather",
+			"type": "resource",
+			"from": "ore-vein",
+			"to": "ore-stock",
+			"formula": "3"
+		},
+		{
+			"id": "wood-gather",
+			"type": "resource",
+			"from": "wood-grove",
+			"to": "wood-stock",
+			"formula": "4"
+		},
+		{
+			"id": "ore-to-forge",
+			"type": "resource",
+			"from": "ore-stock",
+			"to": "forge",
+			"formula": "2"
+		},
+		{
+			"id": "forge-to-ingot",
+			"type": "resource",
+			"from": "forge",
+			"to": "ingot-stock",
+			"formula": "1"
+		},
+		{
+			"id": "wood-to-workshop",
+			"type": "resource",
+			"from": "wood-stock",
+			"to": "workshop",
+			"formula": "3"
+		},
+		{
+			"id": "workshop-to-plank",
+			"type": "resource",
+			"from": "workshop",
+			"to": "plank-stock",
+			"formula": "1"
+		}
+	],
+	"expectedBehavior": {
+		"seed": 777,
+		"ticks": 30,
+		"assertions": {
+			"ingotsProduced": true,
+			"planksProduced": true,
+			"allCapacitiesRespected": true,
+			"deterministic": true
+		}
+	}
+}
