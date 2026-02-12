@@ -6,14 +6,14 @@ Let your AI agent build its own dev tools — and use them immediately.
 
 An MCP server where the agent can create, edit, and fix operations (tools) live, without anyone restarting anything. Write a TypeScript file, and it's callable on the next request.
 
-**The core idea**: Instead of exposing 46 MCP tools (burning thousands of context tokens), expose 2 — `list_operations` and `call_operation` — and let the agent discover what it needs on demand. Operations hot-reload from TypeScript files via esbuild. The agent can write new ones mid-session.
+**The core idea**: Instead of exposing 46 MCP tools (burning thousands of context tokens), expose 2 — `list_ops` and `call_op` — and let the agent discover what it needs on demand. Operations hot-reload from TypeScript files via esbuild. The agent can write new ones mid-session.
 
 ## Why
 
 - **Context efficiency**: 2 MCP tools instead of 46. ~200 tokens instead of ~4,600.
 - **Hot reload**: Edit an operation file → next call picks it up. No restart.
 - **Agent-authored tooling**: The agent writes a `.ts` file → immediately available as an operation.
-- **Error resilience**: One broken operation doesn't take down the rest. Compilation errors surface in `list_operations`.
+- **Error resilience**: One broken operation doesn't take down the rest. Compilation errors surface in `list_ops`.
 
 ## Install
 
@@ -97,7 +97,7 @@ import type { Operation } from "./_types";
 
 const operation: Operation = {
   name: "operation_name",        // unique identifier
-  description: "What it does",   // shown to LLM via list_operations
+  description: "What it does",   // shown to LLM via list_ops
   parameters: {
     arg1: { type: "string", description: "...", required: true },
   },
@@ -117,7 +117,7 @@ export default operation;
 2. Bundles each with esbuild into CJS, loads via `new Function()`
 3. Caches in memory — subsequent calls skip bundling
 4. `fs.watch` invalidates cache on file changes — next call re-bundles
-5. Broken operations don't block others — errors surface in `list_operations`
+5. Broken operations don't block others — errors surface in `list_ops`
 
 ## Errors
 
@@ -133,10 +133,10 @@ Compilation errors, runtime errors, and missing operations all return structured
 
 You have 2 tools:
 
-1. **`list_operations`** — no args. Returns all operations with schemas + any compilation errors.
-2. **`call_operation`** — `{ "operation": "name", "args": { ... } }`. Runs it, returns result.
+1. **`list_ops`** — no args. Returns all operations with schemas + any compilation errors.
+2. **`call_op`** — `{ "operation": "name", "args": { ... } }`. Runs it, returns result.
 
-Workflow: `list_operations` → find what you need → `call_operation`. Need a tool that doesn't exist? Create a `.ts` file in the operations directory — it's available immediately on next call.
+Workflow: `list_ops` → find what you need → `call_op`. Need a tool that doesn't exist? Create a `.ts` file in the operations directory — it's available immediately on next call.
 
 ## Security
 

@@ -244,7 +244,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 	const tools = [
 		{
-			name: "list_operations",
+			name: "list_ops",
 			description:
 				"List all available operations with their names, descriptions, and parameter schemas. Also reports any operations that failed to compile.",
 			inputSchema: {
@@ -255,15 +255,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 			},
 		},
 		{
-			name: "call_operation",
+			name: "call_op",
 			description:
-				"Execute a named operation. Use list_operations to discover available operations and their parameter schemas.",
+				"Execute a named operation. Use list_ops to discover available operations and their parameter schemas.",
 			inputSchema: {
 				type: "object" as const,
 				properties: {
 					operation: {
 						type: "string",
-						description: "Operation name (from list_operations)",
+						description: "Operation name (from list_ops)",
 					},
 					args: {
 						type: "object",
@@ -284,7 +284,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 	const toolName = request.params.name;
 	const toolArgs = (request.params.arguments ?? {}) as Record<string, unknown>;
 
-	if (toolName === "list_operations") {
+	if (toolName === "list_ops") {
 		await ensureCache();
 
 		const operations = Array.from(operationCache.values()).map((op) => op.meta);
@@ -303,7 +303,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		};
 	}
 
-	if (toolName === "call_operation") {
+	if (toolName === "call_op") {
 		const operationName = toolArgs.operation as string;
 		const args = (toolArgs.args as Record<string, unknown>) ?? {};
 
