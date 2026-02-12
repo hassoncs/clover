@@ -377,7 +377,7 @@ async function build(): Promise<void> {
 				continue;
 			}
 
-			const packIds = entry.definition.assetSystem?.packIds ?? [];
+			const packIds = (entry.definition.assetSystem as any)?.packIds ?? [];
 			const packs = discoverPacks(packIds);
 
 			const definitionJson = JSON.stringify(entry.definition, null, 2);
