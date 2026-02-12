@@ -84,6 +84,10 @@ func _process(_delta: float) -> void:
 var _method_map: Dictionary = {}
 
 func _build_effects_method_map() -> void:
+	# Only methods dispatched via direct JS bridge calls (getBridge()?.xxx()).
+	# Graph lifecycle methods (apply_plan, start_graph, etc.) are routed
+	# exclusively through QuerySystem as effects.* handlers — see
+	# _register_query_handlers().
 	_method_map = {
 		"apply_sprite_effect": _js_apply_sprite_effect,
 		"update_sprite_effect_param": _js_update_sprite_effect_param,
@@ -98,23 +102,12 @@ func _build_effects_method_map() -> void:
 		"create_dynamic_shader": _js_create_dynamic_shader,
 		"apply_dynamic_shader_to_entity": _js_apply_dynamic_shader,
 		"apply_dynamic_post_shader": _js_apply_dynamic_post_shader,
-		"apply_plan": _js_apply_plan,
-		"clear_plan": _js_clear_plan,
-		"update_params": _js_update_params,
-		"start_graph": _js_start_graph,
-		"pause_graph": _js_pause_graph,
-		"resume_graph": _js_resume_graph,
-		"stop_graph": _js_stop_graph,
-		"reset_graph": _js_reset_graph,
 		"spawn_particle_preset": _js_spawn_particle_preset,
 		"get_available_effects": _js_get_available_effects,
-		"get_snapshot": _js_get_snapshot,
-		"restore_snapshot": _js_restore_snapshot,
 		"draw_to_active_buffer": _js_draw_to_active_buffer,
 		"set_external_input": _js_set_external_input,
 		"set_screen_input": _js_set_screen_input,
 		"hot_swap_shader": _js_hot_swap_shader,
-
 	}
 
 func _register_methods_with_game_bridge() -> void:
@@ -191,36 +184,9 @@ func _register_query_handlers() -> void:
 		return {"success": false, "error": "Missing snapshot argument"}
 	)
 
-	qs.register_handler("effects.drawToActiveBuffer", func(args):
-		if args.size() > 0 and args[0] is Dictionary:
-			var entity_id = str(args[0].get("entityId", ""))
-			var commands = args[0].get("commands", "")
-			return draw_to_active_buffer(entity_id, commands)
-		return {"success": false, "error": "Missing entityId or commands"}
-	)
-
-	qs.register_handler("effects.setExternalInput", func(args):
-		if args.size() > 0 and args[0] is Dictionary:
-			var name = str(args[0].get("name", ""))
-			var image_data = str(args[0].get("imageData", ""))
-			return set_external_input(name, image_data)
-		return {"success": false, "error": "Missing name or imageData"}
-	)
-
-	qs.register_handler("effects.setScreenInput", func(args):
-		if args.size() > 0 and args[0] is Dictionary:
-			var enable = bool(args[0].get("enable", false))
-			return set_screen_input(enable)
-		return {"success": true}
-	)
-
-	qs.register_handler("effects.hotSwapShader", func(args):
-		if args.size() > 0 and args[0] is Dictionary:
-			var pass_id = str(args[0].get("passId", ""))
-			var glsl_code = str(args[0].get("glslCode", ""))
-			return hot_swap_shader(pass_id, glsl_code)
-		return {"success": false, "error": "Missing passId or glslCode"}
-	)
+	# NOTE: drawToActiveBuffer, setExternalInput, setScreenInput, and
+	# hotSwapShader are dispatched via direct _method_map calls (getBridge()?.xxx())
+	# and are NOT registered here to avoid duplicate routing.
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	if not _method_map.has(method_name):
@@ -331,49 +297,6 @@ func _js_apply_dynamic_post_shader(args: Array) -> void:
 	var shader_code = str(args[0])
 	var params = _parse_params(args[1] if args.size() > 1 else {})
 	apply_dynamic_post_shader(shader_code, params)
-
-func _js_apply_plan(args: Array) -> void:
-	if args.size() < 1:
-		_set_last_result({"success": false, "error": "Missing plan argument"})
-		return
-	var result = apply_plan(args[0])
-	_set_last_result(result)
-
-func _js_clear_plan(args: Array) -> void:
-	clear_plan()
-
-func _js_update_params(args: Array) -> void:
-	if args.size() < 2:
-		_set_last_result({"success": false, "error": "Missing pass_id or params"})
-		return
-	var result = update_params(str(args[0]), _parse_params(args[1]))
-	_set_last_result(result)
-
-func _js_start_graph(args: Array) -> void:
-	start_graph()
-
-func _js_pause_graph(args: Array) -> void:
-	pause_graph()
-
-func _js_resume_graph(args: Array) -> void:
-	resume_graph()
-
-func _js_stop_graph(args: Array) -> void:
-	stop_graph()
-
-func _js_reset_graph(args: Array) -> void:
-	reset_graph()
-
-func _js_get_snapshot(args: Array) -> void:
-	var result = get_snapshot()
-	_set_last_result(result)
-
-func _js_restore_snapshot(args: Array) -> void:
-	if args.size() < 1:
-		_set_last_result({"success": false, "error": "Missing snapshot argument"})
-		return
-	var result = restore_snapshot(_parse_params(args[0]))
-	_set_last_result(result)
 
 func _js_draw_to_active_buffer(args: Array) -> void:
 	if args.size() < 2:

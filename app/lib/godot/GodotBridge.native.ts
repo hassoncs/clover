@@ -1,26 +1,17 @@
-import type { GameDefinition, PropertySyncPayload } from "@slopcade/shared";
+import type { PropertySyncPayload } from "@slopcade/shared";
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 import type {
-	BodyDef,
-	ColliderConfig,
 	CollisionEvent,
 	ContactInfo,
 	DistanceJointDef,
-	DrawCommand,
-	DynamicShaderResult,
-	EffectsPipelineSnapshot,
-	EffectsResult,
 	EntitySpawnedEvent,
 	EntityTransform,
 	GodotBridge,
 	MouseJointDef,
-	NormalizedDrawCommand,
 	PrismaticJointDef,
-	RaycastHit,
 	RevoluteJointDef,
 	SensorEvent,
-	SpawnEntityRequest,
 	Vec2,
 	WeldJointDef,
 } from "./types";
@@ -31,11 +22,11 @@ import {
 	createCallbackArrays,
 	createCallbackMethods,
 } from "./callback-registry";
+import { normalizeEffectsResult } from "./GodotBridgeBase";
 import {
-	createEffectsSnapshotPayload,
-	normalizeEffectsResult,
-	normalizeEffectsSnapshot,
-} from "./GodotBridgeBase";
+	createBridgeMethods,
+	type PlatformDispatch,
+} from "./generated/bridge-methods";
 
 class NativeBridgeCore extends BridgeCore {
 	protected send(msg: BridgeMessage): void {
@@ -379,7 +370,7 @@ export function createNativeGodotBridge(): GodotBridge {
 		method: string,
 		params?: Record<string, unknown>,
 		mapData?: (rawData: unknown) => T,
-	): Promise<EffectsResult<T>> => {
+	): Promise<import("./types").EffectsResult<T>> => {
 		try {
 			const response = await callGameBridgeAsync(
 				"callRpc",
@@ -398,7 +389,29 @@ export function createNativeGodotBridge(): GodotBridge {
 		}
 	};
 
+	const nativeDispatch: PlatformDispatch = {
+		sync(snakeName: string, ...args: unknown[]) {
+			callGameBridge(snakeName, ...args);
+		},
+		async async<T>(snakeName: string, ...args: unknown[]): Promise<T> {
+			const actualArgs = Array.isArray(args[0]) ? (args[0] as unknown[]) : args;
+			return callGameBridgeAsync(snakeName, ...actualArgs);
+		},
+		effectsSync(snakeName: string, ...args: unknown[]) {
+			callEffectsBridge(snakeName, ...args);
+		},
+		effectsAsync: executeEffects,
+	};
+
+	const generatedMethods = createBridgeMethods(nativeDispatch);
+
 	const bridge: GodotBridge = {
+		...generatedMethods,
+		...createCallbackMethods(cbs),
+
+		// === NATIVE-SPECIFIC OVERRIDES ===
+
+		// Lifecycle
 		async initialize() {
 			const { RTNGodot, runOnGodotThread } = await getGodotModule();
 
@@ -558,172 +571,7 @@ export function createNativeGodotBridge(): GodotBridge {
 			});
 		},
 
-		async loadGame(definition: GameDefinition) {
-			const jsonString = JSON.stringify(definition);
-			callGameBridge("load_game_json", jsonString);
-		},
-
-		clearGame() {
-			callGameBridge("clear_game");
-		},
-
-		setupWorld(world, background) {
-			callGameBridge(
-				"setup_world",
-				JSON.stringify(world),
-				JSON.stringify(background ?? {}),
-			);
-		},
-
-		registerPrefabs(prefabs) {
-			callGameBridge("register_prefabs", JSON.stringify(prefabs));
-		},
-
-		loadEntities(entities) {
-			callGameBridge("load_entities", JSON.stringify(entities));
-		},
-
-		clearEntities() {
-			callGameBridge("clear_entities");
-		},
-
-		loadRules(rules) {
-			this.callRpc("load_rules", { rules });
-		},
-
-		async loadScript(source) {
-			try {
-				await this.callRpc("load_script", { source });
-				return { ok: true };
-			} catch (error) {
-				return { ok: false, error: String(error) };
-			}
-		},
-
-		pausePhysics() {
-			callGameBridge("pause_physics");
-		},
-		resumePhysics() {
-			callGameBridge("resume_physics");
-		},
-		setInspectMode(_enabled: boolean) {
-			// Not implemented for native yet - only web needs this
-		},
-
-		async stepPhysics(
-			frames: number,
-		): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
-			const response = await callGameBridgeAsync(
-				"callRpc",
-				JSON.stringify({
-					method: "time.step",
-					params: { frames },
-				}),
-			);
-			const result = JSON.parse(response);
-			return {
-				ok: result.ok ?? true,
-				framesAdvanced: result.framesAdvanced ?? frames,
-				endFrame: result.endFrame ?? 0,
-			};
-		},
-
-		async callRpc(method: string, params?: unknown): Promise<any> {
-			const response = await callGameBridgeAsync(
-				"callRpc",
-				JSON.stringify({ method, params }),
-			);
-			const parsed = JSON.parse(response);
-			if (parsed.error) {
-				throw new Error(parsed.error.message);
-			}
-			return parsed.result ?? parsed;
-		},
-
-		async applyGraph(plan) {
-			return executeEffects("effects.applyGraph", { plan });
-		},
-
-		async clearGraph() {
-			return executeEffects("effects.clearGraph");
-		},
-
-		async updateParams(passId: string, params: Record<string, unknown>) {
-			return executeEffects("effects.updateParams", { passId, params });
-		},
-
-		async start() {
-			return executeEffects("effects.start");
-		},
-
-		async pause() {
-			return executeEffects("effects.pause");
-		},
-
-		async resume() {
-			return executeEffects("effects.resume");
-		},
-
-		async stop() {
-			return executeEffects("effects.stop");
-		},
-
-		async reset() {
-			return executeEffects("effects.reset");
-		},
-
-		async snapshot() {
-			return executeEffects<EffectsPipelineSnapshot>(
-				"effects.snapshot",
-				undefined,
-				normalizeEffectsSnapshot,
-			);
-		},
-
-		async restore(snapshot: EffectsPipelineSnapshot) {
-			return executeEffects("effects.restore", {
-				snapshot: createEffectsSnapshotPayload(snapshot),
-			});
-		},
-
-		spawnEntity(request: SpawnEntityRequest): void {
-			const velocityJson = request.velocity
-				? JSON.stringify(request.velocity)
-				: "";
-			callGameBridge(
-				"spawn_entity_with_id",
-				request.prefabId,
-				request.position.x,
-				request.position.y,
-				request.entityId,
-				velocityJson,
-			);
-		},
-
-		async instantiateFromScene(
-			scenePath: string,
-			entityId: string,
-			position: Vec2,
-			properties?: Record<string, unknown>,
-		): Promise<{ entityId: string }> {
-			const result = await callGameBridgeAsync(
-				"instantiate_scene",
-				scenePath,
-				entityId,
-				position.x,
-				position.y,
-				JSON.stringify(properties ?? {}),
-			);
-			if (result && typeof result === "object" && "entityId" in result) {
-				return result as { entityId: string };
-			}
-			return { entityId };
-		},
-
-		destroyEntity(entityId: string) {
-			callGameBridge("destroy_entity", entityId);
-		},
-
+		// Inline worklets (direct Godot node access for performance)
 		async getEntityTransform(
 			entityId: string,
 		): Promise<EntityTransform | null> {
@@ -787,6 +635,34 @@ export function createNativeGodotBridge(): GodotBridge {
 			});
 		},
 
+		async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
+			const { RTNGodot, runOnGodotThread } = await getGodotModule();
+
+			return runOnGodotThread(() => {
+				"worklet";
+				try {
+					const Godot = RTNGodot.API();
+					const gameBridge = Godot.Engine.get_main_loop()
+						.get_root()
+						.get_node("GameBridge");
+					if (gameBridge) {
+						const argsJson = JSON.stringify([screenX, screenY]);
+						const result = gameBridge.native_dispatch(
+							"screen_to_world",
+							argsJson,
+						);
+						if (result && typeof result === "object") {
+							return result as Vec2;
+						}
+					}
+				} catch (e) {
+					console.warn("[GodotBridge] Error in screenToWorld:", e);
+				}
+				return { x: 0, y: 0 };
+			});
+		},
+
+		// Custom response handling
 		async getAllProperties(): Promise<PropertySyncPayload> {
 			const result = await callGameBridgeAsync("get_all_properties");
 			if (result && typeof result === "object") {
@@ -795,66 +671,206 @@ export function createNativeGodotBridge(): GodotBridge {
 			return { frameId: 0, timestamp: 0, entities: {} };
 		},
 
-		setTransform(entityId: string, x: number, y: number, angle: number) {
-			callGameBridge("set_transform", entityId, x, y, angle);
-		},
-
-		setPosition(entityId: string, x: number, y: number) {
-			callGameBridge("set_position", entityId, x, y);
-		},
-
-		setRotation(entityId: string, angle: number) {
-			callGameBridge("set_rotation", entityId, angle);
-		},
-
-		setScale(entityId: string, scaleX: number, scaleY: number) {
-			callGameBridge("set_scale", entityId, scaleX, scaleY);
-		},
-
-		setOpacity(entityId: string, opacity: number) {
-			callGameBridge("set_opacity", entityId, opacity);
-		},
-
-		setVisible(entityId: string, visible: boolean) {
-			callGameBridge("set_visible", entityId, visible);
-		},
-
-		async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
-			const result = await callGameBridgeAsync("get_linear_velocity", entityId);
-			if (result && typeof result === "object" && "x" in result) {
-				return result as Vec2;
-			}
-			return null;
-		},
-
-		setLinearVelocity(entityId: string, velocity: Vec2) {
-			callGameBridge("set_linear_velocity", entityId, velocity.x, velocity.y);
-		},
-
-		async getAngularVelocity(entityId: string): Promise<number | null> {
-			const result = await callGameBridgeAsync(
-				"get_angular_velocity",
-				entityId,
+		// File downloads (native-specific)
+		async setEntityImage(
+			entityId: string,
+			url: string,
+			width: number,
+			height: number,
+		) {
+			console.log(
+				`[GodotBridge.native] setEntityImage called for ${entityId} with URL: ${url}`,
 			);
-			return typeof result === "number" ? result : null;
+			try {
+				const filename = `texture_${entityId}_${Date.now()}.png`;
+				const localPath = `${FileSystem.cacheDirectory}${filename}`;
+
+				console.log(
+					`[GodotBridge.native] Downloading from ${url} to ${localPath}`,
+				);
+				const downloadResult = await FileSystem.downloadAsync(url, localPath);
+				console.log(
+					`[GodotBridge.native] Download result status: ${downloadResult.status}`,
+				);
+
+				if (downloadResult.status === 200) {
+					const godotPath = localPath.replace(/^file:\/\//, "");
+					console.log(
+						`[GodotBridge.native] Calling set_entity_image_from_file with path: ${godotPath}`,
+					);
+					callGameBridge(
+						"set_entity_image_from_file",
+						entityId,
+						godotPath,
+						width,
+						height,
+					);
+				} else {
+					console.error(
+						`[GodotBridge.native] Download failed with status: ${downloadResult.status}`,
+					);
+				}
+			} catch (e) {
+				console.error(
+					`[GodotBridge.native] setEntityImage error for ${entityId}:`,
+					e,
+				);
+			}
 		},
 
-		setAngularVelocity(entityId: string, velocity: number) {
-			callGameBridge("set_angular_velocity", entityId, velocity);
+		async setEntityAtlasRegion(
+			entityId: string,
+			atlasUrl: string,
+			x: number,
+			y: number,
+			w: number,
+			h: number,
+			width: number,
+			height: number,
+		) {
+			try {
+				const urlHash = atlasUrl.replace(/[^a-zA-Z0-9]/g, "_").slice(-50);
+				const filename = `atlas_${urlHash}.png`;
+				const localPath = `${FileSystem.cacheDirectory}${filename}`;
+
+				const fileInfo = await FileSystem.getInfoAsync(localPath);
+
+				let godotPath: string;
+				if (fileInfo.exists) {
+					godotPath = localPath.replace(/^file:\/\//, "");
+				} else {
+					const downloadResult = await FileSystem.downloadAsync(
+						atlasUrl,
+						localPath,
+					);
+
+					if (downloadResult.status !== 200) {
+						return;
+					}
+					godotPath = localPath.replace(/^file:\/\//, "");
+				}
+
+				callGameBridge(
+					"set_entity_atlas_region_from_file",
+					entityId,
+					godotPath,
+					x,
+					y,
+					w,
+					h,
+					width,
+					height,
+				);
+			} catch (e) {
+				console.error(`[GodotBridge.native] setEntityAtlasRegion error:`, e);
+			}
 		},
 
-		applyImpulse(entityId: string, impulse: Vec2) {
-			callGameBridge("apply_impulse", entityId, impulse.x, impulse.y);
+		async preloadTextures(
+			urls: string[],
+			onProgress?: (percent: number, completed: number, failed: number) => void,
+		): Promise<{ completed: number; failed: number }> {
+			if (urls.length === 0) {
+				onProgress?.(100, 0, 0);
+				return { completed: 0, failed: 0 };
+			}
+
+			let completed = 0;
+			let failed = 0;
+			const total = urls.length;
+
+			for (const url of urls) {
+				try {
+					const urlHash = url.replace(/[^a-zA-Z0-9]/g, "_").slice(-50);
+					const filename = `preload_${urlHash}.png`;
+					const localPath = `${FileSystem.cacheDirectory}${filename}`;
+
+					const fileInfo = await FileSystem.getInfoAsync(localPath);
+					if (!fileInfo.exists) {
+						const downloadResult = await FileSystem.downloadAsync(
+							url,
+							localPath,
+						);
+						if (downloadResult.status !== 200) {
+							failed++;
+						} else {
+							completed++;
+						}
+					} else {
+						completed++;
+					}
+				} catch {
+					failed++;
+				}
+
+				const percent = Math.round(((completed + failed) / total) * 100);
+				onProgress?.(percent, completed, failed);
+			}
+
+			return { completed, failed };
 		},
 
-		applyForce(entityId: string, force: Vec2) {
-			callGameBridge("apply_force", entityId, force.x, force.y);
+		// Hardcoded/stubs
+		async getAvailableEffects(): Promise<{
+			sprite: string[];
+			post: string[];
+			particles: string[];
+		}> {
+			return {
+				sprite: [
+					"outline",
+					"glow",
+					"tint",
+					"flash",
+					"pixelate",
+					"posterize",
+					"silhouette",
+					"rainbow",
+					"dissolve",
+					"holographic",
+					"wave",
+					"rim_light",
+					"color_matrix",
+					"inner_glow",
+					"drop_shadow",
+				],
+				post: [
+					"vignette",
+					"scanlines",
+					"chromatic_aberration",
+					"shockwave",
+					"blur",
+					"crt",
+					"color_grading",
+					"glitch",
+					"motion_blur",
+					"pixelate_screen",
+					"shimmer",
+				],
+				particles: [
+					"fire",
+					"smoke",
+					"sparks",
+					"magic",
+					"explosion",
+					"rain",
+					"snow",
+					"bubbles",
+					"confetti",
+					"dust",
+					"leaves",
+					"stars",
+					"blood",
+					"coins",
+				],
+			};
 		},
 
-		applyTorque(entityId: string, torque: number) {
-			callGameBridge("apply_torque", entityId, torque);
+		setInspectMode(_enabled: boolean) {
+			// Not implemented for native yet - only web needs this
 		},
 
+		// Joint creation (uses Date.now() for ID + callGameBridge fire-and-forget)
 		createRevoluteJoint(def: RevoluteJointDef): number {
 			const jointId = Date.now();
 			callGameBridge(
@@ -954,677 +970,50 @@ export function createNativeGodotBridge(): GodotBridge {
 			return typeof result === "number" ? result : -1;
 		},
 
-		destroyJoint(jointId: number) {
-			callGameBridge("destroy_joint", jointId);
+		// RPC routing (uses callRpc/callGameBridgeAsync("callRpc", ...) not standard dispatch)
+		loadRules(rules) {
+			this.callRpc("load_rules", { rules });
 		},
 
-		setMotorSpeed(jointId: number, speed: number) {
-			callGameBridge("set_motor_speed", jointId, speed);
-		},
-
-		setMouseTarget(jointId: number, target: Vec2) {
-			callGameBridge("set_mouse_target", jointId, target.x, target.y);
-		},
-
-		async queryPoint(point: Vec2): Promise<number | null> {
-			const result = await callGameBridgeAsync("query_point", point.x, point.y);
-			return typeof result === "number" ? result : null;
-		},
-
-		async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
-			const { RTNGodot, runOnGodotThread } = await getGodotModule();
-
-			return runOnGodotThread(() => {
-				"worklet";
-				try {
-					const Godot = RTNGodot.API();
-					const gameBridge = Godot.Engine.get_main_loop()
-						.get_root()
-						.get_node("GameBridge");
-					if (gameBridge) {
-						const argsJson = JSON.stringify([screenX, screenY]);
-						const result = gameBridge.native_dispatch(
-							"screen_to_world",
-							argsJson,
-						);
-						if (result && typeof result === "object") {
-							return result as Vec2;
-						}
-					}
-				} catch (e) {
-					console.warn("[GodotBridge] Error in screenToWorld:", e);
-				}
-				return { x: 0, y: 0 };
-			});
-		},
-
-		async queryPointEntity(point: Vec2): Promise<string | null> {
-			const result = await callGameBridgeAsync(
-				"query_point_entity",
-				point.x,
-				point.y,
-			);
-			return typeof result === "string" ? result : null;
-		},
-
-		async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
-			const result = await callGameBridgeAsync(
-				"query_aabb",
-				min.x,
-				min.y,
-				max.x,
-				max.y,
-			);
-			if (typeof result === "string") {
-				return JSON.parse(result) as number[];
-			}
-			return Array.isArray(result) ? result : [];
-		},
-
-		async raycast(
-			origin: Vec2,
-			direction: Vec2,
-			maxDistance: number,
-		): Promise<RaycastHit | null> {
-			const result = await callGameBridgeAsync(
-				"raycast",
-				origin.x,
-				origin.y,
-				direction.x,
-				direction.y,
-				maxDistance,
-			);
-			if (typeof result === "string") {
-				return JSON.parse(result) as RaycastHit;
-			}
-			return result as RaycastHit | null;
-		},
-
-		setUserData(_entityId: string, _data: unknown) {},
-
-		async getUserData(_entityId: string): Promise<unknown> {
-			return null;
-		},
-
-		async getAllEntities(): Promise<string[]> {
-			return [];
-		},
-
-		...createCallbackMethods(cbs),
-
-		setWatchConfig(config: unknown): void {
-			callGameBridge("set_watch_config", JSON.stringify(config));
-		},
-
-		sendInput(type, data) {
-			callGameBridge("send_input", type, data.x, data.y, data.entityId ?? "");
-		},
-
-		createPixelBuffer(
-			entityId: string,
-			width: number,
-			height: number,
-			clearColor: string,
-			worldWidth?: number,
-			worldHeight?: number,
-		) {
-			callGameBridge(
-				"createPixelBuffer",
-				entityId,
-				width,
-				height,
-				clearColor,
-				worldWidth ?? 0,
-				worldHeight ?? 0,
-			);
-		},
-		pixelBufferDraw(entityId: string, commands: DrawCommand[]) {
-			callGameBridge("pixelBufferDraw", entityId, JSON.stringify(commands));
-		},
-		pixelBufferClear(entityId: string, color: string) {
-			callGameBridge("pixelBufferClear", entityId, color);
-		},
-		destroyPixelBuffer(entityId: string) {
-			callGameBridge("destroyPixelBuffer", entityId);
-		},
-
-		drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]) {
-			callGameBridge(
-				"draw_to_active_buffer",
-				entityId,
-				JSON.stringify(commands),
-			);
-		},
-
-		async setEntityImage(
-			entityId: string,
-			url: string,
-			width: number,
-			height: number,
-		) {
-			console.log(
-				`[GodotBridge.native] setEntityImage called for ${entityId} with URL: ${url}`,
-			);
+		async loadScript(source) {
 			try {
-				const filename = `texture_${entityId}_${Date.now()}.png`;
-				const localPath = `${FileSystem.cacheDirectory}${filename}`;
-
-				console.log(
-					`[GodotBridge.native] Downloading from ${url} to ${localPath}`,
-				);
-				const downloadResult = await FileSystem.downloadAsync(url, localPath);
-				console.log(
-					`[GodotBridge.native] Download result status: ${downloadResult.status}`,
-				);
-
-				if (downloadResult.status === 200) {
-					// Strip file:// prefix - Godot's Image.load() expects raw filesystem paths
-					const godotPath = localPath.replace(/^file:\/\//, "");
-					console.log(
-						`[GodotBridge.native] Calling set_entity_image_from_file with path: ${godotPath}`,
-					);
-					callGameBridge(
-						"set_entity_image_from_file",
-						entityId,
-						godotPath,
-						width,
-						height,
-					);
-				} else {
-					console.error(
-						`[GodotBridge.native] Download failed with status: ${downloadResult.status}`,
-					);
-				}
-			} catch (e) {
-				console.error(
-					`[GodotBridge.native] setEntityImage error for ${entityId}:`,
-					e,
-				);
+				await this.callRpc("load_script", { source });
+				return { ok: true };
+			} catch (error) {
+				return { ok: false, error: String(error) };
 			}
 		},
 
-		async setEntityAtlasRegion(
-			entityId: string,
-			atlasUrl: string,
-			x: number,
-			y: number,
-			w: number,
-			h: number,
-			width: number,
-			height: number,
-		) {
-			try {
-				const urlHash = atlasUrl.replace(/[^a-zA-Z0-9]/g, "_").slice(-50);
-				const filename = `atlas_${urlHash}.png`;
-				const localPath = `${FileSystem.cacheDirectory}${filename}`;
-
-				const fileInfo = await FileSystem.getInfoAsync(localPath);
-
-				let godotPath: string;
-				if (fileInfo.exists) {
-					godotPath = localPath.replace(/^file:\/\//, "");
-				} else {
-					const downloadResult = await FileSystem.downloadAsync(
-						atlasUrl,
-						localPath,
-					);
-
-					if (downloadResult.status !== 200) {
-						return;
-					}
-					godotPath = localPath.replace(/^file:\/\//, "");
-				}
-
-				callGameBridge(
-					"set_entity_atlas_region_from_file",
-					entityId,
-					godotPath,
-					x,
-					y,
-					w,
-					h,
-					width,
-					height,
-				);
-			} catch (e) {
-				console.error(`[GodotBridge.native] setEntityAtlasRegion error:`, e);
-			}
-		},
-
-		clearTextureCache(url?: string) {
-			callGameBridge("clear_texture_cache", url ?? "");
-		},
-
-		async preloadTextures(
-			urls: string[],
-			onProgress?: (percent: number, completed: number, failed: number) => void,
-		): Promise<{ completed: number; failed: number }> {
-			if (urls.length === 0) {
-				onProgress?.(100, 0, 0);
-				return { completed: 0, failed: 0 };
-			}
-
-			let completed = 0;
-			let failed = 0;
-			const total = urls.length;
-
-			for (const url of urls) {
-				try {
-					const urlHash = url.replace(/[^a-zA-Z0-9]/g, "_").slice(-50);
-					const filename = `preload_${urlHash}.png`;
-					const localPath = `${FileSystem.cacheDirectory}${filename}`;
-
-					const fileInfo = await FileSystem.getInfoAsync(localPath);
-					if (!fileInfo.exists) {
-						const downloadResult = await FileSystem.downloadAsync(
-							url,
-							localPath,
-						);
-						if (downloadResult.status !== 200) {
-							failed++;
-						} else {
-							completed++;
-						}
-					} else {
-						completed++;
-					}
-				} catch {
-					failed++;
-				}
-
-				const percent = Math.round(((completed + failed) / total) * 100);
-				onProgress?.(percent, completed, failed);
-			}
-
-			return { completed, failed };
-		},
-
-		setDebugShowShapes(show: boolean) {
-			callGameBridge("set_debug_show_shapes", show);
-		},
-
-		setDebugSettings(settings: {
-			showInputDebug: boolean;
-			showPhysicsShapes: boolean;
-			showZones: boolean;
-			showFPS: boolean;
-		}) {
-			callGameBridge("set_debug_settings", JSON.stringify(settings));
-		},
-
-		setCameraTarget(entityId: string | null) {
-			callGameBridge("set_camera_target", entityId ?? "");
-		},
-
-		setCameraPosition(x: number, y: number) {
-			callGameBridge("set_camera_position", x, y);
-		},
-
-		setCameraZoom(zoom: number) {
-			callGameBridge("set_camera_zoom", zoom);
-		},
-
-		startCamera(entityId: string, width?: number, height?: number) {
-			callGameBridge("start_camera", entityId, width ?? 1280, height ?? 720);
-		},
-
-		stopCamera() {
-			callGameBridge("stop_camera");
-		},
-
-		spawnParticle(type: string, x: number, y: number) {
-			callGameBridge("spawn_particle", type, x, y);
-		},
-
-		playSound(resourcePath: string, volume?: number, pitch?: number) {
-			callGameBridge("play_sound", resourcePath, volume ?? 1.0, pitch ?? 1.0);
-		},
-
-		playMusic(resourcePath: string, volume?: number, loop?: boolean) {
-			callGameBridge("play_music", resourcePath, volume ?? 1.0, loop ?? true);
-		},
-
-		stopMusic() {
-			callGameBridge("stop_music");
-		},
-
-		screenShake(intensity: number, duration?: number) {
-			callEffectsBridge("screen_shake", intensity, duration ?? 0.3);
-		},
-
-		zoomPunch(intensity?: number, duration?: number) {
-			callEffectsBridge("zoom_punch", intensity ?? 0.1, duration ?? 0.15);
-		},
-
-		triggerShockwave(worldX: number, worldY: number, duration?: number) {
-			callEffectsBridge("trigger_shockwave", worldX, worldY, duration ?? 0.5);
-		},
-
-		flashScreen(color?: [number, number, number, number?], duration?: number) {
-			const r = color?.[0] ?? 1;
-			const g = color?.[1] ?? 1;
-			const b = color?.[2] ?? 1;
-			const a = color?.[3] ?? 1;
-			callEffectsBridge("flash_screen", r, g, b, a, duration ?? 0.1);
-		},
-
-		async createDynamicShader(
-			shaderId: string,
-			shaderCode: string,
-		): Promise<DynamicShaderResult> {
-			callEffectsBridge("create_dynamic_shader", shaderId, shaderCode);
-			return { success: true, shader_id: shaderId };
-		},
-
-		applyDynamicShader(
-			entityId: string,
-			shaderId: string,
-			params?: Record<string, unknown>,
-		) {
-			callEffectsBridge(
-				"apply_dynamic_shader_to_entity",
-				entityId,
-				shaderId,
-				JSON.stringify(params ?? {}),
+		async stepPhysics(
+			frames: number,
+		): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
+			const response = await callGameBridgeAsync(
+				"callRpc",
+				JSON.stringify({
+					method: "time.step",
+					params: { frames },
+				}),
 			);
-		},
-
-		applyDynamicPostShader(
-			shaderCode: string,
-			params?: Record<string, unknown>,
-		) {
-			callEffectsBridge(
-				"apply_dynamic_post_shader",
-				shaderCode,
-				JSON.stringify(params ?? {}),
-			);
-		},
-
-		hotSwapShader(shaderId: string, source: string) {
-			callGameBridge("hot_swap_shader", shaderId, source);
-		},
-
-		spawnParticlePreset(
-			presetName: string,
-			worldX: number,
-			worldY: number,
-			params?: Record<string, unknown>,
-		) {
-			callEffectsBridge(
-				"spawn_particle_preset",
-				presetName,
-				worldX,
-				worldY,
-				JSON.stringify(params ?? {}),
-			);
-		},
-
-		async getAvailableEffects(): Promise<{
-			sprite: string[];
-			post: string[];
-			particles: string[];
-		}> {
+			const result = JSON.parse(response);
 			return {
-				sprite: [
-					"outline",
-					"glow",
-					"tint",
-					"flash",
-					"pixelate",
-					"posterize",
-					"silhouette",
-					"rainbow",
-					"dissolve",
-					"holographic",
-					"wave",
-					"rim_light",
-					"color_matrix",
-					"inner_glow",
-					"drop_shadow",
-				],
-				post: [
-					"vignette",
-					"scanlines",
-					"chromatic_aberration",
-					"shockwave",
-					"blur",
-					"crt",
-					"color_grading",
-					"glitch",
-					"motion_blur",
-					"pixelate_screen",
-					"shimmer",
-				],
-				particles: [
-					"fire",
-					"smoke",
-					"sparks",
-					"magic",
-					"explosion",
-					"rain",
-					"snow",
-					"bubbles",
-					"confetti",
-					"dust",
-					"leaves",
-					"stars",
-					"blood",
-					"coins",
-				],
+				ok: result.ok ?? true,
+				framesAdvanced: result.framesAdvanced ?? frames,
+				endFrame: result.endFrame ?? 0,
 			};
 		},
 
-		applySpriteEffect(
-			entityId: string,
-			effectName: string,
-			params?: Record<string, unknown>,
-		) {
-			callEffectsBridge(
-				"apply_sprite_effect",
-				entityId,
-				effectName,
-				params ?? {},
+		async callRpc(method: string, params?: unknown): Promise<any> {
+			const response = await callGameBridgeAsync(
+				"callRpc",
+				JSON.stringify({ method, params }),
 			);
+			const parsed = JSON.parse(response);
+			if (parsed.error) {
+				throw new Error(parsed.error.message);
+			}
+			return parsed.result ?? parsed;
 		},
-
-		updateSpriteEffectParam(
-			entityId: string,
-			paramName: string,
-			value: unknown,
-		) {
-			callEffectsBridge(
-				"update_sprite_effect_param",
-				entityId,
-				paramName,
-				value,
-			);
-		},
-
-		clearSpriteEffect(entityId: string) {
-			callEffectsBridge("clear_sprite_effect", entityId);
-		},
-
-		setPostEffect(
-			effectName: string,
-			params?: Record<string, unknown>,
-			layer?: string,
-		) {
-			callEffectsBridge(
-				"set_post_effect",
-				effectName,
-				params ?? {},
-				layer ?? "main",
-			);
-		},
-
-		updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
-			callEffectsBridge(
-				"update_post_effect_param",
-				paramName,
-				value,
-				layer ?? "main",
-			);
-		},
-
-		clearPostEffect(layer?: string) {
-			callEffectsBridge("clear_post_effect", layer ?? "main");
-		},
-
-		createUIButton(
-			buttonId: string,
-			normalImageUrl: string,
-			pressedImageUrl: string,
-			x: number,
-			y: number,
-			width: number,
-			height: number,
-		) {
-			callGameBridge(
-				"create_ui_button",
-				buttonId,
-				normalImageUrl,
-				pressedImageUrl,
-				x,
-				y,
-				width,
-				height,
-			);
-		},
-
-		destroyUIButton(buttonId: string) {
-			callGameBridge("destroy_ui_button", buttonId);
-		},
-
-		createThemedUIComponent(
-			componentId: string,
-			componentType: 0 | 1 | 2 | 3 | 4 | 5 | 6,
-			metadataUrl: string,
-			x: number,
-			y: number,
-			width: number,
-			height: number,
-			labelText: string = "",
-		) {
-			callGameBridge(
-				"create_themed_ui_component",
-				componentId,
-				componentType,
-				metadataUrl,
-				x,
-				y,
-				width,
-				height,
-				labelText,
-			);
-		},
-
-		destroyThemedUIComponent(componentId: string) {
-			callGameBridge("destroy_themed_ui_component", componentId);
-		},
-
-		show3DModel(path: string): boolean {
-			callGameBridge("show_3d_model", path);
-			return true;
-		},
-
-		show3DModelFromUrl(url: string): void {
-			callGameBridge("show_3d_model_from_url", url);
-		},
-
-		set3DViewportPosition(x: number, y: number): void {
-			callGameBridge("set_3d_viewport_position", x, y);
-		},
-
-		set3DViewportSize(width: number, height: number): void {
-			callGameBridge("set_3d_viewport_size", width, height);
-		},
-
-		rotate3DModel(x: number, y: number, z: number): void {
-			callGameBridge("rotate_3d_model", x, y, z);
-		},
-
-		set3DModelPosition(x: number, y: number, z: number): void {
-			callGameBridge("set_3d_model_position", x, y, z);
-		},
-
-		set3DCameraDistance(distance: number): void {
-			callGameBridge("set_3d_camera_distance", distance);
-		},
-
-		set3DCameraSize(size: number): void {
-			callGameBridge("set_3d_camera_size", size);
-		},
-
-		clear3DModels(): void {
-			callGameBridge("clear_3d_models");
-		},
-
-		create3DFloor(
-			size?: number,
-			colorHex?: string,
-			style?: "plain" | "grid",
-		): void {
-			callGameBridge(
-				"create_3d_floor",
-				size ?? 10.0,
-				colorHex ?? "555555",
-				style ?? "plain",
-			);
-		},
-
-		create3DCube(
-			x: number,
-			y: number,
-			z: number,
-			size?: number,
-			colorHex?: string,
-		): void {
-			callGameBridge(
-				"create_3d_cube",
-				x,
-				y,
-				z,
-				size ?? 0.5,
-				colorHex ?? "ff0000",
-			);
-		},
-
-		clear3DCubes(): void {
-			callGameBridge("clear_3d_cubes");
-		},
-
-		set3DCameraPosition(x: number, y: number, z: number): void {
-			callGameBridge("set_3d_camera_position", x, y, z);
-		},
-
-		set3DCameraLookAt(x: number, y: number, z: number): void {
-			callGameBridge("set_3d_camera_look_at", x, y, z);
-		},
-
-		setOrbitControls(enabled: boolean): void {
-			callGameBridge("set_orbit_controls", enabled);
-		},
-
-		setExternalInput(name: string, imageData: string) {
-			callGameBridge("set_external_input", name, imageData);
-		},
-
-		setScreenInput(enable: boolean) {
-			callGameBridge("set_screen_input", enable);
-		},
-
-		effectsUpdateParams(
-			passId: string,
-			params: Record<string, number | boolean | string>,
-		) {
-			callGameBridge(
-				"handle_request",
-				"effects_update_params",
-				"effects.updateParams",
-				JSON.stringify({ passId, params }),
-			);
-		},
-	};
+	} as GodotBridge;
 
 	return bridge;
 }

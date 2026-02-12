@@ -93,6 +93,16 @@ func _js_clear_texture_cache(args: Array) -> void:
 		clear_texture_cache("")
 
 
+func _js_set_entity_image_from_file(args: Array) -> void:
+	if args.size() >= 4:
+		set_entity_image_from_file(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+
+func _js_set_entity_atlas_region_from_file(args: Array) -> void:
+	if args.size() >= 8:
+		set_entity_atlas_region_from_file(str(args[0]), str(args[1]), float(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6]), float(args[7]))
+
+
 func _js_preload_textures(args: Array) -> void:
 	if args.size() < 1:
 		if _bridge and "_push_error" in _bridge:

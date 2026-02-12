@@ -370,6 +370,16 @@ func destroy_themed_ui_component(component_id: String) -> void:
 # JS CALLBACK SETUP
 # =============================================================================
 
+func _js_create_themed_ui_component(args: Array) -> void:
+	if args.size() >= 7:
+		create_themed_ui_component(str(args[0]), int(args[1]), str(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6]), str(args[7]) if args.size() > 7 else "")
+
+
+func _js_destroy_themed_ui_component(args: Array) -> void:
+	if args.size() >= 1:
+		destroy_themed_ui_component(str(args[0]))
+
+
 func _js_on_ui_button_event(args: Array) -> void:
 	if args.size() >= 1 and _bridge and _bridge._event_emitter:
 		_bridge._event_emitter.set_ui_button_callback(args[0])

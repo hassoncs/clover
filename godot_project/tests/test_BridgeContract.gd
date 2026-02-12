@@ -6,7 +6,6 @@ const GameBridgeScript = preload("res://scripts/GameBridge.gd")
 const GameBridgeEffectsScript = preload("res://scripts/bridge/GameBridgeEffects.gd")
 const DebugBridgeScript = preload("res://scripts/bridge/debug/DebugBridge.gd")
 
-var _snake_to_ts: Dictionary = {}
 var _ts_to_snake: Dictionary = {}
 
 func _load_name_map() -> void:
@@ -24,45 +23,29 @@ func _load_name_map() -> void:
 	assert_int(parse_result).is_equal(OK)
 
 	var data = json.data
-	_snake_to_ts = data["nameMap"]["snakeToTs"]
 	_ts_to_snake = data["nameMap"]["tsToSnake"]
 
-func _find_method_in_runtime(ts_name: String, registered_methods: Array, registered_rpcs: Array) -> bool:
+func _is_method_registered(ts_name: String, registered_methods: Array, registered_rpcs: Array) -> bool:
 	var snake_name: String = _ts_to_snake.get(ts_name, "")
 
-	# 1. Direct Dispatch Match (camelCase or snake_case key in _method_map)
-	if registered_methods.has(ts_name) or registered_methods.has(snake_name):
+	# Direct method match (snake_case in _method_map)
+	if registered_methods.has(snake_name):
 		return true
 
-	# 2. RPC Handler Match
+	# RPC handler match (effects.* routes in query system)
 	var rpc_candidates = [
 		"effects." + ts_name,
 		"effects." + snake_name,
-		ts_name,
-		snake_name,
 	]
 	for candidate in rpc_candidates:
 		if registered_rpcs.has(candidate):
 			return true
 
-	# 3. Async Wrapper Pattern (createMouseJointAsync -> createMouseJoint)
+	# Async wrapper pattern (createMouseJointAsync -> create_mouse_joint)
 	if ts_name.ends_with("Async"):
 		var base_ts = ts_name.substr(0, ts_name.length() - 5)
 		var base_snake = _ts_to_snake.get(base_ts, "")
-		if registered_methods.has(base_ts) or registered_methods.has(base_snake):
-			return true
-
-	# 4. Structural mismatches — registration name differs structurally
-	#    from both tsName and its snake_case form. Documented in learnings.md.
-	var structural_aliases: Dictionary = {
-		"loadGame": "load_game_json",
-		"applyDynamicShader": "apply_dynamic_shader_to_entity",
-		"stepPhysics": "step",
-		"effectsUpdateParams": "effects.updateParams",
-	}
-	if structural_aliases.has(ts_name):
-		var target = structural_aliases[ts_name]
-		if registered_methods.has(target) or registered_rpcs.has(target):
+		if registered_methods.has(base_snake):
 			return true
 
 	return false
@@ -87,7 +70,7 @@ func test_bridge_contract_static():
 
 	var missing = []
 	for ts_name in BridgeValidation.EXPECTED_METHODS:
-		if not _find_method_in_runtime(ts_name, registered_methods, registered_rpcs):
+		if not _is_method_registered(ts_name, registered_methods, registered_rpcs):
 			missing.append(ts_name)
 
 	if missing.size() > 0:
@@ -117,7 +100,7 @@ func test_bridge_contract_negative():
 	var fake_methods: Array[String] = ["thisMethodDoesNotExist", "anotherFakeMethod"]
 	var missing = []
 	for fake in fake_methods:
-		if not _find_method_in_runtime(fake, registered_methods, registered_rpcs):
+		if not _is_method_registered(fake, registered_methods, registered_rpcs):
 			missing.append(fake)
 
 	# The fake methods MUST appear as missing — proving mismatch detection works

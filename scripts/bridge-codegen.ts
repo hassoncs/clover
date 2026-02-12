@@ -11,7 +11,9 @@ import { dirname, resolve } from "path";
 import {
 	type InterfaceDeclaration,
 	type MethodSignature,
+	type ParameterDeclaration,
 	Project,
+	type Type,
 } from "ts-morph";
 import { fileURLToPath } from "url";
 
@@ -19,6 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, "..");
 const TYPES_PATH = resolve(ROOT, "app/lib/godot/types.ts");
+const SHARED_TYPES_DIR = resolve(ROOT, "shared/src/types");
 const OUTPUT_DIR = resolve(ROOT, "app/lib/godot/generated");
 const OUTPUT_PATH = resolve(OUTPUT_DIR, "bridge-registry.json");
 const GDSCRIPT_OUTPUT_DIR = resolve(
@@ -29,6 +32,10 @@ const GDSCRIPT_OUTPUT_PATH = resolve(
 	GDSCRIPT_OUTPUT_DIR,
 	"BridgeValidation.gd",
 );
+const GDSCRIPT_METHOD_MAP_PATH = resolve(
+	GDSCRIPT_OUTPUT_DIR,
+	"BridgeMethodMap.gd",
+);
 
 interface MethodParam {
 	name: string;
@@ -36,16 +43,56 @@ interface MethodParam {
 	optional: boolean;
 }
 
+enum WireKind {
+	Primitive = "Primitive",
+	FlatStruct = "FlatStruct",
+	JsonBlob = "JsonBlob",
+	Callback = "Callback",
+}
+
+interface WireArg {
+	name: string;
+	type: "string" | "number" | "boolean" | "json";
+	accessor: string;
+}
+
+interface WireParam {
+	name: string;
+	tsType: string;
+	wireKind: WireKind;
+	optional: boolean;
+	args: WireArg[];
+}
+
 interface MethodEntry {
 	tsName: string;
 	snakeName: string;
 	params: MethodParam[];
+	wireParams: WireParam[];
 	returnType: string;
 	async: boolean;
 	category: string;
 	tsOnly: boolean;
 	source: "GodotBridge" | "EffectsBridge";
+	dispatchTarget: "bridge" | "effects";
 }
+
+const EFFECTS_BRIDGE_SNAKE_NAMES = new Set([
+	"screen_shake",
+	"zoom_punch",
+	"trigger_shockwave",
+	"flash_screen",
+	"create_dynamic_shader",
+	"apply_dynamic_shader_to_entity",
+	"apply_dynamic_post_shader",
+	"spawn_particle_preset",
+	"apply_sprite_effect",
+	"update_sprite_effect_param",
+	"clear_sprite_effect",
+	"set_post_effect",
+	"update_post_effect_param",
+	"clear_post_effect",
+]);
 
 interface BridgeRegistry {
 	generatedAt: string;
@@ -67,16 +114,40 @@ const LIFECYCLE_METHODS = new Set(["initialize", "dispose"]);
 
 const EVENT_CALLBACK_PATTERN = /^on[A-Z]/;
 
+const BRIDGE_NAME_OVERRIDES: Record<string, string> = {
+	loadGame: "load_game_json",
+	applyDynamicShader: "apply_dynamic_shader_to_entity",
+	stepPhysics: "step",
+	effectsUpdateParams: "effects.updateParams",
+};
+
+function snakeToCamel(name: string): string {
+	return name.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
+}
+
 function camelToSnake(name: string): string {
-	return name
-		.replace(/([23])D(?=[A-Z]|$)/g, "_$1d_")
-		.replace(/([a-z])(\d)/g, "$1_$2")
-		.replace(/(\d)([A-Z])/g, "$1_$2")
-		.replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-		.replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
-		.replace(/_+/g, "_")
-		.replace(/^_|_$/g, "")
-		.toLowerCase();
+	return (
+		name
+			// Handle leading digits: "3dViewport" -> "3d_viewport", "2dPosition" -> "2d_position"
+			.replace(/^([23])d/i, "_$1d_")
+			// Handle all-caps sequences: "AABB" -> "aabb", "UI" -> "ui"
+			.replace(/^([A-Z]+)(?=[A-Z][a-z]|$)/g, (match) => match.toLowerCase())
+			// Handle "3D" and "2D" in middle/end: "create3D" -> "create_3d"
+			.replace(/([23])D(?=[A-Z]|$)/g, "_$1d_")
+			// Letter followed by digit: "test2" -> "test_2"
+			.replace(/([a-z])(\d)/g, "$1_$2")
+			// Digit followed by uppercase: "2D" -> "2_d"
+			.replace(/(\d)([A-Z])/g, "$1_$2")
+			// Lowercase/digit followed by uppercase: "camelCase" -> "camel_case"
+			.replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+			// Uppercase followed by uppercase then lowercase: "XMLParser" -> "xml_parser"
+			.replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
+			// Collapse multiple underscores
+			.replace(/_+/g, "_")
+			// Remove leading/trailing underscores
+			.replace(/^_|_$/g, "")
+			.toLowerCase()
+	);
 }
 
 function isTsOnly(name: string, returnType: string): boolean {
@@ -84,6 +155,219 @@ function isTsOnly(name: string, returnType: string): boolean {
 	if (EVENT_CALLBACK_PATTERN.test(name) && returnType.includes("() => void"))
 		return true;
 	return false;
+}
+
+function isStringLiteralUnion(type: Type): boolean {
+	if (!type.isUnion()) return false;
+	return type.getUnionTypes().every((t) => t.isStringLiteral());
+}
+
+function isNumberLiteralUnion(type: Type): boolean {
+	if (!type.isUnion()) return false;
+	return type.getUnionTypes().every((t) => t.isNumberLiteral());
+}
+
+function getNonNullishUnionMembers(type: Type): Type[] | null {
+	if (!type.isUnion()) return null;
+	const nonNullish = type
+		.getUnionTypes()
+		.filter((t) => !t.isUndefined() && !t.isNull());
+	if (nonNullish.length === type.getUnionTypes().length) return null;
+	return nonNullish;
+}
+
+function isBooleanLikeUnion(types: Type[]): boolean {
+	return types.length <= 2 && types.every((t) => t.isBooleanLiteral());
+}
+
+function getPrimitiveWireType(type: Type): WireArg["type"] | null {
+	if (type.isString() || type.isStringLiteral()) return "string";
+	if (type.isNumber() || type.isNumberLiteral()) return "number";
+	if (type.isBoolean() || type.isBooleanLiteral()) return "boolean";
+	if (isStringLiteralUnion(type)) return "string";
+	if (isNumberLiteralUnion(type)) return "number";
+
+	const stripped = getNonNullishUnionMembers(type);
+	if (!stripped || stripped.length === 0) return null;
+	if (stripped.length === 1) return getPrimitiveWireType(stripped[0]);
+	if (isBooleanLikeUnion(stripped)) return "boolean";
+	if (stripped.every((t) => t.isStringLiteral())) return "string";
+	if (stripped.every((t) => t.isNumberLiteral())) return "number";
+
+	return null;
+}
+
+function isCallbackType(type: Type): boolean {
+	if (type.getCallSignatures().length > 0) return true;
+	if (type.isUnion()) {
+		return type
+			.getUnionTypes()
+			.some(
+				(t) =>
+					!t.isUndefined() && !t.isNull() && t.getCallSignatures().length > 0,
+			);
+	}
+	return false;
+}
+
+function flattenStructType(
+	type: Type,
+	prefix: string,
+	accessorPrefix: string,
+	visited: Set<string>,
+): WireArg[] | null {
+	const typeName = type.getSymbol()?.getName() ?? type.getText();
+	if (visited.has(typeName)) return null;
+	visited.add(typeName);
+
+	const properties = type.getProperties();
+	if (properties.length === 0) return null;
+
+	const args: WireArg[] = [];
+
+	for (const prop of properties) {
+		const propName = prop.getName();
+		const decls = prop.getDeclarations();
+		if (decls.length === 0) continue;
+
+		const rawPropType = prop.getTypeAtLocation(decls[0]);
+		const wireName = prefix ? `${prefix}_${propName}` : propName;
+		const accessor = accessorPrefix
+			? `${accessorPrefix}.${propName}`
+			: propName;
+
+		const primitiveType = getPrimitiveWireType(rawPropType);
+		if (primitiveType) {
+			args.push({ name: wireName, type: primitiveType, accessor });
+			continue;
+		}
+
+		const stripped = getNonNullishUnionMembers(rawPropType);
+		const resolvedType =
+			stripped && stripped.length === 1 ? stripped[0] : rawPropType;
+
+		const nestedArgs = flattenStructType(
+			resolvedType,
+			wireName,
+			accessor,
+			new Set(visited),
+		);
+		if (nestedArgs) {
+			args.push(...nestedArgs);
+			continue;
+		}
+
+		return null;
+	}
+
+	return args;
+}
+
+function isFlattenableStruct(type: Type): boolean {
+	// Must have properties (interface/object type)
+	const properties = type.getProperties();
+	if (properties.length === 0) return false;
+
+	// Must not be an array
+	if (type.isArray()) return false;
+
+	// Must not have call signatures (not a function)
+	if (type.getCallSignatures().length > 0) return false;
+
+	// Must not have index signatures (Record<K,V> types)
+	if (type.getNumberIndexType() || type.getStringIndexType()) return false;
+
+	// Try to flatten — if all properties resolve to primitives or nested flat structs, it's flattenable
+	return flattenStructType(type, "", "", new Set()) !== null;
+}
+
+function resolveWireParam(param: ParameterDeclaration): WireParam {
+	const name = param.getName();
+	const type = param.getType();
+	const optional = param.isOptional();
+	const typeNode = param.getTypeNode();
+	const tsType = typeNode ? typeNode.getText() : type.getText(param);
+
+	// 1. Callback/function type
+	if (isCallbackType(type)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Callback,
+			optional,
+			args: [],
+		};
+	}
+
+	// 2. Primitive types (string, number, boolean, void)
+	const primitiveType = getPrimitiveWireType(type);
+	if (primitiveType) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [{ name, type: primitiveType, accessor: name }],
+		};
+	}
+
+	// 3. String/number literal unions → treat as primitive
+	if (isStringLiteralUnion(type)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [{ name, type: "string", accessor: name }],
+		};
+	}
+	if (isNumberLiteralUnion(type)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [{ name, type: "number", accessor: name }],
+		};
+	}
+
+	// 4. Void type
+	if (type.isVoid() || type.isUndefined() || type.isNull()) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.Primitive,
+			optional,
+			args: [],
+		};
+	}
+
+	// 5. Flattenable struct (all properties are primitives or nested flat structs)
+	if (isFlattenableStruct(type)) {
+		const flatArgs = flattenStructType(type, "", name, new Set());
+		if (flatArgs) {
+			return {
+				name,
+				tsType,
+				wireKind: WireKind.FlatStruct,
+				optional,
+				args: flatArgs,
+			};
+		}
+	}
+
+	// 6. Everything else → JsonBlob
+	return {
+		name,
+		tsType,
+		wireKind: WireKind.JsonBlob,
+		optional,
+		args: [{ name, type: "json", accessor: `JSON.stringify(${name})` }],
+	};
+}
+
+function resolveWireParams(method: MethodSignature): WireParam[] {
+	return method.getParameters().map(resolveWireParam);
 }
 
 function inferCategory(
@@ -189,7 +473,7 @@ function extractMethod(
 	source: "GodotBridge" | "EffectsBridge",
 ): MethodEntry {
 	const tsName = method.getName();
-	const snakeName = camelToSnake(tsName);
+	const snakeName = BRIDGE_NAME_OVERRIDES[tsName] ?? camelToSnake(tsName);
 	const returnTypeNode = method.getReturnTypeNode();
 	const returnType = returnTypeNode
 		? returnTypeNode.getText()
@@ -206,21 +490,30 @@ function extractMethod(
 		};
 	});
 
+	const wireParams = resolveWireParams(method);
+
 	const category =
 		source === "EffectsBridge"
 			? "effects_pipeline"
 			: inferCategory(method, interfaceDecl);
 	const tsOnly = isTsOnly(tsName, returnType);
 
+	const dispatchTarget: "bridge" | "effects" =
+		source === "EffectsBridge" || EFFECTS_BRIDGE_SNAKE_NAMES.has(snakeName)
+			? "effects"
+			: "bridge";
+
 	return {
 		tsName,
 		snakeName,
 		params,
+		wireParams,
 		returnType,
 		async: isAsync,
 		category,
 		tsOnly,
 		source,
+		dispatchTarget,
 	};
 }
 
@@ -276,14 +569,99 @@ static func validate(method_map: Dictionary) -> Array[String]:
 	chmodSync(GDSCRIPT_OUTPUT_PATH, 0o444);
 }
 
+function godotSnakeToCamel(snake: string): string {
+	const parts = snake.split("_");
+	if (parts.length === 1) return snake;
+	let result = parts[0];
+	for (let i = 1; i < parts.length; i++) {
+		const part = parts[i];
+		if (part === "3d") {
+			result += "3D";
+		} else if (part === "2d") {
+			result += "2D";
+		} else {
+			result += part.charAt(0).toUpperCase() + part.slice(1);
+		}
+	}
+	return result;
+}
+
+function generateGDScriptMethodMap(registry: BridgeRegistry): void {
+	const bridgeMethods = registry.methods.filter(
+		(m) =>
+			!m.tsOnly &&
+			m.source !== "EffectsBridge" &&
+			!m.snakeName.startsWith("effects."),
+	);
+
+	const entries = bridgeMethods
+		.map((m) => {
+			const jsName = godotSnakeToCamel(m.snakeName);
+			return `  "${jsName}": "${m.snakeName}",`;
+		})
+		.join("\n");
+
+	const gdscript = `# ⚠️ AUTO-GENERATED - DO NOT EDIT
+# This file is automatically generated from types.ts
+# Any changes will be overwritten on next generation
+# To modify: update app/lib/godot/types.ts and run pnpm generate:bridge
+#
+# Generated by: scripts/bridge-codegen.ts
+# Source: app/lib/godot/types.ts (GodotBridge + EffectsBridge interfaces)
+# Generated: ${registry.generatedAt}
+
+class_name BridgeMethodMap
+
+# Map of bridge name (camelCase as used by JS) -> expected snake_case Godot method
+# The snake_case name corresponds to a _js_{snake_case} method on one of the bridge modules
+const EXPECTED_REGISTRATIONS: Dictionary = {
+${entries}
+}
+
+static func validate_registration(method_map: Dictionary) -> Array[String]:
+  var errors: Array[String] = []
+  for js_name in EXPECTED_REGISTRATIONS:
+    if not method_map.has(js_name):
+      errors.append("Missing bridge method: " + js_name + " (expected _js_" + EXPECTED_REGISTRATIONS[js_name] + " on a module)")
+  # Also check for unexpected methods
+  for js_name in method_map:
+    if not EXPECTED_REGISTRATIONS.has(js_name):
+      errors.append("Unregistered bridge method: " + js_name + " (not in contract)")
+  return errors
+`;
+
+	mkdirSync(GDSCRIPT_OUTPUT_DIR, { recursive: true });
+
+	if (existsSync(GDSCRIPT_METHOD_MAP_PATH)) {
+		chmodSync(GDSCRIPT_METHOD_MAP_PATH, 0o644);
+	}
+	writeFileSync(GDSCRIPT_METHOD_MAP_PATH, gdscript);
+	chmodSync(GDSCRIPT_METHOD_MAP_PATH, 0o444);
+}
+
 function computeSourceHash(): string {
 	const content = readFileSync(TYPES_PATH, "utf-8");
 	return createHash("sha256").update(content).digest("hex").slice(0, 12);
 }
 
 function generateRegistry(): BridgeRegistry {
-	const project = new Project({ compilerOptions: { strict: true } });
-	project.addSourceFileAtPath(TYPES_PATH);
+	const project = new Project({
+		compilerOptions: {
+			strict: true,
+			baseUrl: resolve(ROOT, "app"),
+			paths: {
+				"@slopcade/shared": [resolve(ROOT, "shared/src/types/index.ts")],
+				"@slopcade/shared/*": [resolve(ROOT, "shared/src/*")],
+				"@slopcade/shared/effects": [
+					resolve(ROOT, "shared/src/types/index.ts"),
+				],
+			},
+		},
+	});
+	project.addSourceFilesAtPaths([
+		TYPES_PATH,
+		resolve(SHARED_TYPES_DIR, "**/*.ts"),
+	]);
 
 	const sourceFile = project.getSourceFileOrThrow(TYPES_PATH);
 
@@ -298,6 +676,16 @@ function generateRegistry(): BridgeRegistry {
 
 	for (const method of godotBridge.getMethods()) {
 		methods.push(extractMethod(method, godotBridge, "GodotBridge"));
+	}
+
+	// Validate that all override keys reference actual methods
+	const allTsNames = new Set(methods.map((m) => m.tsName));
+	for (const overrideKey of Object.keys(BRIDGE_NAME_OVERRIDES)) {
+		if (!allTsNames.has(overrideKey)) {
+			throw new Error(
+				`BRIDGE_NAME_OVERRIDES references non-existent method: "${overrideKey}"`,
+			);
+		}
 	}
 
 	const byCategory: Record<string, number> = {};
@@ -445,6 +833,109 @@ ${methodImpls}
 	console.log(`  Methods: ${bridgeMethods.length}`);
 }
 
+function wireArgTypeToTS(wireType: WireArg["type"]): string {
+	return wireType === "json" ? "string" : wireType;
+}
+
+function generateWindowDeclaration(registry: BridgeRegistry): void {
+	const WINDOW_DECL_PATH = resolve(OUTPUT_DIR, "window-godot-bridge.d.ts");
+
+	const bridgeMethods = registry.methods.filter((m) => !m.tsOnly);
+
+	const methodLines = bridgeMethods.map((m) => {
+		// Collect raw arg entries: { name, type, optional, paramName }
+		const rawArgs: {
+			name: string;
+			type: string;
+			optional: boolean;
+			paramName: string;
+		}[] = [];
+
+		for (const wp of m.wireParams) {
+			if (wp.wireKind === WireKind.Callback) continue;
+
+			if (
+				wp.wireKind === WireKind.Primitive ||
+				wp.wireKind === WireKind.FlatStruct
+			) {
+				for (const arg of wp.args) {
+					rawArgs.push({
+						name: arg.name,
+						type: wireArgTypeToTS(arg.type),
+						optional: wp.optional,
+						paramName: wp.name,
+					});
+				}
+			} else if (wp.wireKind === WireKind.JsonBlob) {
+				rawArgs.push({
+					name: wp.name,
+					type: "string",
+					optional: wp.optional,
+					paramName: wp.name,
+				});
+			}
+		}
+
+		// Detect duplicate names and prefix with paramName where needed
+		const nameCounts = new Map<string, number>();
+		for (const arg of rawArgs) {
+			nameCounts.set(arg.name, (nameCounts.get(arg.name) ?? 0) + 1);
+		}
+
+		const wireArgs = rawArgs.map((arg) => {
+			const displayName =
+				(nameCounts.get(arg.name) ?? 0) > 1
+					? `${arg.paramName}_${arg.name}`
+					: arg.name;
+			const optMark = arg.optional ? "?" : "";
+			return `${displayName}${optMark}: ${arg.type}`;
+		});
+
+		const paramsStr = wireArgs.join(", ");
+		return `\t\t\t${m.tsName}(${paramsStr}): void;`;
+	});
+
+	const content = `// ⚠️ AUTO-GENERATED - DO NOT EDIT
+// This file is automatically generated from types.ts
+// Any changes will be overwritten on next generation
+// To modify: update app/lib/godot/types.ts and run pnpm generate:bridge
+//
+// Generated by: scripts/bridge-codegen.ts
+// Source: app/lib/godot/types.ts (GodotBridge + EffectsBridge interfaces)
+// Generated: ${registry.generatedAt}
+//
+// Wire-level type declaration for the Godot bridge object exposed on window.
+// Method signatures use flattened primitive parameters matching what Godot's
+// _setup_js_bridge() registers via JavaScriptBridge.create_callback().
+// All methods return void at the wire level; complex returns go through the
+// query/callback system.
+
+declare global {
+\tinterface Window {
+\t\tGodotBridge?: {
+\t\t\t_lastResult: unknown;
+\t\t\t_pendingQueries?: Map<string, (result: unknown) => void>;
+\t\t\tquery(requestId: string, method: string, argsJson: string): void;
+${methodLines.join("\n")}
+\t\t};
+\t}
+}
+
+export {};
+`;
+
+	mkdirSync(OUTPUT_DIR, { recursive: true });
+
+	if (existsSync(WINDOW_DECL_PATH)) {
+		chmodSync(WINDOW_DECL_PATH, 0o644);
+	}
+	writeFileSync(WINDOW_DECL_PATH, content);
+	chmodSync(WINDOW_DECL_PATH, 0o444);
+
+	console.log(`Generated ${WINDOW_DECL_PATH}`);
+	console.log(`  Bridge methods: ${bridgeMethods.length}`);
+}
+
 function generateMockGodotBridge(registry: BridgeRegistry): void {
 	const MOCK_OUTPUT_DIR = resolve(ROOT, "app/lib/godot/__tests__/generated");
 	const MOCK_OUTPUT_PATH = resolve(MOCK_OUTPUT_DIR, "MockGodotBridge.ts");
@@ -515,6 +1006,291 @@ ${mockMethods}
 	console.log(`  Methods: ${registry.methods.length}`);
 }
 
+function generateSharedTransport(registry: BridgeRegistry): void {
+	const SHARED_OUTPUT_PATH = resolve(OUTPUT_DIR, "bridge-methods.ts");
+
+	const bridgeMethods = registry.methods.filter((m) => !m.tsOnly);
+
+	function wireDefault(wireType: WireArg["type"]): string {
+		switch (wireType) {
+			case "number":
+				return "0";
+			case "string":
+				return '""';
+			case "boolean":
+				return "false";
+			case "json":
+				return '""';
+		}
+	}
+
+	function safeAccessor(a: WireArg, wp: WireParam): string {
+		if (wp.wireKind !== WireKind.FlatStruct) return a.accessor;
+
+		const parts = a.accessor.split(".");
+		if (parts.length <= 1) return a.accessor;
+
+		const safeParts = [parts[0]];
+		for (let i = 1; i < parts.length; i++) {
+			safeParts.push(`?.${parts[i]}`);
+		}
+		return `${safeParts.join("")} ?? ${wireDefault(a.type)}`;
+	}
+
+	function buildWireArgs(m: MethodEntry): string[] {
+		const args: string[] = [];
+		for (const wp of m.wireParams) {
+			if (wp.wireKind === WireKind.Callback) continue;
+			for (const a of wp.args) {
+				args.push(safeAccessor(a, wp));
+			}
+		}
+		return args;
+	}
+
+	function getAsyncInnerType(returnType: string): string | null {
+		const match = returnType.match(/^Promise<(.+)>$/s);
+		return match ? match[1].trim() : null;
+	}
+
+	function getAsyncFallback(innerType: string): string | null {
+		if (innerType === "void") return null;
+		if (innerType === "number") return "0";
+		if (innerType === "number | null") return "null";
+		if (innerType === "string | null") return "null";
+		if (innerType.endsWith("| null")) return "null";
+		if (innerType === "any") return "undefined";
+		return null;
+	}
+
+	function getDefaultFallback(returnType: string): string | null {
+		if (returnType === "void") return null;
+		if (returnType === "boolean") return "false";
+		if (returnType === "number") return "-1";
+		if (returnType === "string") return '""';
+		return null;
+	}
+
+	function buildParamSignature(m: MethodEntry): string {
+		return m.params
+			.map((p) => {
+				const optionalMark = p.optional ? "?" : "";
+				return `${p.name}${optionalMark}: ${p.type}`;
+			})
+			.join(", ");
+	}
+
+	function generateEffectsAsyncBody(m: MethodEntry): string {
+		const effectsMethod = `effects.${m.tsName}`;
+
+		if (m.tsName === "snapshot") {
+			return `return dispatch.effectsAsync<EffectsPipelineSnapshot>("${effectsMethod}", undefined, normalizeEffectsSnapshot);`;
+		}
+
+		if (m.tsName === "restore") {
+			return `return dispatch.effectsAsync("${effectsMethod}", { snapshot: createEffectsSnapshotPayload(snapshot) });`;
+		}
+
+		const nonCallbackParams = m.wireParams.filter(
+			(wp) => wp.wireKind !== WireKind.Callback,
+		);
+
+		if (nonCallbackParams.length === 0) {
+			return `return dispatch.effectsAsync("${effectsMethod}");`;
+		}
+
+		const paramObj = nonCallbackParams.map((wp) => wp.name).join(", ");
+
+		return `return dispatch.effectsAsync("${effectsMethod}", { ${paramObj} });`;
+	}
+
+	function generateEffectsSyncBody(m: MethodEntry): string {
+		const wireArgs = buildWireArgs(m);
+		const argsStr = wireArgs.length > 0 ? `, ${wireArgs.join(", ")}` : "";
+		return `dispatch.effectsSync("${m.snakeName}"${argsStr});`;
+	}
+
+	function generateBridgeAsyncBody(m: MethodEntry): string {
+		const wireArgs = buildWireArgs(m);
+		const innerType = getAsyncInnerType(m.returnType);
+		const fallback = innerType ? getAsyncFallback(innerType) : null;
+
+		const argsArray = wireArgs.length > 0 ? `[${wireArgs.join(", ")}]` : "[]";
+
+		if (fallback !== null) {
+			return `return await dispatch.async<${innerType}>("${m.snakeName}", ${argsArray}) ?? ${fallback};`;
+		}
+		return `return dispatch.async<${innerType}>("${m.snakeName}", ${argsArray});`;
+	}
+
+	function generateBridgeSyncBody(m: MethodEntry): string {
+		const wireArgs = buildWireArgs(m);
+		const argsStr = wireArgs.length > 0 ? `, ${wireArgs.join(", ")}` : "";
+		const fallback = getDefaultFallback(m.returnType);
+
+		if (m.returnType === "void") {
+			return `dispatch.sync("${m.snakeName}"${argsStr});`;
+		}
+
+		if (fallback !== null) {
+			return `return dispatch.sync("${m.snakeName}"${argsStr}) as ${m.returnType} ?? ${fallback};`;
+		}
+
+		return `return dispatch.sync("${m.snakeName}"${argsStr}) as ${m.returnType};`;
+	}
+
+	function generateMethodBody(m: MethodEntry): string {
+		// EffectsBridge source methods always use effectsAsync (pipeline methods)
+		if (m.source === "EffectsBridge") {
+			return generateEffectsAsyncBody(m);
+		}
+
+		// GodotBridge methods targeting effects bridge: sync → effectsSync
+		if (m.dispatchTarget === "effects" && !m.async) {
+			return generateEffectsSyncBody(m);
+		}
+
+		// All async methods (including effects-target async like createDynamicShader)
+		// go through dispatch.async — the platform adapter routes to the right bridge
+		if (m.async) {
+			return generateBridgeAsyncBody(m);
+		}
+
+		return generateBridgeSyncBody(m);
+	}
+
+	const methodImpls = bridgeMethods
+		.map((m) => {
+			const params = buildParamSignature(m);
+			const body = generateMethodBody(m);
+			const asyncPrefix = m.async ? "async " : "";
+			const indent = "    ";
+
+			return `  ${asyncPrefix}${m.tsName}(${params}): ${m.returnType} {\n${indent}${body}\n  }`;
+		})
+		.join(",\n\n");
+
+	const importTypes = new Set<string>();
+	for (const m of bridgeMethods) {
+		for (const p of m.params) {
+			const typeStr = p.type;
+			const typeNames = [
+				"GameDefinition",
+				"GameRule",
+				"PropertySyncPayload",
+				"Vec2",
+				"EntityTransform",
+				"CollisionEvent",
+				"SensorEvent",
+				"SpawnEntityRequest",
+				"EntitySpawnedEvent",
+				"RaycastHit",
+				"DynamicShaderResult",
+				"EffectsResult",
+				"EffectsPipelineSnapshot",
+				"RevoluteJointDef",
+				"DistanceJointDef",
+				"PrismaticJointDef",
+				"WeldJointDef",
+				"MouseJointDef",
+				"NormalizedDrawCommand",
+				"DrawCommand",
+			];
+			for (const tn of typeNames) {
+				if (typeStr.includes(tn)) importTypes.add(tn);
+			}
+		}
+		const retTypeNames = [
+			"EntityTransform",
+			"Vec2",
+			"RaycastHit",
+			"DynamicShaderResult",
+			"EffectsResult",
+			"EffectsPipelineSnapshot",
+			"PropertySyncPayload",
+		];
+		for (const tn of retTypeNames) {
+			if (m.returnType.includes(tn)) importTypes.add(tn);
+		}
+	}
+
+	importTypes.add("GodotBridge");
+
+	const hasEffectsPipeline = bridgeMethods.some(
+		(m) => m.source === "EffectsBridge",
+	);
+	const hasSnapshot = bridgeMethods.some(
+		(m) => m.source === "EffectsBridge" && m.tsName === "snapshot",
+	);
+	const hasRestore = bridgeMethods.some(
+		(m) => m.source === "EffectsBridge" && m.tsName === "restore",
+	);
+
+	const typesImports = Array.from(importTypes).sort();
+
+	const baseImports: string[] = [];
+	if (hasEffectsPipeline) {
+		const baseItems: string[] = [];
+		if (hasSnapshot) baseItems.push("normalizeEffectsSnapshot");
+		if (hasRestore) baseItems.push("createEffectsSnapshotPayload");
+		if (baseItems.length > 0) {
+			baseImports.push(
+				`import { ${baseItems.join(", ")} } from '../GodotBridgeBase';`,
+			);
+		}
+	}
+
+	const sharedImports: string[] = [];
+	const hasCompiledPlan = bridgeMethods.some((m) =>
+		m.params.some((p) => p.type.includes("CompiledPlan")),
+	);
+	if (hasCompiledPlan) {
+		sharedImports.push(
+			`import type { CompiledPlan } from '@slopcade/shared/effects';`,
+		);
+	}
+
+	const content = `// ⚠️ AUTO-GENERATED - DO NOT EDIT
+// This file is automatically generated from types.ts
+// Any changes will be overwritten on next generation
+// To modify: update app/lib/godot/types.ts and run pnpm generate:bridge
+//
+// Generated by: scripts/bridge-codegen.ts
+// Source: app/lib/godot/types.ts (GodotBridge + EffectsBridge interfaces)
+// Generated: ${registry.generatedAt}
+
+import type { ${typesImports.join(", ")} } from '../types';
+${sharedImports.length > 0 ? sharedImports.join("\n") + "\n" : ""}${baseImports.length > 0 ? baseImports.join("\n") + "\n" : ""}
+export interface PlatformDispatch {
+  sync(snakeName: string, ...args: unknown[]): unknown;
+  async<T>(snakeName: string, ...args: unknown[]): Promise<T>;
+  effectsSync(snakeName: string, ...args: unknown[]): void;
+  effectsAsync<T = void>(
+    method: string,
+    params?: Record<string, unknown>,
+    mapData?: (rawData: unknown) => T,
+  ): Promise<EffectsResult<T>>;
+}
+
+export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBridge> {
+  return {
+${methodImpls},
+  };
+}
+`;
+
+	mkdirSync(OUTPUT_DIR, { recursive: true });
+
+	if (existsSync(SHARED_OUTPUT_PATH)) {
+		chmodSync(SHARED_OUTPUT_PATH, 0o644);
+	}
+	writeFileSync(SHARED_OUTPUT_PATH, content);
+	chmodSync(SHARED_OUTPUT_PATH, 0o444);
+
+	console.log(`Generated ${SHARED_OUTPUT_PATH}`);
+	console.log(`  Methods: ${bridgeMethods.length}`);
+}
+
 function generateMode(): void {
 	const registry = generateRegistry();
 
@@ -545,9 +1321,16 @@ ${JSON.stringify(registry, null, 2).slice(2)}`;
 	generateGDScriptValidator(registry);
 	console.log(`Generated ${GDSCRIPT_OUTPUT_PATH}`);
 
+	generateGDScriptMethodMap(registry);
+	console.log(`Generated ${GDSCRIPT_METHOD_MAP_PATH}`);
+
 	generateTypedBridgeClient(registry);
 
 	generateMockGodotBridge(registry);
+
+	generateWindowDeclaration(registry);
+
+	generateSharedTransport(registry);
 }
 
 function main() {
