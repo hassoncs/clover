@@ -6,13 +6,13 @@
 
 Load this skill when:
 - Creating a new game definition
-- Modifying an existing game (entities, templates, behaviors, rules)
+- Modifying an existing game (entities, prefabs, behaviors, rules)
 - Debugging game logic (collisions, rules, scripts)
 - Adding features (scoring, win/lose conditions, state machines, scripts)
 
 ## Architecture Overview
 
-Games are TypeScript files that export a `GameDefinition` object. The engine runs on Godot 4 with a React Native shell. Games are declarative: you define templates, entities, rules, and behaviors — the engine handles rendering, physics, and game loop.
+Games are TypeScript files that export a `GameDefinition` object. The engine runs on Godot 4 with a React Native shell. Games are declarative: you define prefabs, entities, rules, and behaviors — the engine handles rendering, physics, and game loop.
 
 **Coordinate system**: Origin at world center. X increases right, Y increases up (physics convention). Use helper functions to convert from screen-space (top-left origin):
 
@@ -62,7 +62,7 @@ const game: GameDefinition = {
   },
   background: { type: "static", color: "#1a1a2e" },
   camera: { type: "fixed", zoom: 1 },
-  templates: {
+  prefabs: {
     ball: {
       id: "ball",
       tags: ["ball"],
@@ -75,7 +75,7 @@ const game: GameDefinition = {
     {
       id: "ball1",
       name: "Ball",
-      template: "ball",
+      prefab: "ball",
       transform: { x: 0, y: 3, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
@@ -86,13 +86,13 @@ export default game;
 
 ## Core Concepts
 
-### Templates vs Entities
+### Prefabs vs Entities
 
-**Templates** (`Record<string, EntityTemplate>`) define blueprints — visual, physics, collider, behaviors, tags. **Entities** (`GameEntity[]`) are instances placed in the world, referencing a template by string key.
+**Prefabs** (`Record<string, EntityPrefab>`) define blueprints — visual, physics, collider, behaviors, tags. **Entities** (`GameEntity[]`) are instances placed in the world, referencing a prefab by string key.
 
 ```typescript
-templates: {
-  brick: {                              // Template key
+prefabs: {
+  brick: {                              // Prefab key
     id: "brick",                        // Must match key
     tags: ["brick"],
     visual: { type: "rect", width: 1.2, height: 0.5, color: "#ff0000" },
@@ -101,7 +101,7 @@ templates: {
   },
 },
 entities: [
-  { id: "brick1", name: "Brick 1", template: "brick",           // ← References template KEY
+  { id: "brick1", name: "Brick 1", prefab: "brick",           // ← References prefab KEY
     transform: { x: 0, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
 ],
 ```
@@ -272,7 +272,7 @@ rules: [
 
 ## Behaviors
 
-Behaviors are per-entity logic attached to templates. Key types:
+Behaviors are per-entity logic attached to prefabs. Key types:
 
 | Behavior | Purpose | Key Fields |
 |----------|---------|-----------|
@@ -341,10 +341,10 @@ See `.claude/skills/game-authoring/scripting-api-reference.md` for complete Scri
 
 ## Child Entities (Hierarchies)
 
-Templates can define children that move with the parent:
+Prefabs can define children that move with the parent:
 
 ```typescript
-templates: {
+prefabs: {
   pipeGroup: {
     id: "pipeGroup",
     tags: ["pipe-group"],
@@ -357,9 +357,9 @@ templates: {
       ]},
     ],
     children: [
-      { name: "pipeTop", template: "pipeTop",
+      { name: "pipeTop", prefab: "pipeTop",
         localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-      { name: "pipeBottom", template: "pipeBottom",
+      { name: "pipeBottom", prefab: "pipeBottom",
         localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
     ],
   },
@@ -458,7 +458,7 @@ assetSystem: {
 },
 ```
 
-Templates with `visual.type: "image"` get their images from the active asset pack. Add `whatDescription` to templates for AI generation hints.
+Prefabs with `visual.type: "image"` get their images from the active asset pack. Add `whatDescription` to prefabs for AI generation hints.
 
 ## Build & Test
 
@@ -473,18 +473,18 @@ pnpm tsc --noEmit
 ## Validation Checklist
 
 Before committing a game definition:
-1. All entity `template` references match a key in `templates`
+1. All entity `prefab` references match a key in `prefabs`
 2. All tags referenced in rules/behaviors are assigned to entities
 3. Physics entities have BOTH `physics` AND `collider` components
 4. Every `transform` has all 5 fields: `x`, `y`, `angle`, `scaleX`, `scaleY`
-5. Template `id` matches its key in the `templates` object
+5. Prefab `id` matches its key in the `prefabs` object
 6. `pnpm tsc --noEmit` passes
 
 ## Common Field Name Mistakes
 
 | Wrong | Correct |
 |-------|---------|
-| `templateId` | `template` (on entity) |
+| `templateId` | `prefab` (on entity) |
 | `physics.shape` | Shape is on `collider`, not `physics` |
 | `fill` | `color` (on visual) |
 | `tagA` / `tagB` | `entityATag` / `entityBTag` (collision trigger) |
@@ -508,7 +508,7 @@ For detailed API docs, read these files in `.claude/skills/game-authoring/`:
 | What | File |
 |------|------|
 | GameDefinition | `shared/src/types/GameDefinition.ts` |
-| Entity/Template | `shared/src/types/entity.ts` |
+| Entity/Prefab | `shared/src/types/entity.ts` |
 | Behaviors (35 types) | `shared/src/types/behavior.ts` |
 | Rules (triggers, conditions, actions) | `shared/src/types/rules.ts` |
 | Visual components | `shared/src/types/visual.ts` |

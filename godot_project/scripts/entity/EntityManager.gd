@@ -83,9 +83,9 @@ func spawn_entity(
 		push_error("[EntityManager] Bridge not available")
 		return null
 	
-	var templates = _bridge.prefabs if "templates" in _bridge else {}
+	var prefabs = _bridge.prefabs
 	if not prefabs.has(prefab_id):
-		push_error("[EntityManager] Prefab not found: " + template_id)
+		push_error("[EntityManager] Prefab not found: " + prefab_id)
 		return null
 	
 	var entity_data = {

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "toggle_cube_tween",
+    "name": "Toggle cube tween on animate button tap",
+    "trigger": {
+      "type": "tap"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "export": "toggleCubeTween"
+      }
+    ]
+  }
+]

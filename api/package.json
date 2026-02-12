@@ -1,57 +1,58 @@
 {
-  "name": "@slopcade/api",
-  "version": "1.0.0",
-  "private": true,
-  "types": "./dist-types/trpc/router.d.ts",
-  "exports": {
-    "./trpc": {
-      "types": "./dist-types/trpc/router.d.ts"
-    }
-  },
-  "scripts": {
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "release": "wrangler deploy --minify --define __DEV__:false",
-    "db:push": "npx wrangler d1 execute slopcade-db --file=./schema.sql --local",
-    "db:push:remote": "npx wrangler d1 execute slopcade-db --file=./schema.sql --remote",
-    "db:reset": "rm -rf .wrangler/state/v3/d1 && pnpm db:push",
-    "type-check": "tsc --noEmit",
-    "build:types": "tsc -b tsconfig.build.json",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "generate:ui": "npx tsx src/cli/generate-ui.ts",
-    "build:games": "tsx scripts/build-games.ts",
-    "watch:games": "tsx scripts/watch-games.ts",
-    "generate:assets": "tsx scripts/generate-assets.ts"
-  },
-  "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.17",
-    "nanoid": "^5.1.5",
-    "@ai-sdk/openai": "^3.0.13",
-    "@ai-sdk/provider": "^3.0.4",
-    "@hono/trpc-server": "^0.3.4",
-    "@slopcade/shared": "workspace:*",
-    "@supabase/supabase-js": "^2.90.1",
-    "@trpc/server": "11.8.1",
-    "ai": "^6.0.42",
-    "drizzle-orm": "^0.38.3",
-    "hono": "^4.11.4",
-    "pngjs": "^7.0.0",
-    "sharp": "^0.34.5",
-    "superjson": "^2.2.6",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.12.3",
-    "@cloudflare/workers-types": "^4.20240512.0",
-    "@trpc/client": "11.8.1",
-    "@types/pngjs": "^6.0.5",
-    "@types/sharp": "^0.32.0",
-    "@types/yargs": "^17.0.35",
-    "esbuild": "^0.27.2",
-    "typescript": "^5.4.5",
-    "vitest": "^2.1.9",
-    "wrangler": "^4.59.2",
-    "yargs": "^18.0.0"
-  }
+	"name": "@slopcade/api",
+	"version": "1.0.0",
+	"private": true,
+	"types": "./dist-types/trpc/router.d.ts",
+	"exports": {
+		"./trpc": {
+			"types": "./dist-types/trpc/router.d.ts"
+		}
+	},
+	"scripts": {
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"release": "wrangler deploy --minify --define __DEV__:false",
+		"db:push": "npx wrangler d1 execute slopcade-db --file=./schema.sql --local",
+		"db:push:remote": "npx wrangler d1 execute slopcade-db --file=./schema.sql --remote",
+		"db:reset": "rm -rf .wrangler/state/v3/d1 && pnpm db:push",
+		"type-check": "tsc --noEmit",
+		"build:types": "tsc -b tsconfig.build.json",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"generate:ui": "npx tsx src/cli/generate-ui.ts",
+		"build:games": "tsx scripts/build-games.ts",
+		"watch:games": "tsx scripts/watch-games.ts",
+		"generate:assets": "tsx scripts/generate-assets.ts"
+	},
+	"dependencies": {
+		"@ai-sdk/anthropic": "^3.0.17",
+		"nanoid": "^5.1.5",
+		"@ai-sdk/openai": "^3.0.13",
+		"@ai-sdk/provider": "^3.0.4",
+		"@hono/trpc-server": "^0.3.4",
+		"@slopcade/game-bundler": "workspace:*",
+		"@slopcade/shared": "workspace:*",
+		"@supabase/supabase-js": "^2.90.1",
+		"@trpc/server": "11.8.1",
+		"ai": "^6.0.42",
+		"drizzle-orm": "^0.38.3",
+		"hono": "^4.11.4",
+		"pngjs": "^7.0.0",
+		"sharp": "^0.34.5",
+		"superjson": "^2.2.6",
+		"zod": "^3.25.76"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.12.3",
+		"@cloudflare/workers-types": "^4.20240512.0",
+		"@trpc/client": "11.8.1",
+		"@types/pngjs": "^6.0.5",
+		"@types/sharp": "^0.32.0",
+		"@types/yargs": "^17.0.35",
+		"esbuild": "^0.27.2",
+		"typescript": "^5.4.5",
+		"vitest": "^2.1.9",
+		"wrangler": "^4.59.2",
+		"yargs": "^18.0.0"
+	}
 }

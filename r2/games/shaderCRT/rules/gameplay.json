@@ -1,0 +1,14 @@
+[
+	{
+		"id": "tap_launch",
+		"name": "Tap to launch ball upward",
+		"trigger": { "type": "tap" },
+		"actions": [
+			{
+				"type": "set_velocity",
+				"target": { "type": "by_tag", "tag": "ball" },
+				"y": 8
+			}
+		]
+	}
+]

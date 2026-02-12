@@ -52,6 +52,7 @@ export function CodeEditor({
 				overflow: "hidden",
 				display: "flex",
 				flexDirection: "column",
+				height: "100%",
 				minHeight: 0,
 				backgroundColor: "#1F2937",
 			}}

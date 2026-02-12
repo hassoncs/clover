@@ -17,4 +17,8 @@ echo "Running TypeScript type check..."
 cd app && pnpm tsc --noEmit && cd ..
 echo "TypeScript check passed."
 
+echo "Linting GDScript..."
+pnpm lint:gdscript
+echo "GDScript lint passed."
+
 pnpm hush check --only-changed

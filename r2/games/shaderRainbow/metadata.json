@@ -1,0 +1,11 @@
+{
+  "id": "shader-rainbow-demo",
+  "slug": "shaderRainbow",
+  "title": "Shader Rainbow",
+  "description": "A visual demo showcasing a rainbow sine wave shader on entities",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": null,
+  "updatedAt": 1770856821619
+}

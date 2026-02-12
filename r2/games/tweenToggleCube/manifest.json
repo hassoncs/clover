@@ -1,0 +1,32 @@
+{
+  "name": "9da2e0ff-6cb6-4ecb-a827-3c7a7c312f09",
+  "version": "1.0.0",
+  "title": "Tween Toggle Cube",
+  "description": "Tap a button to tween a cube between two positions.",
+  "instructions": "Tap Animate to move the cube. Tap again to move it back.",
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "background": {
+    "type": "static",
+    "color": "#0f172a"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": []
+  },
+  "assetSystem": {
+    "activePackId": "default"
+  }
+}

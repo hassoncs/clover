@@ -1,0 +1,27 @@
+[
+  {
+    "id": "background",
+    "name": "Background",
+    "prefab": "background",
+    "transform": {
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-hover-highlight",
+    "name": "Tube Hover Highlight",
+    "prefab": "tubeHoverHighlight",
+    "visible": false,
+    "transform": {
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  }
+]

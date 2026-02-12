@@ -1,0 +1,14 @@
+{
+	"name": "shader-multi-demo",
+	"version": "1.0.0",
+	"title": "Shader Multi",
+	"description": "Multiple different shaders applied to different entities simultaneously",
+	"instructions": "Watch different shader effects on each entity. Tap to add more!",
+	"world": {
+		"gravity": { "x": 0, "y": -3 },
+		"pixelsPerMeter": 50,
+		"bounds": { "width": 12, "height": 16 }
+	},
+	"background": { "type": "static", "color": "#0f0f1e" },
+	"camera": { "type": "fixed", "zoom": 1 }
+}

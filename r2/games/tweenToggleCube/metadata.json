@@ -2,10 +2,10 @@
   "id": "9da2e0ff-6cb6-4ecb-a827-3c7a7c312f09",
   "slug": "tweenToggleCube",
   "title": "Tween Toggle Cube",
-  "description": "Tap a button to tween a cube left and right.",
+  "description": "Tap a button to tween a cube between two positions.",
   "version": "1.0.0",
   "thumbnailUrl": null,
   "packs": [],
-  "activePackId": "default",
-  "updatedAt": 1770841276626
+  "activePackId": null,
+  "updatedAt": 1770856821628
 }

@@ -1,0 +1,324 @@
+[
+  {
+    "id": "potatoBody",
+    "tags": [
+      "potato"
+    ],
+    "whatDescription": "A large, blank, smooth brown potato body shape for Mr. Potato Head, simple and clean with no facial features, slightly oval, cartoon style, front-facing",
+    "visual": {
+      "type": "image",
+      "imageWidth": 5,
+      "imageHeight": 6
+    }
+  },
+  {
+    "id": "drawer",
+    "tags": [
+      "drawer"
+    ],
+    "whatDescription": "A wooden toy drawer or tray with a flat bottom, cartoon style, warm brown wood grain, slightly rounded edges, viewed from the front, open top",
+    "visual": {
+      "type": "image",
+      "imageWidth": 11,
+      "imageHeight": 5
+    }
+  },
+  {
+    "id": "leftEye",
+    "tags": [
+      "piece",
+      "eye",
+      "leftEye"
+    ],
+    "whatDescription": "A single cartoon googly eye for Mr. Potato Head, round white with black pupil, plastic toy style, left eye",
+    "visual": {
+      "type": "image",
+      "imageWidth": 0.8,
+      "imageHeight": 0.8
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.7200000000000001,
+      "height": 0.7200000000000001
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "rightEye",
+    "tags": [
+      "piece",
+      "eye",
+      "rightEye"
+    ],
+    "whatDescription": "A single cartoon googly eye for Mr. Potato Head, round white with black pupil, plastic toy style, right eye",
+    "visual": {
+      "type": "image",
+      "imageWidth": 0.8,
+      "imageHeight": 0.8
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.7200000000000001,
+      "height": 0.7200000000000001
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "nose",
+    "tags": [
+      "piece",
+      "nose"
+    ],
+    "whatDescription": "A big orange carrot-shaped nose for Mr. Potato Head, cartoon plastic toy style, pointing forward",
+    "visual": {
+      "type": "image",
+      "imageWidth": 0.8,
+      "imageHeight": 1
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.7200000000000001,
+      "height": 0.9
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "mouth",
+    "tags": [
+      "piece",
+      "mouth"
+    ],
+    "whatDescription": "A wide red smiling mouth with white teeth for Mr. Potato Head, plastic toy style, cartoon, happy expression",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.4,
+      "imageHeight": 0.7
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.26,
+      "height": 0.63
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "mustache",
+    "tags": [
+      "piece",
+      "mustache"
+    ],
+    "whatDescription": "A thick black handlebar mustache for Mr. Potato Head, plastic toy style, cartoon, curled ends",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.6,
+      "imageHeight": 0.6
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.4400000000000002,
+      "height": 0.54
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "leftArm",
+    "tags": [
+      "piece",
+      "arm",
+      "leftArm"
+    ],
+    "whatDescription": "A small blue plastic left arm and hand for Mr. Potato Head, cartoon toy style, open palm, waving gesture",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 0.8
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.08,
+      "height": 0.7200000000000001
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "rightArm",
+    "tags": [
+      "piece",
+      "arm",
+      "rightArm"
+    ],
+    "whatDescription": "A small blue plastic right arm and hand for Mr. Potato Head, cartoon toy style, open palm, waving gesture",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 0.8
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.08,
+      "height": 0.7200000000000001
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "hat",
+    "tags": [
+      "piece",
+      "hat"
+    ],
+    "whatDescription": "A small black bowler hat or derby hat for Mr. Potato Head, classic style, plastic toy, cartoon, shiny",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.8,
+      "imageHeight": 1
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.62,
+      "height": 0.9
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "ears",
+    "tags": [
+      "piece",
+      "ears"
+    ],
+    "whatDescription": "A pair of large pink plastic ears for Mr. Potato Head, attached by a headband piece, cartoon toy style",
+    "visual": {
+      "type": "image",
+      "imageWidth": 2,
+      "imageHeight": 0.8
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.8,
+      "height": 0.7200000000000001
+    },
+    "behaviors": [
+      {
+        "type": "draggable",
+        "mode": "kinematic",
+        "requireDirectHit": true
+      }
+    ]
+  },
+  {
+    "id": "resetButton",
+    "tags": [
+      "resetButton"
+    ],
+    "visual": {
+      "type": "rect",
+      "width": 2.4,
+      "height": 0.8,
+      "color": "#e74c3c"
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 2.4,
+      "height": 0.8
+    }
+  },
+  {
+    "id": "resetLabel",
+    "tags": [
+      "resetLabel"
+    ],
+    "visual": {
+      "type": "text",
+      "text": "Reset",
+      "fontSize": 18,
+      "color": "#ffffff"
+    }
+  }
+]

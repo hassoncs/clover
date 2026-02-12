@@ -1,18 +1,9 @@
 {
   "metadata": {
     "id": "f596586c-a857-44d3-be97-46149daf60b3",
-    "slug": "snake",
     "title": "Snake",
     "description": "Classic snake game. Eat food, grow longer, don't hit the walls!",
-    "instructions": "Swipe up/down/left/right to control the snake. Eat red food to grow!",
     "version": "1.0.0"
-  },
-  "assetSystem": {
-    "activePackId": "default"
-  },
-  "background": {
-    "type": "static",
-    "color": "#1a1a2e"
   },
   "world": {
     "gravity": {
@@ -24,50 +15,6 @@
       "width": 12,
       "height": 16
     }
-  },
-  "camera": {
-    "type": "fixed",
-    "zoom": 1
-  },
-  "overlay": {
-    "elements": [
-      {
-        "id": "var-score",
-        "type": "text",
-        "anchor": "top-center",
-        "offset": {
-          "x": 0,
-          "y": 16
-        },
-        "fontSize": 18,
-        "fontWeight": "bold",
-        "color": "#FFFFFF",
-        "bindings": {
-          "text": "SCORE\n{{variables.score}}"
-        },
-        "style": {
-          "backgroundColor": "rgba(0,0,0,0.6)",
-          "borderRadius": 8,
-          "paddingHorizontal": 12,
-          "paddingVertical": 6
-        }
-      }
-    ]
-  },
-  "loseCondition": {
-    "type": "custom",
-    "expr": "gameOver == 1"
-  },
-  "variables": {
-    "score": 0,
-    "gameOver": 0,
-    "snakeX": 9,
-    "snakeY": 12,
-    "direction": 1,
-    "nextDirection": 1,
-    "moveTimer": 0,
-    "foodX": 15,
-    "foodY": 12
   },
   "prefabs": {
     "snakeHead": {
@@ -1337,5 +1284,5 @@
       ]
     }
   ],
-  "script": "\nconst GRID_SIZE = 0.6;\nconst MOVE_DELAY = 0.15;\nconst WORLD_WIDTH = 12;\nconst WORLD_HEIGHT = 16;\nconst HALF_W = WORLD_WIDTH / 2;\nconst HALF_H = WORLD_HEIGHT / 2;\nconst cx = (x) => x - HALF_W;\nconst cy = (y) => HALF_H - y;\n\nlet snake = [{ x: 9, y: 12 }];\nlet moveAccumulator = 0;\n\nexports.onStart = function(ctx) {\n  snake = [{ x: 9, y: 12 }];\n  moveAccumulator = 0;\n  ctx.setVariable('score', 0);\n  ctx.setVariable('gameOver', 0);\n  ctx.setVariable('direction', 1);\n  ctx.setVariable('nextDirection', 1);\n};\n\nexports.onUpdate = function(ctx, dt) {\n  if (ctx.getVariable('gameOver') === 1) return;\n  \n  moveAccumulator += dt;\n  if (moveAccumulator < MOVE_DELAY) return;\n  moveAccumulator = 0;\n  \n  const nextDir = ctx.getVariable('nextDirection');\n  ctx.setVariable('direction', nextDir);\n  \n  const head = snake[0];\n  let newX = head.x;\n  let newY = head.y;\n  \n  if (nextDir === 0) newY -= 1;\n  else if (nextDir === 1) newX += 1;\n  else if (nextDir === 2) newY += 1;\n  else if (nextDir === 3) newX -= 1;\n  \n  if (newX < 1 || newX >= 17 || newY < 1 || newY >= 23) {\n    ctx.setVariable('gameOver', 1);\n    return;\n  }\n  \n  for (let i = 0; i < snake.length; i++) {\n    if (snake[i].x === newX && snake[i].y === newY) {\n      ctx.setVariable('gameOver', 1);\n      return;\n    }\n  }\n  \n  snake.unshift({ x: newX, y: newY });\n  \n  const foodX = ctx.getVariable('foodX');\n  const foodY = ctx.getVariable('foodY');\n  if (newX === foodX && newY === foodY) {\n    ctx.setVariable('score', (ctx.getVariable('score') || 0) + 10);\n    ctx.setVariable('foodX', Math.floor(Math.random() * 16) + 1);\n    ctx.setVariable('foodY', Math.floor(Math.random() * 22) + 1);\n  } else {\n    snake.pop();\n  }\n  \n  const headEntity = ctx.queryEntities({ tag: 'snake' })[0];\n  if (headEntity) {\n    ctx.setEntityPosition(headEntity, { x: cx(newX * GRID_SIZE + 1), y: cy(newY * GRID_SIZE + 1) });\n  }\n};\n"
+  "script": "// --- main ---\n\nconst GRID_SIZE = 0.6;\nconst MOVE_DELAY = 0.15;\nconst WORLD_WIDTH = 12;\nconst WORLD_HEIGHT = 16;\nconst HALF_W = WORLD_WIDTH / 2;\nconst HALF_H = WORLD_HEIGHT / 2;\nconst cx = (x) => x - HALF_W;\nconst cy = (y) => HALF_H - y;\n\nlet snake = [{ x: 9, y: 12 }];\nlet moveAccumulator = 0;\n\nexports.onStart = function(ctx) {\n  snake = [{ x: 9, y: 12 }];\n  moveAccumulator = 0;\n  ctx.setVariable('score', 0);\n  ctx.setVariable('gameOver', 0);\n  ctx.setVariable('direction', 1);\n  ctx.setVariable('nextDirection', 1);\n};\n\nexports.onUpdate = function(ctx, dt) {\n  if (ctx.getVariable('gameOver') === 1) return;\n  \n  moveAccumulator += dt;\n  if (moveAccumulator < MOVE_DELAY) return;\n  moveAccumulator = 0;\n  \n  const nextDir = ctx.getVariable('nextDirection');\n  ctx.setVariable('direction', nextDir);\n  \n  const head = snake[0];\n  let newX = head.x;\n  let newY = head.y;\n  \n  if (nextDir === 0) newY -= 1;\n  else if (nextDir === 1) newX += 1;\n  else if (nextDir === 2) newY += 1;\n  else if (nextDir === 3) newX -= 1;\n  \n  if (newX < 1 || newX >= 17 || newY < 1 || newY >= 23) {\n    ctx.setVariable('gameOver', 1);\n    return;\n  }\n  \n  for (let i = 0; i < snake.length; i++) {\n    if (snake[i].x === newX && snake[i].y === newY) {\n      ctx.setVariable('gameOver', 1);\n      return;\n    }\n  }\n  \n  snake.unshift({ x: newX, y: newY });\n  \n  const foodX = ctx.getVariable('foodX');\n  const foodY = ctx.getVariable('foodY');\n  if (newX === foodX && newY === foodY) {\n    ctx.setVariable('score', (ctx.getVariable('score') || 0) + 10);\n    ctx.setVariable('foodX', Math.floor(Math.random() * 16) + 1);\n    ctx.setVariable('foodY', Math.floor(Math.random() * 22) + 1);\n  } else {\n    snake.pop();\n  }\n  \n  const headEntity = ctx.queryEntities({ tag: 'snake' })[0];\n  if (headEntity) {\n    ctx.setEntityPosition(headEntity, { x: cx(newX * GRID_SIZE + 1), y: cy(newY * GRID_SIZE + 1) });\n  }\n};\n"
 }

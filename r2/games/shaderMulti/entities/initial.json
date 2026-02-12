@@ -1,0 +1,56 @@
+[
+	{
+		"id": "orb1",
+		"name": "Glow Orb 1",
+		"prefab": "glowOrb",
+		"transform": { "x": -3, "y": 5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "orb2",
+		"name": "Glow Orb 2",
+		"prefab": "glowOrb",
+		"transform": { "x": -2, "y": 3, "angle": 0, "scaleX": 0.8, "scaleY": 0.8 }
+	},
+	{
+		"id": "block1",
+		"name": "Dissolve Block 1",
+		"prefab": "dissolveBlock",
+		"transform": { "x": 0, "y": 5, "angle": 15, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "block2",
+		"name": "Dissolve Block 2",
+		"prefab": "dissolveBlock",
+		"transform": { "x": 1, "y": 2, "angle": -20, "scaleX": 0.7, "scaleY": 0.7 }
+	},
+	{
+		"id": "tri1",
+		"name": "Holo Triangle 1",
+		"prefab": "holoTriangle",
+		"transform": { "x": 3, "y": 5, "angle": 0, "scaleX": 1.2, "scaleY": 1.2 }
+	},
+	{
+		"id": "tri2",
+		"name": "Holo Triangle 2",
+		"prefab": "holoTriangle",
+		"transform": { "x": 2, "y": 3, "angle": 30, "scaleX": 0.9, "scaleY": 0.9 }
+	},
+	{
+		"id": "floor",
+		"name": "Floor",
+		"prefab": "floor",
+		"transform": { "x": 0, "y": -7.5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallLeft",
+		"name": "Wall Left",
+		"prefab": "wall",
+		"transform": { "x": -6.25, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallRight",
+		"name": "Wall Right",
+		"prefab": "wall",
+		"transform": { "x": 6.25, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	}
+]

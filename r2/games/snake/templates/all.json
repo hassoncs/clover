@@ -1,0 +1,90 @@
+[
+  {
+    "id": "snakeHead",
+    "tags": [
+      "snake",
+      "player"
+    ],
+    "visual": {
+      "type": "rect",
+      "width": 0.54,
+      "height": 0.54,
+      "color": "#4ade80"
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.54,
+      "height": 0.54,
+      "isSensor": true
+    }
+  },
+  {
+    "id": "snakeBody",
+    "tags": [
+      "snake",
+      "body"
+    ],
+    "visual": {
+      "type": "rect",
+      "width": 0.51,
+      "height": 0.51,
+      "color": "#22c55e"
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.51,
+      "height": 0.51,
+      "isSensor": true
+    }
+  },
+  {
+    "id": "food",
+    "tags": [
+      "food"
+    ],
+    "visual": {
+      "type": "circle",
+      "radius": 0.21,
+      "color": "#ef4444"
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "circle",
+      "radius": 0.21,
+      "isSensor": true
+    }
+  },
+  {
+    "id": "wall",
+    "tags": [
+      "wall"
+    ],
+    "visual": {
+      "type": "rect",
+      "width": 0.6,
+      "height": 0.6,
+      "color": "#374151"
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.6,
+      "height": 0.6,
+      "isSensor": true
+    }
+  }
+]

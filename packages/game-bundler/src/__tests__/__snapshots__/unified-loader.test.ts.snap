@@ -30,27 +30,7 @@ exports[`bundle compilation snapshots > produces consistent output for a simple 
     "title": "Pong",
     "version": "1.0.0",
   },
-  "rules": [
-    {
-      "actions": [
-        {
-          "amount": 1,
-          "type": "addScore",
-        },
-      ],
-      "id": "ball-paddle-collision",
-      "trigger": {
-        "entityA": {
-          "tag": "ball",
-        },
-        "entityB": {
-          "tag": "paddle",
-        },
-        "type": "collision",
-      },
-    },
-  ],
-  "templates": {
+  "prefabs": {
     "ball": {
       "id": "ball",
       "physics": {
@@ -83,6 +63,26 @@ exports[`bundle compilation snapshots > produces consistent output for a simple 
       ],
     },
   },
+  "rules": [
+    {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "addScore",
+        },
+      ],
+      "id": "ball-paddle-collision",
+      "trigger": {
+        "entityA": {
+          "tag": "ball",
+        },
+        "entityB": {
+          "tag": "paddle",
+        },
+        "type": "collision",
+      },
+    },
+  ],
   "world": {
     "bounds": {
       "height": 16,

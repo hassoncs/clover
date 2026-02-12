@@ -1,0 +1,11 @@
+{
+  "id": "shader-crt-demo",
+  "slug": "shaderCRT",
+  "title": "Shader CRT",
+  "description": "A retro CRT post-process effect applied to a simple scene",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": null,
+  "updatedAt": 1770856821616
+}

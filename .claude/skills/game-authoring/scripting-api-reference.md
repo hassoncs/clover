@@ -43,7 +43,7 @@ ctx.distance(vecA, vecB)        // Distance between two Vec2
 
 ### Entity Lifecycle
 ```javascript
-ctx.spawnEntity(templateId, { x, y }, opts?)  // Returns entityId or null
+ctx.spawnEntity(prefabId, { x, y }, opts?)  // Returns entityId or null
 ctx.destroyEntity(entityId)
 ctx.cloneEntity(entityId, opts?)              // Returns new entityId or null
 ctx.reparentEntity(entityId, newParentId, opts?)
@@ -87,7 +87,7 @@ ctx.getEntityTags(entityId)         // Returns string[]
 ctx.addTag(entityId, tag)
 ctx.removeTag(entityId, tag)        // Returns boolean
 ctx.hasTag(entityId, tag)           // Returns boolean
-ctx.getEntityTemplate(entityId)     // Returns string or undefined
+ctx.getEntityPrefab(entityId)       // Returns string or undefined
 ctx.getEntityData(entityId)         // Returns full WorldEntityData or null
 ```
 
@@ -103,7 +103,7 @@ ctx.raycast(from, to, opts?)            // Returns RaycastHit or null
 **WorldEntityQuery** filter:
 ```javascript
 ctx.queryEntities({ tag: 'enemy' })
-ctx.queryEntities({ template: 'bullet' })
+ctx.queryEntities({ prefab: 'bullet' })
 ctx.queryEntities({ tags: ['enemy', 'alive'] })  // Must have all tags
 ```
 

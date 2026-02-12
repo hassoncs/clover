@@ -8,7 +8,7 @@ Complete field-by-field reference for the `GameDefinition` interface. Source of 
 interface GameDefinition {
   metadata: GameMetadata;                           // Required
   world: WorldConfig;                               // Required
-  templates: Record<string, EntityTemplate>;        // Required
+  prefabs: Record<string, EntityPrefab>;            // Required
   entities: GameEntity[];                           // Required
   presentation?: PresentationConfig;
   camera?: CameraConfig;
@@ -98,15 +98,15 @@ interface GameDefinition {
 { type: "parallax", layers: ParallaxLayer[] }
 ```
 
-## templates: Record<string, EntityTemplate>
+## prefabs: Record<string, EntityPrefab>
 
-Templates are an object map, NOT an array. The key must match the template's `id` field.
+Prefabs are an object map, NOT an array. The key must match the prefab's `id` field.
 
-### EntityTemplate
+### EntityPrefab
 
 ```typescript
 {
-  id: string;                    // Must match the key in templates object
+  id: string;                    // Must match the key in prefabs object
   description?: string;
   whatDescription?: string;      // For AI asset generation: "a bouncing red ball"
   archetype?: EntityArchetype;
@@ -119,7 +119,7 @@ Templates are an object map, NOT an array. The key must match the template's `id
   tags?: string[];
   layer?: number;
   slots?: Record<string, SlotDefinition>;
-  children?: ChildTemplateDefinition[];
+  children?: ChildPrefabDefinition[];
 }
 ```
 
@@ -193,13 +193,13 @@ Templates are an object map, NOT an array. The key must match the template's `id
 {
   id: string;                    // Unique entity ID
   name: string;                  // Human-readable name
-  template?: string;             // References a key in templates
+  prefab?: string;               // References a key in prefabs
   transform: TransformComponent; // { x, y, angle, scaleX, scaleY }
-  visual?: VisualComponent;      // Override template visual
-  physics?: PhysicsComponent;    // Override template physics
-  collider?: ColliderComponent;  // Override template collider
+  visual?: VisualComponent;      // Override prefab visual
+  physics?: PhysicsComponent;    // Override prefab physics
+  collider?: ColliderComponent;  // Override prefab collider
   behaviors?: Behavior[];        // Additional behaviors
-  tags?: string[];               // Additional tags (merged with template)
+  tags?: string[];               // Additional tags (merged with prefab)
   layer?: number;
   visible?: boolean;
   active?: boolean;

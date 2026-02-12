@@ -427,7 +427,7 @@ func find_entities(args: Array) -> Array:
 	
 	if args.size() > 0 and args[0] is Dictionary:
 		var opts = args[0] as Dictionary
-		template_filter = opts.get("prefab", "")
+		prefab_filter = opts.get("prefab", "")
 		tag_filter = opts.get("tag", "")
 		name_filter = opts.get("name", "")
 		limit = opts.get("limit", 100)
@@ -442,7 +442,7 @@ func find_entities(args: Array) -> Array:
 		var node = entities[entity_id]
 		
 		if prefab_filter != "" and node.has_meta("prefab"):
-			if node.get_meta("prefab") != template_filter:
+			if node.get_meta("prefab") != prefab_filter:
 				continue
 		
 		if tag_filter != "" and node.has_meta("tags"):
@@ -505,7 +505,7 @@ func get_entity_count(args: Array) -> Dictionary:
 	
 	if args.size() > 0 and args[0] is Dictionary:
 		var opts = args[0] as Dictionary
-		template_filter = opts.get("prefab", "")
+		prefab_filter = opts.get("prefab", "")
 		tag_filter = opts.get("tag", "")
 	
 	var total = 0

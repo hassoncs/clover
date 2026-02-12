@@ -120,7 +120,7 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 	const [isGeneratingUI, setIsGeneratingUI] = useState(false);
 
 	const prefabs = useMemo(() => {
-		return Object.entries(document.prefabs).map(([id, prefab]) => ({
+		return Object.entries(document.prefabs ?? {}).map(([id, prefab]) => ({
 			id,
 			prefab,
 		}));

@@ -1,0 +1,41 @@
+[
+	{
+		"id": "tap_spawn_orb",
+		"name": "Tap to spawn a glow orb",
+		"trigger": { "type": "tap" },
+		"conditions": [{ "type": "random", "probability": 0.33 }],
+		"actions": [
+			{
+				"type": "spawn",
+				"template": "glowOrb",
+				"position": { "type": "touch" }
+			}
+		]
+	},
+	{
+		"id": "tap_spawn_block",
+		"name": "Tap to spawn a dissolve block",
+		"trigger": { "type": "tap" },
+		"conditions": [{ "type": "random", "probability": 0.33 }],
+		"actions": [
+			{
+				"type": "spawn",
+				"template": "dissolveBlock",
+				"position": { "type": "touch" }
+			}
+		]
+	},
+	{
+		"id": "tap_spawn_tri",
+		"name": "Tap to spawn a holo triangle",
+		"trigger": { "type": "tap" },
+		"conditions": [{ "type": "random", "probability": 0.34 }],
+		"actions": [
+			{
+				"type": "spawn",
+				"template": "holoTriangle",
+				"position": { "type": "touch" }
+			}
+		]
+	}
+]

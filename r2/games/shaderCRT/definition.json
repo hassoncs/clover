@@ -1,0 +1,330 @@
+{
+  "metadata": {
+    "id": "shader-crt-demo",
+    "title": "Shader CRT",
+    "description": "A retro CRT post-process effect applied to a simple scene",
+    "version": "1.0.0"
+  },
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": -10
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "prefabs": {
+    "bounceBall": {
+      "id": "bounceBall",
+      "tags": [
+        "ball"
+      ],
+      "visual": {
+        "type": "circle",
+        "radius": 0.5,
+        "color": "#00ff88"
+      },
+      "physics": {
+        "bodyType": "dynamic",
+        "density": 1,
+        "ccd": true
+      },
+      "collider": {
+        "shape": "circle",
+        "radius": 0.5,
+        "restitution": 0.9,
+        "friction": 0.1
+      }
+    },
+    "paddle": {
+      "id": "paddle",
+      "tags": [
+        "paddle"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 3,
+        "height": 0.4,
+        "color": "#00cc66"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 3,
+        "height": 0.4,
+        "restitution": 1
+      }
+    },
+    "brick": {
+      "id": "brick",
+      "tags": [
+        "brick"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 1.8,
+        "height": 0.6,
+        "color": "#33ff99"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.8,
+        "height": 0.6
+      },
+      "behaviors": [
+        {
+          "type": "destroy_on_collision",
+          "withTags": [
+            "ball"
+          ],
+          "effect": "fade"
+        }
+      ]
+    },
+    "wallH": {
+      "id": "wallH",
+      "tags": [
+        "wall"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 14,
+        "height": 0.5,
+        "color": "#115533"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 14,
+        "height": 0.5
+      }
+    },
+    "wallV": {
+      "id": "wallV",
+      "tags": [
+        "wall"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 0.5,
+        "height": 18,
+        "color": "#115533"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.5,
+        "height": 18
+      }
+    }
+  },
+  "entities": [
+    {
+      "id": "ball",
+      "name": "Bounce Ball",
+      "prefab": "bounceBall",
+      "transform": {
+        "x": 0,
+        "y": 0,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "physics": {
+        "bodyType": "dynamic",
+        "density": 1,
+        "initialVelocity": {
+          "x": 3,
+          "y": 5
+        }
+      }
+    },
+    {
+      "id": "paddle",
+      "name": "Paddle",
+      "prefab": "paddle",
+      "transform": {
+        "x": 0,
+        "y": -6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick1",
+      "name": "Brick 1",
+      "prefab": "brick",
+      "transform": {
+        "x": -3,
+        "y": 5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick2",
+      "name": "Brick 2",
+      "prefab": "brick",
+      "transform": {
+        "x": -1,
+        "y": 5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick3",
+      "name": "Brick 3",
+      "prefab": "brick",
+      "transform": {
+        "x": 1,
+        "y": 5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick4",
+      "name": "Brick 4",
+      "prefab": "brick",
+      "transform": {
+        "x": 3,
+        "y": 5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick5",
+      "name": "Brick 5",
+      "prefab": "brick",
+      "transform": {
+        "x": -2,
+        "y": 6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick6",
+      "name": "Brick 6",
+      "prefab": "brick",
+      "transform": {
+        "x": 0,
+        "y": 6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "brick7",
+      "name": "Brick 7",
+      "prefab": "brick",
+      "transform": {
+        "x": 2,
+        "y": 6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wallTop",
+      "name": "Top Wall",
+      "prefab": "wallH",
+      "transform": {
+        "x": 0,
+        "y": 8,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wallBottom",
+      "name": "Bottom Wall",
+      "prefab": "wallH",
+      "transform": {
+        "x": 0,
+        "y": -7.75,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wallLeft",
+      "name": "Left Wall",
+      "prefab": "wallV",
+      "transform": {
+        "x": -6.25,
+        "y": 0,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wallRight",
+      "name": "Right Wall",
+      "prefab": "wallV",
+      "transform": {
+        "x": 6.25,
+        "y": 0,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "tap_launch",
+      "name": "Tap to launch ball upward",
+      "trigger": {
+        "type": "tap"
+      },
+      "actions": [
+        {
+          "type": "set_velocity",
+          "target": {
+            "type": "by_tag",
+            "tag": "ball"
+          },
+          "y": 8
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "shaders": {
+      "crt_screen": {
+        "filename": "crt_screen.gdshader",
+        "glsl": "shader_type canvas_item;\n\nuniform float scanline_count : hint_range(50.0, 800.0) = 300.0;\nuniform float scanline_intensity : hint_range(0.0, 1.0) = 0.15;\nuniform float curvature : hint_range(0.0, 0.1) = 0.03;\nuniform float vignette_intensity : hint_range(0.0, 1.0) = 0.4;\nuniform float flicker_speed : hint_range(0.0, 10.0) = 3.0;\nuniform float flicker_amount : hint_range(0.0, 0.1) = 0.02;\nuniform float chromatic_offset : hint_range(0.0, 5.0) = 1.0;\nuniform vec4 tint_color : source_color = vec4(0.9, 1.0, 0.9, 1.0);\n\nvec2 curve_uv(vec2 uv) {\n\tuv = uv * 2.0 - 1.0;\n\tvec2 offset = abs(uv.yx) / vec2(6.0, 4.0);\n\tuv = uv + uv * offset * offset * curvature;\n\tuv = uv * 0.5 + 0.5;\n\treturn uv;\n}\n\nvoid fragment() {\n\tvec2 uv = curve_uv(UV);\n\t\n\tif (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {\n\t\tCOLOR = vec4(0.0, 0.0, 0.0, 1.0);\n\t\treturn;\n\t}\n\t\n\tvec2 pixel_size = TEXTURE_PIXEL_SIZE * chromatic_offset;\n\tfloat r = texture(TEXTURE, uv + vec2(pixel_size.x, 0.0)).r;\n\tfloat g = texture(TEXTURE, uv).g;\n\tfloat b = texture(TEXTURE, uv - vec2(pixel_size.x, 0.0)).b;\n\tvec3 col = vec3(r, g, b);\n\t\n\tfloat scanline = sin(uv.y * scanline_count * 3.14159) * 0.5 + 0.5;\n\tcol *= 1.0 - scanline_intensity * (1.0 - scanline);\n\t\n\tfloat flicker = 1.0 - flicker_amount * sin(TIME * flicker_speed);\n\tcol *= flicker;\n\t\n\tfloat vignette = uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y);\n\tvignette = clamp(pow(16.0 * vignette, vignette_intensity), 0.0, 1.0);\n\tcol *= vignette;\n\t\n\tcol *= tint_color.rgb;\n\t\n\tCOLOR = vec4(col, 1.0);\n}"
+      }
+    }
+  }
+}

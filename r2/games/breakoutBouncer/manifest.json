@@ -1,0 +1,137 @@
+{
+  "name": "405c4171-c7a3-4b23-ac3d-dd9ee53e5e0f",
+  "version": "1.0.0",
+  "title": "Breakout Bouncer",
+  "description": "Classic brick-breaker with sci-fi neon assets",
+  "instructions": "Drag the paddle left/right to bounce the ball. Destroy all bricks to win!",
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 10,
+      "height": 20
+    }
+  },
+  "background": {
+    "type": "static",
+    "whatDescription": "a dark neon arcade game background"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "overlay": {
+    "elements": [
+      {
+        "id": "var-score",
+        "type": "text",
+        "anchor": "top-right",
+        "offset": {
+          "x": 16,
+          "y": 16
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "SCORE\n{{variables.score}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-lives",
+        "type": "text",
+        "anchor": "top-right",
+        "offset": {
+          "x": 16,
+          "y": 72
+        },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": {
+          "text": "LIVES\n{{variables.lives}}"
+        },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      }
+    ]
+  },
+  "variables": {
+    "lives": 3,
+    "paddleForce": {
+      "value": 120,
+      "tuning": {
+        "min": 50,
+        "max": 200,
+        "step": 10
+      },
+      "category": "physics",
+      "label": "Paddle Push Force"
+    },
+    "tapImpulse": {
+      "value": 25,
+      "tuning": {
+        "min": 10,
+        "max": 50,
+        "step": 5
+      },
+      "category": "physics",
+      "label": "Tap Impulse Strength"
+    },
+    "tiltForce": {
+      "value": 60,
+      "tuning": {
+        "min": 20,
+        "max": 100,
+        "step": 5
+      },
+      "category": "physics",
+      "label": "Tilt Push Force"
+    }
+  },
+  "assetSystem": {
+    "activePackId": "default"
+  },
+  "winCondition": {
+    "expr": "entityCount('brick') == 0"
+  },
+  "loseCondition": {
+    "type": "custom",
+    "expr": "lives <= 0"
+  },
+  "input": {
+    "tapZones": [
+      {
+        "id": "left-zone",
+        "edge": "left",
+        "size": 0.5,
+        "button": "left"
+      },
+      {
+        "id": "right-zone",
+        "edge": "right",
+        "size": 0.5,
+        "button": "right"
+      }
+    ],
+    "debugTapZones": false,
+    "tilt": {
+      "enabled": true,
+      "sensitivity": 2,
+      "updateInterval": 16
+    }
+  }
+}

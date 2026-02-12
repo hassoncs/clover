@@ -89,7 +89,7 @@ UIManager.gd::GDScript::2938340039645018513::1770158499::0::1::::UIManager<>RefC
 VisualRenderer.gd::GDScript::3033702139520954300::1770413208::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
 WebSocketSystem.gd::GDScript::6579444550606019435::1770841275::0::1::::WebSocketSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/debug/::1770841275
-DebugBridge.gd::GDScript::576835227171242688::1770841275::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
+DebugBridge.gd::GDScript::576835227171242688::1770858043::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
 DebugEvents.gd::GDScript::902416114620322173::1770841275::0::1::::DebugEvents<>RefCounted<><>0<>0<><>::
 DebugLifecycle.gd::GDScript::2459095375678203847::1770841275::0::1::::DebugLifecycle<>RefCounted<><>0<>0<><>::
 DebugPhysics.gd::GDScript::2325521010436117967::1769981004::0::1::::DebugPhysics<>RefCounted<><>0<>0<><>::
@@ -97,7 +97,7 @@ DebugProps.gd::GDScript::4891004605017099441::1770841275::0::1::::DebugProps<>Re
 DebugSelector.gd::GDScript::4146464479291421755::1770841275::0::1::::DebugSelector<>RefCounted<><>0<>0<><>::
 DebugTime.gd::GDScript::5403663126197881566::1769719248::0::1::::DebugTime<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/generated/::1770841275
-BridgeValidation.gd::GDScript::5204360596113440431::1770851587::0::1::::BridgeValidation<>RefCounted<><>0<>0<><>::
+BridgeValidation.gd::GDScript::5204360596113440431::1770854459::0::1::::BridgeValidation<>RefCounted<><>0<>0<><>::
 ::res://scripts/camera/::1770588068
 CameraEffects.gd::GDScript::5294655921117142126::1769538422::0::1::::<>Camera2D<><>0<>0<><>::
 CameraManager.gd::GDScript::5736649760931255875::1770499166::0::1::::<>Node<><>0<>0<><>::
@@ -117,7 +117,7 @@ ViewportPool_copy.gd::GDScript::5234298946019358277::1770692442::0::1::::Viewpor
 ::res://scripts/entity/::1770841275
 EntityFactory.gd::GDScript::38841348357641075::1770841275::0::1::::EntityFactory<>RefCounted<><>0<>0<><>::
 EntityLifecycleSystem.gd::GDScript::3160000650113589081::1770841275::0::1::::EntityLifecycleSystem<>RefCounted<><>0<>0<><>::
-EntityManager.gd::GDScript::418805061965814239::1770841275::0::1::::EntityManager<>RefCounted<><>0<>0<><>::
+EntityManager.gd::GDScript::418805061965814239::1770858020::0::1::::EntityManager<>RefCounted<><>0<>0<><>::
 EntityRecord.gd::GDScript::3038143391968846502::1770841275::0::1::::EntityRecord<>RefCounted<><>0<>0<><>::
 ImageSystem.gd::GDScript::4287088875152274307::1769652858::0::1::::ImageSystem<>RefCounted<><>0<>0<><>::
 TransformSystem.gd::GDScript::5148412927370052613::1770137285::0::1::::TransformSystem<>RefCounted<><>0<>0<><>::
@@ -136,7 +136,7 @@ PhysicsQueries.gd::GDScript::5196289122445717834::1770054896::0::1::::PhysicsQue
 ::res://scripts/systems/::1770588068
 ParticleFactory.gd::GDScript::1328743478439248795::1769538422::0::1::::ParticleFactory<>Node<><>0<>0<><>::
 SplatMapSystem.gd::GDScript::2981357408708297732::1769981866::0::1::::SplatMapSystem<>RefCounted<><>0<>0<><>::
-::res://scripts/testing/::1770675099
+::res://scripts/testing/::1770858377
 HeadlessTestAdapter.gd::GDScript::4671856587268502233::1770675096::0::1::::<>Node<><>0<>0<><>::
 HeadlessTestMain.gd::GDScript::5586250425917113144::1770675096::0::1::::<>Node2D<><>0<>0<><>::
 ::res://scripts/ui/::1770158700

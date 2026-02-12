@@ -1,0 +1,50 @@
+[
+	{
+		"id": "cube1",
+		"name": "Rainbow Cube 1",
+		"prefab": "rainbowCube",
+		"transform": { "x": -2, "y": 4, "angle": 15, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "cube2",
+		"name": "Rainbow Cube 2",
+		"prefab": "rainbowCube",
+		"transform": { "x": 2, "y": 5, "angle": -10, "scaleX": 1.3, "scaleY": 1.3 }
+	},
+	{
+		"id": "circle1",
+		"name": "Rainbow Circle 1",
+		"prefab": "rainbowCircle",
+		"transform": { "x": 0, "y": 6, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "circle2",
+		"name": "Rainbow Circle 2",
+		"prefab": "rainbowCircle",
+		"transform": { "x": -3, "y": 7, "angle": 0, "scaleX": 0.7, "scaleY": 0.7 }
+	},
+	{
+		"id": "circle3",
+		"name": "Rainbow Circle 3",
+		"prefab": "rainbowCircle",
+		"transform": { "x": 3, "y": 7.5, "angle": 0, "scaleX": 1.2, "scaleY": 1.2 }
+	},
+	{
+		"id": "floor",
+		"name": "Floor",
+		"prefab": "floor",
+		"transform": { "x": 0, "y": -7.5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallLeft",
+		"name": "Wall Left",
+		"prefab": "wall",
+		"transform": { "x": -6.25, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallRight",
+		"name": "Wall Right",
+		"prefab": "wall",
+		"transform": { "x": 6.25, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	}
+]

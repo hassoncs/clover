@@ -1,0 +1,15 @@
+[
+	{
+		"id": "tap_spawn_cube",
+		"name": "Tap to spawn a rainbow cube",
+		"trigger": { "type": "tap" },
+		"actions": [
+			{
+				"type": "spawn",
+				"template": "rainbowCube",
+				"position": { "type": "touch" },
+				"count": 1
+			}
+		]
+	}
+]

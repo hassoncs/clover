@@ -1,0 +1,82 @@
+[
+	{
+		"id": "rainbowCube",
+		"tags": ["cube", "rainbow"],
+		"visual": {
+			"type": "rect",
+			"width": 1.5,
+			"height": 1.5,
+			"color": "#ffffff"
+		},
+		"physics": {
+			"bodyType": "dynamic",
+			"density": 1,
+			"linearDamping": 0.5
+		},
+		"collider": {
+			"shape": "box",
+			"width": 1.5,
+			"height": 1.5,
+			"restitution": 0.6,
+			"friction": 0.3
+		}
+	},
+	{
+		"id": "rainbowCircle",
+		"tags": ["circle", "rainbow"],
+		"visual": {
+			"type": "circle",
+			"radius": 0.8,
+			"color": "#ffffff"
+		},
+		"physics": {
+			"bodyType": "dynamic",
+			"density": 0.8,
+			"linearDamping": 0.3
+		},
+		"collider": {
+			"shape": "circle",
+			"radius": 0.8,
+			"restitution": 0.7,
+			"friction": 0.2
+		}
+	},
+	{
+		"id": "floor",
+		"tags": ["floor"],
+		"visual": {
+			"type": "rect",
+			"width": 14,
+			"height": 1,
+			"color": "#222244"
+		},
+		"physics": {
+			"bodyType": "static",
+			"density": 0
+		},
+		"collider": {
+			"shape": "box",
+			"width": 14,
+			"height": 1
+		}
+	},
+	{
+		"id": "wall",
+		"tags": ["wall"],
+		"visual": {
+			"type": "rect",
+			"width": 0.5,
+			"height": 16,
+			"color": "#222244"
+		},
+		"physics": {
+			"bodyType": "static",
+			"density": 0
+		},
+		"collider": {
+			"shape": "box",
+			"width": 0.5,
+			"height": 16
+		}
+	}
+]

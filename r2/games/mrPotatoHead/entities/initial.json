@@ -1,0 +1,171 @@
+[
+  {
+    "id": "potatoBody",
+    "name": "Potato Body",
+    "prefab": "potatoBody",
+    "transform": {
+      "x": 0,
+      "y": 2.5,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 0
+  },
+  {
+    "id": "drawer",
+    "name": "Drawer",
+    "prefab": "drawer",
+    "transform": {
+      "x": 0,
+      "y": -4.5,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 0
+  },
+  {
+    "id": "leftEye",
+    "name": "Left Eye",
+    "prefab": "leftEye",
+    "transform": {
+      "x": -3.5,
+      "y": -3.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "rightEye",
+    "name": "Right Eye",
+    "prefab": "rightEye",
+    "transform": {
+      "x": -2,
+      "y": -3.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "nose",
+    "name": "Nose",
+    "prefab": "nose",
+    "transform": {
+      "x": -0.5,
+      "y": -3.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "ears",
+    "name": "Ears",
+    "prefab": "ears",
+    "transform": {
+      "x": 1.5,
+      "y": -3.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "hat",
+    "name": "Hat",
+    "prefab": "hat",
+    "transform": {
+      "x": 3.5,
+      "y": -3.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "mouth",
+    "name": "Mouth",
+    "prefab": "mouth",
+    "transform": {
+      "x": -3,
+      "y": -5.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "mustache",
+    "name": "Mustache",
+    "prefab": "mustache",
+    "transform": {
+      "x": -0.5,
+      "y": -5.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "leftArm",
+    "name": "Left Arm",
+    "prefab": "leftArm",
+    "transform": {
+      "x": 2,
+      "y": -5.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "rightArm",
+    "name": "Right Arm",
+    "prefab": "rightArm",
+    "transform": {
+      "x": 4,
+      "y": -5.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 2
+  },
+  {
+    "id": "resetButton",
+    "name": "Reset Button",
+    "prefab": "resetButton",
+    "transform": {
+      "x": 0,
+      "y": -7.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 3
+  },
+  {
+    "id": "resetLabel",
+    "name": "Reset Label",
+    "prefab": "resetLabel",
+    "transform": {
+      "x": 0,
+      "y": -7.2,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    "layer": 4
+  }
+]

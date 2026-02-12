@@ -1,0 +1,351 @@
+{
+  "metadata": {
+    "id": "shader-multi-demo",
+    "title": "Shader Multi",
+    "description": "Multiple different shaders applied to different entities simultaneously",
+    "version": "1.0.0"
+  },
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": -3
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "prefabs": {
+    "glowOrb": {
+      "id": "glowOrb",
+      "tags": [
+        "orb",
+        "glow"
+      ],
+      "visual": {
+        "type": "circle",
+        "radius": 0.7,
+        "color": "#4488ff"
+      },
+      "physics": {
+        "bodyType": "dynamic",
+        "density": 0.5,
+        "linearDamping": 0.8
+      },
+      "collider": {
+        "shape": "circle",
+        "radius": 0.7,
+        "restitution": 0.8
+      }
+    },
+    "dissolveBlock": {
+      "id": "dissolveBlock",
+      "tags": [
+        "block",
+        "dissolve"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 2,
+        "height": 2,
+        "color": "#ff8844"
+      },
+      "physics": {
+        "bodyType": "dynamic",
+        "density": 2,
+        "linearDamping": 0.5
+      },
+      "collider": {
+        "shape": "box",
+        "width": 2,
+        "height": 2,
+        "restitution": 0.4
+      }
+    },
+    "holoTriangle": {
+      "id": "holoTriangle",
+      "tags": [
+        "triangle",
+        "holographic"
+      ],
+      "visual": {
+        "type": "polygon",
+        "vertices": [
+          {
+            "x": 0,
+            "y": 1
+          },
+          {
+            "x": -0.87,
+            "y": -0.5
+          },
+          {
+            "x": 0.87,
+            "y": -0.5
+          }
+        ],
+        "color": "#88ffcc"
+      },
+      "physics": {
+        "bodyType": "dynamic",
+        "density": 0.7,
+        "linearDamping": 0.6
+      },
+      "collider": {
+        "shape": "polygon",
+        "vertices": [
+          {
+            "x": 0,
+            "y": 1
+          },
+          {
+            "x": -0.87,
+            "y": -0.5
+          },
+          {
+            "x": 0.87,
+            "y": -0.5
+          }
+        ],
+        "restitution": 0.6
+      }
+    },
+    "floor": {
+      "id": "floor",
+      "tags": [
+        "floor"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 14,
+        "height": 1,
+        "color": "#1a1a2e"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 14,
+        "height": 1
+      }
+    },
+    "wall": {
+      "id": "wall",
+      "tags": [
+        "wall"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 0.5,
+        "height": 18,
+        "color": "#1a1a2e"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.5,
+        "height": 18
+      }
+    }
+  },
+  "entities": [
+    {
+      "id": "orb1",
+      "name": "Glow Orb 1",
+      "prefab": "glowOrb",
+      "transform": {
+        "x": -3,
+        "y": 5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "orb2",
+      "name": "Glow Orb 2",
+      "prefab": "glowOrb",
+      "transform": {
+        "x": -2,
+        "y": 3,
+        "angle": 0,
+        "scaleX": 0.8,
+        "scaleY": 0.8
+      }
+    },
+    {
+      "id": "block1",
+      "name": "Dissolve Block 1",
+      "prefab": "dissolveBlock",
+      "transform": {
+        "x": 0,
+        "y": 5,
+        "angle": 15,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "block2",
+      "name": "Dissolve Block 2",
+      "prefab": "dissolveBlock",
+      "transform": {
+        "x": 1,
+        "y": 2,
+        "angle": -20,
+        "scaleX": 0.7,
+        "scaleY": 0.7
+      }
+    },
+    {
+      "id": "tri1",
+      "name": "Holo Triangle 1",
+      "prefab": "holoTriangle",
+      "transform": {
+        "x": 3,
+        "y": 5,
+        "angle": 0,
+        "scaleX": 1.2,
+        "scaleY": 1.2
+      }
+    },
+    {
+      "id": "tri2",
+      "name": "Holo Triangle 2",
+      "prefab": "holoTriangle",
+      "transform": {
+        "x": 2,
+        "y": 3,
+        "angle": 30,
+        "scaleX": 0.9,
+        "scaleY": 0.9
+      }
+    },
+    {
+      "id": "floor",
+      "name": "Floor",
+      "prefab": "floor",
+      "transform": {
+        "x": 0,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wallLeft",
+      "name": "Wall Left",
+      "prefab": "wall",
+      "transform": {
+        "x": -6.25,
+        "y": 0,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wallRight",
+      "name": "Wall Right",
+      "prefab": "wall",
+      "transform": {
+        "x": 6.25,
+        "y": 0,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "tap_spawn_orb",
+      "name": "Tap to spawn a glow orb",
+      "trigger": {
+        "type": "tap"
+      },
+      "conditions": [
+        {
+          "type": "random",
+          "probability": 0.33
+        }
+      ],
+      "actions": [
+        {
+          "type": "spawn",
+          "template": "glowOrb",
+          "position": {
+            "type": "touch"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tap_spawn_block",
+      "name": "Tap to spawn a dissolve block",
+      "trigger": {
+        "type": "tap"
+      },
+      "conditions": [
+        {
+          "type": "random",
+          "probability": 0.33
+        }
+      ],
+      "actions": [
+        {
+          "type": "spawn",
+          "template": "dissolveBlock",
+          "position": {
+            "type": "touch"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tap_spawn_tri",
+      "name": "Tap to spawn a holo triangle",
+      "trigger": {
+        "type": "tap"
+      },
+      "conditions": [
+        {
+          "type": "random",
+          "probability": 0.34
+        }
+      ],
+      "actions": [
+        {
+          "type": "spawn",
+          "template": "holoTriangle",
+          "position": {
+            "type": "touch"
+          }
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "shaders": {
+      "pulse_glow": {
+        "filename": "pulse_glow.gdshader",
+        "glsl": "shader_type canvas_item;\n\nuniform float glow_intensity : hint_range(0.0, 3.0) = 1.5;\nuniform float pulse_speed : hint_range(0.0, 10.0) = 2.0;\nuniform vec4 glow_color : source_color = vec4(0.3, 0.6, 1.0, 1.0);\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat pulse = (sin(TIME * pulse_speed) * 0.5 + 0.5) * glow_intensity;\n\tvec3 glow = glow_color.rgb * pulse;\n\tCOLOR = vec4(tex.rgb + glow * tex.a, tex.a);\n}"
+      },
+      "dissolve": {
+        "filename": "dissolve.gdshader",
+        "glsl": "shader_type canvas_item;\n\nuniform float dissolve_amount : hint_range(0.0, 1.0) = 0.0;\nuniform float edge_width : hint_range(0.0, 0.2) = 0.05;\nuniform vec4 edge_color : source_color = vec4(1.0, 0.5, 0.0, 1.0);\nuniform float noise_scale : hint_range(1.0, 20.0) = 8.0;\n\nfloat hash(vec2 p) {\n\treturn fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);\n}\n\nfloat noise(vec2 p) {\n\tvec2 i = floor(p);\n\tvec2 f = fract(p);\n\tf = f * f * (3.0 - 2.0 * f);\n\tfloat a = hash(i);\n\tfloat b = hash(i + vec2(1.0, 0.0));\n\tfloat c = hash(i + vec2(0.0, 1.0));\n\tfloat d = hash(i + vec2(1.0, 1.0));\n\treturn mix(mix(a, b, f.x), mix(c, d, f.x), f.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat n = noise(UV * noise_scale);\n\tfloat dissolve_val = (sin(TIME * 0.8) * 0.5 + 0.5);\n\tfloat alpha = step(dissolve_val, n);\n\tfloat edge = step(dissolve_val - edge_width, n) - alpha;\n\tvec3 col = mix(tex.rgb, edge_color.rgb, edge);\n\tCOLOR = vec4(col, tex.a * alpha + edge * tex.a);\n}"
+      },
+      "holographic": {
+        "filename": "holographic.gdshader",
+        "glsl": "shader_type canvas_item;\n\nuniform float scan_speed : hint_range(0.0, 5.0) = 1.0;\nuniform float scan_line_count : hint_range(10.0, 100.0) = 40.0;\nuniform float color_shift_speed : hint_range(0.0, 5.0) = 0.5;\nuniform float hologram_alpha : hint_range(0.0, 1.0) = 0.8;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat scan = sin((UV.y + TIME * scan_speed) * scan_line_count * 3.14159) * 0.5 + 0.5;\n\tfloat hue = fract(UV.y * 0.5 + TIME * color_shift_speed);\n\tvec3 holo_color = hsv2rgb(vec3(hue, 0.7, 1.0));\n\tvec3 result = mix(tex.rgb, holo_color, 0.6) * (0.8 + 0.2 * scan);\n\tCOLOR = vec4(result, tex.a * hologram_alpha);\n}"
+      }
+    }
+  }
+}

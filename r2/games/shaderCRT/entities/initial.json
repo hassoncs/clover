@@ -1,0 +1,85 @@
+[
+	{
+		"id": "ball",
+		"name": "Bounce Ball",
+		"prefab": "bounceBall",
+		"transform": { "x": 0, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 },
+		"physics": {
+			"bodyType": "dynamic",
+			"density": 1,
+			"initialVelocity": { "x": 3, "y": 5 }
+		}
+	},
+	{
+		"id": "paddle",
+		"name": "Paddle",
+		"prefab": "paddle",
+		"transform": { "x": 0, "y": -6, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick1",
+		"name": "Brick 1",
+		"prefab": "brick",
+		"transform": { "x": -3, "y": 5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick2",
+		"name": "Brick 2",
+		"prefab": "brick",
+		"transform": { "x": -1, "y": 5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick3",
+		"name": "Brick 3",
+		"prefab": "brick",
+		"transform": { "x": 1, "y": 5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick4",
+		"name": "Brick 4",
+		"prefab": "brick",
+		"transform": { "x": 3, "y": 5, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick5",
+		"name": "Brick 5",
+		"prefab": "brick",
+		"transform": { "x": -2, "y": 6, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick6",
+		"name": "Brick 6",
+		"prefab": "brick",
+		"transform": { "x": 0, "y": 6, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "brick7",
+		"name": "Brick 7",
+		"prefab": "brick",
+		"transform": { "x": 2, "y": 6, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallTop",
+		"name": "Top Wall",
+		"prefab": "wallH",
+		"transform": { "x": 0, "y": 8, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallBottom",
+		"name": "Bottom Wall",
+		"prefab": "wallH",
+		"transform": { "x": 0, "y": -7.75, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallLeft",
+		"name": "Left Wall",
+		"prefab": "wallV",
+		"transform": { "x": -6.25, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	},
+	{
+		"id": "wallRight",
+		"name": "Right Wall",
+		"prefab": "wallV",
+		"transform": { "x": 6.25, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+	}
+]
