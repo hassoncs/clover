@@ -7,911 +7,510 @@
 // Source: app/lib/godot/types.ts (GodotBridge + EffectsBridge interfaces)
 // Generated: source:d27fbf0251bc
 
-import type { CompiledPlan } from "@slopcade/shared/effects";
-import {
-	createEffectsSnapshotPayload,
-	normalizeEffectsSnapshot,
-} from "../GodotBridgeBase";
-import type {
-	DistanceJointDef,
-	DrawCommand,
-	DynamicShaderResult,
-	EffectsPipelineSnapshot,
-	EffectsResult,
-	EntityTransform,
-	GameDefinition,
-	GameRule,
-	GodotBridge,
-	MouseJointDef,
-	NormalizedDrawCommand,
-	PrismaticJointDef,
-	PropertySyncPayload,
-	RaycastHit,
-	RevoluteJointDef,
-	SpawnEntityRequest,
-	Vec2,
-	WeldJointDef,
-} from "../types";
+import type { DistanceJointDef, DrawCommand, DynamicShaderResult, EffectsPipelineSnapshot, EffectsResult, EntityTransform, GameDefinition, GameRule, GodotBridge, MouseJointDef, NormalizedDrawCommand, PrismaticJointDef, PropertySyncPayload, RaycastHit, RevoluteJointDef, SpawnEntityRequest, Vec2, WeldJointDef } from '../types';
+import type { CompiledPlan } from '@slopcade/shared/effects';
+import { normalizeEffectsSnapshot, createEffectsSnapshotPayload } from '../GodotBridgeBase';
 
 export interface PlatformDispatch {
-	sync(snakeName: string, ...args: unknown[]): unknown;
-	async<T>(snakeName: string, ...args: unknown[]): Promise<T>;
-	effectsSync(snakeName: string, ...args: unknown[]): void;
-	effectsAsync<T = void>(
-		method: string,
-		params?: Record<string, unknown>,
-		mapData?: (rawData: unknown) => T,
-	): Promise<EffectsResult<T>>;
+  sync(snakeName: string, ...args: unknown[]): unknown;
+  async<T>(snakeName: string, ...args: unknown[]): Promise<T>;
+  effectsSync(snakeName: string, ...args: unknown[]): void;
+  effectsAsync<T = void>(
+    method: string,
+    params?: Record<string, unknown>,
+    mapData?: (rawData: unknown) => T,
+  ): Promise<EffectsResult<T>>;
 }
 
-export function createBridgeMethods(
-	dispatch: PlatformDispatch,
-): Partial<GodotBridge> {
-	return {
-		async applyGraph(plan: CompiledPlan): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.applyGraph", { plan });
-		},
-
-		async clearGraph(): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.clearGraph");
-		},
-
-		async updateParams(
-			passId: string,
-			params: Record<string, unknown>,
-		): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.updateParams", { passId, params });
-		},
-
-		async start(): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.start");
-		},
-
-		async pause(): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.pause");
-		},
-
-		async resume(): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.resume");
-		},
-
-		async stop(): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.stop");
-		},
-
-		async reset(): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.reset");
-		},
-
-		async snapshot(): Promise<EffectsResult<EffectsPipelineSnapshot>> {
-			return dispatch.effectsAsync<EffectsPipelineSnapshot>(
-				"effects.snapshot",
-				undefined,
-				normalizeEffectsSnapshot,
-			);
-		},
-
-		async restore(snapshot: EffectsPipelineSnapshot): Promise<EffectsResult> {
-			return dispatch.effectsAsync("effects.restore", {
-				snapshot: createEffectsSnapshotPayload(snapshot),
-			});
-		},
-
-		effectsUpdateParams(
-			passId: string,
-			params: Record<string, number | boolean | string>,
-		): void {
-			dispatch.sync("effects.updateParams", passId, JSON.stringify(params));
-		},
-
-		drawToActiveBuffer(
-			entityId: string,
-			commands: NormalizedDrawCommand[],
-		): void {
-			dispatch.sync(
-				"draw_to_active_buffer",
-				entityId,
-				JSON.stringify(commands),
-			);
-		},
-
-		async loadGame(definition: GameDefinition): Promise<void> {
-			dispatch.sync("load_game_json", JSON.stringify(definition));
-		},
-
-		clearGame(): void {
-			dispatch.sync("clear_game");
-		},
-
-		setupWorld(
-			world: GameDefinition["world"],
-			background?: GameDefinition["background"],
-		): void {
-			dispatch.sync(
-				"setup_world",
-				world?.gravity?.x ?? 0,
-				world?.gravity?.y ?? 0,
-				world?.pixelsPerMeter ?? 0,
-				world?.bounds?.width ?? 0,
-				world?.bounds?.height ?? 0,
-				JSON.stringify(background),
-			);
-		},
-
-		registerPrefabs(prefabs: GameDefinition["prefabs"]): void {
-			dispatch.sync("register_prefabs", JSON.stringify(prefabs));
-		},
-
-		loadEntities(entities: GameDefinition["entities"]): void {
-			dispatch.sync("load_entities", JSON.stringify(entities));
-		},
-
-		clearEntities(): void {
-			dispatch.sync("clear_entities");
-		},
-
-		loadRules(rules: GameRule[]): void {
-			dispatch.sync("load_rules", JSON.stringify(rules));
-		},
-
-		async loadScript(source: string): Promise<{ ok: boolean; error?: string }> {
-			return dispatch.async<{ ok: boolean; error?: string }>("load_script", [
-				source,
-			]);
-		},
-
-		pausePhysics(): void {
-			dispatch.sync("pause_physics");
-		},
-
-		resumePhysics(): void {
-			dispatch.sync("resume_physics");
-		},
-
-		setInspectMode(enabled: boolean): void {
-			dispatch.sync("set_inspect_mode", enabled);
-		},
-
-		async stepPhysics(
-			frames: number,
-		): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
-			return dispatch.async<{
-				ok: boolean;
-				framesAdvanced: number;
-				endFrame: number;
-			}>("step", [frames]);
-		},
-
-		async callRpc(method: string, params?: unknown): Promise<any> {
-			return (
-				(await dispatch.async<any>("call_rpc", [
-					method,
-					JSON.stringify(params),
-				])) ?? undefined
-			);
-		},
-
-		spawnEntity(request: SpawnEntityRequest): void {
-			dispatch.sync(
-				"spawn_entity",
-				request?.entityId ?? "",
-				request?.prefabId ?? "",
-				request?.position?.x ?? 0,
-				request?.position?.y ?? 0,
-				request?.velocity?.x ?? 0,
-				request?.velocity?.y ?? 0,
-			);
-		},
-
-		destroyEntity(entityId: string): void {
-			dispatch.sync("destroy_entity", entityId);
-		},
-
-		async instantiateFromScene(
-			scenePath: string,
-			entityId: string,
-			position: Vec2,
-			properties?: Record<string, unknown>,
-		): Promise<{ entityId: string }> {
-			return dispatch.async<{ entityId: string }>("instantiate_from_scene", [
-				scenePath,
-				entityId,
-				position?.x ?? 0,
-				position?.y ?? 0,
-				JSON.stringify(properties),
-			]);
-		},
-
-		async getEntityTransform(
-			entityId: string,
-		): Promise<EntityTransform | null> {
-			return (
-				(await dispatch.async<EntityTransform | null>("get_entity_transform", [
-					entityId,
-				])) ?? null
-			);
-		},
-
-		async getAllTransforms(): Promise<Record<string, EntityTransform>> {
-			return dispatch.async<Record<string, EntityTransform>>(
-				"get_all_transforms",
-				[],
-			);
-		},
-
-		setTransform(entityId: string, x: number, y: number, angle: number): void {
-			dispatch.sync("set_transform", entityId, x, y, angle);
-		},
-
-		setPosition(entityId: string, x: number, y: number): void {
-			dispatch.sync("set_position", entityId, x, y);
-		},
-
-		setRotation(entityId: string, angle: number): void {
-			dispatch.sync("set_rotation", entityId, angle);
-		},
-
-		setScale(entityId: string, scaleX: number, scaleY: number): void {
-			dispatch.sync("set_scale", entityId, scaleX, scaleY);
-		},
-
-		setOpacity(entityId: string, opacity: number): void {
-			dispatch.sync("set_opacity", entityId, opacity);
-		},
-
-		setVisible(entityId: string, visible: boolean): void {
-			dispatch.sync("set_visible", entityId, visible);
-		},
-
-		async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
-			return (
-				(await dispatch.async<Vec2 | null>("get_linear_velocity", [
-					entityId,
-				])) ?? null
-			);
-		},
-
-		setLinearVelocity(entityId: string, velocity: Vec2): void {
-			dispatch.sync(
-				"set_linear_velocity",
-				entityId,
-				velocity?.x ?? 0,
-				velocity?.y ?? 0,
-			);
-		},
-
-		async getAngularVelocity(entityId: string): Promise<number | null> {
-			return (
-				(await dispatch.async<number | null>("get_angular_velocity", [
-					entityId,
-				])) ?? null
-			);
-		},
-
-		setAngularVelocity(entityId: string, velocity: number): void {
-			dispatch.sync("set_angular_velocity", entityId, velocity);
-		},
-
-		applyImpulse(entityId: string, impulse: Vec2): void {
-			dispatch.sync(
-				"apply_impulse",
-				entityId,
-				impulse?.x ?? 0,
-				impulse?.y ?? 0,
-			);
-		},
-
-		applyForce(entityId: string, force: Vec2): void {
-			dispatch.sync("apply_force", entityId, force?.x ?? 0, force?.y ?? 0);
-		},
-
-		applyTorque(entityId: string, torque: number): void {
-			dispatch.sync("apply_torque", entityId, torque);
-		},
-
-		createRevoluteJoint(def: RevoluteJointDef): number {
-			return (
-				(dispatch.sync(
-					"create_revolute_joint",
-					def?.type ?? "",
-					def?.bodyA ?? "",
-					def?.bodyB ?? "",
-					def?.anchor?.x ?? 0,
-					def?.anchor?.y ?? 0,
-					def?.enableLimit ?? false,
-					def?.lowerAngle ?? 0,
-					def?.upperAngle ?? 0,
-					def?.enableMotor ?? false,
-					def?.motorSpeed ?? 0,
-					def?.maxMotorTorque ?? 0,
-				) as number) ?? -1
-			);
-		},
-
-		createDistanceJoint(def: DistanceJointDef): number {
-			return (
-				(dispatch.sync(
-					"create_distance_joint",
-					def?.type ?? "",
-					def?.bodyA ?? "",
-					def?.bodyB ?? "",
-					def?.anchorA?.x ?? 0,
-					def?.anchorA?.y ?? 0,
-					def?.anchorB?.x ?? 0,
-					def?.anchorB?.y ?? 0,
-					def?.length ?? 0,
-					def?.stiffness ?? 0,
-					def?.damping ?? 0,
-				) as number) ?? -1
-			);
-		},
-
-		createPrismaticJoint(def: PrismaticJointDef): number {
-			return (
-				(dispatch.sync(
-					"create_prismatic_joint",
-					def?.type ?? "",
-					def?.bodyA ?? "",
-					def?.bodyB ?? "",
-					def?.anchor?.x ?? 0,
-					def?.anchor?.y ?? 0,
-					def?.axis?.x ?? 0,
-					def?.axis?.y ?? 0,
-					def?.enableLimit ?? false,
-					def?.lowerTranslation ?? 0,
-					def?.upperTranslation ?? 0,
-					def?.enableMotor ?? false,
-					def?.motorSpeed ?? 0,
-					def?.maxMotorForce ?? 0,
-				) as number) ?? -1
-			);
-		},
-
-		createWeldJoint(def: WeldJointDef): number {
-			return (
-				(dispatch.sync(
-					"create_weld_joint",
-					def?.type ?? "",
-					def?.bodyA ?? "",
-					def?.bodyB ?? "",
-					def?.anchor?.x ?? 0,
-					def?.anchor?.y ?? 0,
-					def?.stiffness ?? 0,
-					def?.damping ?? 0,
-				) as number) ?? -1
-			);
-		},
-
-		createMouseJoint(def: MouseJointDef): number {
-			return (
-				(dispatch.sync(
-					"create_mouse_joint",
-					def?.type ?? "",
-					def?.body ?? "",
-					def?.target?.x ?? 0,
-					def?.target?.y ?? 0,
-					def?.maxForce ?? 0,
-					def?.stiffness ?? 0,
-					def?.damping ?? 0,
-				) as number) ?? -1
-			);
-		},
-
-		async createMouseJointAsync(def: MouseJointDef): Promise<number> {
-			return (
-				(await dispatch.async<number>("create_mouse_joint_async", [
-					def?.type ?? "",
-					def?.body ?? "",
-					def?.target?.x ?? 0,
-					def?.target?.y ?? 0,
-					def?.maxForce ?? 0,
-					def?.stiffness ?? 0,
-					def?.damping ?? 0,
-				])) ?? 0
-			);
-		},
-
-		destroyJoint(jointId: number): void {
-			dispatch.sync("destroy_joint", jointId);
-		},
-
-		setMotorSpeed(jointId: number, speed: number): void {
-			dispatch.sync("set_motor_speed", jointId, speed);
-		},
-
-		setMouseTarget(jointId: number, target: Vec2): void {
-			dispatch.sync(
-				"set_mouse_target",
-				jointId,
-				target?.x ?? 0,
-				target?.y ?? 0,
-			);
-		},
-
-		async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
-			return dispatch.async<Vec2>("screen_to_world", [screenX, screenY]);
-		},
-
-		async queryPoint(point: Vec2): Promise<number | null> {
-			return (
-				(await dispatch.async<number | null>("query_point", [
-					point?.x ?? 0,
-					point?.y ?? 0,
-				])) ?? null
-			);
-		},
-
-		async queryPointEntity(point: Vec2): Promise<string | null> {
-			return (
-				(await dispatch.async<string | null>("query_point_entity", [
-					point?.x ?? 0,
-					point?.y ?? 0,
-				])) ?? null
-			);
-		},
-
-		async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
-			return dispatch.async<number[]>("query_aabb", [
-				min?.x ?? 0,
-				min?.y ?? 0,
-				max?.x ?? 0,
-				max?.y ?? 0,
-			]);
-		},
-
-		async raycast(
-			origin: Vec2,
-			direction: Vec2,
-			maxDistance: number,
-		): Promise<RaycastHit | null> {
-			return (
-				(await dispatch.async<RaycastHit | null>("raycast", [
-					origin?.x ?? 0,
-					origin?.y ?? 0,
-					direction?.x ?? 0,
-					direction?.y ?? 0,
-					maxDistance,
-				])) ?? null
-			);
-		},
-
-		setUserData(entityId: string, data: unknown): void {
-			dispatch.sync("set_user_data", entityId, JSON.stringify(data));
-		},
-
-		async getUserData(entityId: string): Promise<unknown> {
-			return dispatch.async<unknown>("get_user_data", [entityId]);
-		},
-
-		async getAllEntities(): Promise<string[]> {
-			return dispatch.async<string[]>("get_all_entities", []);
-		},
-
-		async getAllProperties(): Promise<PropertySyncPayload> {
-			return dispatch.async<PropertySyncPayload>("get_all_properties", []);
-		},
-
-		setWatchConfig(config: unknown): void {
-			dispatch.sync("set_watch_config", JSON.stringify(config));
-		},
-
-		sendInput(
-			type: "tap" | "drag_start" | "drag_move" | "drag_end",
-			data: { x: number; y: number; entityId?: string },
-		): void {
-			dispatch.sync(
-				"send_input",
-				type,
-				data?.x ?? 0,
-				data?.y ?? 0,
-				data?.entityId ?? "",
-			);
-		},
-
-		setEntityImage(
-			entityId: string,
-			url: string,
-			width: number,
-			height: number,
-		): void {
-			dispatch.sync("set_entity_image", entityId, url, width, height);
-		},
-
-		setEntityAtlasRegion(
-			entityId: string,
-			atlasUrl: string,
-			x: number,
-			y: number,
-			w: number,
-			h: number,
-			width: number,
-			height: number,
-		): void {
-			dispatch.sync(
-				"set_entity_atlas_region",
-				entityId,
-				atlasUrl,
-				x,
-				y,
-				w,
-				h,
-				width,
-				height,
-			);
-		},
-
-		clearTextureCache(url?: string): void {
-			dispatch.sync("clear_texture_cache", url);
-		},
-
-		createPixelBuffer(
-			entityId: string,
-			width: number,
-			height: number,
-			clearColor: string,
-			worldWidth?: number,
-			worldHeight?: number,
-		): void {
-			dispatch.sync(
-				"create_pixel_buffer",
-				entityId,
-				width,
-				height,
-				clearColor,
-				worldWidth,
-				worldHeight,
-			);
-		},
-
-		pixelBufferDraw(entityId: string, commands: DrawCommand[]): void {
-			dispatch.sync("pixel_buffer_draw", entityId, JSON.stringify(commands));
-		},
-
-		pixelBufferClear(entityId: string, color: string): void {
-			dispatch.sync("pixel_buffer_clear", entityId, color);
-		},
-
-		destroyPixelBuffer(entityId: string): void {
-			dispatch.sync("destroy_pixel_buffer", entityId);
-		},
-
-		async preloadTextures(
-			urls: string[],
-			onProgress?: (percent: number, completed: number, failed: number) => void,
-		): Promise<{ completed: number; failed: number }> {
-			return dispatch.async<{ completed: number; failed: number }>(
-				"preload_textures",
-				[JSON.stringify(urls)],
-			);
-		},
-
-		setDebugShowShapes(show: boolean): void {
-			dispatch.sync("set_debug_show_shapes", show);
-		},
-
-		setDebugSettings(settings: {
-			showInputDebug: boolean;
-			showPhysicsShapes: boolean;
-			showZones: boolean;
-			showFPS: boolean;
-		}): void {
-			dispatch.sync(
-				"set_debug_settings",
-				settings?.showInputDebug ?? false,
-				settings?.showPhysicsShapes ?? false,
-				settings?.showZones ?? false,
-				settings?.showFPS ?? false,
-			);
-		},
-
-		setCameraTarget(entityId: string | null): void {
-			dispatch.sync("set_camera_target", entityId);
-		},
-
-		setCameraPosition(x: number, y: number): void {
-			dispatch.sync("set_camera_position", x, y);
-		},
-
-		setCameraZoom(zoom: number): void {
-			dispatch.sync("set_camera_zoom", zoom);
-		},
-
-		startCamera(entityId: string, width?: number, height?: number): void {
-			dispatch.sync("start_camera", entityId, width, height);
-		},
-
-		stopCamera(): void {
-			dispatch.sync("stop_camera");
-		},
-
-		spawnParticle(type: string, x: number, y: number): void {
-			dispatch.sync("spawn_particle", type, x, y);
-		},
-
-		playSound(resourcePath: string, volume?: number, pitch?: number): void {
-			dispatch.sync("play_sound", resourcePath, volume, pitch);
-		},
-
-		playMusic(resourcePath: string, volume?: number, loop?: boolean): void {
-			dispatch.sync("play_music", resourcePath, volume, loop);
-		},
-
-		stopMusic(): void {
-			dispatch.sync("stop_music");
-		},
-
-		applySpriteEffect(
-			entityId: string,
-			effectName: string,
-			params?: Record<string, unknown>,
-		): void {
-			dispatch.effectsSync(
-				"apply_sprite_effect",
-				entityId,
-				effectName,
-				JSON.stringify(params),
-			);
-		},
-
-		updateSpriteEffectParam(
-			entityId: string,
-			paramName: string,
-			value: unknown,
-		): void {
-			dispatch.effectsSync(
-				"update_sprite_effect_param",
-				entityId,
-				paramName,
-				JSON.stringify(value),
-			);
-		},
-
-		clearSpriteEffect(entityId: string): void {
-			dispatch.effectsSync("clear_sprite_effect", entityId);
-		},
-
-		setPostEffect(
-			effectName: string,
-			params?: Record<string, unknown>,
-			layer?: string,
-		): void {
-			dispatch.effectsSync(
-				"set_post_effect",
-				effectName,
-				JSON.stringify(params),
-				layer,
-			);
-		},
-
-		updatePostEffectParam(
-			paramName: string,
-			value: unknown,
-			layer?: string,
-		): void {
-			dispatch.effectsSync(
-				"update_post_effect_param",
-				paramName,
-				JSON.stringify(value),
-				layer,
-			);
-		},
-
-		clearPostEffect(layer?: string): void {
-			dispatch.effectsSync("clear_post_effect", layer);
-		},
-
-		screenShake(intensity: number, duration?: number): void {
-			dispatch.effectsSync("screen_shake", intensity, duration);
-		},
-
-		zoomPunch(intensity?: number, duration?: number): void {
-			dispatch.effectsSync("zoom_punch", intensity, duration);
-		},
-
-		triggerShockwave(worldX: number, worldY: number, duration?: number): void {
-			dispatch.effectsSync("trigger_shockwave", worldX, worldY, duration);
-		},
-
-		flashScreen(
-			color?: [number, number, number, number?],
-			duration?: number,
-		): void {
-			dispatch.effectsSync("flash_screen", JSON.stringify(color), duration);
-		},
-
-		async createDynamicShader(
-			shaderId: string,
-			shaderCode: string,
-		): Promise<DynamicShaderResult> {
-			return dispatch.async<DynamicShaderResult>("create_dynamic_shader", [
-				shaderId,
-				shaderCode,
-			]);
-		},
-
-		applyDynamicShader(
-			entityId: string,
-			shaderId: string,
-			params?: Record<string, unknown>,
-		): void {
-			dispatch.effectsSync(
-				"apply_dynamic_shader_to_entity",
-				entityId,
-				shaderId,
-				JSON.stringify(params),
-			);
-		},
-
-		applyDynamicPostShader(
-			shaderCode: string,
-			params?: Record<string, unknown>,
-		): void {
-			dispatch.effectsSync(
-				"apply_dynamic_post_shader",
-				shaderCode,
-				JSON.stringify(params),
-			);
-		},
-
-		hotSwapShader(shaderId: string, source: string): void {
-			dispatch.sync("hot_swap_shader", shaderId, source);
-		},
-
-		spawnParticlePreset(
-			presetName: string,
-			worldX: number,
-			worldY: number,
-			params?: Record<string, unknown>,
-		): void {
-			dispatch.effectsSync(
-				"spawn_particle_preset",
-				presetName,
-				worldX,
-				worldY,
-				JSON.stringify(params),
-			);
-		},
-
-		async getAvailableEffects(): Promise<{
-			sprite: string[];
-			post: string[];
-			particles: string[];
-		}> {
-			return dispatch.async<{
-				sprite: string[];
-				post: string[];
-				particles: string[];
-			}>("get_available_effects", []);
-		},
-
-		createUIButton(
-			buttonId: string,
-			normalImageUrl: string,
-			pressedImageUrl: string,
-			x: number,
-			y: number,
-			width: number,
-			height: number,
-		): void {
-			dispatch.sync(
-				"create_ui_button",
-				buttonId,
-				normalImageUrl,
-				pressedImageUrl,
-				x,
-				y,
-				width,
-				height,
-			);
-		},
-
-		destroyUIButton(buttonId: string): void {
-			dispatch.sync("destroy_ui_button", buttonId);
-		},
-
-		createThemedUIComponent(
-			componentId: string,
-			componentType: 0 | 1 | 2 | 3 | 4 | 5 | 6,
-			metadataUrl: string,
-			x: number,
-			y: number,
-			width: number,
-			height: number,
-			labelText?: string,
-		): void {
-			dispatch.sync(
-				"create_themed_ui_component",
-				componentId,
-				componentType,
-				metadataUrl,
-				x,
-				y,
-				width,
-				height,
-				labelText,
-			);
-		},
-
-		destroyThemedUIComponent(componentId: string): void {
-			dispatch.sync("destroy_themed_ui_component", componentId);
-		},
-
-		show3DModel(path: string): boolean {
-			return (dispatch.sync("show_3d_model", path) as boolean) ?? false;
-		},
-
-		show3DModelFromUrl(url: string): void {
-			dispatch.sync("show_3d_model_from_url", url);
-		},
-
-		set3DViewportPosition(x: number, y: number): void {
-			dispatch.sync("set_3d_viewport_position", x, y);
-		},
-
-		set3DViewportSize(width: number, height: number): void {
-			dispatch.sync("set_3d_viewport_size", width, height);
-		},
-
-		rotate3DModel(x: number, y: number, z: number): void {
-			dispatch.sync("rotate_3d_model", x, y, z);
-		},
-
-		set3DModelPosition(x: number, y: number, z: number): void {
-			dispatch.sync("set_3d_model_position", x, y, z);
-		},
-
-		set3DCameraDistance(distance: number): void {
-			dispatch.sync("set_3d_camera_distance", distance);
-		},
-
-		set3DCameraSize(size: number): void {
-			dispatch.sync("set_3d_camera_size", size);
-		},
-
-		clear3DModels(): void {
-			dispatch.sync("clear_3d_models");
-		},
-
-		create3DFloor(
-			size?: number,
-			colorHex?: string,
-			style?: "plain" | "grid",
-		): void {
-			dispatch.sync("create_3d_floor", size, colorHex, style);
-		},
-
-		create3DCube(
-			x: number,
-			y: number,
-			z: number,
-			size?: number,
-			colorHex?: string,
-		): void {
-			dispatch.sync("create_3d_cube", x, y, z, size, colorHex);
-		},
-
-		clear3DCubes(): void {
-			dispatch.sync("clear_3d_cubes");
-		},
-
-		set3DCameraPosition(x: number, y: number, z: number): void {
-			dispatch.sync("set_3d_camera_position", x, y, z);
-		},
-
-		set3DCameraLookAt(x: number, y: number, z: number): void {
-			dispatch.sync("set_3d_camera_look_at", x, y, z);
-		},
-
-		setOrbitControls(enabled: boolean): void {
-			dispatch.sync("set_orbit_controls", enabled);
-		},
-
-		setExternalInput(name: string, imageData: string): void {
-			dispatch.sync("set_external_input", name, imageData);
-		},
-
-		setScreenInput(enable: boolean): void {
-			dispatch.sync("set_screen_input", enable);
-		},
-	};
+export function createBridgeMethods(dispatch: PlatformDispatch): Partial<GodotBridge> {
+  return {
+  async applyGraph(plan: CompiledPlan): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.applyGraph", { plan });
+  },
+
+  async clearGraph(): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.clearGraph");
+  },
+
+  async updateParams(passId: string, params: Record<string, unknown>): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.updateParams", { passId, params });
+  },
+
+  async start(): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.start");
+  },
+
+  async pause(): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.pause");
+  },
+
+  async resume(): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.resume");
+  },
+
+  async stop(): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.stop");
+  },
+
+  async reset(): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.reset");
+  },
+
+  async snapshot(): Promise<EffectsResult<EffectsPipelineSnapshot>> {
+    return dispatch.effectsAsync<EffectsPipelineSnapshot>("effects.snapshot", undefined, normalizeEffectsSnapshot);
+  },
+
+  async restore(snapshot: EffectsPipelineSnapshot): Promise<EffectsResult> {
+    return dispatch.effectsAsync("effects.restore", { snapshot: createEffectsSnapshotPayload(snapshot) });
+  },
+
+  effectsUpdateParams(passId: string, params: Record<string, number | boolean | string>): void {
+    dispatch.sync("effects.updateParams", passId, JSON.stringify(params));
+  },
+
+  drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]): void {
+    dispatch.sync("draw_to_active_buffer", entityId, JSON.stringify(commands));
+  },
+
+  async loadGame(definition: GameDefinition): Promise<void> {
+    dispatch.sync("load_game_json", JSON.stringify(definition));
+  },
+
+  clearGame(): void {
+    dispatch.sync("clear_game");
+  },
+
+  setupWorld(world: GameDefinition["world"], background?: GameDefinition["background"]): void {
+    dispatch.sync("setup_world", JSON.stringify(world), JSON.stringify(background));
+  },
+
+  registerPrefabs(prefabs: GameDefinition["prefabs"]): void {
+    dispatch.sync("register_prefabs", JSON.stringify(prefabs));
+  },
+
+  loadEntities(entities: GameDefinition["entities"]): void {
+    dispatch.sync("load_entities", JSON.stringify(entities));
+  },
+
+  clearEntities(): void {
+    dispatch.sync("clear_entities");
+  },
+
+  loadRules(rules: GameRule[]): void {
+    dispatch.sync("load_rules", JSON.stringify(rules));
+  },
+
+  async loadScript(source: string): Promise<{ ok: boolean; error?: string }> {
+    return dispatch.async<{ ok: boolean; error?: string }>("load_script", [source]);
+  },
+
+  pausePhysics(): void {
+    dispatch.sync("pause_physics");
+  },
+
+  resumePhysics(): void {
+    dispatch.sync("resume_physics");
+  },
+
+  setInspectMode(enabled: boolean): void {
+    dispatch.sync("set_inspect_mode", enabled);
+  },
+
+  async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
+    return dispatch.async<{ ok: boolean; framesAdvanced: number; endFrame: number }>("step", [frames]);
+  },
+
+  async callRpc(method: string, params?: unknown): Promise<any> {
+    return await dispatch.async<any>("call_rpc", [method, JSON.stringify(params)]) ?? undefined;
+  },
+
+  spawnEntity(request: SpawnEntityRequest): void {
+    dispatch.sync("spawn_entity", request?.prefabId ?? "", request?.position?.x ?? 0, request?.position?.y ?? 0, request?.entityId ?? "");
+  },
+
+  destroyEntity(entityId: string): void {
+    dispatch.sync("destroy_entity", entityId);
+  },
+
+  async instantiateFromScene(scenePath: string, entityId: string, position: Vec2, properties?: Record<string, unknown>): Promise<{ entityId: string }> {
+    return dispatch.async<{ entityId: string }>("instantiate_from_scene", [scenePath, entityId, position?.x ?? 0, position?.y ?? 0, JSON.stringify(properties)]);
+  },
+
+  async getEntityTransform(entityId: string): Promise<EntityTransform | null> {
+    return await dispatch.async<EntityTransform | null>("get_entity_transform", [entityId]) ?? null;
+  },
+
+  async getAllTransforms(): Promise<Record<string, EntityTransform>> {
+    return dispatch.async<Record<string, EntityTransform>>("get_all_transforms", []);
+  },
+
+  setTransform(entityId: string, x: number, y: number, angle: number): void {
+    dispatch.sync("set_transform", entityId, x, y, angle);
+  },
+
+  setPosition(entityId: string, x: number, y: number): void {
+    dispatch.sync("set_position", entityId, x, y);
+  },
+
+  setRotation(entityId: string, angle: number): void {
+    dispatch.sync("set_rotation", entityId, angle);
+  },
+
+  setScale(entityId: string, scaleX: number, scaleY: number): void {
+    dispatch.sync("set_scale", entityId, scaleX, scaleY);
+  },
+
+  setOpacity(entityId: string, opacity: number): void {
+    dispatch.sync("set_opacity", entityId, opacity);
+  },
+
+  setVisible(entityId: string, visible: boolean): void {
+    dispatch.sync("set_visible", entityId, visible);
+  },
+
+  async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
+    return await dispatch.async<Vec2 | null>("get_linear_velocity", [entityId]) ?? null;
+  },
+
+  setLinearVelocity(entityId: string, velocity: Vec2): void {
+    dispatch.sync("set_linear_velocity", entityId, velocity?.x ?? 0, velocity?.y ?? 0);
+  },
+
+  async getAngularVelocity(entityId: string): Promise<number | null> {
+    return await dispatch.async<number | null>("get_angular_velocity", [entityId]) ?? null;
+  },
+
+  setAngularVelocity(entityId: string, velocity: number): void {
+    dispatch.sync("set_angular_velocity", entityId, velocity);
+  },
+
+  applyImpulse(entityId: string, impulse: Vec2): void {
+    dispatch.sync("apply_impulse", entityId, impulse?.x ?? 0, impulse?.y ?? 0);
+  },
+
+  applyForce(entityId: string, force: Vec2): void {
+    dispatch.sync("apply_force", entityId, force?.x ?? 0, force?.y ?? 0);
+  },
+
+  applyTorque(entityId: string, torque: number): void {
+    dispatch.sync("apply_torque", entityId, torque);
+  },
+
+  createRevoluteJoint(def: RevoluteJointDef): number {
+    return dispatch.sync("create_revolute_joint", def?.bodyA ?? "", def?.bodyB ?? "", def?.anchor?.x ?? 0, def?.anchor?.y ?? 0, def?.enableLimit ?? false, def?.lowerAngle ?? 0, def?.upperAngle ?? 0, def?.enableMotor ?? false, def?.motorSpeed ?? 0, def?.maxMotorTorque ?? 0) as number ?? -1;
+  },
+
+  createDistanceJoint(def: DistanceJointDef): number {
+    return dispatch.sync("create_distance_joint", def?.bodyA ?? "", def?.bodyB ?? "", def?.anchorA?.x ?? 0, def?.anchorA?.y ?? 0, def?.anchorB?.x ?? 0, def?.anchorB?.y ?? 0, def?.length ?? 0, def?.stiffness ?? 0, def?.damping ?? 0) as number ?? -1;
+  },
+
+  createPrismaticJoint(def: PrismaticJointDef): number {
+    return dispatch.sync("create_prismatic_joint", def?.bodyA ?? "", def?.bodyB ?? "", def?.anchor?.x ?? 0, def?.anchor?.y ?? 0, def?.axis?.x ?? 0, def?.axis?.y ?? 0, def?.enableLimit ?? false, def?.lowerTranslation ?? 0, def?.upperTranslation ?? 0, def?.enableMotor ?? false, def?.motorSpeed ?? 0, def?.maxMotorForce ?? 0) as number ?? -1;
+  },
+
+  createWeldJoint(def: WeldJointDef): number {
+    return dispatch.sync("create_weld_joint", def?.bodyA ?? "", def?.bodyB ?? "", def?.anchor?.x ?? 0, def?.anchor?.y ?? 0, def?.stiffness ?? 0, def?.damping ?? 0) as number ?? -1;
+  },
+
+  createMouseJoint(def: MouseJointDef): number {
+    return dispatch.sync("create_mouse_joint", def?.body ?? "", def?.target?.x ?? 0, def?.target?.y ?? 0, def?.maxForce ?? 0, def?.stiffness ?? 0, def?.damping ?? 0) as number ?? -1;
+  },
+
+  async createMouseJointAsync(def: MouseJointDef): Promise<number> {
+    return await dispatch.async<number>("create_mouse_joint_async", [def?.body ?? "", def?.target?.x ?? 0, def?.target?.y ?? 0, def?.maxForce ?? 0, def?.stiffness ?? 0, def?.damping ?? 0]) ?? 0;
+  },
+
+  destroyJoint(jointId: number): void {
+    dispatch.sync("destroy_joint", jointId);
+  },
+
+  setMotorSpeed(jointId: number, speed: number): void {
+    dispatch.sync("set_motor_speed", jointId, speed);
+  },
+
+  setMouseTarget(jointId: number, target: Vec2): void {
+    dispatch.sync("set_mouse_target", jointId, target?.x ?? 0, target?.y ?? 0);
+  },
+
+  async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
+    return dispatch.async<Vec2>("screen_to_world", [screenX, screenY]);
+  },
+
+  async queryPoint(point: Vec2): Promise<number | null> {
+    return await dispatch.async<number | null>("query_point", [point?.x ?? 0, point?.y ?? 0]) ?? null;
+  },
+
+  async queryPointEntity(point: Vec2): Promise<string | null> {
+    return await dispatch.async<string | null>("query_point_entity", [point?.x ?? 0, point?.y ?? 0]) ?? null;
+  },
+
+  async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
+    return dispatch.async<number[]>("query_aabb", [min?.x ?? 0, min?.y ?? 0, max?.x ?? 0, max?.y ?? 0]);
+  },
+
+  async raycast(origin: Vec2, direction: Vec2, maxDistance: number): Promise<RaycastHit | null> {
+    return await dispatch.async<RaycastHit | null>("raycast", [origin?.x ?? 0, origin?.y ?? 0, direction?.x ?? 0, direction?.y ?? 0, maxDistance]) ?? null;
+  },
+
+  setUserData(entityId: string, data: unknown): void {
+    dispatch.sync("set_user_data", entityId, JSON.stringify(data));
+  },
+
+  async getUserData(entityId: string): Promise<unknown> {
+    return dispatch.async<unknown>("get_user_data", [entityId]);
+  },
+
+  async getAllEntities(): Promise<string[]> {
+    return dispatch.async<string[]>("get_all_entities", []);
+  },
+
+  async getAllProperties(): Promise<PropertySyncPayload> {
+    return dispatch.async<PropertySyncPayload>("get_all_properties", []);
+  },
+
+  setWatchConfig(config: unknown): void {
+    dispatch.sync("set_watch_config", JSON.stringify(config));
+  },
+
+  sendInput(type: "tap" | "drag_start" | "drag_move" | "drag_end", data: { x: number; y: number; entityId?: string }): void {
+    dispatch.sync("send_input", type, data?.x ?? 0, data?.y ?? 0, data?.entityId ?? "");
+  },
+
+  setEntityImage(entityId: string, url: string, width: number, height: number): void {
+    dispatch.sync("set_entity_image", entityId, url, width, height);
+  },
+
+  setEntityAtlasRegion(entityId: string, atlasUrl: string, x: number, y: number, w: number, h: number, width: number, height: number): void {
+    dispatch.sync("set_entity_atlas_region", entityId, atlasUrl, x, y, w, h, width, height);
+  },
+
+  clearTextureCache(url?: string): void {
+    dispatch.sync("clear_texture_cache", url);
+  },
+
+  createPixelBuffer(entityId: string, width: number, height: number, clearColor: string, worldWidth?: number, worldHeight?: number): void {
+    dispatch.sync("create_pixel_buffer", entityId, width, height, clearColor, worldWidth, worldHeight);
+  },
+
+  pixelBufferDraw(entityId: string, commands: DrawCommand[]): void {
+    dispatch.sync("pixel_buffer_draw", entityId, JSON.stringify(commands));
+  },
+
+  pixelBufferClear(entityId: string, color: string): void {
+    dispatch.sync("pixel_buffer_clear", entityId, color);
+  },
+
+  destroyPixelBuffer(entityId: string): void {
+    dispatch.sync("destroy_pixel_buffer", entityId);
+  },
+
+  async preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }> {
+    return dispatch.async<{ completed: number; failed: number }>("preload_textures", [JSON.stringify(urls)]);
+  },
+
+  setDebugShowShapes(show: boolean): void {
+    dispatch.sync("set_debug_show_shapes", show);
+  },
+
+  setDebugSettings(settings: {
+		showInputDebug: boolean;
+		showPhysicsShapes: boolean;
+		showZones: boolean;
+		showFPS: boolean;
+	}): void {
+    dispatch.sync("set_debug_settings", JSON.stringify(settings));
+  },
+
+  setCameraTarget(entityId: string | null): void {
+    dispatch.sync("set_camera_target", entityId);
+  },
+
+  setCameraPosition(x: number, y: number): void {
+    dispatch.sync("set_camera_position", x, y);
+  },
+
+  setCameraZoom(zoom: number): void {
+    dispatch.sync("set_camera_zoom", zoom);
+  },
+
+  startCamera(entityId: string, width?: number, height?: number): void {
+    dispatch.sync("start_camera", entityId, width, height);
+  },
+
+  stopCamera(): void {
+    dispatch.sync("stop_camera");
+  },
+
+  spawnParticle(type: string, x: number, y: number): void {
+    dispatch.sync("spawn_particle", type, x, y);
+  },
+
+  playSound(resourcePath: string, volume?: number, pitch?: number): void {
+    dispatch.sync("play_sound", resourcePath, volume, pitch);
+  },
+
+  playMusic(resourcePath: string, volume?: number, loop?: boolean): void {
+    dispatch.sync("play_music", resourcePath, volume, loop);
+  },
+
+  stopMusic(): void {
+    dispatch.sync("stop_music");
+  },
+
+  applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>): void {
+    dispatch.effectsSync("apply_sprite_effect", entityId, effectName, JSON.stringify(params));
+  },
+
+  updateSpriteEffectParam(entityId: string, paramName: string, value: unknown): void {
+    dispatch.effectsSync("update_sprite_effect_param", entityId, paramName, JSON.stringify(value));
+  },
+
+  clearSpriteEffect(entityId: string): void {
+    dispatch.effectsSync("clear_sprite_effect", entityId);
+  },
+
+  setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string): void {
+    dispatch.effectsSync("set_post_effect", effectName, JSON.stringify(params), layer);
+  },
+
+  updatePostEffectParam(paramName: string, value: unknown, layer?: string): void {
+    dispatch.effectsSync("update_post_effect_param", paramName, JSON.stringify(value), layer);
+  },
+
+  clearPostEffect(layer?: string): void {
+    dispatch.effectsSync("clear_post_effect", layer);
+  },
+
+  screenShake(intensity: number, duration?: number): void {
+    dispatch.effectsSync("screen_shake", intensity, duration);
+  },
+
+  zoomPunch(intensity?: number, duration?: number): void {
+    dispatch.effectsSync("zoom_punch", intensity, duration);
+  },
+
+  triggerShockwave(worldX: number, worldY: number, duration?: number): void {
+    dispatch.effectsSync("trigger_shockwave", worldX, worldY, duration);
+  },
+
+  flashScreen(color?: [number, number, number, number?], duration?: number): void {
+    dispatch.effectsSync("flash_screen", JSON.stringify(color), duration);
+  },
+
+  async createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult> {
+    return dispatch.async<DynamicShaderResult>("create_dynamic_shader", [shaderId, shaderCode]);
+  },
+
+  applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): void {
+    dispatch.effectsSync("apply_dynamic_shader_to_entity", entityId, shaderId, JSON.stringify(params));
+  },
+
+  applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): void {
+    dispatch.effectsSync("apply_dynamic_post_shader", shaderCode, JSON.stringify(params));
+  },
+
+  hotSwapShader(shaderId: string, source: string): void {
+    dispatch.sync("hot_swap_shader", shaderId, source);
+  },
+
+  spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>): void {
+    dispatch.effectsSync("spawn_particle_preset", presetName, worldX, worldY, JSON.stringify(params));
+  },
+
+  async getAvailableEffects(): Promise<{
+		sprite: string[];
+		post: string[];
+		particles: string[];
+	}> {
+    return dispatch.async<{
+		sprite: string[];
+		post: string[];
+		particles: string[];
+	}>("get_available_effects", []);
+  },
+
+  createUIButton(buttonId: string, normalImageUrl: string, pressedImageUrl: string, x: number, y: number, width: number, height: number): void {
+    dispatch.sync("create_ui_button", buttonId, normalImageUrl, pressedImageUrl, x, y, width, height);
+  },
+
+  destroyUIButton(buttonId: string): void {
+    dispatch.sync("destroy_ui_button", buttonId);
+  },
+
+  createThemedUIComponent(componentId: string, componentType: 0 | 1 | 2 | 3 | 4 | 5 | 6, metadataUrl: string, x: number, y: number, width: number, height: number, labelText?: string): void {
+    dispatch.sync("create_themed_ui_component", componentId, componentType, metadataUrl, x, y, width, height, labelText);
+  },
+
+  destroyThemedUIComponent(componentId: string): void {
+    dispatch.sync("destroy_themed_ui_component", componentId);
+  },
+
+  show3DModel(path: string): boolean {
+    return dispatch.sync("show_3d_model", path) as boolean ?? false;
+  },
+
+  show3DModelFromUrl(url: string): void {
+    dispatch.sync("show_3d_model_from_url", url);
+  },
+
+  set3DViewportPosition(x: number, y: number): void {
+    dispatch.sync("set_3d_viewport_position", x, y);
+  },
+
+  set3DViewportSize(width: number, height: number): void {
+    dispatch.sync("set_3d_viewport_size", width, height);
+  },
+
+  rotate3DModel(x: number, y: number, z: number): void {
+    dispatch.sync("rotate_3d_model", x, y, z);
+  },
+
+  set3DModelPosition(x: number, y: number, z: number): void {
+    dispatch.sync("set_3d_model_position", x, y, z);
+  },
+
+  set3DCameraDistance(distance: number): void {
+    dispatch.sync("set_3d_camera_distance", distance);
+  },
+
+  set3DCameraSize(size: number): void {
+    dispatch.sync("set_3d_camera_size", size);
+  },
+
+  clear3DModels(): void {
+    dispatch.sync("clear_3d_models");
+  },
+
+  create3DFloor(size?: number, colorHex?: string, style?: "plain" | "grid"): void {
+    dispatch.sync("create_3d_floor", size, colorHex, style);
+  },
+
+  create3DCube(x: number, y: number, z: number, size?: number, colorHex?: string): void {
+    dispatch.sync("create_3d_cube", x, y, z, size, colorHex);
+  },
+
+  clear3DCubes(): void {
+    dispatch.sync("clear_3d_cubes");
+  },
+
+  set3DCameraPosition(x: number, y: number, z: number): void {
+    dispatch.sync("set_3d_camera_position", x, y, z);
+  },
+
+  set3DCameraLookAt(x: number, y: number, z: number): void {
+    dispatch.sync("set_3d_camera_look_at", x, y, z);
+  },
+
+  setOrbitControls(enabled: boolean): void {
+    dispatch.sync("set_orbit_controls", enabled);
+  },
+
+  setExternalInput(name: string, imageData: string): void {
+    dispatch.sync("set_external_input", name, imageData);
+  },
+
+  setScreenInput(enable: boolean): void {
+    dispatch.sync("set_screen_input", enable);
+  },
+  };
 }

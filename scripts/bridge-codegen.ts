@@ -121,6 +121,23 @@ const BRIDGE_NAME_OVERRIDES: Record<string, string> = {
 	effectsUpdateParams: "effects.updateParams",
 };
 
+interface WireOverride {
+	forceSync?: boolean;
+	argOrder?: string[];
+	forceJson?: string[];
+}
+
+const WIRE_OVERRIDES: Record<string, WireOverride> = {
+	load_game_json: { forceSync: true },
+	spawn_entity: {
+		argOrder: ["prefabId", "position.x", "position.y", "entityId"],
+	},
+	setup_world: { forceJson: ["world"] },
+	set_debug_settings: { forceJson: ["settings"] },
+};
+
+const FLATTEN_SKIP_FIELDS = new Set(["type"]);
+
 function snakeToCamel(name: string): string {
 	return name.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
 }
@@ -215,6 +232,7 @@ function flattenStructType(
 	prefix: string,
 	accessorPrefix: string,
 	visited: Set<string>,
+	skipFields?: Set<string>,
 ): WireArg[] | null {
 	const typeName = type.getSymbol()?.getName() ?? type.getText();
 	if (visited.has(typeName)) return null;
@@ -227,6 +245,7 @@ function flattenStructType(
 
 	for (const prop of properties) {
 		const propName = prop.getName();
+		if (skipFields?.has(propName)) continue;
 		const decls = prop.getDeclarations();
 		if (decls.length === 0) continue;
 
@@ -251,6 +270,7 @@ function flattenStructType(
 			wireName,
 			accessor,
 			new Set(visited),
+			skipFields,
 		);
 		if (nestedArgs) {
 			args.push(...nestedArgs);
@@ -263,7 +283,7 @@ function flattenStructType(
 	return args;
 }
 
-function isFlattenableStruct(type: Type): boolean {
+function isFlattenableStruct(type: Type, skipFields?: Set<string>): boolean {
 	// Must have properties (interface/object type)
 	const properties = type.getProperties();
 	if (properties.length === 0) return false;
@@ -278,15 +298,29 @@ function isFlattenableStruct(type: Type): boolean {
 	if (type.getNumberIndexType() || type.getStringIndexType()) return false;
 
 	// Try to flatten — if all properties resolve to primitives or nested flat structs, it's flattenable
-	return flattenStructType(type, "", "", new Set()) !== null;
+	return flattenStructType(type, "", "", new Set(), skipFields) !== null;
 }
 
-function resolveWireParam(param: ParameterDeclaration): WireParam {
+function resolveWireParam(
+	param: ParameterDeclaration,
+	forceJsonParams?: Set<string>,
+): WireParam {
 	const name = param.getName();
 	const type = param.getType();
 	const optional = param.isOptional();
 	const typeNode = param.getTypeNode();
 	const tsType = typeNode ? typeNode.getText() : type.getText(param);
+
+	// 0. Force JSON override — method-specific params that must be serialized as JSON
+	if (forceJsonParams?.has(name)) {
+		return {
+			name,
+			tsType,
+			wireKind: WireKind.JsonBlob,
+			optional,
+			args: [{ name, type: "json", accessor: `JSON.stringify(${name})` }],
+		};
+	}
 
 	// 1. Callback/function type
 	if (isCallbackType(type)) {
@@ -343,8 +377,15 @@ function resolveWireParam(param: ParameterDeclaration): WireParam {
 	}
 
 	// 5. Flattenable struct (all properties are primitives or nested flat structs)
-	if (isFlattenableStruct(type)) {
-		const flatArgs = flattenStructType(type, "", name, new Set());
+	//    Skip discriminator fields (like `type` on joint defs)
+	if (isFlattenableStruct(type, FLATTEN_SKIP_FIELDS)) {
+		const flatArgs = flattenStructType(
+			type,
+			"",
+			name,
+			new Set(),
+			FLATTEN_SKIP_FIELDS,
+		);
 		if (flatArgs) {
 			return {
 				name,
@@ -366,8 +407,13 @@ function resolveWireParam(param: ParameterDeclaration): WireParam {
 	};
 }
 
-function resolveWireParams(method: MethodSignature): WireParam[] {
-	return method.getParameters().map(resolveWireParam);
+function resolveWireParams(
+	method: MethodSignature,
+	forceJsonParams?: Set<string>,
+): WireParam[] {
+	return method
+		.getParameters()
+		.map((p) => resolveWireParam(p, forceJsonParams));
 }
 
 function inferCategory(
@@ -490,7 +536,11 @@ function extractMethod(
 		};
 	});
 
-	const wireParams = resolveWireParams(method);
+	const override = WIRE_OVERRIDES[snakeName];
+	const forceJsonParams = override?.forceJson
+		? new Set(override.forceJson)
+		: undefined;
+	const wireParams = resolveWireParams(method, forceJsonParams);
 
 	const category =
 		source === "EffectsBridge"
@@ -678,12 +728,20 @@ function generateRegistry(): BridgeRegistry {
 		methods.push(extractMethod(method, godotBridge, "GodotBridge"));
 	}
 
-	// Validate that all override keys reference actual methods
 	const allTsNames = new Set(methods.map((m) => m.tsName));
 	for (const overrideKey of Object.keys(BRIDGE_NAME_OVERRIDES)) {
 		if (!allTsNames.has(overrideKey)) {
 			throw new Error(
 				`BRIDGE_NAME_OVERRIDES references non-existent method: "${overrideKey}"`,
+			);
+		}
+	}
+
+	const allSnakeNames = new Set(methods.map((m) => m.snakeName));
+	for (const overrideKey of Object.keys(WIRE_OVERRIDES)) {
+		if (!allSnakeNames.has(overrideKey)) {
+			throw new Error(
+				`WIRE_OVERRIDES references non-existent method: "${overrideKey}"`,
 			);
 		}
 	}
@@ -1038,6 +1096,44 @@ function generateSharedTransport(registry: BridgeRegistry): void {
 	}
 
 	function buildWireArgs(m: MethodEntry): string[] {
+		const override = WIRE_OVERRIDES[m.snakeName];
+		if (override?.argOrder) {
+			const allArgs = new Map<string, { arg: WireArg; wp: WireParam }>();
+			for (const wp of m.wireParams) {
+				if (wp.wireKind === WireKind.Callback) continue;
+				for (const a of wp.args) {
+					allArgs.set(a.accessor, { arg: a, wp });
+				}
+			}
+
+			return override.argOrder.map((path) => {
+				const firstParam = m.wireParams[0];
+				const paramPrefix = firstParam?.name ?? "";
+
+				const candidates = [
+					path,
+					`${paramPrefix}.${path}`,
+					`${paramPrefix}?.${path.replace(/\./g, "?.")}`,
+				];
+
+				for (const candidate of candidates) {
+					const match = allArgs.get(candidate);
+					if (match) return safeAccessor(match.arg, match.wp);
+				}
+
+				for (const [accessor, entry] of allArgs) {
+					if (accessor.endsWith(`.${path}`) || accessor.endsWith(`?.${path}`)) {
+						return safeAccessor(entry.arg, entry.wp);
+					}
+				}
+
+				const leafName = path.split(".").pop() ?? path;
+				const wireType: WireArg["type"] =
+					leafName === "x" || leafName === "y" ? "number" : "string";
+				return `${paramPrefix}?.${path.replace(/\./g, "?.")} ?? ${wireDefault(wireType)}`;
+			});
+		}
+
 		const args: string[] = [];
 		for (const wp of m.wireParams) {
 			if (wp.wireKind === WireKind.Callback) continue;
@@ -1128,7 +1224,7 @@ function generateSharedTransport(registry: BridgeRegistry): void {
 		const argsStr = wireArgs.length > 0 ? `, ${wireArgs.join(", ")}` : "";
 		const fallback = getDefaultFallback(m.returnType);
 
-		if (m.returnType === "void") {
+		if (m.returnType === "void" || m.returnType === "Promise<void>") {
 			return `dispatch.sync("${m.snakeName}"${argsStr});`;
 		}
 
@@ -1140,18 +1236,19 @@ function generateSharedTransport(registry: BridgeRegistry): void {
 	}
 
 	function generateMethodBody(m: MethodEntry): string {
-		// EffectsBridge source methods always use effectsAsync (pipeline methods)
 		if (m.source === "EffectsBridge") {
 			return generateEffectsAsyncBody(m);
 		}
 
-		// GodotBridge methods targeting effects bridge: sync → effectsSync
 		if (m.dispatchTarget === "effects" && !m.async) {
 			return generateEffectsSyncBody(m);
 		}
 
-		// All async methods (including effects-target async like createDynamicShader)
-		// go through dispatch.async — the platform adapter routes to the right bridge
+		const override = WIRE_OVERRIDES[m.snakeName];
+		if (override?.forceSync) {
+			return generateBridgeSyncBody(m);
+		}
+
 		if (m.async) {
 			return generateBridgeAsyncBody(m);
 		}

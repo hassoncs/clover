@@ -391,33 +391,13 @@
         {
           "name": "world",
           "tsType": "GameDefinition[\"world\"]",
-          "wireKind": "FlatStruct",
+          "wireKind": "JsonBlob",
           "optional": false,
           "args": [
             {
-              "name": "gravity_x",
-              "type": "number",
-              "accessor": "world.gravity.x"
-            },
-            {
-              "name": "gravity_y",
-              "type": "number",
-              "accessor": "world.gravity.y"
-            },
-            {
-              "name": "pixelsPerMeter",
-              "type": "number",
-              "accessor": "world.pixelsPerMeter"
-            },
-            {
-              "name": "bounds_width",
-              "type": "number",
-              "accessor": "world.bounds.width"
-            },
-            {
-              "name": "bounds_height",
-              "type": "number",
-              "accessor": "world.bounds.height"
+              "name": "world",
+              "type": "json",
+              "accessor": "JSON.stringify(world)"
             }
           ]
         },
@@ -1663,11 +1643,6 @@
           "optional": false,
           "args": [
             {
-              "name": "type",
-              "type": "string",
-              "accessor": "def.type"
-            },
-            {
               "name": "bodyA",
               "type": "string",
               "accessor": "def.bodyA"
@@ -1745,11 +1720,6 @@
           "optional": false,
           "args": [
             {
-              "name": "type",
-              "type": "string",
-              "accessor": "def.type"
-            },
-            {
               "name": "bodyA",
               "type": "string",
               "accessor": "def.bodyA"
@@ -1821,11 +1791,6 @@
           "wireKind": "FlatStruct",
           "optional": false,
           "args": [
-            {
-              "name": "type",
-              "type": "string",
-              "accessor": "def.type"
-            },
             {
               "name": "bodyA",
               "type": "string",
@@ -1914,11 +1879,6 @@
           "optional": false,
           "args": [
             {
-              "name": "type",
-              "type": "string",
-              "accessor": "def.type"
-            },
-            {
               "name": "bodyA",
               "type": "string",
               "accessor": "def.bodyA"
@@ -1976,11 +1936,6 @@
           "optional": false,
           "args": [
             {
-              "name": "type",
-              "type": "string",
-              "accessor": "def.type"
-            },
-            {
               "name": "body",
               "type": "string",
               "accessor": "def.body"
@@ -2037,11 +1992,6 @@
           "wireKind": "FlatStruct",
           "optional": false,
           "args": [
-            {
-              "name": "type",
-              "type": "string",
-              "accessor": "def.type"
-            },
             {
               "name": "body",
               "type": "string",
@@ -3533,28 +3483,13 @@
         {
           "name": "settings",
           "tsType": "{\n\t\tshowInputDebug: boolean;\n\t\tshowPhysicsShapes: boolean;\n\t\tshowZones: boolean;\n\t\tshowFPS: boolean;\n\t}",
-          "wireKind": "FlatStruct",
+          "wireKind": "JsonBlob",
           "optional": false,
           "args": [
             {
-              "name": "showInputDebug",
-              "type": "boolean",
-              "accessor": "settings.showInputDebug"
-            },
-            {
-              "name": "showPhysicsShapes",
-              "type": "boolean",
-              "accessor": "settings.showPhysicsShapes"
-            },
-            {
-              "name": "showZones",
-              "type": "boolean",
-              "accessor": "settings.showZones"
-            },
-            {
-              "name": "showFPS",
-              "type": "boolean",
-              "accessor": "settings.showFPS"
+              "name": "settings",
+              "type": "json",
+              "accessor": "JSON.stringify(settings)"
             }
           ]
         }

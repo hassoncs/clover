@@ -33,7 +33,7 @@ declare global {
 			drawToActiveBuffer(entityId: string, commands: string): void;
 			loadGame(definition: string): void;
 			clearGame(): void;
-			setupWorld(gravity_x: number, gravity_y: number, pixelsPerMeter: number, bounds_width: number, bounds_height: number, background?: string): void;
+			setupWorld(world: string, background?: string): void;
 			registerPrefabs(prefabs: string): void;
 			loadEntities(entities: string): void;
 			clearEntities(): void;
@@ -62,12 +62,12 @@ declare global {
 			applyImpulse(entityId: string, x: number, y: number): void;
 			applyForce(entityId: string, x: number, y: number): void;
 			applyTorque(entityId: string, torque: number): void;
-			createRevoluteJoint(type: string, bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, enableLimit: boolean, lowerAngle: number, upperAngle: number, enableMotor: boolean, motorSpeed: number, maxMotorTorque: number): void;
-			createDistanceJoint(type: string, bodyA: string, bodyB: string, anchorA_x: number, anchorA_y: number, anchorB_x: number, anchorB_y: number, length: number, stiffness: number, damping: number): void;
-			createPrismaticJoint(type: string, bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, axis_x: number, axis_y: number, enableLimit: boolean, lowerTranslation: number, upperTranslation: number, enableMotor: boolean, motorSpeed: number, maxMotorForce: number): void;
-			createWeldJoint(type: string, bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, stiffness: number, damping: number): void;
-			createMouseJoint(type: string, body: string, target_x: number, target_y: number, maxForce: number, stiffness: number, damping: number): void;
-			createMouseJointAsync(type: string, body: string, target_x: number, target_y: number, maxForce: number, stiffness: number, damping: number): void;
+			createRevoluteJoint(bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, enableLimit: boolean, lowerAngle: number, upperAngle: number, enableMotor: boolean, motorSpeed: number, maxMotorTorque: number): void;
+			createDistanceJoint(bodyA: string, bodyB: string, anchorA_x: number, anchorA_y: number, anchorB_x: number, anchorB_y: number, length: number, stiffness: number, damping: number): void;
+			createPrismaticJoint(bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, axis_x: number, axis_y: number, enableLimit: boolean, lowerTranslation: number, upperTranslation: number, enableMotor: boolean, motorSpeed: number, maxMotorForce: number): void;
+			createWeldJoint(bodyA: string, bodyB: string, anchor_x: number, anchor_y: number, stiffness: number, damping: number): void;
+			createMouseJoint(body: string, target_x: number, target_y: number, maxForce: number, stiffness: number, damping: number): void;
+			createMouseJointAsync(body: string, target_x: number, target_y: number, maxForce: number, stiffness: number, damping: number): void;
 			destroyJoint(jointId: number): void;
 			setMotorSpeed(jointId: number, speed: number): void;
 			setMouseTarget(jointId: number, x: number, y: number): void;
@@ -91,7 +91,7 @@ declare global {
 			destroyPixelBuffer(entityId: string): void;
 			preloadTextures(urls: string): void;
 			setDebugShowShapes(show: boolean): void;
-			setDebugSettings(showInputDebug: boolean, showPhysicsShapes: boolean, showZones: boolean, showFPS: boolean): void;
+			setDebugSettings(settings: string): void;
 			setCameraTarget(entityId: string): void;
 			setCameraPosition(x: number, y: number): void;
 			setCameraZoom(zoom: number): void;
