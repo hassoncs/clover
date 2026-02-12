@@ -654,10 +654,21 @@ export function createWebGodotBridge(): GodotBridge {
 		},
 
 		registerPrefabs(prefabs) {
+			console.log(
+				"[GodotBridge.web] registerPrefabs:",
+				Object.keys(prefabs || {}).length,
+				"prefabs:",
+				Object.keys(prefabs || {}),
+			);
 			getGodotBridge()?.registerPrefabs(JSON.stringify(prefabs));
 		},
 
 		loadEntities(entities) {
+			console.log(
+				"[GodotBridge.web] loadEntities:",
+				Array.isArray(entities) ? entities.length : typeof entities,
+				"entities",
+			);
 			getGodotBridge()?.loadEntities(JSON.stringify(entities));
 		},
 
@@ -699,6 +710,12 @@ export function createWebGodotBridge(): GodotBridge {
 		},
 
 		spawnEntity(request: SpawnEntityRequest): void {
+			console.log(
+				"[GodotBridge.web] spawnEntity:",
+				request.prefabId,
+				request.entityId,
+				request.position,
+			);
 			const velocityJson = request.velocity
 				? JSON.stringify(request.velocity)
 				: "";
