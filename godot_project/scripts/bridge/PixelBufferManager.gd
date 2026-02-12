@@ -47,6 +47,12 @@ func _js_destroy(args: Array) -> void:
 	destroy_pixel_buffer(str(args[0]))
 
 
+# Aliases matching the BridgeMethodMap contract names
+func _js_pixel_buffer_draw(args: Array) -> void: _js_draw_commands(args)
+func _js_pixel_buffer_clear(args: Array) -> void: _js_clear(args)
+func _js_destroy_pixel_buffer(args: Array) -> void: _js_destroy(args)
+
+
 func create_pixel_buffer(entity_id: String, width: int, height: int, clear_color: String, world_w: float = 0.0, world_h: float = 0.0) -> void:
 	if not _has_entity(entity_id):
 		return

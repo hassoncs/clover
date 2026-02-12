@@ -227,149 +227,19 @@ func _auto_register_bridge_methods(modules: Array) -> Dictionary:
 	return registry
 
 func _build_method_map() -> void:
-	var is_dev = OS.is_debug_build()
-
-	# Step 1: Auto-register bridge methods from modules with _js_ prefix
-	var modules = [
-		_entity_manager, _transform_system, _physics_controller, _joint_manager,
+	_method_map = _auto_register_bridge_methods([
+		self, _entity_manager, _transform_system, _physics_controller, _joint_manager,
 		_visual_renderer, _ui_manager, _camera_controller, _input_router,
 		_sync_system, _property_collector, _event_emitter, _physics_queries,
-		_pixel_buffer_manager, _debug_bridge
-	]
-	_method_map = _auto_register_bridge_methods(modules)
-
-	# Step 2: Apply manual overrides for methods needing custom handling
-	var overrides = {
-		"callRpc": _handle_rpc,
-		# Core lifecycle
-		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
-		"clear_game": func(_args): clear_game(),
-		# Sectioned loading
-		"setup_world": _js_setup_world,
-		"register_prefabs": _js_register_prefabs,
-		"load_entities": _js_load_entities,
-		"clear_entities": _js_clear_entities,
-		"set_inspect_mode": func(args): set_inspect_mode(bool(args[0])) if args.size() >= 1 else null,
-		"pause_physics": func(_args): pause_physics(),
-		"resume_physics": func(_args): resume_physics(),
-		"load_custom_scene": func(args): return load_custom_scene(str(args[0])) if args.size() > 0 else false,
-		# Entity management
-		"spawn_entity": _entity_manager._js_spawn_entity,
-		"spawn_entity_with_id": func(args): return spawn_entity_with_id(str(args[0]), float(args[1]), float(args[2]), str(args[3])) if args.size() >= 4 else null,
-		"destroy_entity": _entity_manager._js_destroy_entity,
-		"get_entity_transform": _entity_manager._js_get_entity_transform,
-		"get_all_transforms": _transform_system._js_get_all_transforms,
-		"get_all_properties": _property_collector._js_get_all_properties,
-		"get_all_bodies": _entity_manager._js_get_all_bodies,
-		"set_user_data": _entity_manager._js_set_user_data,
-		"get_user_data": _entity_manager._js_get_user_data,
-		# Sync
-		"on_transform_sync": _sync_system._js_on_transform_sync,
-		"on_property_sync": _sync_system._js_on_property_sync,
-		"set_watch_config": _property_collector._js_set_watch_config,
-		"get_transform": _sync_system._js_get_transform,
-		"get_transforms": _sync_system._js_get_transforms,
-		"set_tracked_entities": _sync_system._js_set_tracked_entities,
-		# Physics
-		"set_linear_velocity": _physics_controller._js_set_linear_velocity,
-		"set_angular_velocity": _physics_controller._js_set_angular_velocity,
-		"apply_impulse": _physics_controller._js_apply_impulse,
-		"apply_force": _physics_controller._js_apply_force,
-		"apply_torque": _physics_controller._js_apply_torque,
-		"get_linear_velocity": _physics_controller._js_get_linear_velocity,
-		"get_angular_velocity": _physics_controller._js_get_angular_velocity,
-		# Transform
-		"set_transform": _transform_system._js_set_transform,
-		"set_position": _transform_system._js_set_position,
-		"set_rotation": _transform_system._js_set_rotation,
-		"set_scale": _transform_system._js_set_scale,
-		# Visual
-		"set_opacity": _visual_renderer._js_set_opacity,
-		"set_visible": _visual_renderer._js_set_visible,
-		"set_entity_image": _visual_renderer._js_set_entity_image,
-		"set_entity_image_from_file": func(args): _visual_renderer.set_entity_image_from_file(str(args[0]), str(args[1]), float(args[2]), float(args[3])) if args.size() >= 4 else null,
-		"set_entity_atlas_region": _visual_renderer._js_set_entity_atlas_region,
-		"set_entity_atlas_region_from_file": func(args): _visual_renderer.set_entity_atlas_region_from_file(str(args[0]), str(args[1]), float(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6]), float(args[7])) if args.size() >= 8 else null,
-		"preload_textures": _visual_renderer._js_preload_textures,
-		"set_debug_show_shapes": _visual_renderer._js_set_debug_show_shapes,
-		"set_debug_settings": _visual_renderer._js_set_debug_settings,
-		"clear_texture_cache": func(args): _visual_renderer.clear_texture_cache(str(args[0]) if args.size() > 0 else ""),
-		# Pixel Buffer
-		"createPixelBuffer": _pixel_buffer_manager._js_create_pixel_buffer,
-		"pixelBufferDraw": _pixel_buffer_manager._js_draw_commands,
-		"pixelBufferClear": _pixel_buffer_manager._js_clear,
-		"destroyPixelBuffer": _pixel_buffer_manager._js_destroy,
-		# Joints
-		"create_revolute_joint": _joint_manager._js_create_revolute_joint,
-		"create_distance_joint": _joint_manager._js_create_distance_joint,
-		"create_prismatic_joint": _joint_manager._js_create_prismatic_joint,
-		"create_weld_joint": _joint_manager._js_create_weld_joint,
-		"create_mouse_joint": _joint_manager._js_create_mouse_joint,
-		"destroy_joint": _joint_manager._js_destroy_joint,
-		"destroy_mouse_joint_for_entity": _joint_manager._js_destroy_mouse_joint_for_entity,
-		"set_motor_speed": _joint_manager._js_set_motor_speed,
-		"set_mouse_target": _joint_manager._js_set_mouse_target,
-		"get_last_joint_id": _joint_manager._js_get_last_joint_id,
-		# Queries
-		"query_point": _physics_queries._js_query_point,
-		"query_point_entity": _physics_queries._js_query_point_entity,
-		"query_aabb": _physics_queries._js_query_aabb,
-		"raycast": _physics_queries._js_raycast,
-		"screen_to_world": func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else {"x": 0, "y": 0},
-		# Input
-		"send_input": _input_router._js_send_input,
-		"on_input_event": _event_emitter._js_on_input_event,
-		"on_collision": _event_emitter._js_on_collision,
-		"on_entity_destroyed": _event_emitter._js_on_entity_destroyed,
-		"on_sensor_begin": _event_emitter._js_on_sensor_begin,
-		"on_sensor_end": _event_emitter._js_on_sensor_end,
-		# Camera
-		"set_camera_target": _camera_controller._js_set_camera_target,
-		"set_camera_position": _camera_controller._js_set_camera_position,
-		"set_camera_zoom": _camera_controller._js_set_camera_zoom,
-		"start_camera": _js_start_camera,
-		"stop_camera": _js_stop_camera,
-		# UI
-		"spawn_particle": _ui_manager._js_spawn_particle,
-		"play_sound": _ui_manager._js_play_sound,
-		"play_music": _ui_manager._js_play_music,
-		"stop_music": _ui_manager._js_stop_music,
-		"create_ui_button": _ui_manager._js_create_ui_button,
-		"destroy_ui_button": _ui_manager._js_destroy_ui_button,
-		"on_ui_button_event": _ui_manager._js_on_ui_button_event,
-		"create_themed_ui_component": func(args): _ui_manager.create_themed_ui_component(str(args[0]), int(args[1]), str(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6]), str(args[7]) if args.size() > 7 else "") if args.size() >= 7 else null,
-		"destroy_themed_ui_component": func(args): _ui_manager.destroy_themed_ui_component(str(args[0])) if args.size() >= 1 else null,
-		# 3D
-		"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
-		"show_3d_model_from_url": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0])),
-		"set_3d_viewport_position": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1]))),
-		"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
-		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
-		"set_3d_model_position": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_position(float(args[0]), float(args[1]), float(args[2])),
-		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
-		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
-		"set_3d_camera_position": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_position(float(args[0]), float(args[1]), float(args[2])),
-		"set_3d_camera_look_at": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_look_at(float(args[0]), float(args[1]), float(args[2])),
-		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
-		"create_3d_floor": func(args): if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain"),
-		"create_3d_cube": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000"),
-		"clear_3d_cubes": func(_args): if _viewport_3d: _viewport_3d.clear_cubes(),
-		# Debug control
-		"enable_debug": func(_args): return enable_debug(),
-		"disable_debug": func(_args): return disable_debug(),
-		"is_debug_enabled": func(_args): return is_debug_enabled(),
-		# Runtime diagnostics
-		"get_bridge_methods": func(_args): return get_bridge_methods(),
-	}
-
-	# Step 3: Apply overrides to method map (manual entries take precedence)
-	for method_name in overrides:
-		_method_map[method_name] = overrides[method_name]
-
-	# Log registration summary
-	if is_dev:
-		print("[GameBridge][REGISTRY] Built method map with ", _method_map.size(), " methods")
-		print("[GameBridge][REGISTRY] Auto-registered from modules, manual overrides applied")
+		_pixel_buffer_manager, _debug_bridge,
+	])
+	# Validate against generated contract (uses camelCase keys)
+	var camel_map: Dictionary = {}
+	for key in _method_map: camel_map[_to_camel_case(key)] = true
+	var errors = BridgeMethodMap.validate_registration(camel_map)
+	for e in errors: push_warning("[GameBridge] " + e)
+	if OS.is_debug_build():
+		print("[GameBridge][REGISTRY] Built method map: %d methods (auto-discovery)" % _method_map.size())
 
 func _handle_rpc(args: Array) -> Variant:
 	if args.size() == 0:
@@ -461,7 +331,7 @@ func _to_camel_case(snake: String) -> String:
 			result += part.capitalize()
 	return result
 
-func _js_load_game(args: Array) -> bool: return load_game_json(str(args[0])) if args.size() > 0 else false
+func _js_load_game_json(args: Array) -> bool: return load_game_json(str(args[0])) if args.size() > 0 else false
 func _js_clear_game(_args: Array) -> void: clear_game()
 func _js_set_inspect_mode(args: Array) -> void: if args.size() >= 1: set_inspect_mode(bool(args[0]))
 func _js_pause_physics(_args: Array) -> void: pause_physics()
@@ -498,6 +368,43 @@ func _js_stop_camera(_args: Array) -> void:
 		# Native path: use CameraManager
 		if _camera_manager:
 			_camera_manager.stop_camera()
+
+func _js_call_rpc(args: Array) -> Variant: return _handle_rpc(args)
+func _js_spawn_entity_with_id(args: Array) -> Node2D: return spawn_entity_with_id(str(args[0]), float(args[1]), float(args[2]), str(args[3])) if args.size() >= 4 else null
+func _js_enable_debug(_args: Array) -> Dictionary: return enable_debug()
+func _js_disable_debug(_args: Array) -> Dictionary: return disable_debug()
+func _js_is_debug_enabled(_args: Array) -> bool: return is_debug_enabled()
+func _js_get_bridge_methods(_args: Array) -> Dictionary: return get_bridge_methods()
+func _js_screen_to_world(args: Array) -> Dictionary: return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else {"x": 0, "y": 0}
+
+# 3D Viewport wrappers (delegated through GameBridge for coordinate conversion)
+func _js_show_3d_model(args: Array) -> bool: return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false
+func _js_show_3d_model_from_url(args: Array) -> void:
+	if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0]))
+func _js_set_3d_viewport_position(args: Array) -> void:
+	if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
+func _js_set_3d_viewport_size(args: Array) -> void:
+	if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1]))
+func _js_rotate_3d_model(args: Array) -> void:
+	if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2])))
+func _js_set_3d_model_position(args: Array) -> void:
+	if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_position(float(args[0]), float(args[1]), float(args[2]))
+func _js_set_3d_camera_distance(args: Array) -> void:
+	if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0]))
+func _js_set_3d_camera_size(args: Array) -> void:
+	if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0]))
+func _js_set_3d_camera_position(args: Array) -> void:
+	if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_position(float(args[0]), float(args[1]), float(args[2]))
+func _js_set_3d_camera_look_at(args: Array) -> void:
+	if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_look_at(float(args[0]), float(args[1]), float(args[2]))
+func _js_clear_3d_models(_args: Array) -> void:
+	if _viewport_3d: _viewport_3d.clear_models()
+func _js_create_3d_floor(args: Array) -> void:
+	if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain")
+func _js_create_3d_cube(args: Array) -> void:
+	if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000")
+func _js_clear_3d_cubes(_args: Array) -> void:
+	if _viewport_3d: _viewport_3d.clear_cubes()
 
 func _log_physics_diagnostics() -> void:
 	print("[GameBridge][DIAG] === PHYSICS DIAGNOSTICS ===")
