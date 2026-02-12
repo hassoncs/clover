@@ -42,3 +42,11 @@
 - Tool call status tracked via accumulator (streaming → calling → complete) but only askUser rendered in UI (non-askUser tools tracked but not displayed — matches pre-migration behavior).
 - askUser HITL: suspension via hasPendingAskUser() → waiting state → UserQuestionCard → submitToolAnswer → reconnect SSE. Full round-trip wired.
 - Integration test deferred by design (needs live Workers env). Covered by 22 unit tests + code path tracing.
+
+## 2026-02-12 Task: End-to-End Streaming Repair (No Legacy)
+- `finish` chunks from `streamText()` fire per step in multi-step mode; mapper must not emit `RUN_FINISHED` from `finish` or the UI exits streaming early.
+- Reliable run completion is: consume all `result.fullStream` parts, then emit a single `RUN_FINISHED` in `stream-handler`.
+- Legacy flat chat message adapters were masking tool-use/tool-result structure and losing semantic state; rendering directly from `ContentBlock[]` removes that drift.
+- `useStreamingChat` can safely merge persisted DB messages and reducer messages as shared `ChatMessage[]` with normalized `content` blocks.
+- Ask-user pending detection is most robust when derived from `tool-use` + absence of matching `tool-result` by `toolCallId`.
+- Duplicate SSE sessions can be suppressed by guarding `connectToStream` with `isConnecting` + `currentStreamUrl` refs.

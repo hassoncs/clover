@@ -1,333 +1,349 @@
-import { stepCountIs, streamText } from 'ai';
-import type { ModelMessage } from 'ai';
-import { nanoid } from 'nanoid';
+import type { AgUiEvent } from "@slopcade/shared/chat";
+import type { ModelMessage } from "ai";
+import { stepCountIs, streamText } from "ai";
+import { nanoid } from "nanoid";
 
-import type { AgUiEvent } from '@slopcade/shared/chat';
+import { CHAT_STAGE_PROMPT } from "@/agent/engine/prompts";
 
-import { CHAT_STAGE_PROMPT } from '@/agent/engine/prompts';
+import { AgUiMapper } from "./agui-mapper";
+import type { ChatHandlerContext } from "./chat-handler";
+import { createChatTools } from "./chat-tools";
 
-import { AgUiMapper } from './agui-mapper';
-import { createChatTools } from './chat-tools';
-import type { ChatHandlerContext } from './chat-handler';
-
-type D1Database = import('@cloudflare/workers-types').D1Database;
+type D1Database = import("@cloudflare/workers-types").D1Database;
 
 type ResponseMessage = {
-  role: string;
-  content: unknown[];
+	role: string;
+	content: unknown[];
 };
 
 type PendingAskUser = {
-  toolCallId: string;
-  toolName: string;
-  questionsJson: string;
+	toolCallId: string;
+	toolName: string;
+	questionsJson: string;
 };
 
 const MAX_STEPS = 10;
 
 async function getNextSeq(db: D1Database, threadId: string): Promise<number> {
-  const row = await db
-    .prepare('SELECT COALESCE(MAX(seq), 0) + 1 AS next_seq FROM messages WHERE thread_id = ?')
-    .bind(threadId)
-    .first<{ next_seq: number }>();
+	const row = await db
+		.prepare(
+			"SELECT COALESCE(MAX(seq), 0) + 1 AS next_seq FROM messages WHERE thread_id = ?",
+		)
+		.bind(threadId)
+		.first<{ next_seq: number }>();
 
-  return row?.next_seq ?? 1;
+	return row?.next_seq ?? 1;
 }
 
 async function insertMessage(
-  db: D1Database,
-  threadId: string,
-  params: {
-    role: string;
-    contentJson: string;
-    toolCallId?: string;
-    toolName?: string;
-    model?: string;
-    costMicros?: number;
-    inputTokens?: number;
-    outputTokens?: number;
-    errorJson?: string;
-  },
+	db: D1Database,
+	threadId: string,
+	params: {
+		role: string;
+		contentJson: string;
+		toolCallId?: string;
+		toolName?: string;
+		model?: string;
+		costMicros?: number;
+		inputTokens?: number;
+		outputTokens?: number;
+		errorJson?: string;
+	},
 ): Promise<void> {
-  const id = nanoid();
-  const now = Date.now();
-  const seq = await getNextSeq(db, threadId);
+	const id = nanoid();
+	const now = Date.now();
+	const seq = await getNextSeq(db, threadId);
 
-  await db
-    .prepare(
-      `INSERT INTO messages (id, thread_id, role, content_json, tool_call_id, tool_name, model, cost_micros, input_tokens, output_tokens, error_json, created_at, seq)
+	await db
+		.prepare(
+			`INSERT INTO messages (id, thread_id, role, content_json, tool_call_id, tool_name, model, cost_micros, input_tokens, output_tokens, error_json, created_at, seq)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      id,
-      threadId,
-      params.role,
-      params.contentJson,
-      params.toolCallId ?? null,
-      params.toolName ?? null,
-      params.model ?? null,
-      params.costMicros ?? 0,
-      params.inputTokens ?? 0,
-      params.outputTokens ?? 0,
-      params.errorJson ?? null,
-      now,
-      seq,
-    )
-    .run();
+		)
+		.bind(
+			id,
+			threadId,
+			params.role,
+			params.contentJson,
+			params.toolCallId ?? null,
+			params.toolName ?? null,
+			params.model ?? null,
+			params.costMicros ?? 0,
+			params.inputTokens ?? 0,
+			params.outputTokens ?? 0,
+			params.errorJson ?? null,
+			now,
+			seq,
+		)
+		.run();
 }
 
 async function updateThread(
-  db: D1Database,
-  threadId: string,
-  updates: {
-    generation_stage?: 'idle' | 'generating' | 'waiting_for_input' | 'complete' | 'error';
-    status_message?: string | null;
-    metadata_json?: string | null;
-  },
+	db: D1Database,
+	threadId: string,
+	updates: {
+		generation_stage?:
+			| "idle"
+			| "generating"
+			| "waiting_for_input"
+			| "complete"
+			| "error";
+		status_message?: string | null;
+		metadata_json?: string | null;
+	},
 ): Promise<void> {
-  const setClauses: string[] = ['updated_at = ?'];
-  const binds: Array<string | number | null> = [Date.now()];
+	const setClauses: string[] = ["updated_at = ?"];
+	const binds: Array<string | number | null> = [Date.now()];
 
-  if (updates.generation_stage !== undefined) {
-    setClauses.push('generation_stage = ?');
-    binds.push(updates.generation_stage);
-  }
+	if (updates.generation_stage !== undefined) {
+		setClauses.push("generation_stage = ?");
+		binds.push(updates.generation_stage);
+	}
 
-  if (updates.status_message !== undefined) {
-    setClauses.push('status_message = ?');
-    binds.push(updates.status_message);
-  }
+	if (updates.status_message !== undefined) {
+		setClauses.push("status_message = ?");
+		binds.push(updates.status_message);
+	}
 
-  if (updates.metadata_json !== undefined) {
-    setClauses.push('metadata_json = ?');
-    binds.push(updates.metadata_json);
-  }
+	if (updates.metadata_json !== undefined) {
+		setClauses.push("metadata_json = ?");
+		binds.push(updates.metadata_json);
+	}
 
-  binds.push(threadId);
+	binds.push(threadId);
 
-  await db
-    .prepare(`UPDATE threads SET ${setClauses.join(', ')} WHERE id = ?`)
-    .bind(...binds)
-    .run();
+	await db
+		.prepare(`UPDATE threads SET ${setClauses.join(", ")} WHERE id = ?`)
+		.bind(...binds)
+		.run();
 }
 
 function findPendingAskUser(steps: unknown[]): PendingAskUser | undefined {
-  const lastStep = steps[steps.length - 1];
-  if (!lastStep || typeof lastStep !== 'object') {
-    return undefined;
-  }
+	const lastStep = steps[steps.length - 1];
+	if (!lastStep || typeof lastStep !== "object") {
+		return undefined;
+	}
 
-  const stepRecord = lastStep as Record<string, unknown>;
-  if (!Array.isArray(stepRecord.toolCalls)) {
-    return undefined;
-  }
+	const stepRecord = lastStep as Record<string, unknown>;
+	if (!Array.isArray(stepRecord.toolCalls)) {
+		return undefined;
+	}
 
-  for (const toolCall of stepRecord.toolCalls) {
-    if (!toolCall || typeof toolCall !== 'object') {
-      continue;
-    }
+	for (const toolCall of stepRecord.toolCalls) {
+		if (!toolCall || typeof toolCall !== "object") {
+			continue;
+		}
 
-    const tc = toolCall as Record<string, unknown>;
-    if (tc.toolName !== 'askUser') {
-      continue;
-    }
+		const tc = toolCall as Record<string, unknown>;
+		if (tc.toolName !== "askUser") {
+			continue;
+		}
 
-    if (typeof tc.toolCallId !== 'string' || tc.toolCallId.length === 0) {
-      continue;
-    }
+		if (typeof tc.toolCallId !== "string" || tc.toolCallId.length === 0) {
+			continue;
+		}
 
-    return {
-      toolCallId: tc.toolCallId,
-      toolName: 'askUser',
-      questionsJson: JSON.stringify(tc.args ?? tc.input ?? null),
-    };
-  }
+		return {
+			toolCallId: tc.toolCallId,
+			toolName: "askUser",
+			questionsJson: JSON.stringify(tc.args ?? tc.input ?? null),
+		};
+	}
 
-  return undefined;
+	return undefined;
 }
 
 function estimateCostMicros(
-  inputTokens: number,
-  outputTokens: number,
-  costPer1kTokensMicros: number,
+	inputTokens: number,
+	outputTokens: number,
+	costPer1kTokensMicros: number,
 ): number {
-  const tokens = inputTokens + outputTokens;
-  if (tokens <= 0) {
-    return 0;
-  }
+	const tokens = inputTokens + outputTokens;
+	if (tokens <= 0) {
+		return 0;
+	}
 
-  return Math.max(1, Math.round((tokens / 1000) * costPer1kTokensMicros));
+	return Math.max(1, Math.round((tokens / 1000) * costPer1kTokensMicros));
 }
 
 async function billForUsage(
-  ctx: ChatHandlerContext,
-  threadId: string,
-  inputTokens: number,
-  outputTokens: number,
+	ctx: ChatHandlerContext,
+	threadId: string,
+	inputTokens: number,
+	outputTokens: number,
 ): Promise<void> {
-  const costPer1k = ctx.costPer1kTokensMicros ?? 1_000;
-  const costMicros = estimateCostMicros(inputTokens, outputTokens, costPer1k);
-  if (costMicros <= 0) {
-    return;
-  }
+	const costPer1k = ctx.costPer1kTokensMicros ?? 1_000;
+	const costMicros = estimateCostMicros(inputTokens, outputTokens, costPer1k);
+	if (costMicros <= 0) {
+		return;
+	}
 
-  const idempotencyKey = `chat-message:${threadId}:${Date.now()}`;
-  await ctx.walletService.debit({
-    userId: ctx.userId,
-    type: 'generation_debit',
-    amountMicros: -costMicros,
-    referenceType: 'thread',
-    referenceId: threadId,
-    idempotencyKey,
-    description: 'Chat message generation',
-    metadata: { threadId, inputTokens, outputTokens, costMicros },
-  });
+	const idempotencyKey = `chat-message:${threadId}:${Date.now()}`;
+	await ctx.walletService.debit({
+		userId: ctx.userId,
+		type: "generation_debit",
+		amountMicros: -costMicros,
+		referenceType: "thread",
+		referenceId: threadId,
+		idempotencyKey,
+		description: "Chat message generation",
+		metadata: { threadId, inputTokens, outputTokens, costMicros },
+	});
 }
 
 async function persistGenerationResults(
-  db: D1Database,
-  threadId: string,
-  modelName: string,
-  responseMessages: ReadonlyArray<ResponseMessage>,
+	db: D1Database,
+	threadId: string,
+	modelName: string,
+	responseMessages: ReadonlyArray<ResponseMessage>,
 ): Promise<void> {
-  for (const message of responseMessages) {
-    if (message.role === 'assistant') {
-      await insertMessage(db, threadId, {
-        role: 'assistant',
-        contentJson: JSON.stringify(message.content),
-        model: modelName,
-      });
-      continue;
-    }
+	for (const message of responseMessages) {
+		if (message.role === "assistant") {
+			await insertMessage(db, threadId, {
+				role: "assistant",
+				contentJson: JSON.stringify(message.content),
+				model: modelName,
+			});
+			continue;
+		}
 
-    if (message.role !== 'tool') {
-      continue;
-    }
+		if (message.role !== "tool") {
+			continue;
+		}
 
-    for (const contentPart of message.content) {
-      const part = contentPart as Record<string, unknown>;
-      if (part.type !== 'tool-result') {
-        continue;
-      }
+		for (const contentPart of message.content) {
+			const part = contentPart as Record<string, unknown>;
+			if (part.type !== "tool-result") {
+				continue;
+			}
 
-      await insertMessage(db, threadId, {
-        role: 'tool',
-        contentJson: JSON.stringify([contentPart]),
-        toolCallId: typeof part.toolCallId === 'string' ? part.toolCallId : undefined,
-        toolName: typeof part.toolName === 'string' ? part.toolName : undefined,
-      });
-    }
-  }
+			await insertMessage(db, threadId, {
+				role: "tool",
+				contentJson: JSON.stringify([contentPart]),
+				toolCallId:
+					typeof part.toolCallId === "string" ? part.toolCallId : undefined,
+				toolName: typeof part.toolName === "string" ? part.toolName : undefined,
+			});
+		}
+	}
 }
 
 function toErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return String(error);
+	if (error instanceof Error) {
+		return error.message;
+	}
+	return String(error);
 }
 
 export async function handleChatStream(
-  ctx: ChatHandlerContext,
-  threadId: string,
-  messages: ModelMessage[],
+	ctx: ChatHandlerContext,
+	threadId: string,
+	messages: ModelMessage[],
 ): Promise<Response> {
-  const encoder = new TextEncoder();
-  const { readable, writable } = new TransformStream();
-  const writer = writable.getWriter();
+	const encoder = new TextEncoder();
+	const { readable, writable } = new TransformStream();
+	const writer = writable.getWriter();
 
-  const emit = async (event: AgUiEvent) => {
-    await writer.write(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
-  };
+	const emit = async (event: AgUiEvent) => {
+		await writer.write(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+	};
 
-  void (async () => {
-    try {
-      await updateThread(ctx.db, threadId, {
-        generation_stage: 'generating',
-        status_message: 'Thinking...',
-      });
+	void (async () => {
+		try {
+			await updateThread(ctx.db, threadId, {
+				generation_stage: "generating",
+				status_message: "Thinking...",
+			});
 
-      const runId = nanoid();
-      await emit({ type: 'RUN_STARTED', threadId, runId });
+			const runId = nanoid();
+			await emit({ type: "RUN_STARTED", threadId, runId });
 
-      const mapper = new AgUiMapper({
-        threadId,
-        runId,
-        generateMessageId: () => nanoid(),
-      });
+			const mapper = new AgUiMapper({
+				threadId,
+				runId,
+				generateMessageId: () => nanoid(),
+			});
 
-      const result = streamText({
-        model: ctx.model,
-        system: CHAT_STAGE_PROMPT,
-        messages,
-        tools: createChatTools({
-          gameId: ctx.gameId,
-          artifactService: ctx.artifactService,
-        }),
-        stopWhen: stepCountIs(MAX_STEPS),
-      });
+			const result = streamText({
+				model: ctx.model,
+				system: CHAT_STAGE_PROMPT,
+				messages,
+				tools: createChatTools({
+					gameId: ctx.gameId,
+					artifactService: ctx.artifactService,
+				}),
+				stopWhen: stepCountIs(MAX_STEPS),
+			});
 
-      for await (const part of result.fullStream) {
-        const event = mapper.map(part);
-        if (event) {
-          await emit(event);
-        }
-      }
+			for await (const part of result.fullStream) {
+				const event = mapper.map(part);
+				if (event) {
+					await emit(event);
+				}
+			}
 
-      const response = await result.response;
-      await persistGenerationResults(
-        ctx.db,
-        threadId,
-        ctx.modelName,
-        response.messages as ReadonlyArray<ResponseMessage>,
-      );
+			await emit({ type: "RUN_FINISHED", threadId, runId });
 
-      const totalUsage = await result.totalUsage;
-      await billForUsage(
-        ctx,
-        threadId,
-        totalUsage.inputTokens ?? 0,
-        totalUsage.outputTokens ?? 0,
-      );
+			const response = await result.response;
+			await persistGenerationResults(
+				ctx.db,
+				threadId,
+				ctx.modelName,
+				response.messages as ReadonlyArray<ResponseMessage>,
+			);
 
-      const steps = await result.steps;
-      const pending = findPendingAskUser(steps as unknown[]);
-      if (pending) {
-        await updateThread(ctx.db, threadId, {
-          generation_stage: 'waiting_for_input',
-          status_message: 'Waiting for your input...',
-          metadata_json: JSON.stringify({ pendingToolCallId: pending.toolCallId }),
-        });
-      } else {
-        await updateThread(ctx.db, threadId, {
-          generation_stage: 'complete',
-          status_message: null,
-        });
-      }
-    } catch (error) {
-      const errorMessage = toErrorMessage(error);
-      await emit({ type: 'RUN_ERROR', message: errorMessage });
+			const totalUsage = await result.totalUsage;
+			await billForUsage(
+				ctx,
+				threadId,
+				totalUsage.inputTokens ?? 0,
+				totalUsage.outputTokens ?? 0,
+			);
 
-      await insertMessage(ctx.db, threadId, {
-        role: 'assistant',
-        contentJson: JSON.stringify([{ type: 'text', text: `Error: ${errorMessage}` }]),
-        errorJson: JSON.stringify({ message: errorMessage, timestamp: Date.now() }),
-      });
+			const steps = await result.steps;
+			const pending = findPendingAskUser(steps as unknown[]);
+			if (pending) {
+				await updateThread(ctx.db, threadId, {
+					generation_stage: "waiting_for_input",
+					status_message: "Waiting for your input...",
+					metadata_json: JSON.stringify({
+						pendingToolCallId: pending.toolCallId,
+					}),
+				});
+			} else {
+				await updateThread(ctx.db, threadId, {
+					generation_stage: "complete",
+					status_message: null,
+				});
+			}
+		} catch (error) {
+			const errorMessage = toErrorMessage(error);
+			await emit({ type: "RUN_ERROR", message: errorMessage });
 
-      await updateThread(ctx.db, threadId, {
-        generation_stage: 'error',
-        status_message: errorMessage,
-      });
-    } finally {
-      await writer.close();
-    }
-  })();
+			await insertMessage(ctx.db, threadId, {
+				role: "assistant",
+				contentJson: JSON.stringify([
+					{ type: "text", text: `Error: ${errorMessage}` },
+				]),
+				errorJson: JSON.stringify({
+					message: errorMessage,
+					timestamp: Date.now(),
+				}),
+			});
 
-  return new Response(readable, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    },
-  });
+			await updateThread(ctx.db, threadId, {
+				generation_stage: "error",
+				status_message: errorMessage,
+			});
+		} finally {
+			await writer.close();
+		}
+	})();
+
+	return new Response(readable, {
+		headers: {
+			"Content-Type": "text/event-stream",
+			"Cache-Control": "no-cache",
+			Connection: "keep-alive",
+		},
+	});
 }
