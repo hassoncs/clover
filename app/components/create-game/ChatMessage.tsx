@@ -691,19 +691,12 @@ export function ChatMessage({
 				otherToolBlocks.map((block) => (
 					<View
 						key={`${message.id}-${block.toolCallId}`}
-						style={styles.systemWrapper}
+						style={styles.toolCallRow}
 					>
-						<View style={styles.systemContainer}>
-							<Ionicons
-								name="construct-outline"
-								size={16}
-								color="#71717A"
-								style={styles.icon}
-							/>
-							<Text style={styles.systemText}>
-								{getToolStatusLabel(block.toolName, block.status)}
-							</Text>
-						</View>
+						<Ionicons name="construct-outline" size={14} color="#71717A" />
+						<Text style={styles.toolCallText}>
+							{getToolStatusLabel(block.toolName, block.status)}
+						</Text>
 					</View>
 				))}
 		</View>
@@ -980,5 +973,19 @@ const styles = StyleSheet.create({
 	},
 	listItemText: {
 		flex: 1,
+	},
+	toolCallRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingLeft: 12,
+		paddingVertical: 4,
+		borderLeftWidth: 2,
+		borderLeftColor: "#3F3F46",
+		marginTop: 4,
+	},
+	toolCallText: {
+		fontSize: 13,
+		color: "#71717A",
+		marginLeft: 6,
 	},
 });

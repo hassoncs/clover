@@ -22,7 +22,8 @@ import { connectSSE } from "./sse-client";
 type StreamAction =
 	| AgUiEvent
 	| { type: "RESET"; threadId: string }
-	| { type: "ADD_USER_MESSAGE"; message: ChatMessage };
+	| { type: "ADD_USER_MESSAGE"; message: ChatMessage }
+	| { type: "MIGRATE_THREAD"; toThreadId: string };
 
 type PendingAskUserPayload = {
 	questions: Array<{
@@ -55,6 +56,16 @@ function streamStateReducer(
 			thread: {
 				...state.thread,
 				messages: [...state.thread.messages, action.message],
+			},
+		};
+	}
+
+	if (action.type === "MIGRATE_THREAD") {
+		return {
+			...state,
+			thread: {
+				...state.thread,
+				id: action.toThreadId,
 			},
 		};
 	}
@@ -214,6 +225,15 @@ function convertPersistedMessages(messages: PersistedMessage[]): ChatMessage[] {
 	}));
 }
 
+function getTextContent(msg: ChatMessage): string {
+	return msg.content
+		.filter(
+			(b): b is Extract<ContentBlock, { type: "text" }> => b.type === "text",
+		)
+		.map((b) => b.text)
+		.join("");
+}
+
 function mergeMessages(
 	base: ChatMessage[],
 	stream: ChatMessage[],
@@ -222,12 +242,22 @@ function mergeMessages(
 	if (stream.length === 0) return base;
 
 	const ids = new Set(base.map((msg) => msg.id));
+	const baseUserTexts = new Set(
+		base.filter((msg) => msg.role === "user").map((msg) => getTextContent(msg)),
+	);
+
 	const merged = [...base];
 	for (const message of stream) {
-		if (!ids.has(message.id)) {
-			merged.push(message);
-			ids.add(message.id);
+		if (ids.has(message.id)) continue;
+		if (
+			message.id.startsWith("user-") &&
+			message.role === "user" &&
+			baseUserTexts.has(getTextContent(message))
+		) {
+			continue;
 		}
+		merged.push(message);
+		ids.add(message.id);
 	}
 	return merged;
 }
@@ -246,6 +276,7 @@ export function useStreamingChat(
 	const currentStreamUrlRef = useRef<string | null>(null);
 	const isConnectingRef = useRef(false);
 	const isSendingRef = useRef(false);
+	const prevThreadIdRef = useRef(threadId);
 
 	const sendMessageMutation = trpc.chatThreads.sendMessage.useMutation();
 	const submitToolAnswerMutation =
@@ -266,6 +297,19 @@ export function useStreamingChat(
 	}, [isSending]);
 
 	useEffect(() => {
+		const prevId = prevThreadIdRef.current;
+		prevThreadIdRef.current = threadId;
+
+		const isFirstThreadAssignment =
+			(prevId === null || prevId === "pending") &&
+			threadId !== null &&
+			threadId !== "pending";
+
+		if (isFirstThreadAssignment && sseRef.current) {
+			dispatch({ type: "MIGRATE_THREAD", toThreadId: threadId });
+			return;
+		}
+
 		dispatch({ type: "RESET", threadId: threadId ?? "pending" });
 		setIsSending(false);
 		setStreamError(null);
