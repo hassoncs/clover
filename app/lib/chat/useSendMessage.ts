@@ -3,7 +3,11 @@ import { useCallback, useRef, useState } from "react";
 import { getAuthToken } from "@/lib/auth/token";
 import { env } from "@/lib/config/env";
 import { trpcReact as trpc } from "@/lib/trpc/react";
-import { useStreamDispatch, useStreamState } from "./ChatStreamProvider";
+import {
+	useChatEventNotify,
+	useStreamDispatch,
+	useStreamState,
+} from "./ChatStreamProvider";
 import { connectSSE } from "./sse-client";
 import { isPlaceholderThreadId, PLACEHOLDER_THREAD_ID } from "./stream-reducer";
 
@@ -18,6 +22,7 @@ export interface UseSendMessageReturn {
 export function useSendMessage(): UseSendMessageReturn {
 	const dispatch = useStreamDispatch();
 	const state = useStreamState();
+	const notifySubscribers = useChatEventNotify();
 	const [isSending, setIsSending] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const sseRef = useRef<{ close: () => void } | null>(null);
@@ -53,6 +58,7 @@ export function useSendMessage(): UseSendMessageReturn {
 						event,
 						threadId: targetThreadId,
 					});
+					notifySubscribers(event);
 					setError(null);
 					if (event.type === "RUN_FINISHED" || event.type === "RUN_ERROR") {
 						setIsSending(false);
@@ -74,7 +80,7 @@ export function useSendMessage(): UseSendMessageReturn {
 				},
 			});
 		},
-		[dispatch],
+		[dispatch, notifySubscribers],
 	);
 
 	const sendMessage = useCallback(

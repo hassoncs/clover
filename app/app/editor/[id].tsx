@@ -9,6 +9,7 @@ import { EditorTopBar } from "@/components/editor/EditorTopBar";
 import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
+import { useGameWebSocket } from "@/lib/editor/hooks/useGameWebSocket";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
 import { LivePreviewController } from "@/lib/game-engine/live/LivePreviewController";
 import { trpc } from "@/lib/trpc/client";
@@ -33,6 +34,8 @@ export default function EditorScreen() {
 		resolvedGameId,
 		null,
 	);
+
+	useGameWebSocket(resolvedGameId);
 
 	const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(
 		null,

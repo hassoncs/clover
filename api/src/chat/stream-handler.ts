@@ -297,8 +297,14 @@ export async function handleChatStream(
 		messages,
 		tools: createChatTools({
 			gameId: ctx.gameId,
-			artifactService: ctx.artifactService,
 			gitService: ctx.gitService,
+			onFileChanged: async ({ gameId, filename }) => {
+				try {
+					await emit({ type: "FILE_CHANGED", gameId, filename });
+				} catch {
+					// Don't fail the run if event delivery fails
+				}
+			},
 		}),
 		stopWhen: stepCountIs(MAX_STEPS),
 	});

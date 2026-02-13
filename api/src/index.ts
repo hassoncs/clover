@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { ModelMessage } from "ai";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { ArtifactService } from "@/agent/artifact-service";
+
 import { RealtimeRelayDO } from "@/agent/RealtimeRelayDO";
 import { resolveChatModel } from "@/ai/chat-model-config";
 import { createModel } from "@/ai/model-factory";
@@ -90,6 +90,64 @@ app.get("/ws/speech-to-text", async (c) => {
 	return stub.fetch(c.req.raw);
 });
 
+app.get("/api/games/:gameId/ws", async (c) => {
+	const upgrade = c.req.header("Upgrade");
+	if (!upgrade || upgrade.toLowerCase() !== "websocket") {
+		return c.text("Expected websocket upgrade", 426);
+	}
+
+	const token = new URL(c.req.url).searchParams.get("token");
+	if (!token) {
+		return c.text("Authentication required", 401);
+	}
+
+	const gameId = c.req.param("gameId");
+	if (!gameId) {
+		return c.text("gameId is required", 400);
+	}
+
+	let userId: string;
+
+	if (__DEV__ && token === "dev-token") {
+		userId = "00000000-0000-0000-0000-000000000000";
+	} else {
+		if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
+			return c.text("Auth not configured", 500);
+		}
+
+		const supabase = createClient(
+			c.env.SUPABASE_URL,
+			c.env.SUPABASE_SERVICE_ROLE_KEY,
+		);
+		const {
+			data: { user },
+			error,
+		} = await supabase.auth.getUser(token);
+		if (error || !user) {
+			return c.text("Invalid or expired token", 401);
+		}
+		userId = user.id;
+	}
+
+	const game = await c.env.DB.prepare(
+		"SELECT id FROM games WHERE id = ? AND user_id = ?",
+	)
+		.bind(gameId, userId)
+		.first<{ id: string }>();
+
+	if (!game) {
+		return c.text("Game not found or access denied", 404);
+	}
+
+	const doId = c.env.GAME_REPO.idFromName(gameId);
+	const stub = c.env.GAME_REPO.get(doId);
+
+	const newRequest = new Request(c.req.raw);
+	newRequest.headers.set("X-Game-Id", gameId);
+
+	return stub.fetch(newRequest);
+});
+
 app.get("/api/chat/stream", async (c) => {
 	const token = new URL(c.req.url).searchParams.get("token");
 	if (!token) {
@@ -146,11 +204,8 @@ app.get("/api/chat/stream", async (c) => {
 
 	const chatModel = resolveChatModel(c.env.AI_CHAT_MODEL ?? c.env.AI_MODEL);
 	const model = createModel({ apiKey, model: chatModel.id });
-	const artifactService = new ArtifactService(c.env.ASSETS, c.env.DB);
 	const walletService = new WalletService(c.env.DB);
-	const gitService = c.env.GAME_REPO
-		? new GitService(c.env.GAME_REPO)
-		: undefined;
+	const gitService = new GitService(c.env.GAME_REPO);
 
 	const history = await c.env.DB.prepare(
 		"SELECT * FROM messages WHERE thread_id = ? ORDER BY seq ASC",
@@ -172,22 +227,18 @@ app.get("/api/chat/stream", async (c) => {
 		);
 
 	if (modelMessages.length === 1) {
-		const fileMetas = await artifactService.listWorkspaceFileMeta(
-			thread.game_id,
-		);
-		const filenames = fileMetas
-			.map((file) => file.filename)
-			.sort((a, b) => a.localeCompare(b));
+		const filenames = await gitService
+			.listFiles(thread.game_id)
+			.catch(() => [] as string[]);
 
 		if (filenames.length > 0) {
-			const contentMap = await artifactService.readWorkspaceFiles(
-				thread.game_id,
-				filenames,
-			);
-			const fileSections = filenames.map((filename) => {
-				const content = contentMap.get(filename) ?? "(empty)";
-				return `### ${filename}\n\`\`\`\n${content}\n\`\`\``;
-			});
+			const decoder = new TextDecoder();
+			const fileSections: string[] = [];
+			for (const filename of filenames.sort()) {
+				const bytes = await gitService.readFile(thread.game_id, filename);
+				const content = bytes ? decoder.decode(bytes) : "(empty)";
+				fileSections.push(`### ${filename}\n\`\`\`\n${content}\n\`\`\``);
+			}
 
 			const workspaceContextMessage: ModelMessage = {
 				role: "user",
@@ -216,7 +267,6 @@ app.get("/api/chat/stream", async (c) => {
 			modelName: chatModel.id,
 			userId,
 			gameId: thread.game_id,
-			artifactService,
 			walletService,
 			gitService,
 		},

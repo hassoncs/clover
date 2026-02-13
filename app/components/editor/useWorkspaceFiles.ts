@@ -1,4 +1,6 @@
+import type { AgUiEvent } from "@slopcade/shared/chat";
 import { useEffect, useRef, useState } from "react";
+import { useChatEventSubscription } from "@/lib/chat/ChatStreamProvider";
 import { trpcReact } from "@/lib/trpc/react";
 
 export interface FileTreeNode {
@@ -17,10 +19,11 @@ export type FileTreeData = Record<string, FileTreeNode>;
 
 export function useWorkspaceFiles(gameId: string | null) {
 	const chatThreads = trpcReact.chatThreads as any;
+	const utils = trpcReact.useUtils();
 
 	const filesQuery = chatThreads.listWorkspaceFiles.useQuery(
 		{ gameId: gameId! },
-		{ enabled: !!gameId, refetchInterval: 5000 },
+		{ enabled: !!gameId },
 	);
 
 	const scaffoldMutation = chatThreads.scaffoldWorkspace.useMutation({
@@ -41,7 +44,7 @@ export function useWorkspaceFiles(gameId: string | null) {
 			return;
 		}
 
-		const files = filesQuery.data ?? [];
+		const files = filesQuery.data?.files ?? [];
 		if (files.length === 0) {
 			scaffoldAttemptedRef.current = true;
 			scaffoldMutate({ gameId });
@@ -59,10 +62,45 @@ export function useWorkspaceFiles(gameId: string | null) {
 
 	const contentQuery = chatThreads.readWorkspaceFile.useQuery(
 		{ gameId: gameId!, filename: activeFile },
-		{ enabled: !!gameId && !!activeFile, refetchInterval: 3000 },
+		{ enabled: !!gameId && !!activeFile },
 	);
 
-	const writeMutation = chatThreads.writeWorkspaceFile.useMutation();
+	useChatEventSubscription((event: AgUiEvent) => {
+		if (event.type === "FILE_CHANGED" && event.gameId === gameId) {
+			(utils.chatThreads as any).listWorkspaceFiles.invalidate({ gameId });
+
+			if (event.filename === activeFile) {
+				(utils.chatThreads as any).readWorkspaceFile.invalidate({
+					gameId,
+					filename: event.filename,
+				});
+			} else if (openTabs.includes(event.filename)) {
+				(utils.chatThreads as any).readWorkspaceFile.prefetch({
+					gameId,
+					filename: event.filename,
+				});
+			}
+		}
+	});
+
+	const writeMutation = chatThreads.writeWorkspaceFile.useMutation({
+		onMutate: async ({
+			filename,
+			content,
+		}: {
+			filename: string;
+			content: string;
+		}) => {
+			await (utils.chatThreads as any).readWorkspaceFile.cancel({
+				gameId,
+				filename,
+			});
+			(utils.chatThreads as any).readWorkspaceFile.setData(
+				{ gameId, filename },
+				{ content },
+			);
+		},
+	});
 
 	const saveFile = (filename: string, content: string) => {
 		if (!gameId) return;

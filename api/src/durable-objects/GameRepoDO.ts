@@ -63,12 +63,75 @@ export class GameRepoDO {
 	private cachedR2Fs: CachedR2Fs | null = null;
 	private cache: object = {};
 	private gameId: string | null = null;
+	private workingTree: Map<string, string> | null = null;
 
 	constructor(
 		private state: DurableObjectState,
 		env: unknown,
 	) {
 		this.env = env as GameRepoEnv;
+	}
+
+	private async getWorkingTree(): Promise<Map<string, string>> {
+		if (!this.workingTree) {
+			const entries = await this.state.storage.list({ prefix: "wt:" });
+			this.workingTree = new Map();
+			for (const [key, value] of entries) {
+				this.workingTree.set(key.slice(3), value as string);
+			}
+		}
+		return this.workingTree;
+	}
+
+	private async seedWorkingTreeFromHead(): Promise<void> {
+		const fs = this.getFs();
+		try {
+			await git.resolveRef({ fs, dir: "/", ref: "HEAD" });
+		} catch {
+			return;
+		}
+
+		try {
+			const files = await git.listFiles({
+				fs,
+				dir: "/",
+				ref: "HEAD",
+				cache: this.cache,
+			});
+
+			const wt = await this.getWorkingTree();
+			const headOid = await git.resolveRef({ fs, dir: "/", ref: "HEAD" });
+
+			for (const filepath of files) {
+				const { blob } = await git.readBlob({
+					fs,
+					dir: "/",
+					oid: headOid,
+					filepath,
+					cache: this.cache,
+				});
+				const content = new TextDecoder().decode(blob);
+				wt.set(filepath, content);
+				await this.state.storage.put(`wt:${filepath}`, content);
+			}
+		} catch {
+			// HEAD exists but tree may be empty
+		}
+	}
+
+	private computeRevisionHash(wt: Map<string, string>): string {
+		const entries = Array.from(wt.entries()).sort((a, b) =>
+			a[0].localeCompare(b[0]),
+		);
+		let hash = 0x811c9dc5;
+		for (const [filename, content] of entries) {
+			const str = `${filename}|${content.length}`;
+			for (let i = 0; i < str.length; i++) {
+				hash ^= str.charCodeAt(i);
+				hash = Math.imul(hash, 0x01000193);
+			}
+		}
+		return (hash >>> 0).toString(16).padStart(8, "0");
 	}
 
 	private getFs(): GitFsClient {
@@ -120,6 +183,10 @@ export class GameRepoDO {
 				}
 			}
 
+			if (request.headers.get("Upgrade") === "websocket") {
+				return this.handleWebSocketUpgrade();
+			}
+
 			const method = request.method;
 
 			if (method === "POST" && pathname === "/init") {
@@ -146,6 +213,12 @@ export class GameRepoDO {
 			if (method === "GET" && pathname === "/diff") {
 				return await this.handleDiff(url);
 			}
+			if (method === "POST" && pathname === "/write") {
+				return await this.handleWrite(request);
+			}
+			if (method === "GET" && pathname === "/snapshot") {
+				return await this.handleSnapshot(url);
+			}
 
 			return errorResponse("Not found", 404);
 		} catch (err) {
@@ -155,6 +228,27 @@ export class GameRepoDO {
 			return errorResponse(message, status);
 		}
 	}
+
+	private handleWebSocketUpgrade(): Response {
+		const [client, server] = Object.values(new WebSocketPair()) as [
+			WebSocket,
+			WebSocket,
+		];
+		this.state.acceptWebSocket(server);
+		return new Response(null, { status: 101, webSocket: client });
+	}
+
+	async webSocketMessage(
+		_ws: WebSocket,
+		_message: string | ArrayBuffer,
+	): Promise<void> {}
+
+	async webSocketClose(
+		_ws: WebSocket,
+		_code: number,
+		_reason: string,
+		_wasClean: boolean,
+	): Promise<void> {}
 
 	private async handleInit(request: Request): Promise<Response> {
 		const body = (await request.json().catch(() => ({}))) as {
@@ -174,6 +268,8 @@ export class GameRepoDO {
 			bare: false,
 			defaultBranch: "main",
 		});
+
+		await this.seedWorkingTreeFromHead();
 
 		return jsonResponse({ ok: true });
 	}
@@ -197,6 +293,7 @@ export class GameRepoDO {
 		}
 
 		const fs = this.getFs();
+		const wt = await this.getWorkingTree();
 
 		for (const file of body.files) {
 			await fs.promises.writeFile(file.path, file.content);
@@ -206,6 +303,9 @@ export class GameRepoDO {
 				filepath: file.path,
 				cache: this.cache,
 			});
+
+			wt.set(file.path, file.content);
+			await this.state.storage.put(`wt:${file.path}`, file.content);
 		}
 
 		const sha = await git.commit({
@@ -219,7 +319,29 @@ export class GameRepoDO {
 			cache: this.cache,
 		});
 
+		this.broadcastFileChanges(body.files);
+
 		return jsonResponse({ sha });
+	}
+
+	private broadcastFileChanges(files: Array<{ path: string }>): void {
+		const sockets = this.state.getWebSockets();
+		if (sockets.length === 0) return;
+
+		for (const file of files) {
+			const message = JSON.stringify({
+				type: "FILE_CHANGED",
+				gameId: this.gameId,
+				filename: file.path,
+			});
+			for (const ws of sockets) {
+				try {
+					ws.send(message);
+				} catch {
+					// ignored: socket may have closed
+				}
+			}
+		}
 	}
 
 	private async handleRead(url: URL): Promise<Response> {
@@ -228,33 +350,46 @@ export class GameRepoDO {
 			return errorResponse("filepath is required", 400);
 		}
 
-		const ref = url.searchParams.get("ref") ?? "HEAD";
-		const fs = this.getFs();
+		const ref = url.searchParams.get("ref");
 
-		const oid = await git.resolveRef({ fs, dir: "/", ref });
-		const { blob } = await git.readBlob({
-			fs,
-			dir: "/",
-			oid,
-			filepath,
-			cache: this.cache,
-		});
+		if (ref) {
+			const fs = this.getFs();
+			const oid = await git.resolveRef({ fs, dir: "/", ref });
+			const { blob } = await git.readBlob({
+				fs,
+				dir: "/",
+				oid,
+				filepath,
+				cache: this.cache,
+			});
+			const content = new TextDecoder().decode(blob);
+			return jsonResponse({ content });
+		}
 
-		const content = new TextDecoder().decode(blob);
+		const wt = await this.getWorkingTree();
+		const content = wt.get(filepath);
+		if (content === undefined) {
+			return errorResponse("File not found in working tree", 404);
+		}
 		return jsonResponse({ content });
 	}
 
 	private async handleTree(url: URL): Promise<Response> {
-		const ref = url.searchParams.get("ref") ?? "HEAD";
-		const fs = this.getFs();
+		const ref = url.searchParams.get("ref");
 
-		const files = await git.listFiles({
-			fs,
-			dir: "/",
-			ref,
-			cache: this.cache,
-		});
+		if (ref) {
+			const fs = this.getFs();
+			const files = await git.listFiles({
+				fs,
+				dir: "/",
+				ref,
+				cache: this.cache,
+			});
+			return jsonResponse({ files });
+		}
 
+		const wt = await this.getWorkingTree();
+		const files = Array.from(wt.keys()).sort();
 		return jsonResponse({ files });
 	}
 
@@ -363,5 +498,63 @@ export class GameRepoDO {
 		});
 
 		return jsonResponse({ changes });
+	}
+
+	private async handleWrite(request: Request): Promise<Response> {
+		const body = await request
+			.json<{ files: Array<{ path: string; content: string }> }>()
+			.catch(() => null);
+		if (!body?.files || !Array.isArray(body.files) || body.files.length === 0) {
+			return errorResponse(
+				"files array is required and must not be empty",
+				400,
+			);
+		}
+
+		const wt = await this.getWorkingTree();
+		const written: string[] = [];
+
+		for (const file of body.files) {
+			wt.set(file.path, file.content);
+			await this.state.storage.put(`wt:${file.path}`, file.content);
+			written.push(file.path);
+		}
+
+		this.broadcastFileChanges(body.files);
+
+		return jsonResponse({ ok: true, written });
+	}
+
+	private async handleSnapshot(url: URL): Promise<Response> {
+		const sinceRevision = url.searchParams.get("sinceRevision");
+		const wt = await this.getWorkingTree();
+		const revision = this.computeRevisionHash(wt);
+
+		if (sinceRevision && sinceRevision === revision) {
+			return jsonResponse({ changed: false, revision });
+		}
+
+		const files: Array<{
+			filename: string;
+			content: string;
+			contentHash: string;
+			size: number;
+		}> = [];
+
+		for (const [filename, content] of wt) {
+			let hash = 0x811c9dc5;
+			for (let i = 0; i < content.length; i++) {
+				hash ^= content.charCodeAt(i);
+				hash = Math.imul(hash, 0x01000193);
+			}
+			files.push({
+				filename,
+				content,
+				contentHash: (hash >>> 0).toString(16).padStart(8, "0"),
+				size: content.length,
+			});
+		}
+
+		return jsonResponse({ changed: true, revision, files });
 	}
 }

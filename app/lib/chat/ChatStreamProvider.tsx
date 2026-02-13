@@ -1,4 +1,8 @@
-import type { ChatMessage, ContentBlock } from "@slopcade/shared/chat";
+import type {
+	AgUiEvent,
+	ChatMessage,
+	ContentBlock,
+} from "@slopcade/shared/chat";
 import type React from "react";
 import {
 	createContext,
@@ -29,6 +33,16 @@ const StreamStateContext = createContext<StreamState | null>(null);
 const StreamDispatchContext =
 	createContext<React.Dispatch<StreamAction> | null>(null);
 const ThreadManagementContext = createContext<ThreadManagement | null>(null);
+
+type ChatEventSubscriber = (event: AgUiEvent) => void;
+
+type ChatEventSubscriptionContextType = {
+	subscribe: (listener: ChatEventSubscriber) => () => void;
+	notify: (event: AgUiEvent) => void;
+};
+
+const ChatEventSubscriptionContext =
+	createContext<ChatEventSubscriptionContextType | null>(null);
 
 interface ChatStreamProviderProps {
 	children: React.ReactNode;
@@ -154,12 +168,34 @@ export function ChatStreamProvider({ children }: ChatStreamProviderProps) {
 		[initThread, switchThread, startNewThread],
 	);
 
+	const subscribersRef = useRef<Set<ChatEventSubscriber>>(new Set());
+
+	const subscribe = useCallback((listener: ChatEventSubscriber) => {
+		subscribersRef.current.add(listener);
+		return () => {
+			subscribersRef.current.delete(listener);
+		};
+	}, []);
+
+	const notify = useCallback((event: AgUiEvent) => {
+		for (const listener of subscribersRef.current) {
+			listener(event);
+		}
+	}, []);
+
+	const eventSubscription = useMemo<ChatEventSubscriptionContextType>(
+		() => ({ subscribe, notify }),
+		[subscribe, notify],
+	);
+
 	return (
 		<StreamStateContext.Provider value={state}>
 			<StreamDispatchContext.Provider value={dispatch}>
 				<ThreadManagementContext.Provider value={threadManagement}>
-					<ThreadSyncManager />
-					{children}
+					<ChatEventSubscriptionContext.Provider value={eventSubscription}>
+						<ThreadSyncManager />
+						{children}
+					</ChatEventSubscriptionContext.Provider>
 				</ThreadManagementContext.Provider>
 			</StreamDispatchContext.Provider>
 		</StreamStateContext.Provider>
@@ -237,4 +273,26 @@ export function useThreadManagement(): ThreadManagement {
 		);
 	}
 	return context;
+}
+
+export function useChatEventNotify(): (event: AgUiEvent) => void {
+	const context = useContext(ChatEventSubscriptionContext);
+	if (!context) {
+		throw new Error(
+			"useChatEventNotify must be used within ChatStreamProvider",
+		);
+	}
+	return context.notify;
+}
+
+export function useChatEventSubscription(listener: (event: AgUiEvent) => void) {
+	const context = useContext(ChatEventSubscriptionContext);
+	if (!context) {
+		throw new Error(
+			"useChatEventSubscription must be used within ChatStreamProvider",
+		);
+	}
+	useEffect(() => {
+		return context.subscribe(listener);
+	}, [context, listener]);
 }
