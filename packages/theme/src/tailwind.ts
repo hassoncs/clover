@@ -125,6 +125,29 @@ export const tailwindPreset = {
 						placeholder: cssVar("ed-input-placeholder"),
 					},
 				},
+
+				grainient: {
+					ultraviolet: {
+						surface: `rgb(var(--grainient-ultraviolet-surface) / <alpha-value>)`,
+						text: `rgb(var(--grainient-ultraviolet-text) / <alpha-value>)`,
+						border: `rgb(var(--grainient-ultraviolet-border) / <alpha-value>)`,
+					},
+					ember: {
+						surface: `rgb(var(--grainient-ember-surface) / <alpha-value>)`,
+						text: `rgb(var(--grainient-ember-text) / <alpha-value>)`,
+						border: `rgb(var(--grainient-ember-border) / <alpha-value>)`,
+					},
+					abyss: {
+						surface: `rgb(var(--grainient-abyss-surface) / <alpha-value>)`,
+						text: `rgb(var(--grainient-abyss-text) / <alpha-value>)`,
+						border: `rgb(var(--grainient-abyss-border) / <alpha-value>)`,
+					},
+					glass: {
+						DEFAULT: `rgb(var(--grainient-glass) / <alpha-value>)`,
+						hover: `rgb(var(--grainient-glass-hover) / <alpha-value>)`,
+						active: `rgb(var(--grainient-glass-active) / <alpha-value>)`,
+					},
+				},
 			},
 			spacing: tokens.spacing,
 			fontFamily: tokens.typography.fontFamily,

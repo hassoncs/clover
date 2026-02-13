@@ -132,6 +132,78 @@ export const editorThemes = {
 	},
 } as const;
 
+// --------------------------------------------------------------------------
+// Grainient Design System
+// --------------------------------------------------------------------------
+
+export const grainient = {
+	palettes: {
+		ultraviolet: {
+			gradient: ["#7B2FBE", "#E040A0", "#4060FF", "#A855F7"],
+			surface: {
+				dark: "rgba(123, 47, 190, 0.15)",
+				light: "rgba(123, 47, 190, 0.08)",
+			},
+			text: {
+				dark: "#E040A0",
+				light: "#7B2FBE",
+			},
+			border: {
+				dark: "rgba(224, 64, 160, 0.3)",
+				light: "rgba(123, 47, 190, 0.2)",
+			},
+		},
+		ember: {
+			gradient: ["#FF6B35", "#F72585", "#FFB627", "#FF006E"],
+			surface: {
+				dark: "rgba(255, 107, 53, 0.15)",
+				light: "rgba(255, 107, 53, 0.08)",
+			},
+			text: {
+				dark: "#FFB627",
+				light: "#FF6B35",
+			},
+			border: {
+				dark: "rgba(255, 182, 39, 0.3)",
+				light: "rgba(255, 107, 53, 0.2)",
+			},
+		},
+		abyss: {
+			gradient: ["#0077B6", "#00B4D8", "#023E8A", "#48CAE4"],
+			surface: {
+				dark: "rgba(0, 119, 182, 0.15)",
+				light: "rgba(0, 119, 182, 0.08)",
+			},
+			text: {
+				dark: "#48CAE4",
+				light: "#0077B6",
+			},
+			border: {
+				dark: "rgba(72, 202, 228, 0.3)",
+				light: "rgba(0, 119, 182, 0.2)",
+			},
+		},
+	},
+	grain: {
+		frequency: 0.65,
+		octaves: 4,
+		opacity: 0.1,
+		blendMode: "overlay",
+	},
+	surfaces: {
+		dark: {
+			glass: "rgba(22, 27, 34, 0.8)",
+			glassHover: "rgba(28, 33, 40, 0.85)",
+			glassActive: "rgba(40, 46, 51, 0.9)",
+		},
+		light: {
+			glass: "rgba(255, 255, 255, 0.7)",
+			glassHover: "rgba(246, 248, 250, 0.8)",
+			glassActive: "rgba(234, 238, 242, 0.85)",
+		},
+	},
+} as const;
+
 export type EditorThemeColors = {
 	[K in keyof typeof editorThemes.dark]: string;
 };
@@ -275,6 +347,7 @@ export const semantic = {
 export const tokens = {
 	colors,
 	editorThemes,
+	grainient,
 	spacing,
 	typography,
 	radii,
