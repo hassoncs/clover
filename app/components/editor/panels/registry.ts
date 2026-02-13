@@ -1,23 +1,46 @@
-import type React from "react";
-import { AssetGalleryPanel } from "../AssetGallery/AssetGalleryPanel";
-import { ChatSidebar } from "../ChatSidebar";
-import { DiagnosticsPanel } from "../DiagnosticsPanel";
-import { AssetsPanel } from "./AssetsPanel";
-import { DebugPanel } from "./DebugPanel";
-import { ExplorerPanel } from "./ExplorerPanel";
-import { HierarchyPanel } from "./HierarchyPanel";
-import { LayersPanel } from "./LayersPanel";
-import { LiveStatePanel } from "./LiveStatePanel";
-import { PropertiesPanel } from "./PropertiesPanel";
+import React, { type LazyExoticComponent } from "react";
 
 export interface PanelDefinition {
 	id: string;
 	title: string;
 	icon?: string;
-	component: React.ComponentType<any>;
+	component: LazyExoticComponent<React.ComponentType<any>>;
 	defaultPlacement: "left" | "center" | "right" | "bottom";
 	minWidth?: number;
 }
+
+const ExplorerPanel = React.lazy(() =>
+	import("./ExplorerPanel").then((m) => ({ default: m.ExplorerPanel })),
+);
+const HierarchyPanel = React.lazy(() =>
+	import("./HierarchyPanel").then((m) => ({ default: m.HierarchyPanel })),
+);
+const PropertiesPanel = React.lazy(() =>
+	import("./PropertiesPanel").then((m) => ({ default: m.PropertiesPanel })),
+);
+const DebugPanel = React.lazy(() =>
+	import("./DebugPanel").then((m) => ({ default: m.DebugPanel })),
+);
+const LiveStatePanel = React.lazy(() =>
+	import("./LiveStatePanel").then((m) => ({ default: m.LiveStatePanel })),
+);
+const AssetsPanel = React.lazy(() =>
+	import("./AssetsPanel").then((m) => ({ default: m.AssetsPanel })),
+);
+const LayersPanel = React.lazy(() =>
+	import("./LayersPanel").then((m) => ({ default: m.LayersPanel })),
+);
+const DiagnosticsPanel = React.lazy(() =>
+	import("../DiagnosticsPanel").then((m) => ({ default: m.DiagnosticsPanel })),
+);
+const AssetGalleryPanel = React.lazy(() =>
+	import("../AssetGallery/AssetGalleryPanel").then((m) => ({
+		default: m.AssetGalleryPanel,
+	})),
+);
+const ChatSidebar = React.lazy(() =>
+	import("../ChatSidebar").then((m) => ({ default: m.ChatSidebar })),
+);
 
 export const PANEL_REGISTRY: PanelDefinition[] = [
 	{

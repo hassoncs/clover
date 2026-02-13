@@ -4,9 +4,15 @@ import type {
 } from "@slopcade/shared/graph-adapters";
 import { createEmptyDocument } from "@slopcade/shared/graph-core";
 import { useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
-import { View } from "react-native";
-import { GraphEditor } from "@/components/editor/graph";
+import { Suspense, useMemo } from "react";
+import { ActivityIndicator, View } from "react-native";
+import React from "react";
+
+const GraphEditor = React.lazy(() =>
+	import("@/components/editor/graph").then((m) => ({
+		default: m.GraphEditor,
+	})),
+);
 
 const mockAdapter: GraphDomainAdapter = {
 	id: "mock-adapter",
@@ -80,11 +86,19 @@ export default function GraphEditorRoute() {
 
 	return (
 		<View className="flex-1">
-			<GraphEditor
-				adapter={mockAdapter}
-				initialDocument={initialDocument}
-				documentId={documentId}
-			/>
+			<Suspense
+				fallback={
+					<View className="flex-1 items-center justify-center">
+						<ActivityIndicator size="large" color="#6366F1" />
+					</View>
+				}
+			>
+				<GraphEditor
+					adapter={mockAdapter}
+					initialDocument={initialDocument}
+					documentId={documentId}
+				/>
+			</Suspense>
 		</View>
 	);
 }
