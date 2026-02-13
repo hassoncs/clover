@@ -36,7 +36,8 @@ export type EditorTab =
 	| "properties"
 	| "layers"
 	| "debug"
-	| "chat";
+	| "chat"
+	| "files";
 export type SheetSnapPoint = 0 | 1 | 2;
 
 interface Vec2 {

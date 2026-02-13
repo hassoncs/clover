@@ -2,11 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { useEditor } from "./EditorProvider";
+import { FileTabBar } from "./FileTabBar";
 import { FileViewer } from "./FileViewer";
 import { PreviewControls } from "./PreviewControls";
 import { PreviewGate } from "./PreviewGate";
 import { StageContainer } from "./StageContainer";
-import { useWorkspaceFiles } from "./useWorkspaceFiles";
+import { useSharedWorkspaceFiles } from "./useWorkspaceFiles";
 
 function shaderIdFromFilename(filename: string): string {
 	return filename.replace(/\.gdshader$/, "");
@@ -14,7 +15,15 @@ function shaderIdFromFilename(filename: string): string {
 
 type ActiveView = { type: "file"; filename: string } | { type: "preview" };
 
-export function StageArea() {
+interface StageAreaProps {
+	onToggleExplorer?: () => void;
+	isExplorerOpen?: boolean;
+}
+
+export function StageArea({
+	onToggleExplorer,
+	isExplorerOpen = false,
+}: StageAreaProps) {
 	const { gameId, hotSwapShader, readiness } = useEditor();
 	const {
 		openTabs,
@@ -22,9 +31,10 @@ export function StageArea() {
 		activeFileContent,
 		isLoadingContent,
 		setActiveFile,
+		closeTab,
 		saveFile,
 		isSaving,
-	} = useWorkspaceFiles(gameId);
+	} = useSharedWorkspaceFiles();
 
 	const handleSave = useCallback(
 		(content: string) => {
@@ -45,63 +55,50 @@ export function StageArea() {
 		filename: "document.md",
 	});
 
-	// Sync view when activeFile changes (e.g. from sidebar or initial load)
 	useEffect(() => {
 		if (activeFile) {
 			setActiveView({ type: "file", filename: activeFile });
 		}
 	}, [activeFile]);
 
-	const handleFileTabPress = (filename: string) => {
-		setActiveFile(filename);
-		setActiveView({ type: "file", filename });
-	};
+	const handleSelectTab = useCallback(
+		(filename: string) => {
+			setActiveFile(filename);
+			setActiveView({ type: "file", filename });
+		},
+		[setActiveFile],
+	);
 
-	const handlePreviewTabPress = () => {
+	const handleCloseTab = useCallback(
+		(filename: string) => {
+			closeTab(filename);
+		},
+		[closeTab],
+	);
+
+	const handlePreviewTabPress = useCallback(() => {
 		setActiveView({ type: "preview" });
-	};
+	}, []);
+
+	const handleToggleSidebar = useCallback(() => {
+		onToggleExplorer?.();
+	}, [onToggleExplorer]);
+
+	const fileTabs = openTabs.map((filename) => ({
+		filename,
+		isActive: activeView.type === "file" && activeView.filename === filename,
+	}));
 
 	return (
 		<View style={styles.container} testID="stage-area">
-			<View
-				style={styles.tabBar}
-				testID="stage-tab-bar"
-				accessibilityRole="tablist"
-			>
-				<View style={styles.fileTabs}>
-					{openTabs.map((filename) => (
-						<TouchableOpacity
-							key={filename}
-							testID={`file-tab-${filename}`}
-							style={[
-								styles.tab,
-								activeView.type === "file" &&
-									activeView.filename === filename &&
-									styles.activeTab,
-							]}
-							onPress={() => handleFileTabPress(filename)}
-							accessibilityRole="tab"
-							accessibilityLabel={filename}
-							accessibilityState={{
-								selected:
-									activeView.type === "file" &&
-									activeView.filename === filename,
-							}}
-						>
-							<Text
-								style={[
-									styles.tabText,
-									activeView.type === "file" &&
-										activeView.filename === filename &&
-										styles.activeTabText,
-								]}
-							>
-								{filename}
-							</Text>
-						</TouchableOpacity>
-					))}
-				</View>
-
+			<View style={styles.tabRow}>
+				<FileTabBar
+					tabs={fileTabs}
+					onSelectTab={handleSelectTab}
+					onCloseTab={handleCloseTab}
+					onToggleSidebar={handleToggleSidebar}
+					isSidebarOpen={isExplorerOpen}
+				/>
 				<TouchableOpacity
 					testID="preview-tab"
 					style={[
@@ -159,32 +156,22 @@ export function StageArea() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#111827", // bg-gray-900
+		backgroundColor: "#111827",
 	},
-	tabBar: {
+	tabRow: {
 		flexDirection: "row",
-		height: 36,
+		height: 32,
 		backgroundColor: "#111827",
 		borderBottomWidth: 1,
-		borderBottomColor: "#1F2937", // border-gray-800
-		alignItems: "flex-end",
-	},
-	fileTabs: {
-		flex: 1,
-		flexDirection: "row",
-	},
-	tab: {
-		paddingHorizontal: 12,
-		paddingVertical: 8,
-		borderBottomWidth: 2,
-		borderBottomColor: "transparent",
+		borderBottomColor: "#1F2937",
 	},
 	activeTab: {
-		borderBottomColor: "#6366F1", // indigo-500
+		borderBottomColor: "#6366F1",
 	},
 	previewTab: {
 		paddingHorizontal: 16,
-		paddingVertical: 8,
+		justifyContent: "center",
+		height: 32,
 		borderBottomWidth: 2,
 		borderBottomColor: "transparent",
 		borderLeftWidth: 1,
@@ -192,7 +179,7 @@ const styles = StyleSheet.create({
 	},
 	tabText: {
 		fontSize: 13,
-		color: "#9CA3AF", // text-gray-400
+		color: "#9CA3AF",
 		fontWeight: "500",
 	},
 	activeTabText: {
@@ -206,7 +193,7 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		backgroundColor: "#1F2937", // bg-gray-800
+		backgroundColor: "#1F2937",
 	},
 	stageWrapper: {
 		flex: 1,

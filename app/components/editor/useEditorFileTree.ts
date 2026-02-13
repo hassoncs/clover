@@ -1,13 +1,10 @@
 import {
 	type FileTreeData,
 	type FileTreeStateResult,
-	pathsToTree,
 	useFileTreeState,
 } from "@slopcade/ui";
-import { useCallback, useMemo } from "react";
-import type { useWorkspaceFiles } from "./useWorkspaceFiles";
-
-type WorkspaceFilesResult = ReturnType<typeof useWorkspaceFiles>;
+import { useCallback } from "react";
+import type { WorkspaceFilesResult } from "./useWorkspaceFiles";
 
 export interface EditorFileTreeResult {
 	treeState: FileTreeStateResult;
@@ -22,29 +19,7 @@ export interface EditorFileTreeResult {
 export function useEditorFileTree(
 	workspaceFiles: WorkspaceFilesResult,
 ): EditorFileTreeResult {
-	const { files, openFile, isLoadingFiles } = workspaceFiles;
-
-	const treeData = useMemo<FileTreeData>(() => {
-		if (!files || files.length === 0) return {};
-		return pathsToTree(files);
-	}, [files]);
-
-	const roots = useMemo(() => {
-		const topLevel: string[] = [];
-		for (const [id, node] of Object.entries(treeData)) {
-			if (node.parentId === null) {
-				topLevel.push(id);
-			}
-		}
-		return topLevel.sort((a, b) => {
-			const aNode = treeData[a];
-			const bNode = treeData[b];
-			if (aNode.type !== bNode.type) {
-				return aNode.type === "folder" ? -1 : 1;
-			}
-			return aNode.name.localeCompare(bNode.name);
-		});
-	}, [treeData]);
+	const { tree: treeData, roots, openFile, isLoadingFiles } = workspaceFiles;
 
 	const handleSelectFile = useCallback(
 		(id: string) => {

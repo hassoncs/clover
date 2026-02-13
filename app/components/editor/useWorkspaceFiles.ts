@@ -1,5 +1,5 @@
 import type { AgUiEvent } from "@slopcade/shared/chat";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useChatEventSubscription } from "@/lib/chat/ChatStreamProvider";
 import { trpcReact } from "@/lib/trpc/react";
 
@@ -145,4 +145,20 @@ export function useWorkspaceFiles(gameId: string | null) {
 		saveFile,
 		isSaving: writeMutation.isPending,
 	};
+}
+
+export type WorkspaceFilesResult = ReturnType<typeof useWorkspaceFiles>;
+
+const WorkspaceFilesContext = createContext<WorkspaceFilesResult | null>(null);
+
+export { WorkspaceFilesContext };
+
+export function useSharedWorkspaceFiles(): WorkspaceFilesResult {
+	const ctx = useContext(WorkspaceFilesContext);
+	if (!ctx) {
+		throw new Error(
+			"useSharedWorkspaceFiles must be used within a WorkspaceFilesProvider",
+		);
+	}
+	return ctx;
 }

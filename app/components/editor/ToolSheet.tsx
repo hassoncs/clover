@@ -1,11 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+	BottomSheetScrollView,
+	BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { useCallback, useMemo, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AssetGalleryPanel } from "./AssetGallery/AssetGalleryPanel";
 import type { EditorTab } from "./EditorProvider";
 import { AssetsPanel } from "./panels/AssetsPanel";
 import { DebugPanel } from "./panels/DebugPanel";
+import { ExplorerPanel } from "./panels/ExplorerPanel";
 import { LayersPanel } from "./panels/LayersPanel";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
 
@@ -15,6 +19,7 @@ const TAB_TITLES: Record<string, string> = {
 	properties: "Properties",
 	layers: "Layers",
 	debug: "Debug",
+	files: "Files",
 };
 
 interface ToolSheetProps {
@@ -49,6 +54,8 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
 		[onDismiss, activeTab],
 	);
 
+	const isFilesTab = activeTab === "files";
+
 	const renderContent = useCallback(() => {
 		switch (activeTab) {
 			case "gallery":
@@ -61,6 +68,8 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
 				return <LayersPanel />;
 			case "debug":
 				return <DebugPanel />;
+			case "files":
+				return <ExplorerPanel />;
 			default:
 				return null;
 		}
@@ -80,9 +89,15 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
 			onClose={onDismiss}
 			enableDynamicSizing={false}
 		>
-			<BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
-				{renderContent()}
-			</BottomSheetScrollView>
+			{isFilesTab ? (
+				<BottomSheetView style={styles.contentContainer}>
+					{renderContent()}
+				</BottomSheetView>
+			) : (
+				<BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
+					{renderContent()}
+				</BottomSheetScrollView>
+			)}
 		</BottomSheet>
 	);
 }

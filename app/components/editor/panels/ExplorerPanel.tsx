@@ -8,13 +8,11 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import { useEditor } from "../EditorProvider";
 import { useEditorFileTree } from "../useEditorFileTree";
-import { useWorkspaceFiles } from "../useWorkspaceFiles";
+import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 
 export function ExplorerPanel() {
-	const { gameId } = useEditor();
-	const workspaceFiles = useWorkspaceFiles(gameId);
+	const workspaceFiles = useSharedWorkspaceFiles();
 	const {
 		treeState,
 		treeData,

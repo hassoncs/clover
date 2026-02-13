@@ -7,12 +7,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EditorProvider } from "@/components/editor/EditorProvider";
 import { EditorTopBar } from "@/components/editor/EditorTopBar";
 import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayout";
+import { WorkspaceFilesProvider } from "@/components/editor/WorkspaceFilesProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
 import { useGameWebSocket } from "@/lib/editor/hooks/useGameWebSocket";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
 import { LivePreviewController } from "@/lib/game-engine/live/LivePreviewController";
 import { trpc } from "@/lib/trpc/client";
+
+function EditorWebSocket({ gameId }: { gameId: string }) {
+	useGameWebSocket(gameId);
+	return null;
+}
 
 export default function EditorScreen() {
 	const router = useRouter();
@@ -34,8 +40,6 @@ export default function EditorScreen() {
 		resolvedGameId,
 		null,
 	);
-
-	useGameWebSocket(resolvedGameId);
 
 	const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(
 		null,
@@ -114,27 +118,30 @@ export default function EditorScreen() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<View className="flex-1 bg-gray-900">
-				<EditorProvider
-					gameId={resolvedGameId}
-					initialDefinition={gameDefinition}
-					isEphemeral={id === "ephemeral"}
-					ephemeralSource={
-						id === "ephemeral" && sourceType && sourceId
-							? {
-									type: sourceType as "database" | "offline",
-									id: sourceId,
-								}
-							: undefined
-					}
-				>
-					<ChatStreamProvider>
-						<EditorTopBar
-							onResetPreview={handleResetPreview}
-							setPreviewMode={setPreviewMode}
-						/>
-						<ResponsiveEditorLayout />
-					</ChatStreamProvider>
-				</EditorProvider>
+				<ChatStreamProvider>
+					<EditorWebSocket gameId={resolvedGameId} />
+					<EditorProvider
+						gameId={resolvedGameId}
+						initialDefinition={gameDefinition}
+						isEphemeral={id === "ephemeral"}
+						ephemeralSource={
+							id === "ephemeral" && sourceType && sourceId
+								? {
+										type: sourceType as "database" | "offline",
+										id: sourceId,
+									}
+								: undefined
+						}
+					>
+						<WorkspaceFilesProvider gameId={resolvedGameId}>
+							<EditorTopBar
+								onResetPreview={handleResetPreview}
+								setPreviewMode={setPreviewMode}
+							/>
+							<ResponsiveEditorLayout />
+						</WorkspaceFilesProvider>
+					</EditorProvider>
+				</ChatStreamProvider>
 			</View>
 		</GestureHandlerRootView>
 	);
