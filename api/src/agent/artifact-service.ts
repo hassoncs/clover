@@ -21,18 +21,6 @@ export interface PublishToActiveParams {
 	sourceKey: string;
 }
 
-export interface StoreWorkspaceFileParams {
-	gameId: string;
-	filename: string;
-	data: string;
-	contentType?: string;
-}
-
-export interface ReadWorkspaceFileParams {
-	gameId: string;
-	filename: string;
-}
-
 export interface RollbackToVersionParams {
 	gameId: string;
 	previousKey: string;
@@ -76,33 +64,6 @@ export class ArtifactService {
 
 		const data = await obj.text();
 		return { data, key };
-	}
-
-	async storeWorkspaceFile(
-		params: StoreWorkspaceFileParams,
-	): Promise<{ key: string }> {
-		const key = `games/${params.gameId}/workspace/${params.filename}`;
-
-		await this.assets.put(key, params.data, {
-			httpMetadata: {
-				contentType: params.contentType ?? "text/plain",
-			},
-		});
-
-		return { key };
-	}
-
-	async readWorkspaceFile(
-		params: ReadWorkspaceFileParams,
-	): Promise<{ data: string } | null> {
-		const key = `games/${params.gameId}/workspace/${params.filename}`;
-		const obj = await this.assets.get(key);
-
-		if (!obj) {
-			return null;
-		}
-
-		return { data: await obj.text() };
 	}
 
 	async readActiveDefinition(gameId: string): Promise<string | null> {
@@ -178,31 +139,5 @@ export class ArtifactService {
 			size: obj.size,
 			uploaded: obj.uploaded,
 		}));
-	}
-
-	async listWorkspaceFileMeta(
-		gameId: string,
-	): Promise<Array<{ filename: string; size: number; uploaded: number }>> {
-		const prefix = `games/${gameId}/workspace/`;
-		const listed = await this.assets.list({ prefix });
-		return listed.objects.map((obj) => ({
-			filename: obj.key.slice(prefix.length),
-			size: obj.size,
-			uploaded: obj.uploaded.getTime(),
-		}));
-	}
-
-	async readWorkspaceFiles(
-		gameId: string,
-		filenames: string[],
-	): Promise<Map<string, string>> {
-		const result = new Map<string, string>();
-		for (const filename of filenames) {
-			const file = await this.readWorkspaceFile({ gameId, filename });
-			if (file) {
-				result.set(filename, file.data);
-			}
-		}
-		return result;
 	}
 }

@@ -214,4 +214,53 @@ export class GitService {
 		const result = await response.json<{ changes: FileDiff[] }>();
 		return result.changes;
 	}
+
+	async writeFiles(gameId: string, files: FileChange[]): Promise<void> {
+		const response = await this.doFetch(gameId, "/write", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ files }),
+		});
+
+		if (!response.ok) {
+			const error = (await response
+				.json<{ error?: string }>()
+				.catch(() => ({}))) as { error?: string };
+			throw new Error(
+				error.error || `Failed to write files: ${response.statusText}`,
+			);
+		}
+	}
+
+	async getSnapshot(
+		gameId: string,
+		sinceRevision?: string,
+	): Promise<{
+		changed: boolean;
+		revision: string;
+		files?: Array<{
+			filename: string;
+			content: string;
+			contentHash: string;
+			size: number;
+		}>;
+	}> {
+		const params = sinceRevision
+			? `?sinceRevision=${encodeURIComponent(sinceRevision)}`
+			: "";
+		const response = await this.doFetch(gameId, `/snapshot${params}`, {
+			method: "GET",
+		});
+
+		if (!response.ok) {
+			const error = (await response
+				.json<{ error?: string }>()
+				.catch(() => ({}))) as { error?: string };
+			throw new Error(
+				error.error || `Failed to get snapshot: ${response.statusText}`,
+			);
+		}
+
+		return response.json();
+	}
 }

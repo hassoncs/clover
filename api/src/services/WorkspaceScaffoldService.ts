@@ -1,4 +1,4 @@
-type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
+import type { FileChange, GitService } from "./git/GitService";
 
 export interface SeedWorkspaceScaffoldOptions {
 	gameId: string;
@@ -12,7 +12,6 @@ export interface SeedWorkspaceScaffoldResult {
 
 interface ScaffoldFile {
 	filename: string;
-	contentType: string;
 	content: (options: SeedWorkspaceScaffoldOptions) => string;
 }
 
@@ -22,11 +21,12 @@ function stringifyJson(value: unknown): string {
 	return JSON.stringify(value, null, 2);
 }
 
+const SYSTEM_AUTHOR = { name: "System", email: "system@slopcade.app" };
+
 export class WorkspaceScaffoldService {
 	private static readonly SCAFFOLD_FILES: ScaffoldFile[] = [
 		{
 			filename: "slopcade.json",
-			contentType: "application/json",
 			content: ({ gameId, gameTitle }) =>
 				stringifyJson({
 					id: gameId,
@@ -37,7 +37,6 @@ export class WorkspaceScaffoldService {
 		},
 		{
 			filename: "world.json",
-			contentType: "application/json",
 			content: () =>
 				stringifyJson({
 					gravity: { x: 0, y: 10 },
@@ -48,17 +47,14 @@ export class WorkspaceScaffoldService {
 		},
 		{
 			filename: "entities.json",
-			contentType: "application/json",
 			content: () => stringifyJson([]),
 		},
 		{
 			filename: "rules.json",
-			contentType: "application/json",
 			content: () => stringifyJson([]),
 		},
 		{
 			filename: "prefabs/default.json",
-			contentType: "application/json",
 			content: () =>
 				stringifyJson({
 					id: "default",
@@ -69,18 +65,16 @@ export class WorkspaceScaffoldService {
 		},
 		{
 			filename: "scripts/main.js",
-			contentType: "text/javascript",
 			content: () =>
 				"exports.onStart = function(ctx) {};\nexports.onUpdate = function(ctx, dt) {};",
 		},
 		{
 			filename: "effects/screen.json",
-			contentType: "application/json",
 			content: () => stringifyJson({ nodes: [], connections: [] }),
 		},
 	];
 
-	constructor(private readonly bucket: R2Bucket) {}
+	constructor(private readonly gitService: GitService) {}
 
 	async seedIfMissing(
 		options: SeedWorkspaceScaffoldOptions,
@@ -88,21 +82,35 @@ export class WorkspaceScaffoldService {
 		const created: string[] = [];
 		const skipped: string[] = [];
 
+		let existingFiles: string[] = [];
+		try {
+			existingFiles = await this.gitService.listFiles(options.gameId);
+		} catch {
+			// Empty repo — no files yet
+		}
+
+		const existingSet = new Set(existingFiles);
+		const filesToCommit: FileChange[] = [];
+
 		for (const scaffoldFile of WorkspaceScaffoldService.SCAFFOLD_FILES) {
-			const key = `games/${options.gameId}/workspace/${scaffoldFile.filename}`;
-			const existing = await this.bucket.head(key);
-
-			if (existing) {
+			if (existingSet.has(scaffoldFile.filename)) {
 				skipped.push(scaffoldFile.filename);
-				continue;
+			} else {
+				filesToCommit.push({
+					path: scaffoldFile.filename,
+					content: scaffoldFile.content(options),
+				});
+				created.push(scaffoldFile.filename);
 			}
+		}
 
-			await this.bucket.put(key, scaffoldFile.content(options), {
-				httpMetadata: {
-					contentType: scaffoldFile.contentType,
-				},
-			});
-			created.push(scaffoldFile.filename);
+		if (filesToCommit.length > 0) {
+			await this.gitService.commitFiles(
+				options.gameId,
+				filesToCommit,
+				"Initialize workspace scaffold",
+				SYSTEM_AUTHOR,
+			);
 		}
 
 		return { created, skipped };
