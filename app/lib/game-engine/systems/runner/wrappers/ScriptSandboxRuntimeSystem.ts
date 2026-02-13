@@ -45,6 +45,8 @@ export interface ScriptSandboxSystemState {
 	hasOnUpdate: boolean;
 	hasOnInput: boolean;
 	hasOnCollision: boolean;
+	hasOnNetworkState: boolean;
+	hasOnPhaseChange: boolean;
 	lastError: ScriptErrorReport | null;
 	reloadCount: number;
 	onStartCalled: boolean;
@@ -67,6 +69,12 @@ export class ScriptSandboxRuntimeSystem
 	private sequenceManager: SequenceManager | null = null;
 	private seededRandom: (() => number) | null = null;
 	private lastUpdateCtx: UpdateContext | null = null;
+	private pendingNetworkStateEvents: Record<string, unknown>[] = [];
+	private pendingPhaseChangeEvents: {
+		phase: string;
+		data?: Record<string, unknown>;
+	}[] = [];
+	private networkEventUnsubscribers: (() => void)[] = [];
 
 	constructor(config: ScriptSandboxSystemConfig) {
 		this.config = config;
@@ -104,6 +112,22 @@ export class ScriptSandboxRuntimeSystem
 
 		this.sequenceManager = new SequenceManager();
 		this.seededRandom = this.createSeededRandom(Date.now());
+
+		const eventQueue = ctx.eventQueue;
+		this.networkEventUnsubscribers.push(
+			eventQueue.subscribe("network:state_update", (data) => {
+				this.pendingNetworkStateEvents.push(
+					(data as Record<string, unknown>) ?? {},
+				);
+			}),
+			eventQueue.subscribe("network:phase_change", (data) => {
+				const d = (data as Record<string, unknown>) ?? {};
+				this.pendingPhaseChangeEvents.push({
+					phase: (d.phase as string) ?? "unknown",
+					data: d.data as Record<string, unknown> | undefined,
+				});
+			}),
+		);
 	}
 
 	private getCurrentGameState() {
@@ -190,9 +214,40 @@ export class ScriptSandboxRuntimeSystem
 				this.runCollision(ctx, collisionEvent);
 			}
 		}
+
+		if (
+			this.sandbox.hasHook("onNetworkState") &&
+			this.pendingNetworkStateEvents.length > 0
+		) {
+			const events = this.pendingNetworkStateEvents.splice(0);
+			for (const state of events) {
+				this.runNetworkState(ctx, state);
+			}
+		} else {
+			this.pendingNetworkStateEvents.length = 0;
+		}
+
+		if (
+			this.sandbox.hasHook("onPhaseChange") &&
+			this.pendingPhaseChangeEvents.length > 0
+		) {
+			const events = this.pendingPhaseChangeEvents.splice(0);
+			for (const event of events) {
+				this.runPhaseChange(ctx, event.phase, event.data);
+			}
+		} else {
+			this.pendingPhaseChangeEvents.length = 0;
+		}
 	}
 
 	destroy(): void {
+		for (const unsub of this.networkEventUnsubscribers) {
+			unsub();
+		}
+		this.networkEventUnsubscribers.length = 0;
+		this.pendingNetworkStateEvents.length = 0;
+		this.pendingPhaseChangeEvents.length = 0;
+
 		if (this.sequenceManager) {
 			this.sequenceManager.dispose();
 			this.sequenceManager = null;
@@ -215,6 +270,8 @@ export class ScriptSandboxRuntimeSystem
 				hasOnUpdate: false,
 				hasOnInput: false,
 				hasOnCollision: false,
+				hasOnNetworkState: false,
+				hasOnPhaseChange: false,
 				lastError: null,
 				reloadCount: 0,
 				onStartCalled: false,
@@ -226,6 +283,8 @@ export class ScriptSandboxRuntimeSystem
 			hasOnUpdate: this.sandbox.hasHook("onUpdate"),
 			hasOnInput: this.sandbox.hasHook("onInput"),
 			hasOnCollision: this.sandbox.hasHook("onCollision"),
+			hasOnNetworkState: this.sandbox.hasHook("onNetworkState"),
+			hasOnPhaseChange: this.sandbox.hasHook("onPhaseChange"),
 			lastError: this.sandbox.getLastError(),
 			reloadCount: this.sandbox.getReloadCount(),
 			onStartCalled: this.onStartCalled,
@@ -281,6 +340,41 @@ export class ScriptSandboxRuntimeSystem
 		if (!result.success) {
 			console.error(
 				"[ScriptSandboxRuntimeSystem] onCollision error:",
+				result.error,
+			);
+		}
+	}
+
+	private runNetworkState(
+		ctx: UpdateContext,
+		state: Record<string, unknown>,
+	): void {
+		if (!this.sandbox || !this.systemContext) return;
+		if (!this.sandbox.hasHook("onNetworkState")) return;
+
+		const scriptContext = this.createScriptContext(ctx);
+		const result = this.sandbox.runNetworkState(scriptContext, state);
+		if (!result.success) {
+			console.error(
+				"[ScriptSandboxRuntimeSystem] onNetworkState error:",
+				result.error,
+			);
+		}
+	}
+
+	private runPhaseChange(
+		ctx: UpdateContext,
+		phase: string,
+		data?: Record<string, unknown>,
+	): void {
+		if (!this.sandbox || !this.systemContext) return;
+		if (!this.sandbox.hasHook("onPhaseChange")) return;
+
+		const scriptContext = this.createScriptContext(ctx);
+		const result = this.sandbox.runPhaseChange(scriptContext, phase, data);
+		if (!result.success) {
+			console.error(
+				"[ScriptSandboxRuntimeSystem] onPhaseChange error:",
 				result.error,
 			);
 		}
@@ -609,6 +703,9 @@ export class ScriptSandboxRuntimeSystem
 			getVariable: (name: string): unknown => ctx.gameState.variables[name],
 
 			setVariable: (name: string, value: unknown): void => {
+				if (name.startsWith("room.")) {
+					return;
+				}
 				if (
 					typeof value !== "number" &&
 					typeof value !== "string" &&

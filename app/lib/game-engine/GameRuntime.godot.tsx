@@ -72,6 +72,7 @@ import {
 	HoverHighlightRuntimeSystem,
 	InputRuntimeSystem,
 	Match3RuntimeSystem,
+	NetworkRuntimeSystem,
 	PropertySyncRuntimeSystem,
 	RulesSystem,
 	ScriptSandboxRuntimeSystem,
@@ -909,6 +910,14 @@ export function GameRuntimeGodot({
 				if (definition.hoverHighlight) {
 					runner.register(
 						new HoverHighlightRuntimeSystem(definition.hoverHighlight),
+					);
+				}
+
+				if (definition.party) {
+					runner.register(
+						new NetworkRuntimeSystem({
+							role: "host",
+						}),
 					);
 				}
 

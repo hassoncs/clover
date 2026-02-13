@@ -41,6 +41,11 @@ export type {
 } from "./Match3RuntimeSystem";
 export { Match3RuntimeSystem } from "./Match3RuntimeSystem";
 export type {
+	NetworkSystemConfig,
+	NetworkSystemState,
+} from "./NetworkRuntimeSystem";
+export { NetworkRuntimeSystem } from "./NetworkRuntimeSystem";
+export type {
 	PropertySyncSystemConfig,
 	PropertySyncSystemState,
 } from "./PropertySyncRuntimeSystem";

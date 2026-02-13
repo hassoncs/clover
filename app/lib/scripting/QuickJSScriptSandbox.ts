@@ -1,76 +1,76 @@
-import { QuickJSEngine } from './engine/QuickJSEngine';
+import { QuickJSEngine } from "./engine/QuickJSEngine";
 import type {
-  IScriptSandbox,
-  ScriptReloadResult,
-  ScriptLogEntry,
-  ScriptHookName,
-} from './IScriptSandbox';
+	IScriptSandbox,
+	ScriptHookName,
+	ScriptLogEntry,
+	ScriptReloadResult,
+	ScriptRuntimeContext,
+} from "./IScriptSandbox";
 import type {
-  ScriptSandboxConfig,
-  ScriptResult,
-  ScriptErrorReport,
-  ScriptInputEvent,
-  ScriptCollisionEvent,
-  ScriptContext,
-} from './types';
-import type { ScriptRuntimeContext } from './IScriptSandbox';
+	ScriptCollisionEvent,
+	ScriptContext,
+	ScriptErrorReport,
+	ScriptInputEvent,
+	ScriptResult,
+	ScriptSandboxConfig,
+} from "./types";
 
 export class QuickJSScriptSandbox implements IScriptSandbox {
-  private config: ScriptSandboxConfig;
-  private engine: QuickJSEngine;
-  private isInitialized = false;
-  private isDisposed = false;
-  private lastError: ScriptErrorReport | null = null;
-  private reloadCount = 0;
-  private logs: ScriptLogEntry[] = [];
-  private maxLogs = 500;
+	private config: ScriptSandboxConfig;
+	private engine: QuickJSEngine;
+	private isInitialized = false;
+	private isDisposed = false;
+	private lastError: ScriptErrorReport | null = null;
+	private reloadCount = 0;
+	private logs: ScriptLogEntry[] = [];
+	private maxLogs = 500;
 
-  constructor(config: ScriptSandboxConfig) {
-    this.config = config;
-    this.engine = new QuickJSEngine({ budget: config.budget });
-  }
+	constructor(config: ScriptSandboxConfig) {
+		this.config = config;
+		this.engine = new QuickJSEngine({ budget: config.budget });
+	}
 
-  async initialize(): Promise<ScriptResult<void>> {
-    if (this.isInitialized) return { success: true };
+	async initialize(): Promise<ScriptResult<void>> {
+		if (this.isInitialized) return { success: true };
 
-    try {
-      await this.engine.initialize();
-      this.setupConsole();
-      const result = await this.compileScript(this.config.scriptCode);
-      if (!result.success) {
-        return result;
-      }
-      this.isInitialized = true;
-      return { success: true };
-    } catch (error) {
-      const errorReport = this.createErrorReport(error, 'load');
-      this.lastError = errorReport;
-      return { success: false, error: errorReport };
-    }
-  }
+		try {
+			await this.engine.initialize();
+			this.setupConsole();
+			const result = await this.compileScript(this.config.scriptCode);
+			if (!result.success) {
+				return result;
+			}
+			this.isInitialized = true;
+			return { success: true };
+		} catch (error) {
+			const errorReport = this.createErrorReport(error, "load");
+			this.lastError = errorReport;
+			return { success: false, error: errorReport };
+		}
+	}
 
-  private setupConsole(): void {
-    this.engine.setupConsole({
-      log: (...args: unknown[]) => {
-        this.logs.push({ level: 'log', args, timestamp: Date.now() });
-        if (this.logs.length > this.maxLogs) this.logs.shift();
-        console.log('[Script]', ...args);
-      },
-      warn: (...args: unknown[]) => {
-        this.logs.push({ level: 'warn', args, timestamp: Date.now() });
-        if (this.logs.length > this.maxLogs) this.logs.shift();
-        console.warn('[Script]', ...args);
-      },
-      error: (...args: unknown[]) => {
-        this.logs.push({ level: 'error', args, timestamp: Date.now() });
-        if (this.logs.length > this.maxLogs) this.logs.shift();
-        console.error('[Script]', ...args);
-      },
-    });
-  }
+	private setupConsole(): void {
+		this.engine.setupConsole({
+			log: (...args: unknown[]) => {
+				this.logs.push({ level: "log", args, timestamp: Date.now() });
+				if (this.logs.length > this.maxLogs) this.logs.shift();
+				console.log("[Script]", ...args);
+			},
+			warn: (...args: unknown[]) => {
+				this.logs.push({ level: "warn", args, timestamp: Date.now() });
+				if (this.logs.length > this.maxLogs) this.logs.shift();
+				console.warn("[Script]", ...args);
+			},
+			error: (...args: unknown[]) => {
+				this.logs.push({ level: "error", args, timestamp: Date.now() });
+				if (this.logs.length > this.maxLogs) this.logs.shift();
+				console.error("[Script]", ...args);
+			},
+		});
+	}
 
-  private async compileScript(scriptCode: string): Promise<ScriptResult<void>> {
-    const wrappedCode = `
+	private async compileScript(scriptCode: string): Promise<ScriptResult<void>> {
+		const wrappedCode = `
       (function() {
         "use strict";
         const exports = {};
@@ -80,246 +80,299 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
       })()
     `;
 
-    const evalResult = this.engine.evaluate(wrappedCode, 'load');
-    if (!evalResult.success) {
-      this.lastError = evalResult.error ?? null;
-      return evalResult as ScriptResult<void>;
-    }
+		const evalResult = this.engine.evaluate(wrappedCode, "load");
+		if (!evalResult.success) {
+			this.lastError = evalResult.error ?? null;
+			return evalResult as ScriptResult<void>;
+		}
 
-    return { success: true };
-  }
+		return { success: true };
+	}
 
+	async reload(newScriptCode: string): Promise<ScriptReloadResult> {
+		const previousHooks = {
+			onStart: this.hasHook("onStart"),
+			onUpdate: this.hasHook("onUpdate"),
+			onInput: this.hasHook("onInput"),
+			onCollision: this.hasHook("onCollision"),
+			onNetworkState: this.hasHook("onNetworkState"),
+			onPhaseChange: this.hasHook("onPhaseChange"),
+		};
 
+		this.config = { ...this.config, scriptCode: newScriptCode };
+		this.isInitialized = false;
+		this.lastError = null;
 
-  async reload(newScriptCode: string): Promise<ScriptReloadResult> {
-    const previousHooks = {
-      onStart: this.hasHook('onStart'),
-      onUpdate: this.hasHook('onUpdate'),
-      onInput: this.hasHook('onInput'),
-      onCollision: this.hasHook('onCollision'),
-    };
+		this.engine.dispose();
+		this.engine = new QuickJSEngine({ budget: this.config.budget });
 
-    this.config = { ...this.config, scriptCode: newScriptCode };
-    this.isInitialized = false;
-    this.lastError = null;
+		const initResult = await this.initialize();
+		this.reloadCount++;
 
-    this.engine.dispose();
-    this.engine = new QuickJSEngine({ budget: this.config.budget });
+		const newHooks = {
+			onStart: this.hasHook("onStart"),
+			onUpdate: this.hasHook("onUpdate"),
+			onInput: this.hasHook("onInput"),
+			onCollision: this.hasHook("onCollision"),
+			onNetworkState: this.hasHook("onNetworkState"),
+			onPhaseChange: this.hasHook("onPhaseChange"),
+		};
 
-    const initResult = await this.initialize();
-    this.reloadCount++;
+		if (!initResult.success) {
+			return {
+				success: false,
+				error: initResult.error,
+				previousHooks,
+				newHooks,
+			};
+		}
 
-    const newHooks = {
-      onStart: this.hasHook('onStart'),
-      onUpdate: this.hasHook('onUpdate'),
-      onInput: this.hasHook('onInput'),
-      onCollision: this.hasHook('onCollision'),
-    };
+		return { success: true, previousHooks, newHooks };
+	}
 
-    if (!initResult.success) {
-      return {
-        success: false,
-        error: initResult.error,
-        previousHooks,
-        newHooks,
-      };
-    }
+	getReloadCount(): number {
+		return this.reloadCount;
+	}
 
-    return { success: true, previousHooks, newHooks };
-  }
+	getScriptCode(): string {
+		return this.config.scriptCode;
+	}
 
+	runStart(runtime: ScriptRuntimeContext): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return { success: false, error: this.createNotReadyError("start") };
+		}
 
+		if (!this.hasHook("onStart")) {
+			return { success: true };
+		}
 
-  getReloadCount(): number {
-    return this.reloadCount;
-  }
+		return this.callHook("onStart", runtime, "start");
+	}
 
-  getScriptCode(): string {
-    return this.config.scriptCode;
-  }
+	runUpdate(runtime: ScriptRuntimeContext, dt: number): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return { success: false, error: this.createNotReadyError("update") };
+		}
 
-  runStart(runtime: ScriptRuntimeContext): ScriptResult<void> {
-    if (!this.isInitialized || this.isDisposed) {
-      return { success: false, error: this.createNotReadyError('start') };
-    }
+		if (!this.hasHook("onUpdate")) {
+			return { success: true };
+		}
 
-    if (!this.hasHook('onStart')) {
-      return { success: true };
-    }
+		return this.callHook("onUpdate", runtime, "update", dt);
+	}
 
-    return this.callHook('onStart', runtime, 'start');
-  }
+	runInput(
+		runtime: ScriptRuntimeContext,
+		event: ScriptInputEvent,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return { success: false, error: this.createNotReadyError("input") };
+		}
 
-  runUpdate(runtime: ScriptRuntimeContext, dt: number): ScriptResult<void> {
-    if (!this.isInitialized || this.isDisposed) {
-      return { success: false, error: this.createNotReadyError('update') };
-    }
+		if (!this.hasHook("onInput")) {
+			return { success: true };
+		}
 
-    if (!this.hasHook('onUpdate')) {
-      return { success: true };
-    }
+		return this.callHook("onInput", runtime, "input", event);
+	}
 
-    return this.callHook('onUpdate', runtime, 'update', dt);
-  }
+	runCollision(
+		runtime: ScriptRuntimeContext,
+		collision: ScriptCollisionEvent,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return { success: false, error: this.createNotReadyError("collision") };
+		}
 
-  runInput(runtime: ScriptRuntimeContext, event: ScriptInputEvent): ScriptResult<void> {
-    if (!this.isInitialized || this.isDisposed) {
-      return { success: false, error: this.createNotReadyError('input') };
-    }
+		if (!this.hasHook("onCollision")) {
+			return { success: true };
+		}
 
-    if (!this.hasHook('onInput')) {
-      return { success: true };
-    }
+		return this.callHook("onCollision", runtime, "collision", collision);
+	}
 
-    return this.callHook('onInput', runtime, 'input', event);
-  }
+	runNetworkState(
+		runtime: ScriptRuntimeContext,
+		state: Record<string, unknown>,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return {
+				success: false,
+				error: this.createNotReadyError("networkState"),
+			};
+		}
 
-  runCollision(runtime: ScriptRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void> {
-    if (!this.isInitialized || this.isDisposed) {
-      return { success: false, error: this.createNotReadyError('collision') };
-    }
+		if (!this.hasHook("onNetworkState")) {
+			return { success: true };
+		}
 
-    if (!this.hasHook('onCollision')) {
-      return { success: true };
-    }
+		return this.callHook("onNetworkState", runtime, "networkState", state);
+	}
 
-    return this.callHook('onCollision', runtime, 'collision', collision);
-  }
+	runPhaseChange(
+		runtime: ScriptRuntimeContext,
+		phase: string,
+		data?: Record<string, unknown>,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return { success: false, error: this.createNotReadyError("phaseChange") };
+		}
 
-  private callHook(
-    hookName: ScriptHookName,
-    runtime: ScriptRuntimeContext,
-    phase: ScriptErrorReport['phase'],
-    ...extraArgs: unknown[]
-  ): ScriptResult<void> {
-    try {
-      const ctxObj = this.createContextObject(runtime);
+		if (!this.hasHook("onPhaseChange")) {
+			return { success: true };
+		}
 
-      const callCode = `
+		return this.callHook(
+			"onPhaseChange",
+			runtime,
+			"phaseChange",
+			phase,
+			data ?? {},
+		);
+	}
+
+	private callHook(
+		hookName: ScriptHookName,
+		runtime: ScriptRuntimeContext,
+		phase: ScriptErrorReport["phase"],
+		...extraArgs: unknown[]
+	): ScriptResult<void> {
+		try {
+			const ctxObj = this.createContextObject(runtime);
+
+			const callCode = `
         (function() {
-          const result = globalThis.__exports.${hookName}(${JSON.stringify(ctxObj)}${extraArgs.length > 0 ? ', ' + extraArgs.map(a => JSON.stringify(a)).join(', ') : ''});
+          const result = globalThis.__exports.${hookName}(${JSON.stringify(ctxObj)}${extraArgs.length > 0 ? ", " + extraArgs.map((a) => JSON.stringify(a)).join(", ") : ""});
           if (result && typeof result === 'object' && typeof result.then === 'function') {
             return "__ASYNC_PROMISE_DETECTED__";
           }
           return result;
         })()
       `;
-      
-      const result = this.engine.evaluate(callCode, phase);
-      if (!result.success) {
-        this.lastError = result.error ?? null;
-        return result as ScriptResult<void>;
-      }
 
-      if (result.value === "__ASYNC_PROMISE_DETECTED__") {
-        const message = `[ScriptSandbox] Hook "${hookName}" returned a Promise. Async hooks are not allowed. Script disabled.`;
-        console.error(message);
-        this.dispose();
-        
-        const errorReport: ScriptErrorReport = {
-          message,
-          type: 'runtime',
-          phase,
-          frameId: 0,
-          timestamp: Date.now(),
-        };
-        this.lastError = errorReport;
-        return { success: false, error: errorReport };
-      }
+			const result = this.engine.evaluate(callCode, phase);
+			if (!result.success) {
+				this.lastError = result.error ?? null;
+				return result as ScriptResult<void>;
+			}
 
-      return { success: true };
-    } catch (error) {
-      const errorReport = this.createErrorReport(error, phase);
-      this.lastError = errorReport;
-      return { success: false, error: errorReport };
-    }
-  }
+			if (result.value === "__ASYNC_PROMISE_DETECTED__") {
+				const message = `[ScriptSandbox] Hook "${hookName}" returned a Promise. Async hooks are not allowed. Script disabled.`;
+				console.error(message);
+				this.dispose();
 
-  callFunction(
-    runtime: ScriptRuntimeContext,
-    functionName: string,
-    args?: Record<string, unknown>
-  ): ScriptResult<unknown> {
-    if (!this.isInitialized || this.isDisposed) {
-      return { success: false, error: this.createNotReadyError('start') };
-    }
+				const errorReport: ScriptErrorReport = {
+					message,
+					type: "runtime",
+					phase,
+					frameId: 0,
+					timestamp: Date.now(),
+				};
+				this.lastError = errorReport;
+				return { success: false, error: errorReport };
+			}
 
-    const checkCode = `typeof globalThis.__exports?.${functionName} === 'function'`;
-    const checkResult = this.engine.evaluate(checkCode, 'update');
-    if (!checkResult.success || checkResult.value !== true) {
-      return { success: true, value: undefined };
-    }
+			return { success: true };
+		} catch (error) {
+			const errorReport = this.createErrorReport(error, phase);
+			this.lastError = errorReport;
+			return { success: false, error: errorReport };
+		}
+	}
 
-    try {
-      const ctxObj = this.createContextObject(runtime);
+	callFunction(
+		runtime: ScriptRuntimeContext,
+		functionName: string,
+		args?: Record<string, unknown>,
+	): ScriptResult<unknown> {
+		if (!this.isInitialized || this.isDisposed) {
+			return { success: false, error: this.createNotReadyError("start") };
+		}
 
-      const callCode = `globalThis.__exports.${functionName}(${JSON.stringify(ctxObj)}, ${JSON.stringify(args ?? {})})`;
-      const result = this.engine.evaluate(callCode, 'update');
-      
-      if (!result.success) {
-        this.lastError = result.error ?? null;
-        return result;
-      }
+		const checkCode = `typeof globalThis.__exports?.${functionName} === 'function'`;
+		const checkResult = this.engine.evaluate(checkCode, "update");
+		if (!checkResult.success || checkResult.value !== true) {
+			return { success: true, value: undefined };
+		}
 
-      return { success: true, value: result.value };
-    } catch (error) {
-      const errorReport = this.createErrorReport(error, 'start');
-      this.lastError = errorReport;
-      return { success: false, error: errorReport };
-    }
-  }
+		try {
+			const ctxObj = this.createContextObject(runtime);
 
-  private createContextObject(runtime: ScriptRuntimeContext): Record<string, unknown> {
-    return runtime as unknown as Record<string, unknown>;
-  }
+			const callCode = `globalThis.__exports.${functionName}(${JSON.stringify(ctxObj)}, ${JSON.stringify(args ?? {})})`;
+			const result = this.engine.evaluate(callCode, "update");
 
-  getLastError(): ScriptErrorReport | null {
-    return this.lastError;
-  }
+			if (!result.success) {
+				this.lastError = result.error ?? null;
+				return result;
+			}
 
-  hasHook(hookName: ScriptHookName): boolean {
-    const checkCode = `typeof globalThis.__exports?.${hookName} === 'function'`;
-    const result = this.engine.evaluate(checkCode, 'load');
-    return result.success && result.value === true;
-  }
+			return { success: true, value: result.value };
+		} catch (error) {
+			const errorReport = this.createErrorReport(error, "start");
+			this.lastError = errorReport;
+			return { success: false, error: errorReport };
+		}
+	}
 
-  getLogs(since?: number): ScriptLogEntry[] {
-    if (since === undefined) return [...this.logs];
-    return this.logs.filter(log => log.timestamp >= since);
-  }
+	private createContextObject(
+		runtime: ScriptRuntimeContext,
+	): Record<string, unknown> {
+		return runtime as unknown as Record<string, unknown>;
+	}
 
-  clearLogs(): void {
-    this.logs = [];
-  }
+	getLastError(): ScriptErrorReport | null {
+		return this.lastError;
+	}
 
-  dispose(): void {
-    if (this.isDisposed) return;
-    this.engine.dispose();
-    this.isDisposed = true;
-    this.isInitialized = false;
-  }
+	hasHook(hookName: ScriptHookName): boolean {
+		const checkCode = `typeof globalThis.__exports?.${hookName} === 'function'`;
+		const result = this.engine.evaluate(checkCode, "load");
+		return result.success && result.value === true;
+	}
 
-  private createNotReadyError(phase: ScriptErrorReport['phase']): ScriptErrorReport {
-    return {
-      message: this.isDisposed ? 'Sandbox disposed' : 'Sandbox not initialized',
-      type: 'unknown',
-      phase,
-      frameId: 0,
-      timestamp: Date.now(),
-    };
-  }
+	getLogs(since?: number): ScriptLogEntry[] {
+		if (since === undefined) return [...this.logs];
+		return this.logs.filter((log) => log.timestamp >= since);
+	}
 
-  private createErrorReport(error: unknown, phase: ScriptErrorReport['phase']): ScriptErrorReport {
-    const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
+	clearLogs(): void {
+		this.logs = [];
+	}
 
-    return {
-      message,
-      type: 'runtime',
-      stack,
-      phase,
-      frameId: 0,
-      timestamp: Date.now(),
-    };
-  }
+	dispose(): void {
+		if (this.isDisposed) return;
+		this.engine.dispose();
+		this.isDisposed = true;
+		this.isInitialized = false;
+	}
+
+	private createNotReadyError(
+		phase: ScriptErrorReport["phase"],
+	): ScriptErrorReport {
+		return {
+			message: this.isDisposed ? "Sandbox disposed" : "Sandbox not initialized",
+			type: "unknown",
+			phase,
+			frameId: 0,
+			timestamp: Date.now(),
+		};
+	}
+
+	private createErrorReport(
+		error: unknown,
+		phase: ScriptErrorReport["phase"],
+	): ScriptErrorReport {
+		const message = error instanceof Error ? error.message : String(error);
+		const stack = error instanceof Error ? error.stack : undefined;
+
+		return {
+			message,
+			type: "runtime",
+			stack,
+			phase,
+			frameId: 0,
+			timestamp: Date.now(),
+		};
+	}
 }
