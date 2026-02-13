@@ -57,7 +57,10 @@ CREATE TABLE IF NOT EXISTS games (
   validation_warning_count INTEGER DEFAULT 0,
   validation_valid INTEGER DEFAULT 0,
   validation_updated_at INTEGER,
-  validator_version TEXT
+  validator_version TEXT,
+  -- Versioning (iOS-style: semver + build number)
+  version TEXT DEFAULT '1.0.0',
+  build_number INTEGER DEFAULT 1
 );
 
 -- Indexes for common queries
@@ -699,6 +702,27 @@ CREATE TABLE IF NOT EXISTS package_readiness (
 );
 
 CREATE INDEX IF NOT EXISTS idx_package_readiness_game ON package_readiness(game_id, checked_at DESC);
+
+-- =============================================================================
+-- AUDIO GENERATIONS (Billing/Usage Tracking)
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS generations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  type TEXT NOT NULL CHECK (type IN ('sfx', 'voice', 'background')),
+  prompt TEXT NOT NULL,
+  asset_id TEXT NOT NULL,
+  r2_key TEXT NOT NULL,
+  duration_seconds REAL,
+  estimated_credits INTEGER NOT NULL,
+  metadata_json TEXT,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_generations_user ON generations(user_id);
+CREATE INDEX IF NOT EXISTS idx_generations_type ON generations(type);
+CREATE INDEX IF NOT EXISTS idx_generations_created ON generations(created_at);
 
 -- =============================================================================
 -- DEV SEED DATA

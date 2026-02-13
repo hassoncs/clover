@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Hono } from "hono";
 import { nanoid } from "nanoid";
 
+import { trackGeneration } from "@/billing/generationTracker";
 import { ElevenLabsService } from "@/services/ElevenLabsService";
 import type { Env } from "@/trpc/context";
 
@@ -95,6 +96,17 @@ router.post("/generate-sfx", async (c) => {
 			},
 		});
 
+		const costEstimate = service.estimateCost("sfx", durationSeconds ?? 2);
+		await trackGeneration(c.env.DB, {
+			userId: auth.userId,
+			type: "sfx",
+			prompt: text,
+			assetId,
+			r2Key,
+			durationSeconds: result.durationSeconds,
+			costEstimate,
+		});
+
 		return c.json({
 			assetId,
 			url: `/assets/${r2Key}`,
@@ -160,6 +172,18 @@ router.post("/generate-voice", async (c) => {
 			},
 		});
 
+		const costEstimate = service.estimateCost("voice", text.length);
+		await trackGeneration(c.env.DB, {
+			userId: auth.userId,
+			type: "voice",
+			prompt: text,
+			assetId,
+			r2Key,
+			durationSeconds: result.durationSeconds,
+			costEstimate,
+			metadata: { voiceId, modelId },
+		});
+
 		return c.json({
 			assetId,
 			url: `/assets/${r2Key}`,
@@ -213,6 +237,20 @@ router.post("/generate-background", async (c) => {
 			},
 		});
 
+		const costEstimate = service.estimateCost(
+			"background",
+			durationSeconds ?? 5,
+		);
+		await trackGeneration(c.env.DB, {
+			userId: auth.userId,
+			type: "background",
+			prompt: text,
+			assetId,
+			r2Key,
+			durationSeconds: result.durationSeconds,
+			costEstimate,
+		});
+
 		return c.json({
 			assetId,
 			url: `/assets/${r2Key}`,
@@ -222,6 +260,65 @@ router.post("/generate-background", async (c) => {
 		});
 	} catch (err) {
 		console.error("Background generation error:", err);
+		const message = err instanceof Error ? err.message : String(err);
+		return c.json({ error: message }, 500);
+	}
+});
+
+router.get("/list", async (c) => {
+	const auth = await authenticateRequest(c);
+	if ("error" in auth) {
+		return c.text(auth.error, auth.status as 401 | 500);
+	}
+
+	try {
+		const typeFilter = c.req.query("type");
+		if (
+			typeFilter &&
+			typeFilter !== "sfx" &&
+			typeFilter !== "voice" &&
+			typeFilter !== "background"
+		) {
+			return c.json(
+				{ error: "Invalid type filter. Must be sfx, voice, or background" },
+				400,
+			);
+		}
+
+		const prefix = typeFilter ? `audio/${typeFilter}/` : "audio/";
+		const listed = await c.env.ASSETS.list({ prefix });
+
+		const assets = await Promise.all(
+			listed.objects.map(async (obj) => {
+				const head = await c.env.ASSETS.head(obj.key);
+				const meta = head?.customMetadata ?? {};
+
+				if (meta.userId !== auth.userId) {
+					return null;
+				}
+
+				const id = obj.key
+					.split("/")
+					.pop()
+					?.replace(/\.[^.]+$/, "");
+
+				return {
+					id: id ?? obj.key,
+					url: `/assets/${obj.key}`,
+					type: meta.type ?? "unknown",
+					prompt: meta.prompt ?? meta.text ?? "",
+					createdAt: meta.generatedAt ?? obj.uploaded.toISOString(),
+				};
+			}),
+		);
+
+		const filtered = assets.filter(
+			(a): a is NonNullable<typeof a> => a !== null,
+		);
+
+		return c.json({ assets: filtered });
+	} catch (err) {
+		console.error("List audio assets error:", err);
 		const message = err instanceof Error ? err.message : String(err);
 		return c.json({ error: message }, 500);
 	}
