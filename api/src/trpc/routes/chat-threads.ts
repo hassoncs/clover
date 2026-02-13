@@ -2,69 +2,28 @@ import type {
 	WorkspaceSnapshot,
 	WorkspaceSnapshotFile,
 } from "@slopcade/shared";
-import { hashStringFNV1a64 } from "@slopcade/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { ArtifactService } from "@/agent/artifact-service";
-import { resolveChatModel } from "@/ai/chat-model-config";
-import { createModel } from "@/ai/model-factory";
 import {
-	type ChatHandlerContext,
 	insertToolResult,
 	insertUserMessage,
 	type MessageRow,
 	type ThreadRow,
 } from "@/chat/chat-handler";
-import { WalletService } from "@/economy/wallet-service";
 import { GitService } from "@/services/git/GitService";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
-import type { Env, User } from "../context";
+import { pathsToTree } from "@/utils/file-tree";
+import type { Env } from "../context";
 import { protectedProcedure, router } from "../index";
 
-function computeWorkspaceRevision(
-	files: Array<{
-		filename: string;
-		content: string;
-		size: number;
-		uploaded: number;
-	}>,
-): string {
-	const lines = files
-		.map((f) => {
-			const contentHash = hashStringFNV1a64(f.content);
-			return `${f.filename}|${f.size}|${f.uploaded}|${contentHash}`;
-		})
-		.sort();
-	return hashStringFNV1a64(lines.join("\n"));
-}
-
-function buildChatContext(
-	env: Env,
-	user: User,
-	gameId: string,
-): ChatHandlerContext {
-	const apiKey = env.OPENROUTER_API_KEY;
-	if (!apiKey) {
+function requireGitService(env: Env): GitService {
+	if (!env.GAME_REPO) {
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
-			message: "AI provider not configured",
+			message: "GAME_REPO binding not configured",
 		});
 	}
-
-	const chatModel = resolveChatModel(env.AI_CHAT_MODEL ?? env.AI_MODEL);
-	const model = createModel({ apiKey, model: chatModel.id });
-	const artifactService = new ArtifactService(env.ASSETS, env.DB);
-	const walletService = new WalletService(env.DB);
-
-	return {
-		db: env.DB,
-		model,
-		modelName: chatModel.id,
-		userId: user.id,
-		gameId,
-		artifactService,
-		walletService,
-	};
+	return new GitService(env.GAME_REPO);
 }
 
 function toThread(row: ThreadRow) {
@@ -106,80 +65,28 @@ function toMessage(row: MessageRow) {
 	};
 }
 
-async function getWorkspaceSnapshotFromGit(
+async function getWorkspaceSnapshotResult(
 	gitService: GitService,
 	gameId: string,
 	sinceRevision: string | undefined,
 ) {
-	const commits = await gitService.log(gameId, 1);
-	const revision = commits.length > 0 ? commits[0].oid : "";
+	const result = await gitService.getSnapshot(gameId, sinceRevision);
 
-	if (!revision || (sinceRevision && sinceRevision === revision)) {
+	if (!result.changed || !result.files) {
 		return { changed: false as const };
 	}
 
-	const filenames = await gitService.listFiles(gameId);
-	const snapshotFiles: WorkspaceSnapshotFile[] = await Promise.all(
-		filenames.map(async (filename) => {
-			const bytes = await gitService.readFile(gameId, filename);
-			const content = bytes ? new TextDecoder().decode(bytes) : "";
-			return {
-				filename,
-				content,
-				contentHash: hashStringFNV1a64(content),
-				size: new TextEncoder().encode(content).byteLength,
-				uploaded: 0,
-			};
-		}),
-	);
-
-	const snapshot: WorkspaceSnapshot = {
-		gameId,
-		revision,
-		generatedAt: Date.now(),
-		files: snapshotFiles,
-	};
-
-	return { changed: true as const, snapshot };
-}
-
-async function getWorkspaceSnapshotFromArtifacts(
-	env: Env,
-	gameId: string,
-	sinceRevision: string | undefined,
-) {
-	const artifactService = new ArtifactService(env.ASSETS, env.DB);
-	const fileMetas = await artifactService.listWorkspaceFileMeta(gameId);
-	const filenames = fileMetas.map((f) => f.filename);
-	const contentMap = await artifactService.readWorkspaceFiles(
-		gameId,
-		filenames,
-	);
-
-	const filesForRevision = fileMetas.map((f) => ({
-		filename: f.filename,
-		content: contentMap.get(f.filename) ?? "",
-		size: f.size,
-		uploaded: f.uploaded,
-	}));
-
-	const revision = computeWorkspaceRevision(filesForRevision);
-
-	if (sinceRevision === revision) {
-		return { changed: false as const };
-	}
-
-	const snapshotFiles: WorkspaceSnapshotFile[] = filesForRevision.map((f) => ({
+	const snapshotFiles: WorkspaceSnapshotFile[] = result.files.map((f) => ({
 		filename: f.filename,
 		content: f.content,
-		contentHash: hashStringFNV1a64(f.content),
+		contentHash: f.contentHash,
 		size: f.size,
-		uploaded: f.uploaded,
+		uploaded: 0,
 	}));
 
 	const snapshot: WorkspaceSnapshot = {
 		gameId,
-		revision,
+		revision: result.revision!,
 		generatedAt: Date.now(),
 		files: snapshotFiles,
 	};
@@ -338,7 +245,8 @@ export const chatThreadsRouter = router({
 					});
 			}
 
-			const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
+			const gitService = requireGitService(ctx.env);
+			const scaffoldService = new WorkspaceScaffoldService(gitService);
 			await scaffoldService.seedIfMissing({ gameId: input.gameId });
 
 			if (!ctx.authToken) {
@@ -438,20 +346,9 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			const gitService = ctx.env.GAME_REPO
-				? new GitService(ctx.env.GAME_REPO)
-				: null;
-
-			if (gitService) {
-				return getWorkspaceSnapshotFromGit(
-					gitService,
-					input.gameId,
-					input.sinceRevision,
-				);
-			}
-
-			return getWorkspaceSnapshotFromArtifacts(
-				ctx.env,
+			const gitService = requireGitService(ctx.env);
+			return getWorkspaceSnapshotResult(
+				gitService,
 				input.gameId,
 				input.sinceRevision,
 			);
@@ -474,14 +371,17 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			const prefix = `games/${input.gameId}/workspace/`;
-			const listed = await ctx.env.ASSETS.list({ prefix });
+			const gitService = requireGitService(ctx.env);
+			let filePaths: string[] = [];
+			try {
+				filePaths = await gitService.listFiles(input.gameId);
+			} catch {
+				// Repo may not exist yet
+			}
 
-			return listed.objects.map((obj) => ({
-				filename: obj.key.slice(prefix.length),
-				size: obj.size,
-				uploaded: obj.uploaded.toISOString(),
-			}));
+			const filesWithSize = filePaths.map((f) => ({ filename: f, size: 0 }));
+			const { tree, roots } = pathsToTree(filesWithSize);
+			return { files: filePaths, tree, roots };
 		}),
 
 	readWorkspaceFile: protectedProcedure
@@ -502,10 +402,10 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			const key = `games/${input.gameId}/workspace/${input.filename}`;
-			const obj = await ctx.env.ASSETS.get(key);
-			if (!obj) return { exists: false, content: null };
-			return { exists: true, content: await obj.text() };
+			const gitService = requireGitService(ctx.env);
+			const data = await gitService.readFile(input.gameId, input.filename);
+			if (!data) return { exists: false, content: null };
+			return { exists: true, content: new TextDecoder().decode(data) };
 		}),
 
 	scaffoldWorkspace: protectedProcedure
@@ -525,32 +425,12 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
-			const result = await scaffoldService.seedIfMissing({
+			const gitService = requireGitService(ctx.env);
+			const scaffoldService = new WorkspaceScaffoldService(gitService);
+			return scaffoldService.seedIfMissing({
 				gameId: input.gameId,
 				gameTitle: game.title ?? undefined,
 			});
-
-			const docKey = `games/${input.gameId}/workspace/document.md`;
-			const existingDoc = await ctx.env.ASSETS.head(docKey);
-			let documentCreated = false;
-
-			if (!existingDoc) {
-				const defaultDoc = `# ${game.title ?? "Untitled Game"}\n\nDescribe your game here.\n`;
-				await ctx.env.ASSETS.put(docKey, defaultDoc, {
-					httpMetadata: { contentType: "text/markdown" },
-				});
-				documentCreated = true;
-			}
-
-			return {
-				created: documentCreated
-					? [...result.created, "document.md"]
-					: result.created,
-				skipped: documentCreated
-					? result.skipped
-					: [...result.skipped, "document.md"],
-			};
 		}),
 
 	writeWorkspaceFile: protectedProcedure
@@ -572,10 +452,10 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			const key = `games/${input.gameId}/workspace/${input.filename}`;
-			await ctx.env.ASSETS.put(key, input.content, {
-				httpMetadata: { contentType: "text/plain" },
-			});
+			const gitService = requireGitService(ctx.env);
+			await gitService.writeFiles(input.gameId, [
+				{ path: input.filename, content: input.content },
+			]);
 			return { success: true };
 		}),
 

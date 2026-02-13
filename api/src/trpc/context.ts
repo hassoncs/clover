@@ -10,6 +10,7 @@ export interface Env {
 	ASSETS: R2Bucket;
 	REALTIME_RELAY: DurableObjectNamespace;
 	GAME_REPO: DurableObjectNamespace;
+	PARTY_ROOM: DurableObjectNamespace;
 
 	SUPABASE_URL: string;
 	SUPABASE_SERVICE_ROLE_KEY: string;
@@ -49,6 +50,8 @@ export interface Env {
 	AI_EDITING_MAX_RUNS_PER_DAY?: string;
 
 	AI_CHAT_MODEL?: string;
+
+	ELEVENLABS_API_KEY?: string;
 }
 
 export interface User {

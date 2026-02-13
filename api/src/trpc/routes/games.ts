@@ -48,6 +48,8 @@ interface GameRow {
 	validation_valid: number;
 	validation_updated_at: number | null;
 	validator_version: string | null;
+	version: string | null;
+	build_number: number;
 }
 
 function parseValidationReport(
@@ -89,6 +91,8 @@ function toClientGameIndex(row: GameRow) {
 		forkedFromId: row.forked_from_id,
 		source: "database" as const,
 		validation: validationFromRow(row),
+		version: row.version ?? "1.0.0",
+		buildNumber: row.build_number ?? 1,
 	};
 }
 
@@ -161,7 +165,7 @@ async function writeMetadataToR2(
 
 async function initGitRepoWithWorkspace(
 	gameId: string,
-	assets: R2Bucket,
+	gameTitle: string,
 	gameRepoNamespace: DurableObjectNamespace | undefined,
 ): Promise<void> {
 	if (!gameRepoNamespace) {
@@ -174,28 +178,10 @@ async function initGitRepoWithWorkspace(
 	try {
 		const gitService = new GitService(gameRepoNamespace);
 		await gitService.initRepo(gameId);
-
-		const workspacePrefix = `games/${gameId}/workspace/`;
-		const workspaceFiles = await assets.list({ prefix: workspacePrefix });
-
-		const files = await Promise.all(
-			workspaceFiles.objects.map(async (obj) => {
-				const content = await assets.get(obj.key);
-				if (!content) {
-					throw new Error(`Failed to read ${obj.key} from R2`);
-				}
-				const text = await content.text();
-				const path = obj.key.replace(workspacePrefix, "");
-				return { path, content: text };
-			}),
-		);
-
-		if (files.length > 0) {
-			await gitService.commitFiles(gameId, files, "Initialize game", {
-				name: "System",
-				email: "system@slopcade.app",
-			});
-		}
+		await new WorkspaceScaffoldService(gitService).seedIfMissing({
+			gameId,
+			gameTitle,
+		});
 	} catch (error) {
 		console.error(
 			`[Game ${gameId}] Failed to initialize Git repo:`,
@@ -318,6 +304,10 @@ export const gamesRouter = router({
 				description: z.string().max(500).optional(),
 				definition: z.string(),
 				isPublic: z.boolean().default(false),
+				version: z
+					.string()
+					.regex(/^\d+\.\d+\.\d+$/)
+					.optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -345,21 +335,16 @@ export const gamesRouter = router({
 				updatedAt: now,
 			});
 
-			const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
-			await scaffoldService.seedIfMissing({
-				gameId: id,
-				gameTitle: input.title,
-			});
-
-			await initGitRepoWithWorkspace(id, ctx.env.ASSETS, ctx.env.GAME_REPO);
+			await initGitRepoWithWorkspace(id, input.title, ctx.env.GAME_REPO);
 
 			await ctx.env.DB.prepare(
 				`INSERT INTO games (
           id, user_id, title, description, r2_prefix, is_public, play_count,
           created_at, updated_at, base_game_id,
           validation_report, validation_score, validation_critical_count,
-          validation_warning_count, validation_valid, validation_updated_at, validator_version
-        ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          validation_warning_count, validation_valid, validation_updated_at, validator_version,
+          version, build_number
+        ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 				.bind(
 					id,
@@ -378,6 +363,8 @@ export const gamesRouter = router({
 					validationReport.valid ? 1 : 0,
 					now,
 					validationReport.validatorVersion,
+					input.version ?? "1.0.0",
+					1,
 				)
 				.run();
 
@@ -520,6 +507,53 @@ export const gamesRouter = router({
 			};
 		}),
 
+	publish: protectedProcedure
+		.input(
+			z.object({
+				id: z.string().uuid(),
+				version: z
+					.string()
+					.regex(/^\d+\.\d+\.\d+$/)
+					.optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const existing = await ctx.env.DB.prepare(
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+			)
+				.bind(input.id)
+				.first<GameRow>();
+
+			if (!existing) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
+			}
+
+			if (existing.user_id !== ctx.user.id) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Cannot publish games you do not own",
+				});
+			}
+
+			const now = Date.now();
+			const newBuildNumber = (existing.build_number ?? 1) + 1;
+			const newVersion = input.version ?? existing.version ?? "1.0.0";
+
+			await ctx.env.DB.prepare(
+				`UPDATE games SET is_public = 1, version = ?, build_number = ?, updated_at = ? WHERE id = ?`,
+			)
+				.bind(newVersion, newBuildNumber, now, input.id)
+				.run();
+
+			return {
+				id: input.id,
+				isPublic: true,
+				version: newVersion,
+				buildNumber: newBuildNumber,
+				updatedAt: new Date(now),
+			};
+		}),
+
 	delete: protectedProcedure
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
@@ -587,6 +621,54 @@ export const gamesRouter = router({
 				.all<GameRow>();
 
 			return result.results.map((row) => toClientGameIndex(row));
+		}),
+
+	search: publicProcedure
+		.input(
+			z.object({
+				query: z.string().min(1).max(200),
+				limit: z.number().min(1).max(50).default(20),
+				offset: z.number().min(0).default(0),
+				sortBy: z
+					.enum(["popular", "newest", "alphabetical", "rating"])
+					.default("popular"),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const searchTerm = `%${input.query}%`;
+
+			let orderBy: string;
+			switch (input.sortBy) {
+				case "newest":
+					orderBy = "created_at DESC";
+					break;
+				case "alphabetical":
+					orderBy = "title ASC";
+					break;
+				case "rating":
+					orderBy = "validation_score DESC, play_count DESC";
+					break;
+				case "popular":
+				default:
+					orderBy = "play_count DESC, created_at DESC";
+					break;
+			}
+
+			const result = await ctx.env.DB.prepare(
+				`SELECT * FROM games
+				WHERE is_public = 1 AND deleted_at IS NULL
+				AND (validation_valid = 1 OR validation_valid IS NULL)
+				AND (title LIKE ? OR description LIKE ?)
+				ORDER BY ${orderBy}
+				LIMIT ? OFFSET ?`,
+			)
+				.bind(searchTerm, searchTerm, input.limit, input.offset)
+				.all<GameRow>();
+
+			return {
+				results: result.results.map((row) => toClientGameIndex(row)),
+				hasMore: result.results.length === input.limit,
+			};
 		}),
 
 	validate: protectedProcedure
@@ -706,21 +788,20 @@ export const gamesRouter = router({
 					updatedAt: now,
 				});
 
-				const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
-				await scaffoldService.seedIfMissing({
-					gameId: id,
-					gameTitle: result.game.metadata.title,
-				});
-
-				await initGitRepoWithWorkspace(id, ctx.env.ASSETS, ctx.env.GAME_REPO);
+				await initGitRepoWithWorkspace(
+					id,
+					result.game.metadata.title,
+					ctx.env.GAME_REPO,
+				);
 
 				await ctx.env.DB.prepare(
 					`INSERT INTO games (
             id, user_id, title, description, r2_prefix, is_public, play_count,
             created_at, updated_at, base_game_id,
             validation_report, validation_score, validation_critical_count,
-            validation_warning_count, validation_valid, validation_updated_at, validator_version
-          ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            validation_warning_count, validation_valid, validation_updated_at, validator_version,
+            version, build_number
+          ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				)
 					.bind(
 						id,
@@ -738,6 +819,8 @@ export const gamesRouter = router({
 						validationReport.valid ? 1 : 0,
 						now,
 						validationReport.validatorVersion,
+						result.game.metadata.version ?? "1.0.0",
+						1,
 					)
 					.run();
 
@@ -1033,6 +1116,10 @@ export const gamesRouter = router({
 						description: z.string().optional(),
 						definition: z.string(),
 						isPublic: z.boolean().default(true),
+						version: z
+							.string()
+							.regex(/^\d+\.\d+\.\d+$/)
+							.optional(),
 					}),
 				),
 			}),
@@ -1130,8 +1217,9 @@ export const gamesRouter = router({
                 id, user_id, title, description, r2_prefix, is_public, play_count,
                 created_at, updated_at, base_game_id,
                 validation_report, validation_score, validation_critical_count,
-                validation_warning_count, validation_valid, validation_updated_at, validator_version
-              ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                validation_warning_count, validation_valid, validation_updated_at, validator_version,
+                version, build_number
+              ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						)
 							.bind(
 								template.id,
@@ -1150,6 +1238,8 @@ export const gamesRouter = router({
 								validationReport.valid ? 1 : 0,
 								now,
 								validationReport.validatorVersion,
+								template.version ?? "1.0.0",
+								1,
 							)
 							.run();
 
