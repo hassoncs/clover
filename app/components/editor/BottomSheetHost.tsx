@@ -54,7 +54,7 @@ export const BottomSheetHost = forwardRef<BottomSheetHostHandle>(
 			},
 		}));
 
-		if (mode === "playtest") {
+		if (mode === "live") {
 			return null;
 		}
 

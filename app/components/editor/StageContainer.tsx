@@ -1,10 +1,15 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { WithGodot } from "@/components/WithGodot";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
 import type { GodotBridge } from "@/lib/godot/types";
 import { useEditor } from "./EditorProvider";
 import { InteractionLayer } from "./InteractionLayer";
+
+const loadGameRuntimeModule = () =>
+	import("@/lib/game-engine/GameRuntime.godot") as Promise<
+		Record<string, unknown>
+	>;
 
 export function StageContainer() {
 	const {
@@ -38,6 +43,26 @@ export function StageContainer() {
 		[registerShaderHandler],
 	);
 
+	const renderRuntime = useCallback(
+		(mod: Record<string, unknown>) => {
+			const GameRuntimeGodot = (
+				mod as {
+					GameRuntimeGodot: React.ComponentType<Record<string, unknown>>;
+				}
+			).GameRuntimeGodot;
+			return (
+				<GameRuntimeGodot
+					definition={document}
+					showHUD={mode === "live"}
+					paused={mode === "author" && timeMode === "paused"}
+					onRequestRestart={handleRequestRestart}
+					onBridgeReady={handleBridgeReady}
+				/>
+			);
+		},
+		[document, mode, timeMode, handleRequestRestart, handleBridgeReady],
+	);
+
 	if (livePreviewEnabled && loadState === "loading") {
 		return (
 			<View className="flex-1 bg-gray-800 items-center justify-center">
@@ -62,19 +87,8 @@ export function StageContainer() {
 		<View className="flex-1 bg-gray-800">
 			<WithGodot
 				key={runtimeKey}
-				getComponent={() =>
-					import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
-						default: () => (
-							<mod.GameRuntimeGodot
-								definition={document}
-								showHUD={mode === "playtest"}
-								paused={mode === "edit" && timeMode === "paused"}
-								onRequestRestart={handleRequestRestart}
-								onBridgeReady={handleBridgeReady}
-							/>
-						),
-					}))
-				}
+				loadModule={loadGameRuntimeModule}
+				render={renderRuntime}
 				fallback={
 					<View className="flex-1 items-center justify-center">
 						<ActivityIndicator size="large" color="#4CAF50" />
@@ -82,7 +96,7 @@ export function StageContainer() {
 				}
 			/>
 
-			{mode === "edit" && (
+			{mode === "author" && (
 				<View style={[StyleSheet.absoluteFill, { pointerEvents: "box-none" }]}>
 					<InteractionLayer
 						pixelsPerMeter={pixelsPerMeter}

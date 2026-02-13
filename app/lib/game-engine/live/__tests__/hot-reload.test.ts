@@ -237,7 +237,7 @@ describe("HotReloadOrchestrator", () => {
 	it("in edit mode calls hotSwap when canHotSwap returns true", async () => {
 		const orchestrator = new HotReloadOrchestrator(
 			{
-				mode: "edit",
+				mode: "author",
 				activeScene: null,
 				bridge,
 				runtime,
@@ -261,7 +261,7 @@ describe("HotReloadOrchestrator", () => {
 	it("in play mode always calls fullReload", async () => {
 		const orchestrator = new HotReloadOrchestrator(
 			{
-				mode: "play",
+				mode: "live",
 				activeScene: null,
 				bridge,
 				runtime,
@@ -285,7 +285,7 @@ describe("HotReloadOrchestrator", () => {
 	it("falls back to fullReload when hotSwap throws", async () => {
 		const orchestrator = new HotReloadOrchestrator(
 			{
-				mode: "edit",
+				mode: "author",
 				activeScene: null,
 				bridge,
 				runtime,
@@ -307,7 +307,7 @@ describe("HotReloadOrchestrator", () => {
 	it("processes tags in order with world first", async () => {
 		const orchestrator = new HotReloadOrchestrator(
 			{
-				mode: "play",
+				mode: "live",
 				activeScene: null,
 				bridge,
 				runtime,
@@ -340,7 +340,7 @@ describe("HotReloadOrchestrator", () => {
 	it("uses resolver lazily and loads latest store payload", async () => {
 		const orchestrator = new HotReloadOrchestrator(
 			{
-				mode: "play",
+				mode: "live",
 				activeScene: null,
 				bridge,
 				runtime,
@@ -371,7 +371,7 @@ describe("HotReloadOrchestrator", () => {
 	it("maps handler payloads to bridge and runtime methods", async () => {
 		const orchestrator = new HotReloadOrchestrator(
 			{
-				mode: "play",
+				mode: "live",
 				activeScene: null,
 				bridge,
 				runtime,

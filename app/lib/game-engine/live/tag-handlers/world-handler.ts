@@ -8,7 +8,7 @@ type WorldPayload = {
 
 export const worldHandler: TagHotReloadHandler<WorldPayload> = {
 	canHotSwap(_oldHash, _newHash, context) {
-		return context.mode === "edit";
+		return context.mode === "author";
 	},
 
 	async hotSwap(_oldPayload, newPayload, context) {

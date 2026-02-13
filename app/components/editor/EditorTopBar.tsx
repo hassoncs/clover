@@ -1,13 +1,22 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import {
+	ActivityIndicator,
+	Alert,
+	Pressable,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "@/lib/theme";
 import { trpc } from "@/lib/trpc/client";
 import { useEditor } from "./EditorProvider";
 
 export interface EditorTopBarProps {
 	onResetPreview?: () => void;
-	setPreviewMode?: (mode: "edit" | "play") => Promise<void>;
+	setPreviewMode?: (mode: "author" | "live") => Promise<void>;
 }
 
 export function EditorTopBar({
@@ -16,6 +25,7 @@ export function EditorTopBar({
 }: EditorTopBarProps) {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const { editorColors, toggleTheme, colorScheme } = useTheme();
 	const [isSaving, setIsSaving] = useState(false);
 	const [isResetting, setIsResetting] = useState(false);
 	const {
@@ -29,7 +39,6 @@ export function EditorTopBar({
 		redo,
 		isDirty,
 		isEphemeral,
-		ephemeralSource,
 		livePreviewEnabled,
 	} = useEditor();
 
@@ -40,7 +49,7 @@ export function EditorTopBar({
 	const handleToggleMode = async () => {
 		toggleMode();
 		if (setPreviewMode) {
-			const newMode = mode === "edit" ? "play" : "edit";
+			const newMode = mode === "author" ? "live" : "author";
 			await setPreviewMode(newMode);
 		}
 	};
@@ -87,117 +96,212 @@ export function EditorTopBar({
 		}
 	};
 
+	const c = editorColors;
+
 	return (
 		<View
-			className="flex-row items-center justify-between px-4 bg-gray-900 border-b border-gray-800"
-			style={{ paddingTop: insets.top, height: 56 + insets.top }}
+			style={[
+				styles.container,
+				{
+					paddingTop: insets.top,
+					height: 40 + insets.top,
+					backgroundColor: c.titleBarBg,
+					borderBottomColor: c.border,
+				},
+			]}
 		>
-			<Pressable
-				testID="editor-back-button"
-				className="w-10 h-10 items-center justify-center rounded-lg active:bg-gray-700"
-				onPress={handleBack}
-				accessibilityRole="button"
-				accessibilityLabel="Go back"
-			>
-				<Text className="text-white text-xl">←</Text>
-			</Pressable>
+			<View style={styles.leftSection}>
+				<Pressable
+					testID="editor-back-button"
+					style={styles.iconBtn}
+					onPress={handleBack}
+					accessibilityRole="button"
+					accessibilityLabel="Go back"
+				>
+					<Ionicons name="chevron-back" size={18} color={c.textSecondary} />
+				</Pressable>
 
-			<View className="flex-row gap-1">
-				<Pressable
-					className={`w-10 h-10 items-center justify-center rounded-lg ${
-						canUndo
-							? "bg-gray-700 active:bg-gray-600"
-							: "bg-gray-800 opacity-40"
-					}`}
-					onPress={undo}
-					disabled={!canUndo}
-					accessibilityRole="button"
-					accessibilityLabel="Undo"
-					accessibilityState={{ disabled: !canUndo }}
-				>
-					<Text className="text-white text-lg">↶</Text>
-				</Pressable>
-				<Pressable
-					className={`w-10 h-10 items-center justify-center rounded-lg ${
-						canRedo
-							? "bg-gray-700 active:bg-gray-600"
-							: "bg-gray-800 opacity-40"
-					}`}
-					onPress={redo}
-					disabled={!canRedo}
-					accessibilityRole="button"
-					accessibilityLabel="Redo"
-					accessibilityState={{ disabled: !canRedo }}
-				>
-					<Text className="text-white text-lg">↷</Text>
-				</Pressable>
+				<View style={styles.undoRedoGroup}>
+					<Pressable
+						style={[styles.iconBtn, !canUndo && styles.iconBtnDisabled]}
+						onPress={undo}
+						disabled={!canUndo}
+						accessibilityRole="button"
+						accessibilityLabel="Undo"
+					>
+						<Ionicons
+							name="arrow-undo"
+							size={16}
+							color={canUndo ? c.textSecondary : c.textMuted}
+						/>
+					</Pressable>
+					<Pressable
+						style={[styles.iconBtn, !canRedo && styles.iconBtnDisabled]}
+						onPress={redo}
+						disabled={!canRedo}
+						accessibilityRole="button"
+						accessibilityLabel="Redo"
+					>
+						<Ionicons
+							name="arrow-redo"
+							size={16}
+							color={canRedo ? c.textSecondary : c.textMuted}
+						/>
+					</Pressable>
+				</View>
 			</View>
 
-			<View className="flex-1 mx-4">
+			<View style={styles.centerSection}>
 				<Text
-					className="text-white font-semibold text-base text-center"
+					style={[styles.title, { color: c.textSecondary }]}
 					numberOfLines={1}
 				>
 					{document?.metadata?.title ?? "Untitled"}
-					{isDirty && <Text className="text-yellow-500"> •</Text>}
+					{isDirty ? <Text style={{ color: c.warning }}> ●</Text> : null}
 				</Text>
 			</View>
 
-			<View className="flex-row gap-2">
+			<View style={styles.rightSection}>
 				{(isEphemeral || isDirty) && (
 					<Pressable
-						className={`px-4 py-2 rounded-lg active:opacity-80 ${
-							isSaving ? "bg-gray-600" : "bg-green-600"
-						}`}
+						style={[styles.textBtn, { backgroundColor: c.surfaceHover }]}
 						onPress={handleSave}
 						disabled={isSaving}
 						accessibilityRole="button"
 						accessibilityLabel="Save game"
 					>
 						{isSaving ? (
-							<ActivityIndicator size="small" color="#FFFFFF" />
+							<ActivityIndicator size="small" color={c.text} />
 						) : (
-							<Text className="text-white font-bold text-sm">
-								{isEphemeral ? "💾 SAVE" : "💾 SAVE"}
-							</Text>
+							<>
+								<Ionicons name="save-outline" size={14} color={c.text} />
+								<Text style={[styles.btnLabel, { color: c.text }]}>Save</Text>
+							</>
 						)}
 					</Pressable>
 				)}
 
 				{livePreviewEnabled && (
 					<Pressable
-						className={`px-4 py-2 rounded-lg active:opacity-80 ${
-							isResetting ? "bg-gray-600" : "bg-yellow-600"
-						}`}
+						style={[styles.textBtn, { backgroundColor: c.surfaceHover }]}
 						onPress={handleReset}
 						disabled={isResetting}
 						accessibilityRole="button"
 						accessibilityLabel="Reset preview"
 					>
 						{isResetting ? (
-							<ActivityIndicator size="small" color="#FFFFFF" />
+							<ActivityIndicator size="small" color={c.text} />
 						) : (
-							<Text className="text-white font-bold text-sm">↺ RESET</Text>
+							<Ionicons name="refresh" size={14} color={c.textSecondary} />
 						)}
 					</Pressable>
 				)}
 
 				<Pressable
+					style={styles.iconBtn}
+					onPress={toggleTheme}
+					accessibilityRole="button"
+					accessibilityLabel="Toggle theme"
+				>
+					<Ionicons
+						name={colorScheme === "dark" ? "sunny-outline" : "moon-outline"}
+						size={16}
+						color={c.textSecondary}
+					/>
+				</Pressable>
+
+				<Pressable
 					testID="editor-play-button"
-					className={`px-4 py-2 rounded-lg active:opacity-80 ${
-						mode === "playtest" ? "bg-green-600" : "bg-indigo-600"
-					}`}
+					style={[
+						styles.playBtn,
+						{
+							backgroundColor: mode === "live" ? c.success : c.accent,
+						},
+					]}
 					onPress={handleToggleMode}
 					accessibilityRole="button"
 					accessibilityLabel={
-						mode === "playtest" ? "Switch to edit mode" : "Switch to play mode"
+						mode === "live" ? "Switch to author mode" : "Switch to live mode"
 					}
 				>
-					<Text className="text-white font-bold text-sm">
-						{mode === "playtest" ? "✏️ EDIT" : "▶ PLAY"}
+					<Ionicons
+						name={mode === "live" ? "pencil" : "play"}
+						size={14}
+						color="#ffffff"
+					/>
+					<Text style={styles.playBtnLabel}>
+						{mode === "live" ? "Author" : "Live"}
 					</Text>
 				</Pressable>
 			</View>
 		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingHorizontal: 8,
+		borderBottomWidth: 1,
+	},
+	leftSection: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 2,
+	},
+	centerSection: {
+		flex: 1,
+		marginHorizontal: 12,
+	},
+	rightSection: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+	},
+	undoRedoGroup: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	iconBtn: {
+		width: 32,
+		height: 32,
+		alignItems: "center",
+		justifyContent: "center",
+		borderRadius: 6,
+	},
+	iconBtnDisabled: {
+		opacity: 0.35,
+	},
+	textBtn: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+		paddingHorizontal: 10,
+		height: 28,
+		borderRadius: 6,
+	},
+	btnLabel: {
+		fontSize: 12,
+		fontWeight: "500",
+	},
+	title: {
+		fontSize: 13,
+		fontWeight: "500",
+		textAlign: "center",
+	},
+	playBtn: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+		paddingHorizontal: 12,
+		height: 28,
+		borderRadius: 6,
+	},
+	playBtnLabel: {
+		color: "#ffffff",
+		fontSize: 12,
+		fontWeight: "600",
+	},
+});

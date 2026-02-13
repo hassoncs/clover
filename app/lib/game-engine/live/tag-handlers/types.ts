@@ -2,7 +2,7 @@ import type { GameRule } from "@slopcade/shared";
 import type { GodotBridge } from "@/lib/godot/types";
 
 export interface HotReloadContext {
-	mode: "edit" | "play";
+	mode: "author" | "live";
 	activeScene: string | null;
 	bridge: GodotBridge;
 	runtime: {

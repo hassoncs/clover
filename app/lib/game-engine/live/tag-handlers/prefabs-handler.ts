@@ -7,7 +7,7 @@ type PrefabsPayload = {
 
 export const prefabsHandler: TagHotReloadHandler<PrefabsPayload> = {
 	canHotSwap(_oldHash, _newHash, context) {
-		return context.mode === "edit";
+		return context.mode === "author";
 	},
 
 	async hotSwap(_oldPayload, newPayload, context) {

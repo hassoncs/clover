@@ -254,7 +254,7 @@ export function InteractionLayer({
 		pinchGesture,
 	);
 
-	if (mode === "playtest") {
+	if (mode === "live") {
 		return null;
 	}
 

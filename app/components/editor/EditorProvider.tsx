@@ -28,7 +28,7 @@ export interface ResolvedAssetEntry {
 	placement?: AssetPlacement;
 }
 
-export type EditorMode = "edit" | "playtest";
+export type EditorMode = "author" | "live";
 export type TimeMode = "paused" | "playing";
 export type EditorTab =
 	| "gallery"
@@ -616,7 +616,7 @@ export function EditorProvider({
 	}, []);
 
 	const initialState: EditorState = {
-		mode: "edit",
+		mode: "author",
 		timeMode: "paused",
 		selectedEntityId: null,
 		activeTab: "gallery",
@@ -642,7 +642,7 @@ export function EditorProvider({
 	const toggleMode = useCallback(() => {
 		dispatch({
 			type: "SET_MODE",
-			mode: state.mode === "edit" ? "playtest" : "edit",
+			mode: state.mode === "author" ? "live" : "author",
 		});
 	}, [state.mode]);
 

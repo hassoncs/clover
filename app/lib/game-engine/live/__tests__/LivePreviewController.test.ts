@@ -165,7 +165,7 @@ describe("LivePreviewController", () => {
 
 			const bridge = createMockBridge();
 			await LivePreviewController.getInstance().initialize("game-1", bridge, {
-				mode: "edit",
+				mode: "author",
 			});
 
 			expect(bridge.setInspectMode).toHaveBeenCalledWith(true);
@@ -192,33 +192,33 @@ describe("LivePreviewController", () => {
 		}
 
 		it("calls setInspectMode(false) when switching to play", async () => {
-			const { controller, bridge } = await initializeInMode("edit");
+			const { controller, bridge } = await initializeInMode("author");
 
-			await controller.setMode("play");
+			await controller.setMode("live");
 
 			expect(bridge.setInspectMode).toHaveBeenLastCalledWith(false);
 		});
 
 		it("calls setInspectMode(true) when switching to edit", async () => {
-			const { controller, bridge } = await initializeInMode("play");
+			const { controller, bridge } = await initializeInMode("live");
 
-			await controller.setMode("edit");
+			await controller.setMode("author");
 
 			expect(bridge.setInspectMode).toHaveBeenLastCalledWith(true);
 		});
 
 		it("triggers fullReset when switching to play mode", async () => {
-			const { controller } = await initializeInMode("edit");
+			const { controller } = await initializeInMode("author");
 			const orchestrator = getOrchestrator(controller);
 			if (!orchestrator) {
 				throw new Error("orchestrator not initialized");
 			}
 
 			const fullResetSpy = vi.spyOn(orchestrator, "fullReset");
-			await controller.setMode("play");
+			await controller.setMode("live");
 
 			expect(fullResetSpy).toHaveBeenCalledTimes(1);
-			expect(controller.getState().mode).toBe("play");
+			expect(controller.getState().mode).toBe("live");
 		});
 	});
 
@@ -325,7 +325,7 @@ describe("LivePreviewController", () => {
 
 			const controller = LivePreviewController.getInstance();
 			await controller.initialize("game-1", createMockBridge(), {
-				mode: "edit",
+				mode: "author",
 			});
 
 			const orchestrator = getOrchestrator(controller);
@@ -359,7 +359,7 @@ describe("LivePreviewController", () => {
 
 			const controller = LivePreviewController.getInstance();
 			await controller.initialize("game-1", createMockBridge(), {
-				mode: "play",
+				mode: "live",
 			});
 
 			const orchestrator = getOrchestrator(controller);
@@ -496,7 +496,7 @@ describe("LivePreviewController", () => {
 
 			expect(controller.getState()).toEqual({
 				loadState: "idle",
-				mode: "edit",
+				mode: "author",
 				revision: null,
 				lastError: null,
 				isPolling: false,

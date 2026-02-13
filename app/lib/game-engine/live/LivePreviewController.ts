@@ -12,7 +12,7 @@ import type { HotReloadContext } from "./tag-handlers/types";
 import { WorkspaceFileStore } from "./WorkspaceFileStore";
 
 export type PreviewLoadState = "idle" | "loading" | "loaded" | "error";
-export type PreviewMode = "edit" | "play";
+export type PreviewMode = "author" | "live";
 
 export interface LivePreviewState {
 	loadState: PreviewLoadState;
@@ -133,7 +133,7 @@ export class LivePreviewController {
 
 	private state: LivePreviewState = {
 		loadState: "idle",
-		mode: "edit",
+		mode: "author",
 		revision: null,
 		lastError: null,
 		isPolling: false,
@@ -191,7 +191,7 @@ export class LivePreviewController {
 		};
 		this.orchestrator = new HotReloadOrchestrator(this.context, this.resolver);
 
-		bridge.setInspectMode(this.state.mode === "edit");
+		bridge.setInspectMode(this.state.mode === "author");
 
 		try {
 			await this.pollSnapshot({ forceFullReset: true });
@@ -239,9 +239,9 @@ export class LivePreviewController {
 
 		this.state.mode = mode;
 		this.context.mode = mode;
-		this.context.bridge.setInspectMode(mode === "edit");
+		this.context.bridge.setInspectMode(mode === "author");
 
-		if (mode === "play" && this.lastSnapshot) {
+		if (mode === "live" && this.lastSnapshot) {
 			this.state.loadState = "loading";
 			await this.orchestrator.fullReset(ALL_TAGS);
 			this.state.loadState = "loaded";
@@ -337,7 +337,7 @@ export class LivePreviewController {
 			return;
 		}
 
-		if (this.state.mode === "play") {
+		if (this.state.mode === "live") {
 			await this.orchestrator.fullReset(ALL_TAGS);
 			return;
 		}

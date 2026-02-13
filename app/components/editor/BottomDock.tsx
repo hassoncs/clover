@@ -37,7 +37,7 @@ export function BottomDock() {
 		sheetSnapPoint,
 	} = useEditor();
 
-	if (mode === "playtest") {
+	if (mode === "live") {
 		return null;
 	}
 

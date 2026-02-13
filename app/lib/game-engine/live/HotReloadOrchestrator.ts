@@ -57,7 +57,7 @@ export class HotReloadOrchestrator {
 			const oldPayload = this.payloads.get(tag) ?? payload;
 
 			try {
-				if (this.context.mode === "play") {
+				if (this.context.mode === "live") {
 					await handler.fullReload(payload, this.context);
 				} else if (handler.canHotSwap(oldHash, newHash, this.context)) {
 					await handler.hotSwap(oldPayload, payload, this.context);

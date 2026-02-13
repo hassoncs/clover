@@ -28,7 +28,7 @@ interface SnapshotState {
 
 const INITIAL_SNAPSHOT_STATE: SnapshotState = {
 	loadState: "idle",
-	mode: "edit",
+	mode: "author",
 	revision: null,
 	error: null,
 };

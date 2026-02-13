@@ -94,7 +94,7 @@ describe("effectsHandler", () => {
 	};
 
 	const mockContext: HotReloadContext = {
-		mode: "edit",
+		mode: "author",
 		activeScene: null,
 		bridge: mockBridge as unknown as GodotBridge,
 		runtime: {

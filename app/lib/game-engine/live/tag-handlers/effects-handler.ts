@@ -108,7 +108,7 @@ function getChangedShaders(
 
 export const effectsHandler: TagHotReloadHandler<EffectsPayload> = {
 	canHotSwap(_oldHash, _newHash, context) {
-		return context.mode === "edit";
+		return context.mode === "author";
 	},
 
 	async hotSwap(oldPayload, newPayload, context) {
