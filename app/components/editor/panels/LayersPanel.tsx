@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useEditor } from "../EditorProvider";
 
 export function LayersPanel() {
@@ -8,20 +8,26 @@ export function LayersPanel() {
 
 	if (entities.length === 0) {
 		return (
-			<View style={styles.emptyState}>
-				<Text style={styles.emptyText}>No entities in this game</Text>
+			<View className="flex-1 justify-center items-center p-8">
+				<Text className="text-secondary-500 text-sm">
+					No entities in this game
+				</Text>
 			</View>
 		);
 	}
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.header}>
-				<Text style={styles.headerText}>LAYERS</Text>
-				<Text style={styles.countText}>{entities.length} entities</Text>
+		<View className="flex-1 p-4">
+			<View className="flex-row justify-between items-center mb-3">
+				<Text className="text-secondary-400 text-xs font-semibold tracking-widest">
+					LAYERS
+				</Text>
+				<Text className="text-secondary-500 text-xs">
+					{entities.length} entities
+				</Text>
 			</View>
 
-			<ScrollView style={styles.list}>
+			<ScrollView className="flex-1">
 				{entities.map((entity, index) => {
 					const isSelected = entity.id === selectedEntityId;
 					const prefab = entity.prefab ? document.prefabs[entity.prefab] : null;
@@ -30,39 +36,47 @@ export function LayersPanel() {
 					return (
 						<Pressable
 							key={entity.id}
-							style={[styles.layerRow, isSelected && styles.layerRowSelected]}
+							className={`flex-row items-center justify-between bg-secondary-700 rounded-lg p-3 mb-2 ${isSelected ? "" : ""}`}
+							style={isSelected ? { backgroundColor: "#4F46E5" } : undefined}
 							onPress={() => selectEntity(entity.id)}
 							accessibilityRole="button"
 							accessibilityLabel={`Select entity ${displayName}`}
 							accessibilityState={{ selected: isSelected }}
 						>
-							<View style={styles.layerInfo}>
+							<View className="flex-row items-center flex-1">
 								<View
-									style={[
-										styles.checkbox,
-										isSelected && styles.checkboxChecked,
-									]}
+									className={`w-5 h-5 rounded border-2 mr-2.5 justify-center items-center ${isSelected ? "" : ""}`}
+									style={
+										isSelected
+											? { backgroundColor: "#6366F1", borderColor: "#6366F1" }
+											: { borderColor: "#6B7280" }
+									}
 								>
-									{isSelected && <Text style={styles.checkmark}>✓</Text>}
+									{isSelected && (
+										<Text className="text-white text-xs font-bold">✓</Text>
+									)}
 								</View>
 
-								<Text style={styles.visibilityIcon}>👁</Text>
+								<Text className="text-base mr-2">👁</Text>
 
-								<Text style={styles.lockIcon}>🔓</Text>
+								<Text className="text-base mr-3">🔓</Text>
 
-								<View style={styles.entityDetails}>
-									<Text style={styles.entityName} numberOfLines={1}>
+								<View className="flex-1">
+									<Text
+										className="text-white text-sm font-medium"
+										numberOfLines={1}
+									>
 										{displayName}
 									</Text>
 									{prefab && (
-										<Text style={styles.entityType}>
+										<Text className="text-secondary-400 text-xs mt-0.5">
 											{prefab.collider?.shape || "entity"}
 										</Text>
 									)}
 								</View>
 							</View>
 
-							<Text style={styles.dragHandle}>≡</Text>
+							<Text className="text-secondary-500 text-lg pl-2">≡</Text>
 						</Pressable>
 					);
 				})}
@@ -70,101 +84,3 @@ export function LayersPanel() {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: 16,
-	},
-	header: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 12,
-	},
-	headerText: {
-		color: "#9CA3AF",
-		fontSize: 12,
-		fontWeight: "600",
-		letterSpacing: 1,
-	},
-	countText: {
-		color: "#6B7280",
-		fontSize: 12,
-	},
-	list: {
-		flex: 1,
-	},
-	layerRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		backgroundColor: "#374151",
-		borderRadius: 8,
-		padding: 12,
-		marginBottom: 8,
-	},
-	layerRowSelected: {
-		backgroundColor: "#4F46E5",
-	},
-	layerInfo: {
-		flexDirection: "row",
-		alignItems: "center",
-		flex: 1,
-	},
-	checkbox: {
-		width: 20,
-		height: 20,
-		borderRadius: 4,
-		borderWidth: 2,
-		borderColor: "#6B7280",
-		marginRight: 10,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	checkboxChecked: {
-		backgroundColor: "#6366F1",
-		borderColor: "#6366F1",
-	},
-	checkmark: {
-		color: "#FFFFFF",
-		fontSize: 12,
-		fontWeight: "bold",
-	},
-	visibilityIcon: {
-		fontSize: 16,
-		marginRight: 8,
-	},
-	lockIcon: {
-		fontSize: 16,
-		marginRight: 12,
-	},
-	entityDetails: {
-		flex: 1,
-	},
-	entityName: {
-		color: "#FFFFFF",
-		fontSize: 14,
-		fontWeight: "500",
-	},
-	entityType: {
-		color: "#9CA3AF",
-		fontSize: 12,
-		marginTop: 2,
-	},
-	dragHandle: {
-		color: "#6B7280",
-		fontSize: 18,
-		paddingLeft: 8,
-	},
-	emptyState: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		padding: 32,
-	},
-	emptyText: {
-		color: "#6B7280",
-		fontSize: 14,
-	},
-});
