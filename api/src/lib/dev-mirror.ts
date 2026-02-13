@@ -1,21 +1,25 @@
-/**
- * Dev-only: mirrors R2 writes to the local r2/ directory on disk.
- * This keeps the git-tracked r2/ files in sync with what the app writes.
- *
- * Only active when __DEV__ is true (local Wrangler dev server).
- */
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const R2_DIR = resolve(__dirname, "..", "..", "..", "r2");
+let _r2Dir: string | null = null;
+
+function getR2Dir(): string {
+	if (_r2Dir) return _r2Dir;
+	try {
+		const dir = dirname(fileURLToPath(import.meta.url));
+		_r2Dir = resolve(dir, "..", "..", "..", "r2");
+	} catch {
+		_r2Dir = resolve(process.cwd(), "r2");
+	}
+	return _r2Dir;
+}
 
 export function mirrorToLocalR2(r2Key: string, data: string | Buffer): void {
 	if (!__DEV__) return;
 
 	try {
-		const filePath = join(R2_DIR, r2Key);
+		const filePath = join(getR2Dir(), r2Key);
 		const dir = dirname(filePath);
 		if (!existsSync(dir)) {
 			mkdirSync(dir, { recursive: true });
@@ -37,7 +41,7 @@ export function mirrorBlobToLocalR2(
 	if (!__DEV__) return;
 
 	try {
-		const filePath = join(R2_DIR, r2Key);
+		const filePath = join(getR2Dir(), r2Key);
 		const dir = dirname(filePath);
 		if (!existsSync(dir)) {
 			mkdirSync(dir, { recursive: true });

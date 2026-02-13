@@ -1,9 +1,10 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/flexible-panel-layout.md",
-  "started_at": "2026-02-13T00:53:45.063Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/party-game-builder.md",
+  "started_at": "2026-02-13T03:35:30.339Z",
   "session_ids": [
-    "ses_3ab8b78c8ffegW7deQUyP35jq7"
+    "ses_3ab28f75bffemD03IN7rustiGd",
+    "ses_3ab136cedffe7yjMt3cwYdmX2r"
   ],
-  "plan_name": "flexible-panel-layout",
+  "plan_name": "party-game-builder",
   "agent": "atlas"
 }
