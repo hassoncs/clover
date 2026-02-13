@@ -3,7 +3,6 @@ import type { Vec2 } from "./common";
 import type { EntityPrefab, GameEntity } from "./entity";
 import type { BackgroundConfig, WorldConfig } from "./GameDefinition";
 import type { WorkspaceManifest } from "./PackageManifest";
-import type { GameRule } from "./rules";
 
 export type TagGroup =
 	| "world"
@@ -40,7 +39,7 @@ export interface TagPayloads {
 		entities: GameEntity[];
 	};
 	rules: {
-		rules: GameRule[];
+		rules: Record<string, unknown>[];
 	};
 	scripts: {
 		script: string;

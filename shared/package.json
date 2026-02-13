@@ -22,6 +22,7 @@
 		"./validation": "./src/validation/index.ts",
 		"./validation/*": "./src/validation/*.ts",
 		"./scripting/authoring": "./src/scripting/script-authoring-types.ts",
+		"./scripting/modules": "./src/scripting/modules/index.ts",
 		"./graph-core": "./src/graph-core/index.ts",
 		"./graph-adapters": "./src/graph-adapters/index.ts",
 		"./effects": "./src/effects/index.ts"

@@ -49,7 +49,6 @@ function createMockBridge(): GodotBridge {
 
 function createRuntime() {
 	return {
-		applyRules: vi.fn(),
 		applyScript: vi.fn().mockResolvedValue(undefined),
 	};
 }

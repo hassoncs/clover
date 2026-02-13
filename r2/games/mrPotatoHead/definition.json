@@ -524,23 +524,7 @@
       "layer": 4
     }
   ],
-  "rules": [
-    {
-      "id": "reset_pieces",
-      "name": "Reset all pieces when reset button tapped",
-      "trigger": {
-        "type": "tap",
-        "target": "resetButton"
-      },
-      "actions": [
-        {
-          "type": "run_script",
-          "export": "resetPieces"
-        }
-      ]
-    }
-  ],
-  "script": "// --- main ---\n\nvar INITIAL_POSITIONS = {\n  leftEye:   { x: -3.5, y: -3.2 },\n  rightEye:  { x: -2.0, y: -3.2 },\n  nose:      { x: -0.5, y: -3.2 },\n  ears:      { x:  1.5, y: -3.2 },\n  hat:       { x:  3.5, y: -3.2 },\n  mouth:     { x: -3.0, y: -5.2 },\n  mustache:  { x: -0.5, y: -5.2 },\n  leftArm:   { x:  2.0, y: -5.2 },\n  rightArm:  { x:  4.0, y: -5.2 },\n};\n\nexports.resetPieces = function(ctx) {\n  if (ctx.isSequenceRunning('reset')) return;\n\n  ctx.startSequence('reset', async function(world) {\n    var keys = Object.keys(INITIAL_POSITIONS);\n    var animations = [];\n    for (var i = 0; i < keys.length; i++) {\n      var id = keys[i];\n      var target = INITIAL_POSITIONS[id];\n      animations.push(\n        world.animate(id, { x: target.x, y: target.y }, { duration: 500, easing: 'ease-in-out' })\n      );\n    }\n    await Promise.all(animations);\n  });\n};\n",
+  "script": "// --- main ---\nvar INITIAL_POSITIONS = {\n\tleftEye: { x: -3.5, y: -3.2 },\n\trightEye: { x: -2.0, y: -3.2 },\n\tnose: { x: -0.5, y: -3.2 },\n\tears: { x: 1.5, y: -3.2 },\n\that: { x: 3.5, y: -3.2 },\n\tmouth: { x: -3.0, y: -5.2 },\n\tmustache: { x: -0.5, y: -5.2 },\n\tleftArm: { x: 2.0, y: -5.2 },\n\trightArm: { x: 4.0, y: -5.2 },\n};\n\nexports.resetPieces = (ctx) => {\n\tif (ctx.isSequenceRunning(\"reset\")) return;\n\n\tctx.startSequence(\"reset\", async (world) => {\n\t\tvar keys = Object.keys(INITIAL_POSITIONS);\n\t\tvar animations = [];\n\t\tfor (var i = 0; i < keys.length; i++) {\n\t\t\tvar id = keys[i];\n\t\t\tvar target = INITIAL_POSITIONS[id];\n\t\t\tanimations.push(\n\t\t\t\tworld.animate(\n\t\t\t\t\tid,\n\t\t\t\t\t{ x: target.x, y: target.y },\n\t\t\t\t\t{ duration: 500, easing: \"ease-in-out\" },\n\t\t\t\t),\n\t\t\t);\n\t\t}\n\t\tawait Promise.all(animations);\n\t});\n};\n\nexports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\texports.resetPieces(ctx);\n\t}\n};\n",
   "background": {
     "type": "static",
     "whatDescription": "A soft, blurry, colorful children's bedroom background with warm lighting, toys on shelves, pastel walls, and a cozy playful atmosphere, out of focus bokeh effect"

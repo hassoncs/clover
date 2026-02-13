@@ -1,11 +1,8 @@
 import type { ExpressionValueType, Value } from "../expressions/types";
-import type { StateMachineDefinition } from "../systems/state-machine/types";
 import type { AssetSource } from "./asset-system";
 import type { Vec2 } from "./common";
-import type { ContainerConfig } from "./container";
 import type { EntityPrefab, GameEntity } from "./entity";
 import type { OverlayConfig } from "./overlay";
-import type { GameRule, LoseCondition, WinCondition } from "./rules";
 import type { TileMap, TileSheet } from "./tilemap";
 
 /**
@@ -478,9 +475,6 @@ export interface GameDefinition {
 	prefabs: Record<string, EntityPrefab>;
 	entities: GameEntity[];
 	joints?: GameJoint[];
-	rules?: GameRule[];
-	winCondition?: WinCondition;
-	loseCondition?: LoseCondition;
 	/** @deprecated Use background with type: 'parallax' instead */
 	parallaxConfig?: ParallaxConfig;
 	tileSheets?: TileSheet[];
@@ -491,17 +485,6 @@ export interface GameDefinition {
 	input?: InputConfig;
 	match3?: Match3Config;
 	tetris?: TetrisConfig;
-	/**
-	 * Game-level state machines for managing game phases, turns, and flow.
-	 * Unlike entity-level machines, these have no `owner` field set.
-	 */
-	stateMachines?: StateMachineDefinition[];
-	/**
-	 * Container definitions for declarative container-based games (Ball Sort, Connect4, etc.).
-	 * Containers track entity membership, validate placements, and compute positions.
-	 */
-	containers?: ContainerConfig[];
-
 	/**
 	 * Optional persistence configuration for saving/loading game progress.
 	 * Games opt-in to persistence by providing this configuration.

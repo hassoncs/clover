@@ -2,7 +2,6 @@ import type {
 	BackgroundConfig,
 	EntityPrefab,
 	GameEntity,
-	GameRule,
 	TagPayloads,
 	WorkspaceTag,
 	WorldConfig,
@@ -172,10 +171,10 @@ export class TagPayloadResolver {
 
 		const parsed = JSON.parse(content) as unknown;
 		if (Array.isArray(parsed)) {
-			return { rules: parsed as GameRule[] };
+			return { rules: parsed as Record<string, unknown>[] };
 		}
 
-		const wrapped = parsed as { rules?: GameRule[] };
+		const wrapped = parsed as { rules?: Record<string, unknown>[] };
 		if (Array.isArray(wrapped.rules)) {
 			return { rules: wrapped.rules };
 		}

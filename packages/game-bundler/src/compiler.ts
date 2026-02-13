@@ -6,7 +6,6 @@ import type {
 	EntityPrefab,
 	GameDefinition,
 	GameMetadata,
-	GameRule,
 	Match3Config,
 	TetrisConfig,
 } from "@slopcade/shared";
@@ -32,7 +31,7 @@ function isConstantRef(value: unknown): value is ConstantRef {
 	);
 }
 
-const BUNDLE_SUBDIRS = ["templates", "entities", "rules"] as const;
+const BUNDLE_SUBDIRS = ["templates", "entities"] as const;
 
 interface ResolvedConstant {
 	value: number | string | boolean;
@@ -297,7 +296,7 @@ function levenshteinDistance(a: string, b: string): number {
 
 function checkDuplicateIds(
 	items: Array<{ id?: string }>,
-	category: "templates" | "entities" | "rules",
+	category: "templates" | "entities",
 	errors: CompileError[],
 	file?: string,
 ): void {
@@ -455,7 +454,6 @@ function buildGameDefinition(
 	rawConstants: Record<string, number | string | boolean> | null,
 	templates: Map<string, Record<string, unknown>>,
 	entities: Array<Record<string, unknown>>,
-	rules: GameRule[],
 	assets: Record<
 		string,
 		{ path?: string; remoteUrl?: string; localPath?: string; type: string }
@@ -501,7 +499,6 @@ function buildGameDefinition(
 		world,
 		prefabs: templateRecord,
 		entities: entities as unknown as GameDefinition["entities"],
-		rules: rules as unknown as GameDefinition["rules"],
 		constants: rawConstants || undefined,
 		// Include system configs if provided
 		...(systems?.match3 && { match3: systems.match3 }),
@@ -528,7 +525,6 @@ export function compileBundle(
 		effects: null,
 		templates: [],
 		entities: [],
-		rules: [],
 		schemas: undefined,
 	};
 
@@ -624,9 +620,6 @@ export function compileBundle(
 		} else if (relativePath.startsWith("entities")) {
 			const items = normalizeToArray(data);
 			rawData.entities.push(...items);
-		} else if (relativePath.startsWith("rules")) {
-			const items = normalizeToArray(data);
-			rawData.rules.push(...items);
 		}
 	}
 
@@ -704,11 +697,7 @@ export function compileBundle(
 	}
 
 	const constantRefs = new Set<string>();
-	const allItems = [
-		...rawData.templates,
-		...rawData.entities,
-		...rawData.rules,
-	];
+	const allItems = [...rawData.templates, ...rawData.entities];
 
 	for (const item of allItems) {
 		findConstantRefs(item, constantRefs);
@@ -790,17 +779,9 @@ export function compileBundle(
 				unknown
 			>,
 	);
-	const resolvedRules = rawData.rules.map(
-		(r) =>
-			resolveConstantRefs(r, constantsMap, ["rules"], errors) as Record<
-				string,
-				unknown
-			>,
-	);
 
 	checkDuplicateIds(resolvedTemplates, "templates", errors);
 	checkDuplicateIds(resolvedEntities, "entities", errors);
-	checkDuplicateIds(resolvedRules, "rules", errors);
 
 	const templateMap = extractTemplates(resolvedTemplates);
 
@@ -852,7 +833,6 @@ export function compileBundle(
 		rawData.constants,
 		templateMap,
 		resolvedEntities,
-		resolvedRules as unknown as GameRule[],
 		rawData.assets,
 		resolvedSystems,
 	);
@@ -873,12 +853,9 @@ export function compileBundle(
 			"overlay",
 			"variables",
 			"joints",
-			"winCondition",
-			"loseCondition",
 			"sounds",
 			"input",
 			"presentation",
-			"stateMachines",
 			"persistence",
 			"hoverHighlight",
 			"dialogs",
@@ -927,10 +904,6 @@ export function compileSectioned(
 	const gameDefinition = result.gameDefinition;
 	const systems: NonNullable<BundleSections["systems"]> = {};
 
-	if (gameDefinition.containers != null) {
-		systems.containers = gameDefinition.containers;
-	}
-
 	if (gameDefinition.match3 != null) {
 		systems.match3 = gameDefinition.match3;
 	}
@@ -939,15 +912,10 @@ export function compileSectioned(
 		systems.tetris = gameDefinition.tetris;
 	}
 
-	if (gameDefinition.stateMachines != null) {
-		systems.stateMachines = gameDefinition.stateMachines;
-	}
-
 	const sections: BundleSections = {
 		world: gameDefinition.world,
 		prefabs: gameDefinition.prefabs,
 		entities: gameDefinition.entities,
-		rules: gameDefinition.rules,
 		...(gameDefinition.script != null && { script: gameDefinition.script }),
 		...(gameDefinition.effects != null && { effects: gameDefinition.effects }),
 		...(Object.keys(systems).length > 0 && { systems }),

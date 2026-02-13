@@ -30,7 +30,6 @@ import type { Physics2D } from "../physics2d/Physics2D";
 import type { CollisionEvent, Unsubscribe } from "../physics2d/types";
 import { TweenSystem } from "./animation/TweenSystem";
 import type { GameState, InputState } from "./BehaviorContext";
-import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { CameraSystem } from "./CameraSystem";
 import { DebugOpsImpl } from "./DebugOpsImpl";
 import {
@@ -63,7 +62,6 @@ import type { Match3Config } from "./systems/Match3GameSystem";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import {
-	BehaviorExecutorRuntimeSystem,
 	CameraRuntimeSystem,
 	ComputedValuesRuntimeSystem,
 	ContainerRuntimeSystem,
@@ -76,7 +74,6 @@ import {
 	MockNetworkSystem,
 	NetworkRuntimeSystem,
 	PropertySyncRuntimeSystem,
-	RulesSystem,
 	ScriptSandboxRuntimeSystem,
 	TargetPositionRuntimeSystem,
 	TweenRuntimeSystem,
@@ -89,7 +86,6 @@ import {
 	evaluateExpression,
 	OverlayRenderer,
 } from "./ui/overlay";
-import { handleDialogEvent } from "./ui/overlay/dialogEventRouter";
 import { useInputHandlers } from "./useInputHandlers";
 import { type ViewportRect, ViewportSystem } from "./ViewportSystem";
 import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
@@ -266,7 +262,6 @@ export function GameRuntimeGodot({
 			);
 			subscriptionsRef.current.push(
 				bridge.onEntityDestroyed((entityId) => {
-					cancelTweensForEntity(entityId);
 					gameRef.current?.entityManager.handleEntityDestroyed(entityId);
 				}),
 			);
@@ -882,12 +877,6 @@ export function GameRuntimeGodot({
 
 				runner.register(new TweenRuntimeSystem(tweenSystem));
 
-				runner.register(
-					new BehaviorExecutorRuntimeSystem({
-						pixelsPerMeter: initialDefinition.world.pixelsPerMeter ?? 50,
-					}),
-				);
-
 				if (initialDefinition.script) {
 					runner.register(
 						new ScriptSandboxRuntimeSystem({
@@ -901,19 +890,6 @@ export function GameRuntimeGodot({
 					);
 				}
 
-				runner.register(
-					new RulesSystem({
-						rules: initialDefinition.rules ?? [],
-						winCondition: initialDefinition.winCondition,
-						loseCondition: initialDefinition.loseCondition,
-						variables: initialDefinition.variables as
-							| Record<string, number | string | boolean>
-							| undefined,
-						containers: initialDefinition.containers,
-						stateMachines: initialDefinition.stateMachines,
-					}),
-				);
-
 				if (initialDefinition.economy) {
 					runner.register(
 						new EconomyRuntimeSystem({
@@ -925,16 +901,6 @@ export function GameRuntimeGodot({
 				if (initialDefinition.match3) {
 					runner.register(
 						new Match3RuntimeSystem(initialDefinition.match3 as Match3Config),
-					);
-				}
-				if (
-					initialDefinition.containers &&
-					initialDefinition.containers.length > 0
-				) {
-					runner.register(
-						new ContainerRuntimeSystem({
-							containers: initialDefinition.containers,
-						}),
 					);
 				}
 				if (initialDefinition.hoverHighlight) {
@@ -982,56 +948,10 @@ export function GameRuntimeGodot({
 
 				setupSubscriptions(bridge, physics, game, match3EventBus);
 
-				const behaviorSystem =
-					runner.getSystem<BehaviorExecutorRuntimeSystem>("behavior-executor");
-				const rulesSystem = runner.getSystem<RulesSystem>("rules");
-				const computedValuesSystem =
-					runner.getSystem<ComputedValuesRuntimeSystem>("computed-values");
 				const cameraSystem = runner.getSystem<CameraRuntimeSystem>("camera");
-				const inputSystem = runner.getSystem<InputRuntimeSystem>("input");
 
 				if (cameraSystem) {
 					cameraRef.current = cameraSystem.getCamera();
-				}
-
-				if (rulesSystem) {
-					rulesSystem.setRuntimeState(game.gameState);
-					rulesSystem.setEventBus(game.events);
-				}
-
-				if (behaviorSystem && computedValuesSystem) {
-					const cvs = computedValuesSystem.getSystem();
-					if (cvs) behaviorSystem.setComputedValues(cvs);
-				}
-				if (behaviorSystem && cameraSystem) {
-					const cam = cameraSystem.getCamera();
-					if (cam) behaviorSystem.setCamera(cam);
-				}
-				if (behaviorSystem && inputSystem) {
-					const iem = inputSystem.getInputEntityManager();
-					if (iem) behaviorSystem.setInputEntityManager(iem);
-				}
-				if (rulesSystem && computedValuesSystem) {
-					const cvs = computedValuesSystem.getSystem();
-					if (cvs) rulesSystem.setComputedValues(cvs);
-				}
-				if (rulesSystem && cameraSystem) {
-					const cam = cameraSystem.getCamera();
-					if (cam) rulesSystem.setCamera(cam);
-				}
-				if (rulesSystem && inputSystem) {
-					const iem = inputSystem.getInputEntityManager();
-					if (iem) rulesSystem.setInputEntityManager(iem);
-				}
-
-				if (initialDefinition.script) {
-					const scriptSystem =
-						runner.getSystem<ScriptSandboxRuntimeSystem>("script-sandbox");
-					if (scriptSystem && rulesSystem) {
-						rulesSystem.setScriptSystem(scriptSystem);
-						const sandbox = scriptSystem.getSandbox();
-						if (sandbox) rulesSystem.setScriptSandbox(sandbox);
-					}
 				}
 
 				gameSystemRunnerRef.current = runner;
@@ -1745,10 +1665,14 @@ export function GameRuntimeGodot({
 
 	const handleDialogButtonPress = useCallback(
 		(eventName: string, data?: Record<string, unknown>) => {
-			handleDialogEvent(eventName, data, {
-				onStart: handleStart,
-				onRestart: handleRestart,
-				onResume: () => {
+			switch (eventName) {
+				case "start_game":
+					handleStart();
+					return;
+				case "restart":
+					handleRestart();
+					return;
+				case "resume": {
 					const game = gameRef.current;
 					if (!game) return;
 					StateHelpers.setGameStateValue(
@@ -1756,15 +1680,29 @@ export function GameRuntimeGodot({
 						"playing",
 						game.events,
 					);
-				},
-				onBackToMenu,
-				onPreviousLevel,
-				triggerEvent: (forwardEvent, payload) => {
-					const game = gameRef.current;
-					if (!game) return;
-					StateHelpers.triggerEvent(game.gameState, forwardEvent, payload);
-				},
-			});
+					return;
+				}
+				case "back_to_menu":
+					if (onBackToMenu) {
+						onBackToMenu();
+						return;
+					}
+					break;
+				case "previous_level":
+					if (onPreviousLevel) {
+						onPreviousLevel();
+						return;
+					}
+					break;
+				default:
+					break;
+			}
+			const game = gameRef.current;
+			if (!game) return;
+			StateHelpers.triggerEvent(game.gameState, eventName, data);
+			gameSystemRunnerRef.current
+				?.getEventQueue()
+				.emit("game_event", { eventName, data });
 		},
 		[handleStart, handleRestart, onBackToMenu, onPreviousLevel],
 	);

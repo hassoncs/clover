@@ -4,8 +4,10 @@ import type { Vec2 } from "@slopcade/shared/types/common";
 import type {
 	HapticStyle,
 	NotificationStyle,
-} from "@slopcade/shared/types/rules";
+} from "@slopcade/shared/types/haptics";
 import type {
+	AnimateOptions,
+	AnimateTarget,
 	CloneOptions,
 	RaycastOptions,
 	ReparentOptions,
@@ -23,7 +25,9 @@ import {
 import type {
 	DragSnapshot,
 	InputSnapshot,
+	ScriptCollisionEnterEvent,
 	ScriptCollisionEvent,
+	ScriptCollisionExitEvent,
 	ScriptContext,
 	ScriptErrorReport,
 	ScriptInputEvent,
@@ -45,6 +49,8 @@ export interface ScriptSandboxSystemState {
 	hasOnUpdate: boolean;
 	hasOnInput: boolean;
 	hasOnCollision: boolean;
+	hasOnCollisionEnter: boolean;
+	hasOnCollisionExit: boolean;
 	hasOnNetworkState: boolean;
 	hasOnPhaseChange: boolean;
 	lastError: ScriptErrorReport | null;
@@ -74,7 +80,9 @@ export class ScriptSandboxRuntimeSystem
 		phase: string;
 		data?: Record<string, unknown>;
 	}[] = [];
+	private pendingGameEvents: [string, unknown][] = [];
 	private networkEventUnsubscribers: (() => void)[] = [];
+	private activeCollisionPairs: Set<string> = new Set();
 
 	constructor(config: ScriptSandboxSystemConfig) {
 		this.config = config;
@@ -126,6 +134,13 @@ export class ScriptSandboxRuntimeSystem
 					phase: (d.phase as string) ?? "unknown",
 					data: d.data as Record<string, unknown> | undefined,
 				});
+			}),
+			eventQueue.subscribe("game_event", (data) => {
+				const d = (data as Record<string, unknown>) ?? {};
+				const eventName = d.eventName as string;
+				if (eventName) {
+					this.pendingGameEvents.push([eventName, d.data]);
+				}
 			}),
 		);
 	}
@@ -215,6 +230,8 @@ export class ScriptSandboxRuntimeSystem
 			}
 		}
 
+		this.processCollisionEnterExit(ctx);
+
 		if (
 			this.sandbox.hasHook("onNetworkState") &&
 			this.pendingNetworkStateEvents.length > 0
@@ -238,6 +255,17 @@ export class ScriptSandboxRuntimeSystem
 		} else {
 			this.pendingPhaseChangeEvents.length = 0;
 		}
+
+		if (this.pendingGameEvents.length > 0) {
+			const events = this.pendingGameEvents.splice(0);
+			for (const [eventName, data] of events) {
+				this.sandbox.callFunction(
+					scriptContext,
+					eventName,
+					(data as Record<string, unknown>) ?? {},
+				);
+			}
+		}
 	}
 
 	destroy(): void {
@@ -247,6 +275,8 @@ export class ScriptSandboxRuntimeSystem
 		this.networkEventUnsubscribers.length = 0;
 		this.pendingNetworkStateEvents.length = 0;
 		this.pendingPhaseChangeEvents.length = 0;
+		this.pendingGameEvents.length = 0;
+		this.activeCollisionPairs.clear();
 
 		if (this.sequenceManager) {
 			this.sequenceManager.dispose();
@@ -270,6 +300,8 @@ export class ScriptSandboxRuntimeSystem
 				hasOnUpdate: false,
 				hasOnInput: false,
 				hasOnCollision: false,
+				hasOnCollisionEnter: false,
+				hasOnCollisionExit: false,
 				hasOnNetworkState: false,
 				hasOnPhaseChange: false,
 				lastError: null,
@@ -283,6 +315,8 @@ export class ScriptSandboxRuntimeSystem
 			hasOnUpdate: this.sandbox.hasHook("onUpdate"),
 			hasOnInput: this.sandbox.hasHook("onInput"),
 			hasOnCollision: this.sandbox.hasHook("onCollision"),
+			hasOnCollisionEnter: this.sandbox.hasHook("onCollisionEnter"),
+			hasOnCollisionExit: this.sandbox.hasHook("onCollisionExit"),
 			hasOnNetworkState: this.sandbox.hasHook("onNetworkState"),
 			hasOnPhaseChange: this.sandbox.hasHook("onPhaseChange"),
 			lastError: this.sandbox.getLastError(),
@@ -343,6 +377,82 @@ export class ScriptSandboxRuntimeSystem
 				result.error,
 			);
 		}
+	}
+
+	private makeCollisionPairKey(idA: string, idB: string): string {
+		return idA < idB ? `${idA}\0${idB}` : `${idB}\0${idA}`;
+	}
+
+	private processCollisionEnterExit(ctx: UpdateContext): void {
+		if (!this.sandbox || !this.systemContext) return;
+
+		const hasEnter = this.sandbox.hasHook("onCollisionEnter");
+		const hasExit = this.sandbox.hasHook("onCollisionExit");
+		if (!hasEnter && !hasExit) return;
+
+		const em = this.systemContext.entityManager;
+		const currentPairs = new Set<string>();
+
+		for (const collision of ctx.frame.collisions) {
+			const key = this.makeCollisionPairKey(
+				collision.entityA.id,
+				collision.entityB.id,
+			);
+			currentPairs.add(key);
+
+			if (hasEnter && !this.activeCollisionPairs.has(key)) {
+				const tagsA = em.getEntity(collision.entityA.id)?.tags ?? [];
+				const tagsB = em.getEntity(collision.entityB.id)?.tags ?? [];
+				const enterEvent: ScriptCollisionEnterEvent = {
+					entityA: collision.entityA.id,
+					entityB: collision.entityB.id,
+					tagsA: [...tagsA],
+					tagsB: [...tagsB],
+					normal: collision.normal,
+					impulse: collision.impulse,
+				};
+				const scriptContext = this.createScriptContext(ctx);
+				const result = this.sandbox!.runCollisionEnter(
+					scriptContext,
+					enterEvent,
+				);
+				if (!result.success) {
+					console.error(
+						"[ScriptSandboxRuntimeSystem] onCollisionEnter error:",
+						result.error,
+					);
+				}
+			}
+		}
+
+		if (hasExit) {
+			for (const key of this.activeCollisionPairs) {
+				if (!currentPairs.has(key)) {
+					const [idA, idB] = key.split("\0");
+					const tagsA = em.getEntity(idA)?.tags ?? [];
+					const tagsB = em.getEntity(idB)?.tags ?? [];
+					const exitEvent: ScriptCollisionExitEvent = {
+						entityA: idA,
+						entityB: idB,
+						tagsA: [...tagsA],
+						tagsB: [...tagsB],
+					};
+					const scriptContext = this.createScriptContext(ctx);
+					const result = this.sandbox!.runCollisionExit(
+						scriptContext,
+						exitEvent,
+					);
+					if (!result.success) {
+						console.error(
+							"[ScriptSandboxRuntimeSystem] onCollisionExit error:",
+							result.error,
+						);
+					}
+				}
+			}
+		}
+
+		this.activeCollisionPairs = currentPairs;
 	}
 
 	private runNetworkState(
@@ -767,6 +877,58 @@ export class ScriptSandboxRuntimeSystem
 			createPixelBuffer: () => {},
 			pixelBufferDraw: () => {},
 			pixelBufferClear: () => {},
+
+			animateEntity: (
+				entityId: string,
+				target: AnimateTarget,
+				opts?: AnimateOptions,
+			): void => {
+				worldOps.animate(entityId, target, opts ?? { duration: 300 });
+			},
+
+			playSound: (
+				soundId: string,
+				opts?: { volume?: number; pitch?: number },
+			): void => {
+				bridge.playSound(soundId, opts?.volume, opts?.pitch);
+			},
+
+			cameraShake: (intensity: number, duration: number): void => {
+				bridge.screenShake(intensity, duration);
+			},
+
+			cameraZoom: (scale: number, duration?: number): void => {
+				bridge.zoomPunch(scale, duration);
+			},
+
+			setTimeScale: (scale: number, duration?: number): void => {
+				eventQueue.emit("set_time_scale", { scale, duration });
+			},
+
+			showDialog: (dialogId: string, data?: Record<string, unknown>): void => {
+				ctx.gameState.variables.activeDialog = dialogId;
+				eventQueue.emit("variable_change", {
+					name: "activeDialog",
+					value: dialogId,
+				});
+				eventQueue.emit("show_dialog", { dialogId, data });
+			},
+
+			dismissDialog: (): void => {
+				ctx.gameState.variables.activeDialog = "";
+				eventQueue.emit("variable_change", {
+					name: "activeDialog",
+					value: "",
+				});
+				eventQueue.emit("dismiss_dialog", {});
+			},
+
+			destroyByTag: (tag: string): void => {
+				const entities = queryEntities({ tag });
+				for (const entityId of entities) {
+					this.pendingDestroys.add(entityId);
+				}
+			},
 
 			haptic: (style?: HapticStyle): void => {
 				Haptics.impactAsync((style as Haptics.ImpactFeedbackStyle) ?? "Medium");

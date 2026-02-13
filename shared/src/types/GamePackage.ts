@@ -2,7 +2,6 @@ import type { EntityPrefab, GameEntity } from "./entity";
 import type { WorldConfig } from "./GameDefinition";
 import type { WorkspaceManifest } from "./PackageManifest";
 import type { PrefabDefinition } from "./Prefab";
-import type { GameRule } from "./rules";
 
 export type { PrefabDefinition } from "./Prefab";
 
@@ -26,7 +25,7 @@ export interface GamePackage {
 	manifest: WorkspaceManifest;
 	prefabs?: Record<string, PrefabDefinition | LegacyPrefabDefinition>;
 	entities?: GameEntity[];
-	rules?: GameRule[];
+	rules?: Record<string, unknown>[];
 	scripts?: string;
 	assets?: AssetManifest;
 	world?: WorldConfig;

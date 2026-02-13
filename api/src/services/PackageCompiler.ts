@@ -3,13 +3,15 @@ import type {
 	BuildManifest,
 	EntityPrefab,
 	GameEntity,
-	GameRule,
 	PackageArtifact,
 	TagGroup,
 	TagPayloads,
 	WorkspaceManifest,
 	WorldConfig,
 } from "@slopcade/shared";
+
+type GameRule = Record<string, unknown>;
+
 import { TAG_GROUPS, WORKSPACE_CONVENTIONS } from "@slopcade/shared";
 import type { BuildArtifactWriter } from "./BuildArtifactWriter";
 import type { WorkspaceFile, WorkspaceReader } from "./GitWorkspaceReader";

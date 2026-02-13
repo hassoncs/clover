@@ -1,4 +1,4 @@
-import type { Behavior, ConditionalBehavior } from "./behavior";
+import type { Behavior } from "./behavior";
 import type { CharacterComponent } from "./character";
 import type {
 	ColliderComponent,
@@ -49,7 +49,7 @@ export interface GameEntity {
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
 	behaviors?: Behavior[];
-	conditionalBehaviors?: ConditionalBehavior[];
+
 	tags?: string[];
 	layer?: number;
 	visible?: boolean;
@@ -92,7 +92,7 @@ export interface BaseEntityPrefab {
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
 	behaviors?: Behavior[];
-	conditionalBehaviors?: ConditionalBehavior[];
+
 	tags?: string[];
 	layer?: number;
 	slots?: Record<string, SlotDefinition>;
@@ -114,7 +114,7 @@ export interface BaseEntityDefinition {
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
 	behaviors?: Behavior[];
-	conditionalBehaviors?: ConditionalBehavior[];
+
 	tags?: string[];
 	layer?: number;
 	visible?: boolean;

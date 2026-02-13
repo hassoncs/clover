@@ -98,7 +98,6 @@ describe("effectsHandler", () => {
 		activeScene: null,
 		bridge: mockBridge as unknown as GodotBridge,
 		runtime: {
-			applyRules: vi.fn(),
 			applyScript: vi.fn().mockResolvedValue(undefined),
 		},
 	};

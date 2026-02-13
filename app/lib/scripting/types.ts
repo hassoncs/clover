@@ -87,6 +87,8 @@ export interface ScriptLifecycleExports {
 	onUpdate?(ctx: ScriptContext, dt: number): void;
 	onInput?(ctx: ScriptContext, event: ScriptInputEvent): void;
 	onCollision?(ctx: ScriptContext, collision: ScriptCollisionEvent): void;
+	onCollisionEnter?(ctx: ScriptContext, event: ScriptCollisionEnterEvent): void;
+	onCollisionExit?(ctx: ScriptContext, event: ScriptCollisionExitEvent): void;
 	onNetworkState?(ctx: ScriptContext, state: Record<string, unknown>): void;
 	onPhaseChange?(
 		ctx: ScriptContext,
@@ -117,6 +119,22 @@ export interface ScriptCollisionEvent {
 	timestamp: number;
 }
 
+export interface ScriptCollisionEnterEvent {
+	entityA: string;
+	entityB: string;
+	tagsA: string[];
+	tagsB: string[];
+	normal: { x: number; y: number };
+	impulse: number;
+}
+
+export interface ScriptCollisionExitEvent {
+	entityA: string;
+	entityB: string;
+	tagsA: string[];
+	tagsB: string[];
+}
+
 export type ScriptErrorType =
 	| "syntax"
 	| "runtime"
@@ -134,6 +152,8 @@ export interface ScriptErrorReport {
 		| "update"
 		| "input"
 		| "collision"
+		| "collisionEnter"
+		| "collisionExit"
 		| "networkState"
 		| "phaseChange";
 	hookName?: string;

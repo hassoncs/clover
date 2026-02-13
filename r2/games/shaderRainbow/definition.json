@@ -208,25 +208,7 @@
       }
     }
   ],
-  "rules": [
-    {
-      "id": "tap_spawn_cube",
-      "name": "Tap to spawn a rainbow cube",
-      "trigger": {
-        "type": "tap"
-      },
-      "actions": [
-        {
-          "type": "spawn",
-          "template": "rainbowCube",
-          "position": {
-            "type": "touch"
-          },
-          "count": 1
-        }
-      ]
-    }
-  ],
+  "script": "// --- main ---\nexports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\tctx.spawnEntity(\"rainbowCube\", event.position);\n\t}\n};\n",
   "effects": {
     "shaders": {
       "rainbow_wave": {

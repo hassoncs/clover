@@ -302,25 +302,7 @@
       }
     }
   ],
-  "rules": [
-    {
-      "id": "tap_launch",
-      "name": "Tap to launch ball upward",
-      "trigger": {
-        "type": "tap"
-      },
-      "actions": [
-        {
-          "type": "set_velocity",
-          "target": {
-            "type": "by_tag",
-            "tag": "ball"
-          },
-          "y": 8
-        }
-      ]
-    }
-  ],
+  "script": "// --- main ---\nexports.onInput = (ctx, event) => {\n\tvar balls, vel;\n\n\tif (event.type === \"tap\") {\n\t\tballs = ctx.queryEntities({ tag: \"ball\" });\n\t\tif (balls.length > 0) {\n\t\t\tvel = ctx.getEntityVelocity(balls[0]);\n\t\t\tif (vel) {\n\t\t\t\tctx.setEntityVelocity(balls[0], { x: vel.x, y: 8 });\n\t\t\t}\n\t\t}\n\t}\n};\n",
   "effects": {
     "shaders": {
       "crt_screen": {

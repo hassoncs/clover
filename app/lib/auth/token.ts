@@ -40,5 +40,13 @@ export async function getAuthToken(): Promise<string | null> {
 
 	if (isDevAuthenticated()) return DEV_AUTH_TOKEN;
 
+	// After HMR the module-level _devAuthenticated resets to false before
+	// AuthProvider has a chance to call loadDevAuthState(). Recover by
+	// reading from persistent storage before giving up.
+	if (__DEV__) {
+		const restored = await loadDevAuthState();
+		if (restored) return DEV_AUTH_TOKEN;
+	}
+
 	return null;
 }

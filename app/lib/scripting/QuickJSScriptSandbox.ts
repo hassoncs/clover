@@ -1,3 +1,4 @@
+import { SLOPCADE_MODULES } from "@slopcade/shared/scripting/modules";
 import { QuickJSEngine } from "./engine/QuickJSEngine";
 import type {
 	IScriptSandbox,
@@ -7,7 +8,9 @@ import type {
 	ScriptRuntimeContext,
 } from "./IScriptSandbox";
 import type {
+	ScriptCollisionEnterEvent,
 	ScriptCollisionEvent,
+	ScriptCollisionExitEvent,
 	ScriptContext,
 	ScriptErrorReport,
 	ScriptInputEvent,
@@ -69,11 +72,37 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
 		});
 	}
 
+	private buildRequirePrelude(): string {
+		const moduleEntries = Object.entries(SLOPCADE_MODULES)
+			.map(
+				([name, source]) =>
+					`${JSON.stringify(name)}: ${JSON.stringify(source)}`,
+			)
+			.join(",\n");
+
+		return `
+      var __modules = {${moduleEntries}};
+      var __moduleCache = {};
+      function require(name) {
+        if (__moduleCache[name]) return __moduleCache[name];
+        var src = __modules[name];
+        if (!src) throw new Error("Module not found: " + name);
+        var mod = { exports: {} };
+        var fn = new Function("module", "exports", src);
+        fn(mod, mod.exports);
+        __moduleCache[name] = mod.exports;
+        return mod.exports;
+      }
+    `;
+	}
+
 	private async compileScript(scriptCode: string): Promise<ScriptResult<void>> {
+		const requirePrelude = this.buildRequirePrelude();
 		const wrappedCode = `
       (function() {
         "use strict";
         const exports = {};
+        ${requirePrelude}
         ${scriptCode}
         globalThis.__exports = exports;
         return exports;
@@ -95,6 +124,8 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
 			onUpdate: this.hasHook("onUpdate"),
 			onInput: this.hasHook("onInput"),
 			onCollision: this.hasHook("onCollision"),
+			onCollisionEnter: this.hasHook("onCollisionEnter"),
+			onCollisionExit: this.hasHook("onCollisionExit"),
 			onNetworkState: this.hasHook("onNetworkState"),
 			onPhaseChange: this.hasHook("onPhaseChange"),
 		};
@@ -114,6 +145,8 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
 			onUpdate: this.hasHook("onUpdate"),
 			onInput: this.hasHook("onInput"),
 			onCollision: this.hasHook("onCollision"),
+			onCollisionEnter: this.hasHook("onCollisionEnter"),
+			onCollisionExit: this.hasHook("onCollisionExit"),
 			onNetworkState: this.hasHook("onNetworkState"),
 			onPhaseChange: this.hasHook("onPhaseChange"),
 		};
@@ -190,6 +223,42 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
 		}
 
 		return this.callHook("onCollision", runtime, "collision", collision);
+	}
+
+	runCollisionEnter(
+		runtime: ScriptRuntimeContext,
+		event: ScriptCollisionEnterEvent,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return {
+				success: false,
+				error: this.createNotReadyError("collisionEnter"),
+			};
+		}
+
+		if (!this.hasHook("onCollisionEnter")) {
+			return { success: true };
+		}
+
+		return this.callHook("onCollisionEnter", runtime, "collisionEnter", event);
+	}
+
+	runCollisionExit(
+		runtime: ScriptRuntimeContext,
+		event: ScriptCollisionExitEvent,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return {
+				success: false,
+				error: this.createNotReadyError("collisionExit"),
+			};
+		}
+
+		if (!this.hasHook("onCollisionExit")) {
+			return { success: true };
+		}
+
+		return this.callHook("onCollisionExit", runtime, "collisionExit", event);
 	}
 
 	runNetworkState(

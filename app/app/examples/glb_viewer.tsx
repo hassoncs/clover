@@ -30,7 +30,6 @@ const MINIMAL_GAME: GameDefinition = {
 	camera: { type: "fixed", zoom: 1 },
 	prefabs: {},
 	entities: [],
-	rules: [],
 };
 
 export default function GLBViewerExample() {

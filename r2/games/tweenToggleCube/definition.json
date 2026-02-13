@@ -115,22 +115,7 @@
       "layer": 3
     }
   ],
-  "rules": [
-    {
-      "id": "toggle_cube_tween",
-      "name": "Toggle cube tween on animate button tap",
-      "trigger": {
-        "type": "tap"
-      },
-      "actions": [
-        {
-          "type": "run_script",
-          "export": "toggleCubeTween"
-        }
-      ]
-    }
-  ],
-  "script": "// --- main ---\n\nexports.toggleCubeTween = function(ctx) {\n  if (ctx.isSequenceRunning('cube_toggle')) return;\n\n  var pos = ctx.getEntityPosition('cube');\n  var targetX = pos && pos.x > 0 ? -2 : 2;\n\n  ctx.startSequence('cube_toggle', async function(world) {\n    await world.animate('cube', { x: targetX, y: 1 }, { duration: 450, easing: 'ease-in-out' });\n  });\n};\n",
+  "script": "// --- main ---\nexports.toggleCubeTween = (ctx) => {\n\tif (ctx.isSequenceRunning(\"cube_toggle\")) return;\n\n\tvar pos = ctx.getEntityPosition(\"cube\");\n\tvar targetX = pos && pos.x > 0 ? -2 : 2;\n\n\tctx.startSequence(\"cube_toggle\", async (world) => {\n\t\tawait world.animate(\n\t\t\t\"cube\",\n\t\t\t{ x: targetX, y: 1 },\n\t\t\t{ duration: 450, easing: \"ease-in-out\" },\n\t\t);\n\t});\n};\n\nexports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\texports.toggleCubeTween(ctx);\n\t}\n};\n",
   "background": {
     "type": "static",
     "color": "#0f172a"

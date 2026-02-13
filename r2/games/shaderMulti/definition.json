@@ -266,74 +266,7 @@
       }
     }
   ],
-  "rules": [
-    {
-      "id": "tap_spawn_orb",
-      "name": "Tap to spawn a glow orb",
-      "trigger": {
-        "type": "tap"
-      },
-      "conditions": [
-        {
-          "type": "random",
-          "probability": 0.33
-        }
-      ],
-      "actions": [
-        {
-          "type": "spawn",
-          "template": "glowOrb",
-          "position": {
-            "type": "touch"
-          }
-        }
-      ]
-    },
-    {
-      "id": "tap_spawn_block",
-      "name": "Tap to spawn a dissolve block",
-      "trigger": {
-        "type": "tap"
-      },
-      "conditions": [
-        {
-          "type": "random",
-          "probability": 0.33
-        }
-      ],
-      "actions": [
-        {
-          "type": "spawn",
-          "template": "dissolveBlock",
-          "position": {
-            "type": "touch"
-          }
-        }
-      ]
-    },
-    {
-      "id": "tap_spawn_tri",
-      "name": "Tap to spawn a holo triangle",
-      "trigger": {
-        "type": "tap"
-      },
-      "conditions": [
-        {
-          "type": "random",
-          "probability": 0.34
-        }
-      ],
-      "actions": [
-        {
-          "type": "spawn",
-          "template": "holoTriangle",
-          "position": {
-            "type": "touch"
-          }
-        }
-      ]
-    }
-  ],
+  "script": "// --- main ---\nexports.onInput = (ctx, event) => {\n\tvar rand, prefab;\n\n\tif (event.type === \"tap\") {\n\t\trand = Math.random();\n\n\t\tif (rand < 0.33) {\n\t\t\tprefab = \"glowOrb\";\n\t\t} else if (rand < 0.66) {\n\t\t\tprefab = \"dissolveBlock\";\n\t\t} else {\n\t\t\tprefab = \"holoTriangle\";\n\t\t}\n\n\t\tctx.spawnEntity(prefab, event.position);\n\t}\n};\n",
   "effects": {
     "shaders": {
       "pulse_glow": {

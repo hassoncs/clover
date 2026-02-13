@@ -990,6 +990,8 @@ import type {
   Vec2,
   EntityTransform,
   CollisionEvent,
+  CollisionEnterEvent,
+  CollisionExitEvent,
   SensorEvent,
   SpawnEntityRequest,
   EntitySpawnedEvent,
@@ -1005,6 +1007,7 @@ import type {
   NormalizedDrawCommand,
   DrawCommand,
   JsonParam,
+  DisposeOptions,
 } from '../../types.js';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 

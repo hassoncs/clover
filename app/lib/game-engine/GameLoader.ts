@@ -286,6 +286,5 @@ export function createDefaultGameDefinition(): GameDefinition {
 		},
 		prefabs: {},
 		entities: [],
-		rules: [],
 	};
 }

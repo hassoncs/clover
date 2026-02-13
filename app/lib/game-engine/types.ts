@@ -1,6 +1,5 @@
 import type {
 	Behavior,
-	ConditionalBehavior,
 	EntityPrefab,
 	EventBus,
 	GameEntity,
@@ -71,12 +70,6 @@ export interface RuntimeEntity {
 	tags: string[];
 	/** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */
 	tagBits: Set<number>;
-	/** Tag-driven conditional behavior groups */
-	conditionalBehaviors: ConditionalBehavior[];
-	/** Index of the currently active conditional behavior group (-1 if none) */
-	activeConditionalGroupId: number;
-	/** Pending lifecycle transition to process in BehaviorExecutor */
-	pendingLifecycleTransition?: PendingLifecycleTransition;
 	layer: number;
 	visible: boolean;
 	active: boolean;

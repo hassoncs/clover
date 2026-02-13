@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		isAuthenticated: false,
 	});
 	const lastSyncedUserIdRef = useRef<string | null>(null);
+	const authInitializedRef = useRef(false);
 
 	const setAuthenticatedUser = useCallback(
 		(user: User, session: Session | null) => {
@@ -110,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 		async function init() {
 			await refreshSession();
+			authInitializedRef.current = true;
 
 			if (!supabase) return;
 
@@ -118,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				if (user) {
 					void setDevAuthenticated(false);
 					setAuthenticatedUser(user, session);
-				} else if (!isDevAuthenticated()) {
+				} else if (authInitializedRef.current && !isDevAuthenticated()) {
 					setUnauthenticated();
 				}
 			});

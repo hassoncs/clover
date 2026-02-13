@@ -92,33 +92,9 @@
 	"variables": {
 		"currentLevel": 1,
 		"activeDialog": "",
-		"heldBallColor": -1,
-		"sourceTubeIndex": -1,
-		"heldBallId": "",
 		"activeTubeCount": 0,
 		"moveCount": 0,
-		"startTime": 0,
-		"_winAtElapsed": 0,
-		"tube0_count": 0,
-		"tube1_count": 0,
-		"tube2_count": 0,
-		"tube3_count": 0,
-		"tube4_count": 0,
-		"tube5_count": 0,
-		"tube6_count": 0,
-		"tube7_count": 0,
-		"tube8_count": 0,
-		"tube9_count": 0,
-		"tube0_topColor": -1,
-		"tube1_topColor": -1,
-		"tube2_topColor": -1,
-		"tube3_topColor": -1,
-		"tube4_topColor": -1,
-		"tube5_topColor": -1,
-		"tube6_topColor": -1,
-		"tube7_topColor": -1,
-		"tube8_topColor": -1,
-		"tube9_topColor": -1
+		"startTime": 0
 	},
 	"winCondition": {},
 	"input": {
@@ -144,12 +120,12 @@
 				"buttons": [
 					{
 						"label": "Next Level",
-						"eventName": "dialog_next_level",
+						"eventName": "nextLevel",
 						"variant": "primary"
 					},
 					{
 						"label": "Replay Level",
-						"eventName": "dialog_replay_level",
+						"eventName": "replayLevel",
 						"variant": "secondary"
 					}
 				]

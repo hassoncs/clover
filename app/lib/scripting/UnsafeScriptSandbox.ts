@@ -7,6 +7,7 @@
  * Will be replaced by QuickJSScriptSandbox before production launch.
  */
 
+import { SLOPCADE_MODULES } from "@slopcade/shared/scripting/modules";
 import type {
 	IScriptSandbox,
 	ScriptHookName,
@@ -15,7 +16,9 @@ import type {
 	ScriptRuntimeContext,
 } from "./IScriptSandbox";
 import type {
+	ScriptCollisionEnterEvent,
 	ScriptCollisionEvent,
+	ScriptCollisionExitEvent,
 	ScriptContext,
 	ScriptErrorReport,
 	ScriptErrorType,
@@ -33,6 +36,8 @@ interface CompiledExports {
 	onUpdate?: HookFunction;
 	onInput?: HookFunction;
 	onCollision?: HookFunction;
+	onCollisionEnter?: HookFunction;
+	onCollisionExit?: HookFunction;
 	onNetworkState?: HookFunction;
 	onPhaseChange?: HookFunction;
 	[key: string]: unknown;
@@ -84,19 +89,35 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
 		}
 	}
 
+	private buildRequireFunction(): (name: string) => unknown {
+		const moduleCache: Record<string, unknown> = {};
+		return (name: string) => {
+			if (moduleCache[name]) return moduleCache[name];
+			const src = SLOPCADE_MODULES[name];
+			if (!src) throw new Error(`Module not found: ${name}`);
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			const fn = new Function("module", "exports", src);
+			const mod = { exports: {} as Record<string, unknown> };
+			fn(mod, mod.exports);
+			moduleCache[name] = mod.exports;
+			return mod.exports;
+		};
+	}
+
 	private compileScript(scriptCode: string): CompiledExports {
 		const wrappedCode = `
       "use strict";
-      return (function(exports, console) {
+      return (function(exports, console, require) {
         ${scriptCode}
         return exports;
-      })(exports, console);
+      })(exports, console, require);
     `;
 
 		// eslint-disable-next-line @typescript-eslint/no-implied-eval
-		const factory = new Function("exports", "console", wrappedCode);
+		const factory = new Function("exports", "console", "require", wrappedCode);
 		const exports: CompiledExports = {};
-		return factory(exports, this.sandboxConsole) ?? exports;
+		const requireFn = this.buildRequireFunction();
+		return factory(exports, this.sandboxConsole, requireFn) ?? exports;
 	}
 
 	async reload(newScriptCode: string): Promise<ScriptReloadResult> {
@@ -105,6 +126,8 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
 			onUpdate: this.hasHook("onUpdate"),
 			onInput: this.hasHook("onInput"),
 			onCollision: this.hasHook("onCollision"),
+			onCollisionEnter: this.hasHook("onCollisionEnter"),
+			onCollisionExit: this.hasHook("onCollisionExit"),
 			onNetworkState: this.hasHook("onNetworkState"),
 			onPhaseChange: this.hasHook("onPhaseChange"),
 		};
@@ -122,6 +145,8 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
 			onUpdate: this.hasHook("onUpdate"),
 			onInput: this.hasHook("onInput"),
 			onCollision: this.hasHook("onCollision"),
+			onCollisionEnter: this.hasHook("onCollisionEnter"),
+			onCollisionExit: this.hasHook("onCollisionExit"),
 			onNetworkState: this.hasHook("onNetworkState"),
 			onPhaseChange: this.hasHook("onPhaseChange"),
 		};
@@ -200,6 +225,42 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
 		return this.callHook("onCollision", runtime, collision);
 	}
 
+	runCollisionEnter(
+		runtime: ScriptRuntimeContext,
+		event: ScriptCollisionEnterEvent,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return {
+				success: false,
+				error: this.createNotReadyError("collisionEnter"),
+			};
+		}
+
+		if (typeof this.exports.onCollisionEnter !== "function") {
+			return { success: true };
+		}
+
+		return this.callHook("onCollisionEnter", runtime, event);
+	}
+
+	runCollisionExit(
+		runtime: ScriptRuntimeContext,
+		event: ScriptCollisionExitEvent,
+	): ScriptResult<void> {
+		if (!this.isInitialized || this.isDisposed) {
+			return {
+				success: false,
+				error: this.createNotReadyError("collisionExit"),
+			};
+		}
+
+		if (typeof this.exports.onCollisionExit !== "function") {
+			return { success: true };
+		}
+
+		return this.callHook("onCollisionExit", runtime, event);
+	}
+
 	runNetworkState(
 		runtime: ScriptRuntimeContext,
 		state: Record<string, unknown>,
@@ -267,6 +328,8 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
 		onUpdate: "update",
 		onInput: "input",
 		onCollision: "collision",
+		onCollisionEnter: "collisionEnter",
+		onCollisionExit: "collisionExit",
 		onNetworkState: "networkState",
 		onPhaseChange: "phaseChange",
 	};

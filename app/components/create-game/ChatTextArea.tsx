@@ -23,7 +23,7 @@ import { MicButton } from "@/components/ui/MicButton";
 import { useSpeechToText } from "@/lib/speech/useSpeechToText";
 
 const MIN_INPUT_HEIGHT = 40;
-const MAX_INPUT_HEIGHT = 120;
+const MAX_INPUT_HEIGHT = Platform.OS === "web" ? 300 : 120;
 
 interface Props {
 	onSend: (text: string) => void;

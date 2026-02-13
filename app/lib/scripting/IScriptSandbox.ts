@@ -6,7 +6,9 @@
  */
 
 import type {
+	ScriptCollisionEnterEvent,
 	ScriptCollisionEvent,
+	ScriptCollisionExitEvent,
 	ScriptContext,
 	ScriptErrorReport,
 	ScriptInputEvent,
@@ -34,6 +36,8 @@ export interface ScriptReloadResult {
 		onUpdate: boolean;
 		onInput: boolean;
 		onCollision: boolean;
+		onCollisionEnter: boolean;
+		onCollisionExit: boolean;
 		onNetworkState: boolean;
 		onPhaseChange: boolean;
 	};
@@ -42,6 +46,8 @@ export interface ScriptReloadResult {
 		onUpdate: boolean;
 		onInput: boolean;
 		onCollision: boolean;
+		onCollisionEnter: boolean;
+		onCollisionExit: boolean;
 		onNetworkState: boolean;
 		onPhaseChange: boolean;
 	};
@@ -52,6 +58,8 @@ export type ScriptHookName =
 	| "onUpdate"
 	| "onInput"
 	| "onCollision"
+	| "onCollisionEnter"
+	| "onCollisionExit"
 	| "onNetworkState"
 	| "onPhaseChange";
 
@@ -109,6 +117,22 @@ export interface IScriptSandbox {
 	runCollision(
 		runtime: ScriptRuntimeContext,
 		collision: ScriptCollisionEvent,
+	): ScriptResult<void>;
+
+	/**
+	 * Run the onCollisionEnter hook (called once when two bodies first touch).
+	 */
+	runCollisionEnter(
+		runtime: ScriptRuntimeContext,
+		event: ScriptCollisionEnterEvent,
+	): ScriptResult<void>;
+
+	/**
+	 * Run the onCollisionExit hook (called once when two bodies separate).
+	 */
+	runCollisionExit(
+		runtime: ScriptRuntimeContext,
+		event: ScriptCollisionExitEvent,
 	): ScriptResult<void>;
 
 	/**

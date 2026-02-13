@@ -1,8 +1,8 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { GodotBridge } from "../../godot/types";
 import type { Physics2D } from "../../physics2d/Physics2D";
-import type { ReactGameState } from "../BehaviorContext";
 import type { EntityManager } from "../EntityManager";
+import type { ReactGameState } from "./GameEventSubscriber";
 
 // =============================================================================
 // Variable Types

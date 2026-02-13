@@ -1,9 +1,4 @@
 export type {
-	BehaviorExecutorSystemConfig,
-	BehaviorExecutorSystemState,
-} from "./BehaviorExecutorRuntimeSystem";
-export { BehaviorExecutorRuntimeSystem } from "./BehaviorExecutorRuntimeSystem";
-export type {
 	CameraSystemConfig,
 	CameraSystemState,
 } from "./CameraRuntimeSystem";
@@ -55,8 +50,6 @@ export type {
 	PropertySyncSystemState,
 } from "./PropertySyncRuntimeSystem";
 export { PropertySyncRuntimeSystem } from "./PropertySyncRuntimeSystem";
-export type { RulesSystemConfig, RulesSystemState } from "./RulesSystem";
-export { RulesSystem } from "./RulesSystem";
 export type {
 	ScriptSandboxSystemConfig,
 	ScriptSandboxSystemState,

@@ -945,89 +945,7 @@
       }
     }
   ],
-  "rules": [
-    {
-      "id": "swipe_up",
-      "name": "Swipe up",
-      "trigger": {
-        "type": "swipe",
-        "direction": "up"
-      },
-      "conditions": [
-        {
-          "type": "expression",
-          "expr": "allBoxesOnTargets == 0"
-        }
-      ],
-      "actions": [
-        {
-          "type": "event",
-          "eventName": "move_up"
-        }
-      ]
-    },
-    {
-      "id": "swipe_down",
-      "name": "Swipe down",
-      "trigger": {
-        "type": "swipe",
-        "direction": "down"
-      },
-      "conditions": [
-        {
-          "type": "expression",
-          "expr": "allBoxesOnTargets == 0"
-        }
-      ],
-      "actions": [
-        {
-          "type": "event",
-          "eventName": "move_down"
-        }
-      ]
-    },
-    {
-      "id": "swipe_left",
-      "name": "Swipe left",
-      "trigger": {
-        "type": "swipe",
-        "direction": "left"
-      },
-      "conditions": [
-        {
-          "type": "expression",
-          "expr": "allBoxesOnTargets == 0"
-        }
-      ],
-      "actions": [
-        {
-          "type": "event",
-          "eventName": "move_left"
-        }
-      ]
-    },
-    {
-      "id": "swipe_right",
-      "name": "Swipe right",
-      "trigger": {
-        "type": "swipe",
-        "direction": "right"
-      },
-      "conditions": [
-        {
-          "type": "expression",
-          "expr": "allBoxesOnTargets == 0"
-        }
-      ],
-      "actions": [
-        {
-          "type": "event",
-          "eventName": "move_right"
-        }
-      ]
-    }
-  ],
-  "script": "// --- main ---\n\nconst TILE_SIZE = 1.2;\nconst GRID_SIZE = 8;\nconst GRID_OFFSET_X = 0.6;\nconst GRID_OFFSET_Y = 2.4;\nconst WORLD_WIDTH = 12;\nconst WORLD_HEIGHT = 12;\nconst HALF_W = WORLD_WIDTH / 2;\nconst HALF_H = WORLD_HEIGHT / 2;\nconst cx = (x) => x - HALF_W;\nconst cy = (y) => HALF_H - y;\n\n// Grid state: 0 = empty, 1 = wall, 2 = box\nlet grid = [];\nlet playerRow = 6;\nlet playerCol = 3;\nlet targetPositions = [];\n\nfunction initGrid() {\n  // Initialize grid\n  grid = [];\n  for (let row = 0; row < GRID_SIZE; row++) {\n    grid[row] = [];\n    for (let col = 0; col < GRID_SIZE; col++) {\n      grid[row][col] = 0;\n    }\n  }\n  \n  // Set walls (border)\n  for (let i = 0; i < GRID_SIZE; i++) {\n    grid[0][i] = 1;\n    grid[7][i] = 1;\n    grid[i][0] = 1;\n    grid[i][7] = 1;\n  }\n  \n  // Set initial boxes\n  grid[2][3] = 2;\n  grid[5][4] = 2;\n  \n  // Set target positions\n  targetPositions = [\n    { row: 2, col: 6 },\n    { row: 5, col: 2 },\n  ];\n  \n  // Player position\n  playerRow = 6;\n  playerCol = 3;\n}\n\nfunction getPosition(row, col) {\n  return {\n    x: cx(col * TILE_SIZE + GRID_OFFSET_X),\n    y: cy(row * TILE_SIZE + GRID_OFFSET_Y),\n  };\n}\n\nfunction isWall(row, col) {\n  if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n    return true;\n  }\n  return grid[row][col] === 1;\n}\n\nfunction isBox(row, col) {\n  if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n    return false;\n  }\n  return grid[row][col] === 2;\n}\n\nfunction movePlayer(ctx, deltaRow, deltaCol) {\n  const newRow = playerRow + deltaRow;\n  const newCol = playerCol + deltaCol;\n  \n  // Check if moving into a wall\n  if (isWall(newRow, newCol)) {\n    return false;\n  }\n  \n  // Check if pushing a box\n  if (isBox(newRow, newCol)) {\n    const boxNewRow = newRow + deltaRow;\n    const boxNewCol = newCol + deltaCol;\n    \n    // Can't push box into wall or another box\n    if (isWall(boxNewRow, boxNewCol) || isBox(boxNewRow, boxNewCol)) {\n      return false;\n    }\n    \n    // Move the box\n    grid[newRow][newCol] = 0;\n    grid[boxNewRow][boxNewCol] = 2;\n    \n    // Find and move the box entity\n    const boxId = findBoxAtPosition(ctx, newRow, newCol);\n    if (boxId) {\n      const boxPos = getPosition(boxNewRow, boxNewCol);\n      ctx.setEntityPosition(boxId, { x: boxPos.x, y: boxPos.y });\n    }\n  }\n  \n  // Move player\n  playerRow = newRow;\n  playerCol = newCol;\n  \n  const playerPos = getPosition(playerRow, playerCol);\n  const playerEntity = ctx.queryEntities({ tag: 'player' })[0];\n  if (playerEntity) {\n    ctx.setEntityPosition(playerEntity, { x: playerPos.x, y: playerPos.y });\n  }\n  \n  // Increment moves\n  const currentMoves = ctx.getVariable('moves') || 0;\n  ctx.setVariable('moves', currentMoves + 1);\n  \n  // Check win condition\n  checkWinCondition(ctx);\n  \n  return true;\n}\n\nfunction findBoxAtPosition(ctx, row, col) {\n  const pos = getPosition(row, col);\n  const boxes = ctx.queryEntities({ tag: 'box' });\n  \n  for (const box of boxes) {\n    const boxPos = ctx.getEntityPosition(box);\n    if (boxPos && Math.abs(boxPos.x - pos.x) < 0.1 && Math.abs(boxPos.y - pos.y) < 0.1) {\n      return box;\n    }\n  }\n  \n  return null;\n}\n\nfunction checkWinCondition(ctx) {\n  let allOnTargets = true;\n  \n  for (const target of targetPositions) {\n    if (!isBox(target.row, target.col)) {\n      allOnTargets = false;\n      break;\n    }\n  }\n  \n  ctx.setVariable('allBoxesOnTargets', allOnTargets ? 1 : 0);\n}\n\nexports.onStart = function(ctx) {\n  initGrid();\n  ctx.setVariable('moves', 0);\n  ctx.setVariable('allBoxesOnTargets', 0);\n};\n\nexports.onInput = function(ctx, event) {\n  if (ctx.getVariable('allBoxesOnTargets') === 1) {\n    return;\n  }\n  \n  if (event.type !== 'swipe') return;\n  \n  if (event.direction === 'up') {\n    movePlayer(ctx, -1, 0);\n  } else if (event.direction === 'down') {\n    movePlayer(ctx, 1, 0);\n  } else if (event.direction === 'left') {\n    movePlayer(ctx, 0, -1);\n  } else if (event.direction === 'right') {\n    movePlayer(ctx, 0, 1);\n  }\n};\n",
+  "script": "// --- main ---\nvar TILE_SIZE = 1.2;\nvar GRID_SIZE = 8;\nvar GRID_OFFSET_X = 0.6;\nvar GRID_OFFSET_Y = 2.4;\nvar WORLD_WIDTH = 12;\nvar WORLD_HEIGHT = 12;\nvar HALF_W = WORLD_WIDTH / 2;\nvar HALF_H = WORLD_HEIGHT / 2;\nvar cx = (x) => x - HALF_W;\nvar cy = (y) => HALF_H - y;\n\nvar DRAG_THRESHOLD = 30;\nvar dragStartPos = null;\n\n// Grid state: 0 = empty, 1 = wall, 2 = box\nlet grid = [];\nlet playerRow = 6;\nlet playerCol = 3;\nlet targetPositions = [];\n\nfunction initGrid() {\n\t// Initialize grid\n\tgrid = [];\n\tfor (let row = 0; row < GRID_SIZE; row++) {\n\t\tgrid[row] = [];\n\t\tfor (let col = 0; col < GRID_SIZE; col++) {\n\t\t\tgrid[row][col] = 0;\n\t\t}\n\t}\n\n\t// Set walls (border)\n\tfor (let i = 0; i < GRID_SIZE; i++) {\n\t\tgrid[0][i] = 1;\n\t\tgrid[7][i] = 1;\n\t\tgrid[i][0] = 1;\n\t\tgrid[i][7] = 1;\n\t}\n\n\t// Set initial boxes\n\tgrid[2][3] = 2;\n\tgrid[5][4] = 2;\n\n\t// Set target positions\n\ttargetPositions = [\n\t\t{ row: 2, col: 6 },\n\t\t{ row: 5, col: 2 },\n\t];\n\n\t// Player position\n\tplayerRow = 6;\n\tplayerCol = 3;\n}\n\nfunction getPosition(row, col) {\n\treturn {\n\t\tx: cx(col * TILE_SIZE + GRID_OFFSET_X),\n\t\ty: cy(row * TILE_SIZE + GRID_OFFSET_Y),\n\t};\n}\n\nfunction isWall(row, col) {\n\tif (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n\t\treturn true;\n\t}\n\treturn grid[row][col] === 1;\n}\n\nfunction isBox(row, col) {\n\tif (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) {\n\t\treturn false;\n\t}\n\treturn grid[row][col] === 2;\n}\n\nfunction movePlayer(ctx, deltaRow, deltaCol) {\n\tconst newRow = playerRow + deltaRow;\n\tconst newCol = playerCol + deltaCol;\n\n\t// Check if moving into a wall\n\tif (isWall(newRow, newCol)) {\n\t\treturn false;\n\t}\n\n\t// Check if pushing a box\n\tif (isBox(newRow, newCol)) {\n\t\tconst boxNewRow = newRow + deltaRow;\n\t\tconst boxNewCol = newCol + deltaCol;\n\n\t\t// Can't push box into wall or another box\n\t\tif (isWall(boxNewRow, boxNewCol) || isBox(boxNewRow, boxNewCol)) {\n\t\t\treturn false;\n\t\t}\n\n\t\t// Move the box\n\t\tgrid[newRow][newCol] = 0;\n\t\tgrid[boxNewRow][boxNewCol] = 2;\n\n\t\t// Find and move the box entity\n\t\tconst boxId = findBoxAtPosition(ctx, newRow, newCol);\n\t\tif (boxId) {\n\t\t\tconst boxPos = getPosition(boxNewRow, boxNewCol);\n\t\t\tctx.setEntityPosition(boxId, { x: boxPos.x, y: boxPos.y });\n\t\t}\n\t}\n\n\t// Move player\n\tplayerRow = newRow;\n\tplayerCol = newCol;\n\n\tconst playerPos = getPosition(playerRow, playerCol);\n\tconst playerEntity = ctx.queryEntities({ tag: \"player\" })[0];\n\tif (playerEntity) {\n\t\tctx.setEntityPosition(playerEntity, { x: playerPos.x, y: playerPos.y });\n\t}\n\n\t// Increment moves\n\tconst currentMoves = ctx.getVariable(\"moves\") || 0;\n\tctx.setVariable(\"moves\", currentMoves + 1);\n\n\t// Check win condition\n\tcheckWinCondition(ctx);\n\n\treturn true;\n}\n\nfunction findBoxAtPosition(ctx, row, col) {\n\tconst pos = getPosition(row, col);\n\tconst boxes = ctx.queryEntities({ tag: \"box\" });\n\n\tfor (const box of boxes) {\n\t\tconst boxPos = ctx.getEntityPosition(box);\n\t\tif (\n\t\t\tboxPos &&\n\t\t\tMath.abs(boxPos.x - pos.x) < 0.1 &&\n\t\t\tMath.abs(boxPos.y - pos.y) < 0.1\n\t\t) {\n\t\t\treturn box;\n\t\t}\n\t}\n\n\treturn null;\n}\n\nfunction checkWinCondition(ctx) {\n\tlet allOnTargets = true;\n\n\tfor (const target of targetPositions) {\n\t\tif (!isBox(target.row, target.col)) {\n\t\t\tallOnTargets = false;\n\t\t\tbreak;\n\t\t}\n\t}\n\n\tctx.setVariable(\"allBoxesOnTargets\", allOnTargets ? 1 : 0);\n}\n\nexports.onStart = (ctx) => {\n\tinitGrid();\n\tctx.setVariable(\"moves\", 0);\n\tctx.setVariable(\"allBoxesOnTargets\", 0);\n};\n\nexports.onInput = (ctx, event) => {\n\tif (ctx.getVariable(\"allBoxesOnTargets\") === 1) {\n\t\treturn;\n\t}\n\n\tif (event.type === \"dragStart\") {\n\t\tdragStartPos = { x: event.position.x, y: event.position.y };\n\t} else if (event.type === \"dragEnd\" && dragStartPos) {\n\t\tvar dx = event.position.x - dragStartPos.x;\n\t\tvar dy = event.position.y - dragStartPos.y;\n\t\tvar absDx = Math.abs(dx);\n\t\tvar absDy = Math.abs(dy);\n\n\t\tif (Math.max(absDx, absDy) > DRAG_THRESHOLD) {\n\t\t\tif (absDx > absDy) {\n\t\t\t\tif (dx > 0) {\n\t\t\t\t\tmovePlayer(ctx, 0, 1);\n\t\t\t\t} else {\n\t\t\t\t\tmovePlayer(ctx, 0, -1);\n\t\t\t\t}\n\t\t\t} else {\n\t\t\t\tif (dy > 0) {\n\t\t\t\t\tmovePlayer(ctx, 1, 0);\n\t\t\t\t} else {\n\t\t\t\t\tmovePlayer(ctx, -1, 0);\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\tdragStartPos = null;\n\t}\n};\n",
   "background": {
     "type": "static",
     "color": "#2c3e50"
@@ -1064,8 +982,5 @@
   "variables": {
     "moves": 0,
     "allBoxesOnTargets": 0
-  },
-  "winCondition": {
-    "expr": "allBoxesOnTargets == 1"
   }
 }

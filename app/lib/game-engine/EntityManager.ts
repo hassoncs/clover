@@ -8,7 +8,7 @@ import type {
 } from "@slopcade/shared";
 import { getGlobalTagRegistry } from "@slopcade/shared";
 import type { GodotBridge, Vec2 } from "../godot/types";
-import { recomputeActiveConditionalGroup } from "./behaviors/conditional";
+
 import type {
 	EntityManagerOptions,
 	RuntimeBehavior,
@@ -214,8 +214,6 @@ export class EntityManager {
 			visible: true,
 			active: true,
 			colliderId: null,
-			conditionalBehaviors: prefab?.conditionalBehaviors ?? [],
-			activeConditionalGroupId: -1,
 		};
 
 		for (const tag of tags) {
@@ -342,15 +340,6 @@ export class EntityManager {
 		}
 		this.entitiesByTagId.get(tagId)!.add(entityId);
 
-		if (entity.conditionalBehaviors.length > 0) {
-			const oldGroupId = entity.activeConditionalGroupId;
-			const newGroupId = recomputeActiveConditionalGroup(entity);
-			if (oldGroupId !== newGroupId) {
-				entity.pendingLifecycleTransition = { oldGroupId, newGroupId };
-				entity.activeConditionalGroupId = newGroupId;
-			}
-		}
-
 		return true;
 	}
 
@@ -367,15 +356,6 @@ export class EntityManager {
 		if (tagId !== undefined) {
 			entity.tagBits.delete(tagId);
 			this.entitiesByTagId.get(tagId)?.delete(entityId);
-		}
-
-		if (entity.conditionalBehaviors.length > 0) {
-			const oldGroupId = entity.activeConditionalGroupId;
-			const newGroupId = recomputeActiveConditionalGroup(entity);
-			if (oldGroupId !== newGroupId) {
-				entity.pendingLifecycleTransition = { oldGroupId, newGroupId };
-				entity.activeConditionalGroupId = newGroupId;
-			}
 		}
 
 		return true;

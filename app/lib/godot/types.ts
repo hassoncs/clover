@@ -1,12 +1,12 @@
 import type {
 	GameDefinition,
-	GameRule,
 	PropertySyncPayload,
 	Vec2 as SharedVec2,
 } from "@slopcade/shared";
 import type { CompiledPlan } from "@slopcade/shared/effects";
 
-export type { GameDefinition, GameRule, PropertySyncPayload, CompiledPlan };
+export type GameRule = Record<string, unknown>;
+export type { GameDefinition, PropertySyncPayload, CompiledPlan };
 export type Vec2 = SharedVec2;
 
 export type JsonParam<T> = T;
@@ -28,6 +28,18 @@ export interface CollisionEvent {
 	entityA: string;
 	entityB: string;
 	contacts: ContactInfo[];
+}
+
+export interface CollisionEnterEvent {
+	entityA: string;
+	entityB: string;
+	normal: { x: number; y: number };
+	impulse: number;
+}
+
+export interface CollisionExitEvent {
+	entityA: string;
+	entityB: string;
 }
 
 export interface SensorEvent {
@@ -389,6 +401,8 @@ export interface GodotBridge extends EffectsBridge {
 
 	// Events
 	onCollision(callback: (event: CollisionEvent) => void): () => void;
+	onCollisionEnter(callback: (event: CollisionEnterEvent) => void): () => void;
+	onCollisionExit(callback: (event: CollisionExitEvent) => void): () => void;
 	onEntityDestroyed(callback: (entityId: string) => void): () => void;
 	onEntitySpawned(callback: (event: EntitySpawnedEvent) => void): () => void;
 	onSensorBegin(callback: (event: SensorEvent) => void): () => void;

@@ -35,7 +35,6 @@ function createMockBridge() {
 
 function createMockRuntime() {
 	return {
-		applyRules: vi.fn(),
 		applyScript: vi.fn().mockResolvedValue(undefined),
 	};
 }
@@ -404,7 +403,6 @@ describe("HotReloadOrchestrator", () => {
 		expect(bridge.loadEntities).toHaveBeenNthCalledWith(2, [
 			{ id: "box-1", name: "Box", prefab: "box" },
 		]);
-		expect(runtime.applyRules).toHaveBeenCalledWith([]);
 		expect(runtime.applyScript).toHaveBeenCalledWith("function onStart() {}");
 		expect(bridge.hotSwapShader).toHaveBeenCalledWith(
 			"wave",

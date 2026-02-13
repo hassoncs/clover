@@ -118,7 +118,6 @@ export interface RawBundleData {
 	effects: GameDefinition["effects"] | null;
 	templates: Array<Record<string, unknown>>;
 	entities: Array<Record<string, unknown>>;
-	rules: Array<Record<string, unknown>>;
 	schemas?: {
 		level?: object;
 		persistence?: object;
@@ -147,14 +146,11 @@ export interface BundleSections {
 	world: GameDefinition["world"];
 	prefabs: GameDefinition["prefabs"];
 	entities: GameDefinition["entities"];
-	rules: GameDefinition["rules"];
 	script?: string;
 	effects?: GameDefinition["effects"];
 	systems?: {
-		containers?: GameDefinition["containers"];
 		match3?: GameDefinition["match3"];
 		tetris?: GameDefinition["tetris"];
-		stateMachines?: GameDefinition["stateMachines"];
 	};
 }
 

@@ -1,4 +1,3 @@
-import type { GameRule } from "@slopcade/shared";
 import type { GodotBridge } from "@/lib/godot/types";
 
 export interface HotReloadContext {
@@ -6,7 +5,6 @@ export interface HotReloadContext {
 	activeScene: string | null;
 	bridge: GodotBridge;
 	runtime: {
-		applyRules: (rules: GameRule[]) => void;
 		applyScript: (source: string) => Promise<void>;
 	};
 }

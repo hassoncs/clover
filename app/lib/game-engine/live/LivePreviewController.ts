@@ -54,7 +54,6 @@ const DEFAULT_POLL_INTERVAL_MS = 1000;
 const ALL_TAGS: WorkspaceTag[] = [...TAG_GROUPS];
 
 const DEFAULT_RUNTIME: HotReloadContext["runtime"] = {
-	applyRules: () => undefined,
 	applyScript: async () => undefined,
 };
 

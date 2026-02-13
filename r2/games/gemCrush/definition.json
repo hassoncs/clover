@@ -1044,7 +1044,6 @@
       "layer": -1
     }
   ],
-  "rules": [],
   "match3": {
     "gridId": "gem_grid",
     "rows": 7,
@@ -1127,12 +1126,5 @@
         }
       }
     ]
-  },
-  "winCondition": {
-    "expr": "score >= 1000"
-  },
-  "loseCondition": {
-    "type": "time_up",
-    "time": 120
   }
 }
