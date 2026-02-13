@@ -21,9 +21,7 @@ const API_ROOT = resolve(__dirname, "..");
 const R2_DIR = resolve(__dirname, "..", "..", "r2");
 const APP_ROOT = resolve(__dirname, "..", "..", "app");
 const R2_GAMES_DIR = join(R2_DIR, "games");
-const R2_PACKS_DIR = join(R2_DIR, "packs");
 const EMBED_DIR = join(APP_ROOT, "assets", "embedded-games");
-const EMBED_PACKS_DIR = join(EMBED_DIR, "packs");
 const REGISTRY_PATH = join(
 	APP_ROOT,
 	"lib",
@@ -31,53 +29,18 @@ const REGISTRY_PATH = join(
 	"embedded-games-registry.ts",
 );
 
-interface PackManifest {
-	version: number;
-	packId: string;
-	name: string;
-	assets: Record<string, { file: string }>;
-}
-
 interface EmbeddedGameEntry {
 	gameId: string;
 	uuid: string;
-	packs: Array<{ name: string; packId: string; assetCount: number }>;
-	assetCount: number;
 	totalBytes: number;
 }
 
 interface BuildResult {
 	id: string;
 	success: boolean;
-	assetCount: number;
 	totalBytes: number;
 	hasScript: boolean;
 	error?: string;
-}
-
-function discoverPacks(
-	packIds: string[],
-): Array<{ name: string; packId: string; assetCount: number }> {
-	const packs: Array<{ name: string; packId: string; assetCount: number }> = [];
-
-	for (const packId of packIds) {
-		const manifestPath = join(R2_PACKS_DIR, packId, "manifest.json");
-		if (!existsSync(manifestPath)) {
-			console.warn(`  ⚠ Pack ${packId} not found at ${manifestPath}`);
-			continue;
-		}
-
-		const manifest: PackManifest = JSON.parse(
-			readFileSync(manifestPath, "utf-8"),
-		);
-		packs.push({
-			name: manifest.name,
-			packId: manifest.packId,
-			assetCount: Object.keys(manifest.assets).length,
-		});
-	}
-
-	return packs;
 }
 
 function copyDirRecursive(
@@ -107,8 +70,6 @@ function copyDirRecursive(
 function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
 	const definitionLines: string[] = [];
 	const metadataLines: string[] = [];
-	const packManifestLines: string[] = [];
-	const assetLines: string[] = [];
 
 	for (const game of embeddedGames) {
 		definitionLines.push(
@@ -117,40 +78,6 @@ function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
 		metadataLines.push(
 			`  '${game.gameId}': require('@/assets/embedded-games/${game.gameId}/metadata.json'),`,
 		);
-
-		if (game.packs.length > 0) {
-			const packEntries = game.packs.map(
-				(p) =>
-					`    '${p.packId}': require('@/assets/embedded-games/packs/${p.packId}/manifest.json'),`,
-			);
-			packManifestLines.push(
-				`  '${game.gameId}': {\n${packEntries.join("\n")}\n  },`,
-			);
-
-			for (const pack of game.packs) {
-				const manifestPath = join(
-					EMBED_PACKS_DIR,
-					pack.packId,
-					"manifest.json",
-				);
-				if (existsSync(manifestPath)) {
-					const manifest: PackManifest = JSON.parse(
-						readFileSync(manifestPath, "utf-8"),
-					);
-					for (const [, assetEntry] of Object.entries(manifest.assets)) {
-						const assetFilePath = join(
-							EMBED_PACKS_DIR,
-							pack.packId,
-							assetEntry.file,
-						);
-						if (!existsSync(assetFilePath)) continue;
-						assetLines.push(
-							`  'packs/${pack.packId}/${assetEntry.file}': require('@/assets/embedded-games/packs/${pack.packId}/${assetEntry.file}'),`,
-						);
-					}
-				}
-			}
-		}
 	}
 
 	const content = `// AUTO-GENERATED - DO NOT EDIT
@@ -165,14 +92,6 @@ ${definitionLines.join("\n")}
 export const EMBEDDED_METADATA: Record<string, unknown> = {
 ${metadataLines.join("\n")}
 };
-
-export const EMBEDDED_PACK_MANIFESTS: Record<string, Record<string, unknown>> = {
-${packManifestLines.join("\n")}
-};
-
-export const EMBEDDED_ASSETS: Record<string, number> = {
-${assetLines.join("\n")}
-};
 `;
 
 	mkdirSync(dirname(REGISTRY_PATH), { recursive: true });
@@ -180,7 +99,7 @@ ${assetLines.join("\n")}
 	console.log(`✓ Generated embedded-games-registry.ts`);
 }
 
-const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000001";
 const SKIP_SEED = process.argv.includes("--skip-seed");
 const WRANGLER_BIN = join(API_ROOT, "node_modules", ".bin", "wrangler");
 
@@ -370,15 +289,11 @@ async function build(): Promise<void> {
 					id,
 					success: false,
 					error: "Failed to load game",
-					assetCount: 0,
 					totalBytes: 0,
 					hasScript: false,
 				});
 				continue;
 			}
-
-			const packIds = (entry.definition.assetSystem as any)?.packIds ?? [];
-			const packs = discoverPacks(packIds);
 
 			const definitionJson = JSON.stringify(entry.definition, null, 2);
 			const gameUuid = entry.definition.metadata.id;
@@ -388,11 +303,6 @@ async function build(): Promise<void> {
 			mkdirSync(r2GameDir, { recursive: true });
 			writeFileSync(join(r2GameDir, "definition.json"), definitionJson);
 
-			const packEntries = packs.map((p) => ({
-				name: p.name,
-				packId: p.packId,
-				assetCount: p.assetCount,
-			}));
 			const metadata = {
 				id: gameUuid,
 				slug: id,
@@ -402,7 +312,6 @@ async function build(): Promise<void> {
 					(entry.definition.metadata as { version?: string })?.version ??
 					"1.0.0",
 				thumbnailUrl: null,
-				packs: packEntries,
 				updatedAt: Date.now(),
 			};
 			writeFileSync(
@@ -413,38 +322,24 @@ async function build(): Promise<void> {
 			const gameEmbedDir = join(EMBED_DIR, id);
 			const assetBytes = copyDirRecursive(r2GameDir, gameEmbedDir, excludeDirs);
 
-			// Copy packs to app/assets/embedded-games/packs/{packId}/
-			let packBytes = 0;
-			for (const pack of packs) {
-				const packSrc = join(R2_PACKS_DIR, pack.packId);
-				const packDest = join(EMBED_PACKS_DIR, pack.packId);
-				packBytes += copyDirRecursive(packSrc, packDest, new Set());
-			}
-
-			const assetCount = packs.reduce((sum, p) => sum + p.assetCount, 0);
-			const gameTotalBytes =
-				Buffer.byteLength(definitionJson) + assetBytes + packBytes;
+			const gameTotalBytes = Buffer.byteLength(definitionJson) + assetBytes;
 			const hasScript =
 				typeof entry.definition.script === "string" &&
 				entry.definition.script.length > 0;
 			embeddedGames.push({
 				gameId: id,
 				uuid: gameUuid,
-				packs: packEntries,
-				assetCount,
 				totalBytes: gameTotalBytes,
 			});
 			results.push({
 				id,
 				success: true,
-				assetCount,
 				totalBytes: gameTotalBytes,
 				hasScript,
 			});
 
 			const parts = [id];
 			if (hasScript) parts.push("+ script");
-			if (assetCount > 0) parts.push(`${assetCount} assets`);
 			console.log(`✓ ${parts.join(" | ")}`);
 		} catch (error) {
 			const errorMsg = error instanceof Error ? error.message : "Unknown error";
@@ -452,7 +347,6 @@ async function build(): Promise<void> {
 				id,
 				success: false,
 				error: errorMsg,
-				assetCount: 0,
 				totalBytes: 0,
 				hasScript: false,
 			});
@@ -483,11 +377,9 @@ async function build(): Promise<void> {
 
 	const succeeded = results.filter((r) => r.success).length;
 	const failed = results.filter((r) => !r.success).length;
-	const totalAssets = results.reduce((sum, r) => sum + r.assetCount, 0);
 
 	console.log(`\nBuild complete:`);
 	console.log(`  Games: ${succeeded} succeeded, ${failed} failed`);
-	console.log(`  Assets: ${totalAssets} files`);
 	console.log(`  Size: ${(totalBytes / 1024 / 1024).toFixed(2)} MB`);
 
 	if (failed > 0) {

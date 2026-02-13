@@ -20,8 +20,8 @@
 		"test": "vitest",
 		"test:run": "vitest run",
 		"generate:ui": "npx tsx src/cli/generate-ui.ts",
-		"build:games": "tsx scripts/build-games.ts",
-		"watch:games": "tsx scripts/watch-games.ts",
+		"build:games": "tsx scripts/sync-r2.ts",
+		"watch:games": "tsx scripts/sync-r2.ts --watch",
 		"generate:assets": "tsx scripts/generate-assets.ts"
 	},
 	"dependencies": {

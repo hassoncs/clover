@@ -600,8 +600,6 @@ export const TileMapSchema = z.object({
 	layers: z.array(TileLayerSchema),
 });
 
-export const AssetSystemConfigSchema = z.object({});
-
 export const AIEconomyGraphSchema = EconomyGraphSchema;
 
 export const GameDefinitionSchema = z.object({
@@ -614,7 +612,6 @@ export const GameDefinitionSchema = z.object({
 	rules: z.array(GameRuleSchema).optional(),
 	winCondition: WinConditionSchema.optional(),
 	loseCondition: LoseConditionSchema.optional(),
-	assetSystem: AssetSystemConfigSchema.optional(),
 	parallaxConfig: ParallaxConfigSchema.optional(),
 	tileSheets: z.array(TileSheetSchema).optional(),
 	tileMaps: z.array(TileMapSchema).optional(),

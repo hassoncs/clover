@@ -508,6 +508,51 @@ export const chatThreadsRouter = router({
 			return { exists: true, content: await obj.text() };
 		}),
 
+	scaffoldWorkspace: protectedProcedure
+		.input(
+			z.object({
+				gameId: z.string().uuid(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const game = await ctx.env.DB.prepare(
+				"SELECT id, user_id, title FROM games WHERE id = ? AND deleted_at IS NULL",
+			)
+				.bind(input.gameId)
+				.first<{ id: string; user_id: string; title: string | null }>();
+
+			if (!game || game.user_id !== ctx.user.id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
+			}
+
+			const scaffoldService = new WorkspaceScaffoldService(ctx.env.ASSETS);
+			const result = await scaffoldService.seedIfMissing({
+				gameId: input.gameId,
+				gameTitle: game.title ?? undefined,
+			});
+
+			const docKey = `games/${input.gameId}/workspace/document.md`;
+			const existingDoc = await ctx.env.ASSETS.head(docKey);
+			let documentCreated = false;
+
+			if (!existingDoc) {
+				const defaultDoc = `# ${game.title ?? "Untitled Game"}\n\nDescribe your game here.\n`;
+				await ctx.env.ASSETS.put(docKey, defaultDoc, {
+					httpMetadata: { contentType: "text/markdown" },
+				});
+				documentCreated = true;
+			}
+
+			return {
+				created: documentCreated
+					? [...result.created, "document.md"]
+					: result.created,
+				skipped: documentCreated
+					? result.skipped
+					: [...result.skipped, "document.md"],
+			};
+		}),
+
 	writeWorkspaceFile: protectedProcedure
 		.input(
 			z.object({

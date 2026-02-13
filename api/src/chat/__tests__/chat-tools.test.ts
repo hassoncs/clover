@@ -27,12 +27,19 @@ type ReadFilesBatchResult = {
 	}>;
 };
 
+type WriteFileResult = {
+	ok: true;
+	key: string;
+	bytesWritten: number;
+};
+
 const GAME_ID = "test-game-id";
 
 function createArtifactServiceMock() {
 	return {
 		listWorkspaceFileMeta: vi.fn<ArtifactService["listWorkspaceFileMeta"]>(),
 		readWorkspaceFiles: vi.fn<ArtifactService["readWorkspaceFiles"]>(),
+		storeWorkspaceFile: vi.fn<ArtifactService["storeWorkspaceFile"]>(),
 	} as unknown as ArtifactService;
 }
 
@@ -185,5 +192,89 @@ describe("createChatTools", () => {
 				},
 			],
 		});
+	});
+
+	it("writeFile creates a new file successfully", async () => {
+		const artifactService = createArtifactServiceMock();
+		vi.mocked(artifactService.storeWorkspaceFile).mockResolvedValue({
+			key: `workspace/${GAME_ID}/hello.txt`,
+		});
+
+		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const writeFileTool = tools.writeFile as unknown as ExecutableTool<
+			{ filename: string; content: string },
+			WriteFileResult
+		>;
+
+		const result = await writeFileTool.execute({
+			filename: "hello.txt",
+			content: "Hello, world!",
+		});
+
+		expect(artifactService.storeWorkspaceFile).toHaveBeenCalledWith({
+			gameId: GAME_ID,
+			filename: "hello.txt",
+			data: "Hello, world!",
+			contentType: "text/plain",
+		});
+		expect(result).toEqual({
+			ok: true,
+			key: `workspace/${GAME_ID}/hello.txt`,
+			bytesWritten: 13,
+		});
+	});
+
+	it("writeFile overwrites an existing file", async () => {
+		const artifactService = createArtifactServiceMock();
+		vi.mocked(artifactService.storeWorkspaceFile).mockResolvedValue({
+			key: `workspace/${GAME_ID}/world.json`,
+		});
+
+		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const writeFileTool = tools.writeFile as unknown as ExecutableTool<
+			{ filename: string; content: string },
+			WriteFileResult
+		>;
+
+		const updatedContent = '{"world":false,"updated":true}';
+		const result = await writeFileTool.execute({
+			filename: "world.json",
+			content: updatedContent,
+		});
+
+		expect(artifactService.storeWorkspaceFile).toHaveBeenCalledWith({
+			gameId: GAME_ID,
+			filename: "world.json",
+			data: updatedContent,
+			contentType: "text/plain",
+		});
+		expect(result).toEqual({
+			ok: true,
+			key: `workspace/${GAME_ID}/world.json`,
+			bytesWritten: 30,
+		});
+	});
+
+	it("writeFile returns correct bytesWritten for content length", async () => {
+		const artifactService = createArtifactServiceMock();
+		vi.mocked(artifactService.storeWorkspaceFile).mockResolvedValue({
+			key: `workspace/${GAME_ID}/prefabs/player.json`,
+		});
+
+		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const writeFileTool = tools.writeFile as unknown as ExecutableTool<
+			{ filename: string; content: string },
+			WriteFileResult
+		>;
+
+		const content = JSON.stringify({ name: "player", health: 100 });
+		const result = await writeFileTool.execute({
+			filename: "prefabs/player.json",
+			content,
+		});
+
+		expect(result.ok).toBe(true);
+		expect(result.key).toBe(`workspace/${GAME_ID}/prefabs/player.json`);
+		expect(result.bytesWritten).toBe(content.length);
 	});
 });

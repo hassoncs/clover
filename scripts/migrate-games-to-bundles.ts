@@ -40,7 +40,7 @@ interface GameDefinition {
 	rules?: unknown[];
 	winCondition?: unknown;
 	loseCondition?: unknown;
-	assetSystem?: unknown;
+
 	sounds?: unknown;
 	input?: unknown;
 	match3?: unknown;
@@ -113,7 +113,6 @@ function writeBundleFiles(gameSlug: string, gameDef: GameDefinition): void {
 	if (gameDef.camera) manifest.camera = gameDef.camera;
 	if (gameDef.overlay) manifest.overlay = gameDef.overlay;
 	if (gameDef.variables) manifest.variables = gameDef.variables;
-	if (gameDef.assetSystem) manifest.assetSystem = gameDef.assetSystem;
 	if (gameDef.winCondition) manifest.winCondition = gameDef.winCondition;
 	if (gameDef.loseCondition) manifest.loseCondition = gameDef.loseCondition;
 	if (gameDef.input) manifest.input = gameDef.input;

@@ -3,10 +3,6 @@ export interface AssetUrlConfig {
 	localServerUrl?: string;
 }
 
-export function buildR2Key(prefix: string, assetId: string): string {
-	return `packs/${prefix}/${assetId}.png`;
-}
-
 export function getAssetUrl(
 	r2Key: string,
 	cdnBaseUrl: string,

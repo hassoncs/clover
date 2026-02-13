@@ -380,25 +380,24 @@ export const generationJobsRouter = router({
 						height: task.target_height ?? 512,
 					});
 
-					if (result.success && result.r2Key && shouldRemoveBackground) {
+					if (result.success && result.imageBuffer && shouldRemoveBackground) {
 						console.log(
 							`[processGenerationJob] Removing background for ${task.template_id}`,
 						);
 						try {
-							const originalAsset = await ctx.env.ASSETS.get(result.r2Key);
-							if (originalAsset) {
-								const buffer = await originalAsset.arrayBuffer();
-								const bgRemovedResult = await assetService.removeBackground(
-									buffer,
-									entityType,
+							const bgRemovedResult = await assetService.removeBackground(
+								result.imageBuffer.buffer.slice(
+									result.imageBuffer.byteOffset,
+									result.imageBuffer.byteOffset + result.imageBuffer.byteLength,
+								) as ArrayBuffer,
+								entityType,
+							);
+							if (bgRemovedResult.success && bgRemovedResult.assetUrl) {
+								result = bgRemovedResult;
+							} else {
+								console.warn(
+									`[processGenerationJob] Background removal failed, using original: ${bgRemovedResult.error}`,
 								);
-								if (bgRemovedResult.success && bgRemovedResult.assetUrl) {
-									result = bgRemovedResult;
-								} else {
-									console.warn(
-										`[processGenerationJob] Background removal failed, using original: ${bgRemovedResult.error}`,
-									);
-								}
 							}
 						} catch (bgErr) {
 							console.warn(
@@ -408,26 +407,31 @@ export const generationJobsRouter = router({
 						}
 					}
 
-					if (result.success && result.r2Key) {
-						const assetId = crypto.randomUUID();
+					if (result.success && result.contentHash) {
 						const assetNow = Date.now();
 
 						await ctx.env.DB.prepare(
-							`INSERT INTO assets (id, owner_game_id, source, r2_key, width, height, theme_id, compiled_prompt, model_id, created_at)
-               VALUES (?, ?, 'generated', ?, ?, ?, ?, ?, ?, ?)`,
+							`UPDATE assets SET owner_game_id = ?, width = ?, height = ?, theme_id = ?, compiled_prompt = ?, model_id = ?
+               WHERE content_hash = ?`,
 						)
 							.bind(
-								assetId,
 								jobRow.game_id,
-								result.r2Key,
 								task.target_width,
 								task.target_height,
 								jobRow.theme_id,
 								task.compiled_prompt,
 								task.model_id,
-								assetNow,
+								result.contentHash,
 							)
 							.run();
+
+						const assetRow = await ctx.env.DB.prepare(
+							"SELECT id FROM assets WHERE content_hash = ?",
+						)
+							.bind(result.contentHash)
+							.first<{ id: string }>();
+
+						const assetId = assetRow?.id ?? result.contentHash;
 
 						await ctx.env.DB.prepare(
 							`UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`,
@@ -455,7 +459,7 @@ export const generationJobsRouter = router({
 							"INFO",
 							input.jobId,
 							task.id,
-							`Task succeeded - Asset: ${assetId}`,
+							`Task succeeded - Asset hash: ${result.contentHash}`,
 						);
 
 						successCount++;

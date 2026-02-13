@@ -1,6 +1,6 @@
 import type { ExpressionValueType, Value } from "../expressions/types";
 import type { StateMachineDefinition } from "../systems/state-machine/types";
-import type { AssetSource, AssetSystemConfig } from "./asset-system";
+import type { AssetSource } from "./asset-system";
 import type { Vec2 } from "./common";
 import type { ContainerConfig } from "./container";
 import type { EntityPrefab, GameEntity } from "./entity";
@@ -19,6 +19,7 @@ import type { TileMap, TileSheet } from "./tilemap";
  */
 export type ImageField = {
 	imageUrl?: string;
+	url?: string;
 	assetRef?: string;
 	localPath?: string;
 	assetId?: string;
@@ -480,7 +481,6 @@ export interface GameDefinition {
 	rules?: GameRule[];
 	winCondition?: WinCondition;
 	loseCondition?: LoseCondition;
-	assetSystem?: AssetSystemConfig;
 	/** @deprecated Use background with type: 'parallax' instead */
 	parallaxConfig?: ParallaxConfig;
 	tileSheets?: TileSheet[];

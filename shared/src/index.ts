@@ -10,6 +10,5 @@ export * from "./systems";
 export * from "./tags";
 export * from "./types";
 export * from "./utils/asset-url";
-export * from "./utils/definition-resolver";
 export * from "./utils/game-helpers";
 export * from "./validation";

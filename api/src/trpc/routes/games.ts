@@ -141,7 +141,6 @@ async function writeMetadataToR2(
 		description: meta.description,
 		version: "1.0.0",
 		thumbnailUrl: meta.thumbnailUrl,
-		packs: [],
 		updatedAt: meta.updatedAt,
 	};
 	await assets.put(`${r2Prefix}/metadata.json`, JSON.stringify(metadata), {
@@ -1028,7 +1027,7 @@ export const gamesRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+			const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000001";
 			const now = Date.now();
 
 			const results: Array<{

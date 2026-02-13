@@ -1,4 +1,3 @@
-import { buildR2Key } from "@slopcade/shared";
 import { resolveStyle } from "@/ai/pipeline/types";
 import { createComfyUIAdapter } from "@/ai/providers/comfyui/client";
 import type { ImageGenerationAdapter } from "@/ai/providers/contract";
@@ -7,6 +6,7 @@ import {
 	createScenarioAdapter,
 	createScenarioClient,
 } from "@/ai/providers/scenario/client";
+import { BlobStore, type BlobStoreResult } from "@/services/BlobStore";
 import type { Env } from "@/trpc/context";
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === "true";
@@ -78,7 +78,6 @@ export interface StructuredPromptParams {
 
 export interface AssetContext {
 	gameId: string;
-	assetPrefix: string;
 }
 
 export interface AssetGenerationRequest {
@@ -106,6 +105,8 @@ export interface AssetGenerationResult {
 	success: boolean;
 	assetUrl?: string;
 	r2Key?: string;
+	contentHash?: string;
+	imageBuffer?: Uint8Array;
 	silhouetteUrl?: string;
 	silhouetteR2Key?: string;
 	scenarioAssetId?: string;
@@ -626,10 +627,12 @@ export async function createImageGenerationAdapter({
 export class AssetService {
 	private providerClient: ImageGenerationAdapter | null = null;
 	private env: Env;
+	private blobStore: BlobStore;
 	private debugMode: boolean;
 
 	constructor(env: Env) {
 		this.env = env;
+		this.blobStore = new BlobStore(env.ASSETS, env.DB);
 		this.debugMode =
 			DEBUG_ASSET_GENERATION || env.DEBUG_ASSET_GENERATION === "true";
 	}
@@ -745,10 +748,11 @@ export class AssetService {
 				guidance,
 			});
 
-			const assetId = result.assetId;
-			const { buffer, extension } = await provider.downloadImage(assetId);
+			const generatedAssetId = result.assetId;
+			const { buffer, extension } =
+				await provider.downloadImage(generatedAssetId);
 
-			assetLog("INFO", "", `Downloaded generated asset: ${assetId}`);
+			assetLog("INFO", "", `Downloaded generated asset: ${generatedAssetId}`);
 
 			// Debug: save result image and metadata
 			await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
@@ -766,30 +770,34 @@ export class AssetService {
 							height,
 						},
 						silhouette: { shape: physicsShape, width, height },
-						result: { scenarioAssetId: assetId, extension },
+						result: { scenarioAssetId: generatedAssetId, extension },
 					},
 					null,
 					2,
 				),
 			);
 
-			const r2Key = await this.uploadToR2(
-				buffer,
-				extension,
-				entityType,
-				context,
-			);
+			const mimeType = extension === ".png" ? "image/png" : "image/webp";
+			const blobResult = await this.blobStore.put(buffer, mimeType, {
+				source: "generated",
+			});
 
-			assetLog("INFO", "", `Uploaded to R2: ${r2Key}`);
-			assetLog("INFO", "", `Uploaded silhouette to R2: ${silhouetteR2Key}`);
+			assetLog(
+				"INFO",
+				"",
+				`Stored in BlobStore: ${blobResult.hash} (isNew: ${blobResult.isNew})`,
+			);
+			assetLog("INFO", "", `Stored silhouette in R2: ${silhouetteR2Key}`);
 
 			return {
 				success: true,
-				assetUrl: this.getR2PublicUrl(r2Key),
-				r2Key,
+				assetUrl: this.blobStore.getUrl(blobResult.hash),
+				r2Key: `blobs/${blobResult.hash.slice(0, 2)}/${blobResult.hash}`,
+				contentHash: blobResult.hash,
+				imageBuffer: buffer,
 				silhouetteUrl: this.getR2PublicUrl(silhouetteR2Key),
 				silhouetteR2Key,
-				scenarioAssetId: assetId,
+				scenarioAssetId: generatedAssetId,
 			};
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -872,8 +880,9 @@ export class AssetService {
 				guidance: PROVIDER_DEFAULTS.GUIDANCE,
 			});
 
-			const assetId = result.assetId;
-			const { buffer, extension } = await provider.downloadImage(assetId);
+			const generatedAssetId = result.assetId;
+			const { buffer, extension } =
+				await provider.downloadImage(generatedAssetId);
 
 			// Debug: save result image and metadata
 			await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
@@ -890,25 +899,25 @@ export class AssetService {
 							width: physicsWidth,
 							height: physicsHeight,
 						},
-						result: { scenarioAssetId: assetId, extension },
+						result: { scenarioAssetId: generatedAssetId, extension },
 					},
 					null,
 					2,
 				),
 			);
 
-			const r2Key = await this.uploadToR2(
-				buffer,
-				extension,
-				entityType,
-				params.context,
-			);
+			const mimeType = extension === ".png" ? "image/png" : "image/webp";
+			const blobResult = await this.blobStore.put(buffer, mimeType, {
+				source: "generated",
+			});
 
 			return {
 				success: true,
-				assetUrl: this.getR2PublicUrl(r2Key),
-				r2Key,
-				scenarioAssetId: assetId,
+				assetUrl: this.blobStore.getUrl(blobResult.hash),
+				r2Key: `blobs/${blobResult.hash.slice(0, 2)}/${blobResult.hash}`,
+				contentHash: blobResult.hash,
+				imageBuffer: buffer,
+				scenarioAssetId: generatedAssetId,
 			};
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -972,21 +981,22 @@ export class AssetService {
 				guidance: PROVIDER_DEFAULTS.GUIDANCE,
 			});
 
-			const assetId = result.assetId;
-			const { buffer, extension } = await provider.downloadImage(assetId);
+			const generatedAssetId = result.assetId;
+			const { buffer, extension } =
+				await provider.downloadImage(generatedAssetId);
 
-			const r2Key = await this.uploadToR2(
-				buffer,
-				extension,
-				entityType,
-				context,
-			);
+			const mimeType = extension === ".png" ? "image/png" : "image/webp";
+			const blobResult = await this.blobStore.put(buffer, mimeType, {
+				source: "generated",
+			});
 
 			return {
 				success: true,
-				assetUrl: this.getR2PublicUrl(r2Key),
-				r2Key,
-				scenarioAssetId: assetId,
+				assetUrl: this.blobStore.getUrl(blobResult.hash),
+				r2Key: `blobs/${blobResult.hash.slice(0, 2)}/${blobResult.hash}`,
+				contentHash: blobResult.hash,
+				imageBuffer: buffer,
+				scenarioAssetId: generatedAssetId,
 			};
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -1022,17 +1032,18 @@ export class AssetService {
 			const { buffer, extension } = await provider.downloadImage(
 				result.assetId,
 			);
-			const r2Key = await this.uploadToR2(
-				buffer,
-				extension,
-				entityType,
-				context,
-			);
+
+			const mimeType = extension === ".png" ? "image/png" : "image/webp";
+			const blobResult = await this.blobStore.put(buffer, mimeType, {
+				source: "generated",
+			});
 
 			return {
 				success: true,
-				assetUrl: this.getR2PublicUrl(r2Key),
-				r2Key,
+				assetUrl: this.blobStore.getUrl(blobResult.hash),
+				r2Key: `blobs/${blobResult.hash.slice(0, 2)}/${blobResult.hash}`,
+				contentHash: blobResult.hash,
+				imageBuffer: buffer,
 				scenarioAssetId: result.assetId,
 			};
 		} catch (err) {
@@ -1054,15 +1065,7 @@ export class AssetService {
 		const assetId = crypto.randomUUID();
 		const fileSuffix = suffix ? `-${suffix}` : "";
 
-		let r2Key: string;
-		if (context?.gameId && context?.assetPrefix) {
-			const basePath = buildR2Key(context.assetPrefix, assetId);
-			r2Key = suffix
-				? basePath.replace(extension, `${fileSuffix}${extension}`)
-				: basePath;
-		} else {
-			r2Key = `${entityType}/${assetId}${fileSuffix}${extension}`;
-		}
+		const r2Key = `${entityType}/${assetId}${fileSuffix}${extension}`;
 
 		await this.env.ASSETS.put(r2Key, buffer, {
 			httpMetadata: {

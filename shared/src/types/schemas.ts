@@ -10,7 +10,7 @@ import {
 	VariableWithTuningSchema,
 	Vec2ValueSchema,
 } from "../expressions/schema-helpers";
-import { AssetSourceSchema, AssetSystemConfigSchema } from "./asset-system";
+import { AssetSourceSchema } from "./asset-system";
 
 // ============================================================================
 // Constant Reference Types (for bundle format)
@@ -2058,7 +2058,6 @@ export const GameDefinitionSchema = z
 		rules: z.array(GameRuleSchema).optional(),
 		winCondition: WinConditionSchema.optional(),
 		loseCondition: LoseConditionSchema.optional(),
-		assetSystem: AssetSystemConfigSchema.optional(),
 		parallaxConfig: ParallaxConfigSchema.optional(),
 		tileSheets: z.array(TileSheetSchema).optional(),
 		tileMaps: z.array(TileMapSchema).optional(),

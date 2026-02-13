@@ -704,8 +704,16 @@ CREATE INDEX IF NOT EXISTS idx_package_readiness_game ON package_readiness(game_
 -- DEV SEED DATA
 -- =============================================================================
 
+-- Dev user: auto-login user for development/testing
 INSERT OR IGNORE INTO users (id, email, display_name, created_at, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000000', 'dev@localhost', 'Dev User', 1700000000000, 1700000000000);
+VALUES ('00000000-0000-0000-0000-000000000000', 'dev@localhost', 'Dev', 1700000000000, 1700000000000);
 
 INSERT OR REPLACE INTO user_wallets (user_id, balance_micros, lifetime_earned_micros, lifetime_spent_micros, created_at, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000000', 999999999, 999999999, 0, 1700000000000, 1700000000000);
+
+-- Slop user: system user that owns template/dev games
+INSERT OR IGNORE INTO users (id, email, display_name, created_at, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'system@slopcade.dev', 'Slop', 1700000000000, 1700000000000);
+
+INSERT OR REPLACE INTO user_wallets (user_id, balance_micros, lifetime_earned_micros, lifetime_spent_micros, created_at, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 999999999, 999999999, 0, 1700000000000, 1700000000000);

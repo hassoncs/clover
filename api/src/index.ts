@@ -11,6 +11,7 @@ import type { MessageRow } from "@/chat/chat-handler";
 import { handleChatStream } from "@/chat/stream-handler";
 import { GameRepoDO } from "@/durable-objects/GameRepoDO";
 import { WalletService } from "@/economy/wallet-service";
+import { autoSeedGamesFromR2 } from "@/lib/auto-seed";
 import textGridRouter from "@/routes/text-grid";
 import revenuecatWebhookRouter from "@/routes/webhooks/revenuecat";
 import { GitService } from "@/services/git/GitService";
@@ -40,6 +41,13 @@ app.use(
 		credentials: true,
 	}),
 );
+
+app.use("*", async (c, next) => {
+	if (__DEV__) {
+		c.executionCtx.waitUntil(autoSeedGamesFromR2(c.env));
+	}
+	await next();
+});
 
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
 

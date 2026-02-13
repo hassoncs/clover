@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 import { execSync } from "child_process";
-import { randomUUID } from "crypto";
+import { createHash } from "crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -10,23 +10,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const R2_DIR = resolve(__dirname, "..", "..", "r2");
 const API_ROOT = resolve(__dirname, "..");
 const DEBUG_DIR = resolve(__dirname, "..", "debug-output");
+const BLOBS_DIR = join(R2_DIR, "blobs");
 
-interface PackManifest {
-	version: number;
-	packId: string;
-	name: string;
-	assets: Record<string, { file: string }>;
+function computeContentHash(data: Uint8Array): string {
+	return createHash("sha256").update(data).digest("hex");
 }
 
+function blobFilePath(hash: string): string {
+	return join(BLOBS_DIR, hash.slice(0, 2), hash);
+}
 async function main() {
 	const { values } = parseArgs({
 		options: {
 			game: { type: "string" },
-			"pack-id": { type: "string" },
-			pack: { type: "string", default: "default" },
 			theme: { type: "string", default: "" },
 			style: { type: "string", default: "" },
-			templates: { type: "string" },
+			prefabs: { type: "string" },
 			debug: { type: "boolean", default: false },
 			"dry-run": { type: "boolean", default: false },
 			"plan-only": { type: "boolean", default: false },
@@ -38,14 +37,12 @@ async function main() {
 
 	if (!values.game) {
 		console.error(
-			'Usage: hush run -- pnpm generate:assets --game=<gameId> [--pack-id=<existingPackUUID>] [--pack=<packName>] [--theme="..."] [--style="3d|pixel|cartoon|..."] [--templates=a,b] [--debug] [--dry-run] [--plan-only] [--reuse-plan=<path>] [--planner-disable]',
+			'Usage: hush run -- pnpm generate:assets --game=<gameId> [--theme="..."] [--style="3d|pixel|cartoon|..."] [--prefabs=a,b] [--debug] [--dry-run] [--plan-only] [--reuse-plan=<path>] [--planner-disable]',
 		);
 		process.exit(1);
 	}
 
 	const gameId = values.game;
-	const existingPackId = values["pack-id"];
-	const packName = values.pack ?? "default";
 	const theme = values.theme ?? "";
 	const style = values.style ?? "";
 	const dryRun = values["dry-run"] ?? false;
@@ -54,17 +51,6 @@ async function main() {
 	const reusePlanPath = values["reuse-plan"];
 	const plannerDisable = values["planner-disable"] ?? false;
 
-	if (existingPackId) {
-		const existingPackDir = join(R2_DIR, "packs", existingPackId);
-		const existingManifestPath = join(existingPackDir, "manifest.json");
-		if (!existsSync(existingManifestPath)) {
-			console.error(
-				`No manifest.json found at ${existingManifestPath}. Check the pack-id.`,
-			);
-			process.exit(1);
-		}
-	}
-
 	const defPath = join(R2_DIR, "games", gameId, "definition.json");
 	if (!existsSync(defPath)) {
 		console.error(`No definition.json found at ${defPath}. Run build first.`);
@@ -72,7 +58,7 @@ async function main() {
 	}
 
 	const definition = JSON.parse(readFileSync(defPath, "utf-8"));
-	const templates = definition.templates as
+	const prefabs = definition.prefabs as
 		| Record<
 				string,
 				{
@@ -95,8 +81,8 @@ async function main() {
 		  >
 		| undefined;
 
-	if (!templates) {
-		console.error(`Game ${gameId} has no templates.`);
+	if (!prefabs) {
+		console.error(`Game ${gameId} has no prefabs.`);
 		process.exit(1);
 	}
 
@@ -128,47 +114,28 @@ async function main() {
 	}
 
 	const requestedIds =
-		values.templates?.split(",").map((s) => s.trim()) ?? Object.keys(templates);
-	const imageTemplates = requestedIds.filter((id) => {
-		const t = templates[id];
-		return t && t.visual?.type === "image";
+		values.prefabs?.split(",").map((s) => s.trim()) ?? Object.keys(prefabs);
+	const imagePrefabs = requestedIds.filter((id) => {
+		const p = prefabs[id];
+		return p && p.visual?.type === "image";
 	});
 
-	if (imageTemplates.length === 0) {
-		console.log("No image templates found to generate.");
+	if (imagePrefabs.length === 0) {
+		console.log("No image prefabs found to generate.");
 		process.exit(0);
 	}
 
 	console.log(`\nAsset Generation Plan:`);
 	console.log(`  Game: ${gameId}`);
-	console.log(`  Pack: ${packName}`);
 	console.log(`  Theme: ${theme || "(none)"}`);
 	console.log(`  Style: ${style || "(none)"}`);
 	console.log(
-		`  Templates: ${imageTemplates.join(", ")} (${imageTemplates.length} total)`,
+		`  Prefabs: ${imagePrefabs.join(", ")} (${imagePrefabs.length} total)`,
 	);
-
-	const isExistingPack = !!existingPackId;
-	if (isExistingPack) {
-		console.log(`  Target: existing pack ${existingPackId}`);
-	}
 
 	if (dryRun) {
 		console.log("\n(dry run — no assets generated)");
 		return;
-	}
-
-	const packId = existingPackId ?? randomUUID();
-	const packDir = join(R2_DIR, "packs", packId);
-	mkdirSync(packDir, { recursive: true });
-
-	console.log(`  Pack ID: ${packId}${isExistingPack ? " (existing)" : ""}`);
-
-	let existingManifest: PackManifest | undefined;
-	if (isExistingPack) {
-		existingManifest = JSON.parse(
-			readFileSync(join(packDir, "manifest.json"), "utf-8"),
-		);
 	}
 
 	type EntityType =
@@ -192,8 +159,8 @@ async function main() {
 
 	const specs: EntitySpec[] = [];
 
-	for (const templateId of imageTemplates) {
-		const t = templates[templateId];
+	for (const templateId of imagePrefabs) {
+		const t = prefabs[templateId];
 		const tags = t.tags ?? [];
 		const description = t.whatDescription ?? templateId;
 
@@ -271,8 +238,8 @@ async function main() {
 	);
 	const { parseThemePlan } = await import("../src/ai/pipeline/theme-plan");
 
-	type ThemePlan = {
-		templatePlans: Record<
+	type ThemePlanLocal = {
+		prefabPlans: Record<
 			string,
 			{
 				prompt: string;
@@ -282,7 +249,7 @@ async function main() {
 		>;
 	};
 
-	let themePlan: ThemePlan | null = null;
+	let themePlan: ThemePlanLocal | null = null;
 
 	if (!plannerDisable) {
 		if (reusePlanPath) {
@@ -291,7 +258,7 @@ async function main() {
 				const planJson = JSON.parse(readFileSync(reusePlanPath, "utf-8"));
 				themePlan = parseThemePlan(planJson);
 				console.log(
-					`Theme Planner: Plan loaded successfully (${Object.keys(themePlan.templatePlans).length} templates)`,
+					`Theme Planner: Plan loaded successfully (${Object.keys(themePlan.prefabPlans).length} templates)`,
 				);
 			} catch (error) {
 				const msg = error instanceof Error ? error.message : String(error);
@@ -308,12 +275,12 @@ async function main() {
 			console.log(`\nTheme Planner: Generating plan for theme "${theme}"...`);
 
 			const plannerInput = {
-				templates: specs.map((spec) => ({
-					templateId: spec.id,
+				prefabs: specs.map((spec) => ({
+					prefabId: spec.id,
 					whatDescription: spec.description,
 					entityType: spec.entityType as EntityType,
 					physicsShape: spec.shape,
-					tags: templates[spec.id]?.tags ?? [],
+					tags: prefabs[spec.id]?.tags ?? [],
 				})),
 				theme,
 				style: style || undefined,
@@ -328,10 +295,12 @@ async function main() {
 
 				if (themePlan) {
 					console.log(
-						`Theme Planner: Plan generated successfully (${Object.keys(themePlan.templatePlans).length} templates)`,
+						`Theme Planner: Plan generated successfully (${Object.keys(themePlan.prefabPlans).length} templates)`,
 					);
 
-					const planPath = join(packDir, "theme-plan.json");
+					const planDir = join(DEBUG_DIR, gameId);
+					mkdirSync(planDir, { recursive: true });
+					const planPath = join(planDir, "theme-plan.json");
 					writeFileSync(planPath, JSON.stringify(themePlan, null, 2));
 					console.log(`Theme Planner: Plan saved to ${planPath}`);
 				} else {
@@ -374,7 +343,8 @@ async function main() {
 	);
 	const { executeAsset } = await import("../src/ai/pipeline/executor");
 
-	const r2Prefix = `packs/${packId}`;
+	const remixId = `cli-${Date.now()}`;
+	const r2Prefix = "blobs";
 
 	const adapters = await createNodeAdapters({
 		r2Bucket: "slopcade-assets",
@@ -407,7 +377,7 @@ async function main() {
 	const themePlanApplied = !!themePlan;
 	if (themePlan) {
 		for (const spec of specs) {
-			const plan = themePlan.templatePlans[spec.id];
+			const plan = themePlan.prefabPlans[spec.id];
 			if (plan) {
 				spec.description = plan.prompt;
 				if (plan.silhouetteColor) {
@@ -425,10 +395,7 @@ async function main() {
 		`\nGenerating ${specs.length} assets (concurrency: ${CONCURRENCY})...\n`,
 	);
 
-	const manifest: PackManifest = existingManifest
-		? { ...existingManifest }
-		: { version: 1, packId, name: packName, assets: {} };
-
+	const assetHashes: Record<string, string> = {};
 	let successCount = 0;
 	let failCount = 0;
 
@@ -441,7 +408,7 @@ async function main() {
 				localAdapters,
 				{
 					gameId,
-					packId,
+					remixId,
 					assetId: spec.id,
 					gameTitle: definition.metadata?.title ?? gameId,
 					theme: themePlanApplied ? "" : theme,
@@ -452,8 +419,17 @@ async function main() {
 			);
 
 			if (result.success && result.r2Keys.length > 0) {
-				const filename = `${spec.id}.png`;
-				manifest.assets[spec.id] = { file: filename };
+				const r2Key = result.r2Keys[0];
+				const filePath = join(R2_DIR, r2Key);
+				if (existsSync(filePath)) {
+					const fileData = new Uint8Array(readFileSync(filePath));
+					const hash = computeContentHash(fileData);
+					const blobDest = blobFilePath(hash);
+					mkdirSync(dirname(blobDest), { recursive: true });
+					writeFileSync(blobDest, fileData);
+					assetHashes[spec.id] = hash;
+					console.log(`[${spec.id}] Stored as blob: ${hash}`);
+				}
 				successCount++;
 				console.log(
 					`[${spec.id}] Done (${(result.durationMs / 1000).toFixed(1)}s)`,
@@ -486,42 +462,31 @@ async function main() {
 	}
 	await Promise.all(pool);
 
-	writeFileSync(
-		join(packDir, "manifest.json"),
-		JSON.stringify(manifest, null, 2),
-	);
 	console.log(`\nResults: ${successCount} succeeded, ${failCount} failed`);
-	console.log(`Manifest: ${join(packDir, "manifest.json")}`);
 
-	if (successCount > 0) {
-		if (!isExistingPack) {
-			const gameSourcePath = join(R2_DIR, "games", gameId, "src", "game.ts");
-			if (existsSync(gameSourcePath)) {
-				let source = readFileSync(gameSourcePath, "utf-8");
+	if (successCount > 0 && Object.keys(assetHashes).length > 0) {
+		const gameSourcePath = join(R2_DIR, "games", gameId, "src", "game.ts");
+		if (existsSync(gameSourcePath)) {
+			let source = readFileSync(gameSourcePath, "utf-8");
+			let modified = false;
 
-				const packIdsMatch = source.match(/packIds:\s*\[([\s\S]*?)\]/);
-				if (packIdsMatch) {
-					const existingIds = [...packIdsMatch[1].matchAll(/"([^"]+)"/g)].map(
-						(m) => m[1],
-					);
-					if (!existingIds.includes(packId)) {
-						existingIds.push(packId);
-					}
-					const formatted = existingIds
-						.map((id) => `\n        "${id}",`)
-						.join("");
-					source = source.replace(
-						/packIds:\s*\[([\s\S]*?)\]/,
-						`packIds: [${formatted}\n      ]`,
-					);
+			for (const [prefabId, hash] of Object.entries(assetHashes)) {
+				const assetIdPattern = new RegExp(
+					`(${prefabId}[\\s\\S]*?visual\\s*:\\s*\\{[^}]*?)assetId\\s*:\\s*"[^"]*"`,
+				);
+				if (assetIdPattern.test(source)) {
+					source = source.replace(assetIdPattern, `$1assetId: "${hash}"`);
+					modified = true;
 				}
+			}
 
+			if (modified) {
 				writeFileSync(gameSourcePath, source);
 				console.log(`\nUpdated source: ${gameSourcePath}`);
-				console.log(`  activePackId: ${packId}`);
+				for (const [prefabId, hash] of Object.entries(assetHashes)) {
+					console.log(`  ${prefabId}: assetId = ${hash}`);
+				}
 			}
-		} else {
-			console.log(`\nExisting pack updated — no source changes needed.`);
 		}
 
 		console.log(`\nRebuilding games...`);

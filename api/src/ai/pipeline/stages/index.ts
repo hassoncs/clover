@@ -1,5 +1,9 @@
-import { buildR2Key } from "@slopcade/shared";
 import { buildPromptForSpec } from "@/ai/pipeline/prompt-builder";
+
+function buildAssetR2Key(remixId: string, assetId: string): string {
+	return `generated/${remixId}/${assetId}.png`;
+}
+
 import type {
 	AssetRun,
 	DebugSink,
@@ -91,9 +95,7 @@ function calculateSheetDimensions(layout: SheetLayout): {
 	return { width: 512, height: 512 };
 }
 
-function getSheetEntries(
-	spec: SheetSpec,
-): Array<{
+function getSheetEntries(spec: SheetSpec): Array<{
 	index: number;
 	x: number;
 	y: number;
@@ -540,7 +542,7 @@ export const uploadR2Stage: Stage = {
 
 		if (run.spec.type === "parallax" && run.artifacts.layerImages) {
 			for (let i = 0; i < run.artifacts.layerImages.length; i++) {
-				const key = buildR2Key(
+				const key = buildAssetR2Key(
 					run.meta.remixId,
 					`${run.meta.assetId}-layer-${i}`,
 				);
@@ -555,14 +557,14 @@ export const uploadR2Stage: Stage = {
 				throw new Error("No final image to upload");
 			}
 
-			const key = buildR2Key(run.meta.remixId, run.meta.assetId);
+			const key = buildAssetR2Key(run.meta.remixId, run.meta.assetId);
 			const pngImage = await ensurePng(finalImage);
 			await adapters.r2.put(key, pngImage, { contentType: "image/png" });
 			r2Keys.push(key);
 			publicUrls.push(adapters.r2.getPublicUrl(key));
 
 			if (run.artifacts.sheetMetadataJson && run.spec.type === "sheet") {
-				const metadataKey = buildR2Key(
+				const metadataKey = buildAssetR2Key(
 					run.meta.remixId,
 					run.meta.assetId,
 				).replace(/\.png$/, ".json");

@@ -107,7 +107,7 @@ export const orchestrationRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			}
 
-			let definition: { prefabs?: Record<string, any>; assetSystem?: any };
+			let definition: { prefabs?: Record<string, any> };
 			try {
 				definition = JSON.parse(gameDefRow.definition);
 			} catch {

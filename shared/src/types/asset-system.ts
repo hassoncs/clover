@@ -83,7 +83,3 @@ export const DEFAULT_ASSET_PLACEMENT: AssetPlacement = {
 	offsetX: 0,
 	offsetY: 0,
 };
-
-export const AssetSystemConfigSchema = z.object({});
-
-export type AssetSystemConfig = z.infer<typeof AssetSystemConfigSchema>;

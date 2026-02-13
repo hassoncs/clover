@@ -34,7 +34,7 @@ interface TemplateGame {
 	isPublic: boolean;
 }
 
-const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 async function main() {
 	const jsonPath = resolve(__dirname, "test-games.json");
