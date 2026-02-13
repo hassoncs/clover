@@ -4,6 +4,10 @@ function cssVar(name: string) {
 	return `var(--${name})`;
 }
 
+function themeColor(name: string) {
+	return `rgb(var(--color-theme-${name}) / <alpha-value>)`;
+}
+
 export const tailwindPreset = {
 	darkMode: "class" as const,
 	theme: {
@@ -47,6 +51,29 @@ export const tailwindPreset = {
 				background: tokens.semantic.colors.background,
 				border: tokens.semantic.colors.border,
 				text: tokens.semantic.colors.text,
+
+				theme: {
+					background: themeColor("background"),
+					surface: {
+						DEFAULT: themeColor("surface"),
+						elevated: themeColor("surface-elevated"),
+					},
+					border: themeColor("border"),
+					text: {
+						DEFAULT: themeColor("text"),
+						primary: themeColor("text"),
+						secondary: themeColor("text-secondary"),
+						tertiary: themeColor("text-tertiary"),
+						muted: themeColor("text-tertiary"),
+						inverse: themeColor("text-inverse"),
+					},
+					primary: themeColor("primary"),
+					secondary: themeColor("secondary"),
+					success: themeColor("success"),
+					warning: themeColor("warning"),
+					error: themeColor("error"),
+					danger: themeColor("error"),
+				},
 
 				// Editor IDE colors — backed by CSS custom properties for theme switching
 				ed: {

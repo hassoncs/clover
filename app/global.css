@@ -3,6 +3,21 @@
 @tailwind utilities;
 
 :root {
+	/* App theme semantic colors (space-separated RGB for alpha support) */
+	--color-theme-background: 255 255 255;
+	--color-theme-surface: 255 255 255;
+	--color-theme-surface-elevated: 241 245 249;
+	--color-theme-border: 229 231 235;
+	--color-theme-text: 17 24 39;
+	--color-theme-text-secondary: 107 114 128;
+	--color-theme-text-tertiary: 156 163 175;
+	--color-theme-text-inverse: 255 255 255;
+	--color-theme-primary: 99 102 241;
+	--color-theme-secondary: 100 116 139;
+	--color-theme-success: 16 185 129;
+	--color-theme-warning: 245 158 11;
+	--color-theme-error: 239 68 68;
+
 	--ed-bg: #ffffff;
 	--ed-surface: #f6f8fa;
 	--ed-surface-hover: #eaeef2;
@@ -39,6 +54,20 @@
 }
 
 .dark {
+	--color-theme-background: 5 6 8;
+	--color-theme-surface: 17 24 39;
+	--color-theme-surface-elevated: 31 41 55;
+	--color-theme-border: 55 65 81;
+	--color-theme-text: 255 255 255;
+	--color-theme-text-secondary: 156 163 175;
+	--color-theme-text-tertiary: 107 114 128;
+	--color-theme-text-inverse: 17 24 39;
+	--color-theme-primary: 99 102 241;
+	--color-theme-secondary: 148 163 184;
+	--color-theme-success: 16 185 129;
+	--color-theme-warning: 245 158 11;
+	--color-theme-error: 248 81 73;
+
 	--ed-bg: #0d1117;
 	--ed-surface: #161b22;
 	--ed-surface-hover: #1c2128;

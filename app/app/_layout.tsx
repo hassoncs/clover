@@ -14,6 +14,7 @@ import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { TRPCProvider } from "@/lib/trpc/react";
 import "../global.css";
+import { useColorScheme } from "nativewind";
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 const SENTRY_ENABLED = !!SENTRY_DSN && !__DEV__;
@@ -111,6 +112,11 @@ function RootLayoutContent() {
 }
 
 function RootLayout() {
+	const { setColorScheme } = useColorScheme();
+	useEffect(() => {
+		setColorScheme("dark");
+	}, [setColorScheme]);
+
 	return (
 		<GestureHandlerRootView
 			style={{ flex: 1 }}
