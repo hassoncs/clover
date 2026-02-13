@@ -541,6 +541,8 @@ export interface GameDefinition {
 	dialogs?: GameDialogsConfig;
 
 	overlay?: OverlayConfig;
+
+	party?: import("./party").PartyConfig;
 }
 
 export interface HoverHighlightConfig {

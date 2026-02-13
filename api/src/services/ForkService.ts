@@ -98,8 +98,9 @@ export class ForkService {
 				id, user_id, title, description, r2_prefix, is_public, play_count,
 				created_at, updated_at, base_game_id, forked_from_id,
 				validation_report, validation_score, validation_critical_count,
-				validation_warning_count, validation_valid, validation_updated_at, validator_version
-			) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				validation_warning_count, validation_valid, validation_updated_at, validator_version,
+				version, build_number
+			) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				params.newGameId,
@@ -118,6 +119,8 @@ export class ForkService {
 				params.validationValid,
 				now,
 				params.validatorVersion,
+				"1.0.0",
+				1,
 			)
 			.run();
 	}
