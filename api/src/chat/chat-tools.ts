@@ -1,4 +1,8 @@
-import { VOICE_PRESETS, type VoicePresetId } from "@slopcade/shared";
+import {
+	type RuntimeIntentMode,
+	VOICE_PRESETS,
+	type VoicePresetId,
+} from "@slopcade/shared";
 import { tool } from "ai";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -8,10 +12,16 @@ import { ElevenLabsService } from "@/services/ElevenLabsService";
 import type { GitService } from "@/services/git/GitService";
 import type { Env } from "@/trpc/context";
 
+export interface EditorCommandPayload {
+	command: string;
+	payload: Record<string, unknown>;
+}
+
 export interface ChatToolContext {
 	gameId: string;
 	gitService: GitService;
 	onFileChanged?: (payload: { gameId: string; filename: string }) => void;
+	onEditorCommand?: (payload: EditorCommandPayload) => Promise<unknown>;
 	env?: Env;
 }
 
@@ -366,6 +376,166 @@ export function createChatTools(ctx: ChatToolContext) {
 					const message = err instanceof Error ? err.message : String(err);
 					return { ok: false, error: message };
 				}
+			},
+		}),
+
+		"editor.listContexts": tool({
+			description:
+				"List all available preview contexts in the editor. Returns context IDs, labels, modes, and runtime intents. Use this to see what preview panes are available (e.g., host, player) before switching.",
+			inputSchema: z.object({}),
+			execute: async () => {
+				const result = await ctx.onEditorCommand?.({
+					command: "listContexts",
+					payload: {},
+				});
+				if (!result) {
+					return { ok: false, error: "Editor not connected" };
+				}
+				return { ok: true, ...(result as Record<string, unknown>) };
+			},
+		}),
+
+		"editor.switchContext": tool({
+			description:
+				"Switch the active preview context in the editor. Use editor.listContexts first to see available context IDs. This changes which preview pane is focused for inspection and interaction.",
+			inputSchema: z.object({
+				contextId: z
+					.string()
+					.min(1)
+					.describe('The context ID to switch to (e.g., "host", "player")'),
+			}),
+			execute: async ({ contextId }) => {
+				const result = await ctx.onEditorCommand?.({
+					command: "switchContext",
+					payload: { contextId },
+				});
+				if (!result) {
+					return { ok: false, error: "Editor not connected" };
+				}
+				return { ok: true, ...(result as Record<string, unknown>) };
+			},
+		}),
+
+		"editor.setRuntimeIntentMode": tool({
+			description:
+				'Toggle the runtime intent mode for a preview context between "author" (editing/layout) and "live" (running simulation with physics/rules). WARNING: Switching to live mode will start the simulation. Switching to author will stop it.',
+			inputSchema: z.object({
+				contextId: z
+					.string()
+					.optional()
+					.describe(
+						"Target context ID. If omitted, applies to the active context.",
+					),
+				mode: z
+					.enum(["author", "live"] as [
+						RuntimeIntentMode,
+						...RuntimeIntentMode[],
+					])
+					.describe('"author" for editing mode, "live" for simulation mode'),
+			}),
+			execute: async ({ contextId, mode }) => {
+				const result = await ctx.onEditorCommand?.({
+					command: "setRuntimeIntentMode",
+					payload: { contextId, mode },
+				});
+				if (!result) {
+					return { ok: false, error: "Editor not connected" };
+				}
+				return { ok: true, ...(result as Record<string, unknown>) };
+			},
+		}),
+
+		"editor.readState": tool({
+			description:
+				'Read runtime state from the active preview context. Can read game variables (score, lives, custom vars), entity counts, or room state for party games. Use section="variables" for game variables, section="entities" for entity summary, section="room" for party room state, or section="all" for everything.',
+			inputSchema: z.object({
+				section: z
+					.enum(["variables", "entities", "room", "all"])
+					.default("all")
+					.describe("Which section of state to read"),
+				contextId: z
+					.string()
+					.optional()
+					.describe(
+						"Target context ID. If omitted, reads from the active context.",
+					),
+			}),
+			execute: async ({ section, contextId }) => {
+				const result = await ctx.onEditorCommand?.({
+					command: "readState",
+					payload: { section, contextId },
+				});
+				if (!result) {
+					return { ok: false, error: "Editor not connected" };
+				}
+				return { ok: true, ...(result as Record<string, unknown>) };
+			},
+		}),
+
+		"editor.updateState": tool({
+			description:
+				"Update a runtime variable in the active preview context. CAUTION: This mutates live game state. Only use when the user asks you to change a value, or when debugging requires it. Changes are not persisted to the game definition — they only affect the current runtime session.",
+			inputSchema: z.object({
+				key: z
+					.string()
+					.min(1)
+					.describe(
+						'The variable key to update (e.g., "score", "lives", "level")',
+					),
+				value: z
+					.union([z.number(), z.string(), z.boolean()])
+					.describe("The new value to set"),
+				contextId: z
+					.string()
+					.optional()
+					.describe(
+						"Target context ID. If omitted, updates the active context.",
+					),
+			}),
+			execute: async ({ key, value, contextId }) => {
+				const result = await ctx.onEditorCommand?.({
+					command: "updateState",
+					payload: { key, value, contextId },
+				});
+				if (!result) {
+					return { ok: false, error: "Editor not connected" };
+				}
+				return { ok: true, ...(result as Record<string, unknown>) };
+			},
+		}),
+
+		"editor.inspectTarget": tool({
+			description:
+				'Run an inspector operation on a specific preview context. Allows querying entities, checking physics state, counting objects, etc. Common operations: "game_state" (overview), "game_find" (find entities), "game_entity" (inspect one entity), "game_count" (count entities). The operation runs against the targeted preview context.',
+			inputSchema: z.object({
+				operation: z
+					.string()
+					.min(1)
+					.describe(
+						'The inspector operation to run (e.g., "game_state", "game_find", "game_entity", "game_count")',
+					),
+				args: z
+					.record(z.unknown())
+					.optional()
+					.describe(
+						'Arguments for the inspector operation (e.g., { "template": "ball" } for game_find)',
+					),
+				contextId: z
+					.string()
+					.optional()
+					.describe(
+						"Target context ID. If omitted, inspects the active context.",
+					),
+			}),
+			execute: async ({ operation, args, contextId }) => {
+				const result = await ctx.onEditorCommand?.({
+					command: "inspectTarget",
+					payload: { operation, args: args ?? {}, contextId },
+				});
+				if (!result) {
+					return { ok: false, error: "Editor not connected" };
+				}
+				return { ok: true, ...(result as Record<string, unknown>) };
 			},
 		}),
 

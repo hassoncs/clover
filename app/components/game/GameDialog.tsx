@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import {
 	Animated,
 	Modal,
+	Platform,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -37,7 +38,7 @@ export function GameDialog({
 			Animated.timing(fadeAnim, {
 				toValue: 1,
 				duration: 300,
-				useNativeDriver: true,
+				useNativeDriver: Platform.OS !== "web",
 			}).start();
 		}
 	}, [visible, fadeAnim]);

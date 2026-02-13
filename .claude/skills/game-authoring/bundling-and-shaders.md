@@ -1,3 +1,7 @@
+---
+description: "Game bundling system, shader pipeline, and effect compilation. Covers bundle format, compilation, shader graphs, and effects. Use when bundling games, working with shaders, or understanding the effects pipeline."
+---
+
 # Game Bundling, Shaders & Effects Pipeline
 
 > Reference for the game bundling system, shader pipeline, and effect system.

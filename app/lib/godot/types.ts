@@ -272,10 +272,17 @@ export interface ColliderConfig {
 	maskBits?: number;
 }
 
+export interface DisposeOptions {
+	/** When true, fully tears down the Godot engine instance (destroyInstance). Default: false (soft reset). */
+	fullTeardown?: boolean;
+}
+
 export interface GodotBridge extends EffectsBridge {
 	// Lifecycle
 	initialize(): Promise<void>;
-	dispose(): void;
+	dispose(options?: DisposeOptions): void;
+	/** Soft reset: clears game state and callbacks but keeps the engine instance alive. */
+	softReset(): void;
 
 	// Effects hot-path (convenience wrapper for updateParams)
 	effectsUpdateParams(

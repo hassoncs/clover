@@ -24,6 +24,7 @@ export function StageContainer({ contextId }: StageContainerProps) {
 		gameId,
 		livePreviewEnabled,
 		previewContexts,
+		runtimeRef,
 	} = useEditor();
 
 	const context = contextId
@@ -74,6 +75,7 @@ export function StageContainer({ contextId }: StageContainerProps) {
 					paused={effectiveMode === "author" && timeMode === "paused"}
 					onRequestRestart={handleRequestRestart}
 					onBridgeReady={handleBridgeReady}
+					runtimeRef={runtimeRef}
 				/>
 			);
 		},
@@ -83,6 +85,7 @@ export function StageContainer({ contextId }: StageContainerProps) {
 			timeMode,
 			handleRequestRestart,
 			handleBridgeReady,
+			runtimeRef,
 		],
 	);
 

@@ -1,331 +1,336 @@
-import { useEffect, useRef } from 'react';
+import type { LoadingScreenConfig } from "@slopcade/shared";
+import { useEffect, useRef } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  Pressable,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import type { PreloadProgress } from '@/lib/assets';
-import type { LoadingScreenConfig } from '@slopcade/shared';
+	ActivityIndicator,
+	Animated,
+	Image,
+	Platform,
+	Pressable,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import type { PreloadProgress } from "@/lib/assets";
 
 interface AssetLoadingScreenProps {
-  gameTitle: string;
-  progress: PreloadProgress;
-  config?: LoadingScreenConfig;
-  titleHeroImageUrl?: string;
-  instructions?: string;
-  onSkip?: () => void;
-  allowSkipAfterPercent?: number;
+	gameTitle: string;
+	progress: PreloadProgress;
+	config?: LoadingScreenConfig;
+	titleHeroImageUrl?: string;
+	instructions?: string;
+	onSkip?: () => void;
+	allowSkipAfterPercent?: number;
 }
 
 export function AssetLoadingScreen({
-  gameTitle,
-  progress,
-  config,
-  titleHeroImageUrl,
-  instructions,
-  onSkip,
-  allowSkipAfterPercent = 30,
+	gameTitle,
+	progress,
+	config,
+	titleHeroImageUrl,
+	instructions,
+	onSkip,
+	allowSkipAfterPercent = 30,
 }: AssetLoadingScreenProps) {
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+	const progressAnim = useRef(new Animated.Value(0)).current;
+	const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+	useEffect(() => {
+		Animated.timing(fadeAnim, {
+			toValue: 1,
+			duration: 300,
+			useNativeDriver: Platform.OS !== "web",
+		}).start();
+	}, [fadeAnim]);
 
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: progress.percent,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [progress.percent, progressAnim]);
+	useEffect(() => {
+		Animated.timing(progressAnim, {
+			toValue: progress.percent,
+			duration: 200,
+			useNativeDriver: false,
+		}).start();
+	}, [progress.percent, progressAnim]);
 
-  const backgroundColor = config?.backgroundColor ?? '#111827';
-  const progressBarColor = config?.progressBarColor ?? '#4F46E5';
-  const textColor = config?.textColor ?? '#FFFFFF';
-  const canSkip = onSkip && progress.percent >= allowSkipAfterPercent;
+	const backgroundColor = config?.backgroundColor ?? "#111827";
+	const progressBarColor = config?.progressBarColor ?? "#4F46E5";
+	const textColor = config?.textColor ?? "#FFFFFF";
+	const canSkip = onSkip && progress.percent >= allowSkipAfterPercent;
 
-  const phaseLabel = progress.phase === 'images' 
-    ? 'Loading images...' 
-    : progress.phase === 'sounds' 
-      ? 'Loading sounds...' 
-      : 'Finalizing...';
+	const phaseLabel =
+		progress.phase === "images"
+			? "Loading images..."
+			: progress.phase === "sounds"
+				? "Loading sounds..."
+				: "Finalizing...";
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {config?.backgroundImageUrl && (
-          <Image
-            source={{ uri: config.backgroundImageUrl }}
-            style={styles.backgroundImage}
-            resizeMode="cover"
-          />
-        )}
+	return (
+		<SafeAreaView style={[styles.container, { backgroundColor }]}>
+			<Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+				{config?.backgroundImageUrl && (
+					<Image
+						source={{ uri: config.backgroundImageUrl }}
+						style={styles.backgroundImage}
+						resizeMode="cover"
+					/>
+				)}
 
-        <View style={styles.heroContainer}>
-          {titleHeroImageUrl ? (
-            <Image
-              source={{ uri: titleHeroImageUrl }}
-              style={styles.heroImageNoBg}
-              resizeMode="contain"
-            />
-          ) : (
-            <View style={styles.heroPlaceholder}>
-              <Text style={styles.heroText}>{gameTitle}</Text>
-            </View>
-          )}
-        </View>
+				<View style={styles.heroContainer}>
+					{titleHeroImageUrl ? (
+						<Image
+							source={{ uri: titleHeroImageUrl }}
+							style={styles.heroImageNoBg}
+							resizeMode="contain"
+						/>
+					) : (
+						<View style={styles.heroPlaceholder}>
+							<Text style={styles.heroText}>{gameTitle}</Text>
+						</View>
+					)}
+				</View>
 
-        {instructions && (
-          <Text style={[styles.instructions, { color: textColor }]}>
-            {instructions}
-          </Text>
-        )}
+				{instructions && (
+					<Text style={[styles.instructions, { color: textColor }]}>
+						{instructions}
+					</Text>
+				)}
 
-        <View style={styles.progressSection}>
-          {config?.progressBarImageUrl ? (
-            <View style={styles.customProgressContainer}>
-              <Image
-                source={{ uri: config.progressBarImageUrl }}
-                style={styles.progressBarImage}
-                resizeMode="stretch"
-              />
-              <Animated.View
-                style={[
-                  styles.customProgressFill,
-                  {
-                    width: progressAnim.interpolate({
-                      inputRange: [0, 100],
-                      outputRange: ['0%', '100%'],
-                    }),
-                  },
-                ]}
-              >
-                {config.progressBarFillImageUrl && (
-                  <Image
-                    source={{ uri: config.progressBarFillImageUrl }}
-                    style={styles.progressBarFillImage}
-                    resizeMode="stretch"
-                  />
-                )}
-              </Animated.View>
-            </View>
-          ) : (
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBarBackground}>
-                <Animated.View
-                  style={[
-                    styles.progressBarFill,
-                    {
-                      backgroundColor: progressBarColor,
-                      width: progressAnim.interpolate({
-                        inputRange: [0, 100],
-                        outputRange: ['0%', '100%'],
-                      }),
-                    },
-                  ]}
-                />
-              </View>
-              <Text style={[styles.progressPercent, { color: textColor }]}>
-                {Math.round(progress.percent)}%
-              </Text>
-            </View>
-          )}
+				<View style={styles.progressSection}>
+					{config?.progressBarImageUrl ? (
+						<View style={styles.customProgressContainer}>
+							<Image
+								source={{ uri: config.progressBarImageUrl }}
+								style={styles.progressBarImage}
+								resizeMode="stretch"
+							/>
+							<Animated.View
+								style={[
+									styles.customProgressFill,
+									{
+										width: progressAnim.interpolate({
+											inputRange: [0, 100],
+											outputRange: ["0%", "100%"],
+										}),
+									},
+								]}
+							>
+								{config.progressBarFillImageUrl && (
+									<Image
+										source={{ uri: config.progressBarFillImageUrl }}
+										style={styles.progressBarFillImage}
+										resizeMode="stretch"
+									/>
+								)}
+							</Animated.View>
+						</View>
+					) : (
+						<View style={styles.progressBarContainer}>
+							<View style={styles.progressBarBackground}>
+								<Animated.View
+									style={[
+										styles.progressBarFill,
+										{
+											backgroundColor: progressBarColor,
+											width: progressAnim.interpolate({
+												inputRange: [0, 100],
+												outputRange: ["0%", "100%"],
+											}),
+										},
+									]}
+								/>
+							</View>
+							<Text style={[styles.progressPercent, { color: textColor }]}>
+								{Math.round(progress.percent)}%
+							</Text>
+						</View>
+					)}
 
-          <View style={styles.statusRow}>
-            <ActivityIndicator size="small" color={progressBarColor} />
-            <Text style={[styles.statusText, { color: textColor }]}>
-              {progress.currentAsset ? `${phaseLabel} ${progress.currentAsset}` : phaseLabel}
-            </Text>
-          </View>
+					<View style={styles.statusRow}>
+						<ActivityIndicator size="small" color={progressBarColor} />
+						<Text style={[styles.statusText, { color: textColor }]}>
+							{progress.currentAsset
+								? `${phaseLabel} ${progress.currentAsset}`
+								: phaseLabel}
+						</Text>
+					</View>
 
-          <Text style={[styles.countText, { color: textColor }]}>
-            {progress.loaded}/{progress.total} assets
-          </Text>
-        </View>
+					<Text style={[styles.countText, { color: textColor }]}>
+						{progress.loaded}/{progress.total} assets
+					</Text>
+				</View>
 
-        {canSkip && (
-          <Pressable 
-            style={styles.skipButton} 
-            onPress={onSkip}
-            accessibilityRole="button"
-            accessibilityLabel="Skip loading"
-          >
-            <Text style={styles.skipButtonText}>Skip</Text>
-          </Pressable>
-        )}
+				{canSkip && (
+					<Pressable
+						style={styles.skipButton}
+						onPress={onSkip}
+						accessibilityRole="button"
+						accessibilityLabel="Skip loading"
+					>
+						<Text style={styles.skipButtonText}>Skip</Text>
+					</Pressable>
+				)}
 
-        {progress.failedAssets.length > 0 && (
-          <View style={styles.warningContainer}>
-            <Text style={styles.warningText}>
-              {progress.failedAssets.length} asset{progress.failedAssets.length !== 1 ? 's' : ''} failed to load
-            </Text>
-          </View>
-        )}
-      </Animated.View>
-    </SafeAreaView>
-  );
+				{progress.failedAssets.length > 0 && (
+					<View style={styles.warningContainer}>
+						<Text style={styles.warningText}>
+							{progress.failedAssets.length} asset
+							{progress.failedAssets.length !== 1 ? "s" : ""} failed to load
+						</Text>
+					</View>
+				)}
+			</Animated.View>
+		</SafeAreaView>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    maxWidth: 480,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.3,
-  },
-  heroContainer: {
-    marginBottom: 32,
-  },
-  heroImage: {
-    width: 200,
-    height: 120,
-    borderRadius: 12,
-  },
-  heroImageNoBg: {
-    width: 280,
-    height: 160,
-  },
-  heroPlaceholder: {
-    width: 120,
-    height: 120,
-    backgroundColor: 'rgba(79, 70, 229, 0.2)',
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  heroText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'rgba(255, 255, 255, 0.8)',
-    letterSpacing: 2,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  instructions: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 40,
-    paddingHorizontal: 32,
-    opacity: 0.9,
-    lineHeight: 24,
-    maxWidth: 400,
-  },
-  progressSection: {
-    width: '100%',
-    maxWidth: 320,
-    alignItems: 'center',
-  },
-  progressBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 16,
-  },
-  progressBarBackground: {
-    flex: 1,
-    height: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 6,
-    overflow: 'hidden',
-    marginRight: 12,
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 6,
-  },
-  progressPercent: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontVariant: ['tabular-nums'],
-    minWidth: 45,
-    textAlign: 'right',
-  },
-  customProgressContainer: {
-    width: '100%',
-    height: 24,
-    marginBottom: 16,
-    position: 'relative',
-  },
-  progressBarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  customProgressFill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: '100%',
-    overflow: 'hidden',
-  },
-  progressBarFillImage: {
-    width: '100%',
-    height: '100%',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statusText: {
-    fontSize: 14,
-    marginLeft: 8,
-    opacity: 0.8,
-  },
-  countText: {
-    fontSize: 12,
-    opacity: 0.6,
-    fontVariant: ['tabular-nums'],
-  },
-  skipButton: {
-    marginTop: 64,
-    marginBottom: 24,
-    paddingVertical: 18,
-    paddingHorizontal: 56,
-    backgroundColor: '#4F46E5',
-    borderRadius: 14,
-    borderWidth: 0,
-  },
-  skipButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  warningContainer: {
-    marginTop: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-  },
-  warningText: {
-    color: '#EF4444',
-    fontSize: 12,
-  },
+	container: {
+		flex: 1,
+	},
+	content: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 24,
+		maxWidth: 480,
+		alignSelf: "center",
+		width: "100%",
+	},
+	backgroundImage: {
+		...StyleSheet.absoluteFillObject,
+		opacity: 0.3,
+	},
+	heroContainer: {
+		marginBottom: 32,
+	},
+	heroImage: {
+		width: 200,
+		height: 120,
+		borderRadius: 12,
+	},
+	heroImageNoBg: {
+		width: 280,
+		height: 160,
+	},
+	heroPlaceholder: {
+		width: 120,
+		height: 120,
+		backgroundColor: "rgba(79, 70, 229, 0.2)",
+		borderRadius: 24,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	heroText: {
+		fontSize: 18,
+		fontWeight: "bold",
+		color: "rgba(255, 255, 255, 0.8)",
+		letterSpacing: 2,
+	},
+	title: {
+		fontSize: 28,
+		fontWeight: "bold",
+		marginBottom: 32,
+		textAlign: "center",
+	},
+	instructions: {
+		fontSize: 16,
+		textAlign: "center",
+		marginBottom: 40,
+		paddingHorizontal: 32,
+		opacity: 0.9,
+		lineHeight: 24,
+		maxWidth: 400,
+	},
+	progressSection: {
+		width: "100%",
+		maxWidth: 320,
+		alignItems: "center",
+	},
+	progressBarContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		width: "100%",
+		marginBottom: 16,
+	},
+	progressBarBackground: {
+		flex: 1,
+		height: 12,
+		backgroundColor: "rgba(255, 255, 255, 0.1)",
+		borderRadius: 6,
+		overflow: "hidden",
+		marginRight: 12,
+	},
+	progressBarFill: {
+		height: "100%",
+		borderRadius: 6,
+	},
+	progressPercent: {
+		fontSize: 14,
+		fontWeight: "600",
+		fontVariant: ["tabular-nums"],
+		minWidth: 45,
+		textAlign: "right",
+	},
+	customProgressContainer: {
+		width: "100%",
+		height: 24,
+		marginBottom: 16,
+		position: "relative",
+	},
+	progressBarImage: {
+		width: "100%",
+		height: "100%",
+	},
+	customProgressFill: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		height: "100%",
+		overflow: "hidden",
+	},
+	progressBarFillImage: {
+		width: "100%",
+		height: "100%",
+	},
+	statusRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 8,
+	},
+	statusText: {
+		fontSize: 14,
+		marginLeft: 8,
+		opacity: 0.8,
+	},
+	countText: {
+		fontSize: 12,
+		opacity: 0.6,
+		fontVariant: ["tabular-nums"],
+	},
+	skipButton: {
+		marginTop: 64,
+		marginBottom: 24,
+		paddingVertical: 18,
+		paddingHorizontal: 56,
+		backgroundColor: "#4F46E5",
+		borderRadius: 14,
+		borderWidth: 0,
+	},
+	skipButtonText: {
+		color: "#FFFFFF",
+		fontSize: 18,
+		fontWeight: "600",
+	},
+	warningContainer: {
+		marginTop: 16,
+		paddingVertical: 8,
+		paddingHorizontal: 16,
+		backgroundColor: "rgba(239, 68, 68, 0.1)",
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: "rgba(239, 68, 68, 0.3)",
+	},
+	warningText: {
+		color: "#EF4444",
+		fontSize: 12,
+	},
 });

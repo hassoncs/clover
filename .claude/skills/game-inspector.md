@@ -1,3 +1,7 @@
+---
+description: "MCP-based game debugging and testing tools. Covers entity inspection, property editing, physics queries, time control, event subscriptions, and screenshots via Playwright. Use when debugging game state, inspecting entities, or testing games via the inspector."
+---
+
 # Game Inspector
 
 > **Skill for AI Agents**: Debugging and testing games via the game-inspector MCP

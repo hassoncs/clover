@@ -1,3 +1,7 @@
+---
+description: "Native build infrastructure for iOS/Android. Covers Metro port 8085, CocoaPods, Podfile, Expo prebuild, expo plugins (withGodotAssets, withCameraFrameProcessor), preflight checks, and react-native-godot integration. Use when working on native builds, iOS/Android issues, or Expo config plugins."
+---
+
 # Native Infrastructure
 
 > **Skill for AI Agents**: Metro port 8085, CocoaPods, Android, Expo plugins, preflight checks

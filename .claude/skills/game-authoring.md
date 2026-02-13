@@ -1,3 +1,7 @@
+---
+description: "Building and modifying games using the Slopcade game engine. Covers GameDefinition, prefabs, entities, behaviors, rules, scripts, physics, containers, state machines, and input configuration. Use when creating new games, modifying existing games, or debugging game logic."
+---
+
 # Game Authoring
 
 > **Skill for AI Agents**: Building and modifying games using the Slopcade game engine.

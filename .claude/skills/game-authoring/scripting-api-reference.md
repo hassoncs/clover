@@ -1,3 +1,7 @@
+---
+description: "Scripting API reference for QuickJS sandbox. Covers ScriptContext, lifecycle hooks (onStart, onUpdate, onInput, onCollision), WorldOps, and the scripting runtime. Use when writing game scripts or debugging script behavior."
+---
+
 # Scripting API Reference
 
 Scripts provide imperative game logic beyond what the declarative rules system can express. They run in a sandboxed QuickJS environment.

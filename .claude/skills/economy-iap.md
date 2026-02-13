@@ -1,3 +1,7 @@
+---
+description: "Virtual currency (Sparks/Gems), wallet transactions, RevenueCat IAP, pricing tiers. Use when working on in-app purchases, currency, wallet, billing, credits, debits, promo codes, or RevenueCat integration."
+---
+
 # Economy & IAP
 
 > **Skill for AI Agents**: Virtual currency (Sparks/Gems), wallet transactions, RevenueCat IAP, pricing

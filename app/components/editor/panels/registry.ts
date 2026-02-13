@@ -7,6 +7,7 @@ import { DebugPanel } from "./DebugPanel";
 import { ExplorerPanel } from "./ExplorerPanel";
 import { HierarchyPanel } from "./HierarchyPanel";
 import { LayersPanel } from "./LayersPanel";
+import { LiveStatePanel } from "./LiveStatePanel";
 import { PropertiesPanel } from "./PropertiesPanel";
 
 export interface PanelDefinition {
@@ -41,6 +42,12 @@ export const PANEL_REGISTRY: PanelDefinition[] = [
 		id: "debug",
 		title: "Debug",
 		component: DebugPanel,
+		defaultPlacement: "left",
+	},
+	{
+		id: "live-state",
+		title: "Live State",
+		component: LiveStatePanel,
 		defaultPlacement: "left",
 	},
 	{

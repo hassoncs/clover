@@ -431,6 +431,11 @@ export function createWebGodotBridge(): GodotBridge {
 			});
 		},
 
+		softReset() {
+			getGodotBridge()?.clearGame();
+			clearAllCallbacks(cbs);
+		},
+
 		dispose() {
 			getGodotBridge()?.clearGame();
 			clearAllCallbacks(cbs);

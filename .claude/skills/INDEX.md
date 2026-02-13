@@ -2,6 +2,19 @@
 
 Generated: 2026-02-12
 
+> **All skills now have YAML frontmatter with `description` fields for proper OpenCode skill triggering.**
+
+## Skill Loading
+
+All skills in this directory use YAML frontmatter:
+```yaml
+---
+description: "What this skill covers and when to use it"
+---
+```
+
+This enables the OpenCode agent orchestration to properly match skills to tasks.
+
 ## By Category
 
 ### Chat & AI

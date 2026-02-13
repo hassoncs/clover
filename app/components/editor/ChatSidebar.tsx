@@ -1,12 +1,16 @@
-import { StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, Text, View, type ViewStyle } from "react-native";
 import { ChatConversation } from "@/components/create-game/ChatConversation";
+import { useTheme } from "@/lib/theme";
 import { useEditorChatSession } from "./useEditorChatSession";
+
+const isWeb = Platform.OS === "web";
 
 interface ChatSidebarProps {
 	style?: ViewStyle;
 }
 
 export function ChatSidebar({ style }: ChatSidebarProps) {
+	const { editorColors: c } = useTheme();
 	const {
 		messages,
 		handleSendMessage,
@@ -18,10 +22,12 @@ export function ChatSidebar({ style }: ChatSidebarProps) {
 	} = useEditorChatSession();
 
 	return (
-		<View style={[styles.container, style]}>
-			<View style={styles.header}>
-				<Text style={styles.headerTitle}>Chat</Text>
-			</View>
+		<View style={[styles.container, { backgroundColor: c.panelBg }, style]}>
+			{!isWeb && (
+				<View style={[styles.header, { borderBottomColor: c.border }]}>
+					<Text style={[styles.headerTitle, { color: c.text }]}>Chat</Text>
+				</View>
+			)}
 			<ChatConversation
 				messages={messages}
 				onSendMessage={handleSendMessage}
@@ -38,16 +44,13 @@ export function ChatSidebar({ style }: ChatSidebarProps) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#1F2937",
 	},
 	header: {
 		paddingHorizontal: 16,
 		paddingVertical: 12,
 		borderBottomWidth: 1,
-		borderBottomColor: "#374151",
 	},
 	headerTitle: {
-		color: "#FFFFFF",
 		fontSize: 14,
 		fontWeight: "600",
 	},

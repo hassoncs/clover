@@ -1,3 +1,7 @@
+---
+description: "Chat streaming, SSE endpoints, AG-UI protocol, tool calling, HITL (askUser), agent billing, settlement, streamText, chat flow. Use when working on chat, streaming, billing, or AI agent orchestration."
+---
+
 # Agent Orchestration
 
 > **Skill for AI Agents**: Chat streaming, SSE, AG-UI protocol, HITL, billing

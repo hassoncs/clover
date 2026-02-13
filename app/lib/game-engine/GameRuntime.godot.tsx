@@ -9,6 +9,7 @@ import {
 	getValue,
 	PropertyCache,
 } from "@slopcade/shared";
+import type { PreviewContext } from "@slopcade/shared/types/preview";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, View } from "react-native";
 import { hasTunables, TuningPanel } from "@/components/game";
@@ -57,7 +58,7 @@ import {
 	subscribeToGameEvents,
 } from "./runtime/GameEventSubscriber";
 import * as StateHelpers from "./runtime/GameStateHelpers";
-import type { VarValue } from "./runtime/types";
+import type { GameRuntimeRef, VarValue } from "./runtime/types";
 import type { Match3Config } from "./systems/Match3GameSystem";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
@@ -72,6 +73,7 @@ import {
 	HoverHighlightRuntimeSystem,
 	InputRuntimeSystem,
 	Match3RuntimeSystem,
+	MockNetworkSystem,
 	NetworkRuntimeSystem,
 	PropertySyncRuntimeSystem,
 	RulesSystem,
@@ -124,6 +126,9 @@ export interface GameRuntimeGodotProps {
 	paused?: boolean;
 	/** Called when bridge is ready, provides full bridge access */
 	onBridgeReady?: (api: GodotBridge) => void;
+	/** Preview context for editor/inspector preview mode */
+	previewContext?: PreviewContext;
+	runtimeRef?: React.MutableRefObject<GameRuntimeRef | null>;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -146,12 +151,16 @@ export function GameRuntimeGodot({
 	autoStart = false,
 	paused,
 	onBridgeReady,
+	previewContext,
+	runtimeRef,
 }: GameRuntimeGodotProps) {
 	const stablePreloadTextureUrls = preloadTextureUrls ?? EMPTY_TEXTURE_URLS;
 	const progressHook = useGameProgressFromDefinition(definition);
 	const progressHookRef = useRef(progressHook);
 	progressHookRef.current = progressHook;
 	const devToolsCheck = useDevToolsOptional();
+	const definitionRef = useRef(definition);
+	definitionRef.current = definition;
 	const bridgeRef = useRef<GodotBridge | null>(null);
 	const physicsRef = useRef<Physics2D | null>(null);
 	const gameRef = useRef<LoadedGame | null>(null);
@@ -184,6 +193,7 @@ export function GameRuntimeGodot({
 	const onGameEndRef = useRef(onGameEnd);
 	const onScoreChangeRef = useRef(onScoreChange);
 	const onBridgeReadyRef = useRef(onBridgeReady);
+	const previewContextRef = useRef(previewContext);
 
 	useEffect(() => {
 		if (paused !== undefined) {
@@ -200,6 +210,21 @@ export function GameRuntimeGodot({
 		onGameEndRef.current = onGameEnd;
 		onScoreChangeRef.current = onScoreChange;
 		onBridgeReadyRef.current = onBridgeReady;
+		previewContextRef.current = previewContext;
+
+		if (runtimeRef) {
+			runtimeRef.current = {
+				getPhysics: () => physicsRef.current,
+				getEntityManager: () => gameRef.current?.entityManager ?? null,
+				getGameState: () => gameState,
+				setVariable: (key: string, value: any) => {
+					const game = gameRef.current;
+					if (game) {
+						StateHelpers.setVar(game.gameState, key, value, game.events);
+					}
+				},
+			};
+		}
 	});
 
 	const cleanupSubscriptions = useCallback(() => {
@@ -278,7 +303,7 @@ export function GameRuntimeGodot({
 			inputEventUnsubRef.current = bridge.onInputEvent(
 				(type, x, y, entityId) => {
 					if (type === "tap") {
-						const ppm = definition.world.pixelsPerMeter ?? 50;
+						const ppm = definitionRef.current.world.pixelsPerMeter ?? 50;
 						const screenX = x * ppm;
 						const screenY = y * ppm;
 						eventQueueRef.current.push({
@@ -355,11 +380,7 @@ export function GameRuntimeGodot({
 			});
 			subscriptionsRef.current.push(eventBusUnsubRef.current);
 		},
-		[
-			cleanupSubscriptions,
-			definition.world.pixelsPerMeter,
-			definition.persistence,
-		],
+		[cleanupSubscriptions],
 	);
 
 	const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
@@ -618,6 +639,7 @@ export function GameRuntimeGodot({
 	}, []);
 
 	const setupStartedRef = useRef(false);
+	const loadedDefinitionRef = useRef<GameDefinition | null>(null);
 
 	useEffect(() => {
 		if (!godotReady) return;
@@ -663,12 +685,13 @@ export function GameRuntimeGodot({
 				}
 
 				logger.info("lifecycle", "Loading game definition...");
-				await bridge.loadGame(definition);
+				const initialDefinition = definitionRef.current;
+				await bridge.loadGame(initialDefinition);
 				logger.info("lifecycle", "Game loaded into Godot");
 
 				bridge.pausePhysics();
 
-				const analyzer = new DependencyAnalyzer(definition);
+				const analyzer = new DependencyAnalyzer(initialDefinition);
 				const report = analyzer.analyze();
 				const watches = analyzer.getWatchSpecs();
 
@@ -709,16 +732,16 @@ export function GameRuntimeGodot({
 				const loader = new GameLoader({ physics, bridge });
 				loaderRef.current = loader;
 
-				const game = loader.load(definition);
+				const game = loader.load(initialDefinition);
 				gameRef.current = game;
 
-				loader.applyEffects(definition);
+				loader.applyEffects(initialDefinition);
 
 				const camera = CameraSystem.fromGameConfig(
-					definition.camera,
-					definition.world.bounds,
+					initialDefinition.camera,
+					initialDefinition.world.bounds,
 					{ width: 800, height: 600 },
-					definition.world.pixelsPerMeter ?? 50,
+					initialDefinition.world.pixelsPerMeter ?? 50,
 				);
 				cameraRef.current = camera;
 
@@ -732,7 +755,8 @@ export function GameRuntimeGodot({
 					camera.updatePixelsPerMeter(currentViewport.scale);
 					setViewportRect(currentViewport);
 
-					const godotPixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+					const godotPixelsPerMeter =
+						initialDefinition.world.pixelsPerMeter ?? 50;
 					const godotZoom = currentViewport.scale / godotPixelsPerMeter;
 					bridge.setCameraZoom(godotZoom);
 				}
@@ -748,7 +772,7 @@ export function GameRuntimeGodot({
 				let mergedVariables = { ...initialVariables };
 				if (typeof window !== "undefined" && window.localStorage) {
 					try {
-						const tuningStorageKey = `tuning-overrides-${definition.metadata.title
+						const tuningStorageKey = `tuning-overrides-${initialDefinition.metadata.title
 							.toLowerCase()
 							.replace(/\s+/g, "-")}`;
 						const savedOverrides =
@@ -808,16 +832,16 @@ export function GameRuntimeGodot({
 					eventQueue,
 					() => ({
 						variables: game.gameState.vars,
-						constants: definition.constants as
+						constants: initialDefinition.constants as
 							| Record<string, number | string | boolean>
 							| undefined,
 					}),
 				);
 
-				const presentationConfig = definition.presentation;
+				const presentationConfig = initialDefinition.presentation;
 				runner.register(
 					new ViewportRuntimeSystem({
-						worldBounds: definition.world.bounds,
+						worldBounds: initialDefinition.world.bounds,
 						aspectRatio: presentationConfig?.aspectRatio,
 						fit: presentationConfig?.fit,
 						letterboxColor: presentationConfig?.letterboxColor,
@@ -832,10 +856,13 @@ export function GameRuntimeGodot({
 
 				runner.register(
 					new CameraRuntimeSystem({
-						cameraConfig: definition.camera ?? { type: "fixed", zoom: 1 },
-						worldBounds: definition.world.bounds,
+						cameraConfig: initialDefinition.camera ?? {
+							type: "fixed",
+							zoom: 1,
+						},
+						worldBounds: initialDefinition.world.bounds,
 						viewport: { width: 800, height: 600 },
-						pixelsPerMeter: definition.world.pixelsPerMeter ?? 50,
+						pixelsPerMeter: initialDefinition.world.pixelsPerMeter ?? 50,
 					}),
 				);
 
@@ -857,17 +884,17 @@ export function GameRuntimeGodot({
 
 				runner.register(
 					new BehaviorExecutorRuntimeSystem({
-						pixelsPerMeter: definition.world.pixelsPerMeter ?? 50,
+						pixelsPerMeter: initialDefinition.world.pixelsPerMeter ?? 50,
 					}),
 				);
 
-				if (definition.script) {
+				if (initialDefinition.script) {
 					runner.register(
 						new ScriptSandboxRuntimeSystem({
-							scriptCode: definition.script,
-							scriptId: definition.metadata.id,
-							gameId: definition.metadata.id,
-							constants: definition.constants as
+							scriptCode: initialDefinition.script,
+							scriptId: initialDefinition.metadata.id,
+							gameId: initialDefinition.metadata.id,
+							constants: initialDefinition.constants as
 								| Record<string, number | string | boolean>
 								| undefined,
 						}),
@@ -876,44 +903,56 @@ export function GameRuntimeGodot({
 
 				runner.register(
 					new RulesSystem({
-						rules: definition.rules ?? [],
-						winCondition: definition.winCondition,
-						loseCondition: definition.loseCondition,
-						variables: definition.variables as
+						rules: initialDefinition.rules ?? [],
+						winCondition: initialDefinition.winCondition,
+						loseCondition: initialDefinition.loseCondition,
+						variables: initialDefinition.variables as
 							| Record<string, number | string | boolean>
 							| undefined,
-						containers: definition.containers,
-						stateMachines: definition.stateMachines,
+						containers: initialDefinition.containers,
+						stateMachines: initialDefinition.stateMachines,
 					}),
 				);
 
-				if (definition.economy) {
+				if (initialDefinition.economy) {
 					runner.register(
 						new EconomyRuntimeSystem({
 							economyGraph:
-								definition.economy as EconomySystemConfig["economyGraph"],
+								initialDefinition.economy as EconomySystemConfig["economyGraph"],
 						}),
 					);
 				}
-				if (definition.match3) {
+				if (initialDefinition.match3) {
 					runner.register(
-						new Match3RuntimeSystem(definition.match3 as Match3Config),
+						new Match3RuntimeSystem(initialDefinition.match3 as Match3Config),
 					);
 				}
-				if (definition.containers && definition.containers.length > 0) {
+				if (
+					initialDefinition.containers &&
+					initialDefinition.containers.length > 0
+				) {
 					runner.register(
 						new ContainerRuntimeSystem({
-							containers: definition.containers,
+							containers: initialDefinition.containers,
 						}),
 					);
 				}
-				if (definition.hoverHighlight) {
+				if (initialDefinition.hoverHighlight) {
 					runner.register(
-						new HoverHighlightRuntimeSystem(definition.hoverHighlight),
+						new HoverHighlightRuntimeSystem(initialDefinition.hoverHighlight),
 					);
 				}
 
-				if (definition.party) {
+				if (previewContextRef.current?.roomMock) {
+					runner.register(
+						new MockNetworkSystem({
+							role: previewContextRef.current.roomMock.hostId
+								? "host"
+								: "player",
+							roomMock: previewContextRef.current.roomMock,
+						}),
+					);
+				} else if (initialDefinition.party) {
 					runner.register(
 						new NetworkRuntimeSystem({
 							role: "host",
@@ -985,7 +1024,7 @@ export function GameRuntimeGodot({
 					if (iem) rulesSystem.setInputEntityManager(iem);
 				}
 
-				if (definition.script) {
+				if (initialDefinition.script) {
 					const scriptSystem =
 						runner.getSystem<ScriptSandboxRuntimeSystem>("script-sandbox");
 					if (scriptSystem && rulesSystem) {
@@ -1013,12 +1052,26 @@ export function GameRuntimeGodot({
 								eventQueue,
 								() => ({
 									variables: game.gameState.vars,
-									constants: definition.constants as
+									constants: initialDefinition.constants as
 										| Record<string, number | string | boolean>
 										| undefined,
 								}),
 							);
 							(window as any).debugOps = debugOps;
+
+							if (previewContext?.id) {
+								if (!(window as any).debugOpsRegistry) {
+									(window as any).debugOpsRegistry = {};
+									(window as any).debugOpsMetaRegistry = {};
+								}
+								(window as any).debugOpsRegistry[previewContext.id] = debugOps;
+								(window as any).debugOpsMetaRegistry[previewContext.id] = {
+									label: previewContext.label,
+									mode: previewContext.mode,
+								};
+								(window as any).debugOpsFocusedId = previewContext.id;
+							}
+
 							logger.info(
 								"lifecycle",
 								"Exposed window.worldOps and window.debugOps",
@@ -1030,12 +1083,15 @@ export function GameRuntimeGodot({
 					checkDebugBridges();
 				}
 
-				if (progressHookRef.current?.progress && definition.persistence) {
+				if (
+					progressHookRef.current?.progress &&
+					initialDefinition.persistence
+				) {
 					const progress = progressHookRef.current.progress as Record<
 						string,
 						unknown
 					>;
-					for (const key of Object.keys(definition.variables || {})) {
+					for (const key of Object.keys(initialDefinition.variables || {})) {
 						if (key in progress && progress[key] !== undefined) {
 							game.gameState.vars[key] = progress[key] as VarValue;
 						}
@@ -1053,6 +1109,7 @@ export function GameRuntimeGodot({
 				}
 
 				eventQueueRef.current.push({ type: "game_loaded" });
+				loadedDefinitionRef.current = initialDefinition;
 			} catch (error) {
 				logger.error("lifecycle", "Failed to initialize game:", error);
 			}
@@ -1062,6 +1119,7 @@ export function GameRuntimeGodot({
 
 		return () => {
 			setupStartedRef.current = false;
+			loadedDefinitionRef.current = null;
 			cleanupSubscriptions();
 			gameSystemRunnerRef.current?.destroy();
 			gameSystemRunnerRef.current = null;
@@ -1071,15 +1129,116 @@ export function GameRuntimeGodot({
 			gameRef.current = null;
 			loaderRef.current = null;
 			cameraRef.current = null;
+
+			if (Platform.OS === "web" && previewContext?.id) {
+				const registry = (window as any).debugOpsRegistry;
+				const metaRegistry = (window as any).debugOpsMetaRegistry;
+				if (registry) delete registry[previewContext.id];
+				if (metaRegistry) delete metaRegistry[previewContext.id];
+			}
 		};
 	}, [
 		godotReady,
-		definition,
 		stablePreloadTextureUrls,
 		debugMode,
 		cleanupSubscriptions,
 		setupSubscriptions,
 	]);
+
+	// Soft-reload: definition changes after initial mount use in-place clear/load
+	// instead of full engine teardown (mirrors handleRestart flow).
+	useEffect(() => {
+		if (!loadedDefinitionRef.current) return;
+		if (definition === loadedDefinitionRef.current) return;
+
+		const bridge = bridgeRef.current;
+		const loader = loaderRef.current;
+		const camera = cameraRef.current;
+		const physics = physicsRef.current;
+		if (!bridge || !loader || !camera || !physics) return;
+
+		logger.info("lifecycle", "Definition changed — performing soft reload");
+
+		const softReload = async () => {
+			try {
+				bridge.clearGame();
+				await bridge.loadGame(definition);
+				bridge.pausePhysics();
+
+				loader.applyEffects(definition);
+
+				const prevGame = gameRef.current;
+				if (!prevGame) return;
+
+				const newGame = loader.reload(prevGame);
+				gameRef.current = newGame;
+				elapsedRef.current = 0;
+
+				camera.setPosition({ x: 0, y: 0 });
+				camera.setZoom(definition.camera?.zoom ?? 1);
+
+				timeScaleRef.current = 1.0;
+
+				if (match3EventBusRef.current) {
+					setupSubscriptions(
+						bridge,
+						physics,
+						newGame,
+						match3EventBusRef.current,
+					);
+				}
+
+				const initialVariables: Record<string, number | string | boolean> = {};
+				for (const [key, value] of Object.entries(newGame.gameState.vars)) {
+					if (!["score", "lives", "gameState", "elapsed"].includes(key)) {
+						initialVariables[key] = value;
+					}
+				}
+
+				let mergedVariables = { ...initialVariables };
+				if (progressHookRef.current?.progress && definition.persistence) {
+					const progress = progressHookRef.current.progress as Record<
+						string,
+						unknown
+					>;
+					mergedVariables = {
+						...mergedVariables,
+						...(progress as Record<string, any>),
+					};
+					for (const key of Object.keys(definition.variables || {})) {
+						if (key in progress && progress[key] !== undefined) {
+							newGame.gameState.vars[key] = progress[key] as VarValue;
+						}
+					}
+				}
+
+				setGameState({
+					time: 0,
+					state: autoStart ? "playing" : "ready",
+					variables: mergedVariables,
+				});
+
+				if (autoStart) {
+					StateHelpers.setGameStateValue(
+						newGame.gameState,
+						"playing",
+						newGame.events,
+					);
+					bridge.resumePhysics();
+					eventQueueRef.current.push({ type: "game_started" });
+				}
+
+				eventQueueRef.current.push({ type: "game_loaded" });
+				loadedDefinitionRef.current = definition;
+
+				logger.info("lifecycle", "Soft reload complete");
+			} catch (error) {
+				logger.error("lifecycle", "Soft reload failed:", error);
+			}
+		};
+
+		softReload();
+	}, [definition, autoStart, setupSubscriptions]);
 
 	const showInputDebug = devToolsCheck?.state?.showInputDebug ?? false;
 	const showPhysicsShapes = devToolsCheck?.state?.showPhysicsShapes ?? false;

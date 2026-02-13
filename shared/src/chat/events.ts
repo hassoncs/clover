@@ -53,4 +53,9 @@ export type AgUiEvent =
 			type: "FILE_CHANGED";
 			gameId: string;
 			filename: string;
+	  }
+	| {
+			type: "EDITOR_COMMAND";
+			command: string;
+			payload: Record<string, unknown>;
 	  };

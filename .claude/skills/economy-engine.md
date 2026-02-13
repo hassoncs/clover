@@ -1,3 +1,7 @@
+---
+description: "Machinations-inspired economy graph engine for games. Covers resource pools, flows, converters, drains, and economy simulation. Use when adding economy systems, resource flows, or currency mechanics to games."
+---
+
 # Economy Engine
 
 > **Skill for AI Agents**: Building and integrating economy systems using the Machinations-inspired graph engine

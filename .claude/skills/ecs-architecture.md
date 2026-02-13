@@ -1,3 +1,7 @@
+---
+description: "Entity-Component-System architecture for the game engine. Covers prefabs, entities, components, spawning, GameDefinition, EntityManager, behaviors, rules, archetypes, and world settings. Use when working on game logic, entity management, or the rules/behavior system."
+---
+
 # ECS Architecture
 
 > **Skill for AI Agents**: Prefabs, entities, components, GameDefinition, rules, behaviors

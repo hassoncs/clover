@@ -1,3 +1,7 @@
+---
+description: "Speech-to-text transcription and Durable Objects. Covers Whisper STT, RealtimeRelayDO, GameRepoDO, voice input, microphone, and WebSocket relay. Use when working on transcription, voice features, or real-time audio processing."
+---
+
 # Transcription & Durable Objects
 
 > **Skill for AI Agents**: STT/Whisper, RealtimeRelayDO, GameRepoDO, voice input, WebSocket relay

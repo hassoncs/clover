@@ -2,16 +2,21 @@ import { FileTree } from "@slopcade/ui";
 import { useState } from "react";
 import {
 	ActivityIndicator,
+	Platform,
 	Pressable,
 	StyleSheet,
 	Text,
 	TextInput,
 	View,
 } from "react-native";
+import { useTheme } from "@/lib/theme";
 import { useEditorFileTree } from "../useEditorFileTree";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 
+const isWeb = Platform.OS === "web";
+
 export function ExplorerPanel() {
+	const { editorColors: c } = useTheme();
 	const workspaceFiles = useSharedWorkspaceFiles();
 	const {
 		treeState,
@@ -30,27 +35,39 @@ export function ExplorerPanel() {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.header}>
-				<Pressable
-					onPress={() => setIsExpanded(!isExpanded)}
-					style={styles.headerButton}
-					accessibilityRole="button"
-					accessibilityLabel={
-						isExpanded ? "Collapse Explorer" : "Expand Explorer"
-					}
-				>
-					<Text style={styles.title}>EXPLORER</Text>
-					<Text style={styles.chevron}>{isExpanded ? "▾" : "▸"}</Text>
-				</Pressable>
-			</View>
+		<View style={[styles.container, { backgroundColor: c.panelBg }]}>
+			{!isWeb && (
+				<View style={[styles.header, { borderBottomColor: c.border }]}>
+					<Pressable
+						onPress={() => setIsExpanded(!isExpanded)}
+						style={styles.headerButton}
+						accessibilityRole="button"
+						accessibilityLabel={
+							isExpanded ? "Collapse Explorer" : "Expand Explorer"
+						}
+					>
+						<Text style={[styles.title, { color: c.text }]}>EXPLORER</Text>
+						<Text style={{ color: c.textSecondary, fontSize: 14 }}>
+							{isExpanded ? "▾" : "▸"}
+						</Text>
+					</Pressable>
+				</View>
+			)}
 
 			{isExpanded && (
 				<>
 					<TextInput
-						style={styles.searchInput}
+						style={[
+							styles.searchInput,
+							{
+								backgroundColor: c.inputBg,
+								color: c.inputText,
+								borderColor: c.inputBorder,
+								borderWidth: 1,
+							},
+						]}
 						placeholder="Search files..."
-						placeholderTextColor="#6B7280"
+						placeholderTextColor={c.inputPlaceholder}
 						value={searchQuery}
 						onChangeText={setSearchQuery}
 						accessibilityLabel="Search files"
@@ -58,7 +75,7 @@ export function ExplorerPanel() {
 
 					<View style={styles.content}>
 						{isLoading ? (
-							<ActivityIndicator color="#6366F1" />
+							<ActivityIndicator color={c.accent} />
 						) : (
 							<FileTree
 								data={treeData}
@@ -81,7 +98,6 @@ export function ExplorerPanel() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#1F2937",
 	},
 	header: {
 		flexDirection: "row",
@@ -89,7 +105,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		padding: 12,
 		borderBottomWidth: 1,
-		borderBottomColor: "#374151",
 	},
 	headerButton: {
 		flexDirection: "row",
@@ -97,22 +112,15 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	title: {
-		color: "#FFFFFF",
 		fontSize: 14,
 		fontWeight: "600",
 		marginRight: 8,
 	},
-	chevron: {
-		color: "#9CA3AF",
-		fontSize: 14,
-	},
 	searchInput: {
-		margin: 12,
+		margin: 8,
 		padding: 8,
-		backgroundColor: "#374151",
 		borderRadius: 6,
-		color: "#FFFFFF",
-		fontSize: 14,
+		fontSize: 13,
 	},
 	content: {
 		flex: 1,

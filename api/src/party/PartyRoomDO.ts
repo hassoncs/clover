@@ -52,6 +52,11 @@ export class PartyRoomDO {
 		new Map();
 	private activeInputCollector: InputCollector | null = null;
 	private initialized = false;
+	private sockets: Set<WebSocket> = new Set();
+	private socketMetadata: WeakMap<
+		WebSocket,
+		{ role: string; playerId?: string; name?: string }
+	> = new WeakMap();
 
 	constructor(private state: DurableObjectState) {}
 
@@ -125,46 +130,55 @@ export class PartyRoomDO {
 			return jsonResponse({ error: "name required for player" }, 400);
 		}
 
-		const [client, server] = Object.values(new WebSocketPair()) as [
-			WebSocket,
-			WebSocket,
-		];
+		const pair = new WebSocketPair();
+		const client = pair[0];
+		const server = pair[1];
 
-		if (role === "host") {
-			this.state.acceptWebSocket(server, ["host"]);
-		} else {
-			const playerId = crypto.randomUUID();
-			this.state.acceptWebSocket(server, [`player:${playerId}`]);
+		server.accept();
+		this.sockets.add(server);
 
-			server.serializeAttachment({ playerId, name, role: "player" });
-		}
+		const meta = {
+			role,
+			playerId: role === "player" ? crypto.randomUUID() : undefined,
+			name: name ?? undefined,
+		};
+		this.socketMetadata.set(server, meta);
 
-		if (role === "host" && token) {
-			server.serializeAttachment({ role: "host", token });
-		}
+		(async () => {
+			try {
+				if (role === "host") {
+					await this.handleHostConnect(server, token ?? undefined);
+				} else {
+					if (meta.playerId) {
+						await this.handlePlayerConnect(
+							server,
+							meta.playerId,
+							meta.name ?? "Player",
+						);
+					}
+				}
+			} catch (e) {
+				server.close(1011, "Internal Error");
+			}
+		})();
+
+		server.addEventListener("message", async (event) => {
+			try {
+				await this.handleMessage(server, event.data);
+			} catch {}
+		});
+
+		server.addEventListener("close", async (event) => {
+			this.sockets.delete(server);
+			await this.handleClose(server, event.code, event.reason, event.wasClean);
+		});
+
+		server.addEventListener("error", async () => {
+			this.sockets.delete(server);
+			await this.handleClose(server, 1006, "error", false);
+		});
 
 		return new Response(null, { status: 101, webSocket: client });
-	}
-
-	async webSocketOpen(ws: WebSocket): Promise<void> {
-		const attachment = ws.deserializeAttachment() as {
-			role: string;
-			playerId?: string;
-			name?: string;
-			token?: string;
-		} | null;
-
-		if (!attachment) return;
-
-		if (attachment.role === "host") {
-			await this.handleHostConnect(ws, attachment.token);
-		} else if (attachment.role === "player" && attachment.playerId) {
-			await this.handlePlayerConnect(
-				ws,
-				attachment.playerId,
-				attachment.name ?? "Player",
-			);
-		}
 	}
 
 	private async handleHostConnect(
@@ -236,13 +250,6 @@ export class PartyRoomDO {
 			};
 			await this.state.storage.put(`session:${sessionToken}`, session);
 
-			ws.serializeAttachment({
-				role: "player",
-				playerId,
-				name,
-				sessionToken,
-			});
-
 			ws.send(encodeMessage(stateUpdateMessage(this.buildRoomState())));
 			this.broadcastToAll(encodeMessage(playerJoinedMessage(player)));
 		}
@@ -250,18 +257,14 @@ export class PartyRoomDO {
 		await this.saveState();
 	}
 
-	async webSocketMessage(
+	async handleMessage(
 		ws: WebSocket,
 		message: string | ArrayBuffer,
 	): Promise<void> {
-		const attachment = ws.deserializeAttachment() as {
-			role: string;
-			playerId?: string;
-		} | null;
-		if (!attachment) return;
+		const meta = this.socketMetadata.get(ws);
+		if (!meta) return;
 
-		const senderId =
-			attachment.role === "host" ? this.hostId : attachment.playerId;
+		const senderId = meta.role === "host" ? this.hostId : meta.playerId;
 		if (!senderId) return;
 
 		if (!this.checkRateLimit(senderId)) {
@@ -284,12 +287,12 @@ export class PartyRoomDO {
 				);
 				break;
 			case "phase_change":
-				if (attachment.role === "host") {
+				if (meta.role === "host") {
 					await this.setPhase(parsed.phase, parsed.metadata);
 				}
 				break;
 			case "state_update":
-				if (attachment.role === "host") {
+				if (meta.role === "host") {
 					this.sharedData = parsed.state.sharedData ?? {};
 					this.broadcastToAll(
 						encodeMessage(stateUpdateMessage(this.buildRoomState())),
@@ -297,32 +300,30 @@ export class PartyRoomDO {
 					await this.saveState();
 				}
 				break;
+			case "input_request":
+				if (meta.role === "host") {
+					this.requestInput(parsed.requestId, parsed.request).catch(() => {});
+				}
+				break;
 			default:
 				break;
 		}
 	}
 
-	async webSocketClose(
+	async handleClose(
 		ws: WebSocket,
-		_code: number,
-		_reason: string,
-		_wasClean: boolean,
+		code: number,
+		reason: string,
+		wasClean: boolean,
 	): Promise<void> {
-		const attachment = ws.deserializeAttachment() as {
-			role: string;
-			playerId?: string;
-		} | null;
-		if (!attachment) return;
+		const meta = this.socketMetadata.get(ws);
+		if (!meta) return;
 
-		if (attachment.role === "host" && this.hostId) {
+		if (meta.role === "host" && this.hostId) {
 			await this.handleDisconnect(this.hostId);
-		} else if (attachment.role === "player" && attachment.playerId) {
-			await this.handleDisconnect(attachment.playerId);
+		} else if (meta.role === "player" && meta.playerId) {
+			await this.handleDisconnect(meta.playerId);
 		}
-	}
-
-	async webSocketError(ws: WebSocket): Promise<void> {
-		await this.webSocketClose(ws, 1006, "error", false);
 	}
 
 	private async handleDisconnect(playerId: string): Promise<void> {
@@ -360,11 +361,12 @@ export class PartyRoomDO {
 	private async cleanup(): Promise<void> {
 		this.phase = "ended";
 
-		for (const ws of this.state.getWebSockets()) {
+		for (const ws of this.sockets) {
 			try {
 				ws.close(1000, "Room expired");
 			} catch {}
 		}
+		this.sockets.clear();
 
 		for (const timer of this.disconnectTimers.values()) {
 			clearTimeout(timer);
@@ -488,17 +490,19 @@ export class PartyRoomDO {
 	}
 
 	private broadcastToAll(message: string): void {
-		for (const ws of this.state.getWebSockets()) {
-			try {
-				ws.send(message);
-			} catch {}
+		for (const ws of this.sockets) {
+			if (ws.readyState === WebSocket.OPEN) {
+				try {
+					ws.send(message);
+				} catch {}
+			}
 		}
 	}
 
 	private broadcastToPlayers(message: string): void {
-		for (const ws of this.state.getWebSockets()) {
-			const tags = this.state.getTags(ws);
-			if (tags.some((t) => t.startsWith("player:"))) {
+		for (const ws of this.sockets) {
+			const meta = this.socketMetadata.get(ws);
+			if (meta?.role === "player" && ws.readyState === WebSocket.OPEN) {
 				try {
 					ws.send(message);
 				} catch {}
@@ -507,10 +511,13 @@ export class PartyRoomDO {
 	}
 
 	private broadcastToHost(message: string): void {
-		for (const ws of this.state.getWebSockets("host")) {
-			try {
-				ws.send(message);
-			} catch {}
+		for (const ws of this.sockets) {
+			const meta = this.socketMetadata.get(ws);
+			if (meta?.role === "host" && ws.readyState === WebSocket.OPEN) {
+				try {
+					ws.send(message);
+				} catch {}
+			}
 		}
 	}
 

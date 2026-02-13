@@ -55,8 +55,9 @@ export function useGameWebSocket(gameId: string | null) {
 				}
 			};
 
-			ws.onerror = (error) => {
-				console.error("[useGameWebSocket] WebSocket error:", error);
+			ws.onerror = () => {
+				// Silently ignore WebSocket errors - these are expected when
+				// the server is unavailable or during development
 			};
 
 			ws.onclose = () => {

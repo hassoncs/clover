@@ -306,6 +306,18 @@ export async function handleChatStream(
 					// Don't fail the run if event delivery fails
 				}
 			},
+			onEditorCommand: async ({ command, payload }) => {
+				try {
+					await emit({
+						type: "EDITOR_COMMAND",
+						command,
+						payload,
+					});
+					return { dispatched: true, command };
+				} catch {
+					return { dispatched: false, error: "Failed to deliver command" };
+				}
+			},
 		}),
 		stopWhen: stepCountIs(MAX_STEPS),
 	});

@@ -38,7 +38,8 @@ export type EditorTab =
 	| "layers"
 	| "debug"
 	| "chat"
-	| "files";
+	| "files"
+	| "live-state";
 export type SheetSnapPoint = 0 | 1 | 2;
 
 interface Vec2 {
@@ -530,6 +531,8 @@ function editorReducer(
 export interface GameRuntimeRef {
 	getPhysics: () => Physics2D | null;
 	getEntityManager: () => EntityManager | null;
+	getGameState: () => any; // Typed as ReactGameState in implementation
+	setVariable: (key: string, value: any) => void;
 }
 
 export type ShaderHotSwapHandler = (shaderId: string, source: string) => void;

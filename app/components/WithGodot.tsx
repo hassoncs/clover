@@ -1,33 +1,50 @@
-import React, { useEffect, ComponentType } from 'react';
-import { View, StyleSheet } from 'react-native';
+import type React from "react";
+import { useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 interface WithGodotProps {
-  getComponent: () => Promise<{ default: ComponentType<unknown> }>;
-  fallback?: React.ReactNode;
+	loadModule: () => Promise<Record<string, unknown>>;
+	render: (mod: Record<string, unknown>) => React.ReactNode;
+	fallback?: React.ReactNode;
 }
 
+let cachedModule: Record<string, unknown> | null = null;
+
 export function WithGodot({
-  getComponent,
-  fallback = <View style={styles.fallback} />,
+	loadModule,
+	render,
+	fallback = <View style={styles.fallback} />,
 }: WithGodotProps) {
-  const [Component, setComponent] = React.useState<ComponentType<unknown> | null>(null);
+	const [mod, setMod] = useState<Record<string, unknown> | null>(cachedModule);
 
-  useEffect(() => {
-    getComponent().then((mod) => {
-      setComponent(() => mod.default);
-    });
-  }, [getComponent]);
+	useEffect(() => {
+		if (mod) return;
 
-  if (!Component) {
-    return <>{fallback}</>;
-  }
+		let cancelled = false;
+		loadModule()
+			.then((m) => {
+				cachedModule = m;
+				if (!cancelled) setMod(m);
+			})
+			.catch((err) => {
+				console.error("[WithGodot] Failed to load module:", err);
+			});
 
-  return <Component />;
+		return () => {
+			cancelled = true;
+		};
+	}, [loadModule, mod]);
+
+	if (!mod) {
+		return <>{fallback}</>;
+	}
+
+	return <>{render(mod)}</>;
 }
 
 const styles = StyleSheet.create({
-  fallback: {
-    flex: 1,
-    backgroundColor: '#1a1a2e',
-  },
+	fallback: {
+		flex: 1,
+		backgroundColor: "#1a1a2e",
+	},
 });

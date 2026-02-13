@@ -1,3 +1,7 @@
+---
+description: "User input handling across web and native platforms. Covers touch, mouse, keyboard, drag gestures, tap zones, tilt, virtual buttons, and input coordinate transforms. Use when implementing input, debugging coordinate issues, or adding new gesture types."
+---
+
 # Input Handling
 
 > **Skill for AI Agents**: Handling user input across web and native platforms

@@ -10,6 +10,7 @@ import {
 	ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import type { GameInspectorState } from "./types.js";
+import { activateTarget, resolveTargetId } from "./utils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -19,6 +20,7 @@ const state: GameInspectorState = {
 	currentGameId: null,
 	consoleLogs: [],
 	maxLogEntries: 500,
+	activeTargetId: null,
 };
 
 let importCounter = 0;
@@ -156,7 +158,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 			{
 				name: "call_op",
 				description:
-					"Execute a named operation. Use list_ops to discover available operations and their parameter schemas.",
+					"Execute a named operation. Use list_ops to discover available operations and their parameter schemas. Pass targetId in args to target a specific preview context.",
 				inputSchema: {
 					type: "object" as const,
 					properties: {
@@ -167,7 +169,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 						args: {
 							type: "object",
 							additionalProperties: {},
-							description: "Operation arguments as key-value pairs",
+							description:
+								"Operation arguments as key-value pairs. Include targetId to target a specific preview context.",
 						},
 					},
 					required: ["operation"],
@@ -238,6 +241,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		}
 
 		try {
+			const perCallTargetId = args.targetId as string | undefined;
+			delete args.targetId;
+			const effectiveTargetId = resolveTargetId(state, perCallTargetId);
+			if (effectiveTargetId && state.page) {
+				await activateTarget(state.page, effectiveTargetId);
+			}
+
 			const result = await def.handler(args);
 			return result;
 		} catch (err) {

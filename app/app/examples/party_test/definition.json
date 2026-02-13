@@ -1,0 +1,192 @@
+{
+	"metadata": {
+		"id": "party-question-answer",
+		"slug": "partyQuestionAnswer",
+		"title": "Question & Answer",
+		"description": "Minimal party game: host shows questions, players submit text answers.",
+		"version": "1.0.0"
+	},
+	"world": {
+		"gravity": { "x": 0, "y": 0 },
+		"pixelsPerMeter": 50,
+		"bounds": { "width": 12, "height": 16 }
+	},
+	"camera": { "type": "fixed", "zoom": 1 },
+	"background": { "type": "static", "color": "#1a1a2e" },
+	"variables": {
+		"networkStatus": "disconnected",
+		"role": "player"
+	},
+	"prefabs": {},
+	"entities": [],
+	"party": {
+		"maxPlayers": 8
+	},
+	"script": "exports.onNetworkState = function(ctx, state) {\n  if (state.phase) ctx.setVariable('phase', state.phase);\n  if (state.prompt) ctx.setVariable('prompt', state.prompt);\n  if (state.answers) ctx.setVariable('answers', JSON.stringify(state.answers));\n  if (state.timerRemaining !== undefined) ctx.setVariable('timerRemaining', state.timerRemaining);\n  if (state.questionIndex !== undefined) ctx.setVariable('questionIndex', state.questionIndex);\n};\n\nexports.onPhaseChange = function(ctx, phase, data) {\n  ctx.setVariable('phase', phase);\n};",
+	"overlay": {
+		"elements": [
+			{
+				"id": "title",
+				"type": "text",
+				"anchor": "top-center",
+				"offset": { "x": 0, "y": 24 },
+				"text": "Question & Answer",
+				"fontSize": 24,
+				"fontWeight": "bold",
+				"color": "#FFFFFF"
+			},
+			{
+				"id": "room-code",
+				"type": "text",
+				"anchor": "top-center",
+				"offset": { "x": 0, "y": 64 },
+				"fontSize": 32,
+				"fontWeight": "bold",
+				"color": "#FFD700",
+				"visibleWhen": "role == 'host' and room.phase == 'lobby'",
+				"bindings": { "text": "Room: {{room.code}}" },
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 12,
+					"paddingHorizontal": 24,
+					"paddingVertical": 12
+				}
+			},
+			{
+				"id": "player-count",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": -40 },
+				"fontSize": 18,
+				"color": "#AAAAAA",
+				"visibleWhen": "room.phase == 'lobby'",
+				"bindings": { "text": "Players: {{room.playerCount}}" }
+			},
+			{
+				"id": "waiting-text",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": 0 },
+				"text": "Waiting for host to start...",
+				"fontSize": 18,
+				"color": "#888888",
+				"visibleWhen": "role == 'player' and room.phase == 'lobby'"
+			},
+			{
+				"id": "start-button",
+				"type": "button",
+				"anchor": "center",
+				"offset": { "x": 0, "y": 40 },
+				"label": "Start Game",
+				"eventName": "start_game",
+				"width": 200,
+				"height": 50,
+				"color": "#4CAF50",
+				"textColor": "#FFFFFF",
+				"fontSize": 20,
+				"visibleWhen": "role == 'host' and room.phase == 'lobby'"
+			},
+			{
+				"id": "question-text",
+				"type": "text",
+				"anchor": "top-center",
+				"offset": { "x": 0, "y": 100 },
+				"fontSize": 22,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"maxWidth": 300,
+				"align": "center",
+				"visibleWhen": "room.phase == 'question' or room.phase == 'reveal'",
+				"bindings": { "text": "{{room.prompt}}" },
+				"style": {
+					"backgroundColor": "rgba(255,255,255,0.1)",
+					"borderRadius": 12,
+					"paddingHorizontal": 20,
+					"paddingVertical": 16
+				}
+			},
+			{
+				"id": "timer-bar",
+				"type": "bar",
+				"anchor": "top-center",
+				"offset": { "x": 0, "y": 180 },
+				"width": 280,
+				"height": 12,
+				"color": "#4CAF50",
+				"backgroundColor": "#333333",
+				"borderRadius": 6,
+				"visibleWhen": "room.phase == 'question'",
+				"bindings": { "value": "room.timerRemaining", "max": "30" }
+			},
+			{
+				"id": "input-prompt",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": 0 },
+				"text": "Type your answer below!",
+				"fontSize": 18,
+				"color": "#FFD700",
+				"visibleWhen": "role == 'player' and room.phase == 'question'"
+			},
+			{
+				"id": "answer-header",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": -60 },
+				"text": "Answers:",
+				"fontSize": 20,
+				"fontWeight": "bold",
+				"color": "#FFD700",
+				"visibleWhen": "role == 'host' and room.phase == 'reveal'"
+			},
+			{
+				"id": "answers-display",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": 0 },
+				"fontSize": 16,
+				"color": "#FFFFFF",
+				"maxWidth": 300,
+				"align": "left",
+				"visibleWhen": "room.phase == 'reveal'",
+				"bindings": { "text": "{{room.answersText}}" },
+				"style": {
+					"backgroundColor": "rgba(255,255,255,0.1)",
+					"borderRadius": 8,
+					"paddingHorizontal": 16,
+					"paddingVertical": 12
+				}
+			},
+			{
+				"id": "question-counter",
+				"type": "text",
+				"anchor": "bottom-center",
+				"offset": { "x": 0, "y": 40 },
+				"fontSize": 14,
+				"color": "#666666",
+				"visibleWhen": "room.phase == 'question' or room.phase == 'reveal'",
+				"bindings": { "text": "Question {{room.questionIndex + 1}} of 5" }
+			},
+			{
+				"id": "done-text",
+				"type": "text",
+				"anchor": "center",
+				"offset": { "x": 0, "y": 0 },
+				"text": "Game Over! Thanks for playing!",
+				"fontSize": 24,
+				"fontWeight": "bold",
+				"color": "#FFD700",
+				"visibleWhen": "room.phase == 'done'"
+			},
+			{
+				"id": "connection-status",
+				"type": "text",
+				"anchor": "bottom-right",
+				"offset": { "x": 16, "y": 16 },
+				"fontSize": 12,
+				"color": "#666666",
+				"bindings": { "text": "{{networkStatus}}" }
+			}
+		]
+	}
+}

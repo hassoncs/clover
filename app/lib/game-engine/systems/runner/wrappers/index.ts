@@ -41,6 +41,11 @@ export type {
 } from "./Match3RuntimeSystem";
 export { Match3RuntimeSystem } from "./Match3RuntimeSystem";
 export type {
+	MockNetworkConfig,
+	MockNetworkState,
+} from "./MockNetworkSystem";
+export { MockNetworkSystem } from "./MockNetworkSystem";
+export type {
 	NetworkSystemConfig,
 	NetworkSystemState,
 } from "./NetworkRuntimeSystem";

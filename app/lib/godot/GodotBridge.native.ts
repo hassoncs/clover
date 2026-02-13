@@ -527,7 +527,30 @@ export function createNativeGodotBridge(): GodotBridge {
 			});
 		},
 
-		dispose() {
+		softReset() {
+			if (eventPollTimeoutId) {
+				clearTimeout(eventPollTimeoutId);
+				eventPollTimeoutId = null;
+			}
+			bridgeCore.cancelAllPending("Bridge soft reset");
+			clearAllCallbacks(cbs);
+
+			if (!isGodotInitialized) return;
+
+			callGameBridge("clear_game");
+
+			consecutiveEmptyPolls = 0;
+			scheduleNextPoll();
+		},
+
+		dispose(options) {
+			const fullTeardown = options?.fullTeardown ?? false;
+
+			if (!fullTeardown) {
+				this.softReset();
+				return;
+			}
+
 			if (isDisposing) return;
 			isDisposing = true;
 
@@ -536,7 +559,6 @@ export function createNativeGodotBridge(): GodotBridge {
 				eventPollTimeoutId = null;
 			}
 			bridgeCore.cancelAllPending("Bridge disposed");
-
 			clearAllCallbacks(cbs);
 
 			if (!isGodotInitialized) {

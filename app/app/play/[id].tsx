@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Animated,
+	Platform,
 	Pressable,
 	Text,
 	View,
@@ -19,6 +20,11 @@ import { getApiUrl, trpc } from "@/lib/trpc/client";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { AssetLoadingScreen } from "../../components/game";
 import { WithGodot } from "../../components/WithGodot";
+
+const loadGameRuntimeModule = () =>
+	import("@/lib/game-engine/GameRuntime.godot") as Promise<
+		Record<string, unknown>
+	>;
 
 export default function PlayScreen() {
 	const router = useRouter();
@@ -164,7 +170,7 @@ export default function PlayScreen() {
 		Animated.timing(loadingOpacity, {
 			toValue: 0,
 			duration: 500,
-			useNativeDriver: true,
+			useNativeDriver: Platform.OS !== "web",
 		}).start(() => {
 			setLoadingDismissed(true);
 		});
@@ -218,20 +224,26 @@ export default function PlayScreen() {
 			{canMountGame && (
 				<WithGodot
 					key={runtimeKey}
-					getComponent={() =>
-						import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
-							default: () => (
-								<mod.GameRuntimeGodotWithDevTools
-									definition={gameDefinition}
-									onGameEnd={handleGameEnd}
-									onRequestRestart={handleRequestRestart}
-									showHUD
-									preloadTextureUrls={imageUrls}
-									onReady={handleGodotReady}
-								/>
-							),
-						}))
-					}
+					loadModule={loadGameRuntimeModule}
+					render={(mod) => {
+						const Comp = (
+							mod as {
+								GameRuntimeGodotWithDevTools: React.ComponentType<
+									Record<string, unknown>
+								>;
+							}
+						).GameRuntimeGodotWithDevTools;
+						return (
+							<Comp
+								definition={gameDefinition}
+								onGameEnd={handleGameEnd}
+								onRequestRestart={handleRequestRestart}
+								showHUD
+								preloadTextureUrls={imageUrls}
+								onReady={handleGodotReady}
+							/>
+						);
+					}}
 					fallback={null}
 				/>
 			)}

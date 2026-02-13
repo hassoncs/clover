@@ -1,3 +1,7 @@
+---
+description: "Multi-pass shader effects system for visual post-processing. Covers shader graphs, effect compilation, ping-pong feedback buffers, GraphExecutor, and GPU scene-graph compositing. Use when creating visual effects, writing shaders, or debugging effect rendering."
+---
+
 # Effects System
 
 > **Skill for AI Agents**: Working with the multi-pass shader effects system for visual effects

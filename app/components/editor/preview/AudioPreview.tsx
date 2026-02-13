@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Audio } from "expo-av";
-import React, { useEffect, useRef, useState } from "react";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import { useEffect, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	StyleSheet,
@@ -15,99 +15,36 @@ interface AudioPreviewProps {
 }
 
 export function AudioPreview({ filename }: AudioPreviewProps) {
-	const [sound, setSound] = useState<Audio.Sound | null>(null);
-	const [isPlaying, setIsPlaying] = useState(false);
-	const [duration, setDuration] = useState<number | null>(null);
-	const [position, setPosition] = useState(0);
-	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const isMounted = useRef(true);
+	const uri = useMemo(() => getAssetUrl(filename), [filename]);
+	const player = useAudioPlayer({ uri });
+	const status = useAudioPlayerStatus(player);
+
+	const isLoading = !status.isLoaded;
+	const isPlaying = status.playing;
+	const position = status.currentTime * 1000;
+	const duration = status.duration * 1000;
 
 	useEffect(() => {
-		isMounted.current = true;
-		return () => {
-			isMounted.current = false;
-		};
-	}, []);
+		console.log(`Loading audio from: ${uri}`);
+	}, [uri]);
 
-	useEffect(() => {
-		let soundObject: Audio.Sound | null = null;
-
-		const onPlaybackStatusUpdate = (status: any) => {
-			if (!isMounted.current) return;
-
-			if (status.isLoaded) {
-				setPosition(status.positionMillis);
-				setDuration(status.durationMillis || 0);
-				setIsPlaying(status.isPlaying);
-
-				if (status.didJustFinish) {
-					setIsPlaying(false);
-					setPosition(0);
-				}
-			} else if (status.error) {
-				console.error(`Playback error: ${status.error}`);
-				setError(`Playback error: ${status.error}`);
-			}
-		};
-
-		async function loadSound() {
-			try {
-				setIsLoading(true);
-				setError(null);
-
-				const uri = getAssetUrl(filename);
-				console.log(`Loading audio from: ${uri}`);
-
-				const { sound: newSound, status } = await Audio.Sound.createAsync(
-					{ uri },
-					{ shouldPlay: false },
-					onPlaybackStatusUpdate,
-				);
-
-				soundObject = newSound;
-
-				if (isMounted.current) {
-					setSound(newSound);
-					if (status.isLoaded) {
-						setDuration(status.durationMillis || 0);
-					}
-					setIsLoading(false);
-				}
-			} catch (err) {
-				console.error("Error loading sound:", err);
-				if (isMounted.current) {
-					setError("Failed to load audio file");
-					setIsLoading(false);
-				}
-			}
-		}
-
-		loadSound();
-
-		return () => {
-			if (soundObject) {
-				soundObject.unloadAsync();
-			}
-		};
-	}, [filename]);
-
-	const handlePlayPause = async () => {
-		if (!sound) return;
-
+	const handlePlayPause = () => {
 		try {
 			if (isPlaying) {
-				await sound.pauseAsync();
+				player.pause();
 			} else {
-				if (position >= (duration || 0) && (duration || 0) > 0) {
-					await sound.replayAsync();
+				if (position >= duration && duration > 0) {
+					player.seekTo(0);
+					player.play();
 				} else {
-					await sound.playAsync();
+					player.play();
 				}
 			}
 		} catch (err) {
 			console.error("Error toggling playback:", err);
+			setError("Playback error");
 		}
 	};
 

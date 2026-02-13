@@ -93,6 +93,11 @@ export interface GameState {
 	variables: Record<string, number | string | boolean>;
 }
 
+export interface ReactGameState extends GameState {
+	score?: number;
+	lives?: number;
+}
+
 export interface CollisionInfo {
 	entityA: RuntimeEntity;
 	entityB: RuntimeEntity;
