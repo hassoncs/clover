@@ -298,6 +298,7 @@ export async function handleChatStream(
 		tools: createChatTools({
 			gameId: ctx.gameId,
 			gitService: ctx.gitService,
+			env: ctx.env,
 			onFileChanged: async ({ gameId, filename }) => {
 				try {
 					await emit({ type: "FILE_CHANGED", gameId, filename });

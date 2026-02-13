@@ -12,6 +12,8 @@ import { handleChatStream } from "@/chat/stream-handler";
 import { GameRepoDO } from "@/durable-objects/GameRepoDO";
 import { WalletService } from "@/economy/wallet-service";
 import { autoSeedGamesFromR2 } from "@/lib/auto-seed";
+import { PartyRoomDO } from "@/party/PartyRoomDO";
+import audioRouter from "@/routes/audio";
 import textGridRouter from "@/routes/text-grid";
 import revenuecatWebhookRouter from "@/routes/webhooks/revenuecat";
 import { GitService } from "@/services/git/GitService";
@@ -87,6 +89,56 @@ app.get("/ws/speech-to-text", async (c) => {
 
 	const id = c.env.REALTIME_RELAY.idFromName(userId + "-" + Date.now());
 	const stub = c.env.REALTIME_RELAY.get(id);
+	return stub.fetch(c.req.raw);
+});
+
+function generateRoomCode(): string {
+	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+	let code = "";
+	for (let i = 0; i < 8; i++) {
+		if (i === 4) code += "-";
+		code += chars[Math.floor(Math.random() * chars.length)];
+	}
+	return code;
+}
+
+app.post("/api/party/create", async (c) => {
+	const code = generateRoomCode();
+	const hostId = crypto.randomUUID();
+	const hostToken = crypto.randomUUID();
+
+	const doId = c.env.PARTY_ROOM.idFromName(code);
+	const stub = c.env.PARTY_ROOM.get(doId);
+
+	const initResponse = await stub.fetch(
+		new Request("https://party/init", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ hostId, hostToken }),
+		}),
+	);
+
+	if (!initResponse.ok) {
+		return c.json({ error: "Failed to create room" }, 500);
+	}
+
+	return c.json({ code, hostToken, hostId }, 201);
+});
+
+app.get("/api/party/:code/ws", async (c) => {
+	const upgrade = c.req.header("Upgrade");
+	if (!upgrade || upgrade.toLowerCase() !== "websocket") {
+		return c.text("Expected websocket upgrade", 426);
+	}
+
+	const code = c.req.param("code");
+	if (!code) {
+		return c.text("Room code is required", 400);
+	}
+
+	const doId = c.env.PARTY_ROOM.idFromName(code);
+	const stub = c.env.PARTY_ROOM.get(doId);
+
 	return stub.fetch(c.req.raw);
 });
 
@@ -269,6 +321,7 @@ app.get("/api/chat/stream", async (c) => {
 			gameId: thread.game_id,
 			walletService,
 			gitService,
+			env: c.env,
 		},
 		threadId,
 		modelMessages,
@@ -299,6 +352,7 @@ app.get("/assets/*", async (c) => {
 });
 
 app.route("/webhooks/revenuecat", revenuecatWebhookRouter);
+app.route("/api/audio", audioRouter);
 app.route("/api/text-grid", textGridRouter);
 
 app.use(
@@ -311,4 +365,4 @@ app.use(
 );
 
 export default app;
-export { RealtimeRelayDO, GameRepoDO };
+export { RealtimeRelayDO, GameRepoDO, PartyRoomDO };

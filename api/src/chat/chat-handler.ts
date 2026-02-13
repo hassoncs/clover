@@ -2,7 +2,6 @@ import type { LanguageModel, ModelMessage } from "ai";
 import { generateText, stepCountIs } from "ai";
 import { nanoid } from "nanoid";
 
-import type { ArtifactService } from "@/agent/artifact-service";
 import { CHAT_STAGE_PROMPT } from "@/agent/engine/prompts";
 import type { WalletService } from "@/economy/wallet-service";
 import type { GitService } from "@/services/git/GitService";
@@ -58,10 +57,10 @@ export interface ChatHandlerContext {
 	modelName: string;
 	userId: string;
 	gameId: string;
-	artifactService: ArtifactService;
 	walletService: WalletService;
-	gitService?: GitService;
+	gitService: GitService;
 	costPer1kTokensMicros?: number;
+	env?: import("@/trpc/context").Env;
 }
 
 export interface PendingAskUser {
@@ -307,8 +306,8 @@ async function runGeneration(
 
 	const tools = createChatTools({
 		gameId: ctx.gameId,
-		artifactService: ctx.artifactService,
 		gitService: ctx.gitService,
+		env: ctx.env,
 	});
 
 	try {
