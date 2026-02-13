@@ -1,9 +1,14 @@
-import { useState } from "react";
-import { View, Text, Modal, Pressable, ScrollView } from "react-native";
+import React, { Suspense, useState } from "react";
+import { View, Text, Modal, Pressable, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpcReact } from "@/lib/trpc/react";
-import { BuyGemsModal } from "./BuyGemsModal";
-import { BuySparksModal } from "./BuySparksModal";
+
+const BuyGemsModal = React.lazy(() =>
+	import("./BuyGemsModal").then((m) => ({ default: m.BuyGemsModal })),
+);
+const BuySparksModal = React.lazy(() =>
+	import("./BuySparksModal").then((m) => ({ default: m.BuySparksModal })),
+);
 
 interface CurrencySheetProps {
   visible: boolean;
@@ -145,15 +150,35 @@ export function CurrencySheet({ visible, onClose }: CurrencySheetProps) {
         </SafeAreaView>
       </Modal>
 
-      <BuyGemsModal 
-        visible={showGemsModal} 
-        onClose={() => setShowGemsModal(false)} 
-      />
+      {showGemsModal && (
+        <Suspense fallback={
+          <Modal visible={true} transparent animationType="fade">
+            <View className="flex-1 items-center justify-center bg-black/50">
+              <ActivityIndicator size="large" color="#6366F1" />
+            </View>
+          </Modal>
+        }>
+          <BuyGemsModal 
+            visible={showGemsModal} 
+            onClose={() => setShowGemsModal(false)} 
+          />
+        </Suspense>
+      )}
       
-      <BuySparksModal 
-        visible={showSparksModal} 
-        onClose={() => setShowSparksModal(false)} 
-      />
+      {showSparksModal && (
+        <Suspense fallback={
+          <Modal visible={true} transparent animationType="fade">
+            <View className="flex-1 items-center justify-center bg-black/50">
+              <ActivityIndicator size="large" color="#6366F1" />
+            </View>
+          </Modal>
+        }>
+          <BuySparksModal 
+            visible={showSparksModal} 
+            onClose={() => setShowSparksModal(false)} 
+          />
+        </Suspense>
+      )}
     </>
   );
 }

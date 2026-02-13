@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
-import { CodeEditor } from "./code-editor";
 import { detectLanguage } from "./code-editor/types";
 import { BinaryPreviewPanel } from "./preview/BinaryPreviewPanel";
 import { isBinaryFile } from "./preview/utils";
+
+const CodeEditor = React.lazy(() =>
+	import("./code-editor").then((m) => ({ default: m.CodeEditor })),
+);
 
 interface FileViewerProps {
 	filename: string | null;
@@ -140,12 +143,20 @@ export function FileViewer({
 			testID="file-viewer"
 			accessibilityLabel={`Code Editor: ${filename}`}
 		>
-			<CodeEditor
-				value={localContent}
-				onChange={handleTextChange}
-				language={detectLanguage(filename)}
-				testID="file-viewer-editor"
-			/>
+			<Suspense
+				fallback={
+					<View className="flex-1 items-center justify-center">
+						<ActivityIndicator size="large" color="#6366F1" />
+					</View>
+				}
+			>
+				<CodeEditor
+					value={localContent}
+					onChange={handleTextChange}
+					language={detectLanguage(filename)}
+					testID="file-viewer-editor"
+				/>
+			</Suspense>
 			{saveStatus !== "idle" && (
 				<View className="h-6 bg-secondary-900 border-t border-secondary-700 justify-center px-3">
 					<Text className="text-xs text-secondary-400">

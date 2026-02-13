@@ -4,7 +4,8 @@ import type {
 	IDockviewPanelProps,
 } from "dockview";
 import { DockviewReact, themeAbyss } from "dockview";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import "dockview/dist/styles/dockview.css";
 import { ActivityBar } from "./ActivityBar";
 import { useEditor } from "./EditorProvider";
@@ -20,6 +21,12 @@ const StagePanel = (props: IDockviewPanelProps) => {
 	return <StageArea contextId={params?.contextId} />;
 };
 
+const PanelLoadingFallback = () => (
+	<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+		<ActivityIndicator size="large" color="#6366F1" />
+	</View>
+);
+
 const dockviewComponents: Record<
 	string,
 	React.FunctionComponent<IDockviewPanelProps>
@@ -28,7 +35,11 @@ const dockviewComponents: Record<
 };
 for (const panel of PANEL_REGISTRY) {
 	const PanelComponent = panel.component;
-	dockviewComponents[panel.id] = () => <PanelComponent />;
+	dockviewComponents[panel.id] = () => (
+		<Suspense fallback={<PanelLoadingFallback />}>
+			<PanelComponent />
+		</Suspense>
+	);
 }
 
 function buildDefaultLayout(api: DockviewApi) {
