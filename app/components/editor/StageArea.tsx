@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "@/lib/theme";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { useEditor } from "./EditorProvider";
 import { FileTabBar } from "./FileTabBar";
@@ -18,13 +19,29 @@ type ActiveView = { type: "file"; filename: string } | { type: "preview" };
 interface StageAreaProps {
 	onToggleExplorer?: () => void;
 	isExplorerOpen?: boolean;
+	contextId?: string;
 }
 
 export function StageArea({
 	onToggleExplorer,
 	isExplorerOpen = false,
+	contextId: propContextId,
 }: StageAreaProps) {
-	const { gameId, hotSwapShader, readiness } = useEditor();
+	const { editorColors: c } = useTheme();
+	const {
+		gameId,
+		hotSwapShader,
+		readiness,
+		previewContexts,
+		activeContextId,
+		setActiveContext,
+	} = useEditor();
+
+	// If contextId is provided via props (split view), use it.
+	// Otherwise use the globally active context (mobile/tabs).
+	const effectiveContextId = propContextId || activeContextId;
+	const showContextTabs = !propContextId && previewContexts.length > 1;
+
 	const {
 		openTabs,
 		activeFile,
@@ -90,8 +107,16 @@ export function StageArea({
 	}));
 
 	return (
-		<View style={styles.container} testID="stage-area">
-			<View style={styles.tabRow}>
+		<View
+			style={[styles.container, { backgroundColor: c.bg }]}
+			testID="stage-area"
+		>
+			<View
+				style={[
+					styles.tabRow,
+					{ backgroundColor: c.bg, borderBottomColor: c.border },
+				]}
+			>
 				<FileTabBar
 					tabs={fileTabs}
 					onSelectTab={handleSelectTab}
@@ -103,8 +128,11 @@ export function StageArea({
 					testID="preview-tab"
 					style={[
 						styles.previewTab,
-						activeView.type === "preview" && styles.activeTab,
-						readiness.errors.length > 0 && styles.errorTab,
+						{ borderLeftColor: c.border },
+						activeView.type === "preview" && {
+							borderBottomColor: c.accent,
+						},
+						readiness.errors.length > 0 && { borderBottomColor: c.error },
 					]}
 					onPress={handlePreviewTabPress}
 					accessibilityRole="tab"
@@ -114,8 +142,9 @@ export function StageArea({
 					<Text
 						style={[
 							styles.tabText,
-							activeView.type === "preview" && styles.activeTabText,
-							readiness.errors.length > 0 && styles.errorTabText,
+							{ color: c.tabText },
+							activeView.type === "preview" && { color: c.tabActiveText },
+							readiness.errors.length > 0 && { color: c.error },
 						]}
 					>
 						▶ Preview{" "}
@@ -124,16 +153,47 @@ export function StageArea({
 				</TouchableOpacity>
 			</View>
 
-			<View style={styles.content} testID="stage-content">
+			<View
+				style={[styles.content, { backgroundColor: c.surface }]}
+				testID="stage-content"
+			>
 				<View
 					style={[
 						styles.stageWrapper,
 						{ display: activeView.type === "preview" ? "flex" : "none" },
 					]}
 				>
+					{activeView.type === "preview" && showContextTabs && (
+						<View style={[styles.contextTabs, { borderBottomColor: c.border }]}>
+							{previewContexts.map((ctx) => (
+								<TouchableOpacity
+									key={ctx.id}
+									style={[
+										styles.contextTab,
+										activeContextId === ctx.id && {
+											borderBottomColor: c.accent,
+										},
+									]}
+									onPress={() => setActiveContext(ctx.id)}
+								>
+									<Text
+										style={[
+											styles.tabText,
+											{ color: c.tabText },
+											activeContextId === ctx.id && {
+												color: c.tabActiveText,
+											},
+										]}
+									>
+										{ctx.label}
+									</Text>
+								</TouchableOpacity>
+							))}
+						</View>
+					)}
 					{activeView.type === "preview" && <PreviewControls />}
 					<PreviewGate>
-						<StageContainer />
+						<StageContainer contextId={effectiveContextId} />
 					</PreviewGate>
 				</View>
 
@@ -156,17 +216,11 @@ export function StageArea({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#111827",
 	},
 	tabRow: {
 		flexDirection: "row",
 		height: 32,
-		backgroundColor: "#111827",
 		borderBottomWidth: 1,
-		borderBottomColor: "#1F2937",
-	},
-	activeTab: {
-		borderBottomColor: "#6366F1",
 	},
 	previewTab: {
 		paddingHorizontal: 16,
@@ -175,27 +229,27 @@ const styles = StyleSheet.create({
 		borderBottomWidth: 2,
 		borderBottomColor: "transparent",
 		borderLeftWidth: 1,
-		borderLeftColor: "#1F2937",
 	},
 	tabText: {
 		fontSize: 13,
-		color: "#9CA3AF",
 		fontWeight: "500",
-	},
-	activeTabText: {
-		color: "#FFFFFF",
-	},
-	errorTab: {
-		borderBottomColor: "#EF4444",
-	},
-	errorTabText: {
-		color: "#EF4444",
 	},
 	content: {
 		flex: 1,
-		backgroundColor: "#1F2937",
 	},
 	stageWrapper: {
 		flex: 1,
+	},
+	contextTabs: {
+		flexDirection: "row",
+		height: 32,
+		borderBottomWidth: 1,
+	},
+	contextTab: {
+		paddingHorizontal: 16,
+		justifyContent: "center",
+		height: 32,
+		borderBottomWidth: 2,
+		borderBottomColor: "transparent",
 	},
 });

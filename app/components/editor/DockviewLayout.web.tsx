@@ -4,8 +4,10 @@ import type {
 	IDockviewPanelProps,
 } from "dockview";
 import { DockviewReact, themeAbyss } from "dockview";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "dockview/dist/styles/dockview.css";
+import { ActivityBar } from "./ActivityBar";
+import { useEditor } from "./EditorProvider";
 import { InspectOverlay } from "./inspector/InspectOverlay";
 import { DEFAULT_LAYOUT } from "./panels/defaultLayout";
 import { PANEL_REGISTRY } from "./panels/registry";
@@ -13,11 +15,16 @@ import { StageArea } from "./StageArea";
 
 const STORAGE_KEY = "slopcade-editor-layout";
 
+const StagePanel = (props: IDockviewPanelProps) => {
+	const params = props.params as { contextId?: string } | undefined;
+	return <StageArea contextId={params?.contextId} />;
+};
+
 const dockviewComponents: Record<
 	string,
 	React.FunctionComponent<IDockviewPanelProps>
 > = {
-	stage: () => <StageArea />,
+	stage: StagePanel,
 };
 for (const panel of PANEL_REGISTRY) {
 	const PanelComponent = panel.component;
@@ -73,8 +80,47 @@ function buildDefaultLayout(api: DockviewApi) {
 }
 
 export function DockviewLayout() {
+	const { previewContexts } = useEditor();
 	const apiRef = useRef<DockviewApi | null>(null);
 	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [activePanel, setActivePanel] = useState<string | null>("explorer");
+
+	const handleSplitPreview = useCallback(() => {
+		const api = apiRef.current;
+		if (!api) return;
+
+		const existingStage = api.getPanel("stage");
+		if (existingStage) {
+			existingStage.api.close();
+		}
+
+		for (const ctx of previewContexts) {
+			const panel = api.getPanel(`stage-${ctx.id}`);
+			if (panel) panel.api.close();
+		}
+
+		const firstCtx = previewContexts[0];
+		if (!firstCtx) return;
+
+		const firstPanel = api.addPanel({
+			id: `stage-${firstCtx.id}`,
+			component: "stage",
+			params: { contextId: firstCtx.id },
+			title: firstCtx.label,
+			position: { direction: "left" },
+		});
+
+		for (let i = 1; i < previewContexts.length; i++) {
+			const ctx = previewContexts[i];
+			api.addPanel({
+				id: `stage-${ctx.id}`,
+				component: "stage",
+				params: { contextId: ctx.id },
+				title: ctx.label,
+				position: { referencePanel: firstPanel, direction: "right" },
+			});
+		}
+	}, [previewContexts]);
 
 	const saveLayout = useCallback(() => {
 		if (saveTimeoutRef.current) {
@@ -113,8 +159,42 @@ export function DockviewLayout() {
 			api.onDidLayoutChange(() => {
 				saveLayout();
 			});
+
+			api.onDidActivePanelChange((e) => {
+				if (e?.id && e.id !== "stage") {
+					setActivePanel(e.id);
+				}
+			});
 		},
 		[saveLayout],
+	);
+
+	const handlePanelToggle = useCallback(
+		(panelId: string) => {
+			const api = apiRef.current;
+			if (!api) return;
+
+			const panel = api.getPanel(panelId);
+			if (panel) {
+				if (activePanel === panelId && panel.api.isVisible) {
+					panel.api.close();
+					setActivePanel(null);
+				} else {
+					panel.api.setActive();
+					setActivePanel(panelId);
+				}
+			} else {
+				const def = PANEL_REGISTRY.find((p) => p.id === panelId);
+				if (!def) return;
+				api.addPanel({
+					id: panelId,
+					component: panelId,
+					title: def.title,
+				});
+				setActivePanel(panelId);
+			}
+		},
+		[activePanel],
 	);
 
 	const handleReset = useCallback(() => {
@@ -144,28 +224,48 @@ export function DockviewLayout() {
 	}, []);
 
 	return (
-		<div style={containerStyle}>
-			<DockviewReact
-				components={dockviewComponents}
-				onReady={handleReady}
-				theme={themeAbyss}
-				disableFloatingGroups
+		<div style={outerStyle}>
+			<ActivityBar
+				activePanel={activePanel}
+				onPanelToggle={handlePanelToggle}
 			/>
-			<div style={overlayStyle}>
-				<InspectOverlay />
+			<div style={containerStyle}>
+				<DockviewReact
+					components={dockviewComponents}
+					onReady={handleReady}
+					theme={themeAbyss}
+					disableFloatingGroups
+				/>
+				<div style={overlayStyle}>
+					<InspectOverlay />
+				</div>
+				<button
+					type="button"
+					onClick={handleSplitPreview}
+					style={splitButtonStyle}
+				>
+					Split Preview
+				</button>
+				<button type="button" onClick={handleReset} style={resetButtonStyle}>
+					Reset Layout
+				</button>
 			</div>
-			<button type="button" onClick={handleReset} style={resetButtonStyle}>
-				Reset Layout
-			</button>
 		</div>
 	);
 }
+
+const outerStyle: React.CSSProperties = {
+	display: "flex",
+	flexDirection: "row",
+	flex: 1,
+	height: "100%",
+	width: "100%",
+};
 
 const containerStyle: React.CSSProperties = {
 	position: "relative",
 	flex: 1,
 	height: "100%",
-	width: "100%",
 };
 
 const overlayStyle: React.CSSProperties = {
@@ -177,6 +277,21 @@ const overlayStyle: React.CSSProperties = {
 	pointerEvents: "none",
 };
 
+const splitButtonStyle: React.CSSProperties = {
+	position: "absolute",
+	top: 4,
+	right: 90,
+	zIndex: 1000,
+	padding: "2px 8px",
+	fontSize: 11,
+	color: "var(--ed-text-secondary)",
+	backgroundColor: "var(--ed-surface-hover)",
+	border: "1px solid var(--ed-border)",
+	borderRadius: 4,
+	cursor: "pointer",
+	opacity: 0.7,
+};
+
 const resetButtonStyle: React.CSSProperties = {
 	position: "absolute",
 	top: 4,
@@ -184,9 +299,9 @@ const resetButtonStyle: React.CSSProperties = {
 	zIndex: 1000,
 	padding: "2px 8px",
 	fontSize: 11,
-	color: "#9CA3AF",
-	backgroundColor: "#1F2937",
-	border: "1px solid #374151",
+	color: "var(--ed-text-secondary)",
+	backgroundColor: "var(--ed-surface-hover)",
+	border: "1px solid var(--ed-border)",
 	borderRadius: 4,
 	cursor: "pointer",
 	opacity: 0.7,
@@ -194,22 +309,22 @@ const resetButtonStyle: React.CSSProperties = {
 
 const THEME_OVERRIDES = `
 .dockview-theme-abyss {
-  --dv-color-abyss-dark: #111827;
-  --dv-color-abyss: #1F2937;
-  --dv-color-abyss-light: #1F2937;
-  --dv-color-abyss-lighter: #374151;
-  --dv-color-abyss-accent: #6366F1;
-  --dv-group-view-background-color: #1F2937;
-  --dv-tabs-and-actions-container-background-color: #111827;
-  --dv-activegroup-visiblepanel-tab-background-color: #1F2937;
-  --dv-activegroup-hiddenpanel-tab-background-color: #111827;
-  --dv-inactivegroup-visiblepanel-tab-background-color: #1F2937;
-  --dv-inactivegroup-hiddenpanel-tab-background-color: #111827;
-  --dv-tab-divider-color: #374151;
-  --dv-separator-border: #374151;
-  --dv-activegroup-visiblepanel-tab-color: #FFFFFF;
-  --dv-activegroup-hiddenpanel-tab-color: rgba(255, 255, 255, 0.5);
-  --dv-inactivegroup-visiblepanel-tab-color: rgba(255, 255, 255, 0.5);
-  --dv-inactivegroup-hiddenpanel-tab-color: rgba(255, 255, 255, 0.25);
+  --dv-color-abyss-dark: var(--ed-bg);
+  --dv-color-abyss: var(--ed-surface);
+  --dv-color-abyss-light: var(--ed-surface);
+  --dv-color-abyss-lighter: var(--ed-border);
+  --dv-color-abyss-accent: var(--ed-accent);
+  --dv-group-view-background-color: var(--ed-surface);
+  --dv-tabs-and-actions-container-background-color: var(--ed-bg);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--ed-surface);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--ed-bg);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--ed-surface);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--ed-bg);
+  --dv-tab-divider-color: var(--ed-border);
+  --dv-separator-border: var(--ed-border);
+  --dv-activegroup-visiblepanel-tab-color: var(--ed-tab-active-text);
+  --dv-activegroup-hiddenpanel-tab-color: var(--ed-tab-text);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--ed-tab-text);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--ed-text-muted);
 }
 `;

@@ -11,7 +11,11 @@ const loadGameRuntimeModule = () =>
 		Record<string, unknown>
 	>;
 
-export function StageContainer() {
+export interface StageContainerProps {
+	contextId?: string;
+}
+
+export function StageContainer({ contextId }: StageContainerProps) {
 	const {
 		mode,
 		timeMode,
@@ -19,7 +23,20 @@ export function StageContainer() {
 		registerShaderHandler,
 		gameId,
 		livePreviewEnabled,
+		previewContexts,
 	} = useEditor();
+
+	const context = contextId
+		? previewContexts.find((c) => c.id === contextId)
+		: undefined;
+
+	const effectiveMode =
+		context?.runtimeIntent === "live"
+			? "live"
+			: context?.runtimeIntent === "author"
+				? "author"
+				: mode;
+
 	const [runtimeKey, setRuntimeKey] = useState(0);
 	const [bridgeApi, setBridgeApi] = useState<GodotBridge | null>(null);
 
@@ -53,14 +70,20 @@ export function StageContainer() {
 			return (
 				<GameRuntimeGodot
 					definition={document}
-					showHUD={mode === "live"}
-					paused={mode === "author" && timeMode === "paused"}
+					showHUD={effectiveMode === "live"}
+					paused={effectiveMode === "author" && timeMode === "paused"}
 					onRequestRestart={handleRequestRestart}
 					onBridgeReady={handleBridgeReady}
 				/>
 			);
 		},
-		[document, mode, timeMode, handleRequestRestart, handleBridgeReady],
+		[
+			document,
+			effectiveMode,
+			timeMode,
+			handleRequestRestart,
+			handleBridgeReady,
+		],
 	);
 
 	if (livePreviewEnabled && loadState === "loading") {

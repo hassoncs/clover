@@ -2,6 +2,7 @@ import type {
 	AssetPlacement,
 	GameDefinition,
 	GameEntity,
+	PreviewContext,
 } from "@slopcade/shared";
 import type {
 	ValidationError,
@@ -71,6 +72,9 @@ interface EditorState {
 	redoStack: HistoryEntry[];
 	cameraPosition: Vec2;
 	cameraZoom: number;
+	previewContexts: PreviewContext[];
+	activeContextId: string;
+	focusedContextId: string;
 }
 
 type EditorStateAction =
@@ -98,7 +102,10 @@ type EditorStateAction =
 			path: string;
 			value: unknown;
 	  }
-	| { type: "SET_ACTIVE_ASSETS"; entries: Record<string, ResolvedAssetEntry> };
+	| { type: "SET_ACTIVE_ASSETS"; entries: Record<string, ResolvedAssetEntry> }
+	| { type: "SET_ACTIVE_CONTEXT"; contextId: string }
+	| { type: "SET_FOCUSED_CONTEXT"; contextId: string }
+	| { type: "UPDATE_PREVIEW_CONTEXTS"; contexts: PreviewContext[] };
 
 const MAX_HISTORY = 50;
 
@@ -489,6 +496,32 @@ function editorReducer(
 			};
 		}
 
+		case "SET_ACTIVE_CONTEXT":
+			return { ...state, activeContextId: action.contextId };
+
+		case "SET_FOCUSED_CONTEXT":
+			return { ...state, focusedContextId: action.contextId };
+
+		case "UPDATE_PREVIEW_CONTEXTS": {
+			const activeId =
+				state.activeContextId &&
+				action.contexts.find((c) => c.id === state.activeContextId)
+					? state.activeContextId
+					: action.contexts[0]?.id || "";
+			const focusedId =
+				state.focusedContextId &&
+				action.contexts.find((c) => c.id === state.focusedContextId)
+					? state.focusedContextId
+					: action.contexts[0]?.id || "";
+
+			return {
+				...state,
+				previewContexts: action.contexts,
+				activeContextId: activeId,
+				focusedContextId: focusedId,
+			};
+		}
+
 		default:
 			return state;
 	}
@@ -521,6 +554,13 @@ interface EditorContextValue {
 	isEphemeral: boolean;
 	ephemeralSource: EphemeralSource | undefined;
 	showAIRunPanel: boolean;
+
+	// Preview Contexts
+	previewContexts: PreviewContext[];
+	activeContextId: string;
+	focusedContextId: string;
+	setActiveContext: (contextId: string) => void;
+	setFocusedContext: (contextId: string) => void;
 
 	setMode: (mode: EditorMode) => void;
 	setTimeMode: (mode: TimeMode) => void;
@@ -627,9 +667,33 @@ export function EditorProvider({
 		redoStack: [],
 		cameraPosition: { x: 0, y: 0 },
 		cameraZoom: initialDefinition.camera?.zoom ?? 1,
+		previewContexts: [
+			{
+				id: "host",
+				label: "Host",
+				mode: "scene",
+				runtimeIntent: "author",
+			},
+			{
+				id: "player",
+				label: "Player",
+				mode: "scene",
+				runtimeIntent: "live",
+			},
+		],
+		activeContextId: "host",
+		focusedContextId: "host",
 	};
 
 	const [state, dispatch] = useReducer(editorReducer, initialState);
+
+	const setActiveContext = useCallback((contextId: string) => {
+		dispatch({ type: "SET_ACTIVE_CONTEXT", contextId });
+	}, []);
+
+	const setFocusedContext = useCallback((contextId: string) => {
+		dispatch({ type: "SET_FOCUSED_CONTEXT", contextId });
+	}, []);
 
 	const setMode = useCallback((mode: EditorMode) => {
 		dispatch({ type: "SET_MODE", mode });
@@ -746,6 +810,11 @@ export function EditorProvider({
 			isEphemeral,
 			ephemeralSource,
 			showAIRunPanel,
+			previewContexts: state.previewContexts,
+			activeContextId: state.activeContextId,
+			focusedContextId: state.focusedContextId,
+			setActiveContext,
+			setFocusedContext,
 
 			setMode,
 			setTimeMode,
@@ -816,6 +885,8 @@ export function EditorProvider({
 			ephemeralSource,
 			showAIRunPanel,
 			toggleAIRunPanel,
+			setActiveContext,
+			setFocusedContext,
 			livePreviewEnabled,
 			registerShaderHandler,
 			hotSwapShader,

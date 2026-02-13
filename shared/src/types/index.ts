@@ -30,6 +30,7 @@ export * from "./Prefab";
 export * from "./particles";
 export * from "./party";
 export * from "./physics";
+export * from "./preview";
 export * from "./progress";
 export * from "./remix";
 export * from "./rules";
