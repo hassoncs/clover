@@ -12,6 +12,7 @@ Updated: 2026-02-12 (post-audit)
 
 ### Editor & UI
 - [editor-system](editor-system.md) - Dockview layouts, panels, CodeMirror editor, EditorContextValue
+- [editor-browser-testing](editor-browser-testing.md) - Agent-browser testing: dev auth, a11y landmarks, content mirrors, chat flow
 
 ### Social & Community
 - [social-features](social-features.md) - 7 services (Comment, Rating, Follow, Bookmark, Block, Notification, Report)
@@ -60,7 +61,7 @@ Updated: 2026-02-12 (post-audit)
 
 ## Totals
 
-- **24 skill files** (20 top-level + 4 game-authoring sub-skills)
+- **25 skill files** (21 top-level + 4 game-authoring sub-skills)
 - All file paths verified via glob
 - All type signatures verified via grep/read of actual source
 - Dead cross-links fixed (coordinate-systems.md, shaders.md, rules-system.md removed)

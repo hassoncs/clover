@@ -48,6 +48,7 @@ export function CodeEditor({
 	return (
 		<div
 			style={{
+				position: "relative",
 				flex: 1,
 				overflow: "hidden",
 				display: "flex",
@@ -57,6 +58,8 @@ export function CodeEditor({
 				backgroundColor: "#1F2937",
 			}}
 			data-testid={testID}
+			role="region"
+			aria-label="Code editor"
 		>
 			<style>
 				{`
@@ -79,6 +82,20 @@ export function CodeEditor({
 					highlightActiveLineGutter: true,
 				}}
 			/>
+			<pre
+				data-testid="code-content-mirror"
+				aria-hidden="true"
+				style={{
+					position: "absolute",
+					width: "1px",
+					height: "1px",
+					overflow: "hidden",
+					clip: "rect(0,0,0,0)",
+					whiteSpace: "pre",
+				}}
+			>
+				{value}
+			</pre>
 		</div>
 	);
 }

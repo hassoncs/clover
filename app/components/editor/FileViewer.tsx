@@ -135,7 +135,11 @@ export function FileViewer({
 	}
 
 	return (
-		<View className="flex-1 bg-secondary-800" testID="file-viewer">
+		<View
+			className="flex-1 bg-secondary-800"
+			testID="file-viewer"
+			accessibilityLabel={`Code Editor: ${filename}`}
+		>
 			<CodeEditor
 				value={localContent}
 				onChange={handleTextChange}

@@ -89,6 +89,8 @@ export function ChatMessageList({
 			onContentSizeChange={handleContentSizeChange}
 			maintainVisibleContentPosition={MAINTAIN_POSITION}
 			keyboardShouldPersistTaps="handled"
+			accessibilityRole="list"
+			testID="chat-message-list"
 			ListEmptyComponent={
 				<View style={styles.emptyContainer}>
 					<Text style={styles.emptyText}>Describe your dream game...</Text>

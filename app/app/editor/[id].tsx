@@ -10,6 +10,7 @@ import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayo
 import { useEditorCommandHandler } from "@/components/editor/useEditorCommandHandler";
 import { WorkspaceFilesProvider } from "@/components/editor/WorkspaceFilesProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { DEV_USER_ID } from "@/lib/auth/token";
 import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
 import { useGameWebSocket } from "@/lib/editor/hooks/useGameWebSocket";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
@@ -76,6 +77,14 @@ export default function EditorScreen() {
 					setGameDefinition(parsed);
 				} else if (id && id !== "preview") {
 					const game = await trpc.games.get.query({ id });
+
+					const currentUserId = auth.user?.id;
+					if (game.userId !== currentUserId) {
+						throw new Error(
+							"You don't own this game. Only the game owner can open the editor.",
+						);
+					}
+
 					const parsed = JSON.parse(game.definition) as GameDefinition;
 					setGameDefinition(parsed);
 				} else {
@@ -91,7 +100,14 @@ export default function EditorScreen() {
 		};
 
 		loadGame();
-	}, [id, definitionParam, auth.isLoading, auth.isAuthenticated, router]);
+	}, [
+		id,
+		definitionParam,
+		auth.isLoading,
+		auth.isAuthenticated,
+		auth.user?.id,
+		router,
+	]);
 
 	const handleBack = () => {
 		router.back();

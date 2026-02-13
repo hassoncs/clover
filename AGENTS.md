@@ -151,6 +151,8 @@ If a command fails with "API key required" or similar, the fix is almost always 
 
 **Plan naming convention**: Use descriptive names like `live-workspace-editor.md` or date-prefixed for small tasks like `2026-02-11-repo-hygiene-loop.md`.
 
+**Auto-open in editor**: When writing a new plan or markdown document, open it in Z editor automatically with `z <path>` — no need to ask.
+
 ---
 
 ## Established Patterns

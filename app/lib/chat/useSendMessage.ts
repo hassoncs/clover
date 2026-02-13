@@ -11,6 +11,18 @@ import {
 import { connectSSE } from "./sse-client";
 import { isPlaceholderThreadId, PLACEHOLDER_THREAD_ID } from "./stream-reducer";
 
+function extractErrorMessage(err: unknown, fallback: string): string {
+	if (!err) return fallback;
+	if (typeof err === "object" && err !== null) {
+		const obj = err as Record<string, unknown>;
+		if (typeof obj.message === "string" && obj.message.length > 0) {
+			return obj.message;
+		}
+	}
+	if (err instanceof Error) return err.message;
+	return fallback;
+}
+
 export interface UseSendMessageReturn {
 	sendMessage: (text: string, gameId: string) => Promise<string | null>;
 	submitAnswer: (questionId: string, answer: string) => Promise<void>;
@@ -125,8 +137,8 @@ export function useSendMessage(): UseSendMessageReturn {
 				await connectToStream(result.streamUrl, realThreadId);
 				return realThreadId;
 			} catch (err) {
-				const errorMessage =
-					err instanceof Error ? err.message : "Failed to send message";
+				const errorMessage = extractErrorMessage(err, "Failed to send message");
+				console.error("[chat] sendMessage failed:", errorMessage, err);
 				setError(errorMessage);
 				setIsSending(false);
 				isSendingRef.current = false;
@@ -153,9 +165,12 @@ export function useSendMessage(): UseSendMessageReturn {
 				setError(null);
 				await connectToStream(result.streamUrl, currentThreadId);
 			} catch (err) {
-				setError(
-					err instanceof Error ? err.message : "Failed to submit answer",
+				const errorMessage = extractErrorMessage(
+					err,
+					"Failed to submit answer",
 				);
+				console.error("[chat] submitAnswer failed:", errorMessage, err);
+				setError(errorMessage);
 				setIsSending(false);
 				isSendingRef.current = false;
 			}

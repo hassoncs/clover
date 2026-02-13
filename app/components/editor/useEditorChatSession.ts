@@ -132,7 +132,7 @@ export function useEditorChatSession() {
 	const currentThreadId = streamState.currentThreadId;
 
 	const { messages, isStreaming } = useChatMessages(currentThreadId);
-	const { sendMessage, submitAnswer, submitUserAnswer, isSending } =
+	const { sendMessage, submitAnswer, submitUserAnswer, isSending, error } =
 		useSendMessage();
 
 	useEffect(() => {
@@ -172,5 +172,6 @@ export function useEditorChatSession() {
 		submitAnswer,
 		submitUserAnswer,
 		pendingQuestions,
+		error,
 	};
 }

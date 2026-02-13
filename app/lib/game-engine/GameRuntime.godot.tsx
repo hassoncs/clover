@@ -1317,11 +1317,7 @@ export function GameRuntimeGodot({
 			const fullGameState: GameState = {
 				time: StateHelpers.getElapsed(game.gameState),
 				state: StateHelpers.getGameStateValue(game.gameState),
-				variables: Object.fromEntries(
-					Object.entries(game.gameState.vars).filter(
-						([k]) => !["gameState", "elapsed"].includes(k),
-					),
-				),
+				variables: game.gameState.vars, // must be by-ref, not a copy — scripts write here
 			};
 
 			const frameEvents = eventQueueRef.current.drain();

@@ -110,6 +110,7 @@ export function StageArea({
 		<View
 			style={[styles.container, { backgroundColor: c.bg }]}
 			testID="stage-area"
+			accessibilityLabel="Stage"
 		>
 			<View
 				style={[

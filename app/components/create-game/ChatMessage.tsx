@@ -559,8 +559,21 @@ export function ChatMessage({
 		);
 	}
 
+	const a11yLabel = isUser
+		? "User message"
+		: messageText.length > 0
+			? "Assistant message"
+			: otherToolBlocks.length > 0
+				? `Tool: ${otherToolBlocks.map((b) => getToolStatusLabel(b.toolName, b.status)).join(", ")}`
+				: "Assistant message";
+
 	return (
-		<View style={isUser ? styles.userContainer : styles.agentContainer}>
+		<View
+			style={isUser ? styles.userContainer : styles.agentContainer}
+			accessibilityRole="summary"
+			accessibilityLabel={a11yLabel}
+			testID={isUser ? "chat-message-user" : "chat-message-assistant"}
+		>
 			{messageText.length > 0 && (
 				<View
 					style={[
@@ -692,6 +705,7 @@ export function ChatMessage({
 					<View
 						key={`${message.id}-${block.toolCallId}`}
 						style={styles.toolCallRow}
+						testID="tool-call-status"
 					>
 						<Ionicons name="construct-outline" size={14} color="#71717A" />
 						<Text style={styles.toolCallText}>

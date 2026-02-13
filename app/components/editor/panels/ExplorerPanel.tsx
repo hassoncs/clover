@@ -35,7 +35,11 @@ export function ExplorerPanel() {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	return (
-		<View style={[styles.container, { backgroundColor: c.panelBg }]}>
+		<View
+			style={[styles.container, { backgroundColor: c.panelBg }]}
+			accessibilityLabel="File Explorer"
+			testID="editor-explorer-panel"
+		>
 			{!isWeb && (
 				<View style={[styles.header, { borderBottomColor: c.border }]}>
 					<Pressable
