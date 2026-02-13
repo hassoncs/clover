@@ -192,7 +192,7 @@ const plan: CompiledPlan = {
 
 - `game-authoring.md` — Effects are part of GameDefinition.effects
 - `bridge-development.md` — Effects use bridge dispatch
-- `shaders.md` — Writing custom GLSL shaders for effects
+- `game-authoring/bundling-and-shaders.md` — Writing custom shaders for effects
 
 ## Changelog
 

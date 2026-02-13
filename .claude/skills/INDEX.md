@@ -1,95 +1,66 @@
 # Skill Index
 
-Generated: 2026-02-12
+Updated: 2026-02-12 (post-audit)
 
-> **All skills now have YAML frontmatter with `description` fields for proper OpenCode skill triggering.**
-
-## Skill Loading
-
-All skills in this directory use YAML frontmatter:
-```yaml
----
-description: "What this skill covers and when to use it"
----
-```
-
-This enables the OpenCode agent orchestration to properly match skills to tasks.
+> All skills verified against source via grep. No fabricated types/interfaces remain.
 
 ## By Category
 
 ### Chat & AI
 - [agent-orchestration](agent-orchestration.md) - Chat streaming, SSE, AG-UI protocol, HITL, billing
+- [ai-game-generation](ai-game-generation.md) - AI agent execution engine, game generation stages, asset pipeline
+
+### Editor & UI
+- [editor-system](editor-system.md) - Dockview layouts, panels, CodeMirror editor, EditorContextValue
+
+### Social & Community
+- [social-features](social-features.md) - 7 services (Comment, Rating, Follow, Bookmark, Block, Notification, Report)
+
+### Auth & Users
+- [auth-system](auth-system.md) - Supabase auth, platform-specific storage, dev mode, tRPC context
 
 ### Godot & Bridge
 - [godot-engine](godot-engine.md) - GDScript patterns, scene composition, exports, coordinate system
 - [physics](physics.md) - Physics bodies, collision, joints, world settings, PPM
-- [bridge-development](bridge-development.md) - Godot-TypeScript bridge, method registration, dispatch
-- [input-handling](input-handling.md) - Web/native input, touch, drag, gestures
-- [game-inspector](game-inspector.md) - MCP tools, debugging, entity inspection
+- [bridge-development](bridge-development.md) - Dual dispatch (method + query), auto-registration, web vs native
+- [input-handling](input-handling.md) - Web/native input, touch, drag, coordinate flow
+- [game-inspector](game-inspector.md) - 46 MCP operations for debugging, inspection, input simulation
 
 ### Game Systems
 - [ecs-architecture](ecs-architecture.md) - Prefabs, entities, components, GameDefinition, rules, behaviors
-- [game-authoring](game-authoring.md) - Creating games, prefabs, entities, behaviors
-- [economy-engine](economy-engine.md) - Resource graphs, pools, economy simulation
-- [effects-system](effects-system.md) - Multi-pass shaders, feedback, visual effects
+- [game-authoring](game-authoring.md) - Creating games: prefabs, entities, behaviors, rules, scripts
+  - [game-authoring/game-definition-reference](game-authoring/game-definition-reference.md) - Complete field-by-field GameDefinition reference
+  - [game-authoring/scripting-api-reference](game-authoring/scripting-api-reference.md) - QuickJS ScriptContext API, lifecycle hooks
+  - [game-authoring/examples](game-authoring/examples.md) - Patterns from production games
+  - [game-authoring/bundling-and-shaders](game-authoring/bundling-and-shaders.md) - Bundle format, build pipeline, shader system
+- [economy-engine](economy-engine.md) - Machinations graph engine, pools, flows, EconomySimulator
+- [effects-system](effects-system.md) - Multi-pass shader graphs, ping-pong feedback, GraphExecutor
+
+### Validation & Packaging
+- [game-validation](game-validation.md) - 3-layer validation pipeline, 36+ error codes, scoring
+- [game-package](game-package.md) - PackageCompiler, PackageValidator, ReadinessService, game-bundler
 
 ### Storage & Infrastructure
-- [storage-ops](storage-ops.md) - D1, R2, Supabase auth, migrations, BlobStore
+- [storage-ops](storage-ops.md) - D1 (raw SQL), R2 via BlobStore, Supabase auth sync
 - [native-infrastructure](native-infrastructure.md) - Metro port 8085, CocoaPods, Expo plugins, preflight
+- [workspace-system](workspace-system.md) - GameRepoDO, GitService, ForkService, R2Fs, isomorphic-git
 
-### Testing
-- [testing-patterns](testing-patterns.md) - Vitest, GDUnit4, tRPC testing, D1/R2 mocking, E2E bridge
+### Economy & IAP
+- [economy-iap](economy-iap.md) - Sparks/Gems currency, wallet transactions, RevenueCat IAP
 
-### Economy
-- [economy-iap](economy-iap.md) - Sparks/Gems currency, wallet transactions, RevenueCat IAP, pricing
-
-### Assets & Generation
-- [asset-pack-generation](asset-pack-generation.md) - Image generation, pipelines, BlobStore
-- [sound-generation](sound-generation.md) - ElevenLabs SFX, audio assets, Godot AudioManager
+### Assets & Audio
+- [asset-pack-generation](asset-pack-generation.md) - Scenario.com image pipeline, silhouette-to-sprite, BlobStore
+- [sound-generation](sound-generation.md) - ElevenLabs SFX, GameDefinition sounds, AudioManager
 
 ### Voice & Real-time
-- [transcription-do](transcription-do.md) - STT/Whisper, RealtimeRelayDO, GameRepoDO, voice input
+- [transcription-do](transcription-do.md) - Whisper STT via RealtimeRelayDO, GameRepoDO for git-on-R2
 
-## Recently Updated
+### Testing
+- [testing-patterns](testing-patterns.md) - Vitest, GDUnit4, tRPC createCaller, D1/R2 mocking
 
-| Skill | Date | Changes |
-|-------|------|---------|
-| godot-engine | 2026-02-12 | Created — GDScript, scenes, bridge, coordinates |
-| physics | 2026-02-12 | Created — bodies, collision, joints, PPM |
-| native-infrastructure | 2026-02-12 | Created — Metro 8085, CocoaPods, Expo plugins |
-| agent-orchestration | 2026-02-12 | Created — covers chat streaming, HITL, billing |
-| storage-ops | 2026-02-12 | Created — covers D1, R2, Supabase, migrations |
-| testing-patterns | 2026-02-12 | Created — covers Vitest, GDUnit4, bridge E2E |
-| ecs-architecture | 2026-02-12 | Created — covers prefabs, entities, rules, behaviors |
-| bridge-development | 2026-02-11 | Created from BRIDGE_REFACTOR.md |
-| economy-engine | 2026-02-11 | Created from ENGINE_GUIDE.md |
-| effects-system | 2026-02-11 | Created from EFFECTS_ARCHITECTURE.md |
-| input-handling | 2026-02-11 | Created from WEB_INPUT_HANDLING.md |
-| game-inspector | 2026-02-11 | Created from unified-input-simulation-plan.md |
+## Totals
 
-## Coverage Report
-
-| Category | Skills | Status |
-|----------|--------|--------|
-| Chat & AI | 1 | ✅ agent-orchestration covers streaming + billing |
-| Godot & Bridge | 5 | ✅ godot-engine + physics + bridge + input + inspector |
-| Game Systems | 4 | ✅ ECS + authoring + economy + effects |
-| Storage & Infra | 2 | ✅ storage-ops + native-infrastructure |
-| Economy | 1 | ✅ economy-iap covers Sparks/Gems/RevenueCat |
-| Testing | 1 | ✅ Vitest/GDUnit4/E2E covered |
-| Assets & Audio | 2 | ✅ asset-generation + sound-generation |
-| Voice & Real-time | 1 | ✅ transcription-do covers STT/DOs |
-
-## Remaining Gaps
-
-No critical gaps remaining. All major domains covered.
-
-## Skill Quality Metrics
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| Total skills | 15-25 | 16 |
-| Avg code examples per skill | 3+ | 4+ ✅ |
-| Avg gotchas per skill | 2+ | 3+ ✅ |
-| Skills with quick reference | 100% | 100% ✅ |
-| Cross-linked skills | 80% | 60% |
+- **24 skill files** (20 top-level + 4 game-authoring sub-skills)
+- All file paths verified via glob
+- All type signatures verified via grep/read of actual source
+- Dead cross-links fixed (coordinate-systems.md, shaders.md, rules-system.md removed)

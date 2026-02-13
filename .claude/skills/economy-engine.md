@@ -167,10 +167,10 @@ Check pool value:
 
 | Task | Solution |
 |------|----------|
-| Validate graph | `validateEconomyGraph(graph)` — returns array of errors |
-| Simulate economy | `simulate(graph, ticks, seed)` — returns timeline of states |
+| Validate graph | `validateEconomyGraph(graph)` — returns `{ valid, errors[] }` |
+| Simulate economy | `new EconomySimulator(graph, seed)` then `.run(ticks)` or `.tick()` |
+| Get current state | `simulator.getState()` — returns `EconomyState` with `nodeValues`, `tick` |
 | Debug economy | Check `economy:pool_*` events in game logs |
-| Integration test | Use fixtures in `.sisyphus/fixtures/economy/` |
 
 ## Node Type Reference
 
@@ -185,7 +185,7 @@ Check pool value:
 ## Related Skills
 
 - `game-authoring.md` — Economy is part of GameDefinition
-- `rules-system.md` — Economy actions/conditions integrate with rules
+- `ecs-architecture.md` — Economy actions/conditions integrate with rules
 
 ## Changelog
 

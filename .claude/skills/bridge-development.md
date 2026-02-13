@@ -179,7 +179,7 @@ async myDebugMethod(args: MyArgs): Promise<MyResult> {
 ## Related Skills
 
 - `input-handling.md` — Input events flow through the bridge
-- `coordinate-systems.md` — Transform methods use bridge dispatch
+- `physics.md` — Coordinate conversion for bridge dispatch
 - `game-inspector.md` — Debug bridge powers inspection tools
 - `testing-patterns.md` — Headless tests use bridge adapter
 
