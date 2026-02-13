@@ -9,7 +9,12 @@
 		"./Button": "./src/Button.tsx",
 		"./Text": "./src/Text.tsx",
 		"./Card": "./src/Card.tsx",
-		"./Input": "./src/Input.tsx"
+		"./Input": "./src/Input.tsx",
+		"./Grainient": "./src/Grainient/index.ts",
+		"./GrainientButton": "./src/Grainient/Button/index.ts",
+		"./Surface": "./src/Grainient/Surface/index.ts",
+		"./GrainOverlay": "./src/Grainient/index.ts",
+		"./GradientFill": "./src/Grainient/index.ts"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "^6.3.1",
