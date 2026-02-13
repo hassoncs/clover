@@ -119,9 +119,14 @@ async function writeDefinitionToR2(
 	r2Prefix: string,
 	definition: string,
 ): Promise<void> {
-	await assets.put(`${r2Prefix}/definition.json`, definition, {
+	const key = `${r2Prefix}/definition.json`;
+	await assets.put(key, definition, {
 		httpMetadata: { contentType: "application/json" },
 	});
+	if (__DEV__) {
+		const { mirrorToLocalR2 } = await import("@/lib/dev-mirror");
+		mirrorToLocalR2(key, definition);
+	}
 }
 
 async function writeMetadataToR2(
@@ -143,9 +148,15 @@ async function writeMetadataToR2(
 		thumbnailUrl: meta.thumbnailUrl,
 		updatedAt: meta.updatedAt,
 	};
-	await assets.put(`${r2Prefix}/metadata.json`, JSON.stringify(metadata), {
+	const key = `${r2Prefix}/metadata.json`;
+	const json = JSON.stringify(metadata);
+	await assets.put(key, json, {
 		httpMetadata: { contentType: "application/json" },
 	});
+	if (__DEV__) {
+		const { mirrorToLocalR2 } = await import("@/lib/dev-mirror");
+		mirrorToLocalR2(key, json);
+	}
 }
 
 async function initGitRepoWithWorkspace(

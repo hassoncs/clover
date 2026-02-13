@@ -51,6 +51,10 @@ export class BlobStore {
 		await this.bucket.put(r2Key, buffer, {
 			httpMetadata: { contentType: mimeType },
 		});
+		if (__DEV__) {
+			const { mirrorBlobToLocalR2 } = await import("@/lib/dev-mirror");
+			mirrorBlobToLocalR2(r2Key, buffer);
+		}
 
 		const assetId = crypto.randomUUID();
 		const now = Math.floor(Date.now() / 1000);
