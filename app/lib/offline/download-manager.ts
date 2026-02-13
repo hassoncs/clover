@@ -1,20 +1,16 @@
 /**
  * Download Manager for Offline Mode
  *
- * Downloads the R2-mirror directory structure for offline play:
+ * Downloads game definitions and asset blobs for offline play:
  * {documentDirectory}/slopcade/games/{gameId}/
  *   ├── definition.json
- *   ├── metadata.json
- *   └── packs/{packName}/
- *       ├── manifest.json
- *       └── {filename}.png
+ *   └── blobs/{hash[0:2]}/{hash}
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { GameDefinition } from "@slopcade/shared";
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
-import type { ResolvedAssetEntry } from "@/lib/assets";
 
 const STORAGE_KEY = "slopcade:downloaded-games";
 const DOWNLOAD_CONCURRENCY = 4;
@@ -26,29 +22,6 @@ export interface DownloadedGame {
 	assetCount: number;
 }
 
-interface GameMetadata {
-	id: string;
-	title: string;
-	description: string | null;
-	packs: Array<{ name: string; packId: string; assetCount: number }>;
-}
-
-interface PackManifest {
-	packId: string;
-	name: string;
-	assets: Record<string, { file: string }>;
-}
-
-interface OfflineManifest {
-	gameId: string;
-	definition: GameDefinition;
-	packs: Array<{
-		packId: string;
-		name: string;
-		assets: Record<string, { file: string; localPath: string }>;
-	}>;
-}
-
 function getBaseDirectory(): string {
 	if (Platform.OS === "web") {
 		throw new Error("Offline downloads not supported on web");
@@ -58,6 +31,39 @@ function getBaseDirectory(): string {
 
 function getGameDirectory(gameId: string): string {
 	return `${getBaseDirectory()}${gameId}/`;
+}
+
+function collectAssetHashes(definition: GameDefinition): string[] {
+	const hashes = new Set<string>();
+
+	if (definition.prefabs) {
+		for (const prefab of Object.values(definition.prefabs)) {
+			if (prefab.visual?.type === "image" && prefab.visual.assetId) {
+				hashes.add(prefab.visual.assetId);
+			}
+		}
+	}
+
+	if (
+		definition.background?.type === "static" &&
+		definition.background.assetId
+	) {
+		hashes.add(definition.background.assetId);
+	}
+
+	if (definition.sounds) {
+		for (const sound of Object.values(definition.sounds)) {
+			if (sound.assetId) {
+				hashes.add(sound.assetId);
+			}
+		}
+	}
+
+	return Array.from(hashes);
+}
+
+function blobUrlPath(hash: string): string {
+	return `blobs/${hash.slice(0, 2)}/${hash}`;
 }
 
 async function downloadFile(url: string, localPath: string): Promise<void> {
@@ -129,63 +135,42 @@ export async function downloadGameForOffline(
 	}
 
 	const gameDir = getGameDirectory(gameId);
-	const gameBaseUrl = `${cdnBaseUrl.replace(/\/$/, "")}/games/${gameId}`;
+	const baseUrl = cdnBaseUrl.replace(/\/$/, "");
+	const gameBaseUrl = `${baseUrl}/games/${gameId}`;
 
 	await FileSystem.makeDirectoryAsync(gameDir, { intermediates: true });
 
-	// 1. Download metadata.json
-	await downloadFile(`${gameBaseUrl}/metadata.json`, `${gameDir}metadata.json`);
-
-	// 2. Download definition.json
+	// 1. Download definition.json
 	await downloadFile(
 		`${gameBaseUrl}/definition.json`,
 		`${gameDir}definition.json`,
 	);
 
-	// 3. Parse metadata to discover packs
-	const metadataStr = await FileSystem.readAsStringAsync(
-		`${gameDir}metadata.json`,
+	// 2. Parse definition and collect asset hashes
+	const definitionStr = await FileSystem.readAsStringAsync(
+		`${gameDir}definition.json`,
 	);
-	const metadata: GameMetadata = JSON.parse(metadataStr);
+	const definition: GameDefinition = JSON.parse(definitionStr);
+	const hashes = collectAssetHashes(definition);
 
-	// 4. For each pack: download manifest, then asset files
-	const assetFiles: Array<{ url: string; localPath: string }> = [];
+	// 3. Build download list for each unique blob
+	const blobFiles = hashes.map((hash) => ({
+		url: `${baseUrl}/assets/${blobUrlPath(hash)}`,
+		localPath: `${gameDir}${blobUrlPath(hash)}`,
+	}));
 
-	const packsBaseUrl = `${cdnBaseUrl.replace(/\/$/, "")}/packs`;
-
-	for (const pack of metadata.packs) {
-		const packDir = `${gameDir}packs/${pack.packId}/`;
-		await FileSystem.makeDirectoryAsync(packDir, { intermediates: true });
-
-		// Download pack manifest
-		const manifestUrl = `${packsBaseUrl}/${pack.packId}/manifest.json`;
-		const manifestPath = `${packDir}manifest.json`;
-		await downloadFile(manifestUrl, manifestPath);
-
-		// Parse manifest to get asset files
-		const manifestStr = await FileSystem.readAsStringAsync(manifestPath);
-		const packManifest: PackManifest = JSON.parse(manifestStr);
-
-		for (const [, assetEntry] of Object.entries(packManifest.assets)) {
-			assetFiles.push({
-				url: `${packsBaseUrl}/${pack.packId}/${assetEntry.file}`,
-				localPath: `${packDir}${assetEntry.file}`,
-			});
-		}
+	// 4. Download all blobs with progress
+	if (blobFiles.length > 0) {
+		await downloadWithConcurrency(blobFiles, onProgress);
 	}
 
-	// 5. Download all assets with progress
-	if (assetFiles.length > 0) {
-		await downloadWithConcurrency(assetFiles, onProgress);
-	}
-
-	// 6. Track in AsyncStorage
+	// 5. Track in AsyncStorage
 	const games = await loadDownloadedGames();
 	games[gameId] = {
 		gameId,
 		downloadedAt: Date.now(),
 		totalBytes: 0,
-		assetCount: assetFiles.length,
+		assetCount: blobFiles.length,
 	};
 	await saveDownloadedGames(games);
 }
@@ -239,52 +224,26 @@ export async function getOfflineGameInfo(gameId: string): Promise<{
 	isPlayable: boolean;
 	assetCount: number;
 	totalBytes: number;
-	availablePackIds: string[];
 } | null> {
 	if (Platform.OS === "web") {
 		return null;
 	}
 
-	const gameDir = getGameDirectory(gameId);
-	const metadataPath = `${gameDir}metadata.json`;
-
-	const metadataInfo = await FileSystem.getInfoAsync(metadataPath);
-	if (!metadataInfo.exists) {
+	const definition = await loadLocalGameDefinition(gameId);
+	if (!definition) {
 		return null;
 	}
 
-	try {
-		const metadataStr = await FileSystem.readAsStringAsync(metadataPath);
-		const metadata = JSON.parse(metadataStr);
+	const hashes = collectAssetHashes(definition);
+	const games = await loadDownloadedGames();
+	const record = games[gameId];
 
-		// Check which packs are actually available
-		const availablePackIds: string[] = [];
-		for (const pack of metadata.packs || []) {
-			const packManifestPath = `${gameDir}packs/${pack.packId}/manifest.json`;
-			const packInfo = await FileSystem.getInfoAsync(packManifestPath);
-			if (packInfo.exists) {
-				availablePackIds.push(pack.packId);
-			}
-		}
-
-		return {
-			gameId,
-			isPlayable: availablePackIds.length > 0,
-			assetCount:
-				metadata.packs?.reduce(
-					(sum: number, p: any) => sum + (p.assetCount || 0),
-					0,
-				) || 0,
-			totalBytes: metadata.totalBytes || 0,
-			availablePackIds,
-		};
-	} catch (error) {
-		console.error(
-			`[DownloadManager] Error reading metadata for ${gameId}:`,
-			error,
-		);
-		return null;
-	}
+	return {
+		gameId,
+		isPlayable: true,
+		assetCount: hashes.length,
+		totalBytes: record?.totalBytes ?? 0,
+	};
 }
 
 // ============================================================================
@@ -323,186 +282,18 @@ export async function loadLocalGameDefinition(
 }
 
 /**
- * Load the offline manifest for a game.
- * The offline manifest contains all pack/asset info for local playback.
+ * Get the local file path for a blob by its content hash.
+ * Returns null if the blob is not downloaded.
  */
-export async function loadOfflineManifest(
+export async function getLocalBlobPath(
 	gameId: string,
-): Promise<OfflineManifest | null> {
+	hash: string,
+): Promise<string | null> {
 	if (Platform.OS === "web") {
 		return null;
 	}
 
-	const gameDir = getGameDirectory(gameId);
-	const manifestPath = `${gameDir}offline-manifest.json`;
-
-	const fileInfo = await FileSystem.getInfoAsync(manifestPath);
-	if (!fileInfo.exists) {
-		// Try to build it from legacy structure
-		return buildOfflineManifestFromLegacy(gameId);
-	}
-
-	try {
-		const json = await FileSystem.readAsStringAsync(manifestPath);
-		return JSON.parse(json) as OfflineManifest;
-	} catch (error) {
-		console.error(
-			`[DownloadManager] Error loading offline manifest for ${gameId}:`,
-			error,
-		);
-		return null;
-	}
-}
-
-/**
- * Build an offline manifest from the legacy directory structure.
- * This is a migration helper for games downloaded before offline-manifest.json existed.
- */
-async function buildOfflineManifestFromLegacy(
-	gameId: string,
-): Promise<OfflineManifest | null> {
-	const gameDir = getGameDirectory(gameId);
-
-	// Load definition
-	const definition = await loadLocalGameDefinition(gameId);
-	if (!definition) {
-		return null;
-	}
-
-	// Load metadata to get pack list
-	const metadataPath = `${gameDir}metadata.json`;
-	const metadataInfo = await FileSystem.getInfoAsync(metadataPath);
-	if (!metadataInfo.exists) {
-		return null;
-	}
-
-	try {
-		const metadataStr = await FileSystem.readAsStringAsync(metadataPath);
-		const metadata: GameMetadata = JSON.parse(metadataStr);
-
-		const packs: OfflineManifest["packs"] = [];
-
-		for (const packMeta of metadata.packs) {
-			const packManifestPath = `${gameDir}packs/${packMeta.packId}/manifest.json`;
-			const packManifestInfo = await FileSystem.getInfoAsync(packManifestPath);
-
-			if (!packManifestInfo.exists) {
-				continue;
-			}
-
-			const manifestStr = await FileSystem.readAsStringAsync(packManifestPath);
-			const packManifest: PackManifest = JSON.parse(manifestStr);
-
-			const assets: Record<string, { file: string; localPath: string }> = {};
-			for (const [assetId, assetEntry] of Object.entries(packManifest.assets)) {
-				assets[assetId] = {
-					file: assetEntry.file,
-					localPath: `${gameDir}packs/${packMeta.packId}/${assetEntry.file}`,
-				};
-			}
-
-			packs.push({
-				packId: packMeta.packId,
-				name: packMeta.name,
-				assets,
-			});
-		}
-
-		return {
-			gameId,
-			definition,
-			packs,
-		};
-	} catch (error) {
-		console.error(
-			`[DownloadManager] Error building legacy manifest for ${gameId}:`,
-			error,
-		);
-		return null;
-	}
-}
-
-/**
- * Get resolved pack entries for a specific pack from local storage.
- * Returns a map of prefabId -> ResolvedAssetEntry for use with the game runtime.
- */
-export async function getLocalResolvedPackEntries(
-	gameId: string,
-	packId: string,
-): Promise<Record<string, ResolvedAssetEntry> | null> {
-	if (Platform.OS === "web") {
-		return null;
-	}
-
-	const manifest = await loadOfflineManifest(gameId);
-	if (!manifest) {
-		return null;
-	}
-
-	const pack = manifest.packs.find((p) => p.packId === packId);
-	if (!pack) {
-		return null;
-	}
-
-	const entries: Record<string, ResolvedAssetEntry> = {};
-
-	for (const [prefabId, asset] of Object.entries(pack.assets)) {
-		// Verify file exists
-		const fileInfo = await FileSystem.getInfoAsync(asset.localPath);
-		if (fileInfo.exists) {
-			entries[prefabId] = {
-				imageUrl: asset.localPath,
-			};
-		}
-	}
-
-	return entries;
-}
-
-/**
- * Get all locally available pack IDs for a game.
- */
-export async function getLocalPackIds(gameId: string): Promise<string[]> {
-	if (Platform.OS === "web") {
-		return [];
-	}
-
-	const manifest = await loadOfflineManifest(gameId);
-	if (!manifest) {
-		return [];
-	}
-
-	return manifest.packs.map((p) => p.packId);
-}
-
-/**
- * Check if a specific pack is available locally.
- */
-export async function isPackAvailableLocally(
-	gameId: string,
-	packId: string,
-): Promise<boolean> {
-	if (Platform.OS === "web") {
-		return false;
-	}
-
-	const manifest = await loadOfflineManifest(gameId);
-	if (!manifest) {
-		return false;
-	}
-
-	const pack = manifest.packs.find((p) => p.packId === packId);
-	if (!pack) {
-		return false;
-	}
-
-	// Verify at least one asset exists
-	for (const asset of Object.values(pack.assets)) {
-		const fileInfo = await FileSystem.getInfoAsync(asset.localPath);
-		if (fileInfo.exists) {
-			return true;
-		}
-	}
-
-	return false;
+	const localPath = `${getGameDirectory(gameId)}${blobUrlPath(hash)}`;
+	const fileInfo = await FileSystem.getInfoAsync(localPath);
+	return fileInfo.exists ? localPath : null;
 }

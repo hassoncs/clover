@@ -8,7 +8,7 @@
 - **Source**: Migration script output / Database audit.
 
 ### 2. API Performance
-- **Metric**: P95 Latency for `assetSystem.remixes.getResolvedRemix`.
+- **Metric**: P95 Latency for asset-related tRPC routes.
 - **Target**: < 200ms.
 - **Source**: Cloudflare Worker Analytics / Sentry.
 

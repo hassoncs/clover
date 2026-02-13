@@ -115,13 +115,9 @@ const EXPECTED_REGISTRATIONS: Dictionary = {
   "setScreenInput": "set_screen_input",
 }
 
-static func validate_registration(method_map: Dictionary) -> Array[String]:
-  var errors: Array[String] = []
+static func get_missing_methods(method_map: Dictionary) -> Array[String]:
+  var missing: Array[String] = []
   for js_name in EXPECTED_REGISTRATIONS:
     if not method_map.has(js_name):
-      errors.append("Missing bridge method: " + js_name + " (expected _js_" + EXPECTED_REGISTRATIONS[js_name] + " on a module)")
-  # Also check for unexpected methods
-  for js_name in method_map:
-    if not EXPECTED_REGISTRATIONS.has(js_name):
-      errors.append("Unregistered bridge method: " + js_name + " (not in contract)")
-  return errors
+      missing.append(js_name)
+  return missing

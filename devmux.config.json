@@ -17,7 +17,7 @@
 		},
 		"games-watcher": {
 			"cwd": "api",
-			"command": "pnpm watch:games"
+			"command": "npx tsx scripts/sync-r2.ts --watch"
 		},
 		"api": {
 			"cwd": ".",
@@ -67,7 +67,7 @@
 		"storybook": {
 			"cwd": "apps/storybook",
 			"command": "npx hush run -t app -- pnpm storybook",
-			"health": { "type": "port", "port": 6006 }
+			"health": { "type": "port", "port": 6007 }
 		}
 	}
 }

@@ -504,7 +504,7 @@ Economy Router
 Routers
 .,. syncFromAuth
  `invites. create,.,. redeem
- `assetSystem. (themes, packs, generation, UI components
+ `assetSystem. (themes, generation, UI components
  `uiComponents. generation
 
 4. Non-tRPC HTTP Endpoints

@@ -101,5 +101,5 @@ Example: Play bounce sound with escalating pitch on combos:
 ## Related Skills
 
 - [ecs-architecture](ecs-architecture.md) — Rules system triggers sounds
-- [asset-pack-generation](asset-pack-generation.md) — Visual asset pipeline (parallel to audio)
+- [asset-pack-generation](asset-pack-generation.md) — Visual asset pipeline (parallel to audio, uses BlobStore)
 - [godot-engine](godot-engine.md) — Godot scene tree where AudioManager lives

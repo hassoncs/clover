@@ -19,21 +19,11 @@ export interface AssetManifest {
 	estimatedTotalSizeBytes: number;
 }
 
-export interface ResolvedAssetEntry {
-	imageUrl: string;
-	placement?: { scale: number; offsetX: number; offsetY: number };
-}
-
-export interface ExtractManifestOptions {
-	resolvedAssetEntries?: Record<string, ResolvedAssetEntry>;
-}
-
 const DEFAULT_IMAGE_SIZE_ESTIMATE = 100_000;
 const DEFAULT_SOUND_SIZE_ESTIMATE = 50_000;
 
 export function extractAssetManifest(
 	definition: GameDefinition,
-	options?: ExtractManifestOptions,
 ): AssetManifest {
 	const images: AssetManifestItem[] = [];
 	const sounds: AssetManifestItem[] = [];
@@ -111,17 +101,13 @@ export function extractAssetManifest(
 
 	// --- Background & Parallax ---
 
-	if (
-		definition.background?.type === "static" &&
-		definition.background.imageUrl
-	) {
-		addImage(
-			definition.background.imageUrl,
-			"background",
-			"Background",
-			"critical",
-			500_000,
-		);
+	if (definition.background?.type === "static") {
+		const bgUrl =
+			(definition.background as any).url ??
+			(definition.background as any).imageUrl;
+		if (bgUrl) {
+			addImage(bgUrl, "background", "Background", "critical", 500_000);
+		}
 	}
 
 	if (definition.parallaxConfig?.enabled && definition.parallaxConfig.layers) {
@@ -145,18 +131,6 @@ export function extractAssetManifest(
 		});
 	}
 
-	// --- Remix Asset Images ---
-
-	if (options?.resolvedAssetEntries) {
-		Object.entries(options.resolvedAssetEntries).forEach(
-			([prefabId, entry]) => {
-				if (entry.imageUrl) {
-					addImage(entry.imageUrl, `pack-${prefabId}`, prefabId, "normal");
-				}
-			},
-		);
-	}
-
 	// --- Tile Sheets ---
 
 	definition.tileSheets?.forEach((sheet) => {
@@ -170,6 +144,25 @@ export function extractAssetManifest(
 			);
 		}
 	});
+
+	// --- Prefab Images ---
+
+	if (definition.prefabs) {
+		for (const [prefabId, prefab] of Object.entries(definition.prefabs)) {
+			if (
+				prefab.visual &&
+				prefab.visual.type === "image" &&
+				(prefab.visual as any).url
+			) {
+				addImage(
+					(prefab.visual as any).url,
+					`prefab-${prefabId}`,
+					prefabId,
+					"high",
+				);
+			}
+		}
+	}
 
 	// --- Sound Assets ---
 

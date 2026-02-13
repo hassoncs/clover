@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trpcReact } from "@/lib/trpc/react";
 
 export interface FileTreeNode {
@@ -22,6 +22,37 @@ export function useWorkspaceFiles(gameId: string | null) {
 		{ gameId: gameId! },
 		{ enabled: !!gameId, refetchInterval: 5000 },
 	);
+
+	const scaffoldMutation = chatThreads.scaffoldWorkspace.useMutation({
+		onSuccess: () => {
+			filesQuery.refetch();
+		},
+	});
+	const scaffoldAttemptedRef = useRef(false);
+	const scaffoldMutate = scaffoldMutation.mutate;
+
+	useEffect(() => {
+		if (
+			!gameId ||
+			filesQuery.isLoading ||
+			scaffoldAttemptedRef.current ||
+			scaffoldMutation.isPending
+		) {
+			return;
+		}
+
+		const files = filesQuery.data ?? [];
+		if (files.length === 0) {
+			scaffoldAttemptedRef.current = true;
+			scaffoldMutate({ gameId });
+		}
+	}, [
+		gameId,
+		filesQuery.isLoading,
+		filesQuery.data,
+		scaffoldMutation.isPending,
+		scaffoldMutate,
+	]);
 
 	const [openTabs, setOpenTabs] = useState<string[]>(["document.md"]);
 	const [activeFile, setActiveFile] = useState<string>("document.md");

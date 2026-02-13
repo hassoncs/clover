@@ -449,16 +449,7 @@ input: {
 
 ## Asset System
 
-For AI-generated image packs:
-
-```typescript
-assetSystem: {
-  activePackId: "a1d20e15-...",
-  packIds: ["a1d20e15-...", "12e102fa-..."],
-},
-```
-
-Prefabs with `visual.type: "image"` get their images from the active asset pack. Add `whatDescription` to prefabs for AI generation hints.
+Prefabs with `visual.type: "image"` get their images from the BlobStore (content-addressed storage). Each prefab with an image visual has an `assetId` field pointing to a blob hash. Add `whatDescription` to prefabs for AI generation hints.
 
 ## Build & Test
 

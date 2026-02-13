@@ -5,7 +5,6 @@ import {
 	extractAssetManifest,
 	type PreloadProgress,
 	type PreloadResult,
-	type ResolvedAssetEntry,
 } from "../assets";
 import type { GodotBridge } from "../godot/types";
 
@@ -16,10 +15,6 @@ export type LoadingPhase =
 	| "ready"
 	| "skipped"
 	| "error";
-
-export interface UseGamePreloaderOptions {
-	resolvedAssetEntries?: Record<string, ResolvedAssetEntry>;
-}
 
 export interface UseGamePreloaderResult {
 	phase: LoadingPhase;
@@ -44,7 +39,6 @@ const initialProgress: PreloadProgress = {
 
 export function useGamePreloader(
 	definition: GameDefinition | null,
-	options?: UseGamePreloaderOptions,
 ): UseGamePreloaderResult {
 	const [phase, setPhase] = useState<LoadingPhase>("idle");
 	const [progress, setProgress] = useState<PreloadProgress>(initialProgress);
@@ -55,9 +49,7 @@ export function useGamePreloader(
 	const startPreload = useCallback(async () => {
 		if (!definition) return;
 
-		const manifest = extractAssetManifest(definition, {
-			resolvedAssetEntries: options?.resolvedAssetEntries,
-		});
+		const manifest = extractAssetManifest(definition);
 
 		const urls = manifest.images.map((img) => img.url);
 		setImageUrls(urls);
@@ -104,7 +96,7 @@ export function useGamePreloader(
 			console.error("[preloader] Error:", error);
 			setPhase("error");
 		}
-	}, [definition, options?.resolvedAssetEntries]);
+	}, [definition]);
 
 	const preloadGodotTextures = useCallback(
 		async (bridge: GodotBridge) => {

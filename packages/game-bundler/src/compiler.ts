@@ -882,7 +882,6 @@ export function compileBundle(
 			"persistence",
 			"hoverHighlight",
 			"dialogs",
-			"assetSystem",
 		];
 		for (const key of MANIFEST_PASSTHROUGH_KEYS) {
 			const systems = manifest.systems as Record<string, unknown> | undefined;

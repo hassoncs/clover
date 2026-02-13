@@ -94,7 +94,7 @@ export async function resolveAssetIds(
 		) {
 			newDefinition.background = {
 				...newDefinition.background,
-				imageUrl: resolvedUrls[newDefinition.background.assetId],
+				url: resolvedUrls[newDefinition.background.assetId],
 			};
 		} else if (
 			newDefinition.background.type === "parallax" &&
@@ -104,7 +104,7 @@ export async function resolveAssetIds(
 				if (layer.assetId && resolvedUrls[layer.assetId]) {
 					return {
 						...layer,
-						imageUrl: resolvedUrls[layer.assetId],
+						url: resolvedUrls[layer.assetId],
 					};
 				}
 				return layer;

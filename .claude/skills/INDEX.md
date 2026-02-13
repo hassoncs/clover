@@ -31,7 +31,7 @@ Generated: 2026-02-12
 - [economy-iap](economy-iap.md) - Sparks/Gems currency, wallet transactions, RevenueCat IAP, pricing
 
 ### Assets & Generation
-- [asset-pack-generation](asset-pack-generation.md) - Image generation, pipelines, silhouettes
+- [asset-pack-generation](asset-pack-generation.md) - Image generation, pipelines, BlobStore
 - [sound-generation](sound-generation.md) - ElevenLabs SFX, audio assets, Godot AudioManager
 
 ### Voice & Real-time
@@ -64,7 +64,7 @@ Generated: 2026-02-12
 | Storage & Infra | 2 | ✅ storage-ops + native-infrastructure |
 | Economy | 1 | ✅ economy-iap covers Sparks/Gems/RevenueCat |
 | Testing | 1 | ✅ Vitest/GDUnit4/E2E covered |
-| Assets & Audio | 2 | ✅ asset-pack-generation + sound-generation |
+| Assets & Audio | 2 | ✅ asset-generation + sound-generation |
 | Voice & Real-time | 1 | ✅ transcription-do covers STT/DOs |
 
 ## Remaining Gaps

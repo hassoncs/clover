@@ -19,7 +19,7 @@ This runbook describes the steps to monitor the system after enabling the `useRe
 - **Action**: Run audit query to ensure no orphaned Remixes or broken references.
 - **Query**:
   ```sql
-  SELECT count(*) FROM remixes WHERE pack_id IS NOT NULL AND pack_id NOT IN (SELECT id FROM packs);
+  SELECT count(*) FROM assets WHERE content_hash IS NULL;
   ```
 - **Frequency**: Weekly.
 

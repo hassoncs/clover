@@ -15,7 +15,7 @@ import {
 	isGameDownloaded,
 	loadLocalGameDefinition,
 } from "@/lib/offline/download-manager";
-import { trpc } from "@/lib/trpc/client";
+import { getApiUrl, trpc } from "@/lib/trpc/client";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { AssetLoadingScreen } from "../../components/game";
 import { WithGodot } from "../../components/WithGodot";
@@ -50,11 +50,17 @@ export default function PlayScreen() {
 					let parsed = JSON.parse(definitionParam) as GameDefinition;
 
 					try {
-						parsed = await resolveAssetIds(parsed, (hashes) =>
-							trpc.blobAssets.batchResolve
-								.query({ hashes })
-								.then((res) => res.urls),
-						);
+						const apiBase = getApiUrl();
+						parsed = await resolveAssetIds(parsed, async (hashes) => {
+							const res = await trpc.blobAssets.batchResolve.query({ hashes });
+							const urls: Record<string, string> = {};
+							for (const [hash, relPath] of Object.entries(res.urls)) {
+								urls[hash] = relPath.startsWith("http")
+									? relPath
+									: `${apiBase}${relPath}`;
+							}
+							return urls;
+						});
 					} catch (e) {
 						console.warn(
 							"[play] Failed to resolve asset IDs from definitionParam",
@@ -70,8 +76,31 @@ export default function PlayScreen() {
 						console.log(
 							`[play] Loading game ${id} from local storage (offline)`,
 						);
-						const localDefinition = await loadLocalGameDefinition(id);
+						let localDefinition = await loadLocalGameDefinition(id);
 						if (localDefinition) {
+							try {
+								const apiBase = getApiUrl();
+								localDefinition = await resolveAssetIds(
+									localDefinition,
+									async (hashes) => {
+										const res = await trpc.blobAssets.batchResolve.query({
+											hashes,
+										});
+										const urls: Record<string, string> = {};
+										for (const [hash, relPath] of Object.entries(res.urls)) {
+											urls[hash] = relPath.startsWith("http")
+												? relPath
+												: `${apiBase}${relPath}`;
+										}
+										return urls;
+									},
+								);
+							} catch (e) {
+								console.warn(
+									"[play] Failed to resolve asset IDs for offline game (will use fallback)",
+									e,
+								);
+							}
 							setGameDefinition(localDefinition);
 						} else {
 							throw new Error(
@@ -84,11 +113,19 @@ export default function PlayScreen() {
 						let parsed = JSON.parse(game.definition) as GameDefinition;
 
 						try {
-							parsed = await resolveAssetIds(parsed, (hashes) =>
-								trpc.blobAssets.batchResolve
-									.query({ hashes })
-									.then((res) => res.urls),
-							);
+							const apiBase = getApiUrl();
+							parsed = await resolveAssetIds(parsed, async (hashes) => {
+								const res = await trpc.blobAssets.batchResolve.query({
+									hashes,
+								});
+								const urls: Record<string, string> = {};
+								for (const [hash, relPath] of Object.entries(res.urls)) {
+									urls[hash] = relPath.startsWith("http")
+										? relPath
+										: `${apiBase}${relPath}`;
+								}
+								return urls;
+							});
 						} catch (e) {
 							console.warn("[play] Failed to resolve asset IDs from API", e);
 						}

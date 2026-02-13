@@ -41,7 +41,12 @@ function getPackageCjsPath(packageName, moduleName, root) {
 	const entries = fs.readdirSync(pnpmPath, { withFileTypes: true });
 	for (const entry of entries) {
 		if (!entry.isDirectory() || !entry.name.startsWith(packagePrefix)) continue;
-		const pkgDir = path.resolve(pnpmPath, entry.name, "node_modules", packageName);
+		const pkgDir = path.resolve(
+			pnpmPath,
+			entry.name,
+			"node_modules",
+			packageName,
+		);
 		if (moduleName === packageName) {
 			const cjsPath = path.resolve(pkgDir, "index.js");
 			if (fs.existsSync(cjsPath)) return cjsPath;
@@ -94,7 +99,43 @@ function getPackageUmdPath(packageName, root) {
 
 const upstreamResolveRequest = baseConfig.resolver.resolveRequest;
 
+// Helper to resolve promise/setimmediate/* submodules from pnpm store
+function resolvePromiseSetimmediate(moduleName) {
+	const match = moduleName.match(/^promise\/setimmediate\/(.+)$/);
+	if (!match) return null;
+	const subModule = match[1];
+
+	// Try to find promise package in pnpm store
+	const pnpmPath = path.resolve(monorepoRoot, "node_modules/.pnpm");
+	if (!fs.existsSync(pnpmPath)) return null;
+
+	const entries = fs.readdirSync(pnpmPath, { withFileTypes: true });
+	for (const entry of entries) {
+		if (!entry.isDirectory() || !entry.name.startsWith("promise@")) continue;
+		const subPath = path.resolve(
+			pnpmPath,
+			entry.name,
+			"node_modules",
+			"promise",
+			"setimmediate",
+			`${subModule}.js`,
+		);
+		if (fs.existsSync(subPath)) {
+			return subPath;
+		}
+	}
+	return null;
+}
+
 baseConfig.resolver.resolveRequest = (context, moduleName, platform) => {
+	// Handle promise/setimmediate/* submodules
+	if (moduleName.startsWith("promise/setimmediate/")) {
+		const resolved = resolvePromiseSetimmediate(moduleName);
+		if (resolved) {
+			return { type: "sourceFile", filePath: resolved };
+		}
+	}
+
 	if (moduleName === "@xyflow/react" || moduleName === "@xyflow/system") {
 		const umdPath =
 			getPackageUmdPath(moduleName, projectRoot) ||

@@ -110,7 +110,7 @@ For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
 | Economy | `economy-engine` | Resource graphs, pools |
 | Input | `input-handling` | Touch, drag, gestures |
 | Game Inspector | `game-inspector` | MCP tools, debugging |
-| Asset Generation | `asset-pack-generation` | Image pipelines, silhouettes |
+| Asset Generation | `asset-pack-generation` | Image pipelines, BlobStore |
 | Native/Build | `native-infrastructure` | Metro 8085, CocoaPods, Expo plugins |
 
 Full skill index: `.claude/skills/INDEX.md`

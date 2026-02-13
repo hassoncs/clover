@@ -85,31 +85,21 @@ var _debug_show_shapes: bool = false
 var _method_map: Dictionary = {}
 var _debug_enabled: bool = false
 
-var _diag_process_frames: int = 0
-var _diag_physics_frames: int = 0
-var _diag_logged: bool = false
-
 func _ready() -> void:
-	print("[GameBridge] _ready() starting...")
-	print("[GameBridge] Platform: ", OS.get_name())
-	print("[GameBridge] Is web: ", OS.has_feature("web"))
-	print("[GameBridge] Physics engine setting: ", ProjectSettings.get_setting("physics/2d/physics_engine", "DEFAULT"))
 	_init_modules()
-	print("[GameBridge] Modules initialized")
 	_camera_controller.setup_camera()
-	print("[GameBridge] Camera setup complete")
 	_build_method_map()
 	# Defer JS bridge exposure to end of frame so ALL autoload _ready() calls
 	# complete first (e.g., GameBridgeEffects registers its query handlers).
 	# window.GodotBridge appearing IS the single "fully ready" signal for JS.
-	# See docs/godot-migration/bridge-initialization.md for the full contract.
 	call_deferred("_finalize_js_bridge")
-	_log_physics_diagnostics()
-	_log_bridge_registry()
 
 func _finalize_js_bridge() -> void:
+	_validate_method_map()
 	_setup_js_bridge()
-	print("[GameBridge] JS Bridge setup complete (deferred)")
+	if OS.is_debug_build():
+		_log_physics_diagnostics()
+		_log_bridge_registry()
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)
@@ -124,7 +114,6 @@ func enable_debug() -> Dictionary:
 	_debug_bridge = DebugBridge.new(self, _query_system)
 	_debug_enabled = true
 
-	print("[GameBridge] Debug mode enabled")
 	return {"ok": true, "wasAlreadyEnabled": false, "methodsRegistered": 33}
 
 func disable_debug() -> Dictionary:
@@ -137,7 +126,6 @@ func disable_debug() -> Dictionary:
 
 	_debug_enabled = false
 
-	print("[GameBridge] Debug mode disabled")
 	return {"ok": true, "wasAlreadyEnabled": true, "methodsUnregistered": 33}
 
 func is_debug_enabled() -> bool:
@@ -234,13 +222,13 @@ func _build_method_map() -> void:
 		_sync_system, _property_collector, _event_emitter, _physics_queries,
 		_pixel_buffer_manager, _debug_bridge, _viewport_3d,
 	])
-	# Validate against generated contract (uses camelCase keys)
+
+func _validate_method_map() -> void:
 	var camel_map: Dictionary = {}
 	for key in _method_map: camel_map[_to_camel_case(key)] = true
-	var errors = BridgeMethodMap.validate_registration(camel_map)
-	for e in errors: push_warning("[GameBridge] " + e)
-	if OS.is_debug_build():
-		print("[GameBridge][REGISTRY] Built method map: %d methods (auto-discovery)" % _method_map.size())
+	var missing = BridgeMethodMap.get_missing_methods(camel_map)
+	if missing.size() > 0:
+		push_error("[GameBridge] %d missing bridge methods: %s" % [missing.size(), ", ".join(missing)])
 
 func _handle_rpc(args: Array) -> Variant:
 	if args.size() == 0:
@@ -260,14 +248,11 @@ func _handle_rpc(args: Array) -> Variant:
 
 func dispatch_raw(method_name: String, args: Array) -> Variant:
 	if not _method_map.has(method_name):
-		push_warning("[GameBridge] Unknown native method: " + method_name)
 		return {"error": "unknown_method", "method": method_name}
 	return _method_map[method_name].call(args)
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
-	print("[GB] native_dispatch: %s (known=%s)" % [method_name, str(_method_map.has(method_name))])
 	if not _method_map.has(method_name):
-		print("[GB] Unknown method: %s. Known methods: %s" % [method_name, str(_method_map.keys())])
 		return {"error": "unknown_method", "method": method_name}
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
@@ -313,7 +298,6 @@ func _setup_js_bridge() -> void:
 		_js_callbacks.append(cb)
 		_js_bridge_obj[js_name] = cb
 	window["GodotBridge"] = _js_bridge_obj
-	print("[GameBridge] JS Bridge registered ", _method_map.size(), " methods")
 
 func _to_camel_case(snake: String) -> String:
 	# Convert snake_case to camelCase for JavaScript compatibility
@@ -486,31 +470,21 @@ func disable_splat_map() -> void: if _splat_map_system: _splat_map_system.disabl
 func get_splat_texture() -> Texture2D: return _splat_map_system.get_texture() if _splat_map_system else null
 
 func _process(delta: float) -> void:
-	_diag_process_frames += 1
 	if _splat_map_system: _splat_map_system.process(delta)
 	if _ws_system: _ws_system.process(delta)
 
 func connect_to_server(url: String = "") -> void: if _ws_system: _ws_system.connect_to_server(url)
 
 func load_game_json(json_string: String) -> bool:
-	print("[GameBridge][DIAG] load_game_json called, json length=", json_string.length())
 	var json = JSON.new()
 	if json.parse(json_string) != OK:
-		print("[GameBridge][DIAG] JSON parse FAILED")
+		push_error("[GameBridge] Failed to parse game JSON")
 		return false
 	game_data = json.data
-	print("[GameBridge][DIAG] JSON parsed OK. World: ", game_data.get("world", {}))
-	print("[GameBridge][DIAG] Prefabs: ", game_data.get("prefabs", {}).keys())
-	print("[GameBridge][DIAG] Entity count: ", game_data.get("entities", []).size())
 	clear_game()
 	setup_world(game_data.get("world", {}), game_data.get("background", {}))
 	register_prefabs(game_data.get("prefabs", {}))
 	load_entities(game_data.get("entities", []))
-	# Log post-creation physics state
-	var space = get_viewport().find_world_2d().space
-	var gravity = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY)
-	var gravity_vec = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR)
-	print("[GameBridge][DIAG] Post-load gravity: ", gravity, " vec: ", gravity_vec)
 	game_loaded.emit(game_data)
 	return true
 
@@ -519,31 +493,24 @@ func load_game_json(json_string: String) -> bool:
 # ============================================================================
 
 func setup_world(world_data: Dictionary, background_data: Dictionary = {}) -> void:
-	print("[GameBridge] setup_world called")
 	if _world_system:
 		_world_system.setup_world(world_data)
-		print("[GameBridge] World setup complete")
 	_visual_renderer.setup_background(background_data)
 
 func register_prefabs(prefabs_data: Dictionary) -> void:
-	print("[GameBridge] register_prefabs called, keys=", prefabs_data.keys())
 	prefabs = prefabs_data
 	_entity_factory.update_state()
 
 func load_entities(entities_data: Array) -> int:
-	print("[GameBridge] load_entities called, count=", entities_data.size())
 	var created_count = 0
 	for entity_data in entities_data:
 		var record = _entity_factory.create_entity(entity_data)
 		if record:
 			entity_registry[record.entity_id] = record
 			created_count += 1
-			print("[GameBridge][DIAG] Created entity '", record.entity_id, "' archetype=", record.archetype, " node_type=", record.node.get_class())
-	print("[GameBridge] Total entities created: ", created_count)
 	return created_count
 
 func clear_entities() -> void:
-	print("[GameBridge] clear_entities called")
 	if _joint_manager: _joint_manager.clear_all()
 	if _entity_manager: _entity_manager.clear_all()
 	entity_registry.clear()
@@ -612,19 +579,6 @@ func clear_game() -> void:
 	prefabs.clear()
 
 func _physics_process(delta: float) -> void:
-	_diag_physics_frames += 1
-	if _diag_physics_frames == 1 or _diag_physics_frames % 120 == 0:
-		if _diag_physics_frames == 1 or _diag_physics_frames % 600 == 0:
-			for entity_id in entity_registry:
-				var record = entity_registry[entity_id]
-				if record and record.is_valid():
-					var node = record.node
-					var node_type = node.get_class()
-					var pos = node.position
-					var vel_str = ""
-					if node is RigidBody2D:
-						vel_str = " vel=" + str(node.linear_velocity) + " sleeping=" + str(node.sleeping)
-					print("[GameBridge][DIAG]   Entity '", entity_id, "' type=", node_type, " pos=", pos, vel_str)
 	if _sync_system: _sync_system.process_sync()
 	if _joint_manager: _joint_manager.process_mouse_joints(delta)
 	if _physics_controller: _physics_controller.process_physics(delta, entity_registry)

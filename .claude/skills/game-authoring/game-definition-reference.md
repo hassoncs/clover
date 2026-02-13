@@ -19,7 +19,6 @@ interface GameDefinition {
   rules?: GameRule[];
   winCondition?: WinCondition;
   loseCondition?: LoseCondition;
-  assetSystem?: AssetSystemConfig;
   tileSheets?: TileSheet[];
   tileMaps?: TileMap[];
   multiplayer?: MultiplayerConfig;

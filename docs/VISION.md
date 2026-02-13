@@ -217,10 +217,10 @@ data lives one place
 
 
 
- Theme prompt._modifier `asset_packs._defaults_json
- Asset image._key Duplicated URLs
- Template→Asset mapping `pack_entries Game definition JSON
- Active pack `game. definition. assetSystem. activePackId Separate table
+ Theme prompt._modifier `themes` table
+ Asset image._key Content-addressed blobs
+ Template→Asset mapping `assets` table with prefab assetId
+ (Legacy pack system removed — assets now use BlobStore)
 
 . Normalized, Not Duplicated
 
@@ -339,11 +339,11 @@ data lives one place
  └─────────────┘
 
  ┌───────┴─────────┐
- pack_entries
+ assets
  ├─────────────────┤
- asset_id
- pack_id
- template_id
+ id
+ content_hash
+ r2_key
  └─────────────────┘
 
 
@@ -352,10 +352,10 @@ data lives one place
 
  shared
  types
- asset-system. Theme, Asset, Pack, Entry types
  GameDefinition. Game engine definition
- utils
- asset-url. R2 key → URL construction
+
+ api/src/services
+ BlobStore. Content-addressed asset storage
 
 api/
  src/
