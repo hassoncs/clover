@@ -1,14 +1,18 @@
+import { VOICE_PRESETS, type VoicePresetId } from "@slopcade/shared";
 import { tool } from "ai";
+import { nanoid } from "nanoid";
 import { z } from "zod";
 
-import type { ArtifactService } from "@/agent/artifact-service";
 import { getSkillById } from "@/ai/skills";
+import { ElevenLabsService } from "@/services/ElevenLabsService";
 import type { GitService } from "@/services/git/GitService";
+import type { Env } from "@/trpc/context";
 
 export interface ChatToolContext {
 	gameId: string;
-	artifactService: ArtifactService;
-	gitService?: GitService;
+	gitService: GitService;
+	onFileChanged?: (payload: { gameId: string; filename: string }) => void;
+	env?: Env;
 }
 
 export function createChatTools(ctx: ChatToolContext) {
@@ -23,23 +27,12 @@ export function createChatTools(ctx: ChatToolContext) {
 					.describe('The filename to read (e.g., "document.md", "notes.txt")'),
 			}),
 			execute: async ({ filename }) => {
-				if (ctx.gitService) {
-					const data = await ctx.gitService.readFile(ctx.gameId, filename);
-					if (!data) {
-						return { ok: true, exists: false, content: null };
-					}
-					const content = new TextDecoder().decode(data);
-					return { ok: true, exists: true, content };
-				}
-
-				const result = await ctx.artifactService.readWorkspaceFile({
-					gameId: ctx.gameId,
-					filename,
-				});
-				if (!result) {
+				const data = await ctx.gitService.readFile(ctx.gameId, filename);
+				if (!data) {
 					return { ok: true, exists: false, content: null };
 				}
-				return { ok: true, exists: true, content: result.data };
+				const content = new TextDecoder().decode(data);
+				return { ok: true, exists: true, content };
 			},
 		}),
 
@@ -54,23 +47,14 @@ export function createChatTools(ctx: ChatToolContext) {
 				content: z.string().describe("The full content to write to the file"),
 			}),
 			execute: async ({ filename, content }) => {
-				if (ctx.gitService) {
-					const sha = await ctx.gitService.commitFiles(
-						ctx.gameId,
-						[{ path: filename, content }],
-						`AI: Update ${filename}`,
-						{ name: "AI Assistant", email: "ai@slopcade.app" },
-					);
-					return { ok: true, commitSha: sha, bytesWritten: content.length };
-				}
-
-				const { key } = await ctx.artifactService.storeWorkspaceFile({
-					gameId: ctx.gameId,
-					filename,
-					data: content,
-					contentType: "text/plain",
-				});
-				return { ok: true, key, bytesWritten: content.length };
+				const sha = await ctx.gitService.commitFiles(
+					ctx.gameId,
+					[{ path: filename, content }],
+					`AI: Update ${filename}`,
+					{ name: "AI Assistant", email: "ai@slopcade.app" },
+				);
+				ctx.onFileChanged?.({ gameId: ctx.gameId, filename });
+				return { ok: true, commitSha: sha, bytesWritten: content.length };
 			},
 		}),
 
@@ -86,32 +70,13 @@ export function createChatTools(ctx: ChatToolContext) {
 					),
 			}),
 			execute: async ({ prefix }) => {
-				if (ctx.gitService) {
-					const allFiles = await ctx.gitService.listFiles(ctx.gameId);
-					const filtered = prefix
-						? allFiles.filter((f) => f.startsWith(prefix))
-						: allFiles;
-					return {
-						ok: true,
-						files: filtered.map((f) => ({ filename: f })),
-					};
-				}
-
-				const files = await ctx.artifactService.listWorkspaceFileMeta(
-					ctx.gameId,
-				);
+				const allFiles = await ctx.gitService.listFiles(ctx.gameId);
 				const filtered = prefix
-					? files.filter((f) => f.filename.startsWith(prefix))
-					: files;
-
+					? allFiles.filter((f) => f.startsWith(prefix))
+					: allFiles;
 				return {
 					ok: true,
-					files: filtered.map((f) => ({
-						filename: f.filename,
-						size: f.size,
-						uploaded: f.uploaded,
-						contentHash: null,
-					})),
+					files: filtered.map((f) => ({ filename: f })),
 				};
 			},
 		}),
@@ -125,42 +90,22 @@ export function createChatTools(ctx: ChatToolContext) {
 					.describe("Array of filenames to read"),
 			}),
 			execute: async ({ filenames }) => {
-				if (ctx.gitService) {
-					const fileResults = await Promise.all(
-						filenames.map(async (filename) => {
-							const data = await ctx.gitService!.readFile(ctx.gameId, filename);
-							if (!data) {
-								return { filename, exists: false, content: null, size: 0 };
-							}
-							const content = new TextDecoder().decode(data);
-							return {
-								filename,
-								exists: true,
-								content,
-								size: content.length,
-							};
-						}),
-					);
-					return { ok: true, files: fileResults };
-				}
-
-				const results = await ctx.artifactService.readWorkspaceFiles(
-					ctx.gameId,
-					filenames,
-				);
-
-				return {
-					ok: true,
-					files: filenames.map((filename) => {
-						const content = results.get(filename);
+				const fileResults = await Promise.all(
+					filenames.map(async (filename) => {
+						const data = await ctx.gitService.readFile(ctx.gameId, filename);
+						if (!data) {
+							return { filename, exists: false, content: null, size: 0 };
+						}
+						const content = new TextDecoder().decode(data);
 						return {
 							filename,
-							exists: content !== undefined,
-							content: content ?? null,
-							size: content?.length ?? 0,
+							exists: true,
+							content,
+							size: content.length,
 						};
 					}),
-				};
+				);
+				return { ok: true, files: fileResults };
 			},
 		}),
 
@@ -175,9 +120,6 @@ export function createChatTools(ctx: ChatToolContext) {
 					.describe("Number of commits to show"),
 			}),
 			execute: async ({ depth }) => {
-				if (!ctx.gitService) {
-					return { ok: false, error: "Git history not available" };
-				}
 				const commits = await ctx.gitService.log(ctx.gameId, depth);
 				return { ok: true, commits };
 			},
@@ -202,6 +144,228 @@ export function createChatTools(ctx: ChatToolContext) {
 					name: skill.name,
 					content: skill.content,
 				};
+			},
+		}),
+
+		generateSoundEffect: tool({
+			description:
+				"Generate a sound effect from a text description using AI. Returns a URL to the generated audio file. Use for game sounds like explosions, clicks, whooshes, impacts, etc.",
+			inputSchema: z.object({
+				text: z
+					.string()
+					.min(1)
+					.describe(
+						'Description of the sound effect to generate (e.g., "laser blast", "coin pickup chime", "wooden door creaking open")',
+					),
+				durationSeconds: z
+					.number()
+					.min(0.5)
+					.max(22)
+					.optional()
+					.describe("Duration in seconds (0.5-22, auto if omitted)"),
+				promptInfluence: z
+					.number()
+					.min(0)
+					.max(1)
+					.optional()
+					.describe("How closely to follow the prompt (0-1, default ~0.3)"),
+			}),
+			execute: async ({ text, durationSeconds, promptInfluence }) => {
+				if (!ctx.env?.ELEVENLABS_API_KEY) {
+					return { ok: false, error: "Audio generation not configured" };
+				}
+
+				try {
+					const service = new ElevenLabsService(ctx.env.ELEVENLABS_API_KEY);
+					const result = await service.generateSFX({
+						text,
+						durationSeconds,
+						promptInfluence,
+					});
+
+					const assetId = nanoid();
+					const r2Key = `audio/sfx/${assetId}.mp3`;
+
+					await ctx.env.ASSETS.put(r2Key, result.audio, {
+						httpMetadata: { contentType: result.contentType },
+						customMetadata: {
+							type: "sfx",
+							prompt: text,
+							generatedAt: new Date().toISOString(),
+							...(result.durationSeconds != null
+								? { durationSeconds: String(result.durationSeconds) }
+								: {}),
+						},
+					});
+
+					return {
+						ok: true,
+						assetId,
+						url: `/assets/${r2Key}`,
+						type: "sfx",
+						contentType: result.contentType,
+						durationSeconds: result.durationSeconds,
+					};
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					return { ok: false, error: message };
+				}
+			},
+		}),
+
+		generateVoice: tool({
+			description: `Generate speech audio from text using AI voice synthesis. Returns a URL to the generated audio file. Use for narration, character dialogue, announcements, tutorials, etc. Available voice presets: ${Object.entries(
+				VOICE_PRESETS,
+			)
+				.map(([id, p]) => `"${id}" (${p.description})`)
+				.join(", ")}`,
+			inputSchema: z.object({
+				text: z.string().min(1).describe("The text to speak"),
+				voicePreset: z
+					.enum(
+						Object.keys(VOICE_PRESETS) as [VoicePresetId, ...VoicePresetId[]],
+					)
+					.optional()
+					.describe(
+						'Voice preset to use (e.g., "narrator", "friendly", "announcer", "villain", "guide"). Defaults to "narrator".',
+					),
+				stability: z
+					.number()
+					.min(0)
+					.max(1)
+					.optional()
+					.describe(
+						"Voice stability (0=variable/expressive, 1=stable/consistent)",
+					),
+				similarityBoost: z
+					.number()
+					.min(0)
+					.max(1)
+					.optional()
+					.describe("How closely to match the original voice (0-1)"),
+				style: z
+					.number()
+					.min(0)
+					.max(1)
+					.optional()
+					.describe("Style exaggeration (0=none, 1=max)"),
+			}),
+			execute: async ({
+				text,
+				voicePreset,
+				stability,
+				similarityBoost,
+				style,
+			}) => {
+				if (!ctx.env?.ELEVENLABS_API_KEY) {
+					return { ok: false, error: "Audio generation not configured" };
+				}
+
+				try {
+					const preset = VOICE_PRESETS[voicePreset ?? "narrator"];
+					const service = new ElevenLabsService(ctx.env.ELEVENLABS_API_KEY);
+					const result = await service.generateVoice({
+						text,
+						voiceId: preset.voiceId,
+						stability,
+						similarityBoost,
+						style,
+					});
+
+					const assetId = nanoid();
+					const r2Key = `audio/voice/${assetId}.mp3`;
+
+					await ctx.env.ASSETS.put(r2Key, result.audio, {
+						httpMetadata: { contentType: result.contentType },
+						customMetadata: {
+							type: "voice",
+							text,
+							voiceId: preset.voiceId,
+							voicePreset: voicePreset ?? "narrator",
+							generatedAt: new Date().toISOString(),
+						},
+					});
+
+					return {
+						ok: true,
+						assetId,
+						url: `/assets/${r2Key}`,
+						type: "voice",
+						contentType: result.contentType,
+						durationSeconds: result.durationSeconds,
+						voicePreset: voicePreset ?? "narrator",
+						voiceName: preset.name,
+					};
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					return { ok: false, error: message };
+				}
+			},
+		}),
+
+		generateBackgroundSound: tool({
+			description:
+				"Generate ambient background audio from a text description using AI. Returns a URL to the generated audio file. Use for background music, ambient sounds, atmosphere, etc.",
+			inputSchema: z.object({
+				text: z
+					.string()
+					.min(1)
+					.describe(
+						'Description of the background sound (e.g., "peaceful forest with birds chirping", "intense battle drums", "underwater bubbling ambience")',
+					),
+				durationSeconds: z
+					.number()
+					.min(0.5)
+					.max(22)
+					.optional()
+					.describe("Duration in seconds (0.5-22, auto if omitted)"),
+				promptInfluence: z
+					.number()
+					.min(0)
+					.max(1)
+					.optional()
+					.describe("How closely to follow the prompt (0-1, default ~0.3)"),
+			}),
+			execute: async ({ text, durationSeconds, promptInfluence }) => {
+				if (!ctx.env?.ELEVENLABS_API_KEY) {
+					return { ok: false, error: "Audio generation not configured" };
+				}
+
+				try {
+					const service = new ElevenLabsService(ctx.env.ELEVENLABS_API_KEY);
+					const result = await service.generateBackground({
+						text,
+						durationSeconds,
+						promptInfluence,
+					});
+
+					const assetId = nanoid();
+					const r2Key = `audio/background/${assetId}.mp3`;
+
+					await ctx.env.ASSETS.put(r2Key, result.audio, {
+						httpMetadata: { contentType: result.contentType },
+						customMetadata: {
+							type: "background",
+							prompt: text,
+							generatedAt: new Date().toISOString(),
+							...(result.durationSeconds != null
+								? { durationSeconds: String(result.durationSeconds) }
+								: {}),
+						},
+					});
+
+					return {
+						ok: true,
+						assetId,
+						url: `/assets/${r2Key}`,
+						type: "background",
+						contentType: result.contentType,
+						durationSeconds: result.durationSeconds,
+					};
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					return { ok: false, error: message };
+				}
 			},
 		}),
 
