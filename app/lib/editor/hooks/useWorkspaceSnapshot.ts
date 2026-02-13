@@ -7,13 +7,10 @@ import {
 	type PreviewMode,
 } from "@/lib/game-engine/live/LivePreviewController";
 import type { GodotBridge } from "@/lib/godot/types";
-import { getStorageItem } from "@/lib/utils/storage";
 
-const STORAGE_KEY = "livePreviewEnabled";
 const STATE_POLL_INTERVAL_MS = 200;
 
 interface UseWorkspaceSnapshotResult {
-	livePreviewEnabled: boolean;
 	loadState: PreviewLoadState;
 	mode: PreviewMode;
 	revision: string | null;
@@ -39,8 +36,8 @@ const INITIAL_SNAPSHOT_STATE: SnapshotState = {
 export function useWorkspaceSnapshot(
 	gameId: string | undefined,
 	bridge: GodotBridge | null,
+	livePreviewEnabled = false,
 ): UseWorkspaceSnapshotResult {
-	const [livePreviewEnabled, setLivePreviewEnabled] = useState(false);
 	const [snapshotState, setSnapshotState] = useState<SnapshotState>(
 		INITIAL_SNAPSHOT_STATE,
 	);
@@ -83,23 +80,6 @@ export function useWorkspaceSnapshot(
 			};
 		});
 	}, [gameId]);
-
-	useEffect(() => {
-		let cancelled = false;
-
-		const loadFlag = async () => {
-			const enabled = await getStorageItem(STORAGE_KEY, false);
-			if (!cancelled) {
-				setLivePreviewEnabled(enabled);
-			}
-		};
-
-		void loadFlag();
-
-		return () => {
-			cancelled = true;
-		};
-	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -226,7 +206,6 @@ export function useWorkspaceSnapshot(
 	}, [syncStateFromController]);
 
 	return {
-		livePreviewEnabled,
 		loadState: snapshotState.loadState,
 		mode: snapshotState.mode,
 		revision: snapshotState.revision,

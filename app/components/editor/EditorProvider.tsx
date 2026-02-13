@@ -12,6 +12,7 @@ import React, {
 	type ReactNode,
 	useCallback,
 	useContext,
+	useEffect,
 	useMemo,
 	useReducer,
 	useRef,
@@ -19,6 +20,7 @@ import React, {
 } from "react";
 import type { EntityManager } from "@/lib/game-engine/EntityManager";
 import type { Physics2D } from "@/lib/physics2d";
+import { getStorageItem } from "@/lib/utils/storage";
 import { usePackageReadiness } from "./usePackageReadiness";
 
 export interface ResolvedAssetEntry {
@@ -545,6 +547,9 @@ interface EditorContextValue {
 	runtimeRef: React.RefObject<GameRuntimeRef | null>;
 	selectedEntity: GameEntity | null;
 
+	livePreviewEnabled: boolean;
+	setLivePreviewEnabled: (enabled: boolean) => void;
+
 	registerShaderHandler: (handler: ShaderHotSwapHandler | null) => void;
 	hotSwapShader: (shaderId: string, source: string) => void;
 
@@ -581,7 +586,22 @@ export function EditorProvider({
 	const runtimeRef = useRef<GameRuntimeRef | null>(null);
 	const shaderHandlerRef = useRef<ShaderHotSwapHandler | null>(null);
 	const [showAIRunPanel, setShowAIRunPanel] = useState(false);
+	const [livePreviewEnabled, setLivePreviewEnabled] = useState(false);
 	const readiness = usePackageReadiness(gameId);
+
+	useEffect(() => {
+		let cancelled = false;
+		const loadFlag = async () => {
+			const enabled = await getStorageItem("livePreviewEnabled", false);
+			if (!cancelled) {
+				setLivePreviewEnabled(enabled);
+			}
+		};
+		void loadFlag();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const registerShaderHandler = useCallback(
 		(handler: ShaderHotSwapHandler | null) => {
@@ -752,6 +772,9 @@ export function EditorProvider({
 			runtimeRef,
 			selectedEntity,
 
+			livePreviewEnabled,
+			setLivePreviewEnabled,
+
 			registerShaderHandler,
 			hotSwapShader,
 			readiness: {
@@ -792,6 +815,7 @@ export function EditorProvider({
 			ephemeralSource,
 			showAIRunPanel,
 			toggleAIRunPanel,
+			livePreviewEnabled,
 			registerShaderHandler,
 			hotSwapShader,
 			readiness,

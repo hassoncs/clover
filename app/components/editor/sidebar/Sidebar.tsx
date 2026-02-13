@@ -1,8 +1,8 @@
 import { StyleSheet, View, type ViewStyle } from "react-native";
-import { DebugPanel } from "./DebugPanel";
-import { ExplorerPanel } from "./ExplorerPanel";
-import { HierarchyPanel } from "./HierarchyPanel";
-import { PropertiesPanel } from "./PropertiesPanel";
+import { DebugPanel } from "../panels/DebugPanel";
+import { ExplorerPanel } from "../panels/ExplorerPanel";
+import { HierarchyPanel } from "../panels/HierarchyPanel";
+import { PropertiesPanel } from "../panels/PropertiesPanel";
 
 interface SidebarProps {
 	style?: ViewStyle;

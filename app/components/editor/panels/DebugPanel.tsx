@@ -1,118 +1,133 @@
-import { View, Text, Switch, StyleSheet } from "react-native";
 import { useState } from "react";
+import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { useInspector } from "../inspector/InspectorProvider";
 
 export function DebugPanel() {
-  const [showPhysicsBounds, setShowPhysicsBounds] = useState(true);
-  const [showSpriteBounds, setShowSpriteBounds] = useState(true);
-  const [showEntityIds, setShowEntityIds] = useState(false);
-  const [showFps, setShowFps] = useState(false);
+	const { inspectMode, toggleInspectMode } = useInspector();
+	const [showPhysics, setShowPhysics] = useState(false);
+	const [showSprites, setShowSprites] = useState(false);
+	const [showIds, setShowIds] = useState(false);
+	const [pauseOnStart, setPauseOnStart] = useState(false);
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>DEBUG OPTIONS</Text>
+	return (
+		<View style={styles.container}>
+			<View style={styles.header}>
+				<Text style={styles.title}>Debug</Text>
+			</View>
 
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Show Physics Bounds</Text>
-          <Switch
-            value={showPhysicsBounds}
-            onValueChange={setShowPhysicsBounds}
-            trackColor={{ false: "#374151", true: "#4F46E5" }}
-            thumbColor="#FFFFFF"
-          />
-        </View>
+			<ScrollView style={styles.content}>
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Visualization</Text>
 
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Show Sprite Bounds</Text>
-          <Switch
-            value={showSpriteBounds}
-            onValueChange={setShowSpriteBounds}
-            trackColor={{ false: "#374151", true: "#4F46E5" }}
-            thumbColor="#FFFFFF"
-          />
-        </View>
+					<View style={styles.row}>
+						<Text style={styles.label}>Show Physics Shapes</Text>
+						<Switch
+							value={showPhysics}
+							onValueChange={setShowPhysics}
+							trackColor={{ false: "#374151", true: "#6366F1" }}
+							accessibilityLabel="Show physics shapes"
+						/>
+					</View>
 
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Show Entity IDs</Text>
-          <Switch
-            value={showEntityIds}
-            onValueChange={setShowEntityIds}
-            trackColor={{ false: "#374151", true: "#4F46E5" }}
-            thumbColor="#FFFFFF"
-          />
-        </View>
+					<View style={styles.row}>
+						<Text style={styles.label}>Show Sprite Bounds</Text>
+						<Switch
+							value={showSprites}
+							onValueChange={setShowSprites}
+							trackColor={{ false: "#374151", true: "#6366F1" }}
+							accessibilityLabel="Show sprite bounds"
+						/>
+					</View>
 
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Show FPS Counter</Text>
-          <Switch
-            value={showFps}
-            onValueChange={setShowFps}
-            trackColor={{ false: "#374151", true: "#4F46E5" }}
-            thumbColor="#FFFFFF"
-          />
-        </View>
-      </View>
+					<View style={styles.row}>
+						<Text style={styles.label}>Show Entity IDs</Text>
+						<Switch
+							value={showIds}
+							onValueChange={setShowIds}
+							trackColor={{ false: "#374151", true: "#6366F1" }}
+							accessibilityLabel="Show entity IDs"
+						/>
+					</View>
+				</View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>INFO</Text>
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Inspector</Text>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Active Bodies</Text>
-          <Text style={styles.infoValue}>--</Text>
-        </View>
+					<View style={styles.row}>
+						<Text style={styles.label}>Inspect Mode</Text>
+						<Switch
+							value={inspectMode}
+							onValueChange={toggleInspectMode}
+							trackColor={{ false: "#374151", true: "#6366F1" }}
+							accessibilityLabel="Inspect mode"
+						/>
+					</View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Contacts</Text>
-          <Text style={styles.infoValue}>--</Text>
-        </View>
+					<View style={styles.row}>
+						<Text style={styles.label}>Pause on Start</Text>
+						<Switch
+							value={pauseOnStart}
+							onValueChange={setPauseOnStart}
+							trackColor={{ false: "#374151", true: "#6366F1" }}
+							accessibilityLabel="Pause on start"
+						/>
+					</View>
+				</View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Frame Time</Text>
-          <Text style={styles.infoValue}>--</Text>
-        </View>
-      </View>
-    </View>
-  );
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Tools</Text>
+					<Text style={styles.hint}>
+						Right-click viewport to inspect entities at cursor
+					</Text>
+				</View>
+			</ScrollView>
+		</View>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    color: "#9CA3AF",
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 1,
-    marginBottom: 16,
-  },
-  toggleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#374151",
-  },
-  toggleLabel: {
-    color: "#FFFFFF",
-    fontSize: 14,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-  },
-  infoLabel: {
-    color: "#9CA3AF",
-    fontSize: 14,
-  },
-  infoValue: {
-    color: "#FFFFFF",
-    fontSize: 14,
-  },
+	container: {
+		flex: 1,
+		backgroundColor: "#1F2937",
+	},
+	header: {
+		padding: 12,
+		borderBottomWidth: 1,
+		borderBottomColor: "#374151",
+	},
+	title: {
+		color: "#FFFFFF",
+		fontSize: 14,
+		fontWeight: "600",
+	},
+	content: {
+		flex: 1,
+	},
+	section: {
+		padding: 12,
+		borderBottomWidth: 1,
+		borderBottomColor: "#374151",
+	},
+	sectionTitle: {
+		color: "#9CA3AF",
+		fontSize: 12,
+		fontWeight: "600",
+		marginBottom: 12,
+		textTransform: "uppercase",
+	},
+	row: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		paddingVertical: 8,
+	},
+	label: {
+		color: "#D1D5DB",
+		fontSize: 14,
+	},
+	hint: {
+		color: "#6B7280",
+		fontSize: 12,
+		fontStyle: "italic",
+	},
 });

@@ -14,11 +14,7 @@ function shaderIdFromFilename(filename: string): string {
 
 type ActiveView = { type: "file"; filename: string } | { type: "preview" };
 
-interface StageAreaProps {
-	onLivePreviewChange?: (enabled: boolean) => void;
-}
-
-export function StageArea({ onLivePreviewChange }: StageAreaProps) {
+export function StageArea() {
 	const { gameId, hotSwapShader, readiness } = useEditor();
 	const {
 		openTabs,
@@ -140,7 +136,7 @@ export function StageArea({ onLivePreviewChange }: StageAreaProps) {
 				>
 					{activeView.type === "preview" && <PreviewControls />}
 					<PreviewGate>
-						<StageContainer onLivePreviewChange={onLivePreviewChange} />
+						<StageContainer />
 					</PreviewGate>
 				</View>
 

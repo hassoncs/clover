@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { WithGodot } from "@/components/WithGodot";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
@@ -6,24 +6,23 @@ import type { GodotBridge } from "@/lib/godot/types";
 import { useEditor } from "./EditorProvider";
 import { InteractionLayer } from "./InteractionLayer";
 
-interface StageContainerProps {
-	onLivePreviewChange?: (enabled: boolean) => void;
-}
-
-export function StageContainer({ onLivePreviewChange }: StageContainerProps) {
-	const { mode, timeMode, document, registerShaderHandler, gameId } =
-		useEditor();
+export function StageContainer() {
+	const {
+		mode,
+		timeMode,
+		document,
+		registerShaderHandler,
+		gameId,
+		livePreviewEnabled,
+	} = useEditor();
 	const [runtimeKey, setRuntimeKey] = useState(0);
 	const [bridgeApi, setBridgeApi] = useState<GodotBridge | null>(null);
 
-	const { livePreviewEnabled, loadState } = useWorkspaceSnapshot(
+	const { loadState } = useWorkspaceSnapshot(
 		gameId,
 		bridgeApi,
+		livePreviewEnabled,
 	);
-
-	useEffect(() => {
-		onLivePreviewChange?.(livePreviewEnabled);
-	}, [livePreviewEnabled, onLivePreviewChange]);
 
 	const handleRequestRestart = useCallback(() => {
 		setRuntimeKey((k) => k + 1);

@@ -6,13 +6,11 @@ import { trpc } from "@/lib/trpc/client";
 import { useEditor } from "./EditorProvider";
 
 export interface EditorTopBarProps {
-	livePreviewEnabled?: boolean;
 	onResetPreview?: () => void;
 	setPreviewMode?: (mode: "edit" | "play") => Promise<void>;
 }
 
 export function EditorTopBar({
-	livePreviewEnabled,
 	onResetPreview,
 	setPreviewMode,
 }: EditorTopBarProps) {
@@ -32,6 +30,7 @@ export function EditorTopBar({
 		isDirty,
 		isEphemeral,
 		ephemeralSource,
+		livePreviewEnabled,
 	} = useEditor();
 
 	const handleBack = () => {

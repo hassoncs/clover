@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EditorProvider } from "@/components/editor/EditorProvider";
 import { EditorTopBar } from "@/components/editor/EditorTopBar";
 import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayout";
+import { useAuth } from "@/hooks/useAuth";
 import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
 import { LivePreviewController } from "@/lib/game-engine/live/LivePreviewController";
@@ -14,6 +15,7 @@ import { trpc } from "@/lib/trpc/client";
 
 export default function EditorScreen() {
 	const router = useRouter();
+	const auth = useAuth();
 	const {
 		id,
 		definition: definitionParam,
@@ -37,13 +39,19 @@ export default function EditorScreen() {
 	);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [livePreviewEnabled, setLivePreviewEnabled] = useState(false);
 
 	const handleResetPreview = useCallback(async () => {
 		await LivePreviewController.getInstance().reset();
 	}, []);
 
 	useEffect(() => {
+		if (auth.isLoading) return;
+
+		if (!auth.isAuthenticated) {
+			router.replace("/(tabs)/profile");
+			return;
+		}
+
 		const loadGame = async () => {
 			setIsLoading(true);
 			setError(null);
@@ -69,7 +77,7 @@ export default function EditorScreen() {
 		};
 
 		loadGame();
-	}, [id, definitionParam]);
+	}, [id, definitionParam, auth.isLoading, auth.isAuthenticated, router]);
 
 	const handleBack = () => {
 		router.back();
@@ -118,13 +126,10 @@ export default function EditorScreen() {
 				>
 					<ChatStreamProvider>
 						<EditorTopBar
-							livePreviewEnabled={livePreviewEnabled}
 							onResetPreview={handleResetPreview}
 							setPreviewMode={setPreviewMode}
 						/>
-						<ResponsiveEditorLayout
-							onLivePreviewChange={setLivePreviewEnabled}
-						/>
+						<ResponsiveEditorLayout />
 					</ChatStreamProvider>
 				</EditorProvider>
 			</View>
