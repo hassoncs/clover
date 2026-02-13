@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { CodeEditor } from "./code-editor";
 import { detectLanguage } from "./code-editor/types";
 import { BinaryPreviewPanel } from "./preview/BinaryPreviewPanel";
@@ -79,11 +79,13 @@ export function FileViewer({
 
 	if (!filename) {
 		return (
-			<View style={styles.container}>
-				<View style={styles.emptyState}>
-					<Text style={styles.emptyIcon}>📄</Text>
-					<Text style={styles.emptyTitle}>No File Selected</Text>
-					<Text style={styles.emptySubtitle}>
+			<View className="flex-1 bg-secondary-800">
+				<View className="flex-1 items-center justify-center p-8">
+					<Text className="text-5xl mb-4">📄</Text>
+					<Text className="text-white text-lg font-semibold mb-2">
+						No File Selected
+					</Text>
+					<Text className="text-secondary-400 text-sm text-center leading-5">
 						Select a file from the sidebar to view its content.
 					</Text>
 				</View>
@@ -98,7 +100,7 @@ export function FileViewer({
 
 	if (isLoading && content === null) {
 		return (
-			<View style={[styles.container, styles.loadingContainer]}>
+			<View className="flex-1 bg-secondary-800 items-center justify-center">
 				<ActivityIndicator size="large" color="#6366F1" />
 			</View>
 		);
@@ -107,11 +109,13 @@ export function FileViewer({
 	if (content === null) {
 		if (filename === "document.md") {
 			return (
-				<View style={styles.container}>
-					<View style={styles.emptyState}>
-						<Text style={styles.emptyIcon}>📄</Text>
-						<Text style={styles.emptyTitle}>Shared Document</Text>
-						<Text style={styles.emptySubtitle}>
+				<View className="flex-1 bg-secondary-800">
+					<View className="flex-1 items-center justify-center p-8">
+						<Text className="text-5xl mb-4">📄</Text>
+						<Text className="text-white text-lg font-semibold mb-2">
+							Shared Document
+						</Text>
+						<Text className="text-secondary-400 text-sm text-center leading-5">
 							The AI will create and edit a document here as you chat.
 						</Text>
 					</View>
@@ -120,9 +124,9 @@ export function FileViewer({
 		}
 
 		return (
-			<View style={styles.container}>
-				<View style={styles.emptyState}>
-					<Text style={styles.emptySubtitle}>
+			<View className="flex-1 bg-secondary-800">
+				<View className="flex-1 items-center justify-center p-8">
+					<Text className="text-secondary-400 text-sm text-center leading-5">
 						File is empty or could not be read.
 					</Text>
 				</View>
@@ -131,7 +135,7 @@ export function FileViewer({
 	}
 
 	return (
-		<View style={styles.container} testID="file-viewer">
+		<View className="flex-1 bg-secondary-800" testID="file-viewer">
 			<CodeEditor
 				value={localContent}
 				onChange={handleTextChange}
@@ -139,8 +143,8 @@ export function FileViewer({
 				testID="file-viewer-editor"
 			/>
 			{saveStatus !== "idle" && (
-				<View style={styles.statusBar}>
-					<Text style={styles.statusText}>
+				<View className="h-6 bg-secondary-900 border-t border-secondary-700 justify-center px-3">
+					<Text className="text-xs text-secondary-400">
 						{saveStatus === "saving" ? "Saving..." : "Saved"}
 					</Text>
 				</View>
@@ -148,49 +152,3 @@ export function FileViewer({
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#1F2937",
-	},
-	loadingContainer: {
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	emptyState: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		padding: 32,
-	},
-	emptyIcon: {
-		fontSize: 48,
-		marginBottom: 16,
-	},
-	emptyTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#FFFFFF",
-		marginBottom: 8,
-	},
-	emptySubtitle: {
-		fontSize: 14,
-		color: "#9CA3AF",
-		textAlign: "center",
-		lineHeight: 20,
-	},
-
-	statusBar: {
-		height: 24,
-		backgroundColor: "#111827",
-		borderTopWidth: 1,
-		borderTopColor: "#374151",
-		justifyContent: "center",
-		paddingHorizontal: 12,
-	},
-	statusText: {
-		fontSize: 12,
-		color: "#9CA3AF",
-	},
-});

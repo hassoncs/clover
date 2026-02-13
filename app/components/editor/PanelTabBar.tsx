@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 interface Tab {
 	id: string;
@@ -13,24 +13,26 @@ interface PanelTabBarProps {
 
 export function PanelTabBar({ tabs, activeTab, onTabPress }: PanelTabBarProps) {
 	return (
-		<View style={styles.container}>
+		<View className="bg-secondary-800 border-b border-secondary-700">
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
-				contentContainerStyle={styles.scrollContent}
+				className="flex-row px-1"
 			>
 				{tabs.map((tab) => {
 					const isActive = tab.id === activeTab;
 					return (
 						<Pressable
 							key={tab.id}
-							style={[styles.tab, isActive && styles.activeTab]}
+							className={`px-3.5 py-2.5 border-b-2 ${isActive ? "border-theme-primary bg-secondary-700" : "border-transparent"}`}
 							onPress={() => onTabPress(tab.id)}
 							accessibilityRole="tab"
 							accessibilityLabel={tab.title}
 							accessibilityState={{ selected: isActive }}
 						>
-							<Text style={[styles.tabText, isActive && styles.activeTabText]}>
+							<Text
+								className={`text-sm font-medium ${isActive ? "text-white" : "text-secondary-400"}`}
+							>
 								{tab.title}
 							</Text>
 						</Pressable>
@@ -40,33 +42,3 @@ export function PanelTabBar({ tabs, activeTab, onTabPress }: PanelTabBarProps) {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		backgroundColor: "#1F2937",
-		borderBottomWidth: 1,
-		borderBottomColor: "#374151",
-	},
-	scrollContent: {
-		flexDirection: "row",
-		paddingHorizontal: 4,
-	},
-	tab: {
-		paddingHorizontal: 14,
-		paddingVertical: 10,
-		borderBottomWidth: 2,
-		borderBottomColor: "transparent",
-	},
-	activeTab: {
-		borderBottomColor: "#6366F1",
-		backgroundColor: "#374151",
-	},
-	tabText: {
-		fontSize: 13,
-		fontWeight: "500",
-		color: "#9CA3AF",
-	},
-	activeTabText: {
-		color: "#FFFFFF",
-	},
-});

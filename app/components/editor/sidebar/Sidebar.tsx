@@ -1,4 +1,4 @@
-import { StyleSheet, View, type ViewStyle } from "react-native";
+import { View, type ViewStyle } from "react-native";
 import { DebugPanel } from "../panels/DebugPanel";
 import { ExplorerPanel } from "../panels/ExplorerPanel";
 import { HierarchyPanel } from "../panels/HierarchyPanel";
@@ -10,45 +10,22 @@ interface SidebarProps {
 
 export function Sidebar({ style }: SidebarProps) {
 	return (
-		<View style={[styles.container, style]}>
-			<View style={styles.panelExplorer}>
+		<View style={style} className="flex-1 bg-secondary-800">
+			<View className="flex-3">
 				<ExplorerPanel />
 			</View>
-			<View style={styles.divider} />
-			<View style={styles.panelHierarchy}>
+			<View className="h-1 bg-secondary-700" />
+			<View className="flex-2">
 				<HierarchyPanel />
 			</View>
-			<View style={styles.divider} />
-			<View style={styles.panelProperties}>
+			<View className="h-1 bg-secondary-700" />
+			<View className="flex-2">
 				<PropertiesPanel />
 			</View>
-			<View style={styles.divider} />
-			<View style={styles.panelDebug}>
+			<View className="h-1 bg-secondary-700" />
+			<View className="flex-1">
 				<DebugPanel />
 			</View>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#1F2937",
-	},
-	panelExplorer: {
-		flex: 3,
-	},
-	panelHierarchy: {
-		flex: 2,
-	},
-	panelProperties: {
-		flex: 2,
-	},
-	panelDebug: {
-		flex: 1,
-	},
-	divider: {
-		height: 4,
-		backgroundColor: "#374151",
-	},
-});

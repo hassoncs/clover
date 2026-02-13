@@ -4,7 +4,7 @@ import BottomSheet, {
 	BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useCallback, useMemo, useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { AssetGalleryPanel } from "./AssetGallery/AssetGalleryPanel";
 import type { EditorTab } from "./EditorProvider";
 import { AssetsPanel } from "./panels/AssetsPanel";
@@ -33,21 +33,21 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
 
 	const renderHandle = useCallback(
 		() => (
-			<View style={styles.handleContainer}>
-				<View style={styles.handleIndicator} />
-				<View style={styles.headerRow}>
+			<View className="items-center pt-2 pb-1 bg-secondary-800 rounded-t-4">
+				<View className="w-10 h-1 rounded bg-secondary-500 mb-2" />
+				<View className="flex-row items-center justify-between px-4 pb-2 w-full">
 					<Pressable
 						onPress={onDismiss}
-						style={styles.closeButton}
+						className="w-10 h-10 justify-center items-center"
 						accessibilityRole="button"
 						accessibilityLabel="Close tool sheet"
 					>
 						<Ionicons name="close" size={24} color="#FFFFFF" />
 					</Pressable>
-					<Text style={styles.headerTitle}>
+					<Text className="text-white text-base font-semibold">
 						{TAB_TITLES[activeTab ?? ""] ?? ""}
 					</Text>
-					<View style={styles.closeButton} />
+					<View className="w-10 h-10 justify-center items-center" />
 				</View>
 			</View>
 		),
@@ -82,69 +82,28 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
 			ref={sheetRef}
 			index={0}
 			snapPoints={snapPoints}
-			backgroundStyle={styles.sheetBackground}
+			backgroundStyle={{ backgroundColor: "#1F2937" }}
 			handleComponent={renderHandle}
-			style={styles.sheetShadow}
+			style={{
+				elevation: 10,
+				shadowColor: "#000",
+				shadowOffset: { width: 0, height: -3 },
+				shadowOpacity: 0.125,
+				shadowRadius: 12,
+			}}
 			enablePanDownToClose
 			onClose={onDismiss}
 			enableDynamicSizing={false}
 		>
 			{isFilesTab ? (
-				<BottomSheetView style={styles.contentContainer}>
+				<BottomSheetView className="flex-grow">
 					{renderContent()}
 				</BottomSheetView>
 			) : (
-				<BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
+				<BottomSheetScrollView contentContainerClassName="flex-grow">
 					{renderContent()}
 				</BottomSheetScrollView>
 			)}
 		</BottomSheet>
 	);
 }
-
-const styles = StyleSheet.create({
-	sheetShadow: {
-		elevation: 10,
-		boxShadow: "0px -3px 12px rgba(0, 0, 0, 0.125)",
-	},
-	sheetBackground: {
-		backgroundColor: "#1F2937",
-	},
-	handleContainer: {
-		alignItems: "center",
-		paddingTop: 8,
-		paddingBottom: 4,
-		backgroundColor: "#1F2937",
-		borderTopLeftRadius: 16,
-		borderTopRightRadius: 16,
-	},
-	handleIndicator: {
-		width: 40,
-		height: 4,
-		borderRadius: 2,
-		backgroundColor: "#6B7280",
-		marginBottom: 8,
-	},
-	headerRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingHorizontal: 16,
-		paddingBottom: 8,
-		width: "100%",
-	},
-	closeButton: {
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	headerTitle: {
-		color: "#FFFFFF",
-		fontSize: 17,
-		fontWeight: "600",
-	},
-	contentContainer: {
-		flexGrow: 1,
-	},
-});

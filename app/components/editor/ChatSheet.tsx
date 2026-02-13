@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import type { ChatMessage } from "@slopcade/shared/chat";
 import { useCallback, useMemo, useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { ChatConversation } from "@/components/create-game/ChatConversation";
 
 interface ChatSheetProps {
@@ -33,19 +33,19 @@ export function ChatSheet({
 
 	const renderHandle = useCallback(
 		() => (
-			<View style={styles.handleContainer}>
-				<View style={styles.handleIndicator} />
-				<View style={styles.headerRow}>
+			<View className="items-center pt-2 pb-1 bg-secondary-800 rounded-t-4">
+				<View className="w-10 h-1 rounded bg-secondary-500 mb-2" />
+				<View className="flex-row items-center justify-between px-4 pb-2 w-full">
 					<Pressable
 						onPress={onDismiss}
-						style={styles.closeButton}
+						className="w-10 h-10 justify-center items-center"
 						accessibilityRole="button"
 						accessibilityLabel="Close chat"
 					>
 						<Ionicons name="close" size={24} color="#FFFFFF" />
 					</Pressable>
-					<Text style={styles.headerTitle}>Edit</Text>
-					<View style={styles.closeButton} />
+					<Text className="text-white text-base font-semibold">Edit</Text>
+					<View className="w-10 h-10 justify-center items-center" />
 				</View>
 			</View>
 		),
@@ -59,9 +59,15 @@ export function ChatSheet({
 			ref={sheetRef}
 			index={0}
 			snapPoints={snapPoints}
-			backgroundStyle={styles.sheetBackground}
+			backgroundStyle={{ backgroundColor: "#1F2937" }}
 			handleComponent={renderHandle}
-			style={styles.sheetShadow}
+			style={{
+				elevation: 10,
+				shadowColor: "#000",
+				shadowOffset: { width: 0, height: -3 },
+				shadowOpacity: 0.125,
+				shadowRadius: 12,
+			}}
 			enablePanDownToClose
 			onClose={onDismiss}
 			enableDynamicSizing={false}
@@ -82,47 +88,3 @@ export function ChatSheet({
 		</BottomSheet>
 	);
 }
-
-const styles = StyleSheet.create({
-	sheetShadow: {
-		elevation: 10,
-		boxShadow: "0px -3px 12px rgba(0, 0, 0, 0.125)",
-	},
-	sheetBackground: {
-		backgroundColor: "#1F2937",
-	},
-	handleContainer: {
-		alignItems: "center",
-		paddingTop: 8,
-		paddingBottom: 4,
-		backgroundColor: "#1F2937",
-		borderTopLeftRadius: 16,
-		borderTopRightRadius: 16,
-	},
-	handleIndicator: {
-		width: 40,
-		height: 4,
-		borderRadius: 2,
-		backgroundColor: "#6B7280",
-		marginBottom: 8,
-	},
-	headerRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingHorizontal: 16,
-		paddingBottom: 8,
-		width: "100%",
-	},
-	closeButton: {
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	headerTitle: {
-		color: "#FFFFFF",
-		fontSize: 17,
-		fontWeight: "600",
-	},
-});

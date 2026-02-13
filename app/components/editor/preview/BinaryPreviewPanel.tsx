@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { AudioPreview } from "./AudioPreview";
 import { ImagePreview } from "./ImagePreview";
 import { getFileType } from "./utils";
@@ -20,28 +20,11 @@ export function BinaryPreviewPanel({ filename }: BinaryPreviewPanelProps) {
 	}
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.text}>Unsupported binary file type</Text>
-			<Text style={styles.subtext}>{filename}</Text>
+		<View className="flex-1 items-center justify-center bg-secondary-800">
+			<Text className="text-secondary-100 text-base font-semibold mb-2">
+				Unsupported binary file type
+			</Text>
+			<Text className="text-secondary-400 text-sm">{filename}</Text>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "#1F2937",
-	},
-	text: {
-		color: "#F3F4F6",
-		fontSize: 16,
-		fontWeight: "600",
-		marginBottom: 8,
-	},
-	subtext: {
-		color: "#9CA3AF",
-		fontSize: 14,
-	},
-});
