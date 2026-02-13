@@ -1,93 +1,88 @@
-import { useState, useEffect, useCallback } from 'react';
-import { trpc } from '@/lib/trpc/client';
+import { keepPreviousData } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import { trpcReact } from "@/lib/trpc/react";
 
-interface PublicGame {
-  id: string;
-  title: string;
-  description: string | null;
-  playCount: number;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  userId: string | null;
-  thumbnailUrl: string | null;
-  isPublic: boolean;
-  source: 'database';
-}
+type SortOption = "newest" | "popular" | "alphabetical" | "rating";
 
 interface UseBrowseGamesOptions {
-  pageSize?: number;
+	pageSize?: number;
+	searchQuery?: string;
+	sortBy?: SortOption;
 }
 
-interface UseBrowseGamesReturn {
-  publicGames: PublicGame[];
-  isLoadingPublic: boolean;
-  isRefreshing: boolean;
-  hasMorePublicGames: boolean;
-  publicGamesPage: number;
-  totalPublicGames: number;
-  fetchPublicGames: (page: number, showRefresh?: boolean) => Promise<void>;
-  handleRefresh: () => void;
-}
+export function useBrowseGames(options: UseBrowseGamesOptions = {}) {
+	const pageSize = options.pageSize ?? 20;
+	const searchQuery = options.searchQuery?.trim() ?? "";
+	const sortBy = options.sortBy ?? "popular";
+	const isSearching = searchQuery.length > 0;
 
-export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGamesReturn {
-  const pageSize = options.pageSize ?? 10;
+	const [feedPage, setFeedPage] = useState(0);
+	const [searchPage, setSearchPage] = useState(0);
 
-  const [publicGames, setPublicGames] = useState<PublicGame[]>([]);
-  const [isLoadingPublic, setIsLoadingPublic] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [publicGamesPage, setPublicGamesPage] = useState(1);
-  const [hasMorePublicGames, setHasMorePublicGames] = useState(true);
-  const [totalPublicGames, setTotalPublicGames] = useState(0);
+	const feedQuery = trpcReact.games.listPublic.useQuery(
+		{ limit: pageSize, offset: feedPage * pageSize },
+		{ enabled: !isSearching, placeholderData: keepPreviousData },
+	);
 
-  const fetchPublicGames = useCallback(async (page: number, showRefresh = false) => {
-    if (showRefresh) setIsRefreshing(true);
-    else if (page === 1) setIsLoadingPublic(true);
+	const searchQueryResult = trpcReact.games.search.useQuery(
+		{
+			query: searchQuery,
+			limit: pageSize,
+			offset: searchPage * pageSize,
+			sortBy,
+		},
+		{ enabled: isSearching, placeholderData: keepPreviousData },
+	);
 
-    try {
-      const result = await trpc.games.listPublic.query({ 
-        limit: pageSize, 
-        offset: (page - 1) * pageSize 
-      });
-      
-      const gamesWithSource = result.map(game => ({
-        ...game,
-        source: 'database' as const,
-      }));
-      
-      if (page === 1) {
-        setPublicGames(gamesWithSource);
-      } else {
-        setPublicGames(prev => [...prev, ...gamesWithSource]);
-      }
-      
-      setHasMorePublicGames(result.length === pageSize);
-      setTotalPublicGames(prev => page === 1 ? result.length : prev + result.length);
-    } catch (err) {
-      console.error("Failed to load public games:", err);
-      if (page === 1) setPublicGames([]);
-    } finally {
-      setIsLoadingPublic(false);
-      setIsRefreshing(false);
-    }
-  }, [pageSize]);
+	const games = useMemo(() => {
+		if (isSearching) {
+			return (searchQueryResult.data?.results ?? []).map((g) => ({
+				...g,
+				source: "database" as const,
+			}));
+		}
+		return (feedQuery.data ?? []).map((g) => ({
+			...g,
+			source: "database" as const,
+		}));
+	}, [isSearching, searchQueryResult.data, feedQuery.data]);
 
-  const handleRefresh = useCallback(() => {
-    setPublicGamesPage(1);
-    fetchPublicGames(1, true);
-  }, [fetchPublicGames]);
+	const isLoading = isSearching
+		? searchQueryResult.isLoading
+		: feedQuery.isLoading;
+	const isFetching = isSearching
+		? searchQueryResult.isFetching
+		: feedQuery.isFetching;
 
-  useEffect(() => {
-    fetchPublicGames(1);
-  }, [fetchPublicGames]);
+	const hasMore = isSearching
+		? (searchQueryResult.data?.hasMore ?? false)
+		: (feedQuery.data?.length ?? 0) === pageSize;
 
-  return {
-    publicGames,
-    isLoadingPublic,
-    isRefreshing,
-    hasMorePublicGames,
-    publicGamesPage,
-    totalPublicGames,
-    fetchPublicGames,
-    handleRefresh,
-  };
+	const loadMore = useCallback(() => {
+		if (isSearching) {
+			setSearchPage((p) => p + 1);
+		} else {
+			setFeedPage((p) => p + 1);
+		}
+	}, [isSearching]);
+
+	const refresh = useCallback(() => {
+		if (isSearching) {
+			setSearchPage(0);
+			searchQueryResult.refetch();
+		} else {
+			setFeedPage(0);
+			feedQuery.refetch();
+		}
+	}, [isSearching, searchQueryResult, feedQuery]);
+
+	return {
+		games,
+		isLoading,
+		isFetching,
+		isRefreshing: isFetching && !isLoading,
+		hasMore,
+		loadMore,
+		refresh,
+	};
 }
