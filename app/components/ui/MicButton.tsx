@@ -1,19 +1,28 @@
 import { Ionicons } from "@expo/vector-icons";
 import { tokens } from "@slopcade/theme";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
 	ActivityIndicator,
 	Animated,
-	Platform,
 	Pressable,
 	StyleSheet,
 } from "react-native";
 import type { SpeechToTextError } from "@/lib/speech/types";
 
+const ENERGY_MIN = 0.01;
+const ENERGY_MAX = 0.15;
+const ENERGY_CURVE = 0.5;
+
+function normalizeVolume(raw: number): number {
+	const clamped = Math.max(0, (raw - ENERGY_MIN) / (ENERGY_MAX - ENERGY_MIN));
+	return Math.min(1, clamped ** ENERGY_CURVE);
+}
+
 interface MicButtonProps {
 	isRecording: boolean;
 	isConnecting: boolean;
 	error: SpeechToTextError | null;
+	volumeLevel?: number;
 	onPress?: () => void;
 	onPressIn?: () => void;
 	onPressOut?: () => void;
@@ -24,12 +33,19 @@ export function MicButton({
 	isRecording,
 	isConnecting,
 	error,
+	volumeLevel = 0,
 	onPress,
 	onPressIn,
 	onPressOut,
 	mode,
 }: MicButtonProps) {
-	const pulseAnim = useRef(new Animated.Value(1)).current;
+	const opacityAnim = useRef(new Animated.Value(1)).current;
+	const scaleAnim = useRef(new Animated.Value(1)).current;
+	const volumeRef = useRef(volumeLevel);
+	volumeRef.current = volumeLevel;
+	const frameRef = useRef<number | null>(null);
+	const currentOpacity = useRef(1);
+	const currentScale = useRef(1);
 
 	useEffect(() => {
 		if (error) {
@@ -38,46 +54,66 @@ export function MicButton({
 	}, [error]);
 
 	useEffect(() => {
-		if (isRecording) {
-			const pulse = Animated.loop(
-				Animated.sequence([
-					Animated.timing(pulseAnim, {
-						toValue: 0.4,
-						duration: 800,
-						useNativeDriver: Platform.OS !== "web",
-					}),
-					Animated.timing(pulseAnim, {
-						toValue: 1,
-						duration: 800,
-						useNativeDriver: Platform.OS !== "web",
-					}),
-				]),
-			);
-			pulse.start();
-			return () => pulse.stop();
+		if (!isRecording) {
+			opacityAnim.setValue(1);
+			scaleAnim.setValue(1);
+			currentOpacity.current = 1;
+			currentScale.current = 1;
+			return;
 		}
-		pulseAnim.setValue(1);
-	}, [isRecording, pulseAnim]);
+
+		const animate = () => {
+			const normalized = normalizeVolume(volumeRef.current);
+
+			const targetOpacity = 0.4 + normalized * 0.6;
+			const targetScale = 1 + normalized * 0.15;
+
+			currentOpacity.current += (targetOpacity - currentOpacity.current) * 0.2;
+			currentScale.current += (targetScale - currentScale.current) * 0.2;
+
+			opacityAnim.setValue(currentOpacity.current);
+			scaleAnim.setValue(currentScale.current);
+
+			frameRef.current = requestAnimationFrame(animate);
+		};
+
+		frameRef.current = requestAnimationFrame(animate);
+
+		return () => {
+			if (frameRef.current !== null) {
+				cancelAnimationFrame(frameRef.current);
+				frameRef.current = null;
+			}
+		};
+	}, [isRecording, opacityAnim, scaleAnim]);
+
+	const animatedStyle = useMemo(
+		() =>
+			isRecording
+				? { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }
+				: undefined,
+		[isRecording, opacityAnim, scaleAnim],
+	);
 
 	return (
-		<Pressable
-			onPress={mode === "toggle" ? onPress : undefined}
-			onPressIn={mode === "hold" ? onPressIn : undefined}
-			onPressOut={mode === "hold" ? onPressOut : undefined}
-			style={[styles.button, isRecording && styles.buttonRecording]}
-			accessibilityLabel={isRecording ? "Stop recording" : "Start recording"}
-			accessibilityRole="button"
-			accessibilityState={{ selected: isRecording }}
-			testID="mic-button"
-		>
-			{isConnecting ? (
-				<ActivityIndicator
-					size="small"
-					color={tokens.colors.text.secondary}
-					testID="loading-indicator"
-				/>
-			) : (
-				<Animated.View style={isRecording ? { opacity: pulseAnim } : undefined}>
+		<Animated.View style={animatedStyle}>
+			<Pressable
+				onPress={mode === "toggle" ? onPress : undefined}
+				onPressIn={mode === "hold" ? onPressIn : undefined}
+				onPressOut={mode === "hold" ? onPressOut : undefined}
+				style={[styles.button, isRecording && styles.buttonRecording]}
+				accessibilityLabel={isRecording ? "Stop recording" : "Start recording"}
+				accessibilityRole="button"
+				accessibilityState={{ selected: isRecording }}
+				testID="mic-button"
+			>
+				{isConnecting ? (
+					<ActivityIndicator
+						size="small"
+						color={tokens.colors.text.secondary}
+						testID="loading-indicator"
+					/>
+				) : (
 					<Ionicons
 						name={isRecording ? "mic" : "mic-outline"}
 						size={24}
@@ -86,9 +122,9 @@ export function MicButton({
 						}
 						testID="mic-icon"
 					/>
-				</Animated.View>
-			)}
-		</Pressable>
+				)}
+			</Pressable>
+		</Animated.View>
 	);
 }
 

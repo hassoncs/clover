@@ -1,5 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 /**
@@ -7,19 +6,16 @@ import { ActivityIndicator, View } from "react-native";
  * This maintains backward compatibility for any bookmarks or links.
  */
 export default function GameRedirect() {
-	const router = useRouter();
 	const { id, remixId } = useLocalSearchParams<{
 		id: string;
 		remixId?: string;
 	}>();
 
-	useEffect(() => {
-		if (id) {
-			const params: Record<string, string> = { id };
-			if (remixId) params.remixId = remixId;
-			router.replace({ pathname: "/play/[id]", params });
-		}
-	}, [id, remixId, router]);
+	if (id) {
+		const params: Record<string, string> = { id };
+		if (remixId) params.remixId = remixId;
+		return <Redirect href={{ pathname: "/play/[id]", params }} />;
+	}
 
 	return (
 		<View className="flex-1 bg-gray-900 items-center justify-center">
