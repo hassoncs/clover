@@ -353,7 +353,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 4. NetworkRuntimeSystem — Network State → Game Variables
+- [x] 4. NetworkRuntimeSystem — Network State → Game Variables
 
   **What to do**:
   - Create `app/lib/game-engine/systems/runner/wrappers/NetworkRuntimeSystem.ts`
@@ -421,7 +421,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 5. Extended BindingContext — Role + Room Namespace
+- [x] 5. Extended BindingContext — Role + Room Namespace
 
   **What to do**:
   - Edit `app/lib/game-engine/ui/overlay/BindingEvaluator.ts`:
@@ -479,7 +479,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 6. Script Hooks — onNetworkState + onPhaseChange
+- [x] 6. Script Hooks — onNetworkState + onPhaseChange
 
   **What to do**:
   - Add `onNetworkState` and `onPhaseChange` to `ScriptHookName` type in `IScriptSandbox.ts`
@@ -539,7 +539,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 7. Minimal Test Game — "Question & Answer"
+- [x] 7. Minimal Test Game — "Question & Answer"
 
   **What to do**:
   - Create a complete test game proving the full stack works end-to-end
@@ -662,7 +662,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 9. E2E Test + Verification
+- [x] 9. E2E Test + Verification
 
   **What to do**:
   - Create Playwright E2E test for the test game
@@ -733,14 +733,14 @@ npx playwright test tests/e2e/party/             # Expected: full game flow pass
 ```
 
 ### Final Checklist
-- [ ] All "Must Have" items present and working
-- [ ] All "Must NOT Have" items confirmed absent
-- [ ] Minimal test game playable: host + 1 player, question → answer → display
-- [ ] No modifications to OverlayRenderer, RulesSystem, or GodotBridge
-- [ ] Existing game engine tests still pass
-- [ ] `room.*` variables flow from DO → WebSocket → NetworkRuntimeSystem → overlay
-- [ ] Role-based visibility works via `visibleWhen`
-- [ ] Script `onNetworkState` hook fires on state updates
+- [x] All "Must Have" items present and working
+- [x] All "Must NOT Have" items confirmed absent
+- [x] Minimal test game playable: host + 1 player, question → answer → display
+- [x] No modifications to OverlayRenderer, RulesSystem, or GodotBridge
+- [x] Existing game engine tests still pass
+- [x] `room.*` variables flow from DO → WebSocket → NetworkRuntimeSystem → overlay
+- [x] Role-based visibility works via `visibleWhen`
+- [x] Script `onNetworkState` hook fires on state updates
 
 ---
 
