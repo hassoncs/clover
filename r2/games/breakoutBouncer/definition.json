@@ -987,8 +987,5 @@
       "sensitivity": 2,
       "updateInterval": 16
     }
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

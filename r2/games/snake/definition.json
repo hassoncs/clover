@@ -1334,8 +1334,5 @@
   "loseCondition": {
     "type": "custom",
     "expr": "gameOver == 1"
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

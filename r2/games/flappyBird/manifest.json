@@ -1,98 +1,93 @@
 {
-  "name": "b3f08df4-1a94-49ca-b080-6f157c953864",
-  "version": "1.1.0",
-  "title": "Flappy Bird",
-  "description": "Tap to fly through the pipes without hitting them",
-  "instructions": "Tap anywhere to flap! Avoid the pipes and ground.",
-  "world": {
-    "gravity": {
-      "x": 0,
-      "y": -15
-    },
-    "pixelsPerMeter": 50,
-    "bounds": {
-      "width": 12,
-      "height": 16
-    }
-  },
-  "background": {
-    "type": "static"
-  },
-  "camera": {
-    "type": "fixed",
-    "zoom": 1
-  },
-  "overlay": {
-    "elements": [
-      {
-        "id": "var-score",
-        "type": "text",
-        "anchor": "top-left",
-        "offset": {
-          "x": 16,
-          "y": 16
-        },
-        "fontSize": 18,
-        "fontWeight": "bold",
-        "color": "#FFFFFF",
-        "bindings": {
-          "text": "SCORE\n{{variables.score}}"
-        },
-        "style": {
-          "backgroundColor": "rgba(0,0,0,0.6)",
-          "borderRadius": 8,
-          "paddingHorizontal": 12,
-          "paddingVertical": 6
-        }
-      }
-    ]
-  },
-  "assetSystem": {
-    "activePackId": "default"
-  },
-  "loseCondition": {
-    "type": "entity_destroyed",
-    "tag": "bird"
-  },
-  "persistence": {
-    "storageKey": "flappy-bird-progress",
-    "schema": {
-      "_def": {
-        "unknownKeys": "strip",
-        "catchall": {
-          "_def": {
-            "typeName": "ZodNever"
-          },
-          "~standard": {
-            "version": 1,
-            "vendor": "zod"
-          }
-        },
-        "typeName": "ZodObject"
-      },
-      "~standard": {
-        "version": 1,
-        "vendor": "zod"
-      },
-      "_cached": null
-    },
-    "version": 1,
-    "defaultProgress": {
-      "version": 1,
-      "highScore": 0,
-      "gamesPlayed": 0,
-      "totalPipesPassed": 0,
-      "bestStreak": 0,
-      "unlockedBirds": [
-        "default"
-      ],
-      "totalPlayTime": 0,
-      "sessionsCompleted": 0
-    },
-    "autoSave": {
-      "onGameLose": true,
-      "onBackground": true
-    }
-  },
-  "slug": "flappyBird"
+	"name": "b3f08df4-1a94-49ca-b080-6f157c953864",
+	"version": "1.1.0",
+	"title": "Flappy Bird",
+	"description": "Tap to fly through the pipes without hitting them",
+	"instructions": "Tap anywhere to flap! Avoid the pipes and ground.",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": -15
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"background": {
+		"type": "static"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"overlay": {
+		"elements": [
+			{
+				"id": "var-score",
+				"type": "text",
+				"anchor": "top-left",
+				"offset": {
+					"x": 16,
+					"y": 16
+				},
+				"fontSize": 18,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "SCORE\n{{variables.score}}"
+				},
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 8,
+					"paddingHorizontal": 12,
+					"paddingVertical": 6
+				}
+			}
+		]
+	},
+	"loseCondition": {
+		"type": "entity_destroyed",
+		"tag": "bird"
+	},
+	"persistence": {
+		"storageKey": "flappy-bird-progress",
+		"schema": {
+			"_def": {
+				"unknownKeys": "strip",
+				"catchall": {
+					"_def": {
+						"typeName": "ZodNever"
+					},
+					"~standard": {
+						"version": 1,
+						"vendor": "zod"
+					}
+				},
+				"typeName": "ZodObject"
+			},
+			"~standard": {
+				"version": 1,
+				"vendor": "zod"
+			},
+			"_cached": null
+		},
+		"version": 1,
+		"defaultProgress": {
+			"version": 1,
+			"highScore": 0,
+			"gamesPlayed": 0,
+			"totalPipesPassed": 0,
+			"bestStreak": 0,
+			"unlockedBirds": ["default"],
+			"totalPlayTime": 0,
+			"sessionsCompleted": 0
+		},
+		"autoSave": {
+			"onGameLose": true,
+			"onBackground": true
+		}
+	},
+	"slug": "flappyBird"
 }

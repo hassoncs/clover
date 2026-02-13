@@ -947,8 +947,5 @@
   "loseCondition": {
     "type": "custom",
     "expr": "hasLost == 1"
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

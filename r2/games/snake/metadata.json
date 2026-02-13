@@ -5,7 +5,5 @@
   "description": "Classic snake game. Eat food, grow longer, don't hit the walls!",
   "version": "1.0.0",
   "thumbnailUrl": null,
-  "packs": [],
-  "activeRemixId": null,
-  "updatedAt": 1770870815334
+  "updatedAt": 1770943450527
 }

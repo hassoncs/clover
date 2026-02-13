@@ -1134,8 +1134,5 @@
   "loseCondition": {
     "type": "time_up",
     "time": 120
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

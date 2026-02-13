@@ -2294,8 +2294,5 @@
   "loseCondition": {
     "type": "custom",
     "expr": "lives <= 0"
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

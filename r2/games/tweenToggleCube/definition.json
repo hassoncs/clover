@@ -141,8 +141,5 @@
   },
   "overlay": {
     "elements": []
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

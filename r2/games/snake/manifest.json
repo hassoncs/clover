@@ -1,70 +1,67 @@
 {
-  "name": "f596586c-a857-44d3-be97-46149daf60b3",
-  "version": "1.0.0",
-  "title": "Snake",
-  "description": "Classic snake game. Eat food, grow longer, don't hit the walls!",
-  "instructions": "Swipe up/down/left/right to control the snake. Eat red food to grow!",
-  "world": {
-    "gravity": {
-      "x": 0,
-      "y": 0
-    },
-    "pixelsPerMeter": 50,
-    "bounds": {
-      "width": 12,
-      "height": 16
-    }
-  },
-  "background": {
-    "type": "static",
-    "color": "#1a1a2e"
-  },
-  "camera": {
-    "type": "fixed",
-    "zoom": 1
-  },
-  "overlay": {
-    "elements": [
-      {
-        "id": "var-score",
-        "type": "text",
-        "anchor": "top-center",
-        "offset": {
-          "x": 0,
-          "y": 16
-        },
-        "fontSize": 18,
-        "fontWeight": "bold",
-        "color": "#FFFFFF",
-        "bindings": {
-          "text": "SCORE\n{{variables.score}}"
-        },
-        "style": {
-          "backgroundColor": "rgba(0,0,0,0.6)",
-          "borderRadius": 8,
-          "paddingHorizontal": 12,
-          "paddingVertical": 6
-        }
-      }
-    ]
-  },
-  "variables": {
-    "score": 0,
-    "gameOver": 0,
-    "snakeX": 9,
-    "snakeY": 12,
-    "direction": 1,
-    "nextDirection": 1,
-    "moveTimer": 0,
-    "foodX": 15,
-    "foodY": 12
-  },
-  "assetSystem": {
-    "activePackId": "default"
-  },
-  "loseCondition": {
-    "type": "custom",
-    "expr": "gameOver == 1"
-  },
-  "slug": "snake"
+	"name": "f596586c-a857-44d3-be97-46149daf60b3",
+	"version": "1.0.0",
+	"title": "Snake",
+	"description": "Classic snake game. Eat food, grow longer, don't hit the walls!",
+	"instructions": "Swipe up/down/left/right to control the snake. Eat red food to grow!",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"background": {
+		"type": "static",
+		"color": "#1a1a2e"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"overlay": {
+		"elements": [
+			{
+				"id": "var-score",
+				"type": "text",
+				"anchor": "top-center",
+				"offset": {
+					"x": 0,
+					"y": 16
+				},
+				"fontSize": 18,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "SCORE\n{{variables.score}}"
+				},
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 8,
+					"paddingHorizontal": 12,
+					"paddingVertical": 6
+				}
+			}
+		]
+	},
+	"variables": {
+		"score": 0,
+		"gameOver": 0,
+		"snakeX": 9,
+		"snakeY": 12,
+		"direction": 1,
+		"nextDirection": 1,
+		"moveTimer": 0,
+		"foodX": 15,
+		"foodY": 12
+	},
+	"loseCondition": {
+		"type": "custom",
+		"expr": "gameOver == 1"
+	},
+	"slug": "snake"
 }

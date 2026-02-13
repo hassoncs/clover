@@ -424,8 +424,5 @@
       "onGameLose": true,
       "onBackground": true
     }
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }

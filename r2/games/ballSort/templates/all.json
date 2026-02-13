@@ -9,7 +9,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 14.4,
-      "imageHeight": 25.6
+      "imageHeight": 25.6,
+      "assetId": "261671d54cbf988b37d99841fd6b757058011511d914e5015e0085d47d10eddd"
     }
   },
   {
@@ -21,7 +22,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.68,
-      "imageHeight": 6
+      "imageHeight": 6,
+      "assetId": "5f5557ac7ecd9d4d3a78f86963c2c9e577358e792658d4652c740ac1d88f3558"
     },
     "collider": {
       "shape": "box",
@@ -56,7 +58,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "a7bb3c4a3f63b209f2ab753a30469af62c004186058f5b871cd19d2c69285524"
     },
     "conditionalBehaviors": [
       {
@@ -118,7 +121,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "a2aec05dd56e6b0e013757bdb0d9d56625b2eeccb1a8494da5de11eab962d091"
     },
     "conditionalBehaviors": [
       {
@@ -180,7 +184,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "d35e1900798cc7d4dc70275090a6af9f333113a2b38af5285680d2a0b1f691cf"
     },
     "conditionalBehaviors": [
       {
@@ -242,7 +247,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "6c215f285d46217c1249c6d4e9ca92ce9540125f8eaa575907b2b7f75d82d14c"
     },
     "conditionalBehaviors": [
       {
@@ -304,7 +310,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "e47dd5f8e5f495c84b8a529c8f11e0bd86d785c8362c017ca1cc45e502043c27"
     },
     "conditionalBehaviors": [
       {
@@ -366,7 +373,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "504fc106c4ab9c0cf9f08db1547fa2c0cf647bc57712d8a7e7f5aed6bb540f1b"
     },
     "conditionalBehaviors": [
       {
@@ -428,7 +436,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "7cb817030a66c5ecb4cdbb7b34a975445942cb38e32c9b72a67a69874b4f5fda"
     },
     "conditionalBehaviors": [
       {
@@ -490,7 +499,8 @@
     "visual": {
       "type": "image",
       "imageWidth": 1.2,
-      "imageHeight": 1.2
+      "imageHeight": 1.2,
+      "assetId": "9177fee9e0d26df069da110fd7d8ff796a8649044b050a06f1ceac2a647143e7"
     },
     "conditionalBehaviors": [
       {

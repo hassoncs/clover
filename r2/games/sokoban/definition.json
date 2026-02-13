@@ -1067,8 +1067,5 @@
   },
   "winCondition": {
     "expr": "allBoxesOnTargets == 1"
-  },
-  "assetSystem": {
-    "activePackId": "default"
   }
 }
