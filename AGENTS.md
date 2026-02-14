@@ -110,6 +110,8 @@ This project has a semantic code search index via `codesearch` MCP. Use it to fi
 
 **Config**: `.codesearchignore` controls what gets indexed (excludes addons, vendored code, build artifacts).
 
+**Limitation**: Only one codesearch MCP session can access the DB at a time (LMDB writer lock). If `index_status` returns 0 chunks or an error, another session may have the lock. Close other OpenCode sessions and restart.
+
 ## Project Context
 
 For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
