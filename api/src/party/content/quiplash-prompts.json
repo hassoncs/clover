@@ -1,0 +1,322 @@
+[
+	{
+		"id": "q001",
+		"text": "The worst name for a pet: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q002",
+		"text": "If dogs could text, their first message would be: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q003",
+		"text": "A new breed of dog created by a mad scientist: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q004",
+		"text": "The real reason cats knock things off tables: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q005",
+		"text": "A secret only your pet knows about you: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q006",
+		"text": "If squirrels had a war cry, it would be: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q007",
+		"text": "The least threatening thing a shark could say: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q008",
+		"text": "What pigeons are actually plotting: _____",
+		"category": "animals"
+	},
+	{
+		"id": "q009",
+		"text": "A rejected Starbucks drink name: _____",
+		"category": "food"
+	},
+	{
+		"id": "q010",
+		"text": "The worst pizza topping combination: _____",
+		"category": "food"
+	},
+	{
+		"id": "q011",
+		"text": "A food that should never be made into a smoothie: _____",
+		"category": "food"
+	},
+	{
+		"id": "q012",
+		"text": "The secret ingredient grandma refuses to reveal: _____",
+		"category": "food"
+	},
+	{
+		"id": "q013",
+		"text": "A restaurant where the waiters are required to insult you would be called: _____",
+		"category": "food"
+	},
+	{
+		"id": "q014",
+		"text": "The worst thing to find in your cereal box: _____",
+		"category": "food"
+	},
+	{
+		"id": "q015",
+		"text": "If hot dogs could talk, they'd complain about: _____",
+		"category": "food"
+	},
+	{
+		"id": "q016",
+		"text": "A candy bar that would definitely not sell: _____",
+		"category": "food"
+	},
+	{
+		"id": "q017",
+		"text": "Something you should never say at a job interview: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q018",
+		"text": "The worst company team-building activity: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q019",
+		"text": "An honest out-of-office email reply: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q020",
+		"text": "The real reason your coworker is always in meetings: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q021",
+		"text": "A terrible motivational poster for the office: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q022",
+		"text": "The worst thing to put on a business card: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q023",
+		"text": "Something that would get you fired on your first day: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q024",
+		"text": "An email subject line that guarantees nobody will read it: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q025",
+		"text": "A superhero whose power would be completely useless: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q026",
+		"text": "A movie sequel that absolutely nobody asked for: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q027",
+		"text": "The worst song to play at a wedding: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q028",
+		"text": "A reality TV show that would get cancelled after one episode: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q029",
+		"text": "The real reason the dinosaurs went extinct: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q030",
+		"text": "A video game where the final boss is: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q031",
+		"text": "The worst theme for a children's birthday party: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q032",
+		"text": "A band name that would immediately make you not want to listen: _____",
+		"category": "pop culture"
+	},
+	{
+		"id": "q033",
+		"text": "If you could add one ridiculous law, it would be: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q034",
+		"text": "If babies could talk, the first complaint they'd file: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q035",
+		"text": "If your refrigerator could judge you, it would say: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q036",
+		"text": "If aliens visited Earth, the first thing they'd be confused by: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q037",
+		"text": "If trees could walk, the first place they'd go: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q038",
+		"text": "If you woke up as the president tomorrow, the first thing you'd do: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q039",
+		"text": "If your furniture could file complaints, your couch would say: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q040",
+		"text": "If time travel existed, the dumbest thing someone would use it for: _____",
+		"category": "hypothetical"
+	},
+	{
+		"id": "q041",
+		"text": "Something you should never bring to a potluck: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q042",
+		"text": "The world's worst fortune cookie message: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q043",
+		"text": "A terrible name for a yoga pose: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q044",
+		"text": "The worst thing to yell during a moment of silence: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q045",
+		"text": "A holiday that would be fun for exactly one person: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q046",
+		"text": "The most suspicious thing you could whisper to a stranger: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q047",
+		"text": "A terrible slogan for a dentist's office: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q048",
+		"text": "The worst thing to write on a birthday cake: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q049",
+		"text": "The worst first date idea: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q050",
+		"text": "A terrible pickup line that might actually work on Martians: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q051",
+		"text": "The most awkward thing to say when meeting your partner's parents: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q052",
+		"text": "Something you should never text your ex at 2 AM: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q053",
+		"text": "A red flag so big you could see it from space: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q054",
+		"text": "The worst advice a best man could give in a wedding toast: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q055",
+		"text": "A romantic gesture that would backfire horribly: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q056",
+		"text": "The real reason people ghost each other: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q057",
+		"text": "A new app feature that would make everyone delete their phone: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q058",
+		"text": "The worst thing for a smart home assistant to say at 3 AM: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q059",
+		"text": "An honest error message your computer should display: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q060",
+		"text": "If your browser history could talk, it would say: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q061",
+		"text": "A social media platform designed to make everyone miserable would be called: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q062",
+		"text": "The worst feature to add to a self-driving car: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q063",
+		"text": "A password so bad that even hackers would feel sorry for you: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q064",
+		"text": "The most useless thing you could 3D-print: _____",
+		"category": "technology"
+	}
+]
