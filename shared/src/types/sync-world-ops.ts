@@ -1,5 +1,6 @@
 import type { Bounds, Vec2 } from "./common";
 import type { HapticStyle, NotificationStyle } from "./haptics";
+import type { VoiceHandleId, VoicePrepareOptions } from "./voice-handle";
 import type {
 	AnimateOptions,
 	AnimateTarget,
@@ -112,6 +113,20 @@ export interface SyncWorldOps {
 	// Sound
 	// ═══════════════════════════════════════════════════════════════
 	playSound(soundId: string, opts?: { volume?: number; pitch?: number }): void;
+
+	// ═══════════════════════════════════════════════════════════════
+	// Voice (prepare-play pattern for party game announcers)
+	// ═══════════════════════════════════════════════════════════════
+	prepareVoice(
+		voicePreset: string,
+		text: string,
+		opts?: VoicePrepareOptions,
+	): VoiceHandleId;
+	isVoiceReady(handleId: VoiceHandleId): boolean;
+	playVoice(
+		handleId: VoiceHandleId,
+		opts?: { volume?: number; pitch?: number },
+	): void;
 
 	// ═══════════════════════════════════════════════════════════════
 	// Camera
