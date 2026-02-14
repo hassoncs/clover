@@ -71,15 +71,15 @@ Ship a playable 3-round Quiplash clone with AI-generated prompts, head-to-head v
 - `app/examples/quiplash/index.ts` — Example registration
 
 ### Definition of Done
-- [ ] 3+ players can join a room, play 3 rounds of Quiplash, and see a winner
-- [ ] Each player receives 2 unique prompts per round and submits text answers
-- [ ] Voting phase shows 2 answers head-to-head; non-authors vote for favorite
-- [ ] Scores update based on vote percentage; "Quiplash" bonus for 100% votes
-- [ ] Game ships with 50+ AI-generated comedy prompts
-- [ ] Host screen shows room code, prompts, answers, scores, and winner
-- [ ] Player screen shows input prompts, voting choices, and personal score
-- [ ] `tsc --noEmit` passes in all workspaces
-- [ ] vitest tests pass for game template logic
+- [x] 3+ players can join a room, play 3 rounds of Quiplash, and see a winner
+- [x] Each player receives 2 unique prompts per round and submits text answers
+- [x] Voting phase shows 2 answers head-to-head; non-authors vote for favorite
+- [x] Scores update based on vote percentage; "Quiplash" bonus for 100% votes
+- [x] Game ships with 50+ AI-generated comedy prompts
+- [x] Host screen shows room code, prompts, answers, scores, and winner
+- [x] Player screen shows input prompts, voting choices, and personal score
+- [x] `tsc --noEmit` passes in all workspaces
+- [x] vitest tests pass for game template logic
 
 ### Must Have
 - 3-round game structure with escalating point values
@@ -159,7 +159,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 0. Foundation Gaps — Scoring, Room Code, Lobby Gate
+- [x] 0. Foundation Gaps — Scoring, Room Code, Lobby Gate
 
   **What to do**:
   - **Scoring**: Add a `updatePlayerScore(playerId: string, delta: number)` method to `PartyRoomDO` that updates `PartyPlayer.score` and broadcasts updated state. If adding a method is too invasive, track scores in `sharedData.scores` (a `Record<string, number>`) and expose a helper in templates.
@@ -190,19 +190,19 @@ Wave 3 (After Wave 2):
   - `api/src/party/templates/question-answer.ts` — Current template pattern
 
   **Acceptance Criteria**:
-  - [ ] `room.updatePlayerScore(playerId, 100)` updates `PartyPlayer.score` and triggers state broadcast
-  - [ ] `gameState.variables["roomCode"]` is set by NetworkRuntimeSystem
-  - [ ] `{{variables.roomCode}}` resolves in overlay text binding
-  - [ ] Host can send `start_game` message, DO validates min players before running template
-  - [ ] Sending `start_game` with fewer than `minPlayers` returns error message
-  - [ ] `tsc --noEmit` passes in api/ and app/
+  - [x] `room.updatePlayerScore(playerId, 100)` updates `PartyPlayer.score` and triggers state broadcast
+  - [x] `gameState.variables["roomCode"]` is set by NetworkRuntimeSystem
+  - [x] `{{variables.roomCode}}` resolves in overlay text binding
+  - [x] Host can send `start_game` message, DO validates min players before running template
+  - [x] Sending `start_game` with fewer than `minPlayers` returns error message
+  - [x] `tsc --noEmit` passes in api/ and app/
 
   **Commit**: YES
   - Message: `feat(party): add scoring, room code injection, and lobby gate`
 
 ---
 
-- [ ] 1. Content Generation Pipeline — AI Batch Prompts
+- [x] 1. Content Generation Pipeline — AI Batch Prompts
 
   **What to do**:
   - Create `api/scripts/generate-party-content.ts` — CLI script that:
@@ -233,19 +233,19 @@ Wave 3 (After Wave 2):
   - `api/src/ai/game/schemas.ts` — Zod schema patterns for structured output
 
   **Acceptance Criteria**:
-  - [ ] `api/scripts/generate-party-content.ts` exists and runs without errors
-  - [ ] `api/src/party/content/quiplash-prompts.json` contains 50+ unique prompts
-  - [ ] Each prompt has `id`, `text`, and `category` fields
-  - [ ] No two prompts have > 0.85 cosine similarity
-  - [ ] Prompts are 10-25 words, open-ended, suitable for comedy answers
-  - [ ] `tsc --noEmit` passes
+  - [x] `api/scripts/generate-party-content.ts` exists and runs without errors
+  - [x] `api/src/party/content/quiplash-prompts.json` contains 50+ unique prompts
+  - [x] Each prompt has `id`, `text`, and `category` fields
+  - [x] No two prompts have > 0.85 cosine similarity
+  - [x] Prompts are 10-25 words, open-ended, suitable for comedy answers
+  - [x] `tsc --noEmit` passes
 
   **Commit**: YES
   - Message: `feat(party): add AI content generation pipeline and quiplash prompts`
 
 ---
 
-- [ ] 2. Quiplash Game Template — 3 Rounds, Voting, Scoring
+- [x] 2. Quiplash Game Template — 3 Rounds, Voting, Scoring
 
   **What to do**:
   - Create `api/src/party/templates/quiplash.ts` with the full game loop:
@@ -310,17 +310,17 @@ Wave 3 (After Wave 2):
   - `shared/src/types/party.ts` — `PartyInputRequest` with `type: "choice"` and `options`
 
   **Acceptance Criteria**:
-  - [ ] Template exists at `api/src/party/templates/quiplash.ts`
-  - [ ] Template loads prompts from JSON file
-  - [ ] Each player receives exactly 2 unique prompts per round
-  - [ ] Each prompt creates a head-to-head matchup between 2 answers
-  - [ ] Non-authors vote via `requestInput({ type: "choice" })`
-  - [ ] Scores update after each matchup based on vote percentage
-  - [ ] 3 rounds execute with 1x, 2x, 3x multipliers
-  - [ ] Winner determined by highest total score
-  - [ ] Handles 3-8 players correctly
-  - [ ] Handles timeout (no answer, no vote) gracefully
-  - [ ] `tsc --noEmit` passes
+  - [x] Template exists at `api/src/party/templates/quiplash.ts`
+  - [x] Template loads prompts from JSON file
+  - [x] Each player receives exactly 2 unique prompts per round
+  - [x] Each prompt creates a head-to-head matchup between 2 answers
+  - [x] Non-authors vote via `requestInput({ type: "choice" })`
+  - [x] Scores update after each matchup based on vote percentage
+  - [x] 3 rounds execute with 1x, 2x, 3x multipliers
+  - [x] Winner determined by highest total score
+  - [x] Handles 3-8 players correctly
+  - [x] Handles timeout (no answer, no vote) gracefully
+  - [x] `tsc --noEmit` passes
 
   **Agent-Executed QA**:
   ```
@@ -341,7 +341,7 @@ Wave 3 (After Wave 2):
 
 ---
 
-- [ ] 3. Content Curation — Review and Finalize Prompt Pool
+- [x] 3. Content Curation — Review and Finalize Prompt Pool
 
   **What to do**:
   - Run the content generation script from Task 1 to produce ~100 raw prompts
@@ -362,18 +362,18 @@ Wave 3 (After Wave 2):
   - **Skills**: []
 
   **Acceptance Criteria**:
-  - [ ] `quiplash-prompts.json` contains 50-100 prompts
-  - [ ] At least 6 different categories represented
-  - [ ] At least 4 different prompt formats used
-  - [ ] No obviously offensive or unclear prompts
-  - [ ] Template loads and shuffles prompts correctly
+  - [x] `quiplash-prompts.json` contains 50-100 prompts
+  - [x] At least 6 different categories represented
+  - [x] At least 4 different prompt formats used
+  - [x] No obviously offensive or unclear prompts
+  - [x] Template loads and shuffles prompts correctly
 
   **Commit**: YES
   - Message: `content: curate quiplash prompt pool (50+ prompts)`
 
 ---
 
-- [ ] 4. GameDefinition + Overlays — Host TV + Player Phone
+- [x] 4. GameDefinition + Overlays — Host TV + Player Phone
 
   **What to do**:
   - Create `app/examples/quiplash/definition.json` — Full GameDefinition:
@@ -435,20 +435,20 @@ Wave 3 (After Wave 2):
   - `shared/src/types/GameDefinition.ts` — Full schema
 
   **Acceptance Criteria**:
-  - [ ] `app/examples/quiplash/definition.json` exists with valid GameDefinition
-  - [ ] Host overlay shows: room code, player count, prompts, answers, scores, winner
-  - [ ] Player overlay shows: lobby status, answer prompt hint, vote hint, personal score
-  - [ ] `visibleWhen` correctly filters elements by role AND game phase
-  - [ ] Timer bar binds to `room.timerRemaining`
-  - [ ] Scoreboard displays ranked player list
-  - [ ] `tsc --noEmit` passes
+  - [x] `app/examples/quiplash/definition.json` exists with valid GameDefinition
+  - [x] Host overlay shows: room code, player count, prompts, answers, scores, winner
+  - [x] Player overlay shows: lobby status, answer prompt hint, vote hint, personal score
+  - [x] `visibleWhen` correctly filters elements by role AND game phase
+  - [x] Timer bar binds to `room.timerRemaining`
+  - [x] Scoreboard displays ranked player list
+  - [x] `tsc --noEmit` passes
 
   **Commit**: YES
   - Message: `feat: add quiplash game definition with host and player overlays`
 
 ---
 
-- [ ] 5. Integration Tests
+- [x] 5. Integration Tests
 
   **What to do**:
   - `api/src/party/templates/__tests__/quiplash.test.ts`:
@@ -471,17 +471,17 @@ Wave 3 (After Wave 2):
   - **Skills**: [`testing-patterns`]
 
   **Acceptance Criteria**:
-  - [ ] `cd api && npx vitest run src/party/templates/__tests__/quiplash` → all pass
-  - [ ] `cd api && npx vitest run src/party/__tests__/` → all pass
-  - [ ] At least 15 test cases total
-  - [ ] Edge cases covered: timeout, disconnect, ties, min players
+  - [x] `cd api && npx vitest run src/party/templates/__tests__/quiplash` → all pass
+  - [x] `cd api && npx vitest run src/party/__tests__/` → all pass
+  - [x] At least 15 test cases total
+  - [x] Edge cases covered: timeout, disconnect, ties, min players
 
   **Commit**: YES
   - Message: `test: add quiplash game template and party infrastructure tests`
 
 ---
 
-- [ ] 6. E2E Test + Final Verification
+- [x] 6. E2E Test + Final Verification
 
   **What to do**:
   - Create Playwright E2E test for full Quiplash game
@@ -495,13 +495,13 @@ Wave 3 (After Wave 2):
   - **Skills**: [`playwright`, `testing-patterns`]
 
   **Acceptance Criteria**:
-  - [ ] E2E test passes with 3 simulated players
-  - [ ] Host screen shows room code, prompts, answers, votes, scores, winner
-  - [ ] Player screens show prompts, voting choices
-  - [ ] Scores update correctly after each matchup
-  - [ ] Winner announced after 3 rounds
-  - [ ] `tsc --noEmit` passes in shared/, api/, app/
-  - [ ] Existing game engine tests still pass (no regressions)
+  - [x] E2E test passes with 3 simulated players
+  - [x] Host screen shows room code, prompts, answers, votes, scores, winner
+  - [x] Player screens show prompts, voting choices
+  - [x] Scores update correctly after each matchup
+  - [x] Winner announced after 3 rounds
+  - [x] `tsc --noEmit` passes in shared/, api/, app/
+  - [x] Existing game engine tests still pass (no regressions)
 
   **Commit**: YES
   - Message: `test(e2e): add quiplash end-to-end test`
@@ -534,13 +534,13 @@ npx playwright test tests/e2e/quiplash/  # Expected: full game flow passes
 ```
 
 ### Final Checklist
-- [ ] 3+ players can play a complete 3-round game
-- [ ] Head-to-head voting works with choice input
-- [ ] Scores calculated correctly with round multipliers
-- [ ] 50+ unique prompts ship with the game
-- [ ] Host and player screens show correct information per phase
-- [ ] No modifications to existing game engine systems
-- [ ] Voting and scoring infrastructure is reusable (Fibbage/Trivia plans reference it)
+- [x] 3+ players can play a complete 3-round game
+- [x] Head-to-head voting works with choice input
+- [x] Scores calculated correctly with round multipliers
+- [x] 50+ unique prompts ship with the game
+- [x] Host and player screens show correct information per phase
+- [x] No modifications to existing game engine systems
+- [x] Voting and scoring infrastructure is reusable (Fibbage/Trivia plans reference it)
 
 ---
 
