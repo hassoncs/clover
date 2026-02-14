@@ -7,6 +7,7 @@ Updated: 2026-02-12 (post-audit)
 ## By Category
 
 ### Chat & AI
+- [ai-sdk-usage](ai-sdk-usage.md) - **OpenRouter + Vercel AI SDK patterns, model selection, hush secrets** (MUST USE for any AI/LLM calls)
 - [agent-orchestration](agent-orchestration.md) - Chat streaming, SSE, AG-UI protocol, HITL, billing
 - [ai-game-generation](ai-game-generation.md) - AI agent execution engine, game generation stages, asset pipeline
 

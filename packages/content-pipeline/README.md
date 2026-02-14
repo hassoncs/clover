@@ -50,7 +50,7 @@ hush run -- pnpm content cli -- generate --game-type=quip --count=50
 hush run -- pnpm content cli -- generate --game-type=quip --count=10 --dry-run
 ```
 
-**Requires**: `ANTHROPIC_API_KEY` environment variable (use `hush run --`)
+**Requires**: `OPENROUTER_API_KEY` environment variable (use `hush run --`)
 
 ### `moderate` - Content safety filtering
 
@@ -186,7 +186,8 @@ packages/content-pipeline/
 
 ## Dependencies
 
-- `@anthropic-ai/sdk` - AI generation
+- `ai` (Vercel AI SDK) - AI generation
+- `@ai-sdk/openai` - OpenRouter provider (OpenAI-compatible)
 - `better-sqlite3` - Local database
 - `yargs` - CLI framework
 - `zod` - Schema validation

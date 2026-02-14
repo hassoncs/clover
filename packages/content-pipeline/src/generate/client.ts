@@ -1,39 +1,34 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText } from "ai";
 
-/**
- * Create an Anthropic client using the API key from environment.
- * Expects ANTHROPIC_API_KEY to be set (via `hush run --`).
- */
-export function createAnthropicClient(): Anthropic {
-	const apiKey = process.env.ANTHROPIC_API_KEY;
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4-20250514";
+
+function createModel() {
+	const apiKey = process.env.OPENROUTER_API_KEY;
 	if (!apiKey) {
-		throw new Error("ANTHROPIC_API_KEY environment variable is required");
+		throw new Error("OPENROUTER_API_KEY environment variable is required");
 	}
-	return new Anthropic({ apiKey });
+
+	const openrouter = createOpenAI({
+		apiKey,
+		baseURL: OPENROUTER_BASE_URL,
+	});
+
+	return openrouter.chat(DEFAULT_MODEL);
 }
 
 /**
- * Generate content using Claude with a simple prompt.
+ * Generate content using Claude via OpenRouter with a simple prompt.
  * Returns the generated text content.
  */
 export async function generateContent(prompt: string): Promise<string> {
-	const client = createAnthropicClient();
+	const model = createModel();
 
-	const response = await client.messages.create({
-		model: "claude-3-5-sonnet-20241022",
-		max_tokens: 4096,
-		messages: [
-			{
-				role: "user",
-				content: prompt,
-			},
-		],
+	const result = await generateText({
+		model,
+		prompt,
 	});
 
-	const textBlock = response.content.find((block) => block.type === "text");
-	if (!textBlock || textBlock.type !== "text") {
-		throw new Error("No text content in Claude response");
-	}
-
-	return textBlock.text;
+	return result.text;
 }
