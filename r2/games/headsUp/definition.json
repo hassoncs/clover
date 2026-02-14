@@ -10,8 +10,23 @@
       "x": 0,
       "y": 10
     },
-    "pixelsPerMeter": 50
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 10,
+      "height": 10
+    }
   },
-  "prefabs": {},
+  "prefabs": {
+    "placeholder": {
+      "id": "placeholder",
+      "tags": [],
+      "visual": {
+        "type": "rect",
+        "width": 1,
+        "height": 1,
+        "color": "#ffffff"
+      }
+    }
+  },
   "entities": []
 }

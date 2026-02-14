@@ -26,7 +26,7 @@ The Slopcade project features a comprehensive auto-updating HTML documentation s
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. Developer edits shared/src/types/behavior.ts         │
+│ 1. Developer edits shared/src/types/visual.ts           │
 └────────────────────┬────────────────────────────────────┘
                      │
                      v
@@ -112,11 +112,9 @@ The plugin is a Docusaurus lifecycle hook that:
    // Extract properties, JSDoc comments, types
    ```
 
-3. **Parses Five Categories**
-   - **Behaviors:** Parse `behavior.ts`, extract 22 behavior interfaces
+3. **Parses Three Categories**
    - **Effects:** Read `EFFECT_METADATA` constant from `effects.ts`
    - **Particles:** Read `PARTICLE_EMITTER_METADATA` from `particles.ts`
-   - **Rules:** Parse `rules.ts` for triggers, conditions, actions
    - **Games:** Scan `app/lib/test-games/games/` directory
 
 4. **Watches Files for Changes**
@@ -187,7 +185,7 @@ Seven comprehensive guides (1,971 lines total) provide tutorials and explanation
 | Guide | Lines | Description |
 |-------|-------|-------------|
 | **getting-started.md** | 205 | Engine overview, first game (bouncing ball) |
-| **entities.md** | 287 | EntityTemplate, sprite types, physics |
+| **entities.md** | 287 | EntityPrefab, sprite types, physics |
 | **effects.md** | 289 | Visual effects, stacking, parameters |
 | **particles.md** | 210 | Particle emitters, presets, optimization |
 | **scripting.md** | 301 | Scripting engine (hooks, API, modules) |
@@ -220,7 +218,7 @@ Seven comprehensive guides (1,971 lines total) provide tutorials and explanation
 - 192 interfaces documented
 - 70 type aliases
 - 145 variables (metadata constants)
-- Organized by category (Entity, Physics, Behavior, Rules, etc.)
+- Organized by category (Entity, Physics, Scripting, etc.)
 
 **Regeneration:**
 ```bash
@@ -330,10 +328,8 @@ All 14 items verified:
 - ✅ `pnpm dev` starts Metro + API + Docs
 - ✅ Docs accessible at localhost:3000
 - ✅ Editing TypeScript triggers auto-update < 3s
-- ✅ 22 behaviors visible on /behaviors
 - ✅ 19 effects documented on /effects
 - ✅ 10 particles on /particles
-- ✅ Rules page shows triggers/conditions/actions
 - ✅ 23 games showcased on /examples
 - ✅ All 7 guides render properly
 - ✅ Search functionality works on all pages
@@ -404,12 +400,12 @@ Potential improvements:
 
 ### Adding New Components
 
-When adding new engine components (e.g., new behavior type):
+When adding new engine components (e.g., new effect type):
 
-1. **Define in TypeScript:** Add interface to `shared/src/types/behavior.ts`
+1. **Define in TypeScript:** Add interface to `shared/src/types/effects.ts`
 2. **Plugin auto-extracts:** Metadata extracted on next file save
-3. **Verify JSON:** Check `packages/docs/static/data/behaviors.json`
-4. **Update guide:** Add example to `docs/guides/behaviors.md` if needed
+3. **Verify JSON:** Check `packages/docs/static/data/effects.json`
+4. **Update guide:** Add example to `docs/guides/effects.md` if needed
 
 ### Updating Guides
 

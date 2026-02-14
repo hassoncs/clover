@@ -915,6 +915,26 @@ export function GameRuntimeGodot({
 
 				runner.register(new TargetPositionRuntimeSystem());
 
+				if (
+					initialDefinition.modules &&
+					Object.keys(initialDefinition.modules).length > 0
+				) {
+					const sortedModuleKeys = Object.keys(
+						initialDefinition.modules,
+					).sort();
+					const concatenatedScript = sortedModuleKeys
+						.map((k) => initialDefinition.modules![k])
+						.join("\n");
+					runner.register(
+						new ScriptSandboxRuntimeSystem({
+							scriptCode: concatenatedScript,
+							scriptId: initialDefinition.metadata.id,
+							gameId: initialDefinition.metadata.id,
+							constants: initialDefinition.constants,
+						}),
+					);
+				}
+
 				const { EventBus } = await import("@slopcade/shared");
 				const eventBus = new EventBus();
 

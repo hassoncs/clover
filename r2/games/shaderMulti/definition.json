@@ -266,7 +266,6 @@
       }
     }
   ],
-  "script": "// --- main ---\nexports.onInput = (ctx, event) => {\n\tvar rand, prefab;\n\n\tif (event.type === \"tap\") {\n\t\trand = Math.random();\n\n\t\tif (rand < 0.33) {\n\t\t\tprefab = \"glowOrb\";\n\t\t} else if (rand < 0.66) {\n\t\t\tprefab = \"dissolveBlock\";\n\t\t} else {\n\t\t\tprefab = \"holoTriangle\";\n\t\t}\n\n\t\tctx.spawnEntity(prefab, event.position);\n\t}\n};\n",
   "effects": {
     "shaders": {
       "pulse_glow": {
@@ -290,5 +289,8 @@
   "camera": {
     "type": "fixed",
     "zoom": 1
+  },
+  "modules": {
+    "main": "exports.onInput = (ctx, event) => {\n\tvar rand, prefab;\n\n\tif (event.type === \"tap\") {\n\t\trand = Math.random();\n\n\t\tif (rand < 0.33) {\n\t\t\tprefab = \"glowOrb\";\n\t\t} else if (rand < 0.66) {\n\t\t\tprefab = \"dissolveBlock\";\n\t\t} else {\n\t\t\tprefab = \"holoTriangle\";\n\t\t}\n\n\t\tctx.spawnEntity(prefab, event.position);\n\t}\n};\n"
   }
 }

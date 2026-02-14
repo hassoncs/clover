@@ -14,7 +14,6 @@ No build step. No deploy. Instant playable game.
 ```
 Developer writes:
 ├── game.ts (TypeScript)
-│   └── GameDefinition with script as template string literal
 ├── Script embedded as `const SCRIPT = \`...\``
 │   └── No IDE support, escape hell, no type checking
 ├── Build time: bundled with app
@@ -29,7 +28,7 @@ User enters prompt:
 AI generates:
 ├── GameDefinition (JSON)
 │   ├── metadata, world, prefabs, entities
-│   └── (No rules/behaviors/script string)
+│   └── (No script string)
 │
 Compilation & Packaging:
 ├── Scripts compiled into content-hashed chunks
@@ -154,12 +153,6 @@ export function createBallSortScriptedGame(level: number): GameDefinition {
   return {
     // ...
     script: SCRIPT_CODE,
-    rules: [
-      {
-        trigger: { type: "tap", target: "tube" },
-        actions: [{ type: "run_script", export: "onPickup" }]  // No script param needed
-      }
-    ]
   };
 }
 ```
@@ -179,16 +172,8 @@ export function createBallSortScriptedGame(level: number): GameDefinition {
 {
   "metadata": { "id": "user-game-123", "title": "Color Sort" },
   "world": { "gravity": { "x": 0, "y": 0 }, "bounds": { "width": 14, "height": 20 } },
-  "templates": { ... },
+  "prefabs": { ... },
   "entities": [ ... ],
-  "rules": [
-    {
-      "id": "pickup",
-      "trigger": { "type": "tap", "target": "tube" },
-      "conditions": [{ "type": "expression", "expr": "stateIs('gameFlow', 'idle')" }],
-      "actions": [{ "type": "run_script", "export": "onPickup" }]
-    }
-  ],
   "script": "exports.onPickup = function(ctx) { ... }; exports.onDrop = function(ctx) { ... };"
 }
 ```
@@ -212,15 +197,8 @@ async function validateAIGeneratedGame(game: unknown): Promise<ValidationResult>
   }
 
   // 3. Required exports check
-  const requiredExports = extractRequiredExports(game.rules);
   const scriptExports = extractScriptExports(game.script);
-  const missing = requiredExports.filter(e => !scriptExports.includes(e));
-  if (missing.length > 0) {
-    return { valid: false, errors: [{ code: 'MISSING_EXPORTS', message: `Missing: ${missing.join(', ')}` }] };
-  }
-
-  // 4. Optional: Dry run with mock context
-  // ...
+  // ... check for onStart, onUpdate, etc.
 
   return { valid: true };
 }
@@ -250,111 +228,11 @@ if (definition.script) {
     gameId: definition.metadata.id,
   });
   await sandbox.initialize();
-
-  // Connect to rules system
-  rulesSystem.setScriptSandbox(sandbox);
 }
 
-// When run_script action executes
-class RunScriptActionExecutor {
-  execute(action: RunScriptAction, context: RuleContext): void {
-    // action.export is the function name (e.g., "onPickup")
-    // script code comes from definition.script (already in sandbox)
-    const result = this.sandbox.callFunction(
-      this.createRuntimeContext(context),
-      action.export ?? 'default',
-      action.args
-    );
-  }
+// When script hook executes
+class ScriptSandboxRuntimeSystem {
 }
-```
-
----
-
-## Implementation Phases
-
-### Phase 1: Fix Current Pain Points (This PR)
-
-1. **Fix run_script redundancy**
-   - Remove `script` param from RunScriptAction
-   - Use `definition.script` automatically
-   - Update Zod schema
-
-2. **Extract shared runtime context**
-   - Create `createSandboxRuntimeContext(ruleContext)` utility
-   - Use in both RunScriptActionExecutor and ScriptSandboxRuntimeSystem
-
-3. **Add missing APIs**
-   - `animateEntity` in ScriptSandboxRuntimeSystem
-   - `schedule()` for delayed callbacks
-   - `getTapTargetId()` convenience method
-
-4. **Clean up ballSortScripted**
-   - Move script to separate file
-   - Proper TypeScript with types
-
-### Phase 2: Local Dev TypeScript Support
-
-1. **Create ScriptContext types package**
-   ```
-   shared/src/scripting/
-   ├── ScriptContext.ts      # Interface definition
-   ├── ScriptHelpers.ts      # Helper functions for scripts
-   └── index.ts              # Exports
-   ```
-
-2. **Build script compilation**
-   - Script files: `*.script.ts`
-   - Build step: transpile to JS, output as string constant
-   - Or use Vite's `?raw` for simpler approach
-
-3. **Update ballSortScripted**
-   ```
-   ballSortScripted/
-   ├── game.ts           # Imports compiled script
-   ├── script.ts         # TypeScript with full IDE support
-   └── script.compiled.ts # Generated: export const SCRIPT = "..."
-   ```
-
-### Phase 3: Production AI Pipeline
-
-1. **API endpoint: POST /api/games/generate**
-   - Input: prompt string
-   - Output: validated GameDefinition
-
-2. **AI prompt engineering**
-   - Include ScriptContext API docs
-   - Include GameDefinition schema
-   - Include example games
-   - Include common patterns library
-
-3. **Validation pipeline**
-   - Zod schema validation
-   - Script syntax checking
-   - Export verification
-   - Optional dry run
-
-4. **Storage and retrieval**
-   - Save to games table
-   - Load endpoint returns definition
-   - Client parses and runs
-
-### Phase 4: Security Hardening
-
-1. **QuickJS sandbox for production**
-   - Fix WASM issues
-   - Memory limits
-   - Instruction limits
-   - Timeout handling
-
-2. **Script allowlist**
-   - Only approved APIs in ScriptContext
-   - No access to window, document, fetch, etc.
-   - No infinite loops (instruction limit)
-
-3. **Rate limiting**
-   - AI generation rate limits
-   - Script execution time limits
 
 ---
 
@@ -375,7 +253,7 @@ interface ScriptContext {
   lose(): void;
 
   // === Entities ===
-  spawnEntity(templateId: string, position: Vec2, opts?: SpawnOptions): string | null;
+  spawnEntity(prefabId: string, position: Vec2, opts?: SpawnOptions): string | null;
   destroyEntity(entityId: string): void;
   getEntityPosition(entityId: string): Vec2 | null;
   setEntityPosition(entityId: string, position: Vec2): void;
@@ -417,75 +295,6 @@ interface ScriptContext {
   readonly frameId: number;
   readonly elapsed: number;
   readonly dt: number;
-}
-```
-
----
-
-## Example: AI-Generated Ball Sort
-
-**User prompt:** "Create a ball sorting puzzle game with 4 colors and 6 tubes"
-
-**AI generates:**
-
-```json
-{
-  "metadata": {
-    "id": "ball-sort-4color",
-    "title": "Ball Sort Puzzle",
-    "description": "Sort the colored balls into tubes",
-    "version": "1.0.0"
-  },
-  "world": {
-    "gravity": { "x": 0, "y": 0 },
-    "bounds": { "width": 14, "height": 20 }
-  },
-  "variables": {
-    "heldBallId": "",
-    "sourceTubeIndex": -1,
-    "moveCount": 0
-  },
-  "stateMachines": [
-    {
-      "id": "gameFlow",
-      "initialState": "idle",
-      "states": [{ "id": "idle" }, { "id": "holding" }],
-      "transitions": [
-        { "id": "pickup", "from": "idle", "to": "holding", "trigger": { "type": "event", "eventName": "ball_picked" } },
-        { "id": "drop", "from": "holding", "to": "idle", "trigger": { "type": "event", "eventName": "ball_dropped" } }
-      ]
-    }
-  ],
-  "templates": {
-    "tube": { /* ... */ },
-    "ball0": { /* ... */ },
-    "ball1": { /* ... */ },
-    "ball2": { /* ... */ },
-    "ball3": { /* ... */ }
-  },
-  "entities": [
-    /* tubes and balls */
-  ],
-  "rules": [
-    {
-      "id": "tap_idle",
-      "trigger": { "type": "tap", "target": "tube" },
-      "conditions": [{ "type": "expression", "expr": "stateIs('gameFlow', 'idle')" }],
-      "actions": [{ "type": "run_script", "export": "onPickup" }]
-    },
-    {
-      "id": "tap_holding",
-      "trigger": { "type": "tap", "target": "tube" },
-      "conditions": [{ "type": "expression", "expr": "stateIs('gameFlow', 'holding')" }],
-      "actions": [{ "type": "run_script", "export": "onDrop" }]
-    },
-    {
-      "id": "check_win",
-      "trigger": { "type": "event", "eventName": "ball_dropped" },
-      "actions": [{ "type": "run_script", "export": "checkWin" }]
-    }
-  ],
-  "script": "exports.onPickup = function(ctx) { var targetId = ctx.getTapTargetId(); var tubeIndex = parseInt(targetId.split('-')[1]); /* ... */ ctx.emit('ball_picked'); }; exports.onDrop = function(ctx) { /* ... */ ctx.emit('ball_dropped'); }; exports.checkWin = function(ctx) { /* ... */ if (won) ctx.win(); };"
 }
 ```
 

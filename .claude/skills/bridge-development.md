@@ -80,7 +80,7 @@ Three interfaces with different purposes:
 3. **`WorldOps/DebugOps`** (`shared/src/types/world-ops.ts`) — High-level scripting API
    - ~35 methods (WorldOps) + debug extensions
    - Abstracts bridge details for game scripts
-   - Consumed by: game behaviors, test scripts
+   - Consumed by: game scripts, test scripts
 
 ## Common Patterns
 

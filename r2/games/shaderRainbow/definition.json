@@ -208,7 +208,6 @@
       }
     }
   ],
-  "script": "// --- main ---\nexports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\tctx.spawnEntity(\"rainbowCube\", event.position);\n\t}\n};\n",
   "effects": {
     "shaders": {
       "rainbow_wave": {
@@ -224,5 +223,8 @@
   "camera": {
     "type": "fixed",
     "zoom": 1
+  },
+  "modules": {
+    "main": "exports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\tctx.spawnEntity(\"rainbowCube\", event.position);\n\t}\n};\n"
   }
 }

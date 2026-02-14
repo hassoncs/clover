@@ -61,7 +61,7 @@ export async function autoSeedGamesFromR2(env: {
 			const r2Prefix = `games/${slug}`;
 
 			await env.DB.prepare(
-				`INSERT OR REPLACE INTO games (
+				`INSERT OR IGNORE INTO games (
 					id, user_id, title, description, r2_prefix,
 					is_public, play_count, created_at, updated_at, base_game_id,
 					validation_valid

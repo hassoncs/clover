@@ -3,7 +3,7 @@
 > **Goal**: Make every game-engine capability (visual, physics, logic, and configuration) *discoverable, previewable, and reusable* through a unified gallery experience that works for both developers (Storybook) and end-users (in-app on mobile).
 
 This document inventories what exists, identifies gaps, and proposes a minimal architecture + file structure to implement:
-- **Tier 1**: Game Templates (complete, editable games)
+- **Tier 1**: Game Prefabs (complete, editable games)
 - **Tier 2**: Component Gallery (all building blocks)
 - **Tier 3**: JSON Editor (power-user authoring)
 
@@ -19,7 +19,7 @@ This avoids duplicating demos while still taking advantage of Storybook for rapi
 
 **Effort estimate**: 
 - Medium (1–2d) for foundation + Effects/Particles parity
-- Large (3d+) to fully cover behaviors + physics interactives + templates + JSON editor polish
+- Large (3d+) to fully cover scripts + physics interactives + prefabs + JSON editor polish
 
 ---
 
@@ -75,23 +75,21 @@ This avoids duplicating demos while still taking advantage of Storybook for rapi
 
 ---
 
-### C) Behaviors (17 types)
+### C) Scripts
 
-**Source**: `shared/src/types/behavior.ts`  
+**Source**: `shared/src/scripting/`
 **Existing Gallery**: ❌ **None**
 
-| Category | Behaviors |
+| Category | Scripts |
 |----------|-----------|
-| **Movement** | `move`, `rotate`, `rotate_toward`, `follow`, `bounce`, `oscillate` |
-| **Control** | `control` (tap_to_jump, tap_to_shoot, drag_to_aim, drag_to_move, tilt_to_move, tilt_gravity, buttons) |
-| **Combat/Interaction** | `destroy_on_collision`, `score_on_collision`, `score_on_destroy`, `health` |
+| **Movement** | `move`, `rotate`, `follow`, `bounce`, `oscillate` |
+| **Control** | `tap_to_jump`, `tap_to_shoot`, `drag_to_aim`, `drag_to_move`, `tilt_to_move` |
+| **Combat/Interaction** | `destroy_on_collision`, `score_on_collision`, `health` |
 | **Spawning** | `spawn_on_event`, `timer` |
-| **Physics-ish** | `gravity_zone`, `magnetic`, `draggable` |
-| **Animation** | `animate` |
 
 **Capabilities**:
-- Entity logic modules (some require input, collisions, world events)
-- Some are "systems" rather than "components" (e.g., control modes, triggers)
+- Entity logic modules (hooks: onStart, onUpdate, onInput, onCollision)
+- Reusable script patterns
 
 **Discoverability Status**: ❌ **Gap (major)**
 
@@ -140,13 +138,11 @@ This avoids duplicating demos while still taking advantage of Storybook for rapi
 
 | Config | Purpose |
 |--------|---------|
-| `GameDefinition` | metadata, world, camera, ui, templates, entities, rules, win/lose |
-| `EntityTemplate` | Reusable entity blueprint |
+| `GameDefinition` | metadata, world, camera, ui, prefabs, entities |
+| `EntityPrefab` | Reusable entity blueprint |
 | `WorldConfig` | gravity, pixelsPerMeter, bounds |
 | `CameraConfig` | fixed/follow, zoom, bounds |
 | `UIConfig` | showScore, showTimer, showLives |
-| `Rules` | triggers + actions |
-| `Win/Lose` | Conditions for game end |
 
 **Discoverability Status**: ❌ **Gap** (no UI explaining/previewing configs)
 
@@ -164,7 +160,7 @@ car, bridge, pinball, avalanche
 ```
 
 **Discoverability Status**: ⚠️ **Good raw content**, but:
-- Not structured as "Templates" vs "Demos"
+- Not structured as "Prefabs" vs "Demos"
 - No consistent "what does this demonstrate" metadata
 - No JSON export/clone workflow
 
@@ -176,7 +172,7 @@ car, bridge, pinball, avalanche
 
 | Capability | Gap | Priority |
 |------------|-----|----------|
-| **Behaviors** | No gallery at all - biggest blind spot | 🔴 High |
+| **Scripts** | No gallery at all - biggest blind spot | 🔴 High |
 | **Sprite Types** | No preview grid + common props editor | 🟡 Medium |
 | **Physics Features** | Needs structured coverage beyond 2 stories | 🟡 Medium |
 
@@ -185,7 +181,7 @@ car, bridge, pinball, avalanche
 | Capability | Issue |
 |------------|-------|
 | **Particles** | Playground exists, needs per-preset gallery + consistent controls + export |
-| **Examples** | Exist, need metadata + template/demonstration separation |
+| **Examples** | Exist, need metadata + prefab/demonstration separation |
 
 ### Cross-Cutting Gaps
 
@@ -226,7 +222,7 @@ interface GalleryItem {
   description: string;
   category: GalleryCategory;
   tags: string[];
-  kind: 'effect' | 'particle' | 'behavior' | 'physics' | 'sprite' | 'template' | 'config';
+  kind: 'effect' | 'particle' | 'script' | 'physics' | 'sprite' | 'prefab' | 'config';
   
   paramsSchema: ParamDefinition[];  // UI-friendly param definitions
   defaultParams: Record<string, unknown>;
@@ -236,27 +232,26 @@ interface GalleryItem {
 }
 ```
 
-### Making Behaviors Demonstrable
+### Making Scripts Demonstrable
 
-Behaviors are logic, not visual. Solution: **Behavior Sandbox** with:
+Scripts are logic, not visual. Solution: **Script Sandbox** with:
 
 1. **Canonical World**: Ground plane, bounds, camera
-2. **Target Entity**: The "actor" with the behavior attached
+2. **Target Entity**: The "actor" with the script attached
 3. **Secondary Entities**: Targets, obstacles as needed
 4. **Input Simulation**: Virtual joystick/buttons, tap triggers, drag vectors
 5. **Visual Debugging Overlays**:
    - Velocity/force/aim vectors
    - State labels (health, score, timers)
-   - Event log (collision, trigger fired, action executed)
+   - Event log (collision, hook fired)
 6. **Controls**: Deterministic Reset + Replay
 
-| Behavior Category | Sandbox Recipe |
+| Script Category | Sandbox Recipe |
 |-------------------|----------------|
 | Movement | Show paths, easing, highlight target |
 | Control | Display on-screen controls, input mapping |
 | Combat/Interaction | Spawn colliders, show damage/score events |
 | Spawning/Timer | Show timeline, spawned entities |
-| Gravity/Magnetic/Draggable | Show field radius + force vectors |
 
 ### Showing Physics Interactively
 
@@ -279,8 +274,8 @@ Structured mini-scenes with:
 
 ```
 Gallery
-├── Templates (Tier 1)
-│   └── [template cards with preview]
+├── Prefabs (Tier 1)
+│   └── [prefab cards with preview]
 │
 ├── Components (Tier 2)
 │   ├── Sprites
@@ -289,8 +284,8 @@ Gallery
 │   │   └── [18 effect types by category]
 │   ├── Particles
 │   │   └── [10 presets]
-│   ├── Behaviors
-│   │   └── [17 behavior types by category]
+│   ├── Scripts
+│   │   └── [script types by category]
 │   └── Physics
 │       └── [bodies, shapes, joints, materials, collisions, raycasting]
 │
@@ -298,8 +293,6 @@ Gallery
 │   ├── World
 │   ├── Camera
 │   ├── UI
-│   ├── Rules
-│   └── Win/Lose Conditions
 │
 └── JSON Editor (Tier 3)
 ```
@@ -319,17 +312,17 @@ shared/src/gallery/
 ├── items/
 │   ├── effects/         # One file per effect or grouped
 │   ├── particles/       # One file per preset
-│   ├── behaviors/       # One file per behavior
+│   ├── scripts/         # One file per script pattern
 │   ├── physics/         # Bodies, shapes, joints, etc.
 │   ├── sprites/         # Sprite type demos
-│   ├── templates/       # Game template definitions
-│   └── config/          # World, camera, UI, rules items
+│   ├── prefabs/         # Game prefab definitions
+│   └── config/          # World, camera, UI items
 │
 └── runtime/
     ├── SceneHost.tsx    # Runs a scene
     ├── controls/        # Param control primitives
     ├── export/          # JSON/code formatting helpers
-    └── sandbox/         # Behavior sandbox recipes, physics debug UI
+    └── sandbox/         # Script sandbox recipes, physics debug UI
 ```
 
 ### In-App Surface (Expo Router)
@@ -356,10 +349,10 @@ app/components/gallery/
 packages/ui/src/stories/gallery/
 ├── effects.stories.tsx
 ├── particles.stories.tsx
-├── behaviors.stories.tsx
+├── scripts.stories.tsx
 ├── physics.stories.tsx
 ├── sprites.stories.tsx
-└── templates.stories.tsx
+└── prefabs.stories.tsx
 ```
 
 ---
@@ -379,7 +372,7 @@ Every item detail page includes:
 - "Restore defaults" button
 
 ### 3. Export
-- **"Copy JSON"** (component snippet or entity template)
+- **"Copy JSON"** (component snippet or entity prefab)
 - **"Copy GameDefinition fragment"** when appropriate
 - Optional: "Copy TS snippet"
 
@@ -387,7 +380,7 @@ Every item detail page includes:
 - "Where does this go?" mapping:
   - Effects → `sprite.effects`
   - Particles → entity emitter config
-  - Behaviors → entity `behaviors[]`
+  - Scripts → entity `scriptRef`
   - Physics → entity `physics` / world settings
 - Links to 1–2 existing demos that use it
 
@@ -397,21 +390,21 @@ Every item detail page includes:
 
 ## 6. The 3-Tier System
 
-### Tier 1: Game Templates (High-Level)
+### Tier 1: Game Prefabs (High-Level)
 
 **Definition**: Curated "starter games" users can customize with assets and small knobs.
 
 **Implementation**:
 1. Reclassify existing examples into:
-   - "Template-ready" (clear gameplay loop, minimal dev-only controls)
+   - "Prefab-ready" (clear gameplay loop, minimal dev-only controls)
    - "Showcase" (physics experiments, debugging demos)
-2. Add template metadata:
+2. Add prefab metadata:
    - title, description, difficulty, controls, key concepts, required assets
 3. Provide flows:
-   - "Create from template" → clones into user workspace
-   - "Swap images" UI → updates `imageUrl` fields
+   - "Create from prefab" → clones into user workspace
+   - "Swap images" UI → updates `assetId` fields
 
-**Output**: Templates become the friendly front door.
+**Output**: Prefabs become the friendly front door.
 
 ---
 
@@ -420,7 +413,7 @@ Every item detail page includes:
 **Definition**: Exhaustive "what building blocks exist" inventory.
 
 **Implementation**:
-- Registry-driven sections (Sprites/Effects/Particles/Behaviors/Physics/Config)
+- Registry-driven sections (Sprites/Effects/Particles/Scripts/Physics/Config)
 - Each item offers copy/export to accelerate game composition
 
 **Output**: Users can answer "what can the engine do?" in 2 minutes.
@@ -457,9 +450,9 @@ Every item detail page includes:
 
 **Effort**: Short–Medium (1–2d)
 
-### Phase 2 — Behaviors (Largest Gap)
-- Implement Behavior Sandbox runtime
-- Create first 6–8 behavior items
+### Phase 2 — Scripts (Largest Gap)
+- Implement Script Sandbox runtime
+- Create first 6–8 script items
 - Add input simulation + overlays + event log
 
 **Effort**: Medium–Large (1–3d+)
@@ -471,9 +464,9 @@ Every item detail page includes:
 
 **Effort**: Large (3d+)
 
-### Phase 4 — Templates (Tier 1 Product Surface)
-- Add template metadata + catalog UI
-- Add "create from template" + asset swapper
+### Phase 4 — Prefabs (Tier 1 Product Surface)
+- Add prefab metadata + catalog UI
+- Add "create from prefab" + asset swapper
 
 **Effort**: Medium (1–2d)
 
@@ -547,11 +540,11 @@ Every item detail page includes:
 |------------|-------|---------|----------|----------|
 | Effects | 18 | ✅ | ✅ | Done |
 | Particles | 10 | ⚠️ Playground | ✅ | Phase 1 |
-| Behaviors | 17 | ❌ | ❌ | Phase 2 |
+| Scripts | 17 | ❌ | ❌ | Phase 2 |
 | Physics | Many | ⚠️ 2 stories | ❌ | Phase 3 |
 | Sprites | 4 | ❌ | ❌ | Phase 1 |
 | Config | Many | ❌ | ❌ | Phase 5 |
-| Templates | 20 examples | ❌ | ❌ | Phase 4 |
+| Prefabs | 20 examples | ❌ | ❌ | Phase 4 |
 
 ### File Locations
 
@@ -559,7 +552,7 @@ Every item detail page includes:
 |------|-------|
 | Effect types/metadata | `shared/src/types/effects.ts` |
 | Particle presets/metadata | `shared/src/types/particles.ts` |
-| Behavior types | `shared/src/types/behavior.ts` |
+| Script patterns | `shared/src/scripting/` |
 | Physics types | `shared/src/types/physics.ts` |
 | Sprite types | `shared/src/types/sprite.ts` |
 | Game schemas | `shared/src/types/schemas.ts`, `api/src/ai/schemas.ts` |

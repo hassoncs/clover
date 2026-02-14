@@ -115,7 +115,6 @@
       "layer": 3
     }
   ],
-  "script": "// --- main ---\nexports.toggleCubeTween = (ctx) => {\n\tif (ctx.isSequenceRunning(\"cube_toggle\")) return;\n\n\tvar pos = ctx.getEntityPosition(\"cube\");\n\tvar targetX = pos && pos.x > 0 ? -2 : 2;\n\n\tctx.startSequence(\"cube_toggle\", async (world) => {\n\t\tawait world.animate(\n\t\t\t\"cube\",\n\t\t\t{ x: targetX, y: 1 },\n\t\t\t{ duration: 450, easing: \"ease-in-out\" },\n\t\t);\n\t});\n};\n\nexports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\texports.toggleCubeTween(ctx);\n\t}\n};\n",
   "background": {
     "type": "static",
     "color": "#0f172a"
@@ -126,5 +125,8 @@
   },
   "overlay": {
     "elements": []
+  },
+  "modules": {
+    "main": "exports.toggleCubeTween = (ctx) => {\n\tif (ctx.isSequenceRunning(\"cube_toggle\")) return;\n\n\tvar pos = ctx.getEntityPosition(\"cube\");\n\tvar targetX = pos && pos.x > 0 ? -2 : 2;\n\n\tctx.startSequence(\"cube_toggle\", async (world) => {\n\t\tawait world.animate(\n\t\t\t\"cube\",\n\t\t\t{ x: targetX, y: 1 },\n\t\t\t{ duration: 450, easing: \"ease-in-out\" },\n\t\t);\n\t});\n};\n\nexports.onInput = (ctx, event) => {\n\tif (event.type === \"tap\") {\n\t\texports.toggleCubeTween(ctx);\n\t}\n};\n"
   }
 }

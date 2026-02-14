@@ -28,8 +28,8 @@ Updated: 2026-02-12 (post-audit)
 - [game-inspector](game-inspector.md) - 46 MCP operations for debugging, inspection, input simulation
 
 ### Game Systems
-- [ecs-architecture](ecs-architecture.md) - Prefabs, entities, components, GameDefinition, rules, behaviors
-- [game-authoring](game-authoring.md) - Creating games: prefabs, entities, behaviors, rules, scripts
+- [ecs-architecture](ecs-architecture.md) - Prefabs, entities, components, GameDefinition, scriptRef
+- [game-authoring](game-authoring.md) - Creating games: prefabs, entities, scripts
   - [game-authoring/game-definition-reference](game-authoring/game-definition-reference.md) - Complete field-by-field GameDefinition reference
   - [game-authoring/scripting-api-reference](game-authoring/scripting-api-reference.md) - QuickJS ScriptContext API, lifecycle hooks
   - [game-authoring/examples](game-authoring/examples.md) - Patterns from production games

@@ -22,7 +22,7 @@ The Slopcade architecture implements a **hybrid TypeScript + Godot** game engine
 │   TypeScript = DEFINITION AUTHORITY                                          │
 │   ────────────────────────────────                                           │
 │   • GameDefinition JSON (what SHOULD exist)                                  │
-│   • Templates, rules, behaviors (the "source code")                          │
+│   • Prefabs, scripts (the "source code")                                     │
 │   • Game state: score, lives, variables                                      │
 │   • AI authoring, validation, hot-reload triggers                            │
 │                                                                              │
@@ -115,7 +115,7 @@ TODAY (problematic):
 |-----------|---------|--------|-------|
 | **GameDefinition** | TS ✓ | TS ✓ | Already correct |
 | **Entity Registry** | ⚠️ BOTH | **Godot only** | Key fix |
-| **Entity Metadata** | TS ✓ | TS ✓ | Behaviors, timers, rules state |
+| **Entity Metadata** | TS ✓ | TS ✓ | Scripts, timers state |
 | **Physics State** | Godot ✓ | Godot ✓ | Already correct |
 | **Score/Lives/Vars** | TS ✓ | TS ✓ | Already correct |
 | **Collision Events** | Godot ✓ | Godot ✓ | Already correct |
@@ -128,7 +128,7 @@ TODAY (problematic):
 
 | Layer | Authority | What It Owns | Can Modify? |
 |-------|-----------|--------------|-------------|
-| **Definition** | TypeScript | GameDefinition JSON, templates, rules | TS only |
+| **Definition** | TypeScript | GameDefinition JSON, prefabs, scripts | TS only |
 | **Runtime Entities** | Godot | Which entities exist, their physics bodies | Godot creates, TS requests |
 | **Runtime State** | Godot | Positions, velocities, collisions | Godot updates, TS observes |
 | **Game Logic State** | TypeScript | Score, lives, variables, timers, cooldowns | TS only |
@@ -152,7 +152,7 @@ TARGET (clean):
        │ onEntityCreated, onTransformSync events
        ▼
   TypeScript receives events, maintains ONLY:
-  • Entity metadata (behaviors, tags for logic)
+  • Entity metadata (scripts, tags for logic)
   • Game logic state (score, timers, cooldowns)
   • NO duplicate transform/physics data
 ```
@@ -177,10 +177,10 @@ FUTURE LIVE EDITING:
        │ Examples:
        │ • { type: 'UPDATE_ENTITY', id: 'player', changes: { transform: {...} } }
        │ • { type: 'ADD_ENTITY', entity: {...} }
-       │ • { type: 'REMOVE_ENTITY', id: 'enemy_3' }
-       │ • { type: 'UPDATE_TEMPLATE', id: 'ball', changes: {...} }
-       ▼
-  Godot applies patch incrementally (no full reload)
+        │ • { type: 'REMOVE_ENTITY', id: 'enemy_3' }
+        │ • { type: 'UPDATE_PREFAB', id: 'ball', changes: {...} }
+        ▼
+   Godot applies patch incrementally (no full reload)
        │
        │ Emits confirmation event
        ▼
@@ -233,7 +233,6 @@ this.entities.set(id, {
   ...entityDefinition,        // ❌ Duplicates Godot data
   transform: {...},           // ❌ Duplicates Godot data
   physics: {...},             // ❌ Duplicates Godot data
-  behaviors: [...],           // ✓ OK - TS-only state
   timers: {...},              // ✓ OK - TS-only state
 });
 ```
@@ -267,18 +266,18 @@ export class EntityManager {
   private entityGenerations = new Map<string, number>(); // Pool safety
   
   // NEW: Request-based spawn (TS requests, Godot confirms)
-  requestSpawn(templateId: string, position: Vec2, options?: SpawnOptions): void {
-    // Resolve template in TS (content assembly)
-    const resolved = this.resolveTemplate(templateId);
+  requestSpawn(prefabId: string, position: Vec2, options?: SpawnOptions): void {
+    // Resolve prefab in TS (content assembly)
+    const resolved = this.resolvePrefab(prefabId);
     // Send to Godot - don't add to local registry yet
     this.bridge.spawnEntity(resolved, position, options);
     // Entity will be added when Godot emits entity_spawned
   }
-  
+
   // NEW: Event handler for Godot confirmations
-  onEntitySpawned(entityId: string, template: string, generation: number, snapshot: EntitySnapshot): void {
+  onEntitySpawned(entityId: string, prefab: string, generation: number, snapshot: EntitySnapshot): void {
     // NOW we add to local registry (Godot confirmed existence)
-    const entity = this.createRuntimeEntityFromSnapshot(entityId, template, snapshot);
+    const entity = this.createRuntimeEntityFromSnapshot(entityId, prefab, snapshot);
     entity.generation = generation;
     this.entities.set(entityId, entity);
     this.entityGenerations.set(entityId, generation);
@@ -313,11 +312,11 @@ export class EntityManager {
 - ✅ Pool safety via generation tokens
 - ✅ Minimal code changes (same public API)
 
-### 4.2 Clarify Behavior Execution Locations
+### 4.2 Clarify Script Execution Locations
 
 **Decision Matrix**:
 
-| Behavior | Execute In | Reason | Performance |
+| Logic | Execute In | Reason | Performance |
 |----------|------------|--------|-------------|
 | `destroy_on_collision` | **Godot** | Immediate physics response | ✓ No bridge latency |
 | `draggable` | **Godot** | Input-driven, needs low latency | ✓ No bridge latency |
@@ -325,13 +324,13 @@ export class EntityManager {
 | `rotate` | **Godot** | Pure transform animation | ✓ No bridge overhead |
 | `maintain_speed` | **Godot** | Physics-driven, per-frame | ✓ No bridge overhead |
 | `score_on_collision` | **TypeScript** | Involves game state | OK (event-driven) |
-| `spawn_on_event` | **TypeScript** | Template resolution, conditions | OK (event-driven) |
+| `spawn_on_event` | **TypeScript** | Prefab resolution, conditions | OK (event-driven) |
 | `timer` | **TypeScript** | Game logic, pauseable | OK (not per-frame) |
 | `health` | **TypeScript** | Game state tracking | OK (event-driven) |
 
 **Principle**:
-- **Godot**: Stateless behaviors, physics-driven, per-frame updates
-- **TypeScript**: Stateful behaviors, game logic, complex conditions
+- **Godot**: Stateless logic, physics-driven, per-frame updates
+- **TypeScript**: Stateful logic, game logic, complex conditions
 
 ### 4.3 Implement Incremental Patching (for Live Editing)
 
@@ -405,21 +404,6 @@ func get_capabilities() -> Dictionary:
             "shapes": ["box", "circle", "polygon"],
             "joints": ["revolute", "distance", "prismatic", "weld", "mouse"]
         },
-        "behaviors": {
-            "godotExecuted": [
-                "destroy_on_collision",
-                "draggable", 
-                "oscillate",
-                "rotate",
-                "maintain_speed"
-            ],
-            "tsExecuted": [
-                "score_on_collision",
-                "spawn_on_event",
-                "timer",
-                "health"
-            ]
-        },
         "sync": {
             "transforms": true,
             "velocities": true,
@@ -436,7 +420,7 @@ func get_capabilities() -> Dictionary:
 
 | # | Task | File(s) | Effort | Impact |
 |---|------|---------|--------|--------|
-| 1.1 | Add `entity_spawned` event with full snapshot (id, template, tags, transform, generation) | `GameBridge.gd` | Small | High |
+| 1.1 | Add `entity_spawned` event with full snapshot (id, prefab, tags, transform, generation) | `GameBridge.gd` | Small | High |
 | 1.2 | Add `entity_destroyed` event (already exists, verify it fires correctly) | `GameBridge.gd` | Small | High |
 | 1.3 | Add `entity_reparented` event | `GameBridge.gd` | Small | Medium |
 | 1.4 | Add `entity_tags_changed` event | `GameBridge.gd` | Small | Medium |
@@ -522,7 +506,7 @@ const transform = metadataManager.getTransform(id); // From cache
 | 2026-01-27 | **Godot is runtime authority for entities** | Clear single source of truth |
 | 2026-01-27 | **TypeScript maintains only metadata** | Avoid duplication, reduce sync complexity |
 | 2026-01-27 | **Design for live editing from day 1** | Patch API vs reload-only |
-| 2026-01-27 | **Stateless behaviors → Godot, stateful → TypeScript** | Performance + clarity |
+| 2026-01-27 | **Stateless logic → Godot, stateful → TypeScript** | Performance + clarity |
 
 ---
 
@@ -533,7 +517,7 @@ const transform = metadataManager.getTransform(id); // From cache
 | Should TS maintain an entity registry? | **No** - Query Godot or use event cache |
 | Can we do live hot-reload of JSON? | **Yes** - Via incremental patch API |
 | What about performance? | **Addressed** - Batch sync, Godot-side behaviors, no duplication |
-| Who processes behaviors? | **Split** - See matrix in section 4.2 |
+| Who processes logic? | **Split** - See matrix in section 4.2 |
 
 ---
 
@@ -546,7 +530,6 @@ const transform = metadataManager.getTransform(id); // From cache
 | `app/lib/godot/GodotPhysicsAdapter.ts` | Physics abstraction | Minor updates |
 | `app/lib/godot/types.ts` | Bridge interface | Add new methods |
 | `godot_project/scripts/GameBridge.gd` | Godot bridge | Add patch API, capabilities |
-| `shared/src/types/behavior.ts` | Behavior types | Add execution location comments |
 
 ## Appendix B: Message Protocol
 
@@ -568,7 +551,7 @@ type SetTransformMessage = { type: 'SET_TRANSFORM'; entityId: string; transform:
 ### Godot → TypeScript (Events)
 
 ```typescript
-type EntityCreatedEvent = { type: 'ENTITY_CREATED'; entityId: string; template: string };
+type EntityCreatedEvent = { type: 'ENTITY_CREATED'; entityId: string; prefab: string };
 type EntityDestroyedEvent = { type: 'ENTITY_DESTROYED'; entityId: string };
 type EntityPatchedEvent = { type: 'ENTITY_PATCHED'; entityId: string; changes: object };
 type CollisionEvent = { type: 'COLLISION'; entityA: string; entityB: string; contacts: Contact[] };

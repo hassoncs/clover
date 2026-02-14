@@ -84,9 +84,9 @@ New Bridge Methods
 /src.
  Cross-reference checks integrity constraints.
 
- Entity references valid templates.
+ Entity references valid prefabs.
  No parent/child cycles entity hierarchies.
- Constants rules/templates..
+ Constants in prefabs.
  Duplicate IDs files.
 
 

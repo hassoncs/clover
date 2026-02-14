@@ -1,22 +1,14 @@
 ---
-description: "Building and modifying games using the Slopcade game engine. Covers GameDefinition, prefabs, entities, behaviors, rules, scripts, physics, containers, state machines, and input configuration. Use when creating new games, modifying existing games, or debugging game logic."
+description: "Building and modifying games using the Slopcade game engine. Covers GameDefinition, prefabs, entities, scripts, physics, containers, and input configuration. Use when creating new games, modifying existing games, or debugging game logic."
 ---
 
 # Game Authoring
 
 > **Skill for AI Agents**: Building and modifying games using the Slopcade game engine.
 
-## When to Use This Skill
-
-Load this skill when:
-- Creating a new game definition
-- Modifying an existing game (entities, prefabs, behaviors, rules)
-- Debugging game logic (collisions, rules, scripts)
-- Adding features (scoring, win/lose conditions, state machines, scripts)
-
 ## Architecture Overview
 
-Games are TypeScript files that export a `GameDefinition` object. The engine runs on Godot 4 with a React Native shell. Games are declarative: you define prefabs, entities, rules, and behaviors — the engine handles rendering, physics, and game loop.
+Games are TypeScript files that export a `GameDefinition` object and optionally a set of script modules. The engine runs on Godot 4 with a React Native shell. Games are script-driven: you define prefabs and entities, and attach scripts to them for behavior.
 
 **Coordinate system**: Origin at world center. X increases right, Y increases up (physics convention). Use helper functions to convert from screen-space (top-left origin):
 
@@ -92,7 +84,7 @@ export default game;
 
 ### Prefabs vs Entities
 
-**Prefabs** (`Record<string, EntityPrefab>`) define blueprints — visual, physics, collider, behaviors, tags. **Entities** (`GameEntity[]`) are instances placed in the world, referencing a prefab by string key.
+**Prefabs** (`Record<string, EntityPrefab>`) define blueprints — visual, physics, collider, and tags. **Entities** (`GameEntity[]`) are instances placed in the world, referencing a prefab by string key.
 
 ```typescript
 prefabs: {
@@ -173,144 +165,9 @@ force: { expr: "-variables.paddleForce" },
 
 Built-in expression context: `time`, `dt`, `frameId`, `score`, `random()`, `entityCount('tag')`, `variables.NAME`, `self.transform.x`, etc.
 
-### Win/Lose Conditions
-
-```typescript
-winCondition: { expr: "entityCount('brick') == 0" },
-loseCondition: { type: "entity_destroyed", tag: "bird" },
-// or
-loseCondition: { type: "custom", expr: "lives <= 0" },
-// or
-loseCondition: { type: "time_up", time: 60 },
-```
-
-## Rules System
-
-Rules are the primary declarative logic: **trigger** → optional **conditions** → **actions**.
-
-```typescript
-rules: [
-  {
-    id: "tap_to_flap",
-    name: "Tap to flap upward",
-    trigger: { type: "tap" },
-    actions: [
-      { type: "set_velocity", target: { type: "by_tag", tag: "bird" }, y: 7 },
-    ],
-  },
-  {
-    id: "spawn_pipes",
-    trigger: { type: "timer", time: 2.5, repeat: true },
-    actions: [
-      { type: "spawn", template: "pipeGroup", position: { type: "fixed", x: 8, y: 0 } },
-    ],
-  },
-],
-```
-
-### Triggers
-
-| Type | Key Fields |
-|------|-----------|
-| `collision` | `entityATag`, `entityBTag` |
-| `sensor_enter` / `sensor_exit` | `sensorTag`, `entityTag` |
-| `timer` | `time` (seconds), `repeat?` |
-| `tap` | `target?` (`'screen'`, `'self'`, tag), `xMinPercent?`, `xMaxPercent?` |
-| `swipe` | `direction` (`'left'`, `'right'`, `'up'`, `'down'`, `'any'`) |
-| `button` | `button` (`'left'`, `'right'`, `'jump'`, etc.), `state` (`'pressed'`, `'held'`, `'released'`) |
-| `drag` | `phase` (`'start'`, `'move'`, `'end'`), `target?` |
-| `tilt` | `axis?` (`'x'`, `'y'`, `'both'`), `threshold?` |
-| `frame` | Fires every frame |
-| `event` | `eventName` |
-| `entity_count` | `tag`, `count`, `comparison` |
-| `game_started` / `game_loaded` | No fields |
-
-### Core Actions
-
-| Type | Key Fields |
-|------|-----------|
-| `spawn` | `template` (string or string[]), `position`, optional `launch`, `count` |
-| `destroy` | `target`: `{type:'by_id',entityId}`, `{type:'by_tag',tag}`, `{type:'collision_entities'}`, `{type:'all'}` |
-| `set_variable` | `name`, `operation` (`'set'`/`'add'`/`'subtract'`/`'multiply'`/`'toggle'`), `value` |
-| `game_state` | `state` (`'win'`/`'lose'`/`'pause'`/`'restart'`/`'next_level'`), `delay?` |
-| `apply_impulse` | `target` (EntityTarget), `x?`, `y?`, `direction?`, `force?` |
-| `apply_force` | `target`, `x?`, `y?`, `direction?`, `force?` |
-| `set_velocity` | `target`, `x?`, `y?` |
-| `move` | `target`, `direction`, `speed` |
-| `modify` | `target`, `property`, `operation` (`'set'`/`'add'`/`'multiply'`), `value` |
-| `event` | `eventName`, `data?` |
-| `sound` | `soundId`, `volume?` |
-| `haptic` | `hapticType?` (`'impact'`/`'notification'`/`'selection'`), `style?` (`'Light'`/`'Medium'`/`'Heavy'`/`'Rigid'`/`'Soft'`), `notificationStyle?` (`'Success'`/`'Warning'`/`'Error'`) |
-| `camera_shake` | `intensity`, `duration` |
-| `camera_zoom` | `scale`, `duration`, `restoreDelay?` |
-| `set_time_scale` | `scale`, `duration?` |
-| `state_transition` | `machineId`, `toState`, `force?` |
-| `run_script` | `script?`, `export?`, `args?` |
-| `container_push` / `container_pop` / `container_transfer` | See container reference |
-
-### EntityTarget (used by many actions)
-
-```typescript
-{ type: 'self' }
-{ type: 'by_id', entityId: 'paddle' }
-{ type: 'by_tag', tag: 'ball' }
-{ type: 'touched' }
-{ type: 'player' }
-{ type: 'other' }   // Other entity in collision
-```
-
-### Conditions
-
-| Type | Key Fields |
-|------|-----------|
-| `variable` | `name`, `comparison` (`'eq'`/`'gt'`/`'lt'`/`'gte'`/`'lte'`/`'neq'`), `value` |
-| `expression` | `expr` (string) |
-| `entity_count` | `tag`, `min?`, `max?` |
-| `entity_exists` | `entityId?`, `entityTag?` |
-| `random` | `probability` (0-1) |
-| `on_ground` | `value` (boolean) |
-| `velocity` | `axis`, `comparison`, `value` |
-| `state` | `machineId`, `state`, `negated?` |
-| `cooldown_ready` | `cooldownId` |
-| `container_is_empty` / `container_is_full` / `container_count` | See container reference |
-
-## Behaviors
-
-Behaviors are per-entity logic attached to prefabs. Key types:
-
-| Behavior | Purpose | Key Fields |
-|----------|---------|-----------|
-| `translate` | Transform-based movement (no physics needed) | `direction` (MovementDirection), `speed` |
-| `set_velocity` | Set physics velocity | `direction`, `speed` |
-| `apply_impulse` | One-shot physics impulse | `direction`, `magnitude` |
-| `maintain_speed` | Keep constant speed | `speed`, `mode?` (`'constant'`/`'minimum'`) |
-| `draggable` | Drag entity with touch | `mode?` (`'force'`/`'kinematic'`), `requireDirectHit?` |
-| `destroy_on_collision` | Destroy on collision | `withTags`, `effect?`, `destroyOther?`, `delay?` |
-| `destroy_when_off_screen` | Destroy when off screen | `edge`, `buffer?`, `recursive?` |
-| `score_on_collision` | Add score on collision | `withTags`, `points`, `once?` |
-| `oscillate` | Oscillate position | `axis`, `amplitude`, `frequency` |
-| `rotate` | Constant rotation | `speed`, `direction` |
-| `tween` | Animate property | `property`, `to`, `duration`, `ease?`, `loop?`, `yoyo?` |
-| `health` | Hit points | `maxHealth`, `damageFromTags?`, `destroyOnDeath?` |
-| `stick_to_entity` | Follow another entity | `targetTag`, `offset?` |
-| `launch_on_input` | Launch on tap/click | `speed`, `minAngle?`, `maxAngle?` |
-| `move` | Physics-based movement | `direction`, `speed`, `target?` |
-| `follow` | Follow target entity | `target` (tag), `speed` |
-| `spawn_on_event` | Spawn on events | `event`, `entityTemplate`, `spawnPosition` |
-| `timer` | Timed action | `duration`, `action`, `repeat?` |
-| `configure_children_at_spawn` | Randomize children | `configs[]` |
-
-**MovementDirection** (for translate/set_velocity/apply_impulse):
-```typescript
-{ type: 'vector', x: -1, y: 0 }     // Direction vector
-{ type: 'toward_target', targetTag?: string }
-{ type: 'away_from_target', targetTag?: string }
-{ type: 'random' }
-```
-
 ## Custom Scripts
 
-For logic beyond declarative rules, embed JavaScript in the `script` field. Scripts run in a QuickJS sandbox.
+Embed JavaScript in the `script` field for game logic. Scripts run in a QuickJS sandbox.
 
 ```typescript
 script: `
@@ -352,14 +209,6 @@ prefabs: {
   pipeGroup: {
     id: "pipeGroup",
     tags: ["pipe-group"],
-    behaviors: [
-      { type: "translate", direction: { type: "vector", x: -1, y: 0 }, speed: 15 },
-      { type: "destroy_when_off_screen", edge: "left", buffer: 2, recursive: true },
-      { type: "configure_children_at_spawn", configs: [
-        { childName: "pipeTop", property: "localTransform.y", randomRange: [-6, -2] },
-        { childName: "pipeBottom", property: "localTransform.y", offsetFrom: "pipeTop", offset: -9 },
-      ]},
-    ],
     children: [
       { name: "pipeTop", prefab: "pipeTop",
         localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
@@ -368,30 +217,6 @@ prefabs: {
     ],
   },
 },
-```
-
-## State Machines
-
-For managing game phases (menu → playing → paused → game_over):
-
-```typescript
-stateMachines: [
-  {
-    id: "gamePhase",
-    initialState: "playing",
-    states: [
-      { id: "playing", onEnter: [/* actions */] },
-      { id: "paused", onEnter: [{ type: "set_time_scale", scale: 0 }] },
-      { id: "game_over" },
-    ],
-    transitions: [
-      { id: "pause", from: "playing", to: "paused",
-        trigger: { type: "event", eventName: "pause_pressed" } },
-      { id: "resume", from: "paused", to: "playing",
-        trigger: { type: "event", eventName: "resume_pressed" } },
-    ],
-  },
-],
 ```
 
 ## Containers
@@ -469,11 +294,10 @@ pnpm tsc --noEmit
 
 Before committing a game definition:
 1. All entity `prefab` references match a key in `prefabs`
-2. All tags referenced in rules/behaviors are assigned to entities
-3. Physics entities have BOTH `physics` AND `collider` components
-4. Every `transform` has all 5 fields: `x`, `y`, `angle`, `scaleX`, `scaleY`
-5. Prefab `id` matches its key in the `prefabs` object
-6. `pnpm tsc --noEmit` passes
+2. Physics entities have BOTH `physics` AND `collider` components
+3. Every `transform` has all 5 fields: `x`, `y`, `angle`, `scaleX`, `scaleY`
+4. Prefab `id` matches its key in the `prefabs` object
+5. `pnpm tsc --noEmit` passes
 
 ## Common Field Name Mistakes
 
@@ -482,11 +306,9 @@ Before committing a game definition:
 | `templateId` | `prefab` (on entity) |
 | `physics.shape` | Shape is on `collider`, not `physics` |
 | `fill` | `color` (on visual) |
-| `tagA` / `tagB` | `entityATag` / `entityBTag` (collision trigger) |
 | `destroy_entity` | `destroy` (action type) |
 | `emit_event` | `event` (action type) |
 | `game_start` | `game_started` (trigger type) |
-| `velocity` on behaviors | `speed` + `direction` |
 
 ## Reference Files
 
@@ -504,12 +326,9 @@ For detailed API docs, read these files in `.claude/skills/game-authoring/`:
 |------|------|
 | GameDefinition | `shared/src/types/GameDefinition.ts` |
 | Entity/Prefab | `shared/src/types/entity.ts` |
-| Behaviors (35 types) | `shared/src/types/behavior.ts` |
-| Rules (triggers, conditions, actions) | `shared/src/types/rules.ts` |
 | Visual components | `shared/src/types/visual.ts` |
 | Physics + Collider | `shared/src/types/physics.ts` |
 | Container system | `shared/src/types/container.ts` |
-| State machines | `shared/src/systems/state-machine/types.ts` |
 | Scripting API | `shared/src/scripting/script-authoring-types.ts` |
 | Expressions | `shared/src/expressions/types.ts` |
 

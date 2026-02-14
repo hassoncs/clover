@@ -1115,7 +1115,7 @@ export const gamesRouter = router({
 						title: z.string(),
 						description: z.string().optional(),
 						definition: z.string(),
-						isPublic: z.boolean().default(true),
+						isPublic: z.boolean().default(false),
 						version: z
 							.string()
 							.regex(/^\d+\.\d+\.\d+$/)

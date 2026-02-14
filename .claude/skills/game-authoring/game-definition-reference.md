@@ -1,5 +1,5 @@
 ---
-description: "Complete field-by-field reference for the GameDefinition interface. Covers metadata, world config, prefabs, entities, rules, behaviors, variables, and all game definition fields. Use when authoring games or understanding the GameDefinition schema."
+description: "Complete field-by-field reference for the GameDefinition interface. Covers metadata, world config, prefabs, entities, variables, and all game definition fields. Use when authoring games or understanding the GameDefinition schema."
 ---
 
 # GameDefinition Field Reference

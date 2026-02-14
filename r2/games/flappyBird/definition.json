@@ -310,7 +310,6 @@
       }
     }
   ],
-  "script": "// --- main ---\nvar PIPE_SPAWN_INTERVAL = 2.5;\nvar FLAP_VELOCITY_Y = 7;\nvar PIPE_SPAWN_X = 8;\nvar PIPE_SPAWN_Y = 0;\nvar pipeSpawnTimer = 0;\n\nexports.onInput = (ctx, event) => {\n\tvar birds, vel;\n\tif (event.type === \"tap\") {\n\t\tbirds = ctx.queryEntities({ tag: \"bird\" });\n\t\tif (birds.length > 0) {\n\t\t\tvel = ctx.getEntityVelocity(birds[0]);\n\t\t\tctx.setEntityVelocity(birds[0], {\n\t\t\t\tx: vel ? vel.x : 0,\n\t\t\t\ty: FLAP_VELOCITY_Y,\n\t\t\t});\n\t\t}\n\t}\n};\n\nexports.onUpdate = (ctx, dt) => {\n\tpipeSpawnTimer += dt;\n\tif (pipeSpawnTimer >= PIPE_SPAWN_INTERVAL) {\n\t\tpipeSpawnTimer -= PIPE_SPAWN_INTERVAL;\n\t\tctx.spawnEntity(\"pipeGroup\", { x: PIPE_SPAWN_X, y: PIPE_SPAWN_Y });\n\t}\n};\n",
   "background": {
     "type": "static"
   },
@@ -382,5 +381,8 @@
       "onGameLose": true,
       "onBackground": true
     }
+  },
+  "modules": {
+    "main": "var PIPE_SPAWN_INTERVAL = 2.5;\nvar FLAP_VELOCITY_Y = 7;\nvar PIPE_SPAWN_X = 8;\nvar PIPE_SPAWN_Y = 0;\nvar pipeSpawnTimer = 0;\n\nexports.onInput = (ctx, event) => {\n\tvar birds, vel;\n\tif (event.type === \"tap\") {\n\t\tbirds = ctx.queryEntities({ tag: \"bird\" });\n\t\tif (birds.length > 0) {\n\t\t\tvel = ctx.getEntityVelocity(birds[0]);\n\t\t\tctx.setEntityVelocity(birds[0], {\n\t\t\t\tx: vel ? vel.x : 0,\n\t\t\t\ty: FLAP_VELOCITY_Y,\n\t\t\t});\n\t\t}\n\t}\n};\n\nexports.onUpdate = (ctx, dt) => {\n\tpipeSpawnTimer += dt;\n\tif (pipeSpawnTimer >= PIPE_SPAWN_INTERVAL) {\n\t\tpipeSpawnTimer -= PIPE_SPAWN_INTERVAL;\n\t\tctx.spawnEntity(\"pipeGroup\", { x: PIPE_SPAWN_X, y: PIPE_SPAWN_Y });\n\t}\n};\n"
   }
 }

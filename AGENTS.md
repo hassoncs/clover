@@ -191,10 +191,10 @@ This enables visual inspection at each pipeline stage.
 Domain-specific gotchas live in their respective skills (see Project Context table above). This section is for cross-cutting patterns that don't fit in a single skill.
 
 ### Script-First Architecture
-- The engine has migrated to a script-first model. Logic lives in JS modules referenced by `scriptRef` on prefabs and entities. Rules and Behaviors are legacy and should not be used for new work.
+- The engine has migrated to a script-first model. Logic lives in JS modules referenced by `scriptRef` on prefabs and entities.
 
-### Template → Prefab Migration
-- The codebase has completed a big-bang rename from `template` to `prefab`. All core types (`EntityTemplate` → `EntityPrefab`, `GameDefinition.templates` → `GameDefinition.prefabs`) have been updated.
+### Prefab Migration
+- The codebase has completed a big-bang rename from `template` to `prefab`. All core types (`EntityPrefab`, `GameDefinition.prefabs`) have been updated.
 
 ---
 

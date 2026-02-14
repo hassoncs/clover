@@ -178,13 +178,13 @@ await debugBridge.game_wait_stationary('ball-1');
 | Debug tap location | Log `event.worldX, event.worldY` in `onInputEvent` |
 | Test input handling | Use `debugBridge.simulateInput()` with appropriate type |
 | Get entity under finger | Use `targetEntityId` from drag_start event |
-| Check if button pressed | Read `ctx.input.buttons.left` in behavior update |
+| Check if button pressed | Read `ctx.input.buttons.left` in script update hook |
 
 ## Related Skills
 
 - `bridge-development.md` — Input events flow through bridge
 - `game-inspector.md` — Simulating input for testing
-- `game-authoring.md` — Handling input in behaviors
+- `game-authoring.md` — Handling input in scripts
 
 ## Changelog
 

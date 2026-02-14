@@ -5,7 +5,7 @@
 The asset generation system has three conceptual layers that describe "what an asset looks like":
 
 ### 1. Entity Description (`whatDescription`)
-Defined per-template in `definition.json`. Describes *what* the thing is.
+Defined per-prefab in `definition.json`. Describes *what* the thing is.
 ```
 "whatDescription": "a shiny red gumball candy"
 "whatDescription": "a transparent glass cylinder tube container"
@@ -50,7 +50,7 @@ There are **two separate prompt-building code paths**, which complicates things:
 The service.ts path is more mature — it uses `visualDescription` (mapped from `whatDescription`) and weaves the theme naturally into the prompt. The pipeline path is simpler but broken.
 
 ### Bug in `generate-assets.ts`
-The CLI script sets `description: templateId` (line 132) instead of using the template's `whatDescription`. So even if the pipeline worked, prompts would say "tube for a video game" instead of "a transparent glass cylinder tube container for a video game."
+The CLI script sets `description: prefabId` (line 132) instead of using the prefab's `whatDescription`. So even if the pipeline worked, prompts would say "tube for a video game" instead of "a transparent glass cylinder tube container for a video game."
 
 ---
 
@@ -149,7 +149,7 @@ The CLI script sets `description: templateId` (line 132) instead of using the te
 ### Prompt hierarchy (all layers combined at generation time)
 
 ```
-What:   "a shiny red gumball candy"              ← template.whatDescription
+What:   "a shiny red gumball candy"              ← prefab.whatDescription
 Theme:  "spooky Halloween with jack-o-lanterns"   ← themes table or --theme flag
 Style:  "3D rendered, smooth shading"             ← preset key or free text
 Game:   "Ball Sort"                               ← game title (context)
@@ -177,7 +177,7 @@ STYLE_PRESETS = {
 2. **Added** `STYLE_PRESETS` map and `resolveStyle()` in `types.ts`
 3. **Added** `style?: string` to `AssetRun.meta`, `GameAssetConfig`, and `executeAsset` meta
 4. **Updated** `buildEntityPrompt` to accept a `PromptContext { theme?, style? }` and layer all four dimensions
-5. **Fixed** `generate-assets.ts` to use `whatDescription` from templates (was using `templateId`)
+5. **Fixed** `generate-assets.ts` to use `whatDescription` from prefabs (was using `prefabId`)
 6. **Restored** `--style` CLI flag as free-text string
 7. **Updated** error messages to mention `hush run`
 8. **Added** hush documentation to `AGENTS.md`

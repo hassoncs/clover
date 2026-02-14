@@ -102,7 +102,7 @@ Defined in `shared/src/types/GamePackage.ts` as `WORKSPACE_CONVENTIONS`:
 ```
 GitWorkspaceReader.readAllFiles(gameId)
         ↓
-parseWorkspace(files)  →  ParsedWorkspace { manifest, world, prefabs, entities, rules, scripts, assetUrls }
+parseWorkspace(files)  →  ParsedWorkspace { manifest, world, prefabs, entities, scripts, assetUrls }
         ↓
 buildTagPayloads(parsed)  →  Map<TagGroup, unknown>  (one payload per tag group)
         ↓
@@ -279,9 +279,8 @@ game-name/
   editor.json         # Optional. Editor metadata for constants
   assets.json         # Optional. Asset registry { id: { path?, remoteUrl?, localPath?, type } }
   effects.json        # Optional. Effect definitions
-  templates/          # Prefab JSON files (single object or array)
+  prefabs/            # Prefab JSON files (single object or array)
   entities/           # Entity JSON files
-  rules/              # Rule JSON files
   scripts/            # .js files (sorted alphabetically, concatenated, must have exports.X = ...)
   schemas/            # Optional. level.json, persistence.json
   assets/             # Local asset files (.png, .jpg, .mp3, .wav, etc.)
@@ -349,8 +348,8 @@ Bundle JSON files can use `{ "const": "GRAVITY" }` to reference values from `con
 
 ## Related Skills
 
-- **game-authoring**: GameDefinition structure, prefabs, entities, rules
+- **game-authoring**: GameDefinition structure, prefabs, entities, scripts
 - **storage-ops**: R2 storage for build artifacts, D1 for readiness state
 - **effects-system**: Effect compilation and shader pipeline
 - **bridge-development**: PackageRuntimeAPI, tag-based loading into Godot
-- **ecs-architecture**: Entity/prefab/rule structure
+- **ecs-architecture**: Entity/prefab structure, scriptRef

@@ -23,7 +23,7 @@ The dev user auto-authenticates via `Bearer dev-token` → user ID `00000000-000
 curl -s -X POST "http://localhost:8789/trpc/games.create" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer dev-token" \
-  -d '{"title":"Test Game","definition":"{\"metadata\":{\"title\":\"Test Game\"},\"world\":{\"gravity\":{\"x\":0,\"y\":9.8},\"bounds\":{\"width\":20,\"height\":12},\"pixelsPerMeter\":50},\"entities\":{},\"templates\":{},\"scenes\":{\"main\":{\"entities\":[]}},\"globalVariables\":{},\"rules\":[]}","isPublic":false}'
+  -d '{"title":"Test Game","definition":"{\"metadata\":{\"title\":\"Test Game\"},\"world\":{\"gravity\":{\"x\":0,\"y\":9.8},\"bounds\":{\"width\":20,\"height\":12},\"pixelsPerMeter\":50},\"prefabs\":{},\"entities\":[],\"modules\":{}}","isPublic":false}'
 ```
 
 Extract the `id` from the response and navigate to `/editor/{id}`.

@@ -41,24 +41,24 @@ Only call `game-inspector_list_ops` if you need to check for newly added operati
 | Operation | Args | Purpose |
 |-----------|------|---------|
 | `game_state` | `detail?` (summary/tags/full), `tags?` | Variables, score, lives, entity counts |
-| `game_snapshot` | `detail?` (low/med/high), `filterTemplate?`, `filterTags?` | Full game state snapshot |
+| `game_snapshot` | `detail?` (low/med/high), `filterPrefab?`, `filterTags?` | Full game state snapshot |
 | `game_screenshot` | `filename?` | Capture screenshot (base64 or file) |
 | `game_entity` | `id` | Detailed info about one entity |
-| `game_count` | `template?`, `tag?` | Count entities |
+| `game_count` | `prefab?`, `tag?` | Count entities |
 | `get_console_logs` | `filter?`, `limit?`, `since?`, `clear?` | Console output from game |
 
 ### Entity Queries
 | Operation | Args | Purpose |
 |-----------|------|---------|
 | `query` | `selector`, `limit?`, `offset?` | CSS-like selector: `.tag`, `#id`, `[prefab=x]` |
-| `game_find` | `template?`, `tag?`, `name?`, `limit?` | Find by template/tag/name |
+| `game_find` | `prefab?`, `tag?`, `name?`, `limit?` | Find by prefab/tag/name |
 | `game_at_point` | `x`, `y` | Entities at world position |
 | `game_in_rect` | `minX`, `minY`, `maxX`, `maxY` | Entities in region |
 
 ### Entity Mutation
 | Operation | Args | Purpose |
 |-----------|------|---------|
-| `spawn` | `template`, `position?`, `properties?`, `id?` | Create entity |
+| `spawn` | `prefab`, `position?`, `properties?`, `id?` | Create entity |
 | `destroy` | `entityId`, `recursive?` | Remove entity |
 | `clone` | `entityId`, `position?`, `id?`, `deep?` | Clone entity |
 | `reparent` | `entityId`, `newParentId`, `keepGlobalTransform?` | Move to new parent |

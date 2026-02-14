@@ -1,0 +1,242 @@
+[
+  {
+    "id": "bird",
+    "tags": [
+      "bird"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a small yellow bird with wings",
+      "imageWidth": 0.6,
+      "imageHeight": 0.6
+    },
+    "physics": {
+      "bodyType": "dynamic",
+      "density": 1,
+      "fixedRotation": true
+    },
+    "collider": {
+      "shape": "circle",
+      "radius": 0.3,
+      "friction": 0,
+      "restitution": 0
+    },
+    "behaviors": [
+      {
+        "type": "destroy_on_collision",
+        "withTags": [
+          "pipe",
+          "ground",
+          "ceiling"
+        ],
+        "effect": "fade"
+      }
+    ]
+  },
+  {
+    "id": "pipeTop",
+    "tags": [
+      "pipe",
+      "pipe-top"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a green pipe obstacle pointing downward",
+      "imageWidth": 1.2,
+      "imageHeight": 6
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.2,
+      "height": 6,
+      "friction": 0,
+      "restitution": 0
+    }
+  },
+  {
+    "id": "pipeBottom",
+    "tags": [
+      "pipe",
+      "pipe-bottom"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a green pipe obstacle pointing upward",
+      "imageWidth": 1.2,
+      "imageHeight": 6
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.2,
+      "height": 6,
+      "friction": 0,
+      "restitution": 0
+    }
+  },
+  {
+    "id": "scoreZone",
+    "tags": [
+      "score-zone"
+    ],
+    "visual": {
+      "type": "rect",
+      "width": 0.3,
+      "height": 3,
+      "color": "#00000000"
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.3,
+      "height": 3,
+      "isSensor": true
+    },
+    "behaviors": [
+      {
+        "type": "score_on_collision",
+        "withTags": [
+          "bird"
+        ],
+        "points": 1,
+        "once": true
+      }
+    ]
+  },
+  {
+    "id": "pipeGroup",
+    "tags": [
+      "pipe-group",
+      "obstacle"
+    ],
+    "behaviors": [
+      {
+        "type": "translate",
+        "direction": {
+          "type": "vector",
+          "x": -1,
+          "y": 0
+        },
+        "speed": 15
+      },
+      {
+        "type": "destroy_when_off_screen",
+        "edge": "left",
+        "buffer": 2,
+        "recursive": true
+      },
+      {
+        "type": "configure_children_at_spawn",
+        "configs": [
+          {
+            "childName": "pipeTop",
+            "property": "localTransform.y",
+            "randomRange": [
+              0.5,
+              6.5
+            ]
+          },
+          {
+            "childName": "pipeBottom",
+            "property": "localTransform.y",
+            "offsetFrom": "pipeTop",
+            "offset": -9
+          },
+          {
+            "childName": "scoreZone",
+            "property": "localTransform.y",
+            "offsetFrom": "pipeTop",
+            "offset": -4.5
+          }
+        ]
+      }
+    ],
+    "children": [
+      {
+        "name": "pipeTop",
+        "prefab": "pipeTop",
+        "localTransform": {
+          "x": 0,
+          "y": 0,
+          "angle": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        }
+      },
+      {
+        "name": "pipeBottom",
+        "prefab": "pipeBottom",
+        "localTransform": {
+          "x": 0,
+          "y": 0,
+          "angle": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        }
+      },
+      {
+        "name": "scoreZone",
+        "prefab": "scoreZone",
+        "localTransform": {
+          "x": 0,
+          "y": 0,
+          "angle": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "ground",
+    "tags": [
+      "ground"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a grassy ground floor",
+      "imageWidth": 16,
+      "imageHeight": 1.5
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 16,
+      "height": 1.5,
+      "friction": 0.5,
+      "restitution": 0
+    }
+  },
+  {
+    "id": "ceiling",
+    "tags": [
+      "ceiling"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a sky ceiling boundary",
+      "imageWidth": 16,
+      "imageHeight": 0.5
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 16,
+      "height": 0.5,
+      "friction": 0,
+      "restitution": 0
+    }
+  }
+]

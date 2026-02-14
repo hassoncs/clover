@@ -198,6 +198,15 @@ func _register_core_query_handlers() -> void:
 	_query_system.register_handler("queryPointEntity", func(args): return _physics_queries.query_point_entity(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("screenToWorld", func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("getSplatTexture", func(_args): return get_splat_texture())
+	_query_system.register_handler("preloadTextures", func(args):
+		var urls = args[0] if args.size() > 0 else []
+		if urls is String:
+			urls = JSON.parse_string(urls)
+			if urls == null: urls = []
+		if urls is Array:
+			_visual_renderer.preload_textures(urls)
+		return {"ok": true}
+	)
 
 func _auto_register_bridge_methods(modules: Array) -> Dictionary:
 	var registry = {}
@@ -318,6 +327,7 @@ func _to_camel_case(snake: String) -> String:
 
 func _js_load_game_json(args: Array) -> bool: return load_game_json(str(args[0])) if args.size() > 0 else false
 func _js_clear_game(_args: Array) -> void: clear_game()
+func _js_soft_reset(_args: Array) -> void: clear_game()
 func _js_set_inspect_mode(args: Array) -> void: if args.size() >= 1: set_inspect_mode(bool(args[0]))
 func _js_pause_physics(_args: Array) -> void: pause_physics()
 func _js_resume_physics(_args: Array) -> void: resume_physics()

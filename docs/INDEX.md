@@ -56,7 +56,7 @@ Reference
  **troubleshooting Symptoms causes fixes
  **research Investigations, experiments
  **planning Roadmaps, feature plans
- **templates Reusable patterns, examples Evergreen catalog
+  **prefabs Reusable patterns, examples Evergreen catalog
  **log/** Status updates, completion notes-prefixed
  **archive Historical docs, outdated content
 

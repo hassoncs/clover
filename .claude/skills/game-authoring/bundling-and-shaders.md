@@ -18,13 +18,11 @@ r2/games/{slug}/
   constants.json         # Optional compile-time constants (resolved via { const: "NAME" })
   effects.json           # Optional shader/effect definitions
   assets.json            # Optional asset references
-  templates/             # Prefab definitions (maps to GameDefinition.prefabs)
+  prefabs/               # Prefab definitions (maps to GameDefinition.prefabs)
     all.json             # Array of prefab objects [{id, tags, visual, physics, ...}]
   entities/              # Entity placements
     initial.json         # Array of entity objects [{id, name, prefab, transform, ...}]
-  rules/                 # Game rules
-    gameplay.json        # Array of rule objects [{id, trigger, conditions, actions, ...}]
-  scripts/               # Optional JavaScript logic (plain JS, not TypeScript)
+  scripts/               # JavaScript logic (plain JS, not TypeScript)
     main.js              # Uses exports.functionName = function(ctx) { ... }
   assets/                # Optional local asset files (images, sounds)
   

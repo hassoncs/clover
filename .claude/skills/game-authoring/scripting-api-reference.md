@@ -4,7 +4,7 @@ description: "Scripting API reference for QuickJS sandbox. Covers ScriptContext,
 
 # Scripting API Reference
 
-Scripts provide imperative game logic beyond what the declarative rules system can express. They run in a sandboxed QuickJS environment.
+Scripts provide the imperative game logic for Slopcade. They run in a sandboxed QuickJS environment.
 
 ## Script Lifecycle Hooks
 
@@ -229,18 +229,6 @@ exports.onUpdate = function(ctx, dt) {
 };
 ```
 
-### Run Script from Rules
-```typescript
-// In rules:
-{ type: "run_script", export: "handleTap", args: { tubeIndex: 0 } }
-
-// In script:
-exports.handleTap = function(ctx, args) {
-  const tubeIndex = args.tubeIndex;
-  // ...
-};
-```
-
 ### Spawning and Tracking
 ```javascript
 exports.onUpdate = function(ctx, dt) {
@@ -274,4 +262,3 @@ Scripts run with safety limits per frame:
 - The sandbox has no access to DOM, network, or file system
 - `ctx.random()` is seeded for determinism in replays
 - All position values are in world units (meters), not pixels
-- Named exports (e.g., `exports.handleTap`) can be called from rules via `run_script` action

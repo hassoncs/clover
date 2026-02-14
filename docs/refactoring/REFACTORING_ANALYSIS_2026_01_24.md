@@ -39,7 +39,7 @@ This analysis identifies **15 refactoring candidates** across the codebase, cate
 4. Input event handling (touch, keyboard, mouse, tilt, joystick, D-pad, buttons)
 5. Game loop management (16ms interval)
 6. Collision event processing
-7. Rules evaluation orchestration
+7. Script execution orchestration
 8. HUD rendering (score, timer, lives, variable displays)
 9. Overlay rendering (pause, ready, win/lose states)
 
@@ -129,12 +129,12 @@ Implementation:
 - **Mixed UI Concerns**: Asset pack management + generation logic + alignment editing
 - **Large Inline State**: 10+ useState hooks for various UI states
 - **Complex Effect Logic**: Lines 73-113 have a massive useEffect with side effects
-- **No separation**: Quick create form, pack selector, template grid all in one file
+- **No separation**: Quick create form, pack selector, prefab grid all in one file
 
 **Current Sections:**
 1. Asset pack selection & management (lines 35-178)
 2. Quick generation form (lines 45-227)
-3. Template grid display (lines 448-484)
+3. Prefab grid display (lines 448-484)
 4. Alignment editor modal (lines 498-506)
 
 **Recommended Refactoring:**
@@ -147,7 +147,7 @@ Refactored:
 ├── AssetPackManager.tsx         # Pack CRUD operations
 ├── QuickGenerationForm.tsx      # AI generation form
 ├── AssetPackSelector.tsx        # Already exists, keep separate
-└── TemplateGrid.tsx             # Template display grid
+└── PrefabGrid.tsx               # Prefab display grid
 ```
 
 **Estimated Effort:** 0.5-1 day  

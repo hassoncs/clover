@@ -202,7 +202,7 @@ Task 5 (Final review & commit)
   - **Earn (Sparks)**: Play games → earn Sparks → fuel AI generation
   - **Earn (Gems)**: Create popular games → earn Gems from engagement
   - **Spend (Sparks)**: AI asset generation, game reskins
-  - **Spend (Gems)**: Profile customization, premium templates, creator tips
+  - **Spend (Gems)**: Profile customization, premium prefabs, creator tips
   
   ### Balance Mechanisms
   [How we prevent inflation/deflation]

@@ -369,7 +369,7 @@ The planning stage detects paint/shader keywords and injects archetype context i
 
 ## Related Skills
 
-- **game-authoring**: `GameDefinition` structure, prefabs, entities, behaviors, rules
+- **game-authoring**: `GameDefinition` structure, prefabs, entities, scripts
 - **asset-pack-generation**: Asset pipeline details, Scenario.com/ComfyUI providers
 - **effects-system**: Shader effects created in shader stage
 - **storage-ops**: R2 artifact storage, D1 database

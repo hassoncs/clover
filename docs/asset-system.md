@@ -10,9 +10,8 @@ Game Workspace (git-backed)          Content-Addressable Blob Store
 ├── prefabs/                         D1: assets table (metadata)
 │   ├── ball.json ──assetId──────►   ┌──────────────────────┐
 │   └── tube.json ──assetId──────►   │  blobs/a3/a3f2b8...  │
-├── entities/                        │  blobs/5f/5f5557...  │
-├── rules/                           │  blobs/d3/d35e19...  │
-├── scripts/                         └──────────────────────┘
+├── entities/
+├── scripts/
 └── ...                              Served: /assets/blobs/{hh}/{hash}
 ```
 

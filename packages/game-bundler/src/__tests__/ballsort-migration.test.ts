@@ -75,10 +75,11 @@ describe("Ball Sort Migration", () => {
 		expect(moduleNames.length).toBeGreaterThan(0);
 
 		const allScriptContent = Object.values(scripts!).join("\n");
-		expect(allScriptContent).toContain("exports.generateLevel");
+		expect(allScriptContent).toContain("exports.onStart");
+		expect(allScriptContent).toContain("exports.onInput");
+		expect(allScriptContent).toContain("exports.onUpdate");
 		expect(allScriptContent).toContain("exports.nextLevel");
 		expect(allScriptContent).toContain("exports.replayLevel");
-		expect(allScriptContent).toContain("exports.onStart");
 	});
 
 	it("compileSectioned succeeds", () => {
@@ -118,9 +119,6 @@ describe("Ball Sort Migration", () => {
 			true,
 		);
 		expect(result.processedFiles.some((f) => f.startsWith("entities/"))).toBe(
-			true,
-		);
-		expect(result.processedFiles.some((f) => f.startsWith("rules/"))).toBe(
 			true,
 		);
 		expect(result.processedFiles.some((f) => f.startsWith("scripts/"))).toBe(

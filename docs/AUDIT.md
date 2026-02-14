@@ -34,7 +34,7 @@ Slopcade Codebase Audit
 
 Sub-system Location Purpose
 
- **Types** (32 files GameDefinition, entities, rules, behaviors, physics, containers, state machines, world ops,.
+  **Types** (32 files GameDefinition, entities, scripts, physics, containers, world ops,.
  **Schemas** (4 files Drizzle DB schemas users, games, economy, agent-runs
  Parser, tokenizer, evaluator dynamic game formulas computed value system property watching
  **Systems** (18 dirs State machine, grid, inventory, checkpoint, path,,, spatial-query, container, slots, layout
@@ -104,7 +104,7 @@ HTTP routes tRPC procedures WebSocket upgrade agent runs webhook endpoints
 
 .-engine
 
- Client-side game runtime, behaviors, rules, scripting, animations.
+  Client-side game runtime, scripts, animations.
 
 
 
@@ -112,18 +112,14 @@ Sub-system Location Lines Purpose
 
  **GameRuntime**.., Main React component initializes, runs game loop, handles input/events
  **GameSystemRunner**. 155 Phase-ordered system orchestrator
- **RulesSystem**/runner/wrappers. 755 Trigger condition action evaluation
- **ScriptSandbox** `systems/runner/wrappers. QuickJS script execution
- **EntityManager**. ~400 Entity lifecycle, template spawning, tag queries
- **BehaviorExecutor**. ~300 Entity behavior execution phase
- **TweenSystem**. Tween animations
- **GameLoader**. ~130 Initialization GameDefinition
- **GameLoopController**. ~180 Fixed-timestep frame timing
- **WorldOpsImpl**. ~300 High-level world manipulation API
- RuntimeSystems** `systems/runner/wrappers, 300 Input, Viewport, Camera, Physics, Behaviors, Match3, Container,.
-Action Executors** `rules/actions ~800 Spawn, destroy, physics,, sound,, inventory,.
- **Trigger/Condition `rules, ~500 Collision,, logic,, container evaluators
- ~1, 000 Movement,,,, lifecycle behaviors
+  **ScriptSandbox** `systems/runner/wrappers. QuickJS script execution
+  **EntityManager**. ~400 Entity lifecycle, prefab spawning, tag queries
+  **TweenSystem**. Tween animations
+  **GameLoader**. ~130 Initialization GameDefinition
+  **GameLoopController**. ~180 Fixed-timestep frame timing
+  **WorldOpsImpl**. ~300 High-level world manipulation API
+  RuntimeSystems** `systems/runner/wrappers, 300 Input, Viewport, Camera, Physics, Match3, Container,.
+  ~1, 000 Movement,,,, lifecycle scripts
 
 React component game screens
  GodotBridge, Physics2D adapter, types systems
@@ -278,44 +274,18 @@ Compiles TypeScript game scripts JSON definitions GameDefinition bundles.
 . initialize
  system. initialize phase order
  ScriptSandbox compiles scripts
- GodotBridge. loadGame(definition
- EntityFactory creates scene nodes
- VisualRenderer loads textures
- GameLoopController starts 60fps
- frame collect input. update sync
+  GodotBridge. loadGame(definition
+  EntityFactory creates scene nodes
+  VisualRenderer loads textures
+  GameLoopController starts 60fps
+  frame collect input. update sync
 
 
 /game[id.,.,/AssetPreloader.,-engine/GameRuntime..,.,/EntityManager.,/GameSystemRunner., 14 wrapper systems,/GodotBridge..,/scripts/GameBridge.
 
 
 
- Flow Rule Evaluation)
-
-
- GameSystemRunner. update
- RulesSystem. update,
- rule
- TriggerEvaluator. evaluate,
- CollisionTriggerEvaluator.
- InputTriggerEvaluator.
- LogicTriggerEvaluator,,
- triggered
- ConditionEvaluator. evaluateAll
- LogicConditionEvaluator
- PhysicsConditionEvaluator
- ContainerConditionEvaluator
- conditions met
- ActionRegistry. execute(actions
- 22 specialized executors
- WinLoseConditionEvaluator. check
- StateMachine transitions
-
-
-., 3 trigger evaluators, condition evaluators,., 22 action executors
-
-
-
- Flow 3: AI Game Generation
+  Flow 3: AI Game Generation
 
 
  User enters/AIGenerateModal.
@@ -399,7 +369,7 @@ Store Location Key Type Value Type Lifecycle
 
  **Entity Map** `EntityManager. entities (entityId) `RuntimeEntity Game session
 
- **Template `EntityManager. templates (templateId) `EntityTemplate Game session
+  **Prefab `EntityManager. prefabs (prefabId) `EntityPrefab Game session
 
  **Tag `EntityManager. tagIndex `number (tagId) `Set<string> (entityIds) Game session
 
@@ -407,11 +377,7 @@ Store Location Key Type Value Type Lifecycle
 
  State lists**. `ListValue (any[
 
- **Cooldowns** `GameState. (ruleId) `number (remaining) Game session
-
- **Fired-once**. `Set<string> (ruleIds) Game
-
- **Pending `GameState. pendingEvents `string Per-frame
+  **Pending `GameState. pendingEvents `string Per-frame
 
  **Editor Document** `EditorProvider.. `GameDefinition Editor session
 
@@ -652,10 +618,7 @@ File Lines Issue
  `RunCoordinatorDO., 803 WebSocket state machine recovery billing
  `agent-runs., 020 Route orchestration mixed
  `games. CRUD generation validation mixed
- `RulesSystem. Trigger/condition/action state machines
- `rules. 618 Massive union
- `ScriptSandboxRuntimeSystem. 586 Sandbox context creation hook dispatch
- `GameDefinition. 545 Everything-bag type
+  `GameDefinition. 545 Everything-bag type
 
 
 
@@ -672,16 +635,6 @@ File Lines Issue
 . system, 231 lines themes,, generation jobs, UI components. 4 files minimum.
 
 .test Zero tests 67 components. 1 test 21 files. complex system 755 lines 1 test file.
-
-8. 2 Architecture Strengths (Preserve
-
-.-phase system elegant extensible
-. wallet system well-designed
-. game JSON-based game format
-..... pattern
-. **tRPC type end-to-end types API to client
-. **Durable Object agent run coordination
-. **Expression sophisticated formula evaluation
 
 . 3 Open Questions
 

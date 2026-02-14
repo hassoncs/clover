@@ -11,12 +11,12 @@ description: "Machinations-inspired economy graph engine for games. Covers resou
 
 ## When to Use This Skill
 
-Load this skill when:
+Load when working on:
 - Adding an economy system to a game
 - Defining resource flows, pools, and converters
 - Creating economy-driven game mechanics
 - Debugging economy simulation issues
-- Integrating economy with rules/actions
+- Integrating economy with game scripts
 
 ## Key Concepts
 
@@ -56,7 +56,7 @@ Authoring (TypeScript) → Validation (API) → Runtime (Godot)
 - Initializes when `definition.economy` is present
 - Runs at 1 tick/second (configurable)
 - Emits events: `economy:pool_full`, `economy:pool_empty`, `economy:transfer`
-- Integrates with rules system for actions/conditions
+- Accessible from game scripts via ScriptContext
 
 ## Common Patterns
 
@@ -185,7 +185,7 @@ Check pool value:
 ## Related Skills
 
 - `game-authoring.md` — Economy is part of GameDefinition
-- `ecs-architecture.md` — Economy actions/conditions integrate with rules
+- `ecs-architecture.md` — Economy accessible from scripts
 
 ## Changelog
 

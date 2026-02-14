@@ -117,8 +117,6 @@ In `breakoutBouncer/game.ts`, only ONE input method should be active at a time f
 
 ## Related Files
 
-- **Game definition:** `app/lib/test-games/games/breakoutBouncer/game.ts`}                                     }
-- **Input trigger evaluation:** `app/lib/game-engine/rules/triggers/InputTriggerEvaluator.ts`
-- **Physics actions:** `app/lib/game-engine/rules/actions/PhysicsActionExecutor.ts`
+- **Game definition:** `app/lib/test-games/games/breakoutBouncer/game.ts`
 - **Game runtime (input handling):** `app/lib/game-engine/GameRuntime.godot.tsx`
 - **Input event flow docs:** `INPUT_EVENT_FLOW.md`

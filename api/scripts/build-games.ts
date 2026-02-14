@@ -14,6 +14,7 @@ import {
 } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
+import { getPlatformProxy } from "wrangler";
 import { GAME_IDS, loadGame } from "../src/lib/game-registry";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -112,7 +113,6 @@ function wrangler(args: string): void {
 }
 
 const R2_SYNC_MANIFEST = join(API_ROOT, ".r2-sync-manifest.json");
-const R2_BUCKET_NAME = "slopcade-assets-dev";
 
 function contentTypeForExt(ext: string): string {
 	switch (ext) {
@@ -153,7 +153,12 @@ function walkR2Files(
 	return files;
 }
 
-function syncLocalR2(): void {
+async function syncLocalR2(): Promise<void> {
+	const proxy = await getPlatformProxy<{
+		ASSETS: import("@cloudflare/workers-types").R2Bucket;
+	}>();
+	const r2 = proxy.env.ASSETS;
+
 	const excludeDirs = new Set<string>();
 	const files = walkR2Files(R2_DIR, "", excludeDirs);
 
@@ -164,7 +169,6 @@ function syncLocalR2(): void {
 
 	const newManifest: Record<string, string> = {};
 	let uploaded = 0;
-	let deleted = 0;
 	let skipped = 0;
 
 	for (const { key, filePath } of files) {
@@ -179,18 +183,20 @@ function syncLocalR2(): void {
 
 		const ext = filePath.substring(filePath.lastIndexOf("."));
 		const ct = contentTypeForExt(ext);
-		wrangler(
-			`r2 object put ${R2_BUCKET_NAME}/${key} --file="${filePath}" --local --ct="${ct}"`,
-		);
+		const arrayBuf = new Uint8Array(content).buffer;
+		await (r2 as any).put(key, arrayBuf, { httpMetadata: { contentType: ct } });
 		uploaded++;
 	}
 
+	let deleted = 0;
 	for (const key of Object.keys(oldManifest)) {
 		if (!newManifest[key]) {
-			wrangler(`r2 object delete ${R2_BUCKET_NAME}/${key} --local`);
+			await (r2 as any).delete(key);
 			deleted++;
 		}
 	}
+
+	await proxy.dispose();
 
 	writeFileSync(R2_SYNC_MANIFEST, JSON.stringify(newManifest, null, 2));
 
@@ -246,7 +252,7 @@ function seedLocalD1(games: EmbeddedGameEntry[]): void {
 	}
 }
 
-function seedLocal(embeddedGames: EmbeddedGameEntry[]): void {
+async function seedLocal(embeddedGames: EmbeddedGameEntry[]): Promise<void> {
 	if (SKIP_SEED) {
 		console.log("⏭ Skipping local seed (--skip-seed)");
 		return;
@@ -257,7 +263,7 @@ function seedLocal(embeddedGames: EmbeddedGameEntry[]): void {
 	try {
 		seedLocalD1(embeddedGames);
 		console.log(`✓ Seeded local D1 with ${embeddedGames.length} games`);
-		syncLocalR2();
+		await syncLocalR2();
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
 		console.warn(`⚠ Local seed failed (non-fatal): ${msg}`);
@@ -324,8 +330,8 @@ async function build(): Promise<void> {
 
 			const gameTotalBytes = Buffer.byteLength(definitionJson) + assetBytes;
 			const hasScript =
-				typeof entry.definition.script === "string" &&
-				entry.definition.script.length > 0;
+				!!entry.definition.modules &&
+				Object.keys(entry.definition.modules).length > 0;
 			embeddedGames.push({
 				gameId: id,
 				uuid: gameUuid,
@@ -373,7 +379,7 @@ async function build(): Promise<void> {
 
 	generateEmbeddedRegistry(embeddedGames);
 
-	seedLocal(embeddedGames);
+	await seedLocal(embeddedGames);
 
 	const succeeded = results.filter((r) => r.success).length;
 	const failed = results.filter((r) => !r.success).length;

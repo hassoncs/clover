@@ -10,8 +10,8 @@ Slopcade Vision
 
  fundamental insight **Games not monolithic**. composed
 
-. rules, physics, logic
- 2. **Templates** entities (ball, paddle, brick
+. scripts, physics, logic
+ 2. **Prefabs** entities (ball, paddle, brick
 . **Assets** visuals
  4. aesthetic direction
 
@@ -22,12 +22,12 @@ Slopcade Vision
  GAME = + VISUALS
 
 
- GAME (Logic) VISUALS (Assets
- Physics rules Ball sprite
- Scoring system Paddle sprite
- Win/lose conditions Brick sprites
- Entity behaviors Background
- Templates definitions
+  GAME (Logic) VISUALS (Assets
+  Physics scripts Ball sprite
+  Scoring system Paddle sprite
+  Win/lose conditions Brick sprites
+  Entity scripts Background
+  Prefabs definitions
 
  Engine defines exists Assets define looks
 
@@ -39,8 +39,8 @@ Slopcade Vision
 Layer defines shared?
 
  Aesthetic prompt Halloween") Across games
- **Asset images game templates game forks
- Rules, physics, templates forking
+  **Asset images game prefabs game forks
+  Scripts, physics, prefabs forking
  Instance** active pack
 
 
@@ -68,17 +68,17 @@ Layer defines shared?
  game engine defines
 
 
- "Breakout Bouncer"
- Templates
- ball, bounces
- paddle, player-controlled
- brick, destroyable
- wall, static
- Rules
- Ball bounces off paddle walls
- destroys bricks collision
- loses life falls below paddle
- Win all bricks destroyed
+  "Breakout Bouncer"
+  Prefabs
+  ball, bounces
+  paddle, player-controlled
+  brick, destroyable
+  wall, static
+  Scripts
+  Ball bounces off paddle walls
+  destroys bricks collision
+  loses life falls below paddle
+  Win all bricks destroyed
  Physics
  Gravity none
  Bounce coefficient 1. 0
@@ -86,9 +86,9 @@ Layer defines shared?
 
 
 Game engines **forked**. fork
- get own copy rules
- modify anything
- fork shares asset packs original_game_id
+  get own copy scripts
+  modify anything
+  fork shares asset packs original_game_id
 
 Asset Packs (Game-Specific Collections
 
@@ -128,19 +128,19 @@ Asset Packs (Game-Specific Collections
 
 
 
- Original Game "Breakout Classic"
- base_game_id game_001
- forked_from_id
- Templates [ball, paddle, brick, wall
- Asset Packs [Classic, Halloween, Sci-Fi
+  Original Game "Breakout Classic"
+  base_game_id game_001
+  forked_from_id
+  Prefabs [ball, paddle, brick, wall
+  Asset Packs [Classic, Halloween, Sci-Fi
 
  forks
 
- Game "My Breakout"
- base_game_id_001! asset packs
+  Game "My Breakout"
+  base_game_id_001! asset packs
 
- Templates [ball, paddle, brick, wall, powerup
-Asset Packs, Halloween, Sci-Fi Inherited access
+  Prefabs [ball, paddle, brick, wall, powerup
+  Asset Packs, Halloween, Sci-Fi Inherited access
 
 
  share_game_id, use packs.
@@ -169,47 +169,47 @@ Asset Packs, Halloween, Sci-Fi Inherited access
 . selects game "Breakout Bouncer
 . theme "Halloween creates
 . creates pack theme_id
-. template
-. Combine theme prompt template description
+. prefab
+. Combine theme prompt prefab description
 . Generate image
 . Upload R2
 . Create asset record
-. pack entry (template
+. pack entry (prefab
 . Mark pack complete
 . Activate pack
 . shows Halloween visuals!
 
 
- Prompt Hierarchy
+  Prompt Hierarchy
 
 
- Final Prompt Theme Prompt Template Description Style Modifiers
+  Final Prompt Theme Prompt Prefab Description Style Modifiers
 
 
- Theme spooky halloween pumpkins bats
- Template bouncing ball,, sprite
- Style art,, edges
- Final spooky halloween pumpkins bats,,
+  Theme spooky halloween pumpkins bats
+  Prefab bouncing ball,, sprite
+  Style art,, edges
+  Final spooky halloween pumpkins bats,,
 ,,,,
 
 
 
 
- Principles
+  Principles
 
 . No URL Storage
 
- URLs, never stored
+  URLs, never stored
 
 
- Database stores R2 keys
+  Database stores R2 keys
 ._key "generated/game123/pack456/ball.
 
- URLs constructed runtime
+  URLs constructed runtime
 _BASE_URL. r2_key
 
 
- URLs change migration, domain changes. Keys stable.
+  URLs change migration, domain changes. Keys stable.
 
 . Source Truth
 
@@ -217,47 +217,47 @@ data lives one place
 
 
 
- Theme prompt._modifier `themes` table
- Asset image._key Content-addressed blobs
- Template→Asset mapping `assets` table with prefab assetId
- (Legacy pack system removed — assets now use BlobStore)
+  Theme prompt._modifier `themes` table
+  Asset image._key Content-addressed blobs
+  Prefab→Asset mapping `assets` table with prefab assetId
+  (Legacy pack system removed — assets now use BlobStore)
 
 . Normalized, Not Duplicated
 
- Three tables, clear relationships
+  Three tables, clear relationships
 
 
- themes_packs pack_entries assets
+  themes_packs pack_entries assets
 
 
- No data duplication. Changes propagate.
+  No data duplication. Changes propagate.
 
 . Everything Has Owner
 
 
- Theme creator_user_id
- Asset
- Pack
- Game user_id owns
+  Theme creator_user_id
+  Asset
+  Pack
+  Game user_id owns
 
 
- Enables attribution, permissions, discovery.
+  Enables attribution, permissions, discovery.
 
 . Deletes
 
- Nothing deleted. `deleted_at
+  Nothing deleted. `deleted_at
 
 
- deleted NULL show active records
+  deleted NULL show active records
 
 
- Enables recovery audit trails.
+  Enables recovery audit trails.
 
 
 
- User Journeys
+  User Journeys
 
- 1: Play's Game
+  1: Play's Game
 
 
 . Browse games
@@ -266,7 +266,7 @@ data lives one place
 .!
 
 
- 2: Fork Retheme
+  2: Fork Retheme
 
 
 . "Breakout Classic
@@ -274,11 +274,11 @@ data lives one place
 . own "My Breakout"
 . "Change Theme"
 .-Fi theme
-. System generates templates
+. System generates prefabs
 . Play Sci-Fi Breakout!
 
 
- Create New Theme
+  Create New Theme
 
 
 . Themes
@@ -288,7 +288,7 @@ data lives one place
 . Apply game generate assets
 
 
- Journey 4: Explore Theme Gallery
+  Journey 4: Explore Theme Gallery
 
 
 . "Halloween
@@ -305,83 +305,83 @@ data lives one place
 
 . "Breakout Classic
 . Open game editor
-. Add template "powerup
-. Define behavior
+. Add prefab "powerup
+. Define script
 . Generate powerup theme
 . Publish modified game
 
 
 
 
- Technical Architecture
+  Technical Architecture
 
- Database
-
-
- ┌─────────────┐
- themes
- ├─────────────┤
- id │◄─────────────────────┐
- name
- prompt
- style
- └─────────────┘ │
+  Database
 
 
-
- ┌──────┴──────┐
- assets_packs games
- ├─────────────┤
- id │◄──┐
- r2_key name definition
- theme_id base_game_id base_game_id│
- prompt theme_id └─────────────┘
- └─────────────┘
-
- ┌───────┴─────────┐
- assets
- ├─────────────────┤
- id
- content_hash
- r2_key
- └─────────────────┘
+  ┌─────────────┐
+  themes
+  ├─────────────┤
+  id │◄─────────────────────┐
+  name
+  prompt
+  style
+  └─────────────┘ │
 
 
- ### Code Organization
+
+  ┌──────┴──────┐
+  assets_packs games
+  ├─────────────┤
+  id │◄──┐
+  r2_key name definition
+  theme_id base_game_id base_game_id│
+  prompt theme_id └─────────────┘
+  └─────────────┘
+
+  ┌───────┴─────────┐
+  assets
+  ├─────────────────┤
+  id
+  content_hash
+  r2_key
+  └─────────────────┘
 
 
- shared
- types
- GameDefinition. Game engine definition
+  ### Code Organization
 
- api/src/services
- BlobStore. Content-addressed asset storage
+
+  shared
+  types
+  GameDefinition. Game engine definition
+
+  api/src/services
+  BlobStore. Content-addressed asset storage
 
 api/
- src/
- trpc/routes
+  src/
+  trpc/routes
 -system. asset/theme/pack APIs
- ai
- scenario.. client
- pipeline Generation pipeline
- scripts
- theme-game. CLI tool
+  ai
+  scenario.. client
+  pipeline Generation pipeline
+  scripts
+  theme-game. CLI tool
 
- app
+  app
 
- admin/themes Theme management UI
- play/[id]. Game player
- components
- ThemePicker. Theme selection
-
-
-
-
- Offline Mode Local Asset Serving
+  admin/themes Theme management UI
+  play/[id]. Game player
+  components
+  ThemePicker. Theme selection
 
 
 
- native builds (iOS/Android, users
+
+  Offline Mode Local Asset Serving
+
+
+
+  native builds (iOS/Android, users
 . Download game assets
 . Play offline
 . Switch between online/offline modes
@@ -392,7 +392,7 @@ api/
 
 
 
- ASSET RESOLUTION
+  ASSET RESOLUTION
 
 
 
@@ -404,45 +404,44 @@ api/
 
 
 
- ┌───────────────┐
+  ┌───────────────┐
 
  Offline Mode?
 
- └───────┬───────┘ │
+  └───────┬───────┘ │
 
 
 
- ┌────────────┴────────────┐
+  ┌────────────┴────────────┐
 
 
 
 
 
- ┌─────────────┐
+  ┌─────────────┐
 
  OFFLINE ONLINE
 
- Local Server│ CDN │
-
- └─────────────┘ └─────────────┘
-
+  Local Server│ CDN │
+  └─────────────┘ └─────────────┘
 
 
 
 
- localhost:8765/ cdn. slopcade. com
 
- games/breakout/ generated/game123/
+  localhost:8765/ cdn. slopcade. com
 
- ball. png pack456/ball. png
+  games/breakout/ generated/game123/
 
+  ball. png pack456/ball. png
 
 
 
 
 
 
- Downloading Game
+
+  Downloading Game
 
 
 . User clicks "Download Offline
@@ -456,8 +455,8 @@ api/
 ..., Full game JSON
  scripts..., files
 
- templateId "ball,/g/p.,
- templateId "paddle,.,
+ prefabId "ball,/g/p.,
+ prefabId "paddle,.,
 ...
 
 
@@ -500,7 +499,7 @@ Local Structure
  breakout-123/
  manifest. Game definition list
  scripts/
- game-rules.
+ game-scripts.
  generated/
  game123
  pack456/
@@ -540,7 +539,7 @@ Local Structure
 
  Assets download
 
- templateId,
+ prefabId,
  r2Key, Path R2 local path
  url, CDN URL download
 ,
@@ -664,7 +663,7 @@ startLocalAssetServer
 
 export async function downloadGameForOffline
  gameId string,
-? (downloaded, total
+ ? (downloaded, total
 
 . Fetch manifest API
  await.. offlineManifest. query gameId
@@ -876,10 +875,10 @@ Phase 2: Theme Marketplace
  "Use ball sprite game
  Asset creators get attribution
 
- Phase 4: Game Engine Templates
+ Phase 4: Game Engine Prefabs
  Pre-built game engines, Puzzle, Shooter
- from Platformer template
- Customize rules
+ from Platformer prefab
+ Customize scripts
  Share engines community
 
  Phase 5 Collaborative Creation
@@ -896,10 +895,10 @@ Phase 2: Theme Marketplace
 
  **Theme** reusable aesthetic direction
  **Asset** single generated image
- complete set assets game templates
- **Pack single template mapping
+ complete set assets game prefabs
+ **Pack single prefab mapping
  entity type game engine,,.
- rules, physics, template definitions
+ scripts, physics, prefab definitions
  **Game Instance** specific configuration active asset pack
  **Fork** copy game base_game_id
  root game ID

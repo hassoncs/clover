@@ -516,6 +516,12 @@ export interface GameDefinition {
 	overlay?: OverlayConfig;
 
 	party?: import("./party").PartyConfig;
+
+	/**
+	 * Script modules loaded by ScriptSandboxRuntimeSystem.
+	 * Keys are module names, values are JavaScript source code strings.
+	 */
+	modules?: Record<string, string>;
 }
 
 export interface HoverHighlightConfig {

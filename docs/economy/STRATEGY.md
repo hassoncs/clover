@@ -106,7 +106,7 @@ Slopcade will utilize a **dual-currency system** to manage these approaches:
 - **Tipping System:** Allow users to give small Gem "Sparks" of appreciation to creators.
 
 ### Phase 3: Expansion (Prestige)
-- **Premium Templates:** Advanced game templates unlockable with Gems.
+- **Premium Prefabs:** Advanced game prefabs unlockable with Gems.
 - **Visibility Boosts:** Spend Gems to get a game into the "Recommended" section.
 - **Marketplace:** (Proposed) Safe trading or gifting of custom asset prompts.
 

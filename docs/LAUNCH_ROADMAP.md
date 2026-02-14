@@ -5,15 +5,15 @@ Slopcade App Store Launch
 
 
 
-. Tier Core Game Templates (6 Games
- template/Lose, **Polished, Asset, **1-tap AI Regeneration**.
+. Tier Core Game Prefabs (6 Games
+ prefab/Lose, **Polished, Asset, **1-tap AI Regeneration**.
 
  Current Status Polish Needed
 
- Peggle Clone Template example
+ Peggle Clone Prefab example
  Physics Pinball HUD styling, scoring animations
  Match-3, polish
- **Jumpy Platformer AI Template 100% polished "Mario-feel" example
+ **Jumpy Platformer AI Prefab 100% polished "Mario-feel" example
  **Stack Attack** Tower Stacker Win conditions, block variety
  **Breakout** Arcade Bouncer Level layouts, power-ups
 

@@ -51,7 +51,7 @@ Project Guide
 
 Interactive Documentation Site
  Start with `pnpm docs access auto-updating documentation http://localhost:3000:
- **5 Interactive Pages** Behaviors, Effects, Particles, Rules, Examples
+ **3 Interactive Pages** Effects, Particles, Examples
  **7 Comprehensive Guides** Setup, testing, asset generation, more
  **TypeDoc API Reference** Full TypeScript API documentation
  **Auto-Updates** Changes to TypeScript files update in < 3 seconds
@@ -122,7 +122,7 @@ Game Engine Architecture (Script-First)
 
 The game engine underwent a major migration in Feb 2026 to a script-first architecture.
 
-- **Script-First Logic**: All game logic is now implemented in JavaScript/TypeScript modules. The legacy Rules and Behavior systems are deprecated.
+- **Script-First Logic**: All game logic is implemented in JavaScript/TypeScript modules.
 - **`scriptRef`**: Prefabs and Entities reference logic modules via the `scriptRef` field.
 - **Unified Event Bus**: Communication between engine and React UI flows through `GameEventBus`.
 - **Generic Variables**: `score`, `lives`, etc., are managed via a unified variables system.
@@ -158,7 +158,7 @@ Command  Action
  Path Purpose
 
  `lib/godot/` Bridge** TypeScript communication
- `lib/game-engine/ Entity manager, behaviors,
+  `lib/game-engine/ Entity manager, scripts,
  `lib/registry/ **Universal Registry** Auto-discovered loading system
  `app/examples/` Expo Router pages demos (auto-discovered
  `godot_project/ GDScript,, physics
@@ -374,8 +374,8 @@ Images not updating paths don `file://` prefix
 
 
 
- Related Documentation
+ [Related Documentation]
 
 [Documentation Skill]... opencode/skills/documentation. write docs project
 [Godot Project README].._project/README. Godot-specific documentation
-[Game Templates].. /docs/game-maker/templates Pre-built game patterns
+[Game Prefabs].. /docs/game-maker/prefabs Pre-built game patterns

@@ -1,0 +1,10 @@
+{
+	"id": "placeholder",
+	"tags": [],
+	"visual": {
+		"type": "rect",
+		"width": 1,
+		"height": 1,
+		"color": "#ffffff"
+	}
+}

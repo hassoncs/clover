@@ -8,207 +8,115 @@ Patterns extracted from production games. Read the full source at `r2/games/{slu
 
 ## Pattern: Tap-to-Flap (Flappy Bird)
 
-Simple tap input that sets upward velocity on a dynamic body.
+Simple tap input that sets upward velocity on a dynamic body via script.
 
-```typescript
-rules: [
-  {
-    id: "tap_to_flap",
-    trigger: { type: "tap" },
-    actions: [
-      { type: "set_velocity", target: { type: "by_tag", tag: "bird" }, y: 7 },
-    ],
-  },
-],
+```javascript
+// src/script.ts
+exports.onInput = function(ctx, event) {
+  if (event.type === 'tap') {
+    const birdId = ctx.queryEntities({ tag: 'bird' })[0];
+    if (birdId) {
+      ctx.setEntityVelocity(birdId, { x: 0, y: 7 });
+    }
+  }
+};
 ```
 
 ## Pattern: Timer Spawning (Flappy Bird)
 
-Periodically spawn entities using a repeating timer.
+Periodically spawn entities using `onUpdate` with an accumulator.
 
-```typescript
-{
-  id: "spawn_pipes",
-  trigger: { type: "timer", time: 2.5, repeat: true },
-  actions: [
-    {
-      type: "spawn",
-      template: "pipeGroup",
-      position: { type: "fixed", x: 8, y: 0 },
-    },
-  ],
-},
+```javascript
+// src/script.ts
+let spawnTimer = 0;
+
+exports.onUpdate = function(ctx, dt) {
+  spawnTimer += dt;
+  if (spawnTimer >= 2.5) {
+    spawnTimer = 0;
+    ctx.spawnEntity('pipeGroup', { x: 8, y: 0 });
+  }
+};
 ```
 
 ## Pattern: Child Entities with Random Positioning (Flappy Bird)
 
-Parent entity moves children together. `configure_children_at_spawn` randomizes child positions at spawn time.
+Parent entity moves children together. Randomize child positions at spawn time in `onStart`.
 
-```typescript
-pipeGroup: {
-  id: "pipeGroup",
-  tags: ["pipe-group"],
-  behaviors: [
-    { type: "translate", direction: { type: "vector", x: -1, y: 0 }, speed: 15 },
-    { type: "destroy_when_off_screen", edge: "left", buffer: 2, recursive: true },
-    {
-      type: "configure_children_at_spawn",
-      configs: [
-        { childName: "pipeTop", property: "localTransform.y", randomRange: [-6, -2] },
-        { childName: "pipeBottom", property: "localTransform.y",
-          offsetFrom: "pipeTop", offset: -9 },
-        { childName: "scoreZone", property: "localTransform.y",
-          offsetFrom: "pipeTop", offset: -4.5 },
-      ],
-    },
-  ],
-  children: [
-    { name: "pipeTop", prefab: "pipeTop",
-      localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { name: "pipeBottom", prefab: "pipeBottom",
-      localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { name: "scoreZone", prefab: "scoreZone",
-      localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-  ],
-},
+```javascript
+// src/script.ts
+exports.onStart = function(ctx) {
+  const pipeGroups = ctx.queryEntities({ tag: 'pipe-group' });
+  for (const id of pipeGroups) {
+    // Randomize child positions if needed
+  }
+};
 ```
 
 ## Pattern: Invisible Score Zones (Flappy Bird)
 
-Sensor colliders with transparent visuals for scoring.
+Sensor colliders with transparent visuals for scoring, handled in `onCollision`.
 
-```typescript
-scoreZone: {
-  id: "scoreZone",
-  tags: ["score-zone"],
-  visual: { type: "rect", width: 0.3, height: 3, color: "#00000000" },
-  collider: { shape: "box", width: 0.3, height: 3, isSensor: true },
-  behaviors: [
-    { type: "score_on_collision", withTags: ["bird"], points: 1, once: true },
-  ],
-},
+```javascript
+// src/script.ts
+exports.onCollision = function(ctx, collision) {
+  if (ctx.hasTag(collision.entityA, 'bird') && ctx.hasTag(collision.entityB, 'score-zone')) {
+    const score = ctx.getVariable('score') || 0;
+    ctx.setVariable('score', score + 1);
+    ctx.haptic('Light');
+  }
+};
 ```
 
 ## Pattern: Multi-Input Paddle Control (Breakout Bouncer)
 
-Supporting tap zones, keyboard buttons, AND tilt for the same action.
+Supporting tap zones and tilt for the same action.
 
-```typescript
-input: {
-  tapZones: [
-    { id: "left-zone", edge: "left", size: 0.5, button: "left" },
-    { id: "right-zone", edge: "right", size: 0.5, button: "right" },
-  ],
-  tilt: { enabled: true, sensitivity: 2, updateInterval: 16 },
-},
-rules: [
-  // Keyboard/button: held = continuous force
-  {
-    id: "paddle_left",
-    trigger: { type: "button", button: "left", state: "held" },
-    actions: [
-      { type: "apply_force", target: { type: "by_tag", tag: "paddle" },
-        x: { expr: "-variables.paddleForce" } },
-    ],
-  },
-  // Tap zones: tap = one-shot impulse
-  {
-    id: "tap_left",
-    trigger: { type: "tap", xMinPercent: 0, xMaxPercent: 50 },
-    actions: [
-      { type: "apply_impulse", target: { type: "by_tag", tag: "paddle" },
-        x: { expr: "-variables.tapImpulse" } },
-    ],
-  },
-  // Tilt: continuous force following device angle
-  {
-    id: "tilt_control",
-    trigger: { type: "tilt", axis: "x", threshold: 0.1 },
-    actions: [
-      { type: "apply_force", target: { type: "by_tag", tag: "paddle" },
-        direction: "tilt_direction", force: { expr: "variables.tiltForce" } },
-    ],
-  },
-],
-```
+```javascript
+// src/script.ts
+exports.onUpdate = function(ctx, dt) {
+  const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];
+  if (!paddleId) return;
 
-## Pattern: Stick + Launch (Breakout Bouncer)
+  // Tilt control
+  if (ctx.input?.type === 'tilt') {
+    const force = ctx.getVariable('tiltForce') || 100;
+    ctx.applyForce(paddleId, { x: ctx.input.x * force, y: 0 });
+  }
+};
 
-Ball starts stuck to paddle, launches on tap, then maintains speed.
+exports.onInput = function(ctx, event) {
+  if (event.type === 'tap') {
+    const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];
+    if (!paddleId) return;
 
-```typescript
-ball: {
-  id: "ball",
-  tags: ["ball"],
-  behaviors: [
-    { type: "stick_to_entity", targetTag: "paddle", offset: { x: 0, y: -0.5 } },
-    { type: "launch_on_input", speed: 8, minAngle: 45, maxAngle: 135,
-      enableBehaviorAfterLaunch: 2 },
-    { type: "maintain_speed", speed: 8, enabled: false },  // Index 2, enabled after launch
-  ],
-},
+    const impulse = ctx.getVariable('tapImpulse') || 5;
+    const xDir = event.position.x < 0 ? -1 : 1;
+    ctx.applyImpulse(paddleId, { x: xDir * impulse, y: 0 });
+  }
+};
 ```
 
 ## Pattern: Life System with Respawn (Breakout Bouncer)
 
 Drain sensor detects ball leaving play area. Subtract life, destroy, and respawn.
 
-```typescript
-{
-  id: "ball_drain",
-  trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
-  actions: [
-    { type: "set_variable", name: "lives", operation: "subtract", value: 1 },
-    { type: "destroy", target: { type: "by_tag", tag: "ball" } },
-    { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: -7 } },
-  ],
-},
-```
-
-## Pattern: Locking Entity Position (Breakout Bouncer)
-
-Use frame trigger + modify to lock an axis while allowing movement on another.
-
-```typescript
-{
-  id: "lock_paddle_y",
-  trigger: { type: "frame" },
-  actions: [
-    { type: "modify", target: { type: "by_id", entityId: "paddle" },
-      property: "y", operation: "set", value: -8 },
-  ],
-},
-```
-
-## Pattern: Tunable Variables (Breakout Bouncer)
-
-Variables with tuning metadata for in-game dev UI.
-
-```typescript
-variables: {
-  lives: 3,
-  paddleForce: {
-    value: 120,
-    tuning: { min: 50, max: 200, step: 10 },
-    category: 'physics',
-    label: 'Paddle Push Force',
-  },
-},
-```
-
-Reference in expressions: `{ expr: "variables.paddleForce" }` or `{ expr: "-variables.paddleForce" }`
-
-## Pattern: Swipe Input with Direction Guard (Snake)
-
-Prevent reversing direction (can't go left if going right).
-
-```typescript
-{
-  id: "swipe_up",
-  trigger: { type: "swipe", direction: "up" },
-  conditions: [{ type: "expression", expr: "direction != 2" }],  // 2 = down
-  actions: [{ type: "set_variable", name: "nextDirection", operation: "set", value: 0 }],
-},
+```javascript
+// src/script.ts
+exports.onCollision = function(ctx, collision) {
+  if (ctx.hasTag(collision.entityA, 'ball') && ctx.hasTag(collision.entityB, 'drain')) {
+    ctx.destroyEntity(collision.entityA);
+    
+    const lives = ctx.getVariable('lives') || 0;
+    ctx.setVariable('lives', lives - 1);
+    
+    if (lives > 1) {
+      ctx.spawnEntity('ball', { x: 0, y: -7 });
+    } else {
+      ctx.lose();
+    }
+  }
+};
 ```
 
 ## Pattern: Script-Driven Game Loop (Snake)
@@ -252,37 +160,6 @@ exports.onUpdate = function(ctx, dt) {
 };
 ```
 
-## Pattern: Collision-Based Destroy + Score (Breakout Bouncer)
-
-Behaviors on the entity being destroyed.
-
-```typescript
-brickRed: {
-  id: "brickRed",
-  tags: ["brick"],
-  behaviors: [
-    { type: "destroy_on_collision", withTags: ["ball"], effect: "fade" },
-    { type: "score_on_collision", withTags: ["ball"], points: 40 },
-  ],
-},
-```
-
-## Pattern: Expression-Based Win/Lose
-
-```typescript
-// Win when all bricks destroyed
-winCondition: { expr: "entityCount('brick') == 0" },
-
-// Lose when lives reach 0
-loseCondition: { type: "custom", expr: "lives <= 0" },
-
-// Lose when specific entity destroyed
-loseCondition: { type: "entity_destroyed", tag: "bird" },
-
-// Lose when variable set by script
-loseCondition: { type: "custom", expr: "gameOver == 1" },
-```
-
 ## Pattern: Persistence (Flappy Bird)
 
 Save high scores across sessions.
@@ -310,21 +187,6 @@ const game: GameDefinition = {
 };
 ```
 
-## Pattern: Simple Draggable Entity
-
-```typescript
-cube: {
-  id: "cube",
-  tags: ["cube"],
-  visual: { type: "image", imageWidth: 1, imageHeight: 1 },
-  physics: { bodyType: "kinematic", density: 0 },
-  collider: { shape: "box", width: 1, height: 1 },
-  behaviors: [
-    { type: "draggable", mode: "kinematic", requireDirectHit: true },
-  ],
-},
-```
-
 ## Pattern: HUD Overlay Elements
 
 ```typescript
@@ -339,22 +201,6 @@ overlay: {
       fontWeight: 'bold',
       color: '#FFFFFF',
       bindings: { text: "SCORE\n{{variables.score}}" },
-      style: {
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-      },
-    },
-    {
-      id: 'var-lives',
-      type: 'text',
-      anchor: 'top-right',
-      offset: { x: 16, y: 16 },
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: '#FFFFFF',
-      bindings: { text: "LIVES\n{{variables.lives}}" },
       style: {
         backgroundColor: 'rgba(0,0,0,0.6)',
         borderRadius: 8,
@@ -382,30 +228,4 @@ const cy = (y: number) => HALF_H - y;
 
 // Place entity at screen position (3, 8):
 transform: { x: cx(3), y: cy(8), angle: 0, scaleX: 1, scaleY: 1 }
-```
-
-## Pattern: Random Spawn in Bounds
-
-```typescript
-{
-  type: "spawn",
-  template: "food",
-  position: {
-    type: "random",
-    bounds: { minX: -4, maxX: 4, minY: -6, maxY: 6 },
-  },
-},
-```
-
-## Pattern: Collision with Sensor Zones
-
-Using `isSensor: true` for detection without physical collision (drain zones, trigger areas).
-
-```typescript
-drain: {
-  id: "drain",
-  tags: ["drain"],
-  collider: { shape: "box", width: 10, height: 2, isSensor: true },
-  // No visual, no physics - just a detection zone
-},
 ```

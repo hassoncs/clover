@@ -47,7 +47,6 @@ Full runtime integration that:
 - Connects to physics system for velocity/impulse
 - Handles input events (tap, drag)
 - Handles collision events
-- Emits events to the rules system
 - Manages variable get/set
 
 ### 4. ScriptContext API (Already Defined)
@@ -65,7 +64,7 @@ interface ScriptContext {
   lose(): void;
 
   // Entities
-  spawnEntity(templateId: string, position: Vec2, opts?: SpawnOptions): string | null;
+  spawnEntity(prefabId: string, position: Vec2, opts?: SpawnOptions): string | null;
   destroyEntity(entityId: string): void;
   getEntityPosition(entityId: string): Vec2 | null;
   setEntityPosition(entityId: string, position: Vec2): void;
@@ -115,42 +114,13 @@ interface GameDefinition {
 
 ## What's Missing (The 20%)
 
-### Priority 1: Wire Up RunScriptActionExecutor ⚡
+### Priority 1: Wire Up ScriptSandboxRuntimeSystem ⚡
 
-**File:** `app/lib/game-engine/rules/actions/RunScriptActionExecutor.ts`
-
-**Current state:** Stub that logs a warning
-```typescript
-execute(action: RunScriptAction, _context: RuleContext): void {
-  console.warn(`Script execution not yet implemented for '${functionName}'`);
-}
-```
+**File:** `app/lib/game-engine/systems/runner/wrappers/ScriptSandboxRuntimeSystem.ts`
 
 **What it needs:**
 ```typescript
-execute(action: RunScriptAction, context: RuleContext): void {
-  if (!this.sandbox) {
-    console.warn('[RunScriptActionExecutor] No sandbox available');
-    return;
-  }
-
-  // Get script code from game definition or action
-  const scriptCode = action.script; // or from definition.scripts[action.scriptId]
-
-  // Create runtime context from RuleContext
-  const runtimeContext = this.createRuntimeContext(context);
-
-  // Call the exported function
-  const result = this.sandbox.callFunction(
-    runtimeContext,
-    action.export ?? 'default',
-    action.args
-  );
-
-  if (!result.success) {
-    console.error('[RunScript] Error:', result.error);
-  }
-}
+// ...
 ```
 
 **Effort:** 2-4 hours
@@ -204,8 +174,6 @@ interface ScriptContext {
 ```typescript
 // In script:
 ctx.setVariable('_winAtElapsed', ctx.elapsed + 0.3);
-
-// Frame rule checks and triggers
 ```
 
 **Effort:** 1-2 hours (variable pattern already works)
@@ -225,7 +193,7 @@ interface EntityData {
   id: string;
   tags: string[];
   position: { x: number; y: number };
-  template?: string;
+  prefab?: string;
 }
 
 queryEntitiesWithData(query?: EntityQuery): EntityData[];
@@ -234,16 +202,11 @@ getEntityData(entityId: string): EntityData | null;
 
 **Effort:** 1-2 hours
 
-### Priority 5: Input Context in Actions 📱
+### Priority 5: Input Context 📱
 
-**Missing:** Access to tap target in `run_script` actions
+**Missing:** Access to tap target in scripts
 
-**Current:** Can't easily get "which tube was tapped" from within a script action
-
-**Options:**
-1. Pass tap context as args: `{ type: 'run_script', args: { tubeIndex: { expr: 'tapTargetIndex()' } } }`
-2. Add to ScriptContext: `ctx.getLastTapTarget(): string | null`
-3. Use input event hooks instead of actions
+**Current:** Can't easily get "which tube was tapped" from within a script
 
 **Effort:** 2-4 hours
 
@@ -251,19 +214,21 @@ getEntityData(entityId: string): EntityData | null;
 
 ## Implementation Plan
 
-### Phase 1: Minimum Viable Script Actions (1 day)
+### Phase 1: Minimum Viable Scripting (1 day)
 
-1. **Wire up RunScriptActionExecutor** to call sandbox
+1. **Wire up ScriptSandboxRuntimeSystem** to call sandbox
 2. **Add `getEntityData()`** to get position + tags for an entity
 3. **Test with simple script:** spawn entity on tap
 
 ```typescript
 // Test game script
-exports.onTap = function(ctx, args) {
-  const entities = ctx.queryEntities({ tag: 'ball' });
-  for (const id of entities) {
-    const pos = ctx.getEntityPosition(id);
-    console.log('Ball at', pos);
+exports.onInput = function(ctx, event) {
+  if (event.type === 'tap') {
+    const entities = ctx.queryEntities({ tag: 'ball' });
+    for (const id of entities) {
+      const pos = ctx.getEntityPosition(id);
+      console.log('Ball at', pos);
+    }
   }
 };
 ```
@@ -279,7 +244,7 @@ exports.onTap = function(ctx, args) {
 
 1. **Add Zod schemas** for script API types (for AI validation)
 2. **Create TypeScript type declarations** that AI can reference
-3. **Build script templates** for common patterns (pickup/drop, win check)
+3. **Build script prefabs** for common patterns (pickup/drop, win check)
 4. **Add script linting/validation** before execution
 5. **Document** the full API for AI context
 
@@ -295,111 +260,14 @@ exports.onStart = function(ctx) {
   // Initialize any state
 };
 
-exports.onPickup = function(ctx, { tubeIndex }) {
-  const count = ctx.getVariable('tube' + tubeIndex + '_count');
-  if (count === 0) {
-    ctx.emit('pickup_cancelled');
-    return;
-  }
-
-  // Find top ball in tube
-  const balls = ctx.queryEntities({ tag: 'in-container-tube-' + tubeIndex });
-  let topBall = null;
-  let topY = -Infinity;
-
-  for (const ballId of balls) {
-    const pos = ctx.getEntityPosition(ballId);
-    if (pos && pos.y > topY) {
-      topY = pos.y;
-      topBall = ballId;
-    }
-  }
-
-  if (!topBall) {
-    ctx.emit('pickup_cancelled');
-    return;
-  }
-
-  // Get ball color from tags
-  const tags = ctx.getEntityTags(topBall);
-  const colorTag = tags.find(t => t.startsWith('color-'));
-  const color = colorTag ? parseInt(colorTag.slice(6)) : -1;
-
-  // Store pickup state
-  ctx.setVariable('heldBallId', topBall);
-  ctx.setVariable('heldBallColor', color);
-  ctx.setVariable('sourceTubeIndex', tubeIndex);
-
-  // Animate ball up
-  ctx.animateEntity(topBall, {
-    y: topY + 2.0,
-    duration: 0.2,
-    easing: 'easeOutQuad'
-  });
-
-  // Update tube state
-  ctx.setVariable('tube' + tubeIndex + '_count', count - 1);
-  ctx.addTag(topBall, 'held');
-  ctx.removeTag(topBall, 'in-container-tube-' + tubeIndex);
-
-  ctx.emit('ball_picked');
+exports.onInput = function(ctx, event) {
+  if (event.type !== 'tap') return;
+  
+  // ...
 };
 
-exports.onDrop = function(ctx, { tubeIndex }) {
-  const heldBallId = ctx.getVariable('heldBallId');
-  const heldBallColor = ctx.getVariable('heldBallColor');
-  const sourceTubeIndex = ctx.getVariable('sourceTubeIndex');
-
-  if (!heldBallId || tubeIndex === sourceTubeIndex) {
-    // Cancel - return to source
-    ctx.emit('pickup_cancelled');
-    return;
-  }
-
-  const targetCount = ctx.getVariable('tube' + tubeIndex + '_count');
-  const targetTopColor = ctx.getVariable('tube' + tubeIndex + '_topColor');
-
-  // Validate move
-  if (targetCount >= 4) {
-    ctx.emit('invalid_move');
-    return;
-  }
-  if (targetCount > 0 && targetTopColor !== heldBallColor) {
-    ctx.emit('invalid_move');
-    return;
-  }
-
-  // Calculate drop position
-  const tubePos = ctx.getEntityPosition('tube-' + tubeIndex);
-  const dropY = tubePos.y - 2.5 + targetCount * 1.1;
-
-  // Animate ball down
-  ctx.animateEntity(heldBallId, {
-    x: tubePos.x,
-    y: dropY,
-    duration: 0.2,
-    easing: 'easeOutQuad'
-  });
-
-  // Update state
-  ctx.removeTag(heldBallId, 'held');
-  ctx.addTag(heldBallId, 'in-container-tube-' + tubeIndex);
-  ctx.setVariable('tube' + tubeIndex + '_count', targetCount + 1);
-  ctx.setVariable('tube' + tubeIndex + '_topColor', heldBallColor);
-
-  // Clear held state
-  ctx.setVariable('heldBallId', '');
-  ctx.setVariable('sourceTubeIndex', -1);
-  ctx.setVariable('heldBallColor', -1);
-
-  // Increment move count
-  const moves = ctx.getVariable('moveCount') || 0;
-  ctx.setVariable('moveCount', moves + 1);
-
-  ctx.emit('ball_dropped');
-};
-
-exports.checkWin = function(ctx) {
+exports.onUpdate = function(ctx, dt) {
+  // Check win condition
   for (let i = 0; i < 6; i++) {
     const count = ctx.getVariable('tube' + i + '_count');
     if (count === 0) continue;
@@ -421,38 +289,6 @@ exports.checkWin = function(ctx) {
 };
 ```
 
-**Game Definition Rules:**
-```typescript
-rules: [
-  {
-    trigger: { type: 'tap', target: 'tube' },
-    conditions: [{ type: 'state', machineId: 'gameFlow', state: 'idle' }],
-    actions: [{
-      type: 'run_script',
-      export: 'onPickup',
-      args: { tubeIndex: { expr: 'parseInt(tapTargetId.split("-")[1])' } }
-    }]
-  },
-  {
-    trigger: { type: 'tap', target: 'tube' },
-    conditions: [{ type: 'state', machineId: 'gameFlow', state: 'holding' }],
-    actions: [{ type: 'run_script', export: 'onDrop', args: { /* ... */ } }]
-  },
-  {
-    trigger: { type: 'event', eventName: 'ball_dropped' },
-    actions: [{ type: 'run_script', export: 'checkWin' }]
-  },
-  {
-    trigger: { type: 'frame' },
-    conditions: [{ type: 'expression', expr: '_winAtElapsed > 0 && elapsed() >= _winAtElapsed' }],
-    actions: [
-      { type: 'set_variable', name: '_winAtElapsed', operation: 'set', value: 0 },
-      { type: 'game_state', state: 'win' }
-    ]
-  }
-]
-```
-
 ---
 
 ## Summary
@@ -464,16 +300,14 @@ rules: [
 | ScriptSandbox wrapper | ✅ Working | - |
 | ScriptSandboxRuntimeSystem | ✅ Working | - |
 | ScriptContext API | ✅ Defined | - |
-| RunScriptActionExecutor | ❌ Stub | 2-4 hours |
 | `animateEntity()` | ❌ Missing | 2-4 hours |
 | `queryEntitiesWithData()` | ❌ Missing | 1-2 hours |
-| Tap target in args | ⚠️ Awkward | 2-4 hours |
 | **Total for Ball Sort Generic** | | **~2 days** |
 
 **Could AI generate Ball Sort today?** No, but with ~2 days of work: **Yes, absolutely.**
 
 The scripting infrastructure is solid. We just need to:
-1. Connect the action executor to the sandbox
+1. Connect the runtime system to the sandbox
 2. Add animation support
 3. Improve entity queries
 

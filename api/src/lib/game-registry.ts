@@ -60,11 +60,19 @@ function scanGames(): GameRegistryEntry[] {
 					);
 				}
 
+				const definition = result.gameDefinition;
+				if (
+					result.rawData.scripts &&
+					Object.keys(result.rawData.scripts).length > 0
+				) {
+					definition.modules = result.rawData.scripts;
+				}
+
 				return {
-					default: result.gameDefinition,
+					default: definition,
 					metadata: {
-						title: result.gameDefinition.metadata.title,
-						description: result.gameDefinition.metadata.description,
+						title: definition.metadata.title,
+						description: definition.metadata.description,
 					},
 				};
 			},

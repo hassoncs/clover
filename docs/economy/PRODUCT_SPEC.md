@@ -19,7 +19,7 @@ The Slopcade economy revolves around two virtual currencies (Gems and Sparks) an
 | `slopcade.pro.monthly` | Slopcade Pro | Auto-Renewable | $9.99/mo | 500 Gems/mo + 100 Sparks/mo |
 
 ### 2. Gems (Hard Currency)
-Used for unlocking premium templates, special effects, and rapid game generation.
+Used for unlocking premium prefabs, special effects, and rapid game generation.
 
 | Product ID | Name | Type | Current Price | Grants |
 |------------|------|------|---------------|--------|

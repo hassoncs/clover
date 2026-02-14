@@ -282,5 +282,5 @@ games.create tRPC mutation
 ## Related Skills
 
 - **storage-ops**: R2 bucket operations, D1 database
-- **ecs-architecture**: Game workspace file structure (prefabs, entities, rules)
+- **ecs-architecture**: Game workspace file structure (prefabs, entities, scripts)
 - **game-authoring**: GameDefinition and workspace content
