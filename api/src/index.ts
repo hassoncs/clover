@@ -107,14 +107,31 @@ app.post("/api/party/create", async (c) => {
 	const hostId = crypto.randomUUID();
 	const hostToken = crypto.randomUUID();
 
+	const body = (await c.req.json().catch(() => ({}))) as {
+		template?: string;
+		minPlayers?: number;
+	};
+
 	const doId = c.env.PARTY_ROOM.idFromName(code);
 	const stub = c.env.PARTY_ROOM.get(doId);
+
+	const initBody: Record<string, unknown> = {
+		hostId,
+		hostToken,
+		roomCode: code,
+	};
+	if (body.template) {
+		initBody.template = body.template;
+	}
+	if (body.minPlayers !== undefined) {
+		initBody.minPlayers = body.minPlayers;
+	}
 
 	const initResponse = await stub.fetch(
 		new Request("https://party/init", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ hostId, hostToken, roomCode: code }),
+			body: JSON.stringify(initBody),
 		}),
 	);
 

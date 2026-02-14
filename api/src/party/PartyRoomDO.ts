@@ -16,6 +16,7 @@ import {
 	playerReconnectMessage,
 	stateUpdateMessage,
 } from "./protocol";
+import { TEMPLATE_REGISTRY } from "./templates/registry";
 
 const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000;
 const RECONNECT_WINDOW_MS = 60 * 1000;
@@ -42,6 +43,7 @@ interface InputCollector {
 	request: PartyInputRequest;
 	responses: Map<string, PartyInputResponse>;
 	timeoutId: ReturnType<typeof setTimeout> | null;
+	resolve: ((responses: Map<string, PartyInputResponse>) => void) | null;
 }
 
 export type PartyTemplateRunner = (room: PartyRoomDO) => Promise<void>;
@@ -106,6 +108,7 @@ export class PartyRoomDO {
 			hostToken?: string;
 			roomCode?: string;
 			minPlayers?: number;
+			template?: string;
 		};
 
 		if (!body.hostId || !body.hostToken) {
@@ -119,6 +122,9 @@ export class PartyRoomDO {
 		}
 		if (body.minPlayers !== undefined) {
 			this.minPlayers = body.minPlayers;
+		}
+		if (body.template && TEMPLATE_REGISTRY[body.template]) {
+			this.templateRunner = TEMPLATE_REGISTRY[body.template];
 		}
 
 		const session: SessionRecord = {
@@ -453,6 +459,7 @@ export class PartyRoomDO {
 			request,
 			responses: new Map(),
 			timeoutId: null,
+			resolve: null,
 		};
 
 		this.broadcastToPlayers(
@@ -466,6 +473,8 @@ export class PartyRoomDO {
 				resolve(new Map());
 				return;
 			}
+
+			collector.resolve = resolve;
 
 			collector.timeoutId = setTimeout(() => {
 				const responses = collector.responses;
@@ -537,6 +546,12 @@ export class PartyRoomDO {
 		if (this.activeInputCollector.responses.size >= playerCount) {
 			if (this.activeInputCollector.timeoutId) {
 				clearTimeout(this.activeInputCollector.timeoutId);
+			}
+			const resolveFn = this.activeInputCollector.resolve;
+			const responses = this.activeInputCollector.responses;
+			this.activeInputCollector = null;
+			if (resolveFn) {
+				resolveFn(responses);
 			}
 		}
 	}
