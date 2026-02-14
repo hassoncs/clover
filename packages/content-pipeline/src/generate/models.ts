@@ -15,20 +15,20 @@ export interface ModelPreset {
  *
  * Switch models with: --model=<preset-name-or-full-model-id>
  * Examples:
- *   --model=fast        (gpt-4o-mini, cheapest)
+ *   --model=fast        (gpt-oss-120b:nitro, cheapest)
  *   --model=balanced    (gpt-4o, best reliability)
  *   --model=quality     (claude-sonnet-4, best creativity)
- *   --model=reasoning   (kimi-k2, best for complex logic)
+ *   --model=reasoning   (kimi-k2.5, best for complex logic)
  *   --model=openai/gpt-4o  (direct model ID)
  */
 export const MODEL_PRESETS: Record<string, ModelPreset> = {
 	fast: {
-		id: "openai/gpt-4o-mini",
+		id: "openai/gpt-oss-120b:nitro",
 		name: "Fast",
-		description: "Cheapest, good for bulk generation",
+		description: "OSS 120B MoE with nitro throughput, extremely cheap",
 		providerFamily: "openai",
-		inputPricePer1M: 0.15,
-		outputPricePer1M: 0.6,
+		inputPricePer1M: 0.039,
+		outputPricePer1M: 0.19,
 	},
 	balanced: {
 		id: "openai/gpt-4o",
@@ -47,12 +47,13 @@ export const MODEL_PRESETS: Record<string, ModelPreset> = {
 		outputPricePer1M: 15.0,
 	},
 	reasoning: {
-		id: "moonshotai/kimi-k2",
+		id: "moonshotai/kimi-k2.5",
 		name: "Reasoning",
-		description: "Best for complex logic and estimation questions",
+		description:
+			"Kimi K2.5 multimodal with 262K context, best for complex logic",
 		providerFamily: "opensource",
-		inputPricePer1M: 0.6,
-		outputPricePer1M: 2.4,
+		inputPricePer1M: 0.45,
+		outputPricePer1M: 2.25,
 	},
 	opensource: {
 		id: "meta-llama/llama-3.1-70b-instruct",

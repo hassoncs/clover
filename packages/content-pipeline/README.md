@@ -119,10 +119,10 @@ The pipeline uses OpenRouter for all AI generation. You can switch models using 
 
 | Preset | Model ID | Provider Family | Cost (In/Out) | Best For |
 |--------|----------|-----------------|---------------|----------|
-| `fast` | `openai/gpt-4o-mini` | openai | $0.15 / $0.60 | Bulk generation, simple prompts |
+| `fast` | `openai/gpt-oss-120b:nitro` | openai | $0.039 / $0.19 | Bulk generation, extremely cheap |
 | `balanced` | `openai/gpt-4o` | openai | $2.50 / $10.00 | Default, best reliability |
 | `quality` | `anthropic/claude-sonnet-4` | anthropic | $3.00 / $15.00 | Creativity, nuance, complex quips |
-| `reasoning` | `moonshotai/kimi-k2` | opensource | $0.60 / $2.40 | Logic, estimation, math |
+| `reasoning` | `moonshotai/kimi-k2.5` | opensource | $0.45 / $2.25 | Logic, estimation, 262K context |
 | `opensource` | `meta-llama/llama-3.1-70b-instruct` | opensource | $0.40 / $0.40 | Cost-effective high quality |
 
 ### Provider Compatibility
