@@ -3,10 +3,14 @@ import type { ArgumentsCamelCase, Argv } from "yargs";
 import { PipelineDB } from "../db/index.js";
 import { checkDuplicate } from "../dedup/check.js";
 import { computeContentHash } from "../dedup/hash.js";
+import { fetchOpenTDB } from "../ingest/adapters/opentdb.js";
+import type { ContentItem } from "../types/index.js";
 
 export interface IngestOptions {
 	source: string;
 	gameType: string;
+	count?: number;
+	dryRun?: boolean;
 }
 
 export function builder(yargs: Argv): Argv {
@@ -15,26 +19,67 @@ export function builder(yargs: Argv): Argv {
 			alias: "s",
 			type: "string",
 			demandOption: true,
-			description: "Source file path (JSON)",
+			description: "Source file path (JSON) or 'opentdb'",
 		})
 		.option("game-type", {
 			alias: "t",
 			type: "string",
 			demandOption: true,
 			description: "Game type",
+		})
+		.option("count", {
+			alias: "c",
+			type: "number",
+			description: "Number of items to fetch (for opentdb source)",
+			default: 10,
+		})
+		.option("dry-run", {
+			type: "boolean",
+			description: "Display items without saving to DB",
+			default: false,
 		});
 }
 
 export async function handler(
 	args: ArgumentsCamelCase<IngestOptions>,
 ): Promise<void> {
-	const db = new PipelineDB();
-	const data = JSON.parse(readFileSync(args.source, "utf-8"));
+	let items: ContentItem[];
 
+	if (args.source === "opentdb") {
+		items = await fetchOpenTDB(args.count || 10);
+	} else {
+		const data = JSON.parse(readFileSync(args.source, "utf-8"));
+		items = (data.items || []).map((item: any) => ({
+			id: crypto.randomUUID(),
+			gameType: args.gameType,
+			text: item.text,
+			category: item.category || null,
+			provenance: {
+				source: data.source || "imported",
+				metadata: null,
+			},
+			moderationStatus: "pending" as const,
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		}));
+	}
+
+	if (args.dryRun) {
+		console.log(`Dry run: ${items.length} items fetched`);
+		for (const item of items) {
+			console.log(`\n[${item.category || "uncategorized"}] ${item.text}`);
+			if (item.provenance.metadata) {
+				console.log(`  Metadata: ${JSON.stringify(item.provenance.metadata)}`);
+			}
+		}
+		return;
+	}
+
+	const db = new PipelineDB();
 	let inserted = 0;
 	let duplicates = 0;
 
-	for (const item of data.items || []) {
+	for (const item of items) {
 		const contentHash = computeContentHash(item.text);
 		const dupCheck = checkDuplicate(db, contentHash);
 
@@ -47,20 +92,22 @@ export async function handler(
 		}
 
 		db.insertContentItem({
-			id: crypto.randomUUID(),
+			id: item.id,
 			gameType: args.gameType,
 			text: item.text,
-			category: item.category || null,
+			category: item.category ?? null,
 			contentHash,
-			provenanceSource: data.source || "imported",
+			provenanceSource: item.provenance.source,
 			provenanceGeneratedAt: null,
 			provenanceGeneratedBy: null,
 			provenancePrompt: null,
-			provenanceMetadata: null,
-			moderationStatus: "pending",
+			provenanceMetadata: item.provenance.metadata
+				? JSON.stringify(item.provenance.metadata)
+				: null,
+			moderationStatus: item.moderationStatus,
 			moderationNotes: null,
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
+			createdAt: item.createdAt,
+			updatedAt: item.updatedAt,
 			metadata: null,
 		});
 		inserted++;
