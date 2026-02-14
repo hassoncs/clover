@@ -35,7 +35,7 @@ const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const model = openrouter.chat("anthropic/claude-sonnet-4-20250514");
+const model = openrouter.chat("anthropic/claude-sonnet-4");
 ```
 
 ### Canonical reference: `api/src/ai/model-factory.ts`
@@ -54,7 +54,7 @@ export function createModel(options: {
     apiKey: options.apiKey,
     baseURL: OPENROUTER_BASE_URL,
   });
-  return openrouter.chat(options.model ?? "anthropic/claude-sonnet-4-20250514");
+  return openrouter.chat(options.model ?? "anthropic/claude-sonnet-4");
 }
 ```
 
@@ -116,7 +116,7 @@ The environment variable is `OPENROUTER_API_KEY`. Access it via `process.env.OPE
 
 | Use Case | Model ID | Notes |
 |----------|----------|-------|
-| General generation | `anthropic/claude-sonnet-4-20250514` | Default |
+| General generation | `anthropic/claude-sonnet-4` | Default |
 | Fast/cheap tasks | `anthropic/claude-3-5-haiku-20241022` | Moderation, classification |
 | Complex reasoning | `anthropic/claude-opus-4-20250514` | Planning, architecture |
 
@@ -130,9 +130,53 @@ The environment variable is `OPENROUTER_API_KEY`. Access it via `process.env.OPE
 | Running AI scripts without `hush` | Prefix with `hush run --` |
 | Using `openai` package directly | Use `@ai-sdk/openai` (Vercel's OpenAI-compatible provider) |
 
+## Structured Output with OpenRouter
+
+### The Problem
+
+`generateObject` in AI SDK v6 sends `response_format: { type: "json_schema", json_schema: { strict: true, schema: ... } }`. This **only works natively with OpenAI models**. Anthropic and open-source models via OpenRouter **ignore `response_format` entirely** — the model never sees the schema and returns markdown/text instead of JSON.
+
+### Solution: Per-Provider Configuration
+
+| Provider | Config | Why |
+|----------|--------|-----|
+| OpenAI | Default (native json_schema) | Works out of the box |
+| Anthropic | `provider: { order: ["Anthropic"] }` + `providerOptions.openrouter.response_format: { type: "json_object" }` + inject schema into system prompt | Anthropic ignores response_format; must force routing away from Google |
+| Open Source | `providerOptions.openrouter.response_format: { type: "json_object" }` + inject schema into system prompt | Varies by model; json_object + prompt injection is most reliable |
+
+### Schema Injection Pattern
+
+For non-OpenAI providers, convert the Zod schema to JSON Schema and inject it into the system prompt:
+
+```typescript
+import { zodToJsonSchema } from "zod-to-json-schema";
+
+if (providerFamily !== "openai") {
+  const jsonSchema = zodToJsonSchema(schema);
+  system = `${system}\n\nIMPORTANT: You MUST respond with valid JSON only. No markdown, no explanations.\n\nYour response must conform to this JSON schema:\n${JSON.stringify(jsonSchema, null, 2)}`;
+}
+```
+
+### Response-Healing Plugin
+
+Add `plugins: [{ id: "response-healing" }]` to OpenRouter settings. Fixes malformed JSON (trailing commas, missing braces). **Only works with non-streaming requests.**
+
+### Reference Implementation
+
+See `packages/content-pipeline/src/generate/client.ts` for a complete working example with all three provider families.
+
+### Gotchas
+
+- **`.required()` on Zod schemas**: Optional fields cause OpenAI strict mode to fail. Use `.required()` on generation-specific schemas.
+- **OpenRouter model IDs**: Don't use date suffixes. `anthropic/claude-sonnet-4` is valid, `anthropic/claude-sonnet-4-20250514` is NOT.
+- **AI SDK v6 changes**: The `mode` parameter was removed from `generateObject` — it always sends `responseFormat` now.
+- **Dead code in provider**: `@openrouter/ai-sdk-provider`'s `defaultObjectGenerationMode = "tool"` is dead code from v5.
+- **Anthropic routing**: Without `provider: { order: ["Anthropic"] }`, OpenRouter may route to Google which ignores JSON mode.
+- **`require_parameters: true`**: Causes 404 for Anthropic. Don't use it.
+
 ## Gotchas
 
-- **OpenRouter model IDs** use `provider/model` format (e.g., `anthropic/claude-sonnet-4-20250514`), not bare model names
+- **OpenRouter model IDs** use `provider/model` format (e.g., `anthropic/claude-sonnet-4`), not bare model names
 - **Rate limits** are per-key on OpenRouter, not per-model
 - **Streaming** requires CORS headers on SSE responses (see `agent-orchestration` skill)
 - **Standalone packages** (like `content-pipeline`) should NOT import from `@slopcade/api` — copy the pattern locally

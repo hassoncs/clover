@@ -26,11 +26,12 @@
 		"cli": "node dist/cli.js"
 	},
 	"dependencies": {
-		"@ai-sdk/openai": "^3.0.27",
+		"@openrouter/ai-sdk-provider": "^2.2.3",
 		"ai": "^6.0.81",
 		"better-sqlite3": "^11.8.1",
 		"yargs": "^17.7.2",
-		"zod": "^3.25.76"
+		"zod": "^3.25.76",
+		"zod-to-json-schema": "^3.25.1"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.12",

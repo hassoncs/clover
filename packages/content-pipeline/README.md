@@ -43,8 +43,14 @@ pnpm content cli -- ingest --source=opentdb --game-type=trivia --count=10 --dry-
 ### `generate` - AI content generation
 
 ```bash
-# Generate quip prompts via Claude
+# Generate quip prompts (defaults to balanced/gpt-4o)
 hush run -- pnpm content cli -- generate --game-type=quip --count=50
+
+# Use a specific preset (fast, quality, reasoning, opensource)
+hush run -- pnpm content cli -- generate --game-type=quip --count=50 --model=quality
+
+# Use a direct OpenRouter model ID
+hush run -- pnpm content cli -- generate --game-type=quip --count=10 --model=anthropic/claude-3-haiku
 
 # Dry-run
 hush run -- pnpm content cli -- generate --game-type=quip --count=10 --dry-run
@@ -89,6 +95,50 @@ pnpm content cli -- build-pack \
 ```bash
 pnpm content cli -- stats
 ```
+
+### `validate-models` - Test model connectivity
+
+```bash
+# Test all presets
+hush run -- pnpm content cli -- validate-models
+
+# Test a specific preset
+hush run -- pnpm content cli -- validate-models --preset=fast
+```
+
+**Validates**:
+- API connectivity via OpenRouter
+- JSON schema enforcement
+- Response formatting for each provider family
+
+## Model Configuration
+
+The pipeline uses OpenRouter for all AI generation. You can switch models using the `--model` flag, which accepts either a preset name or a direct OpenRouter model ID.
+
+### Presets
+
+| Preset | Model ID | Provider Family | Cost (In/Out) | Best For |
+|--------|----------|-----------------|---------------|----------|
+| `fast` | `openai/gpt-4o-mini` | openai | $0.15 / $0.60 | Bulk generation, simple prompts |
+| `balanced` | `openai/gpt-4o` | openai | $2.50 / $10.00 | Default, best reliability |
+| `quality` | `anthropic/claude-sonnet-4` | anthropic | $3.00 / $15.00 | Creativity, nuance, complex quips |
+| `reasoning` | `moonshotai/kimi-k2` | opensource | $0.60 / $2.40 | Logic, estimation, math |
+| `opensource` | `meta-llama/llama-3.1-70b-instruct` | opensource | $0.40 / $0.40 | Cost-effective high quality |
+
+### Provider Compatibility
+
+The pipeline automatically handles differences between model providers (e.g., how they handle JSON schemas).
+
+| Provider | JSON Schema | JSON Object | Schema in Prompt | Notes |
+|----------|-------------|-------------|-----------------|-------|
+| OpenAI | ✅ Native | ✅ | No | Best for structured output |
+| Anthropic | ❌ Ignores | ❌ Ignores | YES (auto) | Schema injected into system prompt |
+| Open Source | ⚠️ Varies | ⚠️ Varies | YES (auto) | Schema injected + response-healing |
+
+**Features**:
+- **Schema Injection**: For non-OpenAI models, the Zod schema is automatically converted to JSON Schema and injected into the system prompt.
+- **Response Healing**: Automatically fixes common JSON errors (trailing commas, missing braces) returned by smaller models.
+- **Forced Routing**: Anthropic models are forced to Anthropic infrastructure to ensure JSON mode compatibility.
 
 ## Content Types
 
@@ -187,7 +237,8 @@ packages/content-pipeline/
 ## Dependencies
 
 - `ai` (Vercel AI SDK) - AI generation
-- `@ai-sdk/openai` - OpenRouter provider (OpenAI-compatible)
+- `@openrouter/ai-sdk-provider` - OpenRouter provider
+- `zod-to-json-schema` - Schema conversion
 - `better-sqlite3` - Local database
 - `yargs` - CLI framework
 - `zod` - Schema validation

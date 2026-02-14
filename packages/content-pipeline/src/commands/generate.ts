@@ -2,14 +2,16 @@ import { randomUUID } from "node:crypto";
 import type { ArgumentsCamelCase, Argv } from "yargs";
 import { PipelineDB } from "../db/index.js";
 import { computeContentHash } from "../dedup/hash.js";
-import { generateContent } from "../generate/client.js";
-import { GAME_TYPE_PROMPTS } from "../generate/prompts.js";
+import { generateItems } from "../generate/client.js";
+import { resolveModelId } from "../generate/models.js";
+import { GAME_TYPE_CONFIGS } from "../generate/prompts.js";
 
 export interface GenerateOptions {
 	gameType: string;
 	count: number;
 	category?: string;
 	dryRun?: boolean;
+	model?: string;
 }
 
 export function builder(yargs: Argv): Argv {
@@ -35,6 +37,12 @@ export function builder(yargs: Argv): Argv {
 			type: "boolean",
 			default: false,
 			description: "Display generated content without saving to database",
+		})
+		.option("model", {
+			alias: "m",
+			type: "string",
+			description:
+				"Model preset or ID (presets: fast, balanced, quality, reasoning, opensource)",
 		});
 }
 
@@ -56,27 +64,30 @@ export async function handler(
 ): Promise<void> {
 	const { gameType, count, category, dryRun } = args;
 
-	const promptTemplate = GAME_TYPE_PROMPTS[gameType];
-	if (!promptTemplate) {
+	const config = GAME_TYPE_CONFIGS[gameType];
+	if (!config) {
 		console.error(`Unknown game type: ${gameType}`);
 		console.error(
-			`Available types: ${Object.keys(GAME_TYPE_PROMPTS).join(", ")}`,
+			`Available types: ${Object.keys(GAME_TYPE_CONFIGS).join(", ")}`,
 		);
 		process.exit(1);
 	}
 
-	console.log(`Generating ${count} items for ${gameType}...`);
+	const resolvedModel = resolveModelId(args.model as string | undefined);
+	console.log(
+		`Generating ${count} items for ${gameType} using ${resolvedModel}...`,
+	);
 
 	try {
-		const response = await generateContent(promptTemplate);
+		const prompt = config.promptTemplate(count);
+		const result = await generateItems({
+			schema: config.schema,
+			system: config.system,
+			prompt,
+			model: args.model,
+		});
 
-		const jsonMatch = response.match(/\[[\s\S]*\]/);
-		if (!jsonMatch) {
-			throw new Error("No JSON array found in response");
-		}
-
-		const items = JSON.parse(jsonMatch[0]) as Array<Record<string, unknown>>;
-
+		const items = result.items as Array<Record<string, unknown>>;
 		const limitedItems = items.slice(0, count);
 
 		if (dryRun) {
@@ -90,6 +101,7 @@ export async function handler(
 		const now = new Date().toISOString();
 		let savedCount = 0;
 		let duplicateCount = 0;
+		const modelUsed = resolvedModel;
 
 		for (const item of limitedItems) {
 			const text = extractText(item, gameType);
@@ -110,8 +122,8 @@ export async function handler(
 				contentHash,
 				provenanceSource: "ai-generated",
 				provenanceGeneratedAt: now,
-				provenanceGeneratedBy: "claude-3-5-sonnet-20241022",
-				provenancePrompt: promptTemplate,
+				provenanceGeneratedBy: modelUsed,
+				provenancePrompt: prompt,
 				provenanceMetadata: JSON.stringify({ originalItem: item }),
 				moderationStatus: "pending",
 				moderationNotes: null,

@@ -1,62 +1,60 @@
-export const GAME_TYPE_PROMPTS: Record<string, string> = {
-	quip: `Generate fill-in-the-blank comedy prompts for a party game.
-Each prompt should be funny, open-ended, and suitable for ages 8-14.
-Avoid: violence, romance, politics, copyrighted characters.
+import { z } from "zod";
+import {
+	DrawingPromptSchema,
+	EstimationQuestionSchema,
+	QuipPromptSchema,
+	TriviaQuestionSchema,
+	WouldYouRatherSchema,
+} from "../types/index.js";
 
-Output JSON array format:
-[{"text": "The worst name for a pet: _____", "category": "animals"}]
+export interface GameTypeConfig {
+	schema: z.ZodType<{ items: unknown[] }>;
+	system: string;
+	promptTemplate: (count: number) => string;
+}
 
-Generate 10 prompts across categories: animals, food, technology, workplace, absurd.`,
+const QuipItemSchema = QuipPromptSchema.omit({ id: true });
+const TriviaItemSchema = TriviaQuestionSchema.omit({ id: true }).required();
+const DrawingItemSchema = DrawingPromptSchema.omit({ id: true }).required();
+const WyrItemSchema = WouldYouRatherSchema.omit({ id: true });
+const EstimationItemSchema = EstimationQuestionSchema.omit({
+	id: true,
+}).required();
 
-	trivia: `Generate trivia questions with multiple choice answers for a party game.
-Each question should be interesting, educational, and suitable for ages 8-14.
-Avoid: violence, romance, politics, copyrighted characters.
-
-Output JSON array format:
-[{
-  "question": "What is the largest planet in our solar system?",
-  "answers": ["Jupiter", "Saturn", "Earth", "Mars"],
-  "correctIndex": 0,
-  "category": "science"
-}]
-
-Generate 10 questions across categories: science, history, geography, animals, pop culture.`,
-
-	drawing: `Generate drawing prompts for a party game where players draw and others guess.
-Each prompt should be a simple noun or phrase that's fun to draw and suitable for ages 8-14.
-Avoid: violence, romance, politics, copyrighted characters.
-
-Output JSON array format:
-[{"text": "A confused penguin", "difficulty": "medium", "category": "animals"}]
-
-Generate 10 prompts across categories: animals, objects, actions, food, fantasy.
-Include difficulty levels: easy, medium, hard.`,
-
-	wyr: `Generate "Would You Rather" questions for a party game.
-Each question should present two silly or interesting choices suitable for ages 8-14.
-Avoid: violence, romance, politics, copyrighted characters.
-
-Output JSON array format:
-[{
-  "optionA": "Have the ability to fly",
-  "optionB": "Have the ability to become invisible",
-  "category": "superpowers"
-}]
-
-Generate 10 questions across categories: superpowers, food, animals, abilities, silly scenarios.`,
-
-	estimation: `Generate estimation questions for a party game where players guess numbers.
-Each question should have a surprising or interesting answer suitable for ages 8-14.
-Avoid: violence, romance, politics, copyrighted characters.
-
-Output JSON array format:
-[{
-  "question": "How many teeth does an adult human have?",
-  "answer": 32,
-  "unit": "teeth",
-  "category": "human body"
-}]
-
-Generate 10 questions across categories: animals, geography, human body, food, technology.
-Include the unit of measurement for each answer.`,
+export const GAME_TYPE_CONFIGS: Record<string, GameTypeConfig> = {
+	quip: {
+		schema: z.object({ items: z.array(QuipItemSchema) }),
+		system:
+			"You generate fill-in-the-blank comedy prompts for a party game. Output must be suitable for ages 8-14. No violence, romance, politics, or copyrighted characters.",
+		promptTemplate: (count) =>
+			`Generate ${count} fill-in-the-blank prompts across categories: animals, food, technology, workplace, absurd. Each should have a blank (use _____).`,
+	},
+	trivia: {
+		schema: z.object({ items: z.array(TriviaItemSchema) }),
+		system:
+			"You generate trivia questions with multiple choice answers for a party game. Suitable for ages 8-14. No violence, romance, politics, or copyrighted characters.",
+		promptTemplate: (count) =>
+			`Generate ${count} trivia questions across categories: science, history, geography, animals, pop culture. Each needs exactly 3 incorrect answers.`,
+	},
+	drawing: {
+		schema: z.object({ items: z.array(DrawingItemSchema) }),
+		system:
+			"You generate drawing prompts for a party game where players draw and others guess. Suitable for ages 8-14. No violence, romance, politics, or copyrighted characters.",
+		promptTemplate: (count) =>
+			`Generate ${count} drawing prompts across categories: animals, objects, actions, food, fantasy. Include difficulty levels: easy, medium, hard.`,
+	},
+	wyr: {
+		schema: z.object({ items: z.array(WyrItemSchema) }),
+		system:
+			"You generate 'Would You Rather' questions for a party game. Two silly or interesting choices. Suitable for ages 8-14. No violence, romance, politics, or copyrighted characters.",
+		promptTemplate: (count) =>
+			`Generate ${count} 'Would You Rather' questions across categories: superpowers, food, animals, abilities, silly scenarios.`,
+	},
+	estimation: {
+		schema: z.object({ items: z.array(EstimationItemSchema) }),
+		system:
+			"You generate estimation questions where players guess numbers. Answers should be surprising or interesting. Suitable for ages 8-14. No violence, romance, politics, or copyrighted characters.",
+		promptTemplate: (count) =>
+			`Generate ${count} estimation questions across categories: animals, geography, human body, food, technology. Include the unit of measurement.`,
+	},
 };
