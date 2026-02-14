@@ -1,7 +1,9 @@
 {
-	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/party-live-announcer-prepare-play-api.md",
-	"started_at": "2026-02-14T03:00:59.751Z",
-	"session_ids": ["ses_3a6320594ffel2lKqGpRH9azso"],
-	"plan_name": "party-live-announcer-prepare-play-api",
-	"agent": "atlas"
+	"active_plan": null,
+	"started_at": null,
+	"session_ids": [],
+	"plan_name": null,
+	"agent": "atlas",
+	"completed_plan": "party-game-content-pipeline-side-project",
+	"completed_at": "2026-02-14T05:12:00.000Z"
 }

@@ -77,12 +77,12 @@ Build a self-contained experimental content pipeline that generates and curates 
 - Internal provenance/license tracking within the package's own data store.
 
 ### Definition of Done
-- [ ] `packages/content-pipeline` builds and type-checks from repo root.
-- [ ] At least one ingestion source and one AI generation path produce validated content with provenance.
-- [ ] License validation rejects unsupported/ambiguous licenses at ingestion time.
-- [ ] Safety pipeline classifies content and rejects unsafe items.
-- [ ] Output JSON files match the shape of `api/src/party/content/quiplash-prompts.json`.
-- [ ] `rm -rf packages/content-pipeline` causes zero test/build failures elsewhere.
+- [x] `packages/content-pipeline` builds and type-checks from repo root.
+- [x] At least one ingestion source and one AI generation path produce validated content with provenance.
+- [x] License validation rejects unsupported/ambiguous licenses at ingestion time.
+- [x] Safety pipeline classifies content and rejects unsafe items.
+- [x] Output JSON files match the shape of `api/src/party/content/quiplash-prompts.json`.
+- [x] `rm -rf packages/content-pipeline` causes zero test/build failures elsewhere.
 
 ### Must Have
 - Fully standalone package boundary — zero imports from `@slopcade/shared` or `@slopcade/api`.
@@ -166,7 +166,7 @@ Wave 3 (Output):
 
 ## TODOs
 
-- [ ] 1. Scaffold `@slopcade/content-pipeline` package
+- [x] 1. Scaffold `@slopcade/content-pipeline` package
 
   **What to do**:
   - Create `packages/content-pipeline/` with `src/`, `package.json`, `tsconfig.json`.
@@ -196,10 +196,10 @@ Wave 3 (Output):
   - `api/src/party/content/quiplash-prompts.json` - Target output shape to match.
 
   **Acceptance Criteria**:
-  - [ ] `packages/content-pipeline/package.json` exists, zero `@slopcade/*` dependencies.
-  - [ ] `pnpm --filter @slopcade/content-pipeline type-check` passes.
-  - [ ] CLI entrypoint runs: `pnpm content -- --help` shows commands.
-  - [ ] Internal SQLite DB initializes on first run.
+  - [x] `packages/content-pipeline/package.json` exists, zero `@slopcade/*` dependencies.
+  - [x] `pnpm --filter @slopcade/content-pipeline type-check` passes.
+  - [x] CLI entrypoint runs: `pnpm content -- --help` shows commands.
+  - [x] Internal SQLite DB initializes on first run.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -229,7 +229,7 @@ Wave 3 (Output):
   - Message: `feat(content-pipeline): scaffold standalone package with CLI and internal DB`
   - Files: `packages/content-pipeline/`, root `package.json`
 
-- [ ] 2. Define source registry + license compatibility policy
+- [x] 2. Define source registry + license compatibility policy
 
   **What to do**:
   - Create `src/sources/registry.ts` with approved source catalog: OpenTDB (CC BY-SA 4.0), Wikidata (CC0), Wikipedia unusual articles (CC BY-SA 4.0), World Bank/Gapminder (CC BY 4.0), CIA World Factbook (public domain), US gov datasets (public domain), AI-generated (owned).
@@ -256,10 +256,10 @@ Wave 3 (Output):
   - CC license compatibility chart: https://creativecommons.org/faq/#can-i-combine-material-under-different-creative-commons-licenses-in-my-work
 
   **Acceptance Criteria**:
-  - [ ] Source registry lists all approved sources with SPDX license ID.
-  - [ ] License validator accepts CC0, CC-BY-4.0, CC-BY-SA-4.0, Public Domain. Rejects CC-BY-NC-*.
-  - [ ] Attribution generator produces correct text per license.
-  - [ ] Tests pass for both positive and negative cases.
+  - [x] Source registry lists all approved sources with SPDX license ID.
+  - [x] License validator accepts CC0, CC-BY-4.0, CC-BY-SA-4.0, Public Domain. Rejects CC-BY-NC-*.
+  - [x] Attribution generator produces correct text per license.
+  - [x] Tests pass for both positive and negative cases.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -284,7 +284,7 @@ Wave 3 (Output):
   - Message: `feat(content-pipeline): add source registry and license validation`
   - Files: `packages/content-pipeline/src/sources/`
 
-- [ ] 3. Build ingestion adapters for external sources
+- [x] 3. Build ingestion adapters for external sources
 
   **What to do**:
   - Implement OpenTDB adapter: fetch trivia, normalize to internal `ContentItem` schema, attach provenance.
@@ -312,10 +312,10 @@ Wave 3 (Output):
   - MediaWiki API: `https://en.wikipedia.org/w/api.php?action=parse&page=List_of_unusual_deaths&format=json`
 
   **Acceptance Criteria**:
-  - [ ] `pnpm content -- ingest --source=opentdb --count=50 --dry-run` outputs 50 normalized items with provenance.
-  - [ ] Each item has: id, text, category, source, license, attribution, ingestedAt.
-  - [ ] Resume works: second run skips already-ingested items.
-  - [ ] Invalid source name errors gracefully.
+  - [x] `pnpm content -- ingest --source=opentdb --count=50 --dry-run` outputs 50 normalized items with provenance.
+  - [x] Each item has: id, text, category, source, license, attribution, ingestedAt.
+  - [x] Resume works: second run skips already-ingested items.
+  - [x] Invalid source name errors gracefully.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -341,7 +341,7 @@ Wave 3 (Output):
   - Message: `feat(content-pipeline): add OpenTDB and Wikipedia ingestion adapters`
   - Files: `packages/content-pipeline/src/ingest/`
 
-- [ ] 4. Build AI generation + moderation pipeline
+- [x] 4. Build AI generation + moderation pipeline
 
   **What to do**:
   - Add `generate` command that calls Claude API to batch-generate content per game type (quip prompts, trivia, drawing prompts, WYR, estimation).
@@ -370,10 +370,10 @@ Wave 3 (Output):
   - The user's original document includes detailed generation prompts for each game type.
 
   **Acceptance Criteria**:
-  - [ ] `pnpm content -- generate --type=quip --count=20` produces 20 schema-valid items.
-  - [ ] `pnpm content -- moderate` classifies all unmoderated items.
-  - [ ] Blocked keyword triggers immediate rejection.
-  - [ ] AI classifier routes ambiguous items to pending_review.
+  - [x] `pnpm content -- generate --type=quip --count=20` produces 20 schema-valid items.
+  - [x] `pnpm content -- moderate` classifies all unmoderated items.
+  - [x] Blocked keyword triggers immediate rejection.
+  - [x] AI classifier routes ambiguous items to pending_review.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -400,7 +400,7 @@ Wave 3 (Output):
   - Message: `feat(content-pipeline): add AI generation and moderation pipeline`
   - Files: `packages/content-pipeline/src/generate/`, `packages/content-pipeline/src/moderate/`
 
-- [ ] 5. Add deduplication and provenance persistence
+- [x] 5. Add deduplication and provenance persistence
 
   **What to do**:
   - Implement exact-hash dedup on content text (normalized lowercase, stripped whitespace).
@@ -424,9 +424,9 @@ Wave 3 (Output):
   - `api/src/services/BlobStore.ts` - content-hash dedup pattern (for reference).
 
   **Acceptance Criteria**:
-  - [ ] Duplicate ingestion of same content produces single active record.
-  - [ ] `pnpm content -- stats` reports item counts by status and source.
-  - [ ] Provenance export produces JSON sidecar files.
+  - [x] Duplicate ingestion of same content produces single active record.
+  - [x] `pnpm content -- stats` reports item counts by status and source.
+  - [x] Provenance export produces JSON sidecar files.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -452,7 +452,7 @@ Wave 3 (Output):
   - Message: `feat(content-pipeline): add dedup, provenance export, and stats`
   - Files: `packages/content-pipeline/src/dedup/`, `packages/content-pipeline/src/provenance/`
 
-- [ ] 6. Build pack builder — emit drop-in JSON files
+- [x] 6. Build pack builder — emit drop-in JSON files
 
   **What to do**:
   - Add `build-pack` command that queries internal SQLite for approved content and outputs JSON files.
@@ -480,11 +480,11 @@ Wave 3 (Output):
   - `api/scripts/build-games.ts` - file output + manifest pattern.
 
   **Acceptance Criteria**:
-  - [ ] `pnpm content -- build-pack --type=quip` outputs JSON to `api/src/party/content/generated/quip-prompts.json`.
-  - [ ] Output JSON is valid and structurally identical to existing `quiplash-prompts.json`.
-  - [ ] Only approved items included in output.
-  - [ ] `CREDITS.md` generated alongside with attribution per source.
-  - [ ] Existing `quiplash-prompts.json` is untouched.
+  - [x] `pnpm content -- build-pack --type=quip` outputs JSON to `api/src/party/content/generated/quip-prompts.json`.
+  - [x] Output JSON is valid and structurally identical to existing `quiplash-prompts.json`.
+  - [x] Only approved items included in output.
+  - [x] `CREDITS.md` generated alongside with attribution per source.
+  - [x] Existing `quiplash-prompts.json` is untouched.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -512,7 +512,7 @@ Wave 3 (Output):
   - Message: `feat(content-pipeline): add pack builder with drop-in JSON output`
   - Files: `packages/content-pipeline/src/pack/`
 
-- [ ] 7. End-to-end smoke test
+- [x] 7. End-to-end smoke test
 
   **What to do**:
   - Run the full pipeline: ingest small batch → generate small batch → moderate → build-pack.
@@ -537,10 +537,10 @@ Wave 3 (Output):
   - All previous task outputs.
 
   **Acceptance Criteria**:
-  - [ ] Full pipeline runs without errors.
-  - [ ] Output JSON files exist and are structurally valid.
-  - [ ] `pnpm --filter @slopcade/content-pipeline test` passes.
-  - [ ] Package removal causes zero breakage in rest of monorepo.
+  - [x] Full pipeline runs without errors.
+  - [x] Output JSON files exist and are structurally valid.
+  - [x] `pnpm --filter @slopcade/content-pipeline test` passes.
+  - [x] Package removal causes zero breakage in rest of monorepo.
 
   **Agent-Executed QA Scenarios**:
   ```
@@ -595,10 +595,10 @@ pnpm tsc --noEmit                                      # No breakage to rest of 
 ```
 
 ### Final Checklist
-- [ ] All Must Have requirements are implemented.
-- [ ] All Must NOT Have guardrails are preserved.
-- [ ] Package has zero `@slopcade/*` dependencies.
-- [ ] `rm -rf packages/content-pipeline` causes zero test/build failures elsewhere.
-- [ ] Output JSON files match existing prompt format shapes.
-- [ ] All shipped content has provenance + license metadata internally.
-- [ ] Moderation gates prevent unsafe content from appearing in output files.
+- [x] All Must Have requirements are implemented.
+- [x] All Must NOT Have guardrails are preserved.
+- [x] Package has zero `@slopcade/*` dependencies.
+- [x] `rm -rf packages/content-pipeline` causes zero test/build failures elsewhere.
+- [x] Output JSON files match existing prompt format shapes.
+- [x] All shipped content has provenance + license metadata internally.
+- [x] Moderation gates prevent unsafe content from appearing in output files.
