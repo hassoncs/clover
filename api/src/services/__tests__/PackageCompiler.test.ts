@@ -79,12 +79,6 @@ const MINIMAL_WORKSPACE: WorkspaceFile[] = [
 		]),
 	},
 	{
-		path: "rules.json",
-		content: JSON.stringify([
-			{ id: "rule1", trigger: { type: "collision" }, actions: [] },
-		]),
-	},
-	{
 		path: "prefabs/ball-prefab.json",
 		content: JSON.stringify({ id: "ball-prefab", name: "Ball Prefab" }),
 	},
@@ -118,11 +112,10 @@ describe("PackageCompiler", () => {
 			expect(result.buildId).toBeTruthy();
 			expect(result.manifest.packageManifest.id).toBe("test-game");
 			expect(result.manifest.packageManifest.name).toBe("Test Game");
-			expect(result.manifest.artifacts).toHaveLength(6);
+			expect(result.manifest.artifacts).toHaveLength(5);
 			expect(result.processedFiles).toContain("slopcade.json");
 			expect(result.processedFiles).toContain("world.json");
 			expect(result.processedFiles).toContain("entities.json");
-			expect(result.processedFiles).toContain("rules.json");
 			expect(result.processedFiles).toContain("prefabs/ball-prefab.json");
 			expect(result.processedFiles).toContain("scripts/main.js");
 			expect(result.processedFiles).toContain("assets.json");
@@ -139,13 +132,12 @@ describe("PackageCompiler", () => {
 				writer.writeBuild.mock.calls[0];
 			expect(gameId).toBe("test-game");
 			expect(buildId).toBeTruthy();
-			expect(manifest.artifacts).toHaveLength(6);
+			expect(manifest.artifacts).toHaveLength(5);
 
 			const tags = artifacts.map((a: { tag: TagGroup }) => a.tag);
 			expect(tags).toContain("world");
 			expect(tags).toContain("prefabs");
 			expect(tags).toContain("entities");
-			expect(tags).toContain("rules");
 			expect(tags).toContain("scripts");
 			expect(tags).toContain("assets");
 		});
@@ -254,9 +246,8 @@ describe("PackageCompiler", () => {
 			expect(parsed.world).toBeTruthy();
 			expect(parsed.world?.world.gravity).toEqual({ x: 0, y: 9.8 });
 			expect(parsed.entities).toHaveLength(1);
-			expect(parsed.rules).toHaveLength(1);
 			expect(Object.keys(parsed.prefabs)).toContain("ball-prefab");
-			expect(parsed.scripts).toContain("onTick");
+			expect(Object.values(parsed.scriptModules).join("")).toContain("onTick");
 			expect(parsed.assetUrls["ball-sprite"]).toBe(
 				"https://example.com/ball.png",
 			);
@@ -271,11 +262,12 @@ describe("PackageCompiler", () => {
 			];
 			const parsed = parseWorkspace(files);
 
-			expect(parsed.scripts).toContain("onTick");
-			expect(parsed.scripts).toContain("return 1");
+			expect(parsed.scriptModules["main"]).toContain("onTick");
+			expect(parsed.scriptModules["main"]).toContain("return 1");
+			expect(parsed.scriptEntrypoint).toBe("main");
 		});
 
-		it("concatenates multiple script files alphabetically", () => {
+		it("produces module-map with sorted keys from multiple script files", () => {
 			const files: WorkspaceFile[] = [
 				{
 					path: "scripts/b-utils.js",
@@ -288,9 +280,9 @@ describe("PackageCompiler", () => {
 			];
 			const parsed = parseWorkspace(files);
 
-			const aIndex = parsed.scripts.indexOf("a-main");
-			const bIndex = parsed.scripts.indexOf("b-utils");
-			expect(aIndex).toBeLessThan(bIndex);
+			const keys = Object.keys(parsed.scriptModules);
+			expect(keys).toEqual(["a-main", "b-utils"]);
+			expect(parsed.scriptEntrypoint).toBe("a-main");
 		});
 
 		it("handles multiple prefab files", () => {
@@ -379,15 +371,14 @@ describe("PackageCompiler", () => {
 	});
 
 	describe("buildTagPayloads", () => {
-		it("creates payloads for all 6 tag groups", () => {
+		it("creates payloads for all 5 tag groups", () => {
 			const parsed = parseWorkspace(MINIMAL_WORKSPACE);
 			const payloads = buildTagPayloads(parsed);
 
-			expect(payloads.size).toBe(6);
+			expect(payloads.size).toBe(5);
 			expect(payloads.has("world")).toBe(true);
 			expect(payloads.has("prefabs")).toBe(true);
 			expect(payloads.has("entities")).toBe(true);
-			expect(payloads.has("rules")).toBe(true);
 			expect(payloads.has("scripts")).toBe(true);
 			expect(payloads.has("assets")).toBe(true);
 		});
@@ -401,12 +392,16 @@ describe("PackageCompiler", () => {
 			expect(world.world.pixelsPerMeter).toBe(50);
 		});
 
-		it("scripts payload concatenates all scripts", () => {
+		it("scripts payload produces module-map with entrypoint", () => {
 			const parsed = parseWorkspace(MINIMAL_WORKSPACE);
 			const payloads = buildTagPayloads(parsed);
-			const scripts = payloads.get("scripts") as { script: string };
+			const scripts = payloads.get("scripts") as {
+				modules: Record<string, string>;
+				entrypoint?: string;
+			};
 
-			expect(scripts.script).toContain("onTick");
+			expect(scripts.modules).toBeDefined();
+			expect(Object.values(scripts.modules).join("")).toContain("onTick");
 		});
 
 		it("assets payload maps IDs to URLs", () => {

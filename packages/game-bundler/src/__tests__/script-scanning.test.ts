@@ -3,7 +3,7 @@ import { compileBundle } from "../compiler";
 import { VirtualFileReader } from "../FileReader";
 
 describe("Script Scanning", () => {
-	it("should process single script file and populate gameDefinition.script", () => {
+	it("should process single script file and populate rawData.scripts module map", () => {
 		const files = new Map<string, string>([
 			[
 				"manifest.json",
@@ -20,9 +20,6 @@ describe("Script Scanning", () => {
 
 		expect(result.success).toBe(true);
 		expect(result.errors).toHaveLength(0);
-		expect(result.gameDefinition?.script).toBeDefined();
-		expect(result.gameDefinition?.script).toContain("// --- game ---");
-		expect(result.gameDefinition?.script).toContain("exports.onInit");
 		expect(result.rawData.scripts).toEqual({
 			game: 'exports.onInit = function() { console.log("init"); };',
 		});
@@ -61,7 +58,6 @@ describe("Script Scanning", () => {
 		const result = compileBundle("/bundle", { fileReader });
 
 		expect(result.success).toBe(true);
-		expect(result.gameDefinition?.script).toBeUndefined();
 		expect(result.rawData.scripts).toBeNull();
 	});
 
@@ -80,15 +76,10 @@ describe("Script Scanning", () => {
 		const result = compileBundle("/bundle", { fileReader });
 
 		expect(result.success).toBe(true);
-		expect(result.gameDefinition?.script).toBeDefined();
+		expect(result.rawData.scripts).not.toBeNull();
 
-		const script = result.gameDefinition!.script!;
-		const alphaIndex = script.indexOf("// --- alpha ---");
-		const middleIndex = script.indexOf("// --- middle ---");
-		const zebraIndex = script.indexOf("// --- zebra ---");
-
-		expect(alphaIndex).toBeLessThan(middleIndex);
-		expect(middleIndex).toBeLessThan(zebraIndex);
+		const moduleKeys = Object.keys(result.rawData.scripts!);
+		expect(moduleKeys).toEqual(["alpha", "middle", "zebra"]);
 
 		expect(result.rawData.scripts).toEqual({
 			alpha: "exports.alpha = 2;",
@@ -154,7 +145,9 @@ describe("Script Scanning", () => {
 		const result = compileBundle("/bundle", { fileReader });
 
 		expect(result.success).toBe(true);
-		expect(result.gameDefinition?.script).toContain("exports.onInit");
-		expect(result.gameDefinition?.script).toContain("exports.onUpdate");
+		expect(result.rawData.scripts).not.toBeNull();
+		const allContent = Object.values(result.rawData.scripts!).join("\n");
+		expect(allContent).toContain("exports.onInit");
+		expect(allContent).toContain("exports.onUpdate");
 	});
 });

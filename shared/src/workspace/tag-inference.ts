@@ -4,7 +4,6 @@ const ALL_TAGS: WorkspaceTag[] = [
 	"world",
 	"prefabs",
 	"entities",
-	"rules",
 	"scripts",
 	"effects",
 	"assets",
@@ -19,7 +18,6 @@ const TAG_RULES: TagRule[] = [
 	{ test: (p) => p === "slopcade.json", tags: ALL_TAGS },
 	{ test: (p) => p === "world.json", tags: ["world"] },
 	{ test: (p) => p === "entities.json", tags: ["entities"] },
-	{ test: (p) => p === "rules.json", tags: ["rules"] },
 	{
 		test: (p) => p.startsWith("prefabs/") && p.endsWith(".json"),
 		tags: ["prefabs"],
@@ -41,7 +39,6 @@ const TAG_RULES: TagRule[] = [
 		test: (p) => /^scenes\/[^/]+\/entities\.json$/.test(p),
 		tags: ["entities"],
 	},
-	{ test: (p) => /^scenes\/[^/]+\/rules\.json$/.test(p), tags: ["rules"] },
 ];
 
 export function inferTagHints(path: string): WorkspaceTag[] {

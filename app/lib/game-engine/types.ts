@@ -66,7 +66,7 @@ export interface RuntimeEntity {
 		vertices?: { x: number; y: number }[];
 	};
 
-	behaviors: RuntimeBehavior[];
+	behaviors?: RuntimeBehavior[];
 	tags: string[];
 	/** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */
 	tagBits: Set<number>;

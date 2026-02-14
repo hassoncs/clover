@@ -17,7 +17,6 @@ function createManifest(overrides?: Partial<BuildManifest>): BuildManifest {
 			{ tag: "world", hash: "abc123", sizeBytes: 100 },
 			{ tag: "prefabs", hash: "def456", sizeBytes: 200 },
 			{ tag: "entities", hash: "ghi789", sizeBytes: 150 },
-			{ tag: "rules", hash: "jkl012", sizeBytes: 50 },
 			{ tag: "scripts", hash: "mno345", sizeBytes: 300 },
 			{ tag: "assets", hash: "pqr678", sizeBytes: 80 },
 		],
@@ -45,8 +44,10 @@ const testArtifacts: Record<string, unknown> = {
 			},
 		],
 	} satisfies TagPayloads["entities"],
-	rules: { rules: [] } satisfies TagPayloads["rules"],
-	scripts: { script: "function onStart() {}" } satisfies TagPayloads["scripts"],
+	scripts: {
+		modules: { main: "function onStart() {}" },
+		entrypoint: "main",
+	} satisfies TagPayloads["scripts"],
 	assets: {
 		urls: { bg: "https://cdn.example.com/bg.png" },
 	} satisfies TagPayloads["assets"],
@@ -89,7 +90,6 @@ describe("PackageRuntimeAdapter", () => {
 				"world",
 				"prefabs",
 				"entities",
-				"rules",
 				"scripts",
 				"assets",
 			]);
@@ -117,7 +117,6 @@ describe("PackageRuntimeAdapter", () => {
 			});
 			expect(definition.entities).toHaveLength(1);
 			expect(definition.entities[0].id).toBe("box-1");
-			expect(definition.script).toBe("function onStart() {}");
 		});
 
 		it("preloads asset textures before loading game", async () => {
@@ -184,7 +183,6 @@ describe("PackageRuntimeAdapter", () => {
 			const noWorldResolver = new InMemoryArtifactResolver({
 				prefabs: testArtifacts.prefabs,
 				entities: testArtifacts.entities,
-				rules: testArtifacts.rules,
 				scripts: testArtifacts.scripts,
 				assets: testArtifacts.assets,
 			});
@@ -259,7 +257,6 @@ describe("PackageRuntimeAdapter", () => {
 					{ tag: "world", hash: "abc123", sizeBytes: 100 },
 					{ tag: "prefabs", hash: "def456", sizeBytes: 200 },
 					{ tag: "entities", hash: "CHANGED", sizeBytes: 150 },
-					{ tag: "rules", hash: "jkl012", sizeBytes: 50 },
 					{ tag: "scripts", hash: "mno345", sizeBytes: 300 },
 					{ tag: "assets", hash: "pqr678", sizeBytes: 80 },
 				],
@@ -287,16 +284,6 @@ describe("PackageRuntimeAdapter", () => {
 	});
 
 	describe("artifactsToGameDefinition mapping", () => {
-		it("maps script to undefined when empty", async () => {
-			resolver.set("scripts", { script: "" });
-			const manifest = createManifest();
-			await adapter.loadPackage(manifest);
-
-			const definition = vi.mocked(bridge.loadGame).mock
-				.calls[0][0] as GameDefinition;
-			expect(definition.script).toBeUndefined();
-		});
-
 		it("maps workspace manifest fields to metadata", async () => {
 			const manifest = createManifest({
 				packageManifest: {

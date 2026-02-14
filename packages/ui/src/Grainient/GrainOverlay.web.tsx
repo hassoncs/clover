@@ -27,22 +27,28 @@ export const GrainOverlayWeb: React.FC<GrainOverlayProps> = ({
 			{...props}
 		>
 			<svg
-				width="100%"
-				height="100%"
+				viewBox="0 0 200 200"
+				preserveAspectRatio="none"
 				xmlns="http://www.w3.org/2000/svg"
 				style={styles.svg}
 				aria-hidden="true"
 			>
-				<filter id={filterId}>
+				<filter id={filterId} x="0%" y="0%" width="100%" height="100%">
 					<feTurbulence
 						type="fractalNoise"
 						baseFrequency={grainient.grain.frequency}
 						numOctaves={grainient.grain.octaves}
 						stitchTiles="stitch"
+						result="noise"
 					/>
-					<feColorMatrix type="saturate" values="0" />
+					<feColorMatrix in="noise" type="saturate" values="0" />
 				</filter>
-				<rect width="100%" height="100%" filter={`url(#${filterId})`} />
+				<rect
+					width="100%"
+					height="100%"
+					fill="white"
+					filter={`url(#${filterId})`}
+				/>
 			</svg>
 		</View>
 	);
@@ -51,7 +57,7 @@ export const GrainOverlayWeb: React.FC<GrainOverlayProps> = ({
 const styles = StyleSheet.create({
 	container: {
 		...StyleSheet.absoluteFillObject,
-		zIndex: 0,
+		zIndex: 1,
 	},
 	svg: {
 		position: "absolute",

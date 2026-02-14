@@ -156,7 +156,7 @@ describe("TagPayloadResolver", () => {
 		expect(resolver.resolve("entities")).toEqual({ entities });
 	});
 
-	it("resolves scripts by concatenating scripts/*.js alphabetically", () => {
+	it("resolves scripts as module-map keyed by filename, sorted alphabetically", () => {
 		const store = createStore([
 			{ filename: "scripts/z-last.js", content: "const z = 3;" },
 			{ filename: "scripts/a-first.js", content: "const a = 1;" },
@@ -165,7 +165,12 @@ describe("TagPayloadResolver", () => {
 		const resolver = new TagPayloadResolver(store);
 
 		expect(resolver.resolve("scripts")).toEqual({
-			script: ["const a = 1;", "const m = 2;", "const z = 3;"].join("\n\n"),
+			modules: {
+				"a-first": "const a = 1;",
+				"m-middle": "const m = 2;",
+				"z-last": "const z = 3;",
+			},
+			entrypoint: "a-first",
 		});
 	});
 
@@ -174,7 +179,6 @@ describe("TagPayloadResolver", () => {
 
 		expect(resolver.resolve("world")).toBeNull();
 		expect(resolver.resolve("entities")).toBeNull();
-		expect(resolver.resolve("rules")).toBeNull();
 	});
 });
 
@@ -203,10 +207,6 @@ describe("HotReloadOrchestrator", () => {
 			{
 				filename: "entities.json",
 				content: JSON.stringify([{ id: "box-1", name: "Box", prefab: "box" }]),
-			},
-			{
-				filename: "rules.json",
-				content: JSON.stringify([]),
 			},
 			{ filename: "scripts/main.js", content: "function onStart() {}" },
 			{
@@ -382,7 +382,6 @@ describe("HotReloadOrchestrator", () => {
 			"world",
 			"prefabs",
 			"entities",
-			"rules",
 			"scripts",
 			"effects",
 			"assets",

@@ -28,24 +28,43 @@ User enters prompt:
 │
 AI generates:
 ├── GameDefinition (JSON)
-│   ├── metadata, world, templates, entities, rules
-│   └── script: "// JavaScript code as string"
+│   ├── metadata, world, prefabs, entities
+│   └── (No rules/behaviors/script string)
 │
-Validation:
-├── Zod schema validates GameDefinition structure
-├── Script syntax checked (parse without executing)
-├── Optional: dry-run in sandbox with mock context
+Compilation & Packaging:
+├── Scripts compiled into content-hashed chunks
+├── GamePackageManifest generated:
+│   ├── version: "1.0"
+│   ├── contentHash: SHA-256 of manifest
+│   ├── entrypoint: "main" module
+│   ├── chunks: [ { name, filename: "chunk-hash.js", hash, size } ]
+│   └── gameDefinition: Complete JSON
 │
-Storage:
-├── Saved to database (games table)
-│   └── definition column: JSON string
+Storage (R2/S3):
+├── manifest.json
+└── chunks/chunk-hash.js (Immutable)
 │
 Runtime:
-├── Load from DB → parse JSON → GameDefinition
-├── Initialize ScriptSandbox with definition.script
-├── Rules trigger run_script actions
-└── Sandbox executes script functions
+├── Load manifest.json
+├── Resolve and fetch required chunks
+├── Initialize ScriptSandbox with module map
+└── ScriptSandboxRuntimeSystem executes hooks
 ```
+
+## Authoring vs. Publishing Models
+
+### Authoring (Loose-File)
+- **Format**: Individual `.ts` and `.json` files in a workspace directory.
+- **Loading**: `GameLoader` reads files from the workspace, compiles scripts on the fly (via `EvalSandbox` or `QuickJSSandbox`).
+- **Development**: Supports hot-reloading. Changes to any file trigger a refresh of the sandbox and state.
+- **Precedence**: Local workspace files always override cached artifacts.
+
+### Publishing (Manifest + Chunks)
+- **Format**: A single `GamePackageManifest` JSON file and multiple `.js` script chunks.
+- **Deterministic**: Chunks are named by content hash (`chunk-{first12charsOfSHA256}.js`). Identical code always produces the same filename.
+- **Modular**: The `entrypoint` identifies the starting module (default: "main").
+- **Efficient**: Only required chunks are loaded. Immutable chunks can be aggressively cached.
+- **Registry**: `ScriptModuleMap` (`Record<string, string>`) maps module names to their source code at the bundle section layer.
 
 ---
 

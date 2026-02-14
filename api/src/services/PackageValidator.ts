@@ -5,13 +5,6 @@ import type {
 	TagPayloads,
 } from "@slopcade/shared";
 
-interface GameRule {
-	id?: string;
-	trigger?: unknown;
-	actions?: Record<string, unknown>[];
-	[key: string]: unknown;
-}
-
 import { TAG_GROUPS } from "@slopcade/shared";
 
 export interface ValidationError {
@@ -212,121 +205,6 @@ function validateEntities(
 	}
 }
 
-function collectRulePrefabRefs(rules: GameRule[]): string[] {
-	const refs: string[] = [];
-	for (const rule of rules) {
-		if (!rule.actions) continue;
-		for (const action of rule.actions) {
-			if (!isRecord(action)) continue;
-			const actionRecord = action as Record<string, unknown>;
-			if (actionRecord.type === "spawn") {
-				const template = actionRecord.prefab;
-				if (typeof template === "string") {
-					refs.push(template);
-				} else if (Array.isArray(template)) {
-					for (const t of template) {
-						if (typeof t === "string") refs.push(t);
-					}
-				}
-			}
-		}
-	}
-	return refs;
-}
-
-function collectRuleEntityRefs(rules: GameRule[]): string[] {
-	const refs: string[] = [];
-	for (const rule of rules) {
-		if (!rule.actions) continue;
-		for (const action of rule.actions) {
-			if (!isRecord(action)) continue;
-			const actionRecord = action as Record<string, unknown>;
-
-			for (const field of ["target", "position", "towardEntity"]) {
-				const fieldVal = actionRecord[field];
-				if (!isRecord(fieldVal)) continue;
-				const target = fieldVal as Record<string, unknown>;
-				if (
-					(target.type === "by_id" || target.type === "at_entity") &&
-					typeof target.entityId === "string"
-				) {
-					refs.push(target.entityId);
-				}
-			}
-
-			if (typeof actionRecord.sourceEntityId === "string") {
-				refs.push(actionRecord.sourceEntityId);
-			}
-		}
-	}
-	return refs;
-}
-
-function validateRules(
-	rules: GameRule[],
-	prefabIds: Set<string>,
-	entityIds: Set<string>,
-	errors: ValidationError[],
-	warnings: ValidationError[],
-): void {
-	const ruleIds = new Set<string>();
-
-	for (const rule of rules) {
-		if (!rule.id) {
-			warnings.push({
-				code: "MISSING_RULE_ID",
-				message: "Rule is missing an id",
-				path: "rules",
-				severity: "warning",
-			});
-			continue;
-		}
-
-		if (ruleIds.has(rule.id)) {
-			warnings.push({
-				code: "DUPLICATE_RULE_ID",
-				message: `Duplicate rule id "${rule.id}"`,
-				path: `rules.${rule.id}`,
-				severity: "warning",
-			});
-		}
-		ruleIds.add(rule.id);
-
-		if (!rule.trigger) {
-			errors.push({
-				code: "MISSING_RULE_TRIGGER",
-				message: `Rule "${rule.id}" is missing a trigger`,
-				path: `rules.${rule.id}.trigger`,
-				severity: "error",
-			});
-		}
-	}
-
-	const prefabRefs = collectRulePrefabRefs(rules);
-	for (const ref of prefabRefs) {
-		if (!prefabIds.has(ref)) {
-			warnings.push({
-				code: "UNKNOWN_RULE_PREFAB_REFERENCE",
-				message: `Rule references unknown prefab "${ref}"`,
-				path: "rules",
-				severity: "warning",
-			});
-		}
-	}
-
-	const entityRefs = collectRuleEntityRefs(rules);
-	for (const ref of entityRefs) {
-		if (!entityIds.has(ref)) {
-			errors.push({
-				code: "UNKNOWN_RULE_ENTITY_REFERENCE",
-				message: `Rule references unknown entity "${ref}"`,
-				path: "rules",
-				severity: "error",
-			});
-		}
-	}
-}
-
 export class PackageValidator {
 	validateBuild(
 		manifest: BuildManifest,
@@ -344,11 +222,6 @@ export class PackageValidator {
 
 		const entities = artifacts.entities?.entities ?? [];
 		validateEntities(entities, prefabIds, errors, warnings);
-
-		const entityIds = new Set(entities.map((e) => e.id).filter(Boolean));
-
-		const rules = artifacts.rules?.rules ?? [];
-		validateRules(rules, prefabIds, entityIds, errors, warnings);
 
 		return {
 			valid: errors.length === 0,

@@ -10,12 +10,14 @@ import type {
 } from "./types.js";
 import { DEFAULT_TIMEOUT } from "./types.js";
 
-export function normalizeGameName(name: string): GameInfo | null {
-	return findByIdOrPath(name) ?? null;
+export async function normalizeGameName(
+	name: string,
+): Promise<GameInfo | null> {
+	return (await findByIdOrPath(name)) ?? null;
 }
 
-export function buildGameUrl(gameId: string, baseUrl: string): string {
-	return `${baseUrl}/game/${gameId}?debug=true`;
+export function buildGameUrl(gameUuid: string, baseUrl: string): string {
+	return `${baseUrl}/play/${gameUuid}?debug=true`;
 }
 
 export function buildExampleUrl(exampleId: string, baseUrl: string): string {
@@ -123,9 +125,21 @@ export async function takeScreenshot(
 ): Promise<ScreenshotResult> {
 	const { filepath: explicitPath, prefix = "screenshot" } = options;
 
-	const filepath =
-		explicitPath ??
-		path.join(getScreenshotsDir(), `${prefix}-${Date.now()}.png`);
+	let filepath: string;
+	if (explicitPath) {
+		const isBareName =
+			!explicitPath.includes(path.sep) && !explicitPath.includes("/");
+		filepath = isBareName
+			? path.join(getScreenshotsDir(), explicitPath)
+			: explicitPath;
+	} else {
+		filepath = path.join(getScreenshotsDir(), `${prefix}-${Date.now()}.png`);
+	}
+
+	const dir = path.dirname(filepath);
+	if (!fs.existsSync(dir)) {
+		fs.mkdirSync(dir, { recursive: true });
+	}
 
 	const godotElement = await page.$(
 		'iframe[title="Godot Game Engine"], canvas#canvas, canvas',
@@ -152,9 +166,7 @@ export async function takeScreenshot(
 	};
 }
 
-export async function takeScreenshotToBuffer(
-	page: Page,
-): Promise<{
+export async function takeScreenshotToBuffer(page: Page): Promise<{
 	buffer: Buffer;
 	width: number;
 	height: number;

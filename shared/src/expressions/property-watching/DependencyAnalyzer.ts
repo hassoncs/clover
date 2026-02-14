@@ -1,5 +1,3 @@
-import type { Behavior } from "../../types/behavior";
-import type { EntityPrefab } from "../../types/entity";
 import type { GameDefinition } from "../../types/GameDefinition";
 import { Parser } from "../parser";
 import type { ASTNode, ExpressionValue } from "../types";
@@ -52,71 +50,11 @@ export class DependencyAnalyzer {
 		return this.watches;
 	}
 
-	private analyzePrefabs(): void {
-		for (const [prefabId, prefab] of Object.entries(this.game.prefabs)) {
-			this.analyzePrefab(prefabId, prefab as EntityPrefab);
-		}
-	}
+	private analyzePrefabs(): void {}
 
-	private analyzePrefab(prefabId: string, prefab: EntityPrefab): void {
-		if (!prefab.behaviors) return;
+	private analyzeEntities(): void {}
 
-		for (let i = 0; i < prefab.behaviors.length; i++) {
-			const behavior = prefab.behaviors[i];
-			this.analyzeBehavior(behavior, {
-				hasSelfContext: true,
-				contextTags: prefab.tags,
-				debugName: `Prefab[${prefabId}].Behavior[${i}:${behavior.type}]`,
-				behaviorType: behavior.type,
-			});
-		}
-	}
-
-	private analyzeEntities(): void {
-		for (const entity of this.game.entities) {
-			if (!entity.behaviors) continue;
-
-			for (let i = 0; i < entity.behaviors.length; i++) {
-				const behavior = entity.behaviors[i];
-				this.analyzeBehavior(behavior, {
-					hasSelfContext: true,
-					contextTags: entity.tags,
-					debugName: `Entity[${entity.id}].Behavior[${i}:${behavior.type}]`,
-					entityId: entity.id,
-					behaviorType: behavior.type,
-				});
-			}
-		}
-	}
-
-	private analyzeBehavior(behavior: Behavior, context: AnalysisContext): void {
-		switch (behavior.type) {
-			case "maintain_speed":
-				this.analyzeValue(behavior.speed, {
-					...context,
-					debugName: `${context.debugName}.speed`,
-				});
-				break;
-
-			case "score_on_collision":
-				this.analyzeValue(behavior.points, {
-					...context,
-					debugName: `${context.debugName}.points`,
-				});
-				break;
-
-			case "score_on_destroy":
-				this.analyzeValue(behavior.points, {
-					...context,
-					debugName: `${context.debugName}.points`,
-				});
-				break;
-		}
-	}
-
-	private analyzeRules(): void {
-		// Rules removed from GameDefinition — no-op
-	}
+	private analyzeRules(): void {}
 
 	private analyzeValue<T>(
 		value: T | ExpressionValue,
@@ -343,16 +281,6 @@ export class DependencyAnalyzer {
 	}
 
 	private countBehaviors(): number {
-		let count = 0;
-
-		for (const prefab of Object.values(this.game.prefabs)) {
-			count += prefab.behaviors?.length ?? 0;
-		}
-
-		for (const entity of this.game.entities) {
-			count += entity.behaviors?.length ?? 0;
-		}
-
-		return count;
+		return 0;
 	}
 }

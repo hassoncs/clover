@@ -10,7 +10,6 @@ const TAG_ORDER: WorkspaceTag[] = [
 	"world",
 	"prefabs",
 	"entities",
-	"rules",
 	"scripts",
 	"effects",
 	"assets",

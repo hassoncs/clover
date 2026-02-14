@@ -47,12 +47,12 @@ describe("WorkspaceModuleGraph", () => {
 	it("multiple changes produce union of affected tags", () => {
 		const graph = new WorkspaceModuleGraph();
 		graph.upsertNode("world.json", inferTagHints("world.json"));
-		graph.upsertNode("rules.json", inferTagHints("rules.json"));
+		graph.upsertNode("entities.json", inferTagHints("entities.json"));
 
-		const result = graph.invalidate(["world.json", "rules.json"]);
+		const result = graph.invalidate(["world.json", "entities.json"]);
 
 		expect(result.affectedTags).toContain("world");
-		expect(result.affectedTags).toContain("rules");
+		expect(result.affectedTags).toContain("entities");
 	});
 
 	it("handles cycles without infinite loop", () => {
@@ -84,7 +84,7 @@ describe("WorkspaceModuleGraph", () => {
 
 	it("unknown paths infer all tags", () => {
 		const tags = inferTagHints("some/random/file.txt");
-		expect(tags).toHaveLength(7);
+		expect(tags).toHaveLength(6);
 		expect(tags).toContain("world");
 		expect(tags).toContain("effects");
 	});
@@ -112,17 +112,15 @@ describe("WorkspaceModuleGraph", () => {
 
 describe("inferTagHints", () => {
 	it.each([
-		["slopcade.json", 7],
+		["slopcade.json", 6],
 		["world.json", 1],
 		["entities.json", 1],
-		["rules.json", 1],
 		["prefabs/player.json", 1],
 		["scripts/main.js", 1],
 		["effects/screen.json", 1],
 		["shaders/crt.gdshader", 1],
 		["assets/player.png", 1],
 		["scenes/main/entities.json", 1],
-		["scenes/main/rules.json", 1],
 	])("infers correct tag count for %s", (path, expectedCount) => {
 		expect(inferTagHints(path)).toHaveLength(expectedCount);
 	});

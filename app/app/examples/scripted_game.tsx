@@ -158,7 +158,6 @@ const createGameDefinition = (script: string): GameDefinition => ({
 			transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
 		},
 	],
-	script,
 });
 
 export default function ScriptedGameExample() {

@@ -65,15 +65,12 @@ Interactive Documentation Site
 
 [docs/INDEX.... Global documentation hub
 [docs/godot-migration/]..
-[docs/game-maker/INDEX.... AI game generation, entities, behaviors
+[docs/game-maker/INDEX.md] AI game generation, entities, scripting
+...
+ [Entity System] Game entity structure
+ [Scripting System] Script-first logic
+ [Registry System] Auto-discovered loading
 
- Most-Used References
-
- Document Description
-
- [Entity System]..-maker/reference. Game entity structure
- [Behavior System]... Game logic behaviors
- [Registry System]... Auto-discovered loading
  [Troubleshooting].. Common issues fixes
 
 Writing Documentation
@@ -121,14 +118,15 @@ Architecture at a Glance
 
 
 
-Game Engine Architecture (Post-Cleanup)
+Game Engine Architecture (Script-First)
 
- game engine underwent major cleanup Feb 2026 unify systems simplify communication
+The game engine underwent a major migration in Feb 2026 to a script-first architecture.
 
- **Unified RulesSystem** `RulesRuntimeSystem `RulesEvaluator merged into single `RulesSystem.
--Based communication engine React UI flows through `GameEventBus. Direct system access from UI discouraged.
- **Generic Variables** `score `lives fields. managed via unified variables system.
- Ownership** Each system,,. has single source truth injected via `SystemContext`.
+- **Script-First Logic**: All game logic is now implemented in JavaScript/TypeScript modules. The legacy Rules and Behavior systems are deprecated.
+- **`scriptRef`**: Prefabs and Entities reference logic modules via the `scriptRef` field.
+- **Unified Event Bus**: Communication between engine and React UI flows through `GameEventBus`.
+- **Generic Variables**: `score`, `lives`, etc., are managed via a unified variables system.
+- **System Ownership**: Each system has a single source of truth injected via `SystemContext`.
 
 
 

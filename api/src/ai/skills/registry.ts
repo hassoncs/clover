@@ -40,7 +40,7 @@ When designing levels or game progression, use the "introduce, develop, twist" p
 
 For the Slopcade engine, visuals are defined through prefab visual components (rect, circle, polygon, image, text). When using the image type, provide clear "whatDescription" fields that describe the asset for AI generation. Keep descriptions focused on the object itself against a transparent background — e.g., "a bouncy red slime monster, cartoon style, front-facing" rather than "a monster in a dungeon."
 
-Animation in this engine comes primarily from physics simulation and tween behaviors. Use tweens for UI polish (scale pulsing on collectibles, color shifts on damage) and physics for gameplay movement. The combination of static visual assets with dynamic physics creates a satisfying juxtaposition.
+Animation in this engine comes primarily from physics simulation and scripts. Use scripts for UI polish (scale pulsing on collectibles, color shifts on damage) and physics for gameplay movement.
 
 When choosing a visual style, maintain consistency across all game assets. Pick a coherent palette (3-5 main colors plus accents), a consistent level of detail (don't mix pixel art with photorealistic elements), and ensure sufficient contrast between gameplay-critical elements and decorative ones.`,
 	},
@@ -53,7 +53,6 @@ When choosing a visual style, maintain consistency across all game assets. Pick 
 			"script",
 			"scripting",
 			"custom logic",
-			"behavior",
 			"code",
 			"javascript",
 			"collision handler",
@@ -61,11 +60,13 @@ When choosing a visual style, maintain consistency across all game assets. Pick 
 		priority: 0,
 		content: `You are an expert in the Slopcade scripting system. Scripts run in a QuickJS sandbox and use the ScriptContext API. The key lifecycle hooks are: onStart (initialization), onUpdate (per-frame logic), onInput (user interaction), and onCollision (physics events).
 
+All game logic MUST be implemented via scripts. Prefabs and entities use the 'scriptRef' property to point to a script module.
+
 When writing scripts, remember that the sandbox has no access to browser APIs, network, or filesystem. Use ctx.getVariable/ctx.setVariable for state, ctx.queryEntities for finding entities by tag, ctx.getEntityPosition/ctx.setEntityPosition for movement, and ctx.spawnEntity/ctx.destroyEntity for entity lifecycle.
 
 For collision handling, use the onCollision hook which receives collision objects with entityA, entityB, and contact info. Always check tags with ctx.hasTag() before acting on collisions — don't assume which entity is which. A common pattern is: check if one entity has tag "bullet" and the other has tag "enemy", then destroy both and increment score.
 
-For complex game logic (grid-based games, turn-based mechanics, state machines beyond what the declarative system provides), scripts are the right tool. Structure your script with clear state variables initialized in onStart, updated in onUpdate, and responsive to input in onInput. Keep frame-based logic lightweight — avoid heavy computation in onUpdate since it runs every frame at 60fps.`,
+Structure your script with clear state variables initialized in onStart, updated in onUpdate, and responsive to input in onInput. Keep frame-based logic lightweight — avoid heavy computation in onUpdate since it runs every frame at 60fps.`,
 	},
 ];
 

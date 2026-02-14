@@ -34,7 +34,7 @@ export function isConstantRef(value: unknown): value is ConstantRef {
 export type CompileErrorCode =
 	| "UNKNOWN_CONSTANT"
 	| "UNKNOWN_ASSET"
-	| "UNKNOWN_TEMPLATE"
+	| "UNKNOWN_PREFAB"
 	| "DUPLICATE_ID"
 	| "INVALID_JSON"
 	| "MISSING_FILE"
@@ -116,7 +116,7 @@ export interface RawBundleData {
 	> | null;
 	scripts: Record<string, string> | null;
 	effects: GameDefinition["effects"] | null;
-	templates: Array<Record<string, unknown>>;
+	prefabs: Array<Record<string, unknown>>;
 	entities: Array<Record<string, unknown>>;
 	schemas?: {
 		level?: object;
@@ -140,13 +140,13 @@ export interface BundleCompileResult {
 }
 
 /**
- * Sections of a game definition for modular loading
+ * Sections of a game definition for modular loading.
  */
 export interface BundleSections {
 	world: GameDefinition["world"];
 	prefabs: GameDefinition["prefabs"];
 	entities: GameDefinition["entities"];
-	script?: string;
+	modules?: ScriptModuleMap;
 	effects?: GameDefinition["effects"];
 	systems?: {
 		match3?: GameDefinition["match3"];
@@ -169,6 +169,44 @@ export interface SectionedBundle {
 export interface SectionedCompileResult {
 	success: boolean;
 	bundle: SectionedBundle | null;
+	errors: CompileError[];
+	warnings: CompileWarning[];
+}
+
+// ============================================================================
+// Publish Artifact Format
+// ============================================================================
+
+/** Script filename (without extension) → source code. Keys sorted alphabetically for determinism. */
+export type ScriptModuleMap = Record<string, string>;
+
+export interface PublishChunk {
+	name: string;
+	/** Content-hash filename, e.g. "chunk-a1b2c3d4.js" */
+	filename: string;
+	hash: string;
+	sizeBytes: number;
+}
+
+/**
+ * Entry manifest for a published game package.
+ * References content-hashed script chunks that can be loaded independently.
+ * Same input always produces identical hashes (deterministic build).
+ */
+export interface GamePackageManifest {
+	version: "1.0";
+	/** SHA-256 of canonical manifest JSON (computed with this field set to empty string) */
+	contentHash: string;
+	entrypoint?: string;
+	chunks: PublishChunk[];
+	gameDefinition: GameDefinition;
+}
+
+export interface PublishCompileResult {
+	success: boolean;
+	manifest: GamePackageManifest | null;
+	/** Chunk filename → source content, for writing to storage */
+	chunkFiles: Map<string, string>;
 	errors: CompileError[];
 	warnings: CompileWarning[];
 }

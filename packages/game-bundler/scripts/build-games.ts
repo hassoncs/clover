@@ -20,7 +20,6 @@ interface BundleFiles {
 	"constants.json": Record<string, unknown>;
 	"templates/all.json": unknown[];
 	"entities/initial.json": unknown[];
-	"rules/gameplay.json": unknown[];
 }
 
 async function compileGameTypeScript(
@@ -85,12 +84,11 @@ function splitIntoBundleFiles(gameDef: GameDefinition): BundleFiles {
 		},
 		"templates/all.json": templateArray,
 		"entities/initial.json": gameDef.entities || [],
-		"rules/gameplay.json": gameDef.rules || [],
 	};
 }
 
 function writeBundle(bundlePath: string, files: BundleFiles): void {
-	const dirs = ["templates", "entities", "rules"];
+	const dirs = ["templates", "entities"];
 	for (const dir of dirs) {
 		const dirPath = join(bundlePath, dir);
 		if (!existsSync(dirPath)) {

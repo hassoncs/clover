@@ -6,7 +6,6 @@ export const TAG_GROUPS: readonly TagGroup[] = [
 	"world",
 	"prefabs",
 	"entities",
-	"rules",
 	"scripts",
 	"effects",
 	"assets",

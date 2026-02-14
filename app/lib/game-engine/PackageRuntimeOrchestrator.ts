@@ -262,7 +262,6 @@ export class PackageRuntimeOrchestrator {
 				this.bridge.clearEntities();
 				this.applyEntitiesToBridge();
 				break;
-			case "rules":
 			case "scripts":
 				break;
 			case "assets":

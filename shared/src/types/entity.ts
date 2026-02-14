@@ -1,4 +1,3 @@
-import type { Behavior } from "./behavior";
 import type { CharacterComponent } from "./character";
 import type {
 	ColliderComponent,
@@ -33,7 +32,6 @@ export interface ChildEntityDefinition {
 	physics?: Partial<PhysicsComponent>;
 	collider?: Partial<ColliderComponent>;
 	character?: Partial<CharacterComponent>;
-	behaviors?: Behavior[];
 	tags?: string[];
 	visible?: boolean;
 	children?: ChildEntityDefinition[];
@@ -43,12 +41,16 @@ export interface GameEntity {
 	id: string;
 	name: string;
 	prefab?: string;
+	/**
+	 * Script module reference. Overrides prefab.scriptRef at compile time.
+	 * Points to a module key in the script payload's module map.
+	 */
+	scriptRef?: string;
 	transform: TransformComponent;
 	visual?: VisualComponent;
 	physics?: PhysicsComponent;
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
-	behaviors?: Behavior[];
 
 	tags?: string[];
 	layer?: number;
@@ -72,7 +74,6 @@ export interface ChildPrefabDefinition {
 	physics?: Partial<PhysicsComponent>;
 	collider?: Partial<ColliderComponent>;
 	character?: Partial<CharacterComponent>;
-	behaviors?: Behavior[];
 	tags?: string[];
 	children?: ChildPrefabDefinition[];
 }
@@ -86,12 +87,16 @@ export interface BaseEntityPrefab {
 	 * This describes the functional nature, NOT the visual style (style comes from pack theme).
 	 */
 	whatDescription?: string;
+	/**
+	 * Script module reference. Points to a module key in the script payload's module map.
+	 * Entity-level scriptRef overrides this at compile time.
+	 */
+	scriptRef?: string;
 	archetype?: EntityArchetype;
 	visual?: VisualComponent;
 	physics?: PhysicsComponent;
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
-	behaviors?: Behavior[];
 
 	tags?: string[];
 	layer?: number;
@@ -113,7 +118,6 @@ export interface BaseEntityDefinition {
 	physics?: PhysicsComponent;
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
-	behaviors?: Behavior[];
 
 	tags?: string[];
 	layer?: number;

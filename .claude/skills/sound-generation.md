@@ -15,7 +15,7 @@ Load when working on: sound, audio, SFX, music, ElevenLabs, sound effects, Audio
 - **ElevenLabs** generates SFX from text prompts (no music generation yet)
 - **Audio Storage**: R2 for production, `godot_project/sounds/` for development
 - **GameDefinition**: Sounds referenced in `sounds` record as `SoundAsset` objects
-- **Rule-Based Triggers**: `sound` action type in rules system plays sounds on events
+- **Script-Based Triggers**: Play sounds via `ctx.playSound()` in scripts on any event
 - **Godot Playback**: `AudioManager.gd` handles caching, playback, and pitch shifting
 
 ## Sound Generation (ElevenLabs)
@@ -50,23 +50,18 @@ sounds: {
 }
 ```
 
-### Sound Action in Rules
-```typescript
-interface SoundAction {
-  type: "sound";
-  soundId: string;       // References key in GameDefinition.sounds
-  volume?: number;       // 0.0 - 1.0
-  pitch?: number;        // 0.5 - 2.0 (runtime pitch shifting)
-}
+### Play Sound in Script
+```javascript
+// In onStart, onUpdate, or any hook:
+exports.onCollision = function(ctx, args) {
+  ctx.playSound("bounce", { volume: 1.0, pitch: 1.2 });
+};
 ```
 
 Example: Play bounce sound with escalating pitch on combos:
-```json
-{
-  "type": "sound",
-  "soundId": "bounce",
-  "pitch": 1.0
-}
+```javascript
+const combo = ctx.getVariable("combo") || 0;
+ctx.playSound("bounce", { pitch: 1.0 + combo * 0.1 });
 ```
 
 ## Godot Implementation
@@ -98,12 +93,12 @@ Example: Play bounce sound with escalating pitch on combos:
 |------|---------|
 | `api/scripts/generate-sound.ts` | ElevenLabs SFX generation CLI |
 | `shared/src/types/GameDefinition.ts` | SoundAsset schema |
-| `shared/src/types/rules.ts` | SoundAction definition |
 | `godot_project/scripts/audio/AudioManager.gd` | Engine-side playback |
 | `app/lib/audio/AudioManager.ts` | Web-side audio preloading |
 
 ## Related Skills
 
-- [ecs-architecture](ecs-architecture.md) — Rules system triggers sounds
+- [ecs-architecture](ecs-architecture.md) — Spawning and entity management
+- [scripting-api-reference](game-authoring/scripting-api-reference.md) — Playing sounds via script
 - [asset-pack-generation](asset-pack-generation.md) — Visual asset pipeline (parallel to audio, uses BlobStore)
 - [godot-engine](godot-engine.md) — Godot scene tree where AudioManager lives

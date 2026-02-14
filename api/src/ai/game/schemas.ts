@@ -115,165 +115,6 @@ export const PhysicsComponentSchema = z.discriminatedUnion("shape", [
 	PolygonPhysicsSchema,
 ]);
 
-export const MoveBehaviorSchema = z.object({
-	type: z.literal("move"),
-	direction: z.enum([
-		"left",
-		"right",
-		"up",
-		"down",
-		"toward_target",
-		"away_from_target",
-	]),
-	speed: z.number().positive(),
-	target: z.string().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const RotateBehaviorSchema = z.object({
-	type: z.literal("rotate"),
-	speed: z.number(),
-	direction: z.enum(["clockwise", "counterclockwise"]),
-	affectsPhysics: z.boolean().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const ControlBehaviorSchema = z.object({
-	type: z.literal("control"),
-	controlType: z.enum([
-		"tap_to_jump",
-		"tap_to_shoot",
-		"tap_to_flip",
-		"drag_to_aim",
-		"drag_to_move",
-		"tilt_to_move",
-		"tilt_gravity",
-		"buttons",
-	]),
-	force: z.number().optional(),
-	cooldown: z.number().optional(),
-	maxSpeed: z.number().optional(),
-	aimLine: z.boolean().optional(),
-	maxPullDistance: z.number().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const SpawnOnEventBehaviorSchema = z.object({
-	type: z.literal("spawn_on_event"),
-	event: z.enum(["tap", "timer", "collision", "destroy", "start"]),
-	entityTemplate: z.string(),
-	spawnPosition: z.enum(["at_self", "at_touch", "random_in_bounds", "offset"]),
-	offset: Vec2Schema.optional(),
-	bounds: BoundsSchema.optional(),
-	interval: z.number().optional(),
-	maxSpawns: z.number().optional(),
-	initialVelocity: Vec2Schema.optional(),
-	withTags: z.array(z.string()).optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const DestroyOnCollisionBehaviorSchema = z.object({
-	type: z.literal("destroy_on_collision"),
-	withTags: z.array(z.string()),
-	effect: z.enum(["none", "fade", "explode", "shrink"]).optional(),
-	destroyOther: z.boolean().optional(),
-	minImpactVelocity: z.number().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const ScoreOnCollisionBehaviorSchema = z.object({
-	type: z.literal("score_on_collision"),
-	withTags: z.array(z.string()),
-	points: z.number(),
-	once: z.boolean().optional(),
-	showPopup: z.boolean().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const TimerBehaviorSchema = z.object({
-	type: z.literal("timer"),
-	duration: z.number().positive(),
-	action: z.enum([
-		"destroy",
-		"spawn",
-		"enable_behavior",
-		"disable_behavior",
-		"trigger_event",
-	]),
-	repeat: z.boolean().optional(),
-	spawnTemplate: z.string().optional(),
-	behaviorIndex: z.number().optional(),
-	eventName: z.string().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const OscillateBehaviorSchema = z.object({
-	type: z.literal("oscillate"),
-	axis: z.enum(["x", "y", "both"]),
-	amplitude: z.number().positive(),
-	frequency: z.number().positive(),
-	phase: z.number().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const FollowBehaviorSchema = z.object({
-	type: z.literal("follow"),
-	target: z.string(),
-	speed: z.number().positive(),
-	minDistance: z.number().optional(),
-	maxDistance: z.number().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const BounceBehaviorSchema = z.object({
-	type: z.literal("bounce"),
-	bounds: BoundsSchema,
-	enabled: z.boolean().optional(),
-});
-
-export const MagneticBehaviorSchema = z.object({
-	type: z.literal("magnetic"),
-	strength: z.number(),
-	radius: z.number().positive(),
-	attractsTags: z.array(z.string()).optional(),
-	repels: z.boolean().optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const AnimateBehaviorSchema = z.object({
-	type: z.literal("animate"),
-	frames: z.array(z.string()),
-	fps: z.number().positive(),
-	loop: z.boolean().optional(),
-	playOn: z.enum(["always", "moving", "collision", "destroy"]).optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const GravityZoneBehaviorSchema = z.object({
-	type: z.literal("gravity_zone"),
-	gravity: Vec2Schema,
-	radius: z.number().positive(),
-	affectsTags: z.array(z.string()).optional(),
-	falloff: z.enum(["none", "linear", "quadratic"]).optional(),
-	enabled: z.boolean().optional(),
-});
-
-export const BehaviorSchema = z.discriminatedUnion("type", [
-	MoveBehaviorSchema,
-	RotateBehaviorSchema,
-	ControlBehaviorSchema,
-	SpawnOnEventBehaviorSchema,
-	DestroyOnCollisionBehaviorSchema,
-	ScoreOnCollisionBehaviorSchema,
-	TimerBehaviorSchema,
-	OscillateBehaviorSchema,
-	FollowBehaviorSchema,
-	BounceBehaviorSchema,
-	MagneticBehaviorSchema,
-	AnimateBehaviorSchema,
-	GravityZoneBehaviorSchema,
-]);
-
 export const TransformSchema = z.object({
 	x: z.number(),
 	y: z.number(),
@@ -286,7 +127,7 @@ export const EntityPrefabSchema = z.object({
 	id: z.string(),
 	visual: VisualComponentSchema.optional(),
 	physics: PhysicsComponentSchema.optional(),
-	behaviors: z.array(BehaviorSchema).optional(),
+	scriptRef: z.string().optional(),
 	tags: z.array(z.string()).optional(),
 	layer: z.number().optional(),
 });
@@ -298,125 +139,11 @@ export const GameEntitySchema = z.object({
 	transform: TransformSchema,
 	visual: VisualComponentSchema.optional(),
 	physics: PhysicsComponentSchema.optional(),
-	behaviors: z.array(BehaviorSchema).optional(),
+	scriptRef: z.string().optional(),
 	tags: z.array(z.string()).optional(),
 	layer: z.number().optional(),
 	visible: z.boolean().optional(),
 	active: z.boolean().optional(),
-});
-
-export const CollisionTriggerSchema = z.object({
-	type: z.literal("collision"),
-	entityATag: z.string(),
-	entityBTag: z.string(),
-});
-
-export const TimerTriggerSchema = z.object({
-	type: z.literal("timer"),
-	time: z.number().positive(),
-	repeat: z.boolean().optional(),
-});
-
-export const EntityCountTriggerSchema = z.object({
-	type: z.literal("entity_count"),
-	tag: z.string(),
-	count: z.number(),
-	comparison: z.enum(["gte", "lte", "eq", "zero"]),
-});
-
-export const EventTriggerSchema = z.object({
-	type: z.literal("event"),
-	eventName: z.string(),
-});
-
-export const RuleTriggerSchema = z.discriminatedUnion("type", [
-	CollisionTriggerSchema,
-	TimerTriggerSchema,
-	EntityCountTriggerSchema,
-	EventTriggerSchema,
-]);
-
-export const SpawnActionSchema = z.object({
-	type: z.literal("spawn"),
-	prefab: z.string(),
-	position: z.object({
-		type: z.enum(["fixed", "random", "at_entity", "at_collision"]),
-		x: z.number().optional(),
-		y: z.number().optional(),
-		bounds: BoundsSchema.optional(),
-		entityId: z.string().optional(),
-	}),
-	count: z.number().optional(),
-	spread: z.number().optional(),
-});
-
-export const DestroyActionSchema = z.object({
-	type: z.literal("destroy"),
-	target: z.object({
-		type: z.enum(["by_id", "by_tag", "collision_entities", "all"]),
-		entityId: z.string().optional(),
-		tag: z.string().optional(),
-		count: z.number().optional(),
-	}),
-});
-
-export const GameStateActionSchema = z.object({
-	type: z.literal("game_state"),
-	state: z.enum(["win", "lose", "pause", "restart", "next_level"]),
-	delay: z.number().optional(),
-});
-
-export const EventActionSchema = z.object({
-	type: z.literal("event"),
-	eventName: z.string(),
-	data: z.record(z.unknown()).optional(),
-});
-
-export const RuleActionSchema = z.discriminatedUnion("type", [
-	SpawnActionSchema,
-	DestroyActionSchema,
-	GameStateActionSchema,
-	EventActionSchema,
-]);
-
-export const GameRuleSchema = z.object({
-	id: z.string(),
-	name: z.string().optional(),
-	enabled: z.boolean().optional(),
-	trigger: RuleTriggerSchema,
-	conditions: z
-		.array(
-			z.object({
-				type: z.enum(["time", "entity_exists", "entity_count", "random"]),
-				min: z.number().optional(),
-				max: z.number().optional(),
-				entityId: z.string().optional(),
-				entityTag: z.string().optional(),
-				tag: z.string().optional(),
-				probability: z.number().optional(),
-			}),
-		)
-		.optional(),
-	actions: z.array(RuleActionSchema),
-	fireOnce: z.boolean().optional(),
-	cooldown: z.number().optional(),
-});
-
-export const WinConditionSchema = z.object({
-	expr: z.string().optional(),
-});
-
-export const LoseConditionSchema = z.object({
-	type: z.enum([
-		"entity_destroyed",
-		"entity_exits_screen",
-		"time_up",
-		"custom",
-	]),
-	tag: z.string().optional(),
-	time: z.number().optional(),
-	entityId: z.string().optional(),
-	expr: z.string().optional(),
 });
 
 export const WorldConfigSchema = z.object({
@@ -609,9 +336,6 @@ export const GameDefinitionSchema = z.object({
 	camera: CameraConfigSchema.optional(),
 	prefabs: z.record(z.string(), EntityPrefabSchema),
 	entities: z.array(GameEntitySchema).min(1),
-	rules: z.array(GameRuleSchema).optional(),
-	winCondition: WinConditionSchema.optional(),
-	loseCondition: LoseConditionSchema.optional(),
 	parallaxConfig: ParallaxConfigSchema.optional(),
 	tileSheets: z.array(TileSheetSchema).optional(),
 	tileMaps: z.array(TileMapSchema).optional(),

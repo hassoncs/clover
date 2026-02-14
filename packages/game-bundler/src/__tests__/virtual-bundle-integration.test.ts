@@ -7,7 +7,7 @@ import { VirtualFileReader } from "../FileReader";
  */
 function createMinimalBundle(overrides?: {
 	manifest?: Record<string, unknown>;
-	templates?: unknown;
+	prefabs?: unknown;
 	rules?: unknown;
 	scripts?: Record<string, string>;
 	assets?: Record<string, unknown>;
@@ -22,11 +22,9 @@ function createMinimalBundle(overrides?: {
 	};
 	files.set("manifest.json", JSON.stringify(manifest));
 
-	// Minimal templates
-	const templates = overrides?.templates || [
-		{ id: "player", tags: ["player"] },
-	];
-	files.set("templates/templates.json", JSON.stringify(templates));
+	// Minimal prefabs
+	const prefabs = overrides?.prefabs || [{ id: "player", tags: ["player"] }];
+	files.set("prefabs/prefabs.json", JSON.stringify(prefabs));
 
 	// Minimal rules
 	const rules = overrides?.rules || [];
@@ -84,18 +82,15 @@ describe("Virtual Bundle Integration", () => {
 		const result = compileBundle("/virtual/test", { fileReader });
 
 		expect(result.success).toBe(true);
-		expect(result.gameDefinition?.script).toBeDefined();
+		expect(result.rawData.scripts).not.toBeNull();
 
-		const script = result.gameDefinition!.script!;
-		const firstIndex = script.indexOf("// --- a_first ---");
-		const middleIndex = script.indexOf("// --- m_middle ---");
-		const lastIndex = script.indexOf("// --- z_last ---");
+		const moduleKeys = Object.keys(result.rawData.scripts!);
+		expect(moduleKeys).toEqual(["a_first", "m_middle", "z_last"]);
 
-		expect(firstIndex).toBeLessThan(middleIndex);
-		expect(middleIndex).toBeLessThan(lastIndex);
-		expect(script).toContain("exports.first");
-		expect(script).toContain("exports.middle");
-		expect(script).toContain("exports.last");
+		const allContent = Object.values(result.rawData.scripts!).join("\n");
+		expect(allContent).toContain("exports.first");
+		expect(allContent).toContain("exports.middle");
+		expect(allContent).toContain("exports.last");
 	});
 
 	it("warns on duplicate exports", () => {
@@ -209,7 +204,7 @@ describe("Virtual Bundle Integration", () => {
 					bounds: { width: 20, height: 12 },
 				},
 			},
-			templates: [
+			prefabs: [
 				{
 					id: "player",
 					tags: ["player"],
@@ -259,12 +254,8 @@ describe("Virtual Bundle Integration", () => {
 		expect(gameDef.prefabs.player).toBeDefined();
 		expect(gameDef.prefabs.enemy).toBeDefined();
 
-		expect(gameDef.rules).toBeDefined();
-		expect(gameDef.rules).toHaveLength(1);
-		expect(gameDef.rules![0].id).toBe("collision-rule");
-
-		expect(gameDef.script).toBeDefined();
-		expect(gameDef.script).toContain("exports.onInit");
+		expect(result.rawData.scripts).not.toBeNull();
+		expect(result.rawData.scripts!.game).toContain("exports.onInit");
 	});
 
 	it("handles complex nested directory structure", () => {
@@ -276,17 +267,17 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify({ name: "nested-test", version: "1.0.0" }),
 		);
 
-		// Templates in subdirectories
+		// Prefabs in subdirectories
 		files.set(
-			"templates/player/player.json",
+			"prefabs/player/player.json",
 			JSON.stringify({ id: "player", tags: ["player"] }),
 		);
 		files.set(
-			"templates/enemies/basic.json",
+			"prefabs/enemies/basic.json",
 			JSON.stringify({ id: "basic-enemy", tags: ["enemy"] }),
 		);
 		files.set(
-			"templates/enemies/boss.json",
+			"prefabs/enemies/boss.json",
 			JSON.stringify({ id: "boss-enemy", tags: ["enemy", "boss"] }),
 		);
 
@@ -332,18 +323,16 @@ describe("Virtual Bundle Integration", () => {
 		expect(result.success).toBe(true);
 		expect(result.errors).toHaveLength(0);
 
-		// Verify all templates loaded
+		// Verify all prefabs loaded
 		expect(Object.keys(result.gameDefinition!.prefabs)).toHaveLength(3);
 		expect(result.gameDefinition!.prefabs.player).toBeDefined();
 		expect(result.gameDefinition!.prefabs["basic-enemy"]).toBeDefined();
 		expect(result.gameDefinition!.prefabs["boss-enemy"]).toBeDefined();
 
-		// Verify all rules loaded
-		expect(result.gameDefinition!.rules).toHaveLength(2);
-
-		// Verify scripts concatenated
-		expect(result.gameDefinition!.script).toContain("// --- init ---");
-		expect(result.gameDefinition!.script).toContain("// --- update ---");
+		// Verify scripts loaded as modules
+		expect(result.rawData.scripts).not.toBeNull();
+		expect(result.rawData.scripts!.init).toContain("exports.onInit");
+		expect(result.rawData.scripts!.update).toContain("exports.onUpdate");
 
 		// Verify assets loaded
 		expect(result.rawData.assets?.player.localPath).toBe("sprites/player.png");
@@ -357,7 +346,7 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify({ name: "test", version: "1.0.0" }),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([{ id: "player", tags: ["player"] }]),
 		);
 		files.set("rules/gameplay.json", JSON.stringify([]));
@@ -380,14 +369,14 @@ describe("Virtual Bundle Integration", () => {
 		expect(result.errors[0].message).toContain("nonexistent.png");
 	});
 
-	it("validates template references in entities", () => {
+	it("validates prefab references in entities", () => {
 		const files = new Map<string, string>();
 		files.set(
 			"manifest.json",
 			JSON.stringify({ name: "test", version: "1.0.0" }),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([{ id: "player", tags: ["player"] }]),
 		);
 		files.set(
@@ -395,12 +384,12 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify([
 				{
 					id: "player1",
-					template: "player",
+					prefab: "player",
 					transform: { x: 0, y: 0, angle: 0 },
 				},
 				{
 					id: "enemy1",
-					template: "nonexistent",
+					prefab: "nonexistent",
 					transform: { x: 5, y: 5, angle: 0 },
 				},
 			]),
@@ -412,7 +401,7 @@ describe("Virtual Bundle Integration", () => {
 
 		expect(result.success).toBe(false);
 		expect(result.errors).toHaveLength(1);
-		expect(result.errors[0].code).toBe("UNKNOWN_TEMPLATE");
+		expect(result.errors[0].code).toBe("UNKNOWN_PREFAB");
 		expect(result.errors[0].message).toContain("nonexistent");
 	});
 
@@ -423,11 +412,11 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify({ name: "test", version: "1.0.0" }),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([{ id: "player", tags: ["player"] }]),
 		);
 		files.set("rules/gameplay.json", JSON.stringify([]));
-		files.set("templates/broken.json", "{ invalid json syntax }");
+		files.set("prefabs/broken.json", "{ invalid json syntax }");
 
 		const fileReader = new VirtualFileReader("/virtual/test", files);
 		const result = compileBundle("/virtual/test", { fileReader });
@@ -437,7 +426,7 @@ describe("Virtual Bundle Integration", () => {
 		const jsonError = result.errors.find((e) => e.code === "INVALID_JSON");
 		expect(jsonError).toBeDefined();
 		expect(jsonError?.message).toContain("Invalid JSON");
-		expect(jsonError?.file).toContain("templates/broken.json");
+		expect(jsonError?.file).toContain("prefabs/broken.json");
 	});
 
 	it("resolves assets with both remoteUrl and localPath", () => {
@@ -463,9 +452,9 @@ describe("Virtual Bundle Integration", () => {
 		expect(asset?.localPath).toBe("player.png");
 	});
 
-	it("validates asset references in templates", () => {
+	it("validates asset references in prefabs", () => {
 		const files = createMinimalBundle({
-			templates: [
+			prefabs: [
 				{
 					id: "player",
 					tags: ["player"],
@@ -486,7 +475,7 @@ describe("Virtual Bundle Integration", () => {
 		expect(result.errors[0].message).toContain("unknown-asset");
 	});
 
-	it("resolves constant references in templates", () => {
+	it("resolves constant references in prefabs", () => {
 		const files = new Map<string, string>();
 		files.set(
 			"manifest.json",
@@ -500,7 +489,7 @@ describe("Virtual Bundle Integration", () => {
 			}),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([
 				{
 					id: "player",
@@ -529,7 +518,7 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify({ name: "test", version: "1.0.0" }),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([
 				{
 					id: "player",
@@ -556,7 +545,7 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify({ name: "test", version: "1.0.0" }),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([{ id: "player", tags: ["player"] }]),
 		);
 		files.set(
@@ -564,12 +553,12 @@ describe("Virtual Bundle Integration", () => {
 			JSON.stringify([
 				{
 					id: "player1",
-					template: "player",
+					prefab: "player",
 					transform: { x: 0, y: 0, angle: 0 },
 				},
 				{
 					id: "player1",
-					template: "player",
+					prefab: "player",
 					transform: { x: 5, y: 5, angle: 0 },
 				},
 			]),
@@ -586,14 +575,14 @@ describe("Virtual Bundle Integration", () => {
 		expect(result.errors[0].message).toContain("entities");
 	});
 
-	it("errors on duplicate rule IDs", () => {
+	it("ignores rules directory (legacy, script-first migration)", () => {
 		const files = new Map<string, string>();
 		files.set(
 			"manifest.json",
 			JSON.stringify({ name: "test", version: "1.0.0" }),
 		);
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([{ id: "player", tags: ["player"] }]),
 		);
 		files.set(
@@ -607,17 +596,14 @@ describe("Virtual Bundle Integration", () => {
 		const fileReader = new VirtualFileReader("/virtual/test", files);
 		const result = compileBundle("/virtual/test", { fileReader });
 
-		expect(result.success).toBe(false);
-		expect(result.errors).toHaveLength(1);
-		expect(result.errors[0].code).toBe("DUPLICATE_ID");
-		expect(result.errors[0].message).toContain("rule1");
-		expect(result.errors[0].message).toContain("rules");
+		// Rules are no longer processed — compiler succeeds regardless of rule content
+		expect(result.success).toBe(true);
 	});
 
 	it("handles bundle without manifest", () => {
 		const files = new Map<string, string>();
 		files.set(
-			"templates/templates.json",
+			"prefabs/prefabs.json",
 			JSON.stringify([{ id: "player", tags: ["player"] }]),
 		);
 
@@ -639,7 +625,7 @@ describe("Virtual Bundle Integration", () => {
 				version: "1.0.0",
 				title: "Complete Test",
 			},
-			templates: [
+			prefabs: [
 				{ id: "player", tags: ["player"] },
 				{ id: "enemy", tags: ["enemy"] },
 			],
@@ -673,7 +659,7 @@ describe("Virtual Bundle Integration", () => {
 		expect(result.success).toBe(true);
 		expect(result.errors).toHaveLength(0);
 		expect(result.processedFiles).toContain("manifest.json");
-		expect(result.processedFiles).toContain("templates/templates.json");
+		expect(result.processedFiles).toContain("prefabs/prefabs.json");
 		expect(result.processedFiles).toContain("rules/gameplay.json");
 		expect(result.processedFiles).toContain("scripts/init.js");
 		expect(result.processedFiles).toContain("scripts/update.js");
@@ -681,9 +667,9 @@ describe("Virtual Bundle Integration", () => {
 
 		expect(result.gameDefinition?.metadata.id).toBe("complete-test");
 		expect(Object.keys(result.gameDefinition!.prefabs)).toHaveLength(2);
-		expect(result.gameDefinition?.rules).toHaveLength(1);
-		expect(result.gameDefinition?.script).toContain("exports.onInit");
-		expect(result.gameDefinition?.script).toContain("exports.onUpdate");
+		expect(result.rawData.scripts).not.toBeNull();
+		expect(result.rawData.scripts!.init).toContain("exports.onInit");
+		expect(result.rawData.scripts!.update).toContain("exports.onUpdate");
 		expect(result.rawData.assets?.background).toBeDefined();
 	});
 });

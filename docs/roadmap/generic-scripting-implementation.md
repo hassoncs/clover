@@ -2,7 +2,27 @@
 
 **Goal:** Enable AI-generated games by completing the scripting infrastructure so games like Ball Sort can be implemented entirely via scripts without hardcoded action executors.
 
-**Status:** Infrastructure is 80% complete. ~2-3 days of focused work to reach MVP.
+**Status:** ✅ COMPLETE (Feb 2026)
+
+---
+
+## Final Architecture
+
+### Script-First Model
+The engine has transitioned from a declarative Rules/Behavior system to a **Script-First** model. Game logic is now implemented in standalone JavaScript modules.
+
+### Key Components
+1. **`ScriptSandbox`**: Executes modules in a secure environment (QuickJS in production, Eval in dev).
+2. **`scriptRef`**: Field on `EntityPrefab` and `GameEntity` that points to a module key.
+3. **`ScriptContext`**: The API provided to scripts (hooks: `onStart`, `onUpdate`, `onInput`, `onCollision`).
+4. **Manifest-Based Publishing**: Games are published as a `manifest.json` referencing content-hashed script chunks.
+
+### Legacy Systems
+The following systems are deprecated and have been removed from active game definition contracts:
+- `GameRule[]` (rules.json)
+- `Behavior[]` (behaviors section in prefabs)
+- `stateMachines`
+- `containers` (now handled by script logic)
 
 ---
 
@@ -80,6 +100,30 @@
 ### Execution Flow
 
 ```
+GamePackageManifest (manifest.json)
+         │
+         ▼
+┌─────────────────────────┐
+│  Game Initialization    │
+│  (GameLoader)           │
+│  - Fetches Chunks       │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  ScriptSandbox          │
+│  - Mounts Module Map    │
+│  - Links scriptRefs     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  Engine Event/Update    │
+│  - Calls Module Hooks   │
+│  - (onStart, onUpdate)  │
+└─────────────────────────┘
+```
+
 GameDefinition.script (string)
          │
          ▼

@@ -7,15 +7,14 @@ The workspace contains these file types (all in JSON format unless noted):
 - document.md — Shared design document (visible to the user in real-time). ALWAYS write this first.
 - slopcade.json — Game metadata (title, description, version)
 - world.json — World configuration (bounds, gravity, background)
-- prefabs/*.json — Entity prefab definitions (visuals, physics, behaviors)
+- prefabs/*.json — Entity prefab definitions (visuals, physics, scriptRef)
 - entities.json — Entity instances placed in the world
-- rules.json — Game rules and logic (win/lose conditions, scoring)
-- scripts/*.js — Custom scripts for advanced logic
+- scripts/*.js — Custom scripts for advanced logic (win/lose conditions, scoring, input handling)
 - effects/*.json — Visual effect graphs (shaders, post-processing)
 - assets/ — Asset references (sprites, sounds, music)
 
 WORKFLOW:
-When creating a new game or making significant changes, ALWAYS start by writing document.md first. This document should outline the game design: what the game is, core mechanics, entities, rules, and visual style. The user sees this document in real-time in a preview panel, so it serves as a shared understanding of what you're building. After the document is written, proceed to implement the game files.
+When creating a new game or making significant changes, ALWAYS start by writing document.md first. This document should outline the game design: what the game is, core mechanics, entities, scripting logic, and visual style. The user sees this document in real-time in a preview panel, so it serves as a shared understanding of what you're building. After the document is written, proceed to implement the game files.
 
 EDITOR TOOLS:
 You also have editor tools for the edit-run-inspect-mutate loop:

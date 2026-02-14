@@ -102,7 +102,7 @@ For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
 | Chat/AI | `agent-orchestration` | SSE streaming, AG-UI, HITL, billing |
 | Database/Storage | `storage-ops` | D1, R2, Supabase, migrations |
 | Testing | `testing-patterns` | Vitest, GDUnit4, mocking, E2E |
-| Entities/Games | `ecs-architecture` | Prefabs, GameDefinition, rules, behaviors |
+| Entities/Games | `ecs-architecture` | Prefabs, GameDefinition, EntityManager, scriptRef |
 | Godot Engine | `godot-engine` | GDScript, scenes, coordinates, exports |
 | Physics | `physics` | Bodies, collision, joints, PPM |
 | Godot Bridge | `bridge-development` | TS↔Godot communication |
@@ -190,8 +190,11 @@ This enables visual inspection at each pipeline stage.
 
 Domain-specific gotchas live in their respective skills (see Project Context table above). This section is for cross-cutting patterns that don't fit in a single skill.
 
+### Script-First Architecture
+- The engine has migrated to a script-first model. Logic lives in JS modules referenced by `scriptRef` on prefabs and entities. Rules and Behaviors are legacy and should not be used for new work.
+
 ### Template → Prefab Migration
-- The codebase has completed a big-bang rename from `template` to `prefab`. All core types (`EntityTemplate` → `EntityPrefab`, `GameDefinition.templates` → `GameDefinition.prefabs`) have been updated. Legacy references may still exist in non-critical paths.
+- The codebase has completed a big-bang rename from `template` to `prefab`. All core types (`EntityTemplate` → `EntityPrefab`, `GameDefinition.templates` → `GameDefinition.prefabs`) have been updated.
 
 ---
 

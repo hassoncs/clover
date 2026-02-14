@@ -23,7 +23,7 @@ describe("loadGameFromPath with bundles", () => {
 				}),
 			],
 			[
-				"templates/player.json",
+				"prefabs/player.json",
 				JSON.stringify({
 					id: "player",
 					tags: ["player"],
@@ -34,7 +34,7 @@ describe("loadGameFromPath with bundles", () => {
 			[
 				"entities/initial.json",
 				JSON.stringify([
-					{ id: "player1", template: "player", transform: { x: 0, y: 0 } },
+					{ id: "player1", prefab: "player", transform: { x: 0, y: 0 } },
 				]),
 			],
 			[
@@ -55,7 +55,7 @@ describe("loadGameFromPath with bundles", () => {
 	});
 
 	it("handles missing manifest gracefully", () => {
-		const files = new Map<string, string>([["templates/player.json", "{}"]]);
+		const files = new Map<string, string>([["prefabs/player.json", "{}"]]);
 
 		const fileReader = new VirtualFileReader("/games/badGame", files);
 		const result = compileBundle("/games/badGame", { fileReader });
@@ -94,7 +94,7 @@ describe("bundle compilation snapshots", () => {
 				}),
 			],
 			[
-				"templates/paddle.json",
+				"prefabs/paddle.json",
 				JSON.stringify({
 					id: "paddle",
 					tags: ["paddle"],
@@ -107,7 +107,7 @@ describe("bundle compilation snapshots", () => {
 				}),
 			],
 			[
-				"templates/ball.json",
+				"prefabs/ball.json",
 				JSON.stringify({
 					id: "ball",
 					tags: ["ball"],
@@ -120,8 +120,8 @@ describe("bundle compilation snapshots", () => {
 			[
 				"entities/initial.json",
 				JSON.stringify([
-					{ id: "paddle1", template: "paddle", transform: { x: 0, y: -7 } },
-					{ id: "ball1", template: "ball", transform: { x: 0, y: 0 } },
+					{ id: "paddle1", prefab: "paddle", transform: { x: 0, y: -7 } },
+					{ id: "ball1", prefab: "ball", transform: { x: 0, y: 0 } },
 				]),
 			],
 			[
@@ -165,7 +165,7 @@ describe("bundle compilation snapshots", () => {
 				}),
 			],
 			[
-				"templates/player.json",
+				"prefabs/player.json",
 				JSON.stringify({
 					id: "player",
 					physics: {

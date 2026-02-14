@@ -1,150 +1,128 @@
-import { describe, it, expect } from 'vitest';
-import { validateGameDefinition } from '../gameDefinitionValidator';
-import type { GameDefinition } from '../../types/GameDefinition';
+import { describe, expect, it } from "vitest";
+import type { GameDefinition } from "../../types/GameDefinition";
+import { validateGameDefinition } from "../gameDefinitionValidator";
 
-function createMinimalGame(overrides: Partial<GameDefinition> = {}): GameDefinition {
-  return {
-    metadata: { id: 'test-game', title: 'Test Game', version: '1.0.0' },
-    world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-    prefabs: {},
-    entities: [
-      {
-        id: 'player',
-        name: 'Player',
-        tags: ['player'],
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-      },
-    ],
-    rules: [
-      {
-        id: 'tap-rule',
-        trigger: { type: 'tap' },
-        actions: [{ type: 'score', operation: 'add', value: 10 }],
-      },
-    ],
-    winCondition: { expr: 'score >= 100' },
-    loseCondition: { type: "custom", expr: "lives <= 0" },
-    variables: { lives: 3 },
-    ...overrides,
-  } as GameDefinition;
+function createMinimalGame(
+	overrides: Partial<GameDefinition> = {},
+): GameDefinition {
+	return {
+		metadata: { id: "test-game", title: "Test Game", version: "1.0.0" },
+		world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+		prefabs: {},
+		entities: [
+			{
+				id: "player",
+				name: "Player",
+				tags: ["player"],
+				transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+			},
+		],
+		...overrides,
+	} as GameDefinition;
 }
 
-describe('gameDefinitionValidator', () => {
-  describe('expression-based win condition validation', () => {
-    it('should warn when no win mechanism is present', () => {
-      const game = createMinimalGame({
-        winCondition: {},
-        rules: [],
-      });
+describe("gameDefinitionValidator", () => {
+	describe("valid game definitions", () => {
+		it("should pass a minimal valid game", () => {
+			const game = createMinimalGame();
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
+			expect(result.valid).toBe(true);
+			expect(result.errors).toHaveLength(0);
+		});
+	});
 
-      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(true);
-    });
+	describe("metadata validation", () => {
+		it("should warn when title is missing", () => {
+			const game = createMinimalGame({
+				metadata: { id: "test", title: "", version: "1.0.0" },
+			});
 
-    it('should not warn when win condition has expr', () => {
-      const game = createMinimalGame({
-        winCondition: { expr: 'score >= 100' },
-      });
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
+			expect(result.warnings.some((w) => w.code === "MISSING_TITLE")).toBe(
+				true,
+			);
+		});
 
-      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(false);
-    });
+		it("should warn when version is missing", () => {
+			const game = createMinimalGame({
+				metadata: { id: "test", title: "Test", version: "" },
+			});
 
-    it('should not warn when game has game_state win action', () => {
-      const game = createMinimalGame({
-        winCondition: {},
-        rules: [
-          {
-            id: 'check-win',
-            trigger: { type: 'event', eventName: 'check_win' },
-            actions: [{ type: 'game_state', state: 'win' }],
-          },
-        ],
-      });
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
+			expect(result.warnings.some((w) => w.code === "MISSING_VERSION")).toBe(
+				true,
+			);
+		});
+	});
 
-      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(false);
-    });
+	describe("entity validation", () => {
+		it("should error on duplicate entity IDs", () => {
+			const game = createMinimalGame({
+				entities: [
+					{
+						id: "dup",
+						name: "A",
+						tags: [],
+						transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+					},
+					{
+						id: "dup",
+						name: "B",
+						tags: [],
+						transform: { x: 1, y: 1, angle: 0, scaleX: 1, scaleY: 1 },
+					},
+				],
+			});
 
-    it('should not warn when game has ball_sort_check_win action', () => {
-      const game = createMinimalGame({
-        winCondition: {},
-        rules: [
-          {
-            id: 'check-win',
-            trigger: { type: 'event', eventName: 'ball_dropped' },
-            actions: [{ type: 'ball_sort_check_win' }],
-          },
-        ],
-      });
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
+			expect(result.errors.some((e) => e.code === "DUPLICATE_ENTITY_ID")).toBe(
+				true,
+			);
+		});
 
-      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(false);
-    });
-  });
+		it("should error when entities array is empty", () => {
+			const game = createMinimalGame({ entities: [] });
 
-  describe('custom lose condition validation', () => {
-    it('should error when custom lose condition has no rule to trigger lose', () => {
-      const game = createMinimalGame({
-        loseCondition: { type: 'custom' },
-      });
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
+			expect(result.errors.some((e) => e.code === "NO_ENTITIES")).toBe(true);
+		});
 
-      expect(result.valid).toBe(false);
-      const hasRelevantError = result.errors.some(
-        (e) => e.code === 'CUSTOM_LOSE_NO_RULE' || e.code === 'SCHEMA_VALIDATION_ERROR'
-      );
-      expect(hasRelevantError).toBe(true);
-    });
+		it("should error on unknown prefab reference", () => {
+			const game = createMinimalGame({
+				prefabs: {},
+				entities: [
+					{
+						id: "e1",
+						name: "E1",
+						prefab: "nonexistent",
+						tags: [],
+						transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+					},
+				],
+			});
 
-    it('should pass when custom lose condition has game_state lose action', () => {
-      const game = createMinimalGame({
-        loseCondition: { type: 'custom' },
-        rules: [
-          {
-            id: 'tap-rule',
-            trigger: { type: 'tap' },
-            actions: [{ type: 'score', operation: 'add', value: 10 }],
-          },
-          {
-            id: 'check-lose',
-            trigger: { type: 'timer', time: 60 },
-            actions: [{ type: 'game_state', state: 'lose' }],
-          },
-        ],
-      });
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
+			expect(result.errors.some((e) => e.code === "UNKNOWN_PREFAB")).toBe(true);
+		});
+	});
 
-      const customLoseError = result.errors.find(e => e.code === 'CUSTOM_LOSE_NO_RULE');
-      expect(customLoseError).toBeUndefined();
-    });
-  });
+	describe("world validation", () => {
+		it("should warn on invalid pixelsPerMeter", () => {
+			const game = createMinimalGame({
+				world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: -1 },
+			});
 
-  describe('expression-based win conditions', () => {
-    it('should accept expression-based win conditions', () => {
-      const game = createMinimalGame({
-        winCondition: { expr: 'score >= 100' },
-      });
+			const result = validateGameDefinition(game);
 
-      const result = validateGameDefinition(game);
-
-      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(false);
-    });
-
-    it('should accept entity count expressions', () => {
-      const game = createMinimalGame({
-        winCondition: { expr: "entityCount('enemy') == 0" },
-      });
-
-      const result = validateGameDefinition(game);
-
-      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(false);
-    });
-  });
+			expect(
+				result.warnings.some((w) => w.code === "INVALID_PIXELS_PER_METER"),
+			).toBe(true);
+		});
+	});
 });

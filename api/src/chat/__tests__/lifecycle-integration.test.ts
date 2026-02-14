@@ -171,7 +171,6 @@ const MINIMAL_GAME_DEFINITION = JSON.stringify({
 		gravity: { x: 0, y: 9.8 },
 	},
 	entities: [],
-	rules: [],
 });
 
 describe("Full Game Lifecycle Integration", () => {
@@ -222,7 +221,7 @@ describe("Full Game Lifecycle Integration", () => {
 			expect(initialFiles).toContain("slopcade.json");
 			expect(initialFiles).toContain("world.json");
 			expect(initialFiles).toContain("entities.json");
-			expect(initialFiles).toContain("rules.json");
+			expect(initialFiles).toContain("scripts/main.js");
 
 			// ============================================================
 			// STEP 3: Send a chat message that instructs AI to create game content
@@ -239,7 +238,7 @@ describe("Full Game Lifecycle Integration", () => {
 						"1. Update world.json with gravity and a dark blue background",
 						"2. Create a ball prefab at prefabs/ball.json with a circle visual, dynamic physics, and a bounce behavior",
 						"3. Update entities.json with one ball entity placed near the top of the world",
-						"4. Add a simple rule in rules.json that tracks bounces",
+						"4. Write a script in scripts/main.js that tracks bounces using onCollision",
 						"Do NOT use askUser. Just write the files directly.",
 					].join("\n"),
 				},
@@ -347,11 +346,9 @@ describe("Full Game Lifecycle Integration", () => {
 				Array.isArray(entitiesData) ? entitiesData.length : "non-array",
 			);
 
-			const rulesJson = finalFiles.find((f) => f.filename === "rules.json");
-			expect(rulesJson).toBeDefined();
-			const rulesData = JSON.parse(rulesJson!.content);
-			expect(rulesData).toBeDefined();
-			console.log("[lifecycle] rules.json is valid JSON ✓");
+			const hasScripts = finalFilenames.some((f) => f.startsWith("scripts/"));
+			expect(hasScripts).toBe(true);
+			console.log("[lifecycle] scripts directory present ✓");
 
 			// ============================================================
 			// SUMMARY

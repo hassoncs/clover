@@ -67,40 +67,22 @@ The Slopcade project features a comprehensive auto-updating HTML documentation s
 ```
 packages/docs/
 ├── docs/                              # Manual documentation
-│   ├── getting-started.md             # Engine overview, first game
-│   ├── api-reference/                 # TypeDoc generated (192 interfaces)
-│   └── guides/                        # Tutorial guides (1,971 lines)
-│       ├── entities.md                # EntityTemplate, sprites, physics
-│       ├── behaviors.md               # 22 behaviors reference
-│       ├── effects.md                 # 19 visual effects
-│       ├── particles.md               # 10 particle presets
-│       ├── rules.md                   # Triggers, conditions, actions
-│       └── creating-a-game.md         # Complete tutorial
-│
 ├── src/
 │   ├── pages/                         # Interactive component pages
-│   │   ├── behaviors.tsx              # Grid view of 22 behaviors
-│   │   ├── effects.tsx                # Grid view of 19 effects
-│   │   ├── particles.tsx              # Grid view of 10 presets
-│   │   ├── rules.tsx                  # Rules engine reference
-│   │   └── examples.tsx               # Gallery of 23 test games
+│   │   ├── effects.tsx                # Grid view of visual effects
+│   │   ├── particles.tsx              # Grid view of particle presets
+│   │   └── examples.tsx               # Gallery of test games
 │   │
 │   └── components/                    # Reusable UI components
-│       ├── EngineCard.tsx             # Card component for items
-│       ├── Grid.tsx                   # Responsive grid layout
-│       └── FilterBar.tsx              # Search/filter UI
 │
 ├── plugins/
 │   └── game-engine-metadata/          # Custom Docusaurus plugin
-│       └── index.ts                   # Extraction + file watching
 │
 ├── static/
 │   └── data/                          # Auto-generated JSON
-│       ├── behaviors.json             # 22 behaviors
-│       ├── effects.json               # 19 effects
-│       ├── particles.json             # 10 presets
-│       ├── rules.json                 # Triggers/conditions/actions
-│       └── games.json                 # 23 test games
+│       ├── effects.json               # visual effects
+│       ├── particles.json             # particle presets
+│       └── games.json                 # test games
 │
 ├── docusaurus.config.ts               # Site configuration
 ├── sidebars.ts                        # Sidebar navigation
@@ -206,10 +188,9 @@ Seven comprehensive guides (1,971 lines total) provide tutorials and explanation
 |-------|-------|-------------|
 | **getting-started.md** | 205 | Engine overview, first game (bouncing ball) |
 | **entities.md** | 287 | EntityTemplate, sprite types, physics |
-| **behaviors.md** | 257 | Behavior system, common patterns |
 | **effects.md** | 289 | Visual effects, stacking, parameters |
 | **particles.md** | 210 | Particle emitters, presets, optimization |
-| **rules.md** | 301 | Rules engine (triggers → conditions → actions) |
+| **scripting.md** | 301 | Scripting engine (hooks, API, modules) |
 | **creating-a-game.md** | 422 | Complete step-by-step tutorial |
 
 **Standards:**
@@ -309,17 +290,6 @@ pnpm --filter @slopcade/docs serve
 
 ## Documented Components
 
-### Behaviors (22 total)
-
-**Categories:**
-- **Movement:** move, rotate, rotate_toward, follow, bounce, oscillate, maintain_speed
-- **Spawning:** spawn_on_event
-- **Lifecycle:** destroy_on_collision, timer, health
-- **Physics:** gravity_zone, magnetic, attach_to, teleport
-- **Visual:** animate, scale_oscillate, sprite_effect, particle_emitter
-- **Interaction:** draggable
-- **Scoring:** score_on_collision, score_on_destroy
-
 ### Effects (19 total)
 
 **Categories:**
@@ -334,24 +304,8 @@ pnpm --filter @slopcade/docs serve
 - fire, smoke, sparks, magic, explosion
 - rain, snow, bubbles, confetti, custom
 
-### Rules System
-
-**Triggers (12 types):**
-- collision, timer, score, entity_count, event, frame
-- tap, drag, tilt, button, swipe, gameStart
-
-**Conditions (12 types):**
-- score, time, entity_exists, entity_count, random
-- on_ground, touching, velocity, cooldown_ready
-- variable, list_contains, expression
-
-**Actions (40+ types):**
-- spawn, destroy, score, game_state, sound, event
-- apply_impulse, set_velocity, move, camera_shake
-- set_variable, start_cooldown, list operations
-- And many more...
-
-### Test Games (23 total)
+### Test Games
+ (23 total)
 
 **Categories:**
 - **Action/Physics:** breakoutBouncer, flappyBird, pinballLite, physicsStacker, slopeggle

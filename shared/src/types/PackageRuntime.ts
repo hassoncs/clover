@@ -8,7 +8,6 @@ export type TagGroup =
 	| "world"
 	| "prefabs"
 	| "entities"
-	| "rules"
 	| "scripts"
 	| "effects"
 	| "assets";
@@ -38,11 +37,9 @@ export interface TagPayloads {
 	entities: {
 		entities: GameEntity[];
 	};
-	rules: {
-		rules: Record<string, unknown>[];
-	};
 	scripts: {
-		script: string;
+		modules: Record<string, string>;
+		entrypoint?: string;
 	};
 	effects: {
 		plans: Record<string, CompiledPlan>;
@@ -99,7 +96,7 @@ export type TimeMode = "paused" | "playing";
  * Maps to bridge primitives: setupWorld, registerPrefabs, loadEntities, etc.
  */
 export interface PackageRuntimeAPI {
-	/** Load all tag groups from manifest in order: world → prefabs → entities → rules → scripts → assets */
+	/** Load all tag groups from manifest in order: world → prefabs → entities → scripts → effects → assets */
 	loadPackage(manifest: BuildManifest): Promise<LoadResult>;
 
 	/** Load a single tag group. Manifest must already be set. */
