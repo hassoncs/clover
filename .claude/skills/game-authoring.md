@@ -345,3 +345,7 @@ For detailed API docs, read these files in `.claude/skills/game-authoring/`:
 | Minefield | `minefield` | Tap-based puzzle, hidden state |
 | Sokoban | `sokoban` | Grid puzzle, push mechanics |
 | Simple | `simple` | Minimal reference (one draggable cube) |
+
+## Gotchas
+
+<!-- Learned patterns added automatically by the self-improvement system -->

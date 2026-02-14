@@ -115,6 +115,16 @@ For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
 
 Full skill index: `.claude/skills/INDEX.md`
 
+### Skill Auto-Loading
+
+Before starting domain-specific work, **proactively load the relevant skill** — don't wait until you're stuck.
+
+1. Check the domain table above OR scan `.claude/skills/INDEX.md` for keyword matches
+2. Load the skill BEFORE writing code in that domain
+3. If a skill's trigger keywords don't match your task but the content would help, update the skill's "When to Use" section with better keywords
+
+If you find yourself grepping for something that a loaded skill should have answered, that skill has a gap — fill it (see § Continuous Self-Improvement below).
+
 ## Secrets Management (Hush)
 
 This project uses **`hush`** for secrets management. API keys and credentials are stored in the hush vault — never in `.env` files.
@@ -198,17 +208,51 @@ Domain-specific gotchas live in their respective skills (see Project Context tab
 
 ---
 
-## Skill Self-Improvement
+## Continuous Self-Improvement
 
-When the user corrects you about something that a skill should have known:
+Skills and AGENTS.md are living documents. Update them as a natural byproduct of working — not as a separate step.
 
-1. **Identify the relevant skill** — check `.claude/skills/INDEX.md` for the matching domain
-2. **Update the skill** — add the correction to the "Gotchas" section of that skill file
-3. **If no matching skill exists** — add a new entry to "Learned Patterns & Gotchas" above
-4. **Commit the update** — `git add .claude/skills/ && git commit -m "docs: update {skill} with learned pattern"`
+### A. Immediate Skill Correction (during work)
 
-Triggers for this behavior:
-- User says "no, that's wrong", "actually it works like...", "you should have known..."
+When you discover that information in a loaded skill is **wrong or outdated**, fix it immediately:
+
+1. Correct the wrong information in-place — don't wait until the end of the session
+2. If a file path in a skill doesn't exist, grep for where it moved and update the skill
+3. If a skill says "use X pattern" but the codebase has migrated to Y, update the skill to Y
+4. Commit: `git add .claude/skills/ && git commit -m "docs: update {skill} — {what changed}"`
+
+**Triggers:**
+- Skill says file is at path A, but it's actually at path B
+- Skill describes a pattern that no longer matches the code
+- Skill references a type/interface/function that was renamed or deleted
+- You try the skill's recommended approach and it fails due to codebase changes
+
+### B. Learning Capture (during work)
+
+When you discover something through research or trial-and-error that a skill *should have told you*:
+
+1. Identify which skill covers this domain (check `.claude/skills/INDEX.md`)
+2. Add the learning to that skill's `## Gotchas` section: `- **{Issue}**: {explanation} → {fix/workaround}`
+3. If no matching skill exists and the learning is cross-cutting, add to "Learned Patterns & Gotchas" above
+4. If no matching skill exists and the learning is domain-specific + substantial (3+ useful facts), create a new skill stub
+5. Commit: `git add .claude/skills/ && git commit -m "docs: add learned pattern to {skill}"`
+
+**Triggers:**
+- You tried 2+ approaches before finding the right one
+- You had to explore/grep for something that prior knowledge would have answered instantly
+- You hit a non-obvious gotcha that will definitely recur
+- User corrects you ("no, that's wrong", "actually it works like...", "you should have known...")
 - User corrects a project-specific behavior or convention
-- You discover through trial-and-error that a pattern works differently than documented
-- A skill's file reference points to a file that no longer exists
+
+### C. End-of-Session Reflection (before signing off)
+
+Before your final response in any substantial session (3+ files edited or 10+ tool calls), do a quick self-check:
+
+1. **Stale info?** Did any skill I loaded have wrong/outdated information I haven't already fixed?
+2. **New learnings?** Did I discover anything not captured in our skills?
+3. **Corrections?** Did the user correct me about something project-specific?
+
+If YES to any → apply fixes (A or B above) if not already done. Mention briefly: "Updated {skill} with {learning}."
+If NO to all → say nothing. Don't reflect for the sake of reflecting.
+
+**Cost budget:** < 30 seconds, 0-2 tool calls. Skip entirely if nothing to update.
