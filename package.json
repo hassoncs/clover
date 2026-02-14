@@ -48,6 +48,7 @@
 		"generate:registry:watch": "cd app && npx reggie --watch",
 		"generate:registry:check": "cd app && npx reggie --check",
 		"generate:editor-bundle": "node scripts/bundle-native-editor.mjs",
+		"content": "pnpm --filter @slopcade/content-pipeline",
 		"generate:bridge": "npx tsx scripts/bridge-codegen.ts",
 		"check:bridge": "npx tsx scripts/bridge-codegen.ts --check",
 		"lint:gdscript": "npx tsx scripts/lint-gdscript.ts",
