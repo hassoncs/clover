@@ -5,7 +5,8 @@
 		"game-inspector": {
 			"cwd": "packages/game-inspector-mcp",
 			"command": "pnpm build && node dist/index.js",
-			"health": { "type": "port", "port": 3100 }
+			"health": { "type": "port", "port": 3100 },
+			"dashboard": false
 		},
 		"game-inspector-tsc": {
 			"cwd": "packages/game-inspector-mcp",
@@ -23,6 +24,7 @@
 			"cwd": ".",
 			"command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
 			"health": { "type": "port", "port": 8789 },
+			"dashboard": false,
 			"dependsOn": ["games-watcher"]
 		},
 		"godot": {
@@ -37,6 +39,7 @@
 			"cwd": "app",
 			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
 			"health": { "type": "port", "port": 8085 },
+			"dashboard": false,
 			"dependsOn": [
 				"api",
 				"godot",
@@ -50,6 +53,7 @@
 			"cwd": "app",
 			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
 			"health": { "type": "port", "port": 8085 },
+			"dashboard": true,
 			"dependsOn": [
 				"api",
 				"godot",
@@ -62,12 +66,14 @@
 		"backlog": {
 			"cwd": ".",
 			"command": "backlog browser --no-open",
-			"health": { "type": "port", "port": 6420 }
+			"health": { "type": "port", "port": 6420 },
+			"dashboard": false
 		},
 		"storybook": {
 			"cwd": "apps/storybook",
 			"command": "npx hush run -t app -- pnpm storybook",
-			"health": { "type": "port", "port": 6007 }
+			"health": { "type": "port", "port": 6007 },
+			"dashboard": true
 		}
 	}
 }

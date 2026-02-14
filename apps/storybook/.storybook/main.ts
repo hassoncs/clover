@@ -4,6 +4,7 @@ import path, { dirname } from "path";
 import tailwindcss from "tailwindcss";
 import { fileURLToPath } from "url";
 import type { Configuration, RuleSetRule } from "webpack";
+import webpack from "webpack";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -81,10 +82,12 @@ const config: StorybookConfig = {
 			include: [
 				/node_modules\/@expo\/vector-icons/,
 				/node_modules\/react-native-vector-icons/,
+				/node_modules\/react-native-css-interop/,
 			],
 			use: {
 				loader: "babel-loader",
 				options: {
+					sourceType: "unambiguous",
 					presets: [
 						[
 							"@babel/preset-env",
@@ -119,6 +122,13 @@ const config: StorybookConfig = {
 			),
 			"@slopcade/shared": path.resolve(__dirname, "../../../shared/src"),
 		};
+
+		config.plugins = config.plugins || [];
+		config.plugins.push(
+			new webpack.DefinePlugin({
+				__DEV__: JSON.stringify(false),
+			}),
+		);
 
 		return config;
 	},
