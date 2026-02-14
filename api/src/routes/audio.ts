@@ -49,6 +49,32 @@ function getFileExtension(contentType: string): string {
 	return ".bin";
 }
 
+async function voiceCacheKey(params: {
+	text: string;
+	voiceId: string;
+	modelId: string;
+	stability: number;
+	similarityBoost: number;
+	style: number;
+}): Promise<string> {
+	const input = [
+		params.voiceId,
+		params.text.trim().toLowerCase(),
+		params.modelId,
+		params.stability.toFixed(2),
+		params.similarityBoost.toFixed(2),
+		params.style.toFixed(2),
+	].join("|");
+	const buf = await crypto.subtle.digest(
+		"SHA-256",
+		new TextEncoder().encode(input),
+	);
+	const hex = [...new Uint8Array(buf)]
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
+	return hex.slice(0, 24);
+}
+
 function createElevenLabsService(env: Env): ElevenLabsService {
 	const apiKey = env.ELEVENLABS_API_KEY;
 	if (!apiKey) {
@@ -132,10 +158,10 @@ router.post("/generate-voice", async (c) => {
 		const {
 			text,
 			voiceId,
-			modelId,
-			stability,
-			similarityBoost,
-			style,
+			modelId = "eleven_multilingual_v2",
+			stability = 0.5,
+			similarityBoost = 0.75,
+			style = 0,
 			outputFormat,
 		} = body;
 
@@ -144,6 +170,41 @@ router.post("/generate-voice", async (c) => {
 		}
 		if (!voiceId || typeof voiceId !== "string") {
 			return c.json({ error: "voiceId is required" }, 400);
+		}
+
+		const cacheHash = await voiceCacheKey({
+			text,
+			voiceId,
+			modelId,
+			stability,
+			similarityBoost,
+			style,
+		});
+		const cacheR2Prefix = `audio/voice/cached/${cacheHash}`;
+
+		const cached = await c.env.ASSETS.list({ prefix: cacheR2Prefix, limit: 1 });
+		if (cached.objects.length > 0) {
+			const obj = cached.objects[0];
+			const head = await c.env.ASSETS.head(obj.key);
+			const meta = head?.customMetadata ?? {};
+			const cachedAssetId =
+				meta.assetId ??
+				obj.key
+					.split("/")
+					.pop()
+					?.replace(/\.[^.]+$/, "") ??
+				cacheHash;
+
+			return c.json({
+				assetId: cachedAssetId,
+				url: `/assets/${obj.key}`,
+				contentType: head?.httpMetadata?.contentType ?? "audio/mpeg",
+				durationSeconds: meta.durationSeconds
+					? Number(meta.durationSeconds)
+					: null,
+				type: "voice",
+				cached: true,
+			});
 		}
 
 		const service = createElevenLabsService(c.env);
@@ -159,7 +220,7 @@ router.post("/generate-voice", async (c) => {
 
 		const assetId = nanoid();
 		const ext = getFileExtension(result.contentType);
-		const r2Key = `audio/voice/${assetId}${ext}`;
+		const r2Key = `${cacheR2Prefix}/${assetId}${ext}`;
 
 		await c.env.ASSETS.put(r2Key, result.audio, {
 			httpMetadata: { contentType: result.contentType },
@@ -167,8 +228,12 @@ router.post("/generate-voice", async (c) => {
 				type: "voice",
 				text,
 				voiceId,
+				assetId,
 				userId: auth.userId,
 				generatedAt: new Date().toISOString(),
+				...(result.durationSeconds != null
+					? { durationSeconds: String(result.durationSeconds) }
+					: {}),
 			},
 		});
 
@@ -190,6 +255,7 @@ router.post("/generate-voice", async (c) => {
 			contentType: result.contentType,
 			durationSeconds: result.durationSeconds,
 			type: "voice",
+			cached: false,
 		});
 	} catch (err) {
 		console.error("Voice generation error:", err);

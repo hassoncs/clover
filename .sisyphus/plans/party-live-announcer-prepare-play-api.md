@@ -1,4 +1,4 @@
-# Party Game Live Announcer Prepare/Play API
+/s# Party Game Live Announcer Prepare/Play API
 
 ## TL;DR
 
@@ -59,11 +59,11 @@ Provide a minimal scripting API that makes round-level announcer voice orchestra
 - Automated tests and agent-executed QA scenarios.
 
 ### Definition of Done
-- [ ] Script can prepare N phrases, await readiness, then play each by handle.
-- [ ] Identical phrase+voice requests dedupe in-flight generation.
-- [ ] Failed preparations surface deterministic status and do not crash scripts.
-- [ ] Round reset cancels/cleans pending handles per policy.
-- [ ] Type-check and tests pass.
+- [x] Script can prepare N phrases, await readiness, then play each by handle.
+- [x] Identical phrase+voice requests dedupe in-flight generation.
+- [x] Failed preparations surface deterministic status and do not crash scripts.
+- [x] Round reset cancels/cleans pending handles per policy.
+- [x] Type-check and tests pass.
 
 ### Must Have
 - Simple primitives only: `prepareVoice`, `isVoiceReady`/`waitForVoices`, `playVoice`.
@@ -164,7 +164,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
 
 ## TODOs
 
-- [ ] 1. Define minimal voice-handle scripting contract
+- [x] 1. Define minimal voice-handle scripting contract
 
   **What to do**:
   - Add shared/runtime types for `VoiceHandleId`, `VoicePrepareStatus`, and `VoicePrepareOptions`.
@@ -204,7 +204,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
   - [ ] API signatures exist and are discoverable from script-facing types.
   - [ ] Contract documents not-ready and failed playback behavior.
 
-- [ ] 2. Implement `VoicePrepareService` with caching and in-flight dedupe
+- [x] 2. Implement `VoicePrepareService` with caching and in-flight dedupe
 
   **What to do**:
   - Create service managing handle lifecycle states.
@@ -241,7 +241,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
   - [ ] Duplicate prepare requests produce one backend generation call.
   - [ ] `waitForVoices` returns deterministic aggregate result under mixed outcomes.
 
-- [ ] 3. Wire voice APIs into script sandbox runtime context
+- [x] 3. Wire voice APIs into script sandbox runtime context
 
   **What to do**:
   - Extend `createScriptContext` to expose new voice primitives.
@@ -279,7 +279,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
   - [ ] Script hooks remain sync and pass existing sandbox constraints.
   - [ ] Runtime teardown clears pending voice state safely.
 
-- [ ] 4. Add generation adapter using existing backend route and preset mapping
+- [x] 4. Add generation adapter using existing backend route and preset mapping
 
   **What to do**:
   - Implement adapter call path for voice generation requests.
@@ -316,7 +316,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
   - [ ] Adapter surfaces backend failures into handle `failed` status.
   - [ ] Cache key includes voice preset and text deterministically.
 
-- [ ] 5. Implement playback path for prepared dynamic audio handles
+- [x] 5. Implement playback path for prepared dynamic audio handles
 
   **What to do**:
   - Add/extend bridge playback path to play prepared dynamic voice assets.
@@ -353,7 +353,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
   - [ ] Not-ready handle playback follows documented deterministic behavior.
   - [ ] Existing static `playSound` scripts remain functional in regression test.
 
-- [ ] 6. Add automated tests for prepare/wait/play flow and edge cases
+- [x] 6. Add automated tests for prepare/wait/play flow and edge cases
 
   **What to do**:
   - Add unit tests for service state transitions and dedupe.
@@ -389,7 +389,7 @@ Critical Path: 1 -> 3 -> 5 -> 6
   - [ ] Targeted unit/integration test command passes with zero failures.
   - [ ] Tests explicitly cover ready, failed, cancelled, and dedupe paths.
 
-- [ ] 7. Add script-author usage docs and example snippet for party rounds
+- [x] 7. Add script-author usage docs and example snippet for party rounds
 
   **What to do**:
   - Document the minimal flow in scripting docs/examples.
@@ -444,7 +444,7 @@ pnpm -r test -- --runInBand
 ```
 
 ### Final Checklist
-- [ ] All Must Have requirements implemented.
-- [ ] All Must NOT Have exclusions respected.
-- [ ] Automated tests and type-check pass.
-- [ ] Party round flow works with prepare -> wait -> play semantics.
+- [x] All Must Have requirements implemented.
+- [x] All Must NOT Have exclusions respected.
+- [x] Automated tests and type-check pass.
+- [x] Party round flow works with prepare -> wait -> play semantics.

@@ -35,6 +35,10 @@ import type {
 	ScriptSandboxConfig,
 } from "../../../../scripting/types";
 import { SequenceManager } from "../../../SequenceManager";
+import {
+	type VoiceGenerationAdapter,
+	VoicePrepareService,
+} from "../../../VoicePrepareService";
 import type { WorldOpsImpl } from "../../../WorldOpsImpl";
 import type { RuntimeSystem, SystemContext, UpdateContext } from "../types";
 
@@ -45,6 +49,7 @@ export interface ScriptSandboxSystemConfig {
 	constants?: Record<string, number | string | boolean>;
 	modules?: Record<string, string>;
 	entrypoint?: string;
+	voiceAdapter?: VoiceGenerationAdapter;
 }
 
 export interface ScriptRefError {
@@ -108,6 +113,7 @@ export class ScriptSandboxRuntimeSystem
 	private activeCollisionPairs: Set<string> = new Set();
 	private moduleHooks: Map<string, ModuleHookState> = new Map();
 	private moduleStartCalled: Set<string> = new Set();
+	private voicePrepareService: VoicePrepareService | null = null;
 	private scriptRefErrors: ScriptRefError[] = [];
 
 	constructor(config: ScriptSandboxSystemConfig) {
@@ -150,6 +156,15 @@ export class ScriptSandboxRuntimeSystem
 
 		this.sequenceManager = new SequenceManager();
 		this.seededRandom = this.createSeededRandom(Date.now());
+
+		const voiceAdapter: VoiceGenerationAdapter = this.config.voiceAdapter ?? {
+			generate: async () => {
+				throw new Error(
+					"Voice generation not configured — pass voiceAdapter in config",
+				);
+			},
+		};
+		this.voicePrepareService = new VoicePrepareService(voiceAdapter);
 
 		const eventQueue = ctx.eventQueue;
 		this.networkEventUnsubscribers.push(
@@ -753,6 +768,11 @@ export class ScriptSandboxRuntimeSystem
 			this.sequenceManager = null;
 		}
 
+		if (this.voicePrepareService) {
+			this.voicePrepareService.dispose();
+			this.voicePrepareService = null;
+		}
+
 		if (this.sandbox) {
 			this.sandbox.dispose();
 			this.sandbox = null;
@@ -1086,10 +1106,13 @@ export class ScriptSandboxRuntimeSystem
 			return newEntityId;
 		};
 
+		const voiceService = this.voicePrepareService!;
+
 		const worldAsync: AsyncWorldOps = {
 			animate: (entityId, target, opts) =>
 				worldOps.animate(entityId, target, opts),
 			wait: (ms, opts) => worldOps.wait(ms, opts),
+			waitForVoices: (handleIds, _opts) => voiceService.awaitMany(handleIds),
 		};
 
 		return {
@@ -1373,6 +1396,23 @@ export class ScriptSandboxRuntimeSystem
 				opts?: { volume?: number; pitch?: number },
 			): void => {
 				bridge.playSound(soundId, opts?.volume, opts?.pitch);
+			},
+
+			prepareVoice: (voicePreset: string, text: string, opts?): string => {
+				return voiceService.prepare(voicePreset, text, opts);
+			},
+
+			isVoiceReady: (handleId: string): boolean => {
+				return voiceService.isReady(handleId);
+			},
+
+			playVoice: (
+				handleId: string,
+				opts?: { volume?: number; pitch?: number },
+			): void => {
+				const assetUrl = voiceService.getPlayableAsset(handleId);
+				if (!assetUrl) return;
+				bridge.playSound(assetUrl, opts?.volume, opts?.pitch);
 			},
 
 			cameraShake: (intensity: number, duration: number): void => {

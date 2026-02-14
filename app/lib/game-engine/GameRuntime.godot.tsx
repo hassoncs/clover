@@ -15,6 +15,8 @@ import { Platform, View } from "react-native";
 import { hasTunables, TuningPanel } from "@/components/game";
 import { DevToolbar } from "@/components/game/DevToolbar";
 import { GameDialog } from "@/components/game/GameDialog";
+import { getAuthToken } from "@/lib/auth/token";
+import { env } from "@/lib/config/env";
 import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import {
 	DevToolsProvider,
@@ -39,6 +41,7 @@ import {
 	SlopcadeDebugBridge,
 	type TimeControl,
 } from "./debug";
+import { FetchVoiceGenerationAdapter } from "./FetchVoiceGenerationAdapter";
 import {
 	GameEventQueue,
 	isInputEvent,
@@ -931,6 +934,10 @@ export function GameRuntimeGodot({
 							scriptId: initialDefinition.metadata.id,
 							gameId: initialDefinition.metadata.id,
 							constants: initialDefinition.constants,
+							voiceAdapter: new FetchVoiceGenerationAdapter({
+								apiUrl: env.apiUrl,
+								getAuthToken,
+							}),
 						}),
 					);
 				}

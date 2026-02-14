@@ -43,4 +43,5 @@ export * from "./targeting";
 export * from "./tilemap";
 export * from "./user-question";
 export * from "./visual";
+export * from "./voice-handle";
 export * from "./world-ops";
