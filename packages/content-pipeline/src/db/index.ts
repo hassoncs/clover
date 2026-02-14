@@ -8,6 +8,7 @@ export interface ContentItemRow {
 	gameType: string;
 	text: string;
 	category: string | null;
+	contentHash: string;
 	provenanceSource: string;
 	provenanceGeneratedAt: string | null;
 	provenanceGeneratedBy: string | null;
@@ -58,6 +59,7 @@ export class PipelineDB {
 				gameType TEXT NOT NULL,
 				text TEXT NOT NULL,
 				category TEXT,
+				contentHash TEXT NOT NULL,
 				provenanceSource TEXT NOT NULL,
 				provenanceGeneratedAt TEXT,
 				provenanceGeneratedBy TEXT,
@@ -73,6 +75,7 @@ export class PipelineDB {
 			CREATE INDEX IF NOT EXISTS idx_content_items_gameType ON content_items(gameType);
 			CREATE INDEX IF NOT EXISTS idx_content_items_moderationStatus ON content_items(moderationStatus);
 			CREATE INDEX IF NOT EXISTS idx_content_items_category ON content_items(category);
+			CREATE INDEX IF NOT EXISTS idx_content_items_contentHash ON content_items(contentHash);
 
 			CREATE TABLE IF NOT EXISTS content_packs (
 				id TEXT PRIMARY KEY,
@@ -101,12 +104,12 @@ export class PipelineDB {
 	insertContentItem(item: ContentItemRow): void {
 		const stmt = this.db.prepare(`
 			INSERT INTO content_items (
-				id, gameType, text, category,
+				id, gameType, text, category, contentHash,
 				provenanceSource, provenanceGeneratedAt, provenanceGeneratedBy,
 				provenancePrompt, provenanceMetadata,
 				moderationStatus, moderationNotes,
 				createdAt, updatedAt, metadata
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`);
 
 		stmt.run(
@@ -114,6 +117,7 @@ export class PipelineDB {
 			item.gameType,
 			item.text,
 			item.category,
+			item.contentHash,
 			item.provenanceSource,
 			item.provenanceGeneratedAt,
 			item.provenanceGeneratedBy,
@@ -197,6 +201,12 @@ export class PipelineDB {
 		`,
 			)
 			.all(packId) as ContentItemRow[];
+	}
+
+	getContentItemByHash(contentHash: string): ContentItemRow | undefined {
+		return this.db
+			.prepare("SELECT * FROM content_items WHERE contentHash = ?")
+			.get(contentHash) as ContentItemRow | undefined;
 	}
 
 	close(): void {

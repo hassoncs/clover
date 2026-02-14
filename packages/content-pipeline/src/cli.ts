@@ -5,6 +5,7 @@ import * as buildPack from "./commands/build-pack.js";
 import * as generate from "./commands/generate.js";
 import * as ingest from "./commands/ingest.js";
 import * as moderate from "./commands/moderate.js";
+import * as stats from "./commands/stats.js";
 
 yargs(hideBin(process.argv))
 	.command(
@@ -30,6 +31,12 @@ yargs(hideBin(process.argv))
 		"Build a content pack",
 		buildPack.builder,
 		buildPack.handler,
+	)
+	.command(
+		"stats",
+		"Show content pipeline statistics",
+		stats.builder,
+		stats.handler,
 	)
 	.demandCommand(1, "You must specify a command")
 	.help()
