@@ -1,0 +1,18 @@
+# Third-party / vendored code (not our source)
+godot_project/addons/
+godot_project/export/
+.venv/
+crux/
+
+# Build artifacts
+dist-ios-check/
+app/public/godot/
+
+# Large generated/config files
+models/
+lancedb/
+
+# Scratch / ephemeral
+.sisyphus/notepads/
+.sisyphus/drafts/
+.sisyphus/evidence/

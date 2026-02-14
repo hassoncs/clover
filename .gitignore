@@ -155,3 +155,6 @@ godot_project/addons/camera-texture/src/*.o
 
 # gdUnit4 reports
 godot_project/reports/
+
+# Code search index (codesearch)
+.codesearch.db/

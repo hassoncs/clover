@@ -93,6 +93,23 @@ agent-browser screenshot --full result.png
 - Video recording requirements
 - Integration with existing Playwright test suites
 
+## Code Search (codesearch)
+
+This project has a semantic code search index via `codesearch` MCP. Use it to find code by meaning, not just string matching.
+
+**When to use codesearch vs grep:**
+- Grep: You know the exact string/symbol name (`RCT_METRO_PORT`, `GameDefinition`)
+- Codesearch: You know what you're looking for conceptually ("where do we handle authentication?", "wallet transaction logic")
+
+**Available MCP tools:**
+- `semantic_search` — natural language code search, returns ranked results. Use `compact=true` (default) for token efficiency.
+- `find_references` — find all usages/call sites of a symbol across the codebase.
+- `get_file_chunks` — get all indexed chunks from a file (structural outline).
+
+**The index auto-updates** — codesearch watches for file changes in MCP mode. No manual re-indexing needed.
+
+**Config**: `.codesearchignore` controls what gets indexed (excludes addons, vendored code, build artifacts).
+
 ## Project Context
 
 For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
