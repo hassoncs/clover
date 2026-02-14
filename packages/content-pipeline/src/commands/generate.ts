@@ -38,6 +38,19 @@ export function builder(yargs: Argv): Argv {
 		});
 }
 
+function extractText(item: Record<string, unknown>, gameType: string): string {
+	switch (gameType) {
+		case "wyr":
+			return `Would you rather: ${item.optionA} OR ${item.optionB}`;
+		case "estimation":
+			return String(item.question);
+		case "drawing":
+			return String(item.text || item.prompt);
+		default:
+			return String(item.text || item.question || "");
+	}
+}
+
 export async function handler(
 	args: ArgumentsCamelCase<GenerateOptions>,
 ): Promise<void> {
@@ -79,7 +92,7 @@ export async function handler(
 		let duplicateCount = 0;
 
 		for (const item of limitedItems) {
-			const text = String(item.text || item.question || "");
+			const text = extractText(item, gameType);
 			const itemCategory = String(item.category || category || "");
 			const contentHash = computeContentHash(text);
 

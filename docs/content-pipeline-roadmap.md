@@ -6,21 +6,34 @@
 - ✅ `@slopcade/content-pipeline` package (standalone)
 - ✅ CLI commands: `ingest`, `generate`, `moderate`, `build-pack`, `stats`
 - ✅ OpenTDB adapter for trivia ingestion
-- ✅ AI generation via Claude API
+- ✅ AI generation via Claude API for: quip, trivia, drawing, wyr, estimation
 - ✅ Keyword-based moderation
 - ✅ SQLite storage with provenance tracking
 - ✅ Output format matches existing `quiplash-prompts.json`
 
 ### What's NOT Built
 - 🔴 No integration with existing party games
-- 🔴 No Wikipedia adapter
+- 🔴 No Wikipedia adapter (needed for Fibbage facts)
 - 🔴 No AI-assisted moderation (Claude Haiku)
-- 🔴 Trivia/Fibbage/Drawing game templates don't exist
+- 🔴 Trivia/Fibbage/Drawing/WYR game templates don't exist
 
 ### Data Currently in Pipeline
 - 5 items in DB (4 approved, 1 rejected)
 - All from OpenTDB or test data
-- No AI-generated content yet
+- No AI-generated content yet (API credits needed)
+
+---
+
+## Content Type Status
+
+| Type | Pipeline | Source | Game Template |
+|------|----------|--------|---------------|
+| QuipPrompt | ✅ Ready | AI generation | ✅ Quiplash built |
+| TriviaQuestion | ✅ Ready | OpenTDB API | 🔴 Not built |
+| DrawingPrompt | ✅ Ready | AI generation | 🔴 Not built |
+| WouldYouRather | ✅ Ready | AI generation | 🔴 Not built |
+| EstimationQuestion | ✅ Ready | AI generation | 🔴 Not built |
+| FibbageQuestion | 🔴 Blocked | Needs Wikipedia/CIA Factbook | 🔴 Not built |
 
 ---
 
@@ -55,11 +68,29 @@
    ```
 5. Test with real players
 
-**Blockers**: None - can do today
+**Blockers**: None - can do today (needs API credits)
 
 ---
 
-### Phase 2: Trivia Game 🔴 BLOCKED
+### Phase 2: Drawing & WYR Games 🔴 BLOCKED BY GAME TEMPLATES
+
+**Goal**: Build Drawful and WYR-style games using AI-generated content.
+
+**Tasks**:
+1. Build `api/src/party/templates/drawing.ts` game template
+2. Build `api/src/party/templates/wyr.ts` game template
+3. Generate content:
+   ```bash
+   hush run -- pnpm content cli -- generate --game-type=drawing --count=100
+   hush run -- pnpm content cli -- generate --game-type=wyr --count=100
+   ```
+4. Wire templates to content pipeline output
+
+**Blockers**: Game templates don't exist
+
+---
+
+### Phase 3: Trivia Game 🔴 BLOCKED BY GAME TEMPLATE
 
 **Goal**: Build Trivia Murder Party-style game using OpenTDB content.
 
@@ -71,38 +102,35 @@
    ```
 3. Create `trivia-prompts.json` output
 4. Wire TriviaQuestion type to game logic
-5. Register in template registry
 
 **Blockers**: Game template doesn't exist
 
 ---
 
-### Phase 3: Fibbage 🔴 BLOCKED
+### Phase 4: Fibbage 🔴 BLOCKED BY FACT SOURCES
 
-**Goal**: Build Fibbage-style bluffing game.
+**Goal**: Build Fibbage-style bluffing game with real facts.
 
 **Tasks**:
-1. Build `api/src/party/templates/fibbage.ts` game template
-2. Generate fact-based questions (numerical answers, obscure facts)
-3. Wire FibbageQuestion type
-4. Test bluffing mechanics
+1. Build Wikipedia adapter for unusual facts
+2. Build CIA Factbook adapter for numerical facts
+3. Build `api/src/party/templates/fibbage.ts` game template
+4. Generate fact-based questions
 
-**Blockers**: Game template doesn't exist
+**Blockers**: No fact source adapters, game template doesn't exist
 
 ---
 
-### Phase 4: Full Pipeline 🔴 FUTURE
+### Phase 5: Full Pipeline 🔴 FUTURE
 
 **Goal**: Complete content ecosystem.
 
 **Tasks**:
-1. Wikipedia adapter for unusual facts
-2. AI-assisted moderation (Claude Haiku classifier)
-3. Content versioning and delta updates
-4. Admin UI for human content review
-5. DrawingPrompt → Drawful game
-6. WouldYouRather → WYR game
-7. EstimationQuestion → Estimation game
+1. AI-assisted moderation (Claude Haiku classifier)
+2. Content versioning and delta updates
+3. Admin UI for human content review
+4. EstimationQuestion → Estimation game
+5. CaptionPrompt → Caption game (needs image sources)
 
 ---
 
