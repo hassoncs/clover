@@ -58,7 +58,7 @@
 		"knip": "knip"
 	},
 	"devDependencies": {
-		"@chriscode/devmux": "^1.2.0",
+		"@chriscode/devmux": "^1.3.1",
 		"@chriscode/hush": "^5.0.6",
 		"@chriscode/reggie": "workspace:*",
 		"@gltf-transform/cli": "^4.3.0",

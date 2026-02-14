@@ -5,7 +5,6 @@
 		"game-inspector": {
 			"cwd": "packages/game-inspector-mcp",
 			"command": "pnpm build && node dist/index.js",
-			"health": { "type": "port", "port": 3100 },
 			"dashboard": false
 		},
 		"game-inspector-tsc": {
@@ -40,28 +39,14 @@
 			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": false,
-			"dependsOn": [
-				"api",
-				"godot",
-				"registry",
-				"game-inspector",
-				"game-inspector-tsc",
-				"bridge-watch"
-			]
+			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
 		},
 		"web": {
 			"cwd": "app",
 			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": true,
-			"dependsOn": [
-				"api",
-				"godot",
-				"registry",
-				"game-inspector",
-				"game-inspector-tsc",
-				"bridge-watch"
-			]
+			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
 		},
 		"backlog": {
 			"cwd": ".",
