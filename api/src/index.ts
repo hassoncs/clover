@@ -114,7 +114,7 @@ app.post("/api/party/create", async (c) => {
 		new Request("https://party/init", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ hostId, hostToken }),
+			body: JSON.stringify({ hostId, hostToken, roomCode: code }),
 		}),
 	);
 

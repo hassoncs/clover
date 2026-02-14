@@ -83,6 +83,10 @@ export class NetworkRuntimeSystem
 			variables[`${ROOM_PREFIX}playerCount`] = latest.roomState.players.length;
 			variables[`${ROOM_PREFIX}hostId`] = latest.roomState.hostId;
 
+			if (latest.roomState.roomCode) {
+				variables["roomCode"] = latest.roomState.roomCode;
+			}
+
 			if (latest.roomState.currentRound !== undefined) {
 				variables[`${ROOM_PREFIX}currentRound`] = latest.roomState.currentRound;
 			}

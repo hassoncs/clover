@@ -17,6 +17,7 @@ const VALID_MESSAGE_TYPES = new Set([
 	"error",
 	"host_reconnect",
 	"player_reconnect",
+	"start_game",
 ]);
 
 export function encodeMessage(msg: PartyMessage): string {

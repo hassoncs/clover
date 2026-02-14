@@ -21,6 +21,10 @@ const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000;
 const RECONNECT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_WINDOW_MS = 1000;
 const RATE_LIMIT_MAX_MESSAGES = 10;
+const DEFAULT_MIN_PLAYERS = 3;
+
+export const DEFAULT_ANSWER_TIMEOUT = 30_000;
+export const DEFAULT_VOTE_TIMEOUT = 15_000;
 
 interface SessionRecord {
 	playerId: string;
@@ -40,13 +44,18 @@ interface InputCollector {
 	timeoutId: ReturnType<typeof setTimeout> | null;
 }
 
+export type PartyTemplateRunner = (room: PartyRoomDO) => Promise<void>;
+
 export class PartyRoomDO {
 	private phase: PartyRoomPhase = "lobby";
 	private players: Map<string, PartyPlayer> = new Map();
 	private hostId: string | null = null;
+	private roomCode: string | null = null;
 	private sharedData: Record<string, unknown> = {};
 	private currentRound = 0;
 	private maxRounds: number | undefined;
+	private minPlayers = DEFAULT_MIN_PLAYERS;
+	private templateRunner: PartyTemplateRunner | null = null;
 	private rateLimits: Map<string, RateLimitEntry> = new Map();
 	private disconnectTimers: Map<string, ReturnType<typeof setTimeout>> =
 		new Map();
@@ -79,10 +88,24 @@ export class PartyRoomDO {
 		return new Response("Not found", { status: 404 });
 	}
 
+	setTemplateRunner(runner: PartyTemplateRunner): void {
+		this.templateRunner = runner;
+	}
+
+	setMinPlayers(min: number): void {
+		this.minPlayers = min;
+	}
+
+	getRoomCode(): string | null {
+		return this.roomCode;
+	}
+
 	private async handleInit(request: Request): Promise<Response> {
 		const body = (await request.json().catch(() => ({}))) as {
 			hostId?: string;
 			hostToken?: string;
+			roomCode?: string;
+			minPlayers?: number;
 		};
 
 		if (!body.hostId || !body.hostToken) {
@@ -91,6 +114,12 @@ export class PartyRoomDO {
 
 		this.hostId = body.hostId;
 		this.phase = "lobby";
+		if (body.roomCode) {
+			this.roomCode = body.roomCode;
+		}
+		if (body.minPlayers !== undefined) {
+			this.minPlayers = body.minPlayers;
+		}
 
 		const session: SessionRecord = {
 			playerId: body.hostId,
@@ -305,6 +334,11 @@ export class PartyRoomDO {
 					this.requestInput(parsed.requestId, parsed.request).catch(() => {});
 				}
 				break;
+			case "start_game":
+				if (meta.role === "host") {
+					await this.handleStartGame(ws);
+				}
+				break;
 			default:
 				break;
 		}
@@ -390,6 +424,18 @@ export class PartyRoomDO {
 		await this.saveState();
 	}
 
+	async updatePlayerScore(playerId: string, delta: number): Promise<void> {
+		const player = this.players.get(playerId);
+		if (!player) return;
+
+		player.score = (player.score ?? 0) + delta;
+		this.players.set(playerId, player);
+		this.broadcastToAll(
+			encodeMessage(stateUpdateMessage(this.buildRoomState())),
+		);
+		await this.saveState();
+	}
+
 	async updateSharedData(data: Record<string, unknown>): Promise<void> {
 		this.sharedData = { ...this.sharedData, ...data };
 		this.broadcastToAll(
@@ -427,6 +473,39 @@ export class PartyRoomDO {
 				resolve(responses);
 			}, timeLimit * 1000);
 		});
+	}
+
+	private async handleStartGame(ws: WebSocket): Promise<void> {
+		if (this.phase !== "lobby") {
+			ws.send(
+				encodeMessage(
+					errorMessage("ALREADY_STARTED", "Game has already started"),
+				),
+			);
+			return;
+		}
+
+		const playerCount = Array.from(this.players.values()).filter(
+			(p) => p.connected && !p.isHost,
+		).length;
+
+		if (playerCount < this.minPlayers) {
+			ws.send(
+				encodeMessage(
+					errorMessage(
+						"MIN_PLAYERS",
+						`Need at least ${this.minPlayers} players`,
+					),
+				),
+			);
+			return;
+		}
+
+		if (this.templateRunner) {
+			this.templateRunner(this).catch(() => {});
+		} else {
+			await this.setPhase("playing");
+		}
 	}
 
 	private async handleInputResponse(
@@ -483,6 +562,7 @@ export class PartyRoomDO {
 			phase: this.phase,
 			players: Array.from(this.players.values()),
 			hostId: this.hostId ?? "",
+			roomCode: this.roomCode ?? undefined,
 			sharedData: this.sharedData,
 			currentRound: this.currentRound,
 			maxRounds: this.maxRounds,
@@ -525,10 +605,12 @@ export class PartyRoomDO {
 		await this.state.storage.put("room", {
 			phase: this.phase,
 			hostId: this.hostId,
+			roomCode: this.roomCode,
 			players: Array.from(this.players.entries()),
 			sharedData: this.sharedData,
 			currentRound: this.currentRound,
 			maxRounds: this.maxRounds,
+			minPlayers: this.minPlayers,
 		});
 	}
 
@@ -536,19 +618,25 @@ export class PartyRoomDO {
 		const saved = await this.state.storage.get<{
 			phase: PartyRoomPhase;
 			hostId: string | null;
+			roomCode: string | null;
 			players: Array<[string, PartyPlayer]>;
 			sharedData: Record<string, unknown>;
 			currentRound: number;
 			maxRounds: number | undefined;
+			minPlayers: number | undefined;
 		}>("room");
 
 		if (saved) {
 			this.phase = saved.phase;
 			this.hostId = saved.hostId;
+			this.roomCode = saved.roomCode ?? null;
 			this.players = new Map(saved.players);
 			this.sharedData = saved.sharedData;
 			this.currentRound = saved.currentRound;
 			this.maxRounds = saved.maxRounds;
+			if (saved.minPlayers !== undefined) {
+				this.minPlayers = saved.minPlayers;
+			}
 		}
 	}
 }

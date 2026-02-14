@@ -61,6 +61,10 @@ export class MockNetworkSystem
 			variables[`${ROOM_PREFIX}hostId`] = mock.hostId;
 		}
 
+		if (mock.roomCode) {
+			variables["roomCode"] = mock.roomCode;
+		}
+
 		if (mock.currentRound !== undefined) {
 			variables[`${ROOM_PREFIX}currentRound`] = mock.currentRound;
 		}

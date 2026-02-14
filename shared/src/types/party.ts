@@ -23,6 +23,7 @@ export interface PartyRoomState {
 	phase: PartyRoomPhase;
 	players: PartyPlayer[];
 	hostId: string;
+	roomCode?: string;
 	sharedData?: Record<string, unknown>;
 	currentRound?: number;
 	maxRounds?: number;
@@ -93,6 +94,10 @@ export interface PlayerReconnectMessage {
 	playerId: string;
 }
 
+export interface StartGameMessage {
+	type: "start_game";
+}
+
 export type PartyMessage =
 	| StateUpdateMessage
 	| PlayerJoinedMessage
@@ -102,4 +107,5 @@ export type PartyMessage =
 	| PhaseChangeMessage
 	| ErrorMessage
 	| HostReconnectMessage
-	| PlayerReconnectMessage;
+	| PlayerReconnectMessage
+	| StartGameMessage;
