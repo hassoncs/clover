@@ -145,9 +145,44 @@ Only 2 commits, no releases, no MCP, no search. The stack-graphs technology is p
 ---
 
 ## Action Items
-- [ ] Add codesearch MCP to opencode.json  
-- [ ] Add `.codesearch.db/` to .gitignore
-- [ ] Remove mcp-local-rag from opencode.json
-- [ ] Delete lancedb/ directory
-- [ ] Update AGENTS.md with codesearch usage guidance
-- [ ] Test codesearch MCP mode in a real session
+- [x] Add codesearch MCP to opencode.json  
+- [x] Add `.codesearch.db/` to .gitignore
+- [x] Remove mcp-local-rag from opencode.json
+- [x] Delete lancedb/ directory
+- [x] Update AGENTS.md with codesearch usage guidance
+- [x] Test codesearch MCP mode in a real session
+
+---
+
+## Real Benchmark Results (post-implementation)
+
+Final index: **62,266 chunks across 1,465 files** (minilm-l6-q, 384 dimensions)
+
+### 10-Query Benchmark: Codesearch vs Grep vs Explore Agent
+
+| # | Query | Codesearch | Grep | Explore |
+|---|-------|-----------|------|---------|
+| 1 | GameDefinition interface | ❌ Found secondary types, missed primary | ✅ Found in 1 call | N/A |
+| 2 | Metro port config | ✅ metro.config.js, withMetroPort.js | ✅ Same | N/A |
+| 3 | tRPC routers | ⚠️ Found 1 router, missed 20 | ✅ All 21 routers | N/A |
+| 4 | Economy/wallet | ⚠️ Found gem-service, missed wallet-service | ⚠️ 310 noisy matches | ✅ Full architecture |
+| 5 | Godot bridge dispatch | ✅ BridgeCore.ts, codegen, native bridge | ⚠️ Scattered | ✅ Full flow |
+| 6 | Entity components | ✅ Prefab.ts, EntityManager (ECS) | ❌ React components | ✅ ECS types |
+| 7 | AI game generation | ⚠️ generator, executor, prompt-builder | ❌ Impossible | ✅ Full pipeline |
+| 8 | Input handling | ⚠️ useInputHandlers, overlays | ❌ Impossible | ✅ Full round-trip |
+| 9 | Database migrations | ❌ Wrong domain (score 0.69) | ⚠️ Files only | ✅ Full system |
+| 10 | Shader effects | ⚠️ Docs only, missed implementation | ❌ Impossible | ✅ Full pipeline |
+
+### Scorecard
+
+| Difficulty | Codesearch | Grep | Explore Agent |
+|------------|-----------|------|---------------|
+| Easy (exact symbols) | 1/3 | **3/3** | N/A |
+| Medium (architecture) | **2/3** | 0/3 | 3/3 |
+| Hard (cross-layer) | 0/4 | 0/4 | **4/4** |
+
+### Final Decision
+- **Kept**: codesearch (semantic search for medium-difficulty queries, domain disambiguation)
+- **Dropped**: mcp-local-rag (redundant — skill system covers docs, codesearch covers code)
+- **Dropped**: tsg_indexer (too early, 2 commits), coderlm (not MCP-native)
+- **Guidance**: Added search tool selection table to AGENTS.md

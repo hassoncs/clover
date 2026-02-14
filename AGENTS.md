@@ -112,6 +112,19 @@ This project has a semantic code search index via `codesearch` MCP. Use it to fi
 
 **Limitation**: Only one codesearch MCP session can access the DB at a time (LMDB writer lock). If `index_status` returns 0 chunks or an error, another session may have the lock. Close other OpenCode sessions and restart.
 
+**Search tool selection guide** (based on benchmarking):
+
+| Query Type | Best Tool | Example |
+|------------|-----------|---------|
+| Exact symbol/string | Grep | `interface GameDefinition`, `RCT_METRO_PORT` |
+| Domain disambiguation | Codesearch | "entity component" → finds ECS types, not React components |
+| Symbol references | Codesearch `find_references` | "where is `authenticate` called?" |
+| List all of a kind | Grep | "find all tRPC routers" → `router(` |
+| Cross-file pipeline | Explore agent | "how does input flow from React Native to Godot?" |
+| Cross-layer architecture | Explore agent | "trace the AI game generation pipeline end-to-end" |
+
+**Known weaknesses:** Codesearch may miss primary definitions when multiple files have similar content (e.g., finds secondary `GameEntry` interface instead of primary `GameDefinition`). For exact type definitions, grep `interface TypeName` is more reliable. Codesearch scores below 0.70 often indicate wrong-domain matches.
+
 ## Project Context
 
 For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
