@@ -30,44 +30,6 @@ function collectChildEntityRefs(children: unknown): string[] {
 	return refs;
 }
 
-function collectBehaviorPrefabRefs(behaviors: unknown): string[] {
-	if (!Array.isArray(behaviors)) return [];
-	const refs: string[] = [];
-	for (const behavior of behaviors) {
-		if (!isRecord(behavior)) continue;
-		if (behavior.type !== "spawn_on_event") continue;
-		const prefabs = behavior.entityTemplate;
-		if (Array.isArray(prefabs)) {
-			for (const prefab of prefabs) {
-				if (typeof prefab === "string") refs.push(prefab);
-			}
-		} else if (typeof prefabs === "string") {
-			refs.push(prefabs);
-		}
-	}
-	return refs;
-}
-
-function collectRulePrefabRefs(rules: unknown): string[] {
-	if (!Array.isArray(rules)) return [];
-	const refs: string[] = [];
-	for (const rule of rules) {
-		if (!isRecord(rule) || !Array.isArray(rule.actions)) continue;
-		for (const action of rule.actions) {
-			if (!isRecord(action) || action.type !== "spawn") continue;
-			const prefabs = action.prefab;
-			if (Array.isArray(prefabs)) {
-				for (const prefab of prefabs) {
-					if (typeof prefab === "string") refs.push(prefab);
-				}
-			} else if (typeof prefabs === "string") {
-				refs.push(prefabs);
-			}
-		}
-	}
-	return refs;
-}
-
 function detectPrefabCycles(
 	prefabs: Record<string, unknown>,
 	errors: ValidationError[],
@@ -172,17 +134,6 @@ function validatePrefabReferences(
 				});
 			}
 		}
-
-		const behaviorRefs = collectBehaviorPrefabRefs(prefab.behaviors);
-		for (const ref of behaviorRefs) {
-			if (!prefabKeys.has(ref)) {
-				warnings.push({
-					code: "UNKNOWN_PREFAB_REFERENCE",
-					message: `Prefab '${key}' spawns unknown prefab '${ref}'`,
-					path: `prefabs.${key}.behaviors`,
-				});
-			}
-		}
 	}
 
 	if (Array.isArray(game.entities)) {
@@ -196,17 +147,6 @@ function validatePrefabReferences(
 						code: "UNKNOWN_PREFAB_REFERENCE",
 						message: `Entity '${entityId}' references unknown child prefab '${ref}'`,
 						path: `entities.${entityId}.children`,
-					});
-				}
-			}
-
-			const behaviorRefs = collectBehaviorPrefabRefs(entity.behaviors);
-			for (const ref of behaviorRefs) {
-				if (!prefabKeys.has(ref)) {
-					warnings.push({
-						code: "UNKNOWN_PREFAB_REFERENCE",
-						message: `Entity '${entityId}' spawns unknown prefab '${ref}'`,
-						path: `entities.${entityId}.behaviors`,
 					});
 				}
 			}

@@ -17,7 +17,11 @@ import type {
 	CompileWarning,
 	ConstantRef,
 	EditorMetadata,
+	GamePackageManifest,
+	PublishChunk,
+	PublishCompileResult,
 	RawBundleData,
+	ScriptModuleMap,
 	SectionedBundle,
 	SectionedCompileResult,
 } from "./types";
@@ -31,7 +35,7 @@ function isConstantRef(value: unknown): value is ConstantRef {
 	);
 }
 
-const BUNDLE_SUBDIRS = ["templates", "entities"] as const;
+const BUNDLE_SUBDIRS = ["prefabs", "entities"] as const;
 
 interface ResolvedConstant {
 	value: number | string | boolean;
@@ -296,7 +300,7 @@ function levenshteinDistance(a: string, b: string): number {
 
 function checkDuplicateIds(
 	items: Array<{ id?: string }>,
-	category: "templates" | "entities",
+	category: "prefabs" | "entities",
 	errors: CompileError[],
 	file?: string,
 ): void {
@@ -321,23 +325,23 @@ function checkDuplicateIds(
 	}
 }
 
-function validateEntityTemplateRefs(
+function validateEntityPrefabRefs(
 	entities: Array<Record<string, unknown>>,
-	templates: Map<string, Record<string, unknown>>,
+	prefabs: Map<string, Record<string, unknown>>,
 	errors: CompileError[],
 ): void {
-	const templateIds = new Set(templates.keys());
+	const prefabIds = new Set(prefabs.keys());
 
 	for (const entity of entities) {
 		const entityId = (entity.id as string) || "unknown";
-		const templateRef = entity.template as string | undefined;
+		const prefabRef = entity.prefab as string | undefined;
 
-		if (templateRef && !templateIds.has(templateRef)) {
-			const similar = findSimilarKeys(templateRef, Array.from(templateIds));
+		if (prefabRef && !prefabIds.has(prefabRef)) {
+			const similar = findSimilarKeys(prefabRef, Array.from(prefabIds));
 			errors.push({
-				code: "UNKNOWN_TEMPLATE",
-				message: `Entity "${entityId}" references unknown template: "${templateRef}"`,
-				path: `entities.${entityId}.template`,
+				code: "UNKNOWN_PREFAB",
+				message: `Entity "${entityId}" references unknown prefab: "${prefabRef}"`,
+				path: `entities.${entityId}.prefab`,
 				suggestions:
 					similar.length > 0
 						? [`Did you mean: ${similar.join(", ")}`]
@@ -350,7 +354,7 @@ function validateEntityTemplateRefs(
 function validateAssetRefs(
 	items: Array<Record<string, unknown>>,
 	assets: Set<string>,
-	category: "templates" | "entities",
+	category: "prefabs" | "entities",
 	errors: CompileError[],
 ): void {
 	function checkObject(obj: unknown, currentPath: string[]): void {
@@ -434,25 +438,25 @@ function resolveConstantRefs(
 	return result;
 }
 
-function extractTemplates(
-	templates: Array<Record<string, unknown>>,
+function extractPrefabs(
+	prefabs: Array<Record<string, unknown>>,
 ): Map<string, Record<string, unknown>> {
-	const templateMap = new Map<string, Record<string, unknown>>();
+	const prefabMap = new Map<string, Record<string, unknown>>();
 
-	for (const template of templates) {
-		const id = template.id as string;
+	for (const prefab of prefabs) {
+		const id = prefab.id as string;
 		if (id) {
-			templateMap.set(id, template);
+			prefabMap.set(id, prefab);
 		}
 	}
 
-	return templateMap;
+	return prefabMap;
 }
 
 function buildGameDefinition(
 	manifest: Record<string, unknown> | null,
 	rawConstants: Record<string, number | string | boolean> | null,
-	templates: Map<string, Record<string, unknown>>,
+	prefabs: Map<string, Record<string, unknown>>,
 	entities: Array<Record<string, unknown>>,
 	assets: Record<
 		string,
@@ -474,9 +478,9 @@ function buildGameDefinition(
 		version: (manifest?.version as string) || "1.0.0",
 	};
 
-	const templateRecord: Record<string, EntityPrefab> = {};
-	for (const [id, template] of Array.from(templates)) {
-		templateRecord[id] = template as unknown as EntityPrefab;
+	const prefabRecord: Record<string, EntityPrefab> = {};
+	for (const [id, prefab] of Array.from(prefabs)) {
+		prefabRecord[id] = prefab as unknown as EntityPrefab;
 	}
 
 	// Build world config from manifest or use defaults
@@ -497,7 +501,7 @@ function buildGameDefinition(
 	return {
 		metadata,
 		world,
-		prefabs: templateRecord,
+		prefabs: prefabRecord,
 		entities: entities as unknown as GameDefinition["entities"],
 		constants: rawConstants || undefined,
 		// Include system configs if provided
@@ -523,7 +527,7 @@ export function compileBundle(
 		assets: null,
 		scripts: null,
 		effects: null,
-		templates: [],
+		prefabs: [],
 		entities: [],
 		schemas: undefined,
 	};
@@ -614,9 +618,9 @@ export function compileBundle(
 			if (typeof data === "object" && data !== null) {
 				rawData.effects = data as GameDefinition["effects"];
 			}
-		} else if (relativePath.startsWith("templates")) {
+		} else if (relativePath.startsWith("prefabs")) {
 			const items = normalizeToArray(data);
-			rawData.templates.push(...items);
+			rawData.prefabs.push(...items);
 		} else if (relativePath.startsWith("entities")) {
 			const items = normalizeToArray(data);
 			rawData.entities.push(...items);
@@ -625,7 +629,6 @@ export function compileBundle(
 
 	const scriptFiles = scanForScriptFiles(bundlePath, fileReader, warnings);
 	const scriptContents: Record<string, string> = {};
-	const scriptParts: string[] = [];
 	const exportTracker = new Map<string, string>();
 
 	for (const scriptPath of scriptFiles) {
@@ -657,11 +660,9 @@ export function compileBundle(
 				exportTracker.set(exportName, basename);
 			}
 		}
-
-		scriptParts.push(`// --- ${basename} ---\n${result.content}`);
 	}
 
-	if (scriptParts.length > 0) {
+	if (Object.keys(scriptContents).length > 0) {
 		rawData.scripts = scriptContents;
 	}
 
@@ -697,7 +698,7 @@ export function compileBundle(
 	}
 
 	const constantRefs = new Set<string>();
-	const allItems = [...rawData.templates, ...rawData.entities];
+	const allItems = [...rawData.prefabs, ...rawData.entities];
 
 	for (const item of allItems) {
 		findConstantRefs(item, constantRefs);
@@ -765,9 +766,9 @@ export function compileBundle(
 		constantsMap.set(name, resolved);
 	}
 
-	const resolvedTemplates = rawData.templates.map(
-		(t) =>
-			resolveConstantRefs(t, constantsMap, ["templates"], errors) as Record<
+	const resolvedPrefabs = rawData.prefabs.map(
+		(p) =>
+			resolveConstantRefs(p, constantsMap, ["prefabs"], errors) as Record<
 				string,
 				unknown
 			>,
@@ -780,17 +781,17 @@ export function compileBundle(
 			>,
 	);
 
-	checkDuplicateIds(resolvedTemplates, "templates", errors);
+	checkDuplicateIds(resolvedPrefabs, "prefabs", errors);
 	checkDuplicateIds(resolvedEntities, "entities", errors);
 
-	const templateMap = extractTemplates(resolvedTemplates);
+	const prefabMap = extractPrefabs(resolvedPrefabs);
 
-	validateEntityTemplateRefs(resolvedEntities, templateMap, errors);
+	validateEntityPrefabRefs(resolvedEntities, prefabMap, errors);
 
 	const assetIds = rawData.assets
 		? new Set(Object.keys(rawData.assets))
 		: new Set<string>();
-	validateAssetRefs(resolvedTemplates, assetIds, "templates", errors);
+	validateAssetRefs(resolvedPrefabs, assetIds, "prefabs", errors);
 	validateAssetRefs(resolvedEntities, assetIds, "entities", errors);
 
 	if (rawData.assets) {
@@ -831,15 +832,11 @@ export function compileBundle(
 	const gameDefinition = buildGameDefinition(
 		rawData.manifest,
 		rawData.constants,
-		templateMap,
+		prefabMap,
 		resolvedEntities,
 		rawData.assets,
 		resolvedSystems,
 	);
-
-	if (scriptParts.length > 0) {
-		gameDefinition.script = scriptParts.join("\n\n");
-	}
 
 	if (rawData.effects != null) {
 		gameDefinition.effects = rawData.effects;
@@ -886,6 +883,98 @@ export function compileBundle(
 	};
 }
 
+function hashContent(content: string): string {
+	return createHash("sha256").update(content).digest("hex");
+}
+
+function buildSortedModuleMap(
+	scripts: Record<string, string>,
+): ScriptModuleMap {
+	const sorted: ScriptModuleMap = {};
+	for (const key of Object.keys(scripts).sort()) {
+		sorted[key] = scripts[key];
+	}
+	return sorted;
+}
+
+function createChunksFromModules(modules: ScriptModuleMap): {
+	chunks: PublishChunk[];
+	chunkFiles: Map<string, string>;
+} {
+	const chunks: PublishChunk[] = [];
+	const chunkFiles = new Map<string, string>();
+
+	for (const [name, source] of Object.entries(modules)) {
+		const hash = hashContent(source);
+		const shortHash = hash.slice(0, 12);
+		const filename = `chunk-${shortHash}.js`;
+
+		chunks.push({
+			name,
+			filename,
+			hash,
+			sizeBytes: Buffer.byteLength(source, "utf-8"),
+		});
+		chunkFiles.set(filename, source);
+	}
+
+	return { chunks, chunkFiles };
+}
+
+function computeManifestHash(
+	manifest: Omit<GamePackageManifest, "contentHash"> & { contentHash: string },
+): string {
+	const canonical = JSON.stringify(manifest);
+	return hashContent(canonical);
+}
+
+export function compilePublishArtifact(
+	bundlePath: string,
+	options?: { fileReader?: FileReader },
+): PublishCompileResult {
+	const result = compileBundle(bundlePath, options);
+
+	if (!result.success || !result.gameDefinition) {
+		return {
+			success: false,
+			manifest: null,
+			chunkFiles: new Map(),
+			errors: result.errors,
+			warnings: result.warnings,
+		};
+	}
+
+	const modules = result.rawData.scripts
+		? buildSortedModuleMap(result.rawData.scripts)
+		: {};
+
+	const { chunks, chunkFiles } = createChunksFromModules(modules);
+
+	const entrypoint =
+		Object.keys(modules).length > 0
+			? (Object.keys(modules).find((k) => k === "main") ??
+				Object.keys(modules)[0])
+			: undefined;
+
+	const manifest: GamePackageManifest = {
+		version: "1.0",
+		contentHash: "",
+		entrypoint,
+		chunks,
+		gameDefinition: result.gameDefinition,
+	};
+
+	manifest.contentHash = computeManifestHash(manifest);
+
+	return {
+		success: true,
+		manifest,
+		chunkFiles,
+		errors: result.errors,
+		warnings: result.warnings,
+	};
+}
+
 export function compileSectioned(
 	bundlePath: string,
 	fileReader?: FileReader,
@@ -912,11 +1001,13 @@ export function compileSectioned(
 		systems.tetris = gameDefinition.tetris;
 	}
 
+	const modules = result.rawData.scripts;
+
 	const sections: BundleSections = {
 		world: gameDefinition.world,
 		prefabs: gameDefinition.prefabs,
 		entities: gameDefinition.entities,
-		...(gameDefinition.script != null && { script: gameDefinition.script }),
+		...(modules != null && { modules }),
 		...(gameDefinition.effects != null && { effects: gameDefinition.effects }),
 		...(Object.keys(systems).length > 0 && { systems }),
 	};

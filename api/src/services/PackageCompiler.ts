@@ -10,8 +10,6 @@ import type {
 	WorldConfig,
 } from "@slopcade/shared";
 
-type GameRule = Record<string, unknown>;
-
 import { TAG_GROUPS, WORKSPACE_CONVENTIONS } from "@slopcade/shared";
 import type { BuildArtifactWriter } from "./BuildArtifactWriter";
 import type { WorkspaceFile, WorkspaceReader } from "./GitWorkspaceReader";
@@ -37,8 +35,8 @@ interface ParsedWorkspace {
 	world: { world: WorldConfig; background?: BackgroundConfig } | null;
 	prefabs: Record<string, EntityPrefab>;
 	entities: GameEntity[];
-	rules: GameRule[];
-	scripts: string;
+	scriptModules: Record<string, string>;
+	scriptEntrypoint?: string;
 	assetUrls: Record<string, string>;
 	diagnostics: CompileDiagnostic[];
 	processedFiles: string[];
@@ -86,8 +84,6 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
 	let world: ParsedWorkspace["world"] = null;
 	const prefabs: Record<string, EntityPrefab> = {};
 	let entities: GameEntity[] = [];
-	let rules: GameRule[] = [];
-	const scriptParts: string[] = [];
 	const assetUrls: Record<string, string> = {};
 
 	const fileMap = new Map<string, string>();
@@ -146,18 +142,6 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
 		}
 	}
 
-	const rulesContent = fileMap.get(WORKSPACE_CONVENTIONS.rules);
-	if (rulesContent) {
-		processedFiles.push(WORKSPACE_CONVENTIONS.rules);
-		const result = tryParseJson(rulesContent, WORKSPACE_CONVENTIONS.rules);
-		if (result.error) {
-			diagnostics.push(result.error);
-		} else {
-			const parsed = result.data;
-			rules = Array.isArray(parsed) ? (parsed as GameRule[]) : [];
-		}
-	}
-
 	const prefabsDir = WORKSPACE_CONVENTIONS.prefabsDir;
 	for (const file of files) {
 		if (file.path.startsWith(prefabsDir) && file.path.endsWith(".json")) {
@@ -206,20 +190,33 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
 		.filter((f) => f.path.startsWith(scriptsDir) && f.path.endsWith(".js"))
 		.sort((a, b) => a.path.localeCompare(b.path));
 
+	const scriptModules: Record<string, string> = {};
+
 	for (const file of scriptFiles) {
 		processedFiles.push(file.path);
 		const basename = file.path.slice(scriptsDir.length).replace(/\.js$/, "");
-		scriptParts.push(`// --- ${basename} ---\n${file.content}`);
+		scriptModules[basename] = file.content;
 	}
 
 	const singleScript = fileMap.get("script.js");
 	if (singleScript) {
 		processedFiles.push("script.js");
-		if (scriptParts.length === 0) {
-			scriptParts.push(singleScript);
-		} else {
-			scriptParts.unshift(`// --- main ---\n${singleScript}`);
+		if (!scriptModules["main"]) {
+			scriptModules["main"] = singleScript;
 		}
+	}
+
+	let scriptEntrypoint: string | undefined;
+	const sortedModuleKeys = Object.keys(scriptModules).sort();
+	if (sortedModuleKeys.length > 0) {
+		scriptEntrypoint = sortedModuleKeys.includes("main")
+			? "main"
+			: sortedModuleKeys[0];
+	}
+
+	const sortedModules: Record<string, string> = {};
+	for (const key of sortedModuleKeys) {
+		sortedModules[key] = scriptModules[key];
 	}
 
 	const assetsDir = WORKSPACE_CONVENTIONS.assetsDir;
@@ -249,15 +246,13 @@ function parseWorkspace(files: WorkspaceFile[]): ParsedWorkspace {
 		}
 	}
 
-	const scripts = scriptParts.join("\n\n");
-
 	return {
 		manifest,
 		world,
 		prefabs,
 		entities,
-		rules,
-		scripts,
+		scriptModules: sortedModules,
+		scriptEntrypoint,
 		assetUrls,
 		diagnostics,
 		processedFiles,
@@ -286,13 +281,9 @@ function buildTagPayloads(parsed: ParsedWorkspace): Map<TagGroup, unknown> {
 	};
 	payloads.set("entities", entitiesPayload);
 
-	const rulesPayload: TagPayloads["rules"] = {
-		rules: parsed.rules,
-	};
-	payloads.set("rules", rulesPayload);
-
 	const scriptsPayload: TagPayloads["scripts"] = {
-		script: parsed.scripts,
+		modules: parsed.scriptModules,
+		entrypoint: parsed.scriptEntrypoint,
 	};
 	payloads.set("scripts", scriptsPayload);
 

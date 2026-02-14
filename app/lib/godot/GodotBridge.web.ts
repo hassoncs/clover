@@ -431,6 +431,25 @@ export function createWebGodotBridge(): GodotBridge {
 			});
 		},
 
+		async stepPhysics(
+			frames: number,
+		): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
+			const result = await queryAsync<{
+				ok?: boolean;
+				framesAdvanced?: number;
+				endFrame?: number;
+			}>("step", [{ frames }]);
+			return {
+				ok: result?.ok ?? true,
+				framesAdvanced: result?.framesAdvanced ?? frames,
+				endFrame: result?.endFrame ?? 0,
+			};
+		},
+
+		async callRpc(method: string, params?: unknown): Promise<unknown> {
+			return queryAsync<unknown>(method, params != null ? [params] : []);
+		},
+
 		softReset() {
 			getGodotBridge()?.clearGame();
 			clearAllCallbacks(cbs);

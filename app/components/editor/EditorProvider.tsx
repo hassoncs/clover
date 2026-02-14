@@ -380,7 +380,6 @@ function editorReducer(
 				},
 				visual: template.visual,
 				collider: template.collider,
-				behaviors: template.behaviors,
 				tags: template.tags,
 				layer: template.layer,
 			};

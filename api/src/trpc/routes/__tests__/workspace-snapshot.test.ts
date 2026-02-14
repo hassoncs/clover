@@ -13,7 +13,6 @@ const SCAFFOLD_FILES = [
 	"slopcade.json",
 	"world.json",
 	"entities.json",
-	"rules.json",
 	"prefabs/default.json",
 	"scripts/main.js",
 	"effects/screen.json",
@@ -90,7 +89,7 @@ describe("Workspace Snapshot", () => {
 			throw new Error("Expected snapshot to be returned");
 		}
 
-		expect(result.snapshot.files).toHaveLength(7);
+		expect(result.snapshot.files).toHaveLength(6);
 		expect(result.snapshot.revision).toMatch(/^[0-9a-f]+$/i);
 	});
 

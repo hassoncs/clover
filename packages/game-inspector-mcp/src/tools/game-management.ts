@@ -106,7 +106,7 @@ export function registerGameManagementTools(
 		"List all available test games and examples with their paths",
 		{},
 		async () => {
-			const games = getAvailableGames();
+			const games = await getAvailableGames();
 			const examples = getAvailableExamples();
 
 			return {
@@ -116,7 +116,9 @@ export function registerGameManagementTools(
 						text: JSON.stringify(
 							{
 								games: games.map((g: GameInfo) => ({
-									name: g.id,
+									slug: g.slug,
+									uuid: g.uuid,
+									title: g.title,
 									path: g.path,
 								})),
 								examples: examples.map((e: GameInfo) => ({
@@ -126,7 +128,7 @@ export function registerGameManagementTools(
 								totalGames: games.length,
 								totalExamples: examples.length,
 								usage:
-									"Pass the game name or path to 'open' to open that game/example. Examples: 'slopeggle', '/game/candyCrush', '/examples/draggable_cubes'",
+									"Pass the game slug, UUID, or full URL to 'open'. Examples: 'ballSort', '03c70657-5789-4550-b38d-787d4219a91b', 'http://localhost:8085/play/...'",
 							},
 							null,
 							2,
@@ -184,23 +186,24 @@ export function registerGameManagementTools(
 				const hasDebug = name.includes("debug=");
 				url = `${baseUrl}${cleanPath}${hasDebug ? "" : name.includes("?") ? "&debug=true" : "?debug=true"}`;
 			} else {
-				const gameInfo = normalizeGameName(name);
+				const gameInfo = await normalizeGameName(name);
 
 				if (gameInfo) {
 					if (gameInfo.type === "game") {
-						url = buildGameUrl(gameInfo.id, baseUrl);
+						url = buildGameUrl(gameInfo.uuid, baseUrl);
 					} else {
 						url = buildExampleUrl(gameInfo.id, baseUrl);
 					}
-					identifier = gameInfo.id;
+					identifier = gameInfo.slug;
 				} else if (isValidExample(name)) {
 					url = buildExampleUrl(name, baseUrl);
 					identifier = name;
-				} else if (isValidGame(name)) {
-					url = buildGameUrl(name, baseUrl);
-					identifier = name;
+				} else if (await isValidGame(name)) {
+					const resolved = await normalizeGameName(name);
+					url = buildGameUrl(resolved?.uuid ?? name, baseUrl);
+					identifier = resolved?.slug ?? name;
 				} else {
-					const availableGames = getAvailableGames();
+					const availableGames = await getAvailableGames();
 					const availableExamples = getAvailableExamples();
 
 					return {
@@ -209,12 +212,12 @@ export function registerGameManagementTools(
 								type: "text" as const,
 								text: JSON.stringify({
 									success: false,
-									error: `Unknown game/example: "${name}". Use game_list to see available options.`,
+									error: `Unknown game/example: "${name}". Use list to see available options.`,
 									hint:
-										"Try one of these game names directly: " +
+										"Try a game slug or UUID: " +
 										availableGames
 											.slice(0, 5)
-											.map((g: GameInfo) => g.id)
+											.map((g: GameInfo) => g.slug)
 											.join(", ") +
 										"...",
 									totalGames: availableGames.length,

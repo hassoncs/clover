@@ -315,9 +315,6 @@ export class PackageRuntimeAdapter {
 		const entitiesPayload = this.resolvedArtifacts.entities as
 			| TagPayloads["entities"]
 			| undefined;
-		const rulesPayload = this.resolvedArtifacts.rules as
-			| TagPayloads["rules"]
-			| undefined;
 		const scriptsPayload = this.resolvedArtifacts.scripts as
 			| TagPayloads["scripts"]
 			| undefined;
@@ -340,7 +337,6 @@ export class PackageRuntimeAdapter {
 			background: worldPayload?.background,
 			prefabs: prefabsPayload?.prefabs ?? {},
 			entities: entitiesPayload?.entities ?? [],
-			script: scriptsPayload?.script || undefined,
 		};
 
 		return definition;

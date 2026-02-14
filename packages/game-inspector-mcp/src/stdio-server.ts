@@ -114,23 +114,36 @@ watch(toolsDir, { recursive: true }, (_eventType, filename) => {
 	}
 });
 
-function serializeSchema(schema: Record<string, unknown>): string {
+function serializeSchema(schema: Record<string, unknown>): object {
 	try {
-		return JSON.stringify(schema, (_key, value) => {
-			if (typeof value === "function") return undefined;
+		const result: {
+			required: string[];
+			optional: string[];
+			properties: Record<string, { type?: string; description?: string }>;
+		} = { required: [], optional: [], properties: {} };
+
+		for (const [key, value] of Object.entries(schema)) {
 			if (value && typeof value === "object" && "_def" in value) {
-				const def = value._def as Record<string, unknown>;
-				const result: Record<string, unknown> = {};
-				if (def.typeName) result.type = def.typeName;
-				if (def.description) result.description = def.description;
-				if (def.innerType) result.innerType = def.innerType;
-				if (def.shape) result.shape = def.shape;
-				return result;
+				const def = (value as { _def: Record<string, unknown> })._def;
+				const typeName = def.typeName as string | undefined;
+				const description = def.description as string | undefined;
+
+				result.properties[key] = {
+					type: typeName?.replace("Zod", "").toLowerCase(),
+					description,
+				};
+
+				if (typeName === "ZodOptional") {
+					result.optional.push(key);
+				} else {
+					result.required.push(key);
+				}
 			}
-			return value;
-		});
+		}
+
+		return result;
 	} catch {
-		return "{}";
+		return { required: [], optional: [], properties: {} };
 	}
 }
 
@@ -224,6 +237,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		}
 
 		await ensureToolsLoaded();
+
+		if (opName === "list_ops") {
+			const operations = Array.from(toolDefinitions.entries()).map(
+				([name, def]) => ({
+					name,
+					description: def.description,
+					parameters: serializeSchema(def.schema),
+				}),
+			);
+
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: JSON.stringify({ operations }, null, 2),
+					},
+				],
+			};
+		}
 
 		const def = toolDefinitions.get(opName);
 		if (!def) {

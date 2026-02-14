@@ -16,13 +16,9 @@ interface GameDefinition {
   entities: GameEntity[];                           // Required
   presentation?: PresentationConfig;
   camera?: CameraConfig;
-  overlay?: OverlayConfig;
   background?: BackgroundConfig;
   variables?: Record<string, GameVariable>;
   joints?: GameJoint[];
-  rules?: GameRule[];
-  winCondition?: WinCondition;
-  loseCondition?: LoseCondition;
   tileSheets?: TileSheet[];
   tileMaps?: TileMap[];
   multiplayer?: MultiplayerConfig;
@@ -31,13 +27,11 @@ interface GameDefinition {
   input?: InputConfig;
   match3?: Match3Config;
   tetris?: TetrisConfig;
-  stateMachines?: StateMachineDefinition[];
-  containers?: ContainerConfig[];
   persistence?: PersistenceConfig<unknown>;
   constants?: Record<string, number | string | boolean>;
-  script?: string;
   hoverHighlight?: HoverHighlightConfig;
   dialogs?: GameDialogsConfig;
+  overlay?: OverlayConfig;
 }
 ```
 
@@ -112,13 +106,12 @@ Prefabs are an object map, NOT an array. The key must match the prefab's `id` fi
   id: string;                    // Must match the key in prefabs object
   description?: string;
   whatDescription?: string;      // For AI asset generation: "a bouncing red ball"
+  scriptRef?: string;            // References a key in modules (e.g., "Player")
   archetype?: EntityArchetype;
   visual?: VisualComponent;
   physics?: PhysicsComponent;
   collider?: ColliderComponent;
   character?: CharacterComponent;
-  behaviors?: Behavior[];
-  conditionalBehaviors?: ConditionalBehavior[];
   tags?: string[];
   layer?: number;
   slots?: Record<string, SlotDefinition>;
@@ -197,11 +190,11 @@ Prefabs are an object map, NOT an array. The key must match the prefab's `id` fi
   id: string;                    // Unique entity ID
   name: string;                  // Human-readable name
   prefab?: string;               // References a key in prefabs
+  scriptRef?: string;            // Override prefab.scriptRef
   transform: TransformComponent; // { x, y, angle, scaleX, scaleY }
   visual?: VisualComponent;      // Override prefab visual
   physics?: PhysicsComponent;    // Override prefab physics
   collider?: ColliderComponent;  // Override prefab collider
-  behaviors?: Behavior[];        // Additional behaviors
   tags?: string[];               // Additional tags (merged with prefab)
   layer?: number;
   visible?: boolean;
@@ -233,34 +226,6 @@ paddleForce: {
   description: 'How hard the paddle pushes',
   display: true,  // Show in HUD
 },
-```
-
-## rules: GameRule[]
-
-```typescript
-{
-  id: string;
-  name?: string;
-  enabled?: boolean;        // Default: true
-  trigger: RuleTrigger;
-  conditions?: RuleCondition[];
-  actions: RuleAction[];
-  fireOnce?: boolean;       // Only fire once then disable
-  cooldown?: number;        // Minimum seconds between firings
-}
-```
-
-## winCondition / loseCondition
-
-```typescript
-// Win: expression that evaluates to true
-winCondition: { expr: "entityCount('brick') == 0" }
-
-// Lose types:
-{ type: 'entity_destroyed', tag: 'bird' }
-{ type: 'entity_exits_screen', tag: 'ball' }
-{ type: 'time_up', time: 60 }
-{ type: 'custom', expr: 'lives <= 0' }
 ```
 
 ## joints: GameJoint[]
@@ -455,73 +420,6 @@ theme?: {
 ```
 
 Default dialogs are auto-injected for missing states (ready, won, lost, paused). Games can override by defining custom dialogs with matching `showOnState`.
-
-## containers: ContainerConfig[]
-
-### Stack Container
-```typescript
-{
-  id: string, type: "stack",
-  capacity: number,
-  layout: {
-    direction: 'vertical' | 'horizontal',
-    spacing: number,
-    basePosition: Vec2,
-    anchor?: 'center' | 'bottom' | 'top' | 'left' | 'right'
-  }
-}
-```
-
-### Grid Container
-```typescript
-{
-  id: string, type: "grid",
-  rows: number, cols: number, cellSize: number,
-  origin: Vec2,
-  originAnchor?: 'top-left' | 'center' | ...,
-  matchTagPattern?: string,
-  minMatch?: number
-}
-```
-
-### Slots Container
-```typescript
-{
-  id: string, type: "slots",
-  count: number,
-  layout: { direction: 'vertical' | 'horizontal', spacing: number, basePosition: Vec2 },
-  allowEmpty?: boolean
-}
-```
-
-## stateMachines: StateMachineDefinition[]
-
-```typescript
-{
-  id: string;
-  owner?: string;                // Entity ID (game-level if omitted)
-  stateVar?: string;             // Variable name (defaults to "sm.{id}")
-  initialState: string;
-  states: Array<{
-    id: string;
-    onEnter?: RuleAction[];
-    onExit?: RuleAction[];
-    onUpdate?: RuleAction[];
-    timeout?: number;
-    timeoutTransition?: string;
-  }>;
-  transitions: Array<{
-    id: string;
-    from: string | string[] | '*';
-    to: string;
-    trigger: { type: 'event', eventName: string }
-           | { type: 'condition', condition: RuleCondition }
-           | { type: 'manual' };
-    conditions?: RuleCondition[];
-    actions?: RuleAction[];
-  }>;
-}
-```
 
 ## persistence: PersistenceConfig
 

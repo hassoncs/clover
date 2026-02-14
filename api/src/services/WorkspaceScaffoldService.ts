@@ -50,10 +50,6 @@ export class WorkspaceScaffoldService {
 			content: () => stringifyJson([]),
 		},
 		{
-			filename: "rules.json",
-			content: () => stringifyJson([]),
-		},
-		{
 			filename: "prefabs/default.json",
 			content: () =>
 				stringifyJson({

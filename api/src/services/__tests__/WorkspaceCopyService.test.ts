@@ -102,7 +102,6 @@ describe("WorkspaceCopyService", () => {
 				gravity: { x: 0, y: 10 },
 			}),
 			"games/src-id/workspace/entities.json": "[]",
-			"games/src-id/workspace/rules.json": "[]",
 			"games/src-id/workspace/prefabs/default.json": JSON.stringify({
 				id: "default",
 			}),
@@ -119,11 +118,10 @@ describe("WorkspaceCopyService", () => {
 		});
 
 		expect(result.skipped).toBe(false);
-		expect(result.copiedFiles).toHaveLength(7);
+		expect(result.copiedFiles).toHaveLength(6);
 		expect(result.copiedFiles).toContain("slopcade.json");
 		expect(result.copiedFiles).toContain("world.json");
 		expect(result.copiedFiles).toContain("entities.json");
-		expect(result.copiedFiles).toContain("rules.json");
 		expect(result.copiedFiles).toContain("prefabs/default.json");
 		expect(result.copiedFiles).toContain("scripts/main.js");
 		expect(result.copiedFiles).toContain("effects/screen.json");

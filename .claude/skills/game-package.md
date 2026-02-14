@@ -38,7 +38,7 @@ Two separate compilation systems exist: the **server-side PackageCompiler** (wor
 
 ```typescript
 // shared/src/types/PackageRuntime.ts
-type TagGroup = "world" | "prefabs" | "entities" | "rules" | "scripts" | "effects" | "assets";
+type TagGroup = "world" | "prefabs" | "entities" | "scripts" | "effects" | "assets";
 
 interface PackageArtifact {
   tag: TagGroup;
@@ -57,14 +57,13 @@ interface TagPayloads {
   world: { world: WorldConfig; background?: BackgroundConfig };
   prefabs: { prefabs: Record<string, EntityPrefab> };
   entities: { entities: GameEntity[] };
-  rules: { rules: GameRule[] };
-  scripts: { script: string };
+  scripts: { modules: Record<string, string> };
   effects: { plans: Record<string, CompiledPlan>; shaders: Record<string, string> };
   assets: { urls: Record<string, string> };
 }
 
 // shared/src/types/PackageManifest.ts
-const TAG_GROUPS: readonly TagGroup[] = ["world", "prefabs", "entities", "rules", "scripts", "effects", "assets"];
+const TAG_GROUPS: readonly TagGroup[] = ["world", "prefabs", "entities", "scripts", "effects", "assets"];
 
 interface WorkspaceManifest {
   id: string;
@@ -90,9 +89,8 @@ Defined in `shared/src/types/GamePackage.ts` as `WORKSPACE_CONVENTIONS`:
 | `manifest` | `slopcade.json` | WorkspaceManifest (id, name, version) |
 | `world` | `world.json` | WorldConfig (gravity, pixelsPerMeter, bounds) + background |
 | `entities` | `entities.json` | Array of GameEntity |
-| `rules` | `rules.json` | Array of GameRule |
 | `prefabsDir` | `prefabs/` | Individual prefab JSON files |
-| `scriptsDir` | `scripts/` | `.js` script files (sorted alphabetically, concatenated) |
+| `scriptsDir` | `scripts/` | `.js` script files (mapped by basename) |
 | `effectsDir` | `effects/` | Effect definitions |
 | `shadersDir` | `shaders/` | Shader files |
 | `assetsDir` | `assets/` | Asset files (images, sounds) |
@@ -189,7 +187,7 @@ Validates a `BuildManifest` and its associated `TagPayloads` artifact data. Chec
 - Artifact hashes present and tag groups valid
 - Prefab IDs unique, physics bodyType valid (`static` | `dynamic` | `kinematic`)
 - Entity IDs unique, prefab references resolve
-- Rule IDs present, triggers present, prefab/entity references in actions resolve
+- Script syntax valid, modules present
 
 ```typescript
 // api/src/services/PackageValidator.ts
@@ -330,10 +328,9 @@ interface BundleSections {
   world: GameDefinition["world"];
   prefabs: GameDefinition["prefabs"];
   entities: GameDefinition["entities"];
-  rules: GameDefinition["rules"];
-  script?: string;
+  modules?: ScriptModuleMap;
   effects?: GameDefinition["effects"];
-  systems?: { containers?; match3?; tetris?; stateMachines? };
+  systems?: { match3?; tetris? };
 }
 ```
 

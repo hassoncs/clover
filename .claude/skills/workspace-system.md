@@ -150,7 +150,6 @@ export interface SeedWorkspaceScaffoldResult { created: string[]; skipped: strin
 - `slopcade.json` — game manifest (id, name, version, activeScene)
 - `world.json` — world config (gravity, pixelsPerMeter, bounds, background)
 - `entities.json` — empty array
-- `rules.json` — empty array
 - `prefabs/default.json` — default prefab
 - `scripts/main.js` — empty onStart/onUpdate
 - `effects/screen.json` — empty shader graph

@@ -187,18 +187,10 @@ export class EntityManager {
 		const prefab = this.prefabs.get(prefabId);
 		const tags = [...(prefab?.tags ?? []), ...(extraTags ?? [])];
 
-		const behaviors: RuntimeBehavior[] = (prefab?.behaviors ?? []).map(
-			(b: Behavior) => ({
-				definition: b,
-				enabled: b.enabled !== false,
-				state: {},
-			}),
-		);
-
 		const runtime: RuntimeEntity = {
 			id: entityId,
-			name: prefab?.id ?? prefabId,
 			prefab: prefabId,
+			name: prefabId,
 			parentId: undefined,
 			children: [],
 			localTransform: { ...transform },
@@ -207,7 +199,6 @@ export class EntityManager {
 			visual: prefab?.visual ? structuredClone(prefab.visual) : undefined,
 			physics: prefab?.physics ? structuredClone(prefab.physics) : undefined,
 			collider: prefab?.collider ? structuredClone(prefab.collider) : undefined,
-			behaviors,
 			tags,
 			tagBits: new Set(),
 			layer: prefab?.layer ?? 0,

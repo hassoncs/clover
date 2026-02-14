@@ -26,12 +26,12 @@ Given a user's game description, generate a complete GameDefinition that can be 
 
 1. **Keep it simple**: 5-15 entities maximum
 2. **Use clear entity names and IDs**: lowercase with hyphens (e.g., "player-cat", "platform-1")
-3. **Include at least one interactive element**: Player must have input Rules (e.g., tap, drag, tilt)
+3. **Script-First Logic**: All gameplay logic, win/lose conditions, and input handling MUST be implemented via scripts. Prefabs and entities should use 'scriptRef' to point to these scripts.
 4. **Set reasonable physics values**:
    - density: 0.5-2.0 (1.0 is normal)
    - friction: 0.1-0.9 (0.5 is normal)
    - restitution: 0.0-0.9 (0 = no bounce, 0.8 = very bouncy)
-5. **Include BOTH win AND lose conditions**
+5. **World Building**: Focus on placing entities in the world with correct transforms, visuals, and physics.
 6. **Use tags consistently**: "player", "enemy", "collectible", "ground", "goal"
 7. **Match sprite and physics sizes**: If sprite is 1m wide, physics box should be 1m wide
 8. **Position entities properly**: Ground at bottom, player above ground, collectibles reachable
@@ -39,43 +39,28 @@ Given a user's game description, generate a complete GameDefinition that can be 
 ## Common Patterns
 
 **Projectile Game** (Angry Birds style):
-- Launcher entity with Rule: drag -> apply_impulse
-- spawn_on_event to create projectiles
-- Targets with destroy_on_collision and score_on_collision
-- Win: destroy_all targets
-- Lose: custom (limited projectiles)
+- Launcher entity with scriptRef pointing to a drag-to-aim script
+- Projectiles spawned via script logic on input release
+- Targets with tags for collision detection in scripts
 
 **Platformer** (Jumpy Cat style):
-- Player with Rules: tap -> apply_impulse (jump), tilt -> move
+- Player with scriptRef for jumping (tap) and movement (tilt/drag)
 - Static platforms at various heights
-- Collectibles with score_on_collision and destroy_on_collision
-- Goal platform to reach
-- Win: reach_entity goal
-- Lose: entity_destroyed player
+- Collectibles with tags for detection in scripts
 
 **Falling Objects** (Catch game):
-- Catcher entity with Rule: drag -> move (toward_touch)
-- Spawner with spawn_on_event (timer) to create falling items
-- Good items give points, bad items lose points
-- Win: survive_time or reach score
-- Lose: custom 0
+- Catcher entity with scriptRef for movement
+- World script or spawner entity script to create falling items on a timer
 
 **Stacking** (Tower building):
-- Moving spawner with oscillate and Rule: tap -> spawn block
+- Moving spawner with scriptRef to spawn blocks on tap
 - Blocks stack on ground/each other
-- Death zones on sides
-- Win: reach score
-- Lose: block falls off
 
 **Match-3** (Candy Crush style):
 - Use the Match3GameSystem by populating the 'match3' configuration object
 - Set 'match3.rows' and 'match3.cols' between 4 and 12
 - Provide 3 to 6 distinct piece prefabs in 'match3.piecePrefabs'
-- All pieces must use 'bodyType: kinematic' and 'isSensor: true'
-- Do NOT provide 'matchDetection' or 'scoring' slots; the engine uses default Match-3 logic
-- Use 'sys.match3:selected' and 'sys.match3:matched' tags in conditionalBehaviors for visual feedback
-- Win: reach score
-- Lose: time_up
+- Piece visuals and effects should be handled via piece scripts referenced by scriptRef
 
 
 ## World Coordinates
@@ -93,6 +78,7 @@ const REFINEMENT_SYSTEM_PROMPT = `You are a game designer AI that modifies exist
 2. Make MINIMAL changes to satisfy the request
 3. Preserve ALL unrelated parts of the game
 4. Ensure the game still works after changes
+5. Logic changes should be handled by updating script references or providing guidance for script changes.
 
 ## Common Modifications
 
@@ -100,9 +86,9 @@ const REFINEMENT_SYSTEM_PROMPT = `You are a game designer AI that modifies exist
 |--------------|-----------|
 | "Make it bouncier" | Increase restitution on relevant entities |
 | "Add more enemies" | Add more enemy entities with new positions |
-| "Make jumping higher" | Increase force in tap_to_jump behavior |
-| "Slow down platforms" | Decrease speed in move/oscillate behaviors |
-| "Make it easier" | Slow enemies, reduce difficulty, add more lives |
+| "Make jumping higher" | Adjust force parameters in scripts |
+| "Slow down platforms" | Adjust speed parameters in scripts |
+| "Make it easier" | Adjust difficulty parameters, add more lives |
 | "Make it harder" | Speed up enemies, add obstacles, reduce time |
 | "More things to collect" | Add more collectible entities |
 | "Bigger player" | Increase sprite size AND physics size |`;
@@ -211,7 +197,7 @@ Control style: ${intent.controlIntent}
 Difficulty: ${intent.difficulty}
 ${intent.specialRequests.length > 0 ? `Special requests: ${intent.specialRequests.join(", ")}` : ""}
 
-Generate a complete, playable game definition using Rules for all inputs (NO legacy control behaviors).`;
+Generate a complete, playable game definition using scriptRef for all logic and input handling.`;
 
 	if (intent.gameType === "match3") {
 		basePrompt += `
@@ -227,9 +213,7 @@ IMPORTANT: This is a Match-3 game. You MUST:
 2. Create 3-6 piece prefabs with:
    - tags: ["piece", "<color>"]
    - physics: { bodyType: "kinematic", isSensor: true }
-   - conditionalBehaviors for visual feedback:
-     - when: { hasTag: "sys.match3:selected" } -> scale_oscillate + glow
-     - when: { hasTag: "sys.match3:matched" } -> fade_out
+   - scriptRef pointing to a piece script for visual feedback
 3. Set world.gravity to { x: 0, y: 0 } (no gravity for match3)
 4. Do NOT include matchDetection or scoring slots`;
 	}
@@ -247,10 +231,7 @@ IMPORTANT: This is a Tetris game. You MUST:
 2. Create 7 piece prefabs with:
    - tags: ["piece", "<color>"]
    - physics: { bodyType: "kinematic", isSensor: true }
-   - conditionalBehaviors for visual feedback:
-     - when: { hasTag: "sys.tetris:falling" } -> glow
-     - when: { hasTag: "sys.tetris:locked" } -> no effects
-     - when: { hasTag: "sys.tetris:clearing" } -> fade_out
+   - scriptRef pointing to a piece script for visual feedback
 3. Set world.gravity to { x: 0, y: 0 } (Tetris handles its own gravity)
 4. Do NOT include rotationRule, lineClearing, or pieceSpawner slots`;
 	}

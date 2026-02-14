@@ -1,128 +1,107 @@
-import { describe, it, expect } from 'vitest';
-import { validateGameDefinition } from '@/ai/game/validator'
-import { classifyPrompt } from '@/ai/game/classifier'
-import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
-import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import type { GameDefinition } from "@slopcade/shared/types/GameDefinition";
+import { describe, expect, it } from "vitest";
+import validProjectileGame from "@/__fixtures__/games/valid-projectile-game.json";
+import { classifyPrompt } from "@/ai/game/classifier";
+import { validateGameDefinition } from "@/ai/game/validator";
 
-describe('generateGame integration (using fixtures)', () => {
-  describe('intent classification + validation pipeline', () => {
-    it('should classify projectile game intent correctly', () => {
-      const intent = classifyPrompt('A game where I launch balls at stacked blocks');
-      
-      expect(intent.gameType).toBe('projectile');
-      expect(intent.controlIntent).toBe('drag_to_aim');
-      expect(intent.winConditionType).toBe('destroy_all');
-    });
+describe("generateGame integration (using fixtures)", () => {
+	describe("intent classification + validation pipeline", () => {
+		it("should classify projectile game intent correctly", () => {
+			const intent = classifyPrompt(
+				"A game where I launch balls at stacked blocks",
+			);
 
-    it('should validate a well-formed game definition', () => {
-      const validation = validateGameDefinition(validProjectileGame as unknown as GameDefinition);
-      
-      expect(validation.valid).toBe(true);
-      expect(validation.errors).toHaveLength(0);
-    });
+			expect(intent.gameType).toBe("projectile");
+			expect(intent.controlIntent).toBe("drag_to_aim");
+			expect(intent.winConditionType).toBe("destroy_all");
+		});
 
-    it('should have consistent pipeline: classify → generate fixture → validate', () => {
-      const prompt = 'A game where I launch balls at stacked blocks';
-      const intent = classifyPrompt(prompt);
-      
-      expect(intent.gameType).toBe('projectile');
-      
-      const game = validProjectileGame as unknown as GameDefinition;
-      expect(game.winCondition?.type).toBe('destroy_all');
-      
-      const hasInputRule = game.rules?.some(r => 
-        ['drag', 'tap', 'tilt', 'button', 'swipe'].includes(r.trigger.type)
-      );
-      expect(hasInputRule).toBe(true);
-      
-      const validation = validateGameDefinition(game);
-      expect(validation.valid).toBe(true);
-    });
-  });
+		it("should validate a well-formed game definition", () => {
+			const validation = validateGameDefinition(
+				validProjectileGame as unknown as GameDefinition,
+			);
 
-  describe('game definition structure', () => {
-    const game = validProjectileGame as unknown as GameDefinition;
+			expect(validation.valid).toBe(true);
+			expect(validation.errors).toHaveLength(0);
+		});
 
-    it('should have required metadata', () => {
-      expect(game.metadata.id).toBeDefined();
-      expect(game.metadata.title).toBeDefined();
-      expect(game.metadata.version).toBeDefined();
-    });
+		it("should have consistent pipeline: classify → generate fixture → validate", () => {
+			const prompt = "A game where I launch balls at stacked blocks";
+			const intent = classifyPrompt(prompt);
 
-    it('should have valid world config', () => {
-      expect(game.world.gravity).toEqual({ x: 0, y: 10 });
-      expect(game.world.pixelsPerMeter).toBe(50);
-    });
+			expect(intent.gameType).toBe("projectile");
 
-    it('should have player-controlled entity or rule', () => {
-      const hasInputRule = game.rules?.some(r => 
-        ['drag', 'tap', 'tilt', 'button', 'swipe'].includes(r.trigger.type)
-      );
-      
-      if (!hasInputRule) {
-        const playerEntity = game.entities.find(e => 
-          e.behaviors?.some(b => (b.type as string) === 'control')
-        );
-        expect(playerEntity).toBeDefined();
-        expect(playerEntity!.tags).toContain('player');
-      } else {
-        expect(hasInputRule).toBe(true);
-      }
-    });
+			const game = validProjectileGame as unknown as GameDefinition;
 
-    it('should have target entities', () => {
-      const targets = game.entities.filter(e => e.tags?.includes('target'));
-      expect(targets.length).toBeGreaterThan(0);
-    });
+			const validation = validateGameDefinition(game);
+			expect(validation.valid).toBe(true);
+		});
+	});
 
-    it('should have prefabs for spawnable entities', () => {
-      const spawner = game.entities.find(e => 
-        e.behaviors?.some(b => b.type === 'spawn_on_event')
-      );
-      
-      if (spawner) {
-        const spawnBehavior = spawner.behaviors!.find(b => b.type === 'spawn_on_event') as any;
-        expect(game.prefabs).toBeDefined();
-        expect(game.prefabs![spawnBehavior.entityTemplate]).toBeDefined();
-      }
-    });
+	describe("game definition structure", () => {
+		const game = validProjectileGame as unknown as GameDefinition;
 
-    it('should have win and lose conditions', () => {
-      expect(game.winCondition).toBeDefined();
-      expect(game.loseCondition).toBeDefined();
-    });
-  });
+		it("should have required metadata", () => {
+			expect(game.metadata.id).toBeDefined();
+			expect(game.metadata.title).toBeDefined();
+			expect(game.metadata.version).toBeDefined();
+		});
 
-  describe('error cases', () => {
-    it('should fail validation for game with no entities', () => {
-      const invalidGame = {
-        metadata: { id: 'test' },
-        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        entities: [],
-      };
+		it("should have valid world config", () => {
+			expect(game.world.gravity).toEqual({ x: 0, y: 10 });
+			expect(game.world.pixelsPerMeter).toBe(50);
+		});
 
-      const validation = validateGameDefinition(invalidGame as unknown as GameDefinition);
-      expect(validation.valid).toBe(false);
-      expect(validation.errors.some(e => e.code === 'NO_ENTITIES')).toBe(true);
-    });
+		it("should have script references", () => {
+			const entitiesWithScripts = game.entities.filter((e) => e.scriptRef);
+			expect(entitiesWithScripts.length).toBeGreaterThan(0);
 
-    it('should fail validation for invalid physics', () => {
-      const invalidGame = {
-        metadata: { id: 'test' },
-        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        entities: [{
-          id: 'bad-entity',
-          name: 'Bad Entity',
-          transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-          physics: { bodyType: 'invalid', density: -1 },
-          collider: { shape: 'invalid', friction: 0.5, restitution: 0 },
-          visual: { type: 'rect', width: 1, height: 1, color: '#000' },
-        }],
-      };
+			expect(game.prefabs["ball"].scriptRef).toBeDefined();
+		});
 
-      const validation = validateGameDefinition(invalidGame as unknown as GameDefinition);
-      expect(validation.valid).toBe(false);
-      expect(validation.errors.some(e => e.code === 'INVALID_BODY_TYPE')).toBe(true);
-    });
-  });
+		it("should have target entities", () => {
+			const targets = game.entities.filter((e) => e.tags?.includes("target"));
+			expect(targets.length).toBeGreaterThan(0);
+		});
+	});
+
+	describe("error cases", () => {
+		it("should fail validation for game with no entities", () => {
+			const invalidGame = {
+				metadata: { id: "test" },
+				world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+				entities: [],
+			};
+
+			const validation = validateGameDefinition(
+				invalidGame as unknown as GameDefinition,
+			);
+			expect(validation.valid).toBe(false);
+			expect(validation.errors.length).toBeGreaterThan(0);
+		});
+
+		it("should fail validation for invalid physics", () => {
+			const invalidGame = {
+				metadata: { id: "test" },
+				world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+				entities: [
+					{
+						id: "bad-entity",
+						name: "Bad Entity",
+						transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+						physics: { bodyType: "invalid", density: -1 },
+						visual: { type: "rect", width: 1, height: 1, color: "#000" },
+					},
+				],
+			};
+
+			const validation = validateGameDefinition(
+				invalidGame as unknown as GameDefinition,
+			);
+			expect(validation.valid).toBe(false);
+			expect(validation.errors.some((e) => e.path.includes("bodyType"))).toBe(
+				true,
+			);
+		});
+	});
 });

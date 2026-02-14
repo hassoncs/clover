@@ -13,36 +13,12 @@ export type {
 	ValidationWarning,
 } from "./gameDefinitionTypes";
 
-const VALID_BEHAVIOR_TYPES = [
-	"move",
-	"rotate",
-	"rotate_toward",
-	"follow",
-	"bounce",
-	"spawn_on_event",
-	"destroy_on_collision",
-	"score_on_collision",
-	"score_on_destroy",
-	"timer",
-	"animate",
-	"oscillate",
-	"gravity_zone",
-	"magnetic",
-	"health",
-	"draggable",
-];
-
 const VALID_BODY_TYPES = ["static", "dynamic", "kinematic"];
 const VALID_SHAPES = ["box", "circle", "polygon", "capsule"];
 const VALID_VISUAL_TYPES = ["rect", "circle", "polygon", "image", "text"];
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null && !Array.isArray(value);
-
-const getStringArray = (value: unknown): string[] =>
-	Array.isArray(value)
-		? value.filter((item): item is string => typeof item === "string")
-		: [];
 
 function validateMetadata(
 	game: GameDefinition,
@@ -280,54 +256,6 @@ function validateVisualComponent(
 	}
 }
 
-function validateBehavior(
-	behavior: unknown,
-	entityId: string,
-	index: number,
-	errors: ValidationError[],
-	warnings: ValidationWarning[],
-): void {
-	if (!isRecord(behavior)) return;
-	const behaviorType = behavior.type;
-	if (
-		typeof behaviorType !== "string" ||
-		!VALID_BEHAVIOR_TYPES.includes(behaviorType)
-	) {
-		errors.push({
-			code: "INVALID_BEHAVIOR_TYPE",
-			message: `Entity ${entityId} behavior ${index} has invalid type: ${String(behaviorType)}`,
-			path: `entities.${entityId}.behaviors[${index}].type`,
-		});
-		return;
-	}
-
-	if (
-		behaviorType === "spawn_on_event" &&
-		typeof behavior.entityTemplate !== "string" &&
-		!Array.isArray(behavior.entityTemplate)
-	) {
-		errors.push({
-			code: "MISSING_SPAWN_TEMPLATE",
-			message: `Entity ${entityId} spawn_on_event behavior missing entityTemplate`,
-			path: `entities.${entityId}.behaviors[${index}].entityTemplate`,
-		});
-	}
-
-	if (
-		behaviorType === "destroy_on_collision" ||
-		behaviorType === "score_on_collision"
-	) {
-		const withTags = getStringArray(behavior.withTags);
-		if (withTags.length === 0) {
-			warnings.push({
-				code: "EMPTY_COLLISION_TAGS",
-				message: `Entity ${entityId} ${behaviorType} behavior has no tags specified`,
-				path: `entities.${entityId}.behaviors[${index}].withTags`,
-			});
-		}
-	}
-}
-
 function validateEntity(
 	entity: Record<string, unknown>,
 	prefabs: Record<string, unknown>,
@@ -372,12 +300,6 @@ function validateEntity(
 	validatePhysicsComponent(entity.physics, entityId, errors, warnings);
 	validateColliderComponent(entity.collider, entityId, errors, warnings);
 	validateVisualComponent(entity.visual, entityId, errors, warnings);
-
-	if (Array.isArray(entity.behaviors)) {
-		entity.behaviors.forEach((behavior, index) => {
-			validateBehavior(behavior, entityId, index, errors, warnings);
-		});
-	}
 }
 
 function validatePrefabs(
@@ -420,18 +342,6 @@ function validatePrefabs(
 					errors,
 					warnings,
 				);
-			}
-
-			if (Array.isArray(prefab.behaviors)) {
-				prefab.behaviors.forEach((behavior, index) => {
-					validateBehavior(
-						behavior,
-						`prefab:${prefabId}`,
-						index,
-						errors,
-						warnings,
-					);
-				});
 			}
 		}
 	}

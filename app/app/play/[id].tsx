@@ -28,10 +28,16 @@ const loadGameRuntimeModule = () =>
 
 export default function PlayScreen() {
 	const router = useRouter();
-	const { id, definition: definitionParam } = useLocalSearchParams<{
+	const {
+		id,
+		definition: definitionParam,
+		debug,
+	} = useLocalSearchParams<{
 		id: string;
 		definition?: string;
+		debug?: string;
 	}>();
+	const isDebugMode = debug === "true";
 
 	const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(
 		null,
@@ -239,6 +245,8 @@ export default function PlayScreen() {
 								onGameEnd={handleGameEnd}
 								onRequestRestart={handleRequestRestart}
 								showHUD
+								debugMode={isDebugMode}
+								autoStart={isDebugMode}
 								preloadTextureUrls={imageUrls}
 								onReady={handleGodotReady}
 							/>

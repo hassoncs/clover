@@ -152,10 +152,8 @@ interface ConditionalBehavior {
 { type: "sprite_effect", effect: "glow", params: { color: [1,1,0], pulse: true } }
 ```
 
-### 4. Behavior System Updates
-- Check `conditionalBehaviors` each frame
-- Evaluate `when` conditions against entity tags
-- Apply/remove behaviors dynamically
+### 4. Legacy Behavior System (Deprecated)
+- The legacy behavior system used declarative JSON arrays. This has been replaced by the Script-First model.
 
 ## Design Questions
 
@@ -174,11 +172,16 @@ interface ConditionalBehavior {
    - Movement behaviors (only move when "active")?
    - Animation states (play "walking" animation when "moving" tag)?
 
-## Next Steps
+## Final Architecture: Script-First (Feb 2026)
 
-1. **Audit existing game engine** - Understand current behavior/rules system deeply
-2. **Design conditional behavior schema** - Finalize the API
-3. **Implement tag management** - Add to EntityManager
-4. **Add new behavior types** - scale_oscillate, sprite_effect
-5. **Refactor Match-3** - Use tags instead of imperative visual code
-6. **Test with AI generation** - Verify AI can generate these configs
+Following the initial hybrid proposal, the engine migrated to a full **Script-First** architecture. 
+
+### Key Differences from Hybrid Proposal:
+1. **Modules instead of Conditional Behaviors**: Instead of declaring visual states in JSON, all logic (including visual state management) is handled in JavaScript modules.
+2. **`scriptRef`**: Prefabs and entities explicitly point to these modules.
+3. **Sandbox Execution**: Logic runs in a `ScriptSandbox` (QuickJS/Eval) with full engine access via `ScriptContext`.
+
+### Patterns in Script-First:
+- **Visual Feedback**: Managed by scripts calling `ctx.animateEntity()` or `ctx.setSpriteEffect()`.
+- **Game Logic**: Pure JS functions responding to `onUpdate`, `onCollision`, etc.
+- **State**: Managed via game variables and entity tags.

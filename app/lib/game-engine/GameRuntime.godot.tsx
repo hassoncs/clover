@@ -877,19 +877,6 @@ export function GameRuntimeGodot({
 
 				runner.register(new TweenRuntimeSystem(tweenSystem));
 
-				if (initialDefinition.script) {
-					runner.register(
-						new ScriptSandboxRuntimeSystem({
-							scriptCode: initialDefinition.script,
-							scriptId: initialDefinition.metadata.id,
-							gameId: initialDefinition.metadata.id,
-							constants: initialDefinition.constants as
-								| Record<string, number | string | boolean>
-								| undefined,
-						}),
-					);
-				}
-
 				if (initialDefinition.economy) {
 					runner.register(
 						new EconomyRuntimeSystem({
@@ -1018,7 +1005,7 @@ export function GameRuntimeGodot({
 					}
 				}
 
-				if (autoStart && !debugMode) {
+				if (autoStart || debugMode) {
 					StateHelpers.setGameStateValue(
 						game.gameState,
 						"playing",
@@ -1030,8 +1017,8 @@ export function GameRuntimeGodot({
 
 				eventQueueRef.current.push({ type: "game_loaded" });
 				loadedDefinitionRef.current = initialDefinition;
-			} catch (error) {
-				logger.error("lifecycle", "Failed to initialize game:", error);
+			} catch (err) {
+				logger.error("lifecycle", "Failed to initialize game:", err);
 			}
 		};
 
@@ -1562,6 +1549,36 @@ export function GameRuntimeGodot({
 			},
 			clearInput: (type: string) => {
 				(inputRef.current as any)[type] = undefined;
+			},
+			pushEvent: (event: Record<string, unknown>) => {
+				eventQueueRef.current.push(event as any);
+			},
+			pressDialogButton: (
+				eventName: string,
+				data?: Record<string, unknown>,
+			) => {
+				handleDialogButtonPress(eventName, data);
+			},
+			getActiveDialog: () => {
+				const dialog = resolveActiveDialog();
+				if (!dialog) return null;
+				const vars = gameRef.current?.gameState.vars ?? {};
+				return {
+					id: dialog.id,
+					title: dialog.title,
+					message: dialog.message,
+					buttons: dialog.buttons.map((b) => ({
+						label: b.label,
+						eventName: b.eventName,
+						variant: b.variant,
+					})),
+					stats: dialog.stats?.map((s) => ({
+						label: s.label,
+						value: s.format
+							? s.format.replace("{value}", String(vars[s.variable] ?? ""))
+							: String(vars[s.variable] ?? ""),
+					})),
+				};
 			},
 			refs: {
 				gameSystemRunner: gameSystemRunnerRef,

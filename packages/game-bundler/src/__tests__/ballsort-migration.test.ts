@@ -44,8 +44,8 @@ describe("Ball Sort Migration", () => {
 		const result = compileBundle(BUNDLE_PATH, { fileReader });
 		const def = result.gameDefinition!;
 
-		const templateKeys = Object.keys(def.prefabs);
-		expect(templateKeys).toHaveLength(12);
+		const prefabKeys = Object.keys(def.prefabs);
+		expect(prefabKeys).toHaveLength(12);
 
 		expect(def.prefabs).toHaveProperty("background");
 		expect(def.prefabs).toHaveProperty("tube");
@@ -66,41 +66,19 @@ describe("Ball Sort Migration", () => {
 		expect(def.entities[1].id).toBe("tube-hover-highlight");
 	});
 
-	it("has all 8 rules", () => {
+	it("has script modules with expected exports", () => {
 		const result = compileBundle(BUNDLE_PATH, { fileReader });
-		const def = result.gameDefinition!;
+		const scripts = result.rawData.scripts;
 
-		expect(def.rules).toHaveLength(8);
+		expect(scripts).not.toBeNull();
+		const moduleNames = Object.keys(scripts!);
+		expect(moduleNames.length).toBeGreaterThan(0);
 
-		const ruleIds = def.rules!.map((r) => r.id);
-		expect(ruleIds).toContain("generate_level");
-		expect(ruleIds).toContain("tap_tube_idle");
-		expect(ruleIds).toContain("tap_tube_holding");
-		expect(ruleIds).toContain("cancel_pickup_same_tube");
-		expect(ruleIds).toContain("check_win");
-		expect(ruleIds).toContain("handle_delayed_win");
-		expect(ruleIds).toContain("dialog_next_level");
-		expect(ruleIds).toContain("dialog_replay_level");
-	});
-
-	it("has script content with expected exports", () => {
-		const result = compileBundle(BUNDLE_PATH, { fileReader });
-		const def = result.gameDefinition!;
-
-		expect(def.script).toBeDefined();
-		expect(def.script).toContain("exports.generateLevel");
-		expect(def.script).toContain("exports.nextLevel");
-		expect(def.script).toContain("exports.replayLevel");
-		expect(def.script).toContain("exports.onStart");
-	});
-
-	it("has stateMachines from manifest systems", () => {
-		const result = compileBundle(BUNDLE_PATH, { fileReader });
-		const def = result.gameDefinition!;
-
-		expect(def.stateMachines).toBeDefined();
-		expect(def.stateMachines).toHaveLength(1);
-		expect(def.stateMachines![0].id).toBe("gameFlow");
+		const allScriptContent = Object.values(scripts!).join("\n");
+		expect(allScriptContent).toContain("exports.generateLevel");
+		expect(allScriptContent).toContain("exports.nextLevel");
+		expect(allScriptContent).toContain("exports.replayLevel");
+		expect(allScriptContent).toContain("exports.onStart");
 	});
 
 	it("compileSectioned succeeds", () => {
@@ -120,8 +98,8 @@ describe("Ball Sort Migration", () => {
 
 		expect(Object.keys(sections.prefabs)).toHaveLength(12);
 		expect(sections.entities).toHaveLength(2);
-		expect(sections.rules).toHaveLength(8);
-		expect(sections.script).toBeDefined();
+		expect(sections.modules).toBeDefined();
+		expect(Object.keys(sections.modules!).length).toBeGreaterThan(0);
 	});
 
 	it("compileSectioned produces a content hash", () => {
@@ -136,7 +114,7 @@ describe("Ball Sort Migration", () => {
 		const result = compileBundle(BUNDLE_PATH, { fileReader });
 
 		expect(result.processedFiles).toContain("manifest.json");
-		expect(result.processedFiles.some((f) => f.startsWith("templates/"))).toBe(
+		expect(result.processedFiles.some((f) => f.startsWith("prefabs/"))).toBe(
 			true,
 		);
 		expect(result.processedFiles.some((f) => f.startsWith("entities/"))).toBe(

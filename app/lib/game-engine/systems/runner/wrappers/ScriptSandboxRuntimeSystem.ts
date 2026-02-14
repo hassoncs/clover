@@ -21,6 +21,7 @@ import * as Haptics from "@/lib/haptics";
 import {
 	createScriptSandbox,
 	type IScriptSandbox,
+	type ScriptHookName,
 } from "../../../../scripting";
 import type {
 	DragSnapshot,
@@ -42,6 +43,26 @@ export interface ScriptSandboxSystemConfig {
 	scriptId: string;
 	gameId: string;
 	constants?: Record<string, number | string | boolean>;
+	modules?: Record<string, string>;
+	entrypoint?: string;
+}
+
+export interface ScriptRefError {
+	entityId: string;
+	prefabId?: string;
+	scriptRef: string;
+	message: string;
+}
+
+export interface ModuleHookState {
+	hasOnStart: boolean;
+	hasOnUpdate: boolean;
+	hasOnInput: boolean;
+	hasOnCollision: boolean;
+	hasOnCollisionEnter: boolean;
+	hasOnCollisionExit: boolean;
+	hasOnNetworkState: boolean;
+	hasOnPhaseChange: boolean;
 }
 
 export interface ScriptSandboxSystemState {
@@ -56,6 +77,8 @@ export interface ScriptSandboxSystemState {
 	lastError: ScriptErrorReport | null;
 	reloadCount: number;
 	onStartCalled: boolean;
+	moduleHooks: Record<string, ModuleHookState>;
+	scriptRefErrors: ScriptRefError[];
 }
 
 export class ScriptSandboxRuntimeSystem
@@ -83,6 +106,9 @@ export class ScriptSandboxRuntimeSystem
 	private pendingGameEvents: [string, unknown][] = [];
 	private networkEventUnsubscribers: (() => void)[] = [];
 	private activeCollisionPairs: Set<string> = new Set();
+	private moduleHooks: Map<string, ModuleHookState> = new Map();
+	private moduleStartCalled: Set<string> = new Set();
+	private scriptRefErrors: ScriptRefError[] = [];
 
 	constructor(config: ScriptSandboxSystemConfig) {
 		this.config = config;
@@ -95,8 +121,10 @@ export class ScriptSandboxRuntimeSystem
 		this.systemContext = ctx;
 		this.constants = this.config.constants;
 
+		const scriptCode = this.buildScriptCode();
+
 		const sandboxConfig: ScriptSandboxConfig = {
-			scriptCode: this.config.scriptCode,
+			scriptCode,
 			scriptId: this.config.scriptId,
 			gameId: this.config.gameId,
 		};
@@ -110,6 +138,8 @@ export class ScriptSandboxRuntimeSystem
 				result.error,
 			);
 		}
+
+		this.detectModuleHooks();
 
 		if (!ctx.worldOps) {
 			throw new Error(
@@ -145,6 +175,197 @@ export class ScriptSandboxRuntimeSystem
 		);
 	}
 
+	private buildScriptCode(): string {
+		const modules = this.config.modules;
+		if (!modules || Object.keys(modules).length === 0) {
+			return this.config.scriptCode;
+		}
+
+		const sortedKeys = Object.keys(modules).sort();
+		const entrypoint = this.config.entrypoint ?? sortedKeys[0];
+		const hookNames = [
+			"onStart",
+			"onUpdate",
+			"onInput",
+			"onCollision",
+			"onCollisionEnter",
+			"onCollisionExit",
+			"onNetworkState",
+			"onPhaseChange",
+		];
+		const parts: string[] = [];
+
+		parts.push("globalThis.__moduleExports = {};");
+
+		for (const key of sortedKeys) {
+			const moduleCode = modules[key];
+			parts.push(
+				`(function() {`,
+				`  var exports = {};`,
+				`  ${moduleCode}`,
+				`  globalThis.__moduleExports[${JSON.stringify(key)}] = exports;`,
+				`})();`,
+			);
+		}
+
+		for (const key of sortedKeys) {
+			for (const hookName of hookNames) {
+				const fnName = `__checkModuleHook_${key}_${hookName}`;
+				parts.push(
+					`exports[${JSON.stringify(fnName)}] = function() {`,
+					`  var mod = globalThis.__moduleExports[${JSON.stringify(key)}];`,
+					`  return !!mod && typeof mod.${hookName} === 'function';`,
+					`};`,
+				);
+			}
+		}
+
+		parts.push(
+			`exports.__callModuleHook = function(ctx, args) {`,
+			`  var moduleKey = args.moduleKey;`,
+			`  var hookName = args.hookName;`,
+			`  var extraArgs = args.extraArgs || [];`,
+			`  var mod = globalThis.__moduleExports[moduleKey];`,
+			`  if (!mod || typeof mod[hookName] !== 'function') return undefined;`,
+			`  return mod[hookName].apply(null, [ctx].concat(extraArgs));`,
+			`};`,
+		);
+
+		const entrypointHooks = hookNames
+			.map(
+				(h) =>
+					`if (typeof globalThis.__moduleExports[${JSON.stringify(entrypoint)}]?.${h} === 'function') { exports.${h} = globalThis.__moduleExports[${JSON.stringify(entrypoint)}].${h}; }`,
+			)
+			.join("\n");
+		parts.push(entrypointHooks);
+
+		return parts.join("\n");
+	}
+
+	private detectModuleHooks(): void {
+		this.moduleHooks.clear();
+
+		if (!this.sandbox) return;
+
+		const modules = this.config.modules;
+		if (!modules || Object.keys(modules).length === 0) {
+			return;
+		}
+
+		const hookNames: ScriptHookName[] = [
+			"onStart",
+			"onUpdate",
+			"onInput",
+			"onCollision",
+			"onCollisionEnter",
+			"onCollisionExit",
+			"onNetworkState",
+			"onPhaseChange",
+		];
+
+		for (const key of Object.keys(modules).sort()) {
+			const state: ModuleHookState = {
+				hasOnStart: false,
+				hasOnUpdate: false,
+				hasOnInput: false,
+				hasOnCollision: false,
+				hasOnCollisionEnter: false,
+				hasOnCollisionExit: false,
+				hasOnNetworkState: false,
+				hasOnPhaseChange: false,
+			};
+
+			for (const hookName of hookNames) {
+				const propKey =
+					`has${hookName.charAt(0).toUpperCase()}${hookName.slice(1)}` as keyof ModuleHookState;
+				state[propKey] = this.moduleHasHook(key, hookName);
+			}
+
+			this.moduleHooks.set(key, state);
+		}
+	}
+
+	private moduleHasHook(moduleKey: string, hookName: ScriptHookName): boolean {
+		if (!this.sandbox) return false;
+		const dummyCtx = {} as ScriptContext;
+		const checkFnName = `__checkModuleHook_${moduleKey}_${hookName}`;
+		const result = this.sandbox.callFunction(dummyCtx, checkFnName);
+		return result.success && result.value === true;
+	}
+
+	private hasModules(): boolean {
+		return this.moduleHooks.size > 0;
+	}
+
+	private resolveEntityScriptRef(entityId: string): string | null {
+		if (!this.systemContext) return null;
+		const em = this.systemContext.entityManager;
+		const entity = em.getEntity(entityId);
+		if (!entity) return null;
+
+		const prefabId = entity.prefab;
+		if (!prefabId) return null;
+
+		const prefab = em.getPrefab(prefabId);
+		const scriptRef = prefab?.scriptRef ?? null;
+
+		if (scriptRef && !this.moduleHooks.has(scriptRef)) {
+			this.reportScriptRefError(
+				entityId,
+				scriptRef,
+				`Module "${scriptRef}" not found in loaded modules. Available: [${[...this.moduleHooks.keys()].join(", ")}]`,
+			);
+			return null;
+		}
+
+		return scriptRef;
+	}
+
+	private callModuleHook(
+		scriptContext: ScriptContext,
+		moduleKey: string,
+		hookName: string,
+		...extraArgs: unknown[]
+	): { success: boolean; error?: ScriptErrorReport } {
+		if (!this.sandbox) {
+			return { success: false };
+		}
+
+		const result = this.sandbox.callFunction(
+			scriptContext,
+			"__callModuleHook",
+			{ moduleKey, hookName, extraArgs },
+		);
+
+		if (!result.success) {
+			console.error(
+				`[ScriptSandboxRuntimeSystem] Module "${moduleKey}" hook "${hookName}" error:`,
+				result.error,
+			);
+			return { success: false, error: result.error };
+		}
+
+		return { success: true };
+	}
+
+	private reportScriptRefError(
+		entityId: string,
+		scriptRef: string,
+		message: string,
+	): void {
+		const entity = this.systemContext?.entityManager.getEntity(entityId);
+		const error: ScriptRefError = {
+			entityId,
+			prefabId: entity?.prefab,
+			scriptRef,
+			message,
+		};
+		this.scriptRefErrors.push(error);
+		console.error(
+			`[ScriptSandboxRuntimeSystem] ScriptRef error: ${message} (entity=${entityId}, scriptRef=${scriptRef})`,
+		);
+	}
+
 	private getCurrentGameState() {
 		return {
 			variables: this.currentGameState?.variables ?? {},
@@ -162,6 +383,7 @@ export class ScriptSandboxRuntimeSystem
 
 		this.lastUpdateCtx = ctx;
 		this.currentGameState = { variables: ctx.gameState.variables };
+		this.scriptRefErrors = [];
 
 		const em = this.systemContext.entityManager;
 
@@ -177,6 +399,16 @@ export class ScriptSandboxRuntimeSystem
 		}
 
 		const scriptContext = this.createScriptContext(ctx);
+
+		if (this.hasModules()) {
+			this.updateWithModuleDispatch(ctx, scriptContext);
+		} else {
+			this.updateLegacy(ctx, scriptContext);
+		}
+	}
+
+	private updateLegacy(ctx: UpdateContext, scriptContext: ScriptContext): void {
+		if (!this.sandbox) return;
 
 		if (!this.onStartCalled && this.sandbox.hasHook("onStart")) {
 			const result = this.sandbox.runStart(scriptContext);
@@ -268,6 +500,244 @@ export class ScriptSandboxRuntimeSystem
 		}
 	}
 
+	private updateWithModuleDispatch(
+		ctx: UpdateContext,
+		scriptContext: ScriptContext,
+	): void {
+		if (!this.sandbox || !this.systemContext) return;
+
+		const sortedModuleKeys = [...this.moduleHooks.keys()].sort();
+
+		for (const moduleKey of sortedModuleKeys) {
+			const hooks = this.moduleHooks.get(moduleKey);
+			if (!hooks?.hasOnStart) continue;
+			if (this.moduleStartCalled.has(moduleKey)) continue;
+
+			const result = this.callModuleHook(scriptContext, moduleKey, "onStart");
+			if (!result.success) {
+				console.error(
+					`[ScriptSandboxRuntimeSystem] Module "${moduleKey}" onStart error:`,
+					result.error,
+				);
+			}
+			this.moduleStartCalled.add(moduleKey);
+		}
+
+		for (const moduleKey of sortedModuleKeys) {
+			const hooks = this.moduleHooks.get(moduleKey);
+			if (!hooks?.hasOnUpdate) continue;
+
+			const result = this.callModuleHook(
+				scriptContext,
+				moduleKey,
+				"onUpdate",
+				ctx.dt,
+			);
+			if (!result.success) {
+				console.error(
+					`[ScriptSandboxRuntimeSystem] Module "${moduleKey}" onUpdate error:`,
+					result.error,
+				);
+			}
+		}
+
+		for (const event of ctx.frame.inputEvents) {
+			if (event.type !== "tap") continue;
+			const tapEvent: ScriptInputEvent = {
+				type: "tap",
+				position: { x: event.worldX, y: event.worldY },
+				entityId: event.targetEntityId ?? null,
+				timestamp: Date.now(),
+			};
+
+			for (const moduleKey of sortedModuleKeys) {
+				const hooks = this.moduleHooks.get(moduleKey);
+				if (!hooks?.hasOnInput) continue;
+				this.callModuleHook(scriptContext, moduleKey, "onInput", tapEvent);
+			}
+		}
+
+		if (ctx.frame.collisions.length > 0) {
+			const dispatchedCollisions = new Set<string>();
+
+			for (const collision of ctx.frame.collisions) {
+				const collisionEvent: ScriptCollisionEvent = {
+					entityA: collision.entityA.id,
+					entityB: collision.entityB.id,
+					normal: collision.normal,
+					impulse: collision.impulse,
+					contactPoint: { x: 0, y: 0 },
+					timestamp: Date.now(),
+				};
+
+				const moduleA = this.resolveEntityScriptRef(collision.entityA.id);
+				const moduleB = this.resolveEntityScriptRef(collision.entityB.id);
+
+				const modulesToNotify = new Set<string>();
+				if (moduleA) modulesToNotify.add(moduleA);
+				if (moduleB) modulesToNotify.add(moduleB);
+
+				for (const moduleKey of [...modulesToNotify].sort()) {
+					const hooks = this.moduleHooks.get(moduleKey);
+					if (!hooks?.hasOnCollision) continue;
+
+					const key = `${moduleKey}:${collision.entityA.id}:${collision.entityB.id}`;
+					if (dispatchedCollisions.has(key)) continue;
+					dispatchedCollisions.add(key);
+
+					this.callModuleHook(
+						scriptContext,
+						moduleKey,
+						"onCollision",
+						collisionEvent,
+					);
+				}
+			}
+		}
+
+		this.processCollisionEnterExitModular(ctx, scriptContext, sortedModuleKeys);
+
+		if (this.pendingNetworkStateEvents.length > 0) {
+			const events = this.pendingNetworkStateEvents.splice(0);
+			for (const state of events) {
+				for (const moduleKey of sortedModuleKeys) {
+					const hooks = this.moduleHooks.get(moduleKey);
+					if (!hooks?.hasOnNetworkState) continue;
+					this.callModuleHook(
+						scriptContext,
+						moduleKey,
+						"onNetworkState",
+						state,
+					);
+				}
+			}
+		} else {
+			this.pendingNetworkStateEvents.length = 0;
+		}
+
+		if (this.pendingPhaseChangeEvents.length > 0) {
+			const events = this.pendingPhaseChangeEvents.splice(0);
+			for (const event of events) {
+				for (const moduleKey of sortedModuleKeys) {
+					const hooks = this.moduleHooks.get(moduleKey);
+					if (!hooks?.hasOnPhaseChange) continue;
+					this.callModuleHook(
+						scriptContext,
+						moduleKey,
+						"onPhaseChange",
+						event.phase,
+						event.data,
+					);
+				}
+			}
+		} else {
+			this.pendingPhaseChangeEvents.length = 0;
+		}
+
+		if (this.pendingGameEvents.length > 0) {
+			const events = this.pendingGameEvents.splice(0);
+			for (const [eventName, data] of events) {
+				this.sandbox.callFunction(
+					scriptContext,
+					eventName,
+					(data as Record<string, unknown>) ?? {},
+				);
+			}
+		}
+	}
+
+	private processCollisionEnterExitModular(
+		ctx: UpdateContext,
+		scriptContext: ScriptContext,
+		sortedModuleKeys: string[],
+	): void {
+		if (!this.systemContext) return;
+
+		const anyEnter = sortedModuleKeys.some(
+			(k) => this.moduleHooks.get(k)?.hasOnCollisionEnter,
+		);
+		const anyExit = sortedModuleKeys.some(
+			(k) => this.moduleHooks.get(k)?.hasOnCollisionExit,
+		);
+		if (!anyEnter && !anyExit) return;
+
+		const em = this.systemContext.entityManager;
+		const currentPairs = new Set<string>();
+
+		for (const collision of ctx.frame.collisions) {
+			const key = this.makeCollisionPairKey(
+				collision.entityA.id,
+				collision.entityB.id,
+			);
+			currentPairs.add(key);
+
+			if (anyEnter && !this.activeCollisionPairs.has(key)) {
+				const tagsA = em.getEntity(collision.entityA.id)?.tags ?? [];
+				const tagsB = em.getEntity(collision.entityB.id)?.tags ?? [];
+				const enterEvent: ScriptCollisionEnterEvent = {
+					entityA: collision.entityA.id,
+					entityB: collision.entityB.id,
+					tagsA: [...tagsA],
+					tagsB: [...tagsB],
+					normal: collision.normal,
+					impulse: collision.impulse,
+				};
+
+				const moduleA = this.resolveEntityScriptRef(collision.entityA.id);
+				const moduleB = this.resolveEntityScriptRef(collision.entityB.id);
+				const modulesToNotify = new Set<string>();
+				if (moduleA) modulesToNotify.add(moduleA);
+				if (moduleB) modulesToNotify.add(moduleB);
+
+				for (const moduleKey of [...modulesToNotify].sort()) {
+					const hooks = this.moduleHooks.get(moduleKey);
+					if (!hooks?.hasOnCollisionEnter) continue;
+					this.callModuleHook(
+						scriptContext,
+						moduleKey,
+						"onCollisionEnter",
+						enterEvent,
+					);
+				}
+			}
+		}
+
+		if (anyExit) {
+			for (const key of this.activeCollisionPairs) {
+				if (!currentPairs.has(key)) {
+					const [idA, idB] = key.split("\0");
+					const tagsA = em.getEntity(idA)?.tags ?? [];
+					const tagsB = em.getEntity(idB)?.tags ?? [];
+					const exitEvent: ScriptCollisionExitEvent = {
+						entityA: idA,
+						entityB: idB,
+						tagsA: [...tagsA],
+						tagsB: [...tagsB],
+					};
+
+					const moduleA = this.resolveEntityScriptRef(idA);
+					const moduleB = this.resolveEntityScriptRef(idB);
+					const modulesToNotify = new Set<string>();
+					if (moduleA) modulesToNotify.add(moduleA);
+					if (moduleB) modulesToNotify.add(moduleB);
+
+					for (const moduleKey of [...modulesToNotify].sort()) {
+						const hooks = this.moduleHooks.get(moduleKey);
+						if (!hooks?.hasOnCollisionExit) continue;
+						this.callModuleHook(
+							scriptContext,
+							moduleKey,
+							"onCollisionExit",
+							exitEvent,
+						);
+					}
+				}
+			}
+		}
+
+		this.activeCollisionPairs = currentPairs;
+	}
+
 	destroy(): void {
 		for (const unsub of this.networkEventUnsubscribers) {
 			unsub();
@@ -291,9 +761,17 @@ export class ScriptSandboxRuntimeSystem
 		this.systemContext = null;
 		this.worldOps = null;
 		this.onStartCalled = false;
+		this.moduleHooks.clear();
+		this.moduleStartCalled.clear();
+		this.scriptRefErrors = [];
 	}
 
 	getState(): ScriptSandboxSystemState {
+		const moduleHooksRecord: Record<string, ModuleHookState> = {};
+		for (const [key, state] of this.moduleHooks) {
+			moduleHooksRecord[key] = state;
+		}
+
 		if (!this.sandbox) {
 			return {
 				hasOnStart: false,
@@ -307,6 +785,8 @@ export class ScriptSandboxRuntimeSystem
 				lastError: null,
 				reloadCount: 0,
 				onStartCalled: false,
+				moduleHooks: moduleHooksRecord,
+				scriptRefErrors: [...this.scriptRefErrors],
 			};
 		}
 
@@ -322,6 +802,8 @@ export class ScriptSandboxRuntimeSystem
 			lastError: this.sandbox.getLastError(),
 			reloadCount: this.sandbox.getReloadCount(),
 			onStartCalled: this.onStartCalled,
+			moduleHooks: moduleHooksRecord,
+			scriptRefErrors: [...this.scriptRefErrors],
 		};
 	}
 

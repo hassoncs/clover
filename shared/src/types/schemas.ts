@@ -236,6 +236,7 @@ export const BodyEntityPrefabSchema = z.object({
 	id: z.string(),
 	description: z.string().optional(),
 	whatDescription: z.string().optional(),
+	scriptRef: z.string().optional(),
 	visual: VisualComponentSchema.optional(),
 	physics: PhysicsComponentSchema.optional(),
 	collider: ColliderComponentSchema.optional(),
@@ -254,6 +255,7 @@ export const GameEntitySchema = z
 		id: z.string(),
 		name: z.string().default(""),
 		prefab: z.string().optional(),
+		scriptRef: z.string().optional(),
 		transform: TransformComponentSchema,
 		visual: VisualComponentSchema.optional(),
 		physics: PhysicsComponentSchema.optional(),
@@ -889,7 +891,6 @@ export const GameDefinitionSchema = z
 		constants: z
 			.record(z.union([z.number(), z.string(), z.boolean()]))
 			.optional(),
-		script: z.string().optional(),
 		effects: EffectsConfigSchema.optional(),
 		hoverHighlight: HoverHighlightConfigSchema.optional(),
 		dialogs: GameDialogsConfigSchema.optional(),

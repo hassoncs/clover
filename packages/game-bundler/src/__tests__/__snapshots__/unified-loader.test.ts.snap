@@ -9,7 +9,7 @@ exports[`bundle compilation snapshots > produces consistent output for a simple 
   "entities": [
     {
       "id": "paddle1",
-      "template": "paddle",
+      "prefab": "paddle",
       "transform": {
         "x": 0,
         "y": -7,
@@ -17,7 +17,7 @@ exports[`bundle compilation snapshots > produces consistent output for a simple 
     },
     {
       "id": "ball1",
-      "template": "ball",
+      "prefab": "ball",
       "transform": {
         "x": 0,
         "y": 0,
@@ -63,26 +63,6 @@ exports[`bundle compilation snapshots > produces consistent output for a simple 
       ],
     },
   },
-  "rules": [
-    {
-      "actions": [
-        {
-          "amount": 1,
-          "type": "addScore",
-        },
-      ],
-      "id": "ball-paddle-collision",
-      "trigger": {
-        "entityA": {
-          "tag": "ball",
-        },
-        "entityB": {
-          "tag": "paddle",
-        },
-        "type": "collision",
-      },
-    },
-  ],
   "variables": {
     "score": 0,
   },

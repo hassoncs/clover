@@ -51,6 +51,8 @@ export type {
 } from "./PropertySyncRuntimeSystem";
 export { PropertySyncRuntimeSystem } from "./PropertySyncRuntimeSystem";
 export type {
+	ModuleHookState,
+	ScriptRefError,
 	ScriptSandboxSystemConfig,
 	ScriptSandboxSystemState,
 } from "./ScriptSandboxRuntimeSystem";

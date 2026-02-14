@@ -55,6 +55,7 @@ const ALL_TAGS: WorkspaceTag[] = [...TAG_GROUPS];
 
 const DEFAULT_RUNTIME: HotReloadContext["runtime"] = {
 	applyScript: async () => undefined,
+	applyModules: async () => undefined,
 };
 
 function inferTagsFromPaths(paths: string[]): WorkspaceTag[] {

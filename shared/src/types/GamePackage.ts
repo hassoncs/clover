@@ -25,7 +25,6 @@ export interface GamePackage {
 	manifest: WorkspaceManifest;
 	prefabs?: Record<string, PrefabDefinition | LegacyPrefabDefinition>;
 	entities?: GameEntity[];
-	rules?: Record<string, unknown>[];
 	scripts?: string;
 	assets?: AssetManifest;
 	world?: WorldConfig;
@@ -42,7 +41,6 @@ export const WORKSPACE_CONVENTIONS = {
 	manifest: "slopcade.json",
 	world: "world.json",
 	entities: "entities.json",
-	rules: "rules.json",
 	prefabsDir: "prefabs/",
 	scriptsDir: "scripts/",
 	effectsDir: "effects/",

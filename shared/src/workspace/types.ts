@@ -2,7 +2,6 @@ export type WorkspaceTag =
 	| "world"
 	| "prefabs"
 	| "entities"
-	| "rules"
 	| "scripts"
 	| "effects"
 	| "assets";
@@ -22,7 +21,6 @@ export interface SceneManifest {
 	/** e.g. "scenes/main" */
 	root: string;
 	entitiesPath?: string;
-	rulesPath?: string;
 	/** Optional per-scene world override */
 	worldPath?: string;
 }

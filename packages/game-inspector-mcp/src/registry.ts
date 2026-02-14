@@ -4,6 +4,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const DEFAULT_API_URL = "http://localhost:8789";
+
 function findProjectRoot(): string {
 	let dir = __dirname;
 	for (let i = 0; i < 10; i++) {
@@ -19,35 +21,99 @@ const PROJECT_ROOT = findProjectRoot();
 
 export interface GameInfo {
 	id: string;
+	slug: string;
+	uuid: string;
+	title: string;
+	description: string | null;
 	path: string;
 	type: "game" | "example";
 }
 
-export function discoverTestGames(): GameInfo[] {
-	const gamesDir = join(PROJECT_ROOT, "r2", "games");
+interface TRPCGameIndex {
+	id: string;
+	title: string;
+	description: string | null;
+	isPublic: boolean;
+	playCount: number;
+	version: string;
+}
 
-	if (!existsSync(gamesDir)) {
-		console.error(`[registry] Games directory not found: ${gamesDir}`);
-		return [];
+function gameFromAPI(g: TRPCGameIndex): GameInfo {
+	return {
+		id: g.id,
+		slug: g.id,
+		uuid: g.id,
+		title: g.title,
+		description: g.description,
+		path: `/play/${g.id}`,
+		type: "game",
+	};
+}
+
+export function getApiUrl(): string {
+	return process.env.SLOPCADE_API_URL ?? DEFAULT_API_URL;
+}
+
+async function fetchTRPC<T>(
+	path: string,
+	input?: unknown,
+	auth?: string,
+): Promise<T> {
+	const apiUrl = getApiUrl();
+	let url = `${apiUrl}/trpc/${path}`;
+	if (input !== undefined) {
+		url += `?input=${encodeURIComponent(JSON.stringify(input))}`;
 	}
+	const headers: Record<string, string> = {};
+	if (auth) {
+		headers.Authorization = `Bearer ${auth}`;
+	}
+	const res = await fetch(url, { headers });
+	if (!res.ok) {
+		throw new Error(`tRPC ${path} failed: ${res.status} ${res.statusText}`);
+	}
+	const body = (await res.json()) as { result: { data: T } };
+	return body.result.data;
+}
 
-	const entries = readdirSync(gamesDir, { withFileTypes: true });
+export async function fetchGamesFromAPI(): Promise<GameInfo[]> {
+	const seen = new Set<string>();
 	const games: GameInfo[] = [];
 
-	for (const entry of entries) {
-		if (entry.isDirectory()) {
-			const manifestFile = join(gamesDir, entry.name, "manifest.json");
-			if (existsSync(manifestFile)) {
-				games.push({
-					id: entry.name,
-					path: `/game/${entry.name}`,
-					type: "game",
-				});
+	try {
+		const userGames = await fetchTRPC<TRPCGameIndex[]>(
+			"games.list",
+			undefined,
+			"dev-token",
+		);
+		for (const g of userGames) {
+			if (!seen.has(g.id)) {
+				seen.add(g.id);
+				games.push(gameFromAPI(g));
 			}
 		}
+	} catch {}
+
+	try {
+		const publicGames = await fetchTRPC<TRPCGameIndex[]>("games.listPublic", {
+			limit: 50,
+			offset: 0,
+			includeCritical: true,
+		});
+		for (const g of publicGames) {
+			if (!seen.has(g.id)) {
+				seen.add(g.id);
+				games.push(gameFromAPI(g));
+			}
+		}
+	} catch (err) {
+		console.error(
+			"[registry] Failed to fetch public games:",
+			err instanceof Error ? err.message : String(err),
+		);
 	}
 
-	return games.sort((a, b) => a.id.localeCompare(b.id));
+	return games.sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export function discoverExamples(): GameInfo[] {
@@ -71,6 +137,10 @@ export function discoverExamples(): GameInfo[] {
 			const id = entry.name.replace(".tsx", "");
 			examples.push({
 				id,
+				slug: id,
+				uuid: id,
+				title: id,
+				description: null,
 				path: `/examples/${id}`,
 				type: "example",
 			});
@@ -80,36 +150,45 @@ export function discoverExamples(): GameInfo[] {
 	return examples.sort((a, b) => a.id.localeCompare(b.id));
 }
 
-export function getAvailableGames(): GameInfo[] {
-	// Always discover fresh - games may be added/removed during development
-	return discoverTestGames();
-}
-
 export function getAvailableExamples(): GameInfo[] {
-	// Always discover fresh - examples may be added/removed during development
 	return discoverExamples();
 }
 
-export function getAllAvailable(): GameInfo[] {
-	return [...getAvailableGames(), ...getAvailableExamples()];
+export async function getAvailableGames(): Promise<GameInfo[]> {
+	return fetchGamesFromAPI();
 }
 
-export function isValidGame(id: string): boolean {
-	return getAvailableGames().some((g) => g.id === id);
+export async function getAllAvailable(): Promise<GameInfo[]> {
+	const [games, examples] = await Promise.all([
+		getAvailableGames(),
+		Promise.resolve(getAvailableExamples()),
+	]);
+	return [...games, ...examples];
+}
+
+export async function isValidGame(id: string): Promise<boolean> {
+	const games = await getAvailableGames();
+	return games.some((g) => g.id === id || g.uuid === id || g.slug === id);
 }
 
 export function isValidExample(id: string): boolean {
 	return getAvailableExamples().some((e) => e.id === id);
 }
 
-export function findByIdOrPath(input: string): GameInfo | undefined {
-	const all = getAllAvailable();
+export async function findByIdOrPath(
+	input: string,
+): Promise<GameInfo | undefined> {
+	const all = await getAllAvailable();
 
-	const byId = all.find((g) => g.id === input);
-	if (byId) return byId;
+	const byExact = all.find(
+		(g) => g.id === input || g.uuid === input || g.slug === input,
+	);
+	if (byExact) return byExact;
 
 	const normalizedInput = input.toLowerCase().replace(/[-_\s]/g, "");
 	return all.find(
-		(g) => g.id.toLowerCase().replace(/[-_\s]/g, "") === normalizedInput,
+		(g) =>
+			g.id.toLowerCase().replace(/[-_\s]/g, "") === normalizedInput ||
+			g.title.toLowerCase().replace(/[-_\s]/g, "") === normalizedInput,
 	);
 }

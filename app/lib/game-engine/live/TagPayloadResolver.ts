@@ -17,7 +17,6 @@ const SCENE_LOCAL_JSON_TAGS: ReadonlySet<WorkspaceTag> = new Set([
 	"world",
 	"prefabs",
 	"entities",
-	"rules",
 	"effects",
 ]);
 
@@ -33,8 +32,6 @@ export class TagPayloadResolver {
 					return this.resolvePrefabs(activeScene) as T;
 				case "entities":
 					return this.resolveEntities(activeScene) as T;
-				case "rules":
-					return this.resolveRules(activeScene) as T;
 				case "scripts":
 					return this.resolveScripts() as T;
 				case "effects":
@@ -159,29 +156,6 @@ export class TagPayloadResolver {
 		return null;
 	}
 
-	private resolveRules(
-		activeScene?: string | null,
-	): TagPayloads["rules"] | null {
-		const content = this.store.getFileContent(
-			this.getFilePath("rules", activeScene),
-		);
-		if (!content) {
-			return null;
-		}
-
-		const parsed = JSON.parse(content) as unknown;
-		if (Array.isArray(parsed)) {
-			return { rules: parsed as Record<string, unknown>[] };
-		}
-
-		const wrapped = parsed as { rules?: Record<string, unknown>[] };
-		if (Array.isArray(wrapped.rules)) {
-			return { rules: wrapped.rules };
-		}
-
-		return null;
-	}
-
 	private resolveScripts(): TagPayloads["scripts"] {
 		const scriptFiles = this.store
 			.getAllFiles()
@@ -192,8 +166,25 @@ export class TagPayloadResolver {
 			)
 			.sort((a, b) => a.filename.localeCompare(b.filename));
 
+		const modules: Record<string, string> = {};
+		for (const file of scriptFiles) {
+			const basename = file.filename
+				.slice(SCRIPTS_PREFIX.length)
+				.replace(/\.js$/, "");
+			modules[basename] = file.content;
+		}
+
+		const sortedKeys = Object.keys(modules).sort();
+		const sortedModules: Record<string, string> = {};
+		for (const key of sortedKeys) {
+			sortedModules[key] = modules[key];
+		}
+
+		const entrypoint = sortedKeys.includes("main") ? "main" : sortedKeys[0];
+
 		return {
-			script: scriptFiles.map((file) => file.content).join("\n\n"),
+			modules: sortedModules,
+			entrypoint,
 		};
 	}
 

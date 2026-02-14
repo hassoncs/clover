@@ -499,16 +499,6 @@ export interface GameDefinition {
 	constants?: Record<string, number | string | boolean>;
 
 	/**
-	 * Optional JavaScript code for custom game scripting.
-	 * Scripts run in a sandboxed QuickJS environment with lifecycle hooks:
-	 * - onStart(ctx): Called once when game starts
-	 * - onUpdate(ctx, dt): Called every frame
-	 * - onInput(ctx, event): Called on input events
-	 * - onCollision(ctx, collision): Called on collision events
-	 */
-	script?: string;
-
-	/**
 	 * Machinations-inspired economy graph for resource flow simulation.
 	 * Validated by @slopcade/economy-engine schemas at build/API layer.
 	 */

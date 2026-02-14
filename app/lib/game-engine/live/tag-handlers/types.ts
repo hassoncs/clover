@@ -6,6 +6,10 @@ export interface HotReloadContext {
 	bridge: GodotBridge;
 	runtime: {
 		applyScript: (source: string) => Promise<void>;
+		applyModules?: (
+			modules: Record<string, string>,
+			entrypoint?: string,
+		) => Promise<void>;
 	};
 }
 

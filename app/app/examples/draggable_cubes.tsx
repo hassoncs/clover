@@ -40,7 +40,6 @@ const GAME_DEFINITION: GameDefinition = {
 				friction: 0.3,
 				restitution: 0.2,
 			},
-			behaviors: [{ type: "draggable", mode: "force", stiffness: 0.5 }],
 		},
 		ground: {
 			id: "ground",
