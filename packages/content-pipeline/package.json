@@ -26,6 +26,7 @@
 		"cli": "node dist/cli.js"
 	},
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.32.1",
 		"better-sqlite3": "^11.8.1",
 		"yargs": "^17.7.2",
 		"zod": "^3.25.76"
