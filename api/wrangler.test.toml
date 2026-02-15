@@ -1,0 +1,18 @@
+# Wrangler config for vitest pool-workers
+# Excludes Durable Objects to avoid isolated storage crash with vitest 3.x
+name = "slopcade-api-test"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat", "enable_nodejs_fs_module"]
+main = "src/index.ts"
+
+[define]
+__DEV__ = "true"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "slopcade-db-test"
+database_id = "test-db-id"
+
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "slopcade-assets-test"

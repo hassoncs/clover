@@ -100,7 +100,7 @@ export class ForkService {
 				validation_report, validation_score, validation_critical_count,
 				validation_warning_count, validation_valid, validation_updated_at, validator_version,
 				version, build_number
-			) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				params.newGameId,

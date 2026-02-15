@@ -9,11 +9,9 @@ export default defineWorkersConfig({
 	test: {
 		poolOptions: {
 			workers: {
-				wrangler: { configPath: "./wrangler.toml" },
+				singleWorker: true,
+				wrangler: { configPath: "./wrangler.test.toml" },
 			},
-		},
-		resolveNodeCompatibilityIssues: {
-			enabled: true,
 		},
 	},
 	resolve: {
