@@ -2,59 +2,72 @@
 
 ## TL;DR
 
-> **Objective**: Build reusable party-game platform primitives first (data + helpers + generic inputs), then use those primitives to rapidly author many games.
+> **Objective**: Build party-game platform primitives oriented around the R2 game system. Party games should use the same GameDefinition + script sandbox architecture as arcade games, with server-side script execution for authoritative multiplayer state.
 >
-> **Immediate Scope**: Execute Phase 1 and Phase 2 now.
+> **Architecture**: Same script sandbox runs everywhere — on player phones, host TV, AND server (Cloudflare Worker). Server instance is authoritative; clients are mirrors that recover from restarts.
 >
-> **Deferred Scope**: Phase 3-4 captured separately in `.sisyphus/plans/party-platform-phase3-4-roadmap.md`.
+> **Immediate Scope**: Execute Phase 1 (platform plumbing) and Phase 2 (R2 migration) now.
 
 ---
 
 ## Context
 
-### Request Summary
-- Extract all generic/template-common logic from individual games.
-- Build core platform data capabilities and reusable input systems.
-- Reuse existing infrastructure; do not duplicate work.
-- Complete Phase 1 + Phase 2 now.
-- Preserve Phase 3 + 4 as scheduled deferred roadmap work.
+### Architecture Direction (Updated 2026-02-15)
+
+The original plan treated party games as server-side TypeScript templates separate from R2 games. **The user redirected**: every game should be an R2 game. The script sandbox (currently QuickJS/UnsafeScriptSandbox) should run:
+1. **On each player's phone** — for input UI and local state
+2. **On the host's TV** — for the "announcer" display
+3. **On the server (Cloudflare Worker)** — as the authoritative game state
+
+This means:
+- Game logic lives in scripts (JS modules in GameDefinition), NOT in hardcoded TypeScript templates
+- Shared utilities are `slopcade/*` modules, available everywhere via `require()`
+- Server-side infrastructure (rooms, WebSocket, scoring) remains as platform APIs
+- The `IScriptSandbox` interface is runtime-agnostic — works in V8 (Worker) and QuickJS (client)
 
 ### Verified Existing Foundation (Do Not Rebuild)
-- `api/src/party/PartyRoomDO.ts`: room lifecycle, websocket sync, phase machine, `requestInput`, scoring, reconnect, rate limit.
-- `app/lib/party/usePartyConnection.ts`: robust connection/reconnect hook, active input request handling.
-- `app/components/party/`: reusable text/vote/timer/scoreboard primitives.
+- `api/src/party/PartyRoomDO.ts`: room lifecycle, websocket sync, phase machine, `requestInput`, `sendToPlayer`, scoring, reconnect, rate limit.
+- `app/lib/party/usePartyConnection.ts`: robust connection/reconnect hook, active input request handling, privateState support.
+- `app/components/party/`: reusable text/vote/timer/scoreboard/buzzer primitives.
+- `app/lib/scripting/IScriptSandbox.ts`: runtime-agnostic sandbox interface with `onNetworkState` and `onPhaseChange` hooks already defined.
+- `app/lib/scripting/UnsafeScriptSandbox.ts`: `new Function()`-based sandbox — pure JS, no browser/native deps, works in V8 Workers.
+- `shared/src/scripting/modules/index.ts`: `SLOPCADE_MODULES` registry — string source code, works anywhere.
 - `packages/content-pipeline/`: generation, moderation, storage, build-pack CLI.
-- Audio and media infra already exists (ElevenLabs, mic capture, image pipeline).
 
-### Key Gaps To Fill In Phase 1-2
-- Shared template utility layer (currently duplicated in templates).
-- Per-player messaging and per-player private state delivery.
-- Subset input collection for asymmetric/judge/team mechanics.
-- Reusable `DrawingInput` and `BuzzerInput` components.
-- Generic phase-router architecture for game-specific UI mapping.
-- Completion of missing content generation configs (fibbage/caption/wordgame).
+### Key Gaps To Fill
+- Server-side script execution in PartyRoomDO (load GameDefinition, run sandbox in Worker)
+- New `slopcade/party` and `slopcade/content` modules for party game utilities
+- R2-stored party game definitions (GameDefinition with `party` config field)
+- Client `privateState` wiring (server → client WebSocket → React context)
+- Subset input collection for asymmetric/judge/team mechanics
+- Phase-router generalization for game-specific UI mapping
+- Migration of existing templates (quiplash, crowd-comedy) to R2 game format
 
 ---
 
 ## Work Objectives
 
 ### Core Objective
-Create a reusable party-game platform layer that minimizes per-game custom code and prevents duplicate infrastructure work.
+Build the infrastructure that lets party games be R2 games — same script sandbox, same `slopcade/*` modules, same GameDefinition format — with server-authoritative multiplayer state.
 
 ### Deliverables
-- Shared template utility module and migration of existing templates.
-- PartyRoomDO API enhancements (`sendToPlayer`, `requestInputFromSubset`).
-- Client private-state wiring and reusable input components (drawing + buzzer).
-- Generic game phase router pattern for player/host views.
-- Content pipeline expansion for missing content families + bulk content generation.
+- Server-side script sandbox execution in PartyRoomDO
+- `slopcade/party` and `slopcade/content` shared modules
+- Client private-state wiring end-to-end
+- Subset input request API
+- Phase-router generalization
+- At least one party game migrated from hardcoded template to R2 GameDefinition + script
 
 ### Definition of Done
-- [ ] Existing templates (`quiplash`, `crowd-comedy`) run unchanged in behavior after utility extraction.
-- [ ] Per-player private state can be sent from server and consumed in client context.
+- [x] Shared template utilities extracted and content loader abstracted.
+- [x] Per-player private state can be sent from server (`sendToPlayer` + protocol).
+- [x] Buzzer input component integrated into party flow.
+- [ ] Client receives and exposes `privateState` in React context.
 - [ ] Subset input request flow works for target-player-only prompts.
-- [ ] Drawing and buzzer reusable components are integrated into party flow.
-- [ ] Missing content generator configs are wired and output packs can be built.
-- [ ] Bulk content inventory reaches target minimums (see Task 10 acceptance criteria).
+- [ ] `slopcade/party` and `slopcade/content` modules available via `require()`.
+- [ ] PartyRoomDO can load a GameDefinition and execute its server script in-process.
+- [ ] At least one party game (quiplash) runs as an R2 game definition.
+- [ ] Phase-router supports game-specific view registration.
 
 ---
 
@@ -63,164 +76,232 @@ Create a reusable party-game platform layer that minimizes per-game custom code 
 ### Test Decision
 - **Infrastructure exists**: YES
 - **Automated tests**: YES (tests-after for this platform phase)
-- **Framework**: existing project tests (`bun test`)
+- **Framework**: vitest (`npx vitest run` from `api/`)
 
 ### Universal Verification Rule
 - No manual-only acceptance. Every criterion must be command/tool verifiable.
 
 ### Shared Verification Commands
 ```bash
-bun test api/src/party/__tests__/PartyRoomDO.test.ts
-bun test api/src/party/templates/__tests__
-pnpm content cli -- stats
+npx vitest run src/party/ --reporter=verbose   # from api/
+npx tsc --noEmit --project api/tsconfig.json
+npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
 ```
 
 ---
 
-## Execution Strategy (Phase 1-2)
+## Execution Strategy
 
-### Wave A (Phase 1 foundation)
-1. Extract shared template utilities.
-2. Add generic content pack loader abstraction.
-3. Add per-player send + private state protocol wiring.
-4. Add reusable buzzer input.
-5. Run bulk content generation for already-supported types.
+### Wave A — Platform Plumbing (keep building on existing infra)
+4. Wire client `privateState` end-to-end.
+6. Add `requestInputFromSubset` in PartyRoomDO.
+8. Generalize phase-router for game-specific views.
 
-### Wave B (Phase 2 core platform)
-6. Add subset input request API.
-7. Add reusable drawing input and integrate with party flow.
-8. Generalize game phase rendering architecture.
-9. Wire missing generation configs (fibbage/caption/wordgame).
-10. Add template helper framework for new game authoring velocity.
+### Wave B — R2 Orientation (new infrastructure)
+12. Create `slopcade/party` module (scoreboard, matchups, vote tallying, points).
+13. Create `slopcade/content` module (shuffle, select, dedup for content packs).
+14. Add server-side script sandbox execution in PartyRoomDO.
+15. Migrate quiplash template to R2 GameDefinition + server script.
+16. Migrate crowd-comedy template to R2 GameDefinition + server script.
+
+### Deferred to Phase 3-4 (removed from this plan)
+- ~~7. DrawingInput~~ → deferred (needs canvas component research)
+- ~~9. Missing generation configs~~ → deferred (fibbage/caption/wordgame)
+- ~~10. Bulk content generation~~ → deferred (needs API keys + generation time)
+- ~~11. Template helper framework~~ → superseded by R2 script migration
 
 ---
 
 ## TODOs (Implementation + Verification)
 
+### Completed (Wave A - original)
+
 - [x] 1. Extract shared template utility module
-  - **What to do**:
-    - Create `api/src/party/templates/utils.ts`.
-    - Move duplicated helpers from `quiplash.ts` and `crowd-comedy.ts` (`shuffle`, `delay`, `startCountdown`, `buildScoreboard`, `generateId`).
-    - Update templates to import utilities.
-  - **References**:
-    - `api/src/party/templates/quiplash.ts`
-    - `api/src/party/templates/crowd-comedy.ts`
-  - **Acceptance criteria**:
-    - [ ] `bun test api/src/party/templates/__tests__/quiplash.test.ts` passes.
-    - [ ] `bun test api/src/party/templates/__tests__/crowd-comedy.test.ts` passes.
+  - **Status**: Done. Created `api/src/party/templates/utils.ts`, migrated all templates.
 
 - [x] 2. Add generic content loader abstraction
-  - **What to do**:
-    - Implement loader API for content packs by game/content type.
-    - Remove hard-coupling to `quiplash-prompts.json` in templates where possible.
-  - **References**:
-    - `api/src/party/content/prompt-loader.ts`
-    - `api/src/party/content/quiplash-prompts.json`
-  - **Acceptance criteria**:
-    - [ ] Existing templates load content through shared loader path.
-    - [ ] No behavior regression in existing templates.
+  - **Status**: Done. Refactored `prompt-loader.ts` with generic `loadContentPack<T>()`, type-safe `ContentTypeMap`.
 
 - [x] 3. Add `sendToPlayer` server capability
-  - **What to do**:
-    - Add player-targeted send method in `PartyRoomDO`.
-    - Add protocol message for private-state updates.
-  - **References**:
-    - `api/src/party/PartyRoomDO.ts`
-    - `api/src/party/protocol.ts`
-    - `shared/src/types/party.ts`
-  - **Acceptance criteria**:
-    - [ ] PartyRoomDO tests include targeted-send coverage.
-    - [ ] Non-target players do not receive private payloads.
+  - **Status**: Done. Added `sendToPlayer()` to PartyRoomDO, `private_state` protocol message, tests pass.
 
-- [ ] 4. Wire client `privateState` end-to-end
+- [x] 5. Add reusable `BuzzerInput` component
+  - **Status**: Done. Created `BuzzerInput.tsx`, integrated into `play.tsx` for `type: buzzer`.
+
+### Active (Wave A - Platform Plumbing)
+
+- [x] 4. Wire client `privateState` end-to-end
   - **What to do**:
-    - Handle new private-state message in websocket client.
-    - Populate context `privateState` in `usePartyConnection` + `PartyContext`.
+    - Add `private_state` case to `usePartyConnection.ts` `onmessage` handler.
+    - Call `setPrivateState(message.data)` when received.
+    - Verify `PartyContext` already exposes `privateState` (it does — just needs the message handler).
   - **References**:
-    - `app/lib/party/usePartyConnection.ts`
+    - `app/lib/party/usePartyConnection.ts` (line ~118, switch statement)
     - `app/lib/party/PartyContext.tsx`
   - **Acceptance criteria**:
     - [ ] Target player receives private data and context updates.
     - [ ] Other players' contexts remain unchanged.
 
-- [x] 5. Add reusable `BuzzerInput` component
+- [x] 6. Add `requestInputFromSubset` in PartyRoomDO
   - **What to do**:
-    - Build reusable party buzzer input component.
-    - Integrate into party play rendering for `type: buzzer`.
+    - Add `requestInputFromSubset(requestId, request, targetPlayerIds)` method.
+    - Send `input_request` only to targeted players.
+    - Collector expects only subset responses or timeout.
   - **References**:
-    - `app/components/party/`
-    - `app/app/party/play.tsx`
-  - **Acceptance criteria**:
-    - [ ] Buzzer request renders buzzer UI.
-    - [ ] Press emits correct `input_response` payload.
-
-- [ ] 6. Add `requestInputFromSubset` in PartyRoomDO
-  - **What to do**:
-    - Implement subset-targeted input request/collection.
-    - Ensure collector expects only subset responses or timeout.
-  - **References**:
-    - `api/src/party/PartyRoomDO.ts`
+    - `api/src/party/PartyRoomDO.ts` (existing `requestInput` method as template)
   - **Acceptance criteria**:
     - [ ] Subset input request works with partial participant targeting.
     - [ ] Non-target players do not receive the request.
-
-- [ ] 7. Build reusable `DrawingInput` from paint example
-  - **What to do**:
-    - Extract drawing mechanics into reusable component under `app/components/party/`.
-    - Integrate with party input flow (`type: drawing`).
-  - **References**:
-    - `app/app/examples/paint.tsx`
-    - `app/app/party/play.tsx`
-  - **Acceptance criteria**:
-    - [ ] Drawing request renders canvas and submit flow.
-    - [ ] Drawing payload reaches server and is captured in collector.
+    - [ ] Tests cover: subset delivery, timeout with partial responses, empty subset.
 
 - [ ] 8. Generalize phase-router for game-specific views
   - **What to do**:
-    - Replace hardcoded phase view logic with game-template phase renderer map.
-    - Apply to both player and host screens.
+    - Create a phase renderer registry: `Record<gameTemplate, Record<phase, Component>>`.
+    - Replace hardcoded switch in `play.tsx` with registry lookup.
+    - Default renderer for unknown phases (shows phase name + sharedData).
+    - Apply same pattern to `host.tsx`.
   - **References**:
-    - `app/app/party/play.tsx`
+    - `app/app/party/play.tsx` (giant switch on `gamePhase`)
     - `app/app/party/host.tsx`
   - **Acceptance criteria**:
     - [ ] Existing game renders continue to work.
-    - [ ] New game can register phase renderer without editing giant switch blocks.
+    - [ ] New game can register phase renderer without editing play.tsx/host.tsx.
 
-- [ ] 9. Wire missing generation configs in content pipeline
-  - **What to do**:
-    - Add generation prompt configs for `fibbage`, `caption`, `wordgame`.
-  - **References**:
-    - `packages/content-pipeline/src/generate/prompts.ts`
-    - `packages/content-pipeline/src/types/index.ts`
-  - **Acceptance criteria**:
-    - [ ] CLI generate command supports new types without errors.
-    - [ ] Output validates against schemas.
+### Active (Wave B - R2 Orientation)
 
-- [ ] 10. Bulk content generation baseline for reusable data layer
+- [ ] 12. Create `slopcade/party` module
   - **What to do**:
-    - Generate and moderate baseline packs:
-      - quip >= 500
-      - trivia >= 500
-      - drawing >= 200
-      - wyr >= 200
-      - estimation >= 200
+    - Add to `shared/src/scripting/modules/index.ts` as `PARTY_MODULE_SOURCE`.
+    - Functions: `createScoreboard(scores, playerNames)`, `createMatchups(playerIds, items)`, `tallyVotes(responses, excludeSelfVotes, authorMap)`, `calculatePoints(voteCounts, opts)`.
+    - Register as `slopcade/party` in `SLOPCADE_MODULES`.
+    - Write tests for each function.
   - **References**:
-    - `packages/content-pipeline/README.md`
-    - `packages/content-pipeline/src/commands/generate.ts`
-    - `packages/content-pipeline/src/commands/moderate.ts`
-    - `packages/content-pipeline/src/commands/build-pack.ts`
+    - `shared/src/scripting/modules/index.ts` (existing module pattern)
+    - `api/src/party/templates/utils.ts` (logic to extract)
+    - `api/src/party/templates/quiplash.ts` (matchup/scoring logic)
   - **Acceptance criteria**:
-    - [ ] `pnpm content cli -- stats` shows target counts.
-    - [ ] Generated pack files exist and are consumable by templates.
+    - [ ] `require("slopcade/party")` works in UnsafeScriptSandbox.
+    - [ ] `createScoreboard` returns sorted entries.
+    - [ ] `createMatchups` generates round-robin pairings.
+    - [ ] `tallyVotes` correctly excludes self-votes.
+    - [ ] Unit tests pass.
 
-- [ ] 11. Build template helper framework (authoring acceleration)
+- [ ] 13. Create `slopcade/content` module
   - **What to do**:
-    - Add composable helper flow for common game loops (ready check, rounds, voting, reveal, scores, winner).
+    - Add to `shared/src/scripting/modules/index.ts` as `CONTENT_MODULE_SOURCE`.
+    - Functions: `shuffle(arr)`, `selectForRound(pool, count, usedIds)`, `markUsed(usedIds, items)`.
+    - Register as `slopcade/content` in `SLOPCADE_MODULES`.
   - **References**:
-    - `api/src/party/templates/`
+    - `shared/src/scripting/modules/index.ts`
+    - `api/src/party/content/prompt-loader.ts` (shufflePrompts, selectPromptsForRound)
   - **Acceptance criteria**:
-    - [ ] At least one existing template migrated to helper framework.
-    - [ ] Migration reduces duplicate boilerplate.
+    - [ ] `require("slopcade/content")` works in UnsafeScriptSandbox.
+    - [ ] Shuffle produces valid permutations.
+    - [ ] selectForRound respects usedIds exclusion.
+    - [ ] Unit tests pass.
+
+- [ ] 14. Add server-side script sandbox in PartyRoomDO
+  - **What to do**:
+    - Import `UnsafeScriptSandbox` (or equivalent V8-compatible sandbox) into API package.
+    - In `PartyRoomDO`, when a game starts:
+      1. Load `GameDefinition` (from template registry initially, later from R2).
+      2. Extract `modules.server` script code.
+      3. Create sandbox instance with script code + slopcade modules.
+      4. Execute the script's `exports.run(roomAPI, config)` function.
+    - The `roomAPI` object wraps existing PartyRoomDO methods: `setPhase`, `updateSharedData`, `requestInput`, `requestInputFromSubset`, `sendToPlayer`, `updatePlayerScore`, `delay`.
+    - Keep `TEMPLATE_REGISTRY` as fallback for non-R2 games.
+  - **References**:
+    - `app/lib/scripting/UnsafeScriptSandbox.ts` (reference implementation)
+    - `shared/src/scripting/modules/index.ts` (SLOPCADE_MODULES)
+    - `api/src/party/PartyRoomDO.ts` (existing template runner)
+    - `api/src/party/templates/registry.ts` (current registry)
+  - **Acceptance criteria**:
+    - [ ] PartyRoomDO can execute a script that calls `room.setPhase`, `room.requestInput`, etc.
+    - [ ] Script has access to `require("slopcade/party")` and `require("slopcade/content")`.
+    - [ ] Script errors are caught and reported without crashing the DO.
+    - [ ] Tests cover: basic script execution, module require, error handling.
+
+- [ ] 15. Migrate quiplash to R2 GameDefinition + server script
+  - **What to do**:
+    - Create `r2/games/quiplash/definition.json` with `party` config and `modules.server`.
+    - Port `api/src/party/templates/quiplash.ts` logic to JS script using `slopcade/party` and `slopcade/content`.
+    - Include content pack (quiplash-prompts.json) in the definition or load separately.
+    - Update `TEMPLATE_REGISTRY` to use the new R2-based runner.
+    - Verify identical behavior to the original template.
+  - **References**:
+    - `api/src/party/templates/quiplash.ts` (source logic)
+    - `r2/games/ballSort/` (reference R2 game structure)
+  - **Acceptance criteria**:
+    - [ ] Quiplash runs through all phases (answering → voting → reveal → scores → winner).
+    - [ ] Scoring logic produces identical results to the original template.
+    - [ ] Game uses `slopcade/party` module for scoreboard/matchups.
+
+- [ ] 16. Migrate crowd-comedy to R2 GameDefinition + server script
+  - **What to do**:
+    - Same pattern as quiplash migration.
+    - Create `r2/games/crowd-comedy/definition.json`.
+    - Port crowd-comedy logic to JS script.
+  - **References**:
+    - `api/src/party/templates/crowd-comedy.ts`
+  - **Acceptance criteria**:
+    - [ ] Crowd Comedy runs through all phases with correct scoring.
+    - [ ] Uses `slopcade/party` and `slopcade/content` modules.
+    - [ ] Pattern validates — two games successfully migrated proves the architecture.
+
+### Deferred (removed from this plan)
+
+- ~~7. DrawingInput~~ → Deferred to Phase 3-4 (needs canvas research for RN)
+- ~~9. Missing generation configs~~ → Deferred (fibbage/caption/wordgame configs)
+- ~~10. Bulk content generation~~ → Deferred (needs API keys + generation time)
+- ~~11. Template helper framework~~ → Superseded by R2 script migration approach
+
+---
+
+## Architecture Notes
+
+### Server Script Execution Model
+```
+PartyRoomDO (Cloudflare Worker, V8)
+  │
+  ├─ On "start_game":
+  │   1. Load GameDefinition (from registry or R2)
+  │   2. Extract modules.server script code
+  │   3. Create sandbox with slopcade/* modules injected
+  │   4. Execute: script.exports.run(roomAPI, config)
+  │
+  ├─ roomAPI = {
+  │     setPhase(phase),
+  │     updateSharedData(data),
+  │     requestInput(id, request) → Promise<Map>,
+  │     requestInputFromSubset(id, request, playerIds) → Promise<Map>,
+  │     sendToPlayer(id, data),
+  │     updatePlayerScore(id, delta),
+  │     delay(ms) → Promise,
+  │     getPlayers() → Player[],
+  │   }
+  │
+  └─ Clients connect via WebSocket, receive state_update/phase_change/input_request
+```
+
+### Why UnsafeScriptSandbox works for V8 Workers
+- Uses `new Function()` — standard V8, no WASM needed
+- `SLOPCADE_MODULES` are string source code — no file system deps
+- Cloudflare Workers are already sandboxed (V8 isolates)
+- Future: swap to QuickJS WASM in Worker for user-submitted scripts (untrusted code)
+
+### GameDefinition `party` field (new)
+```typescript
+party?: {
+  maxPlayers: number;
+  minPlayers: number;
+  serverScript: string;           // key into modules{}
+  contentPacks?: string[];        // content types needed
+  phases: string[];               // declared phases
+  inputTypes: string[];           // input types used
+  roundCount?: number;
+  roles?: Record<string, { screen: string }>;
+}
+```
 
 ---
 
@@ -230,14 +311,18 @@ All non-immediate work is preserved and scheduled in:
 
 - `.sisyphus/plans/party-platform-phase3-4-roadmap.md`
 
-This includes teams, audience role, bracket engine, hidden-role frameworks, private messaging expansion, concurrent editing, and advanced media/real-time systems.
+This includes: DrawingInput, teams, audience role, bracket engine, hidden-role frameworks, QuickJS WASM in Workers (for untrusted scripts), bulk content generation, missing generation configs.
 
 ---
 
 ## Success Criteria
 
-- [ ] Phase 1 + Phase 2 platform work complete with automated verification.
-- [ ] No duplicated generic logic remains in initial templates.
-- [ ] Party platform supports per-player and subset-targeted mechanics.
-- [ ] Reusable drawing and buzzer inputs are available for any future game.
-- [ ] Data/content infrastructure is broad enough to support rapid game catalog expansion.
+- [x] Shared template utilities extracted and content loader abstracted.
+- [x] Per-player private state protocol and server method implemented.
+- [x] Buzzer input component available for party games.
+- [ ] Client `privateState` wired end-to-end.
+- [ ] Subset input collection works for asymmetric mechanics.
+- [ ] `slopcade/party` and `slopcade/content` modules available as shared libraries.
+- [ ] Server-side script sandbox executes game logic in PartyRoomDO.
+- [ ] At least one party game fully migrated to R2 GameDefinition format.
+- [ ] Phase-router generalized for extensible game UI.
