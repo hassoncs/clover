@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { KnobSelect } from "./KnobSelect";
 
 const meta: Meta<typeof KnobSelect> = {
-	title: "Knobs/Select",
+	title: "UI/Knobs/Select",
 	component: KnobSelect,
 	tags: ["autodocs"],
 	decorators: [

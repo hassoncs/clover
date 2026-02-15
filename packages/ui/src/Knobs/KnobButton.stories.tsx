@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { KnobButton } from "./KnobButton";
 
 const meta: Meta<typeof KnobButton> = {
-	title: "Knobs/Button",
+	title: "UI/Knobs/ActionButton",
 	component: KnobButton,
 	tags: ["autodocs"],
 	decorators: [

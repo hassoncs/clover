@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { KnobVec2 } from "./KnobVec2";
 
 const meta: Meta<typeof KnobVec2> = {
-	title: "Knobs/KnobVec2",
+	title: "UI/Knobs/Vec2",
 	component: KnobVec2,
 	decorators: [
 		(Story) => (

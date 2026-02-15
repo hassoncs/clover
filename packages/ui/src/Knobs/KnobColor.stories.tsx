@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { KnobColor } from "./KnobColor";
 
 const meta: Meta<typeof KnobColor> = {
-	title: "Knobs/KnobColor",
+	title: "UI/Knobs/Color",
 	component: KnobColor,
 	decorators: [
 		(Story) => (

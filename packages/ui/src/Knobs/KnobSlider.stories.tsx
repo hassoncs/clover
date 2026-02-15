@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { KnobSlider } from "./KnobSlider";
 
 const meta: Meta<typeof KnobSlider> = {
-	title: "Knobs/Slider",
+	title: "UI/Knobs/Slider",
 	component: KnobSlider,
 	tags: ["autodocs"],
 	decorators: [

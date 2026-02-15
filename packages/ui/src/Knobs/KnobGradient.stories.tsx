@@ -5,7 +5,7 @@ import { KnobGradient } from "./KnobGradient";
 import type { GradientStop } from "./types";
 
 const meta = {
-	title: "Knobs/KnobGradient",
+	title: "UI/Knobs/Gradient",
 	component: KnobGradient,
 	decorators: [
 		(Story) => (

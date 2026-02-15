@@ -9,7 +9,7 @@ import {
 } from "./KnobsPanel";
 
 const meta: Meta<typeof KnobsPanel> = {
-	title: "Knobs/KnobsPanel",
+	title: "UI/Knobs/Panel",
 	component: KnobsPanel,
 	decorators: [
 		(Story) => (

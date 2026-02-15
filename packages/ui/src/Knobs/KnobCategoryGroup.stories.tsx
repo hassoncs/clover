@@ -5,7 +5,7 @@ import { KnobCategoryGroup } from "./KnobCategoryGroup";
 import { KnobSlider } from "./KnobSlider";
 
 const meta: Meta<typeof KnobCategoryGroup> = {
-	title: "Knobs/KnobCategoryGroup",
+	title: "UI/Knobs/CategoryGroup",
 	component: KnobCategoryGroup,
 	decorators: [
 		(Story) => (

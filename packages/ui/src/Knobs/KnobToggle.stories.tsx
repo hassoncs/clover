@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { KnobToggle } from "./KnobToggle";
 
 const meta: Meta<typeof KnobToggle> = {
-	title: "UI/Knobs/KnobToggle",
+	title: "UI/Knobs/Toggle",
 	component: KnobToggle,
 	decorators: [
 		(Story) => (

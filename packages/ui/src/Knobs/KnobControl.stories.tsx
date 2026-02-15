@@ -4,7 +4,7 @@ import { ScrollView, View } from "react-native";
 import { KnobControl } from "./KnobControl";
 
 const meta: Meta<typeof KnobControl> = {
-	title: "Knobs/KnobControl",
+	title: "UI/Knobs/Control",
 	component: KnobControl,
 	decorators: [
 		(Story) => (
