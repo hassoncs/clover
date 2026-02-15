@@ -74,3 +74,36 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
 		ctx: { ...ctx, user } as AuthenticatedContext,
 	});
 });
+
+// Admin procedure - requires valid auth AND admin email
+export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
+	let user: User;
+	if ((ctx as AuthenticatedContext).user) {
+		user = (ctx as AuthenticatedContext).user;
+	} else {
+		user = await validateAuthToken(ctx);
+	}
+
+	// Check admin status
+	const adminEmails = ctx.env.ADMIN_EMAILS
+		? ctx.env.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase())
+		: [];
+
+	if (adminEmails.length === 0) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "No admin emails configured",
+		});
+	}
+
+	if (!adminEmails.includes(user.email.toLowerCase())) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Admin access required",
+		});
+	}
+
+	return next({
+		ctx: { ...ctx, user } as AuthenticatedContext,
+	});
+});

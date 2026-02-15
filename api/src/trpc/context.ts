@@ -52,6 +52,12 @@ export interface Env {
 	AI_CHAT_MODEL?: string;
 
 	ELEVENLABS_API_KEY?: string;
+
+	// Admin access control (comma-separated emails)
+	ADMIN_EMAILS?: string;
+
+	// Invite requirement enforcement
+	REQUIRE_INVITE?: string;
 }
 
 export interface User {

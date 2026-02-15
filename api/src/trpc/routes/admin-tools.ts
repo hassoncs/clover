@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import type { LanguageModel } from "ai";
 import { generateObject } from "ai";
 import { z } from "zod";
-import { protectedProcedure, router } from "@/trpc/index";
+import { adminProcedure, router } from "@/trpc/index";
 
 const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1";
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -207,7 +207,7 @@ async function generatePartyBatch(options: {
 }
 
 export const adminToolsRouter = router({
-	generateSound: protectedProcedure
+	generateSound: adminProcedure
 		.input(
 			z.object({
 				text: z.string().describe("Sound effect description"),
@@ -255,7 +255,7 @@ export const adminToolsRouter = router({
 			};
 		}),
 
-	generateVoice: protectedProcedure
+	generateVoice: adminProcedure
 		.input(
 			z.object({
 				text: z.string().describe("Text to speak"),
@@ -318,7 +318,7 @@ export const adminToolsRouter = router({
 			};
 		}),
 
-	generatePartyContent: protectedProcedure
+	generatePartyContent: adminProcedure
 		.input(
 			z.object({
 				game: z.string().describe("Game type, e.g. 'quiplash'"),
@@ -392,7 +392,7 @@ export const adminToolsRouter = router({
 			};
 		}),
 
-	seedDatabase: protectedProcedure
+	seedDatabase: adminProcedure
 		.input(
 			z.object({
 				targets: z

@@ -1,8 +1,0 @@
-Can we support arbitrary Google Fonts-rich rendering now?
-
-Direct Answer: NO.
-
-While the Godot layer is ready and supports URL-based TTF loading with caching and MSDF effects, the React Native UI layer is currently limited to system fonts. Any game attempting to use Google Fonts will exhibit a visual mismatch where the game world uses the custom font but the UI overlay falls back to system defaults.
-
-Confidence Level: High (95%)
-The infrastructure (expo-font) is present but unused. Fixing this is a P0 task.

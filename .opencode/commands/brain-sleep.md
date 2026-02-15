@@ -1,5 +1,6 @@
 ---
 description: "Audit docs against real code, consolidate knowledge upward, prune stale files — like the brain during sleep"
+agent: "default"
 subtask: false
 ---
 
@@ -37,7 +38,134 @@ Find all `.md` files in the repo, excluding `node_modules/` and `.git/`. Categor
 
 **Process bottom-up: T6 first, T1 last.** This way, insights extracted from lower tiers get consolidated into higher tiers before you reach them.
 
-## Phase 3: Evaluate Each File
+## Phase 3: Plans Deep Analysis (CRITICAL - Do Before File Evaluation)
+
+Plans require special treatment. They accumulate, supersede each other, and often have unclear completion status. This phase runs BEFORE general file evaluation.
+
+### Step 3a: Discover All Plans
+
+```bash
+# Find all plans in T5 locations
+find .sisyphus/plans -name "*.md" | sort
+```
+
+### Step 3b: Read and Categorize Each Plan
+
+For each plan, extract:
+1. **Title/Topic** - What is this plan about?
+2. **Date** - When was it created? (from filename or frontmatter)
+3. **Status** - Completion percentage via checkbox counting
+4. **Scope** - What files/modules/components does it touch?
+5. **Dependencies** - Does it reference other plans?
+6. **Implementation Evidence** - Can you find the implemented code?
+
+### Step 3c: Cross-Reference Analysis (The Key Step)
+
+Build a dependency/overlap graph:
+
+```
+Plan A (DATE): "Implement feature X"
+  → Plan B (DATE): "Feature X v2" [SUPERSEDES A]
+  → Plan C (DATE): "Feature X extension" [EXTENDS B]
+```
+
+**Detection Rules:**
+
+| Pattern | Detection Method | Action |
+|---------|------------------|--------|
+| **Superseded** | Newer plan with same topic + "v2", "revised", "updated" in title | DELETE older plan |
+| **Merged** | Plan A's scope fully contained in Plan B | DELETE Plan A |
+| **Abandoned** | Plan untouched for 30+ days, no matching code in repo | DELETE (or ASK if uncertain) |
+| **Completed** | All checkboxes checked AND code exists | DELETE |
+| **Partially Complete** | Some checkboxes checked, code partially exists | ASSESS: Is remaining work still needed? |
+| **Active** | Recent edits (<14 days) OR has incomplete critical work | KEEP |
+
+### Step 3d: Implementation Verification
+
+**DO NOT trust checkboxes alone.** Verify:
+
+```bash
+# For each "completed" plan:
+# 1. Extract key file paths mentioned
+# 2. Check if those files exist and have recent changes
+# 3. Grep for key function/component names
+# 4. If code doesn't exist, plan is NOT complete regardless of checkboxes
+```
+
+**Example False Positive:**
+```
+Plan: "Implement feature X" - 15/15 checkboxes checked
+But: `grep -r "featureX" packages/` returns nothing
+→ Plan is INCOMPLETE, not complete
+```
+
+### Step 3e: Topic Clustering
+
+Group plans by topic to identify redundancy:
+
+```
+### Topic Cluster: Authentication
+- plan-v1.md (DATE) - SUPERSEDED
+- plan-v2.md (DATE) - ACTIVE
+- extension-plan.md (DATE) - ACTIVE, EXTENDS v2
+
+### Topic Cluster: Feature Module
+- initial-plan.md (DATE) - SUPERSEDED
+- phase-1.md (DATE) - COMPLETE
+- phase-2.md (DATE) - COMPLETE
+- complete-plan.md (DATE) - ACTIVE
+```
+
+### Step 3f: Aggressive Deletion Recommendations
+
+After analysis, produce a deletion report:
+
+```markdown
+## Plans Deletion Report
+
+### DELETE (Superseded)
+| Plan | Reason | Superseded By |
+|------|--------|---------------|
+| {plan-name}.md | Superseded by newer version | {newer-plan}.md |
+| {old-plan}.md | Scope merged into larger plan | {combined-plan}.md |
+
+### DELETE (Completed - Code Exists)
+| Plan | Completion % | Evidence |
+|------|--------------|----------|
+| {plan}.md | 100% | Code exists at {path}/ |
+| {plan}.md | 100% | Functions found in {module}/ |
+
+### DELETE (Stale/Abandoned)
+| Plan | Last Touched | Evidence of Abandonment |
+|------|--------------|-------------------------|
+| {plan}.md | {date} | No code, no references in 30+ days |
+| {plan}.md | {date} | Speculative, never started |
+
+### KEEP (Active)
+| Plan | Status | Next Action |
+|------|--------|-------------|
+| {plan}.md | {progress}% complete | {remaining work} |
+| {plan-dir}/* | In Progress | Multiple active items |
+
+### INVESTIGATE (Uncertain)
+| Plan | Why Uncertain | Action Needed |
+|------|---------------|---------------|
+| {plan}.md | No checkboxes, unclear status | Read and assess |
+```
+
+### Step 3g: Execute with Confirmation
+
+**If 5+ plans recommended for deletion:**
+1. Show the full deletion report
+2. Ask user to confirm or modify
+3. Execute deletions
+4. Update manifest
+
+**Automatic deletion (no confirmation needed):**
+- Plans that are 100% complete AND code exists in repo
+- Plans explicitly superseded by newer plans (same topic + newer date)
+
+## Phase 4: Evaluate Each File
 
 For every file, apply the **Freshness Test**, then the **Consolidation Question**.
 
@@ -195,7 +323,7 @@ After processing all docs:
 4. Calculate coverage: {docs covered} / {total docs}
 5. Cross-link related skills
 
-## Phase 4: Execute (Chunk by Chunk)
+## Phase 5: Execute (Chunk by Chunk)
 
 Process 8-12 files at a time. For each chunk:
 
@@ -208,7 +336,7 @@ Process 8-12 files at a time. For each chunk:
 
 Move to the next chunk.
 
-## Phase 5: Update Manifest
+## Phase 6: Update Manifest
 
 After processing, write/update `.sisyphus/brain-sleep.md`:
 
@@ -219,41 +347,66 @@ Last run: YYYY-MM-DD
 ## Reviewed Files
 | File | Decision | Reason | Date |
 |------|----------|--------|------|
-| .sisyphus/notepads/chat-migration/ | DELETED | Completed task, insight extracted to AGENTS.md | 2026-02-11 |
-| docs/ARCHITECTURE.md | KEPT | Verified accurate against current code | 2026-02-11 |
-| docs/godot/BRIDGE_REFACTOR.md | DELETED | Bridge was replaced, code no longer exists | 2026-02-11 |
+| {path}/ | DELETED | Completed task, insight extracted to AGENTS.md | YYYY-MM-DD |
+| docs/{file}.md | KEPT | Verified accurate against current code | YYYY-MM-DD |
+| docs/{file}.md | DELETED | Code no longer exists | YYYY-MM-DD |
 
 ## Skills Created/Updated
 | Skill | Action | Source Docs |
 |-------|--------|-------------|
-| bridge-development.md | CREATED | docs/godot/BRIDGE_REFACTOR.md, docs/godot/BRIDGE_E2E_TESTING.md |
-| chat-streaming.md | UPDATED | Added AG-UI event patterns from chat-streaming-migration |
-| game-authoring.md | UPDATED | Added QuickJS gotchas from ai-game-dev-lifecycle |
+| {skill}.md | CREATED | {source docs} |
+| {skill}.md | UPDATED | Added {content} from {source} |
+| {skill}.md | UPDATED | Added patterns from {source} |
 
 ## Consolidated Knowledge
 | Source | Destination | Insight |
 |--------|-------------|---------|
-| .sisyphus/notepads/chat-streaming-migration/ | AGENTS.md § Chat Flow | SSE needs CORS on streaming response |
-| .sisyphus/notepads/chat-streaming-migration/ | chat-streaming.md | AG-UI finish chunks fire per step |
-| .sisyphus/notepads/ai-game-dev-lifecycle/ | agent-billing.md | Reservation/settlement/finalize pattern |
+| {notepad}/ | AGENTS.md § {section} | {brief insight} |
+| {notepad}/ | {skill}.md | {brief insight} |
+| {notepad}/ | {skill}.md | {brief insight} |
 
 ## Stats
-- Files reviewed: 47
-- Deleted: 23
-- Kept: 20
-- Updated: 4
-- Insights extracted: 8
-- Skills created: 3
-- Skills updated: 5
-- Coverage: Bridge 60%, Effects 20%, Chat 85%
+- Files reviewed: {N}
+- Deleted: {N}
+- Kept: {N}
+- Updated: {N}
+- Insights extracted: {N}
+- Skills created: {N}
+- Skills updated: {N}
+- Coverage: {category} {percent}%, {category} {percent}%
 
 ## Coverage Report
 | Category | Before | After | Target | Status |
 |----------|--------|-------|--------|--------|
-| Bridge | 40% | 60% | 90% | ⚠️ Needs work |
-| Effects | 0% | 20% | 80% | ⚠️ Needs work |
-| Chat | 70% | 85% | 90% | ✅ Good |
-| Economy | 0% | 0% | 80% | 🔴 Missing |
+| {category} | {percent}% | {percent}% | {percent}% | ✅/⚠️/🔴 {status} |
+| {category} | {percent}% | {percent}% | {percent}% | ✅/⚠️/🔴 {status} |
+
+## Plans Analysis Report
+### Plans Reviewed: {N}
+### Deleted (Superseded): {N} plans
+| Plan | Reason | Superseded By |
+|------|--------|---------------|
+| {plan.md} | {why} | {newer-plan.md} |
+
+### Deleted (Completed): {N} plans
+| Plan | Evidence of Implementation |
+|------|---------------------------|
+| {plan.md} | {code paths that exist} |
+
+### Deleted (Stale/Abandoned): {N} plans
+| Plan | Last Touched | Evidence |
+|------|--------------|----------|
+| {plan.md} | {date} | {why abandoned} |
+
+### Kept (Active): {N} plans
+| Plan | Status | Remaining Work |
+|------|--------|----------------|
+| {plan.md} | {progress} | {what's left} |
+
+### Investigated (Uncertain): {N} plans
+| Plan | Issue | Resolution |
+|------|-------|------------|
+| {plan.md} | {uncertainty} | {what I did} |
 
 ## Self-Critique
 After each run, answer honestly:
@@ -265,6 +418,7 @@ After each run, answer honestly:
 - Skipped files: Did I run out of context and skip files? How many?
 - Freshness test effectiveness: Which test (path/symbol/cross-ref/git-delta) was most useful? Which was wasted effort?
 - Time sinks: What took disproportionately long? What should be faster next time?
+- **Plans analysis quality**: Did I correctly identify superseded plans? Did I verify implementation before deleting completed plans?
 
 ## Learned Rules
 <!-- Add rules discovered through running brain-sleep. These override built-in rules when they conflict. -->
@@ -272,7 +426,7 @@ After each run, answer honestly:
 <!-- Example: "T6 notepads never contain extractable insights in this repo — skip extraction step for T6" -->
 ```
 
-## Phase 6: Self-Critique
+## Phase 7: Self-Critique
 
 After all chunks are processed, populate the **Self-Critique** and **Learned Rules** sections in the manifest. Answer each self-critique question honestly.
 

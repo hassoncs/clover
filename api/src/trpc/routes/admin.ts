@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../index";
+import { adminProcedure, router } from "../index";
 
 export const adminRouter = router({
-	backfillContentHash: protectedProcedure
+	backfillContentHash: adminProcedure
 		.input(z.object({ batchSize: z.number().default(50) }))
 		.mutation(async ({ ctx, input }) => {
 			const { DB, ASSETS } = ctx.env;

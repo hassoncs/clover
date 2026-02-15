@@ -54,7 +54,7 @@ export const blobAssetsRouter = router({
 			return { exists };
 		}),
 
-	batchResolve: publicProcedure
+	batchResolve: protectedProcedure
 		.input(z.object({ hashes: z.array(z.string().length(64)) }))
 		.query(async ({ ctx, input }) => {
 			const blobStore = new BlobStore(ctx.env.ASSETS, ctx.env.DB);
