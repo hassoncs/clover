@@ -154,6 +154,9 @@ export function usePartyConnection({
 								setActiveInputRequest(null);
 							}
 							break;
+						case "private_state":
+							setPrivateState(message.data);
+							break;
 						case "error":
 							console.error(
 								"[usePartyConnection] Server error:",
