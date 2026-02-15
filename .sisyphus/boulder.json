@@ -1,11 +1,9 @@
 {
-  "active_plan": null,
-  "started_at": null,
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/shader-infra-glsl-files.md",
+  "started_at": "2026-02-15T03:07:11.779Z",
   "session_ids": [
-    "ses_3a5a3b5beffe0A4FQrmkIyNGKw"
+    "ses_3a0bbc9f4ffeNR7U3vfTL1l6md"
   ],
-  "plan_name": null,
-  "agent": "atlas",
-  "completed_plan": "party-game-content-pipeline-side-project",
-  "completed_at": "2026-02-14T05:12:00.000Z"
+  "plan_name": "shader-infra-glsl-files",
+  "agent": "atlas"
 }

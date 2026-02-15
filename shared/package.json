@@ -4,6 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"build": "vite build",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},
@@ -37,6 +38,8 @@
 		"@ag-ui/core": "^0.0.45",
 		"@cloudflare/workers-types": "^4.20260116.0",
 		"typescript": "^5.4.5",
+		"vite": "^6.0.0",
+		"vite-plugin-glsl": "^1.5.5",
 		"vitest": "^2.1.9"
 	}
 }
