@@ -654,6 +654,10 @@ func _apply_simple_screen_effect(plan_dict: Dictionary) -> Dictionary:
 	if not glsl.contains("shader_type"):
 		glsl = "shader_type canvas_item;\n" + glsl
 
+	# ColorRect has no texture, so TEXTURE_PIXEL_SIZE is (0,0) causing div-by-zero.
+	# Auto-replace with SCREEN_PIXEL_SIZE for screen-scope shaders.
+	glsl = glsl.replace("TEXTURE_PIXEL_SIZE", "SCREEN_PIXEL_SIZE")
+
 	var shader := Shader.new()
 	shader.code = glsl
 
