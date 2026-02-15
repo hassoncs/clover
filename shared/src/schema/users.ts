@@ -1,15 +1,18 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { z } from 'zod';
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import type { z } from "zod";
 
-export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull(),
-  displayName: text('display_name'),
-  avatarUrl: text('avatar_url'),
-  bio: text('bio'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }),
+export const users = sqliteTable("users", {
+	id: text("id").primaryKey(),
+	email: text("email").notNull(),
+	displayName: text("display_name"),
+	avatarUrl: text("avatar_url"),
+	bio: text("bio"),
+	proSubscriptionUntil: integer("pro_subscription_until"),
+	proSource: text("pro_source"),
+	stripeCustomerId: text("stripe_customer_id"),
+	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updated_at", { mode: "timestamp" }),
 });
 
 export const insertUserSchema = createInsertSchema(users);

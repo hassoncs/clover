@@ -3,6 +3,7 @@ import { adminRouter } from "./routes/admin";
 import { adminDashboardRouter } from "./routes/admin-dashboard";
 import { adminToolsRouter } from "./routes/admin-tools";
 import { assetSystemRouter } from "./routes/asset-system";
+import { billingRouter } from "./routes/billing";
 import { blobAssetsRouter } from "./routes/blob-assets";
 import { chatThreadsRouter } from "./routes/chat-threads";
 import { economyRouter } from "./routes/economy";
@@ -23,6 +24,7 @@ export const appRouter = router({
 	admin: adminRouter,
 	adminDashboard: adminDashboardRouter,
 	adminTools: adminToolsRouter,
+	billing: billingRouter,
 	games: gamesRouter,
 	users: usersRouter,
 	assetSystem: assetSystemRouter,

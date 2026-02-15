@@ -1,6 +1,5 @@
 ---
 description: "Audit docs against real code, consolidate knowledge upward, prune stale files — like the brain during sleep"
-agent: "default"
 subtask: false
 ---
 

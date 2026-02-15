@@ -24,11 +24,11 @@
 		"watch:games": "tsx scripts/sync-r2.ts --watch"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.17.4",
 		"@ai-sdk/anthropic": "^3.0.17",
 		"@ai-sdk/openai": "^3.0.27",
 		"@ai-sdk/provider": "^3.0.4",
 		"@hono/trpc-server": "^0.3.4",
+		"@modelcontextprotocol/sdk": "^1.17.4",
 		"@slopcade/economy-engine": "workspace:*",
 		"@slopcade/game-bundler": "workspace:*",
 		"@slopcade/shared": "workspace:*",
@@ -42,6 +42,7 @@
 		"nanoid": "^5.1.5",
 		"pngjs": "^7.0.0",
 		"sharp": "^0.34.5",
+		"stripe": "^20.3.1",
 		"superjson": "^2.2.6",
 		"zod": "^3.25.76",
 		"zod-to-json-schema": "^3.24.6"

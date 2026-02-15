@@ -18,6 +18,7 @@ import { PartyRoomDO } from "@/party/PartyRoomDO";
 import audioRouter from "@/routes/audio";
 import textGridRouter from "@/routes/text-grid";
 import revenuecatWebhookRouter from "@/routes/webhooks/revenuecat";
+import stripeWebhookRouter from "@/routes/webhooks/stripe";
 import { GitService } from "@/services/git/GitService";
 import { createContext, type Env } from "@/trpc/context";
 import { appRouter } from "@/trpc/router";
@@ -381,6 +382,7 @@ app.get("/assets/*", async (c) => {
 });
 
 app.route("/webhooks/revenuecat", revenuecatWebhookRouter);
+app.route("/webhooks/stripe", stripeWebhookRouter);
 app.route("/api/audio", audioRouter);
 app.route("/api/text-grid", textGridRouter);
 
