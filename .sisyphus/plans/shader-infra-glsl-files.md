@@ -435,7 +435,7 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
     Evidence: .sisyphus/evidence/task-5-tsc.txt
   ```
 
-- [ ] 6. Full verification, cleanup old monoliths, finalize
+- [x] 6. Full verification, cleanup old monoliths, finalize
 
   **What to do**:
   - Run the full existing test suite for `shared/src/effects/`.
