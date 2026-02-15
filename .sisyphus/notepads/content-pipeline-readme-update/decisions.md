@@ -1,0 +1,1 @@
+- **Dependencies**: The README was updated to reflect the switch from @ai-sdk/openai to @openrouter/ai-sdk-provider and the addition of zod-to-json-schema.

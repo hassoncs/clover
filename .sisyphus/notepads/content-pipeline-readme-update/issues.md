@@ -1,0 +1,1 @@
+- **validate-models registration**: The validate-models command exists in the commands directory but was not registered in cli.ts. I documented it as requested but did not modify cli.ts due to the 'MUST NOT DO: Do NOT modify any code files' constraint.

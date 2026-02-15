@@ -102,6 +102,8 @@ PODS:
     - Yoga
   - ExpoAsset (12.0.12):
     - ExpoModulesCore
+  - ExpoAudio (1.1.1):
+    - ExpoModulesCore
   - ExpoDevice (8.0.10):
     - ExpoModulesCore
   - ExpoFileSystem (19.0.21):
@@ -2056,6 +2058,36 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-skia (2.4.21):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-slider (5.1.2):
     - boost
     - DoubleConversion
@@ -3091,6 +3123,7 @@ DEPENDENCIES:
   - "EXNotifications (from `../../node_modules/.pnpm/expo-notifications@0.32.16_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-rou_66dtmwjlbvtgunrvr2u6pxtdfi/node_modules/expo-notifications/ios`)"
   - "Expo (from `../../node_modules/.pnpm/expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0.23_react-native-web_dyop4j453e76tfbc6jys5dj5mi/node_modules/expo`)"
   - "ExpoAsset (from `../../node_modules/.pnpm/expo-asset@12.0.12_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._bgaay5zyhkb35p4xtdc3mcdphq/node_modules/expo-asset/ios`)"
+  - "ExpoAudio (from `../../node_modules/.pnpm/expo-audio@1.1.1_expo-asset@12.0.12_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_uplwx6uercel27isubouexidae/node_modules/expo-audio/ios`)"
   - "ExpoDevice (from `../../node_modules/.pnpm/expo-device@8.0.10_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._zkor2kyvipkodgchgusshlt6ai/node_modules/expo-device/ios`)"
   - "ExpoFileSystem (from `../../node_modules/.pnpm/expo-file-system@19.0.21_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-route_d2fq5brs3ww5c3qes6yywquqoi/node_modules/expo-file-system/ios`)"
   - "ExpoFont (from `../../node_modules/.pnpm/expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0.2_wlg5djinqcc54nlgweqodexrjm/node_modules/expo-font/ios`)"
@@ -3147,6 +3180,7 @@ DEPENDENCIES:
   - "React-microtasksnativemodule (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)"
   - "react-native-get-random-values (from `../../node_modules/.pnpm/react-native-get-random-values@2.0.0_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0_/node_modules/react-native-get-random-values`)"
   - "react-native-safe-area-context (from `../../node_modules/.pnpm/react-native-safe-area-context@5.6.2_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1_c5fewigvayfmf3jormqhozkkhy/node_modules/react-native-safe-area-context`)"
+  - "react-native-skia (from `../../node_modules/.pnpm/@shopify+react-native-skia@2.4.21_react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@_4famdpa5qxmqkzgithc4oe7p6m/node_modules/@shopify/react-native-skia`)"
   - "react-native-slider (from `../../node_modules/.pnpm/@react-native-community+slider@5.1.2/node_modules/@react-native-community/slider`)"
   - "react-native-webview (from `../../node_modules/.pnpm/react-native-webview@13.15.0_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/react-native-webview`)"
   - "react-native-worklets-core (from `../../node_modules/.pnpm/react-native-worklets-core@1.6.2_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/react-native-worklets-core`)"
@@ -3190,7 +3224,7 @@ DEPENDENCIES:
   - "RNSVG (from `../../node_modules/.pnpm/react-native-svg@15.12.1_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/react-native-svg`)"
   - "RNWorklets (from `../../node_modules/.pnpm/react-native-worklets@0.7.2_@babel+core@7.29.0_react-native@0.81.4_@babel+core@7.29.0_@types+_c2dqr7sl4iiel73efckna7czjq/node_modules/react-native-worklets`)"
   - SocketRocket (~> 0.7.1)
-  - "VisionCamera (from `../../node_modules/.pnpm/react-native-vision-camera@4.7.3_react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@b_zg2nfi4vqudmnvf7nmn6pofpdm/node_modules/react-native-vision-camera`)"
+  - "VisionCamera (from `../../node_modules/.pnpm/react-native-vision-camera@4.7.3_@shopify+react-native-skia@2.4.21_react-native-reanimated@4._j7ornvsea2bm5sfveyb63rxbxi/node_modules/react-native-vision-camera`)"
   - "Yoga (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/yoga`)"
 
 SPEC REPOS:
@@ -3224,6 +3258,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0.23_react-native-web_dyop4j453e76tfbc6jys5dj5mi/node_modules/expo"
   ExpoAsset:
     :path: "../../node_modules/.pnpm/expo-asset@12.0.12_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._bgaay5zyhkb35p4xtdc3mcdphq/node_modules/expo-asset/ios"
+  ExpoAudio:
+    :path: "../../node_modules/.pnpm/expo-audio@1.1.1_expo-asset@12.0.12_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_uplwx6uercel27isubouexidae/node_modules/expo-audio/ios"
   ExpoDevice:
     :path: "../../node_modules/.pnpm/expo-device@8.0.10_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._zkor2kyvipkodgchgusshlt6ai/node_modules/expo-device/ios"
   ExpoFileSystem:
@@ -3335,6 +3371,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/react-native-get-random-values@2.0.0_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0_/node_modules/react-native-get-random-values"
   react-native-safe-area-context:
     :path: "../../node_modules/.pnpm/react-native-safe-area-context@5.6.2_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1_c5fewigvayfmf3jormqhozkkhy/node_modules/react-native-safe-area-context"
+  react-native-skia:
+    :path: "../../node_modules/.pnpm/@shopify+react-native-skia@2.4.21_react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@_4famdpa5qxmqkzgithc4oe7p6m/node_modules/@shopify/react-native-skia"
   react-native-slider:
     :path: "../../node_modules/.pnpm/@react-native-community+slider@5.1.2/node_modules/@react-native-community/slider"
   react-native-webview:
@@ -3420,7 +3458,7 @@ EXTERNAL SOURCES:
   RNWorklets:
     :path: "../../node_modules/.pnpm/react-native-worklets@0.7.2_@babel+core@7.29.0_react-native@0.81.4_@babel+core@7.29.0_@types+_c2dqr7sl4iiel73efckna7czjq/node_modules/react-native-worklets"
   VisionCamera:
-    :path: "../../node_modules/.pnpm/react-native-vision-camera@4.7.3_react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@b_zg2nfi4vqudmnvf7nmn6pofpdm/node_modules/react-native-vision-camera"
+    :path: "../../node_modules/.pnpm/react-native-vision-camera@4.7.3_@shopify+react-native-skia@2.4.21_react-native-reanimated@4._j7ornvsea2bm5sfveyb63rxbxi/node_modules/react-native-vision-camera"
   Yoga:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/yoga"
 
@@ -3436,6 +3474,7 @@ SPEC CHECKSUMS:
   EXNotifications: 9eec98712cc814ceff916d876cb53859003b0597
   Expo: ffcd2fb31776b663b84501a2568cab7dd7c0f9cb
   ExpoAsset: f867e55ceb428aab99e1e8c082b5aee7c159ea18
+  ExpoAudio: e4cfe3a2f3317b8487460685385a9867a07fb4fb
   ExpoDevice: 6327c3c200816795708885adf540d26ecab83d1a
   ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
   ExpoFont: f543ce20a228dd702813668b1a07b46f51878d47
@@ -3493,6 +3532,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 75b6604b667d297292345302cc5bfb6b6aeccc1b
   react-native-get-random-values: e2acf4070fe4b7325705a05af047449637a27a21
   react-native-safe-area-context: c00143b4823773bba23f2f19f85663ae89ceb460
+  react-native-skia: d9a291e9c2127a9ecdbd9bc7b8e75ae14f4a5e6c
   react-native-slider: 34064ca1a6864d7b263e44dd76a2d794e8d26744
   react-native-webview: 4cbb7f05f2c50671a7dcff4012d3e85faad271e4
   react-native-worklets-core: 28a6e2121dcf62543b703e81bc4860e9a0150cee

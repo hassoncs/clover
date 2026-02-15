@@ -157,3 +157,20 @@
 - Type-check passes: `pnpm tsc --noEmit`
 - Command help works: `node dist/cli.js generate --help`
 - Command executes and reaches AI client (verified by API error)
+
+## Text Extraction for Different Game Types
+
+**Problem**: The generate command was using a naive fallback `item.text || item.question` which didn't handle all game type schemas correctly.
+
+**Solution**: Added `extractText()` helper function in `packages/content-pipeline/src/commands/generate.ts` that switches on game type:
+- `wyr`: Combines `optionA` and `optionB` into "Would you rather: X OR Y"
+- `estimation`: Uses `question` field
+- `drawing`: Uses `text` or `prompt` field
+- Default: Falls back to `text || question` for quip/trivia
+
+**Pattern**: When dealing with polymorphic content schemas, use a type-aware extraction function rather than generic fallbacks.
+
+**Files Modified**:
+- `packages/content-pipeline/src/commands/generate.ts` - Added extractText() helper, updated line 95
+
+**Verification**: Type-check passes, all 47 tests pass.

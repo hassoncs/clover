@@ -66,7 +66,7 @@ interface TierModelConfig {
 Tier model assignments:
 - `free` → `openai/gpt-4o-mini` (budget: 50,000 micros)
 - `standard` → `openai/gpt-4o` (budget: 200,000 micros)
-- `pro` → `anthropic/claude-sonnet-4-20250514` (budget: 500,000 micros)
+- `pro` → `anthropic/claude-sonnet-4` (budget: 500,000 micros)
 
 Key functions: `resolveTierConfig(tier)`, `createModelForTier(config, env)`, `estimateRunCost(tier, steps)`.
 
@@ -318,7 +318,7 @@ type ChatModelTier = 'fast' | 'balanced' | 'quality' | 'reasoning';
 // Current assignments:
 // fast     → openai/gpt-oss-120b:nitro
 // balanced → openai/gpt-4o
-// quality  → anthropic/claude-sonnet-4-20250514
+// quality  → anthropic/claude-sonnet-4
 // reasoning → moonshotai/kimi-k2-thinking
 ```
 

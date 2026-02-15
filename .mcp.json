@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "backlog": {
+      "command": "node_modules/.bin/backlog",
+      "args": ["mcp", "start"]
+    },
+    "game-inspector": {
+      "command": "node",
+      "args": ["packages/game-inspector-mcp/dist/index.js"]
+    }
+  }
+}

@@ -54,7 +54,7 @@
 		"@types/yargs": "^17.0.35",
 		"esbuild": "^0.27.2",
 		"typescript": "^5.4.5",
-		"vitest": "^2.1.9",
+		"vitest": "^3.2.4",
 		"wrangler": "^4.59.2",
 		"yargs": "^18.0.0"
 	}

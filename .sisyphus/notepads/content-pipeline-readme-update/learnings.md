@@ -1,0 +1,4 @@
+- **Model Presets**: The content-pipeline uses 5 curated presets (fast, balanced, quality, reasoning, opensource) mapped to OpenRouter model IDs.
+- **Provider Compatibility**: Non-OpenAI providers require JSON schema injection into the system prompt as they often ignore the native response_format.
+- **Response Healing**: The pipeline uses a response-healing plugin to fix malformed JSON from smaller models.
+- **validate-models command**: A new command was added to test connectivity and JSON enforcement across all presets.

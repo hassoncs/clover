@@ -1,9 +1,11 @@
 {
-	"active_plan": null,
-	"started_at": null,
-	"session_ids": [],
-	"plan_name": null,
-	"agent": "atlas",
-	"completed_plan": "party-game-content-pipeline-side-project",
-	"completed_at": "2026-02-14T05:12:00.000Z"
+  "active_plan": null,
+  "started_at": null,
+  "session_ids": [
+    "ses_3a5a3b5beffe0A4FQrmkIyNGKw"
+  ],
+  "plan_name": null,
+  "agent": "atlas",
+  "completed_plan": "party-game-content-pipeline-side-project",
+  "completed_at": "2026-02-14T05:12:00.000Z"
 }
