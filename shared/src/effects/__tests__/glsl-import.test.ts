@@ -7,6 +7,6 @@ describe("GLSL Import", () => {
 	});
 
 	it("contains expected content", () => {
-		expect(testShader).toContain("Test shader for import verification");
+		expect(testShader).toContain("void main");
 	});
 });

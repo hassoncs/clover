@@ -251,7 +251,7 @@ export function lintShaderSource(
 			const context = extractContext(source, match.index!, match[0].length);
 
 			const issue: ShaderLintIssue = {
-				code: `INCOMPATIBLE_${code.replace(/[^A-Z_]/g, "_").toUpperCase()}`,
+				code: `INCOMPATIBLE_${code.toUpperCase().replace(/[^A-Z0-9_]/g, "_")}`,
 				message: `${message}. ${suggestion}`,
 				severity,
 				line,

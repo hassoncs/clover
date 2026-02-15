@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { compileGraph } from "../compiler";
-import { getAvailableShaderKeys, SHADER_LIBRARY } from "../shaderLibrary";
+import {
+	getAvailableShaderKeys,
+	getShaderGlsl,
+	SHADER_LIBRARY,
+} from "../shaderLibrary";
 import type { EffectGraphSpec, EffectNode } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -611,7 +615,7 @@ describe("compileGraph", () => {
 				],
 			});
 
-			const result = compileGraph(graph);
+			const result = compileGraph(graph, { shaderLookup: getShaderGlsl });
 			expect(result.success).toBe(true);
 
 			// Check that blur pass has inline GLSL
@@ -1068,7 +1072,7 @@ describe("real game definition compilation", () => {
 			],
 			connections: [],
 		});
-		const result = compileGraph(graph);
+		const result = compileGraph(graph, { shaderLookup: getShaderGlsl });
 		expect(result.success).toBe(true);
 		const pass = result.plan!.passes[0];
 		expect(pass.shaderSource.glsl).toContain("shader_type canvas_item");
