@@ -1,0 +1,122 @@
+[
+	{
+		"id": "ground",
+		"name": "Ground",
+		"prefab": "floor",
+		"transform": {
+			"x": 0,
+			"y": -0.1,
+			"z": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "box1",
+		"name": "Metallic Box",
+		"prefab": "box",
+		"transform": {
+			"x": -4,
+			"y": 0.6,
+			"z": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "sphere1",
+		"name": "Chrome Sphere",
+		"prefab": "sphere",
+		"transform": {
+			"x": -2,
+			"y": 0.7,
+			"z": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "cylinder1",
+		"name": "Gold Cylinder",
+		"prefab": "cylinder",
+		"transform": {
+			"x": 0,
+			"y": 0.8,
+			"z": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "capsule1",
+		"name": "Purple Capsule",
+		"prefab": "capsule",
+		"transform": {
+			"x": 2,
+			"y": 0.7,
+			"z": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "box2",
+		"name": "Tilted Box",
+		"prefab": "box",
+		"transform": {
+			"x": 4,
+			"y": 0.6,
+			"z": 0,
+			"rotationX": 25,
+			"rotationY": 45,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "bigSphere1",
+		"name": "Bouncing Ball",
+		"prefab": "bigSphere",
+		"transform": {
+			"x": 0,
+			"y": 8,
+			"z": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "box3",
+		"name": "Scaled Box",
+		"prefab": "box",
+		"transform": {
+			"x": -1,
+			"y": 0.3,
+			"z": -3,
+			"scaleX": 3,
+			"scaleY": 0.5,
+			"scaleZ": 0.5
+		}
+	},
+	{
+		"id": "sphere2",
+		"name": "Back Sphere",
+		"prefab": "sphere",
+		"transform": {
+			"x": 2,
+			"y": 0.7,
+			"z": -3,
+			"scaleX": 1.5,
+			"scaleY": 1.5,
+			"scaleZ": 1.5
+		}
+	}
+]

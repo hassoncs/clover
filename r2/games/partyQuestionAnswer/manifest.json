@@ -1,0 +1,10 @@
+{
+	"name": "party-question-answer",
+	"version": "1.0.0",
+	"title": "Question & Answer",
+	"description": "A party game where players answer fun questions",
+	"instructions": "Host starts the game, players type answers to each question",
+	"slug": "partyQuestionAnswer",
+	"tags": ["party", "multiplayer"],
+	"requiresPartyMode": true
+}

@@ -1,0 +1,10 @@
+{
+	"id": "quiplash",
+	"slug": "quiplash",
+	"title": "Quiplash",
+	"description": "Fill-in-the-blank comedy game. Players submit funny answers, then vote head-to-head!",
+	"version": "1.0.0",
+	"thumbnailUrl": null,
+	"updatedAt": 1771200000000,
+	"tags": ["party", "multiplayer"]
+}

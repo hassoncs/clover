@@ -1,2 +1,1 @@
-export * from './SeededRandom';
-export * from './angryBurns/AngryBurnsLevelGenerator';
+export * from "./SeededRandom";

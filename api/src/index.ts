@@ -12,6 +12,7 @@ import { handleChatStream } from "@/chat/stream-handler";
 import { GameRepoDO } from "@/durable-objects/GameRepoDO";
 import { WalletService } from "@/economy/wallet-service";
 import { autoSeedGamesFromR2 } from "@/lib/auto-seed";
+import { handleMcpRequest } from "@/mcp/server";
 import { PartyRoomDO } from "@/party/PartyRoomDO";
 import audioRouter from "@/routes/audio";
 import textGridRouter from "@/routes/text-grid";
@@ -371,6 +372,10 @@ app.get("/assets/*", async (c) => {
 app.route("/webhooks/revenuecat", revenuecatWebhookRouter);
 app.route("/api/audio", audioRouter);
 app.route("/api/text-grid", textGridRouter);
+
+app.all("/mcp", async (c) => {
+	return handleMcpRequest(c.req.raw, c.env);
+});
 
 app.use(
 	"/trpc/*",

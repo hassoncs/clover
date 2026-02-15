@@ -1,0 +1,10 @@
+{
+	"name": "angry-burns",
+	"version": "0.1.0",
+	"title": "Angry Burns",
+	"description": "Angry Birds-style tower destruction game with procedural level generation",
+	"instructions": "Launch projectiles to destroy tower structures and hit targets.",
+	"slug": "angryBurns",
+	"tags": ["physics", "puzzle", "wip"],
+	"status": "stub"
+}

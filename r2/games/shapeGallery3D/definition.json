@@ -1,0 +1,236 @@
+{
+	"metadata": {
+		"id": "shape-gallery-3d",
+		"title": "Shape Gallery 3D",
+		"description": "All 3D primitives with metallic/roughness materials",
+		"version": "1.0.0",
+		"slug": "shapeGallery3D"
+	},
+	"sceneType": "3d",
+	"world": {
+		"gravity": { "x": 0, "y": -9.8, "z": 0 },
+		"floor": {
+			"enabled": true,
+			"size": 30,
+			"color": "#E0E0E0"
+		},
+		"sky": {
+			"type": "gradient",
+			"topColor": "#1A1A2E",
+			"bottomColor": "#16213E"
+		},
+		"lighting": "studio"
+	},
+	"camera3d": {
+		"type": "perspective",
+		"position": { "x": 8, "y": 6, "z": 12 },
+		"lookAt": { "x": 0, "y": 1.5, "z": 0 },
+		"fov": 55
+	},
+	"prefabs": {
+		"floor": {
+			"id": "floor",
+			"tags": ["floor"],
+			"visual": {
+				"type": "primitive",
+				"shape": "box",
+				"color": "#E0E0E0",
+				"size": { "x": 30, "y": 0.2, "z": 30 }
+			},
+			"physics": { "bodyType": "static" },
+			"collider": { "shape": "box", "width": 30, "height": 0.2, "depth": 30 }
+		},
+		"box": {
+			"id": "box",
+			"tags": ["shape"],
+			"visual": {
+				"type": "primitive",
+				"shape": "box",
+				"color": "#FF6B35",
+				"size": { "x": 1.2, "y": 1.2, "z": 1.2 },
+				"roughness": 0.3,
+				"metallic": 0.7
+			},
+			"physics": { "bodyType": "static" }
+		},
+		"sphere": {
+			"id": "sphere",
+			"tags": ["shape"],
+			"visual": {
+				"type": "primitive",
+				"shape": "sphere",
+				"color": "#4ECDC4",
+				"radius": 0.7,
+				"roughness": 0.1,
+				"metallic": 0.9
+			},
+			"physics": { "bodyType": "static" }
+		},
+		"cylinder": {
+			"id": "cylinder",
+			"tags": ["shape"],
+			"visual": {
+				"type": "primitive",
+				"shape": "cylinder",
+				"color": "#FFE66D",
+				"radius": 0.5,
+				"height": 1.6,
+				"roughness": 0.5,
+				"metallic": 0.4
+			},
+			"physics": { "bodyType": "static" }
+		},
+		"capsule": {
+			"id": "capsule",
+			"tags": ["shape"],
+			"visual": {
+				"type": "primitive",
+				"shape": "capsule",
+				"color": "#A855F7",
+				"radius": 0.4,
+				"height": 1.4,
+				"roughness": 0.2,
+				"metallic": 0.6
+			},
+			"physics": { "bodyType": "static" }
+		},
+		"bigSphere": {
+			"id": "bigSphere",
+			"tags": ["shape"],
+			"visual": {
+				"type": "primitive",
+				"shape": "sphere",
+				"color": "#EF4444",
+				"radius": 1.0,
+				"roughness": 0.8,
+				"metallic": 0.0
+			},
+			"physics": { "bodyType": "dynamic", "mass": 5 },
+			"collider": { "shape": "sphere", "radius": 1.0 }
+		}
+	},
+	"entities": [
+		{
+			"id": "ground",
+			"name": "Ground",
+			"prefab": "floor",
+			"transform": {
+				"x": 0,
+				"y": -0.1,
+				"z": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "box1",
+			"name": "Metallic Box",
+			"prefab": "box",
+			"transform": {
+				"x": -4,
+				"y": 0.6,
+				"z": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "sphere1",
+			"name": "Chrome Sphere",
+			"prefab": "sphere",
+			"transform": {
+				"x": -2,
+				"y": 0.7,
+				"z": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "cylinder1",
+			"name": "Gold Cylinder",
+			"prefab": "cylinder",
+			"transform": {
+				"x": 0,
+				"y": 0.8,
+				"z": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "capsule1",
+			"name": "Purple Capsule",
+			"prefab": "capsule",
+			"transform": {
+				"x": 2,
+				"y": 0.7,
+				"z": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "box2",
+			"name": "Tilted Box",
+			"prefab": "box",
+			"transform": {
+				"x": 4,
+				"y": 0.6,
+				"z": 0,
+				"rotationX": 25,
+				"rotationY": 45,
+				"rotationZ": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "bigSphere1",
+			"name": "Bouncing Ball",
+			"prefab": "bigSphere",
+			"transform": {
+				"x": 0,
+				"y": 8,
+				"z": 0,
+				"scaleX": 1,
+				"scaleY": 1,
+				"scaleZ": 1
+			}
+		},
+		{
+			"id": "box3",
+			"name": "Scaled Box",
+			"prefab": "box",
+			"transform": {
+				"x": -1,
+				"y": 0.3,
+				"z": -3,
+				"scaleX": 3,
+				"scaleY": 0.5,
+				"scaleZ": 0.5
+			}
+		},
+		{
+			"id": "sphere2",
+			"name": "Back Sphere",
+			"prefab": "sphere",
+			"transform": {
+				"x": 2,
+				"y": 0.7,
+				"z": -3,
+				"scaleX": 1.5,
+				"scaleY": 1.5,
+				"scaleZ": 1.5
+			}
+		}
+	],
+	"variables": {},
+	"modules": {}
+}

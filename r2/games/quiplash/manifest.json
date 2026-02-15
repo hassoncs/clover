@@ -1,0 +1,10 @@
+{
+	"name": "quiplash",
+	"version": "1.0.0",
+	"title": "Quiplash",
+	"description": "Fill-in-the-blank comedy game. Players submit funny answers, then vote head-to-head!",
+	"instructions": "Answer prompts with your funniest response. Vote for your favorite in each matchup. Get the most votes to win!",
+	"slug": "quiplash",
+	"tags": ["party", "multiplayer"],
+	"requiresPartyMode": true
+}

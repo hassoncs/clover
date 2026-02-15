@@ -1,0 +1,32 @@
+{
+	"name": "cube-world-3d",
+	"version": "1.0.0",
+	"title": "Cube World 3D",
+	"description": "3D smoke test scene with dynamic cubes and floor",
+	"instructions": "Watch cubes fall onto the floor in a 3D environment.",
+	"sceneType": "3d",
+	"world": {
+		"gravity": { "x": 0, "y": -9.8, "z": 0 },
+		"floor": {
+			"enabled": true,
+			"size": 20,
+			"color": "#4CAF50"
+		},
+		"sky": {
+			"type": "gradient",
+			"topColor": "#4A90D9",
+			"bottomColor": "#87CEEB"
+		},
+		"lighting": "bright-day"
+	},
+	"camera3d": {
+		"type": "perspective",
+		"position": { "x": 0, "y": 5, "z": 10 },
+		"lookAt": { "x": 0, "y": 1, "z": 0 },
+		"fov": 60
+	},
+	"variables": {
+		"score": 0
+	},
+	"slug": "cubeWorld3D"
+}

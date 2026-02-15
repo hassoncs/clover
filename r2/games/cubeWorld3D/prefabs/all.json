@@ -1,0 +1,26 @@
+[
+	{
+		"id": "cube",
+		"tags": ["cube"],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#FF6B35",
+			"size": { "x": 1, "y": 1, "z": 1 }
+		},
+		"physics": { "bodyType": "dynamic", "mass": 1 },
+		"collider": { "shape": "box", "width": 1, "height": 1, "depth": 1 }
+	},
+	{
+		"id": "floor",
+		"tags": ["floor"],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#8BC34A",
+			"size": { "x": 20, "y": 0.5, "z": 20 }
+		},
+		"physics": { "bodyType": "static" },
+		"collider": { "shape": "box", "width": 20, "height": 0.5, "depth": 20 }
+	}
+]

@@ -21,10 +21,10 @@
 		"test:run": "vitest run",
 		"generate:ui": "npx tsx src/cli/generate-ui.ts",
 		"build:games": "tsx scripts/sync-r2.ts",
-		"watch:games": "tsx scripts/sync-r2.ts --watch",
-		"generate:assets": "tsx scripts/generate-assets.ts"
+		"watch:games": "tsx scripts/sync-r2.ts --watch"
 	},
 	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.17.4",
 		"@ai-sdk/anthropic": "^3.0.17",
 		"@ai-sdk/openai": "^3.0.27",
 		"@ai-sdk/provider": "^3.0.4",
@@ -43,7 +43,8 @@
 		"pngjs": "^7.0.0",
 		"sharp": "^0.34.5",
 		"superjson": "^2.2.6",
-		"zod": "^3.25.76"
+		"zod": "^3.25.76",
+		"zod-to-json-schema": "^3.24.6"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.12.3",

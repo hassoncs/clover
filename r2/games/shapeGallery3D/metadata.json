@@ -1,0 +1,9 @@
+{
+	"id": "shape-gallery-3d",
+	"slug": "shapeGallery3D",
+	"title": "Shape Gallery 3D",
+	"description": "All 3D primitives with metallic/roughness materials",
+	"version": "1.0.0",
+	"thumbnailUrl": null,
+	"updatedAt": 1771200000000
+}

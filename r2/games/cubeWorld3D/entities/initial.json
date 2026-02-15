@@ -1,0 +1,66 @@
+[
+	{
+		"id": "ground",
+		"name": "Ground",
+		"prefab": "floor",
+		"transform": {
+			"x": 0,
+			"y": -0.25,
+			"z": 0,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "cube1",
+		"name": "Red Cube",
+		"prefab": "cube",
+		"transform": {
+			"x": 0,
+			"y": 5,
+			"z": 0,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "cube2",
+		"name": "Blue Cube",
+		"prefab": "cube",
+		"transform": {
+			"x": 2,
+			"y": 8,
+			"z": 1,
+			"rotationX": 0,
+			"rotationY": 45,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "cube3",
+		"name": "Green Cube",
+		"prefab": "cube",
+		"transform": {
+			"x": -1,
+			"y": 12,
+			"z": -1,
+			"rotationX": 30,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1.5,
+			"scaleY": 1.5,
+			"scaleZ": 1.5
+		}
+	}
+]

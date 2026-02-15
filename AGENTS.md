@@ -166,16 +166,56 @@ This project uses **`hush`** for secrets management. API keys and credentials ar
 **Any command that needs secrets (AI generation, external APIs) must be prefixed with `hush run --`:**
 
 ```bash
-# Asset generation (run from repo root — NOT from api/ directory)
-hush run -- pnpm generate:assets --game=ballSort --debug
-
 # Any script needing SCENARIO_API_KEY, MODAL_ENDPOINT, etc.
 hush run -- npx tsx api/scripts/some-script.ts
 ```
 
-**IMPORTANT: Always run `pnpm generate:assets` from the repo root.** The root package.json delegates to the api workspace automatically.
-
 If a command fails with "API key required" or similar, the fix is almost always to prefix with `hush run --`.
+
+**Note:** Most functionality that previously required CLI scripts is now available as tRPC routes callable via MCP. See "API-First: No New CLI Scripts" below.
+
+## API-First: No New CLI Scripts
+
+**All new functionality MUST be implemented as tRPC routes, not CLI scripts.**
+
+The API has an MCP (Model Context Protocol) endpoint at `/mcp` that auto-discovers all tRPC routes and exposes them as MCP tools. This means any tRPC route is automatically callable by AI agents.
+
+### Why API routes over CLI scripts
+
+| CLI Script | tRPC Route |
+|------------|------------|
+| Only callable from terminal | Callable by agents, UI, other services, and terminal |
+| Requires `hush run --` for secrets | Secrets available via `ctx.env` automatically |
+| Local filesystem only | R2, D1, and all Workers bindings available |
+| Can't be shipped to production | Already deployed as part of the API |
+| Hard to test | Testable via tRPC caller |
+
+### How it works
+
+1. Create a tRPC route in `api/src/trpc/routes/`
+2. Register it in `api/src/trpc/router.ts`
+3. The MCP bridge (`api/src/mcp/trpc-mcp-bridge.ts`) auto-discovers it
+4. Agents can call it via the `slopcade-api` MCP server (configured in `.opencode/opencode.json`)
+
+### Where to put new routes
+
+| Purpose | Router | File |
+|---------|--------|------|
+| Admin/dev tools (generation, seeding) | `adminTools` | `api/src/trpc/routes/admin-tools.ts` |
+| Game operations | `games` | `api/src/trpc/routes/games.ts` |
+| Asset operations | `assetSystem` | `api/src/trpc/routes/asset-system.ts` |
+
+### Remaining CLI scripts (exceptions)
+
+Only one script remains as a CLI — it requires direct local filesystem access:
+
+| Script | Why it stays |
+|--------|-------------|
+| `api/scripts/sync-r2.ts` | Infrastructure script for syncing `r2/` directory to local wrangler (used by devmux) |
+
+### MCP configuration
+
+The MCP server is configured in `.opencode/opencode.json` as `slopcade-api`. It uses `mcp-remote` to bridge the HTTP MCP endpoint at `http://localhost:8789/mcp` to stdio. The API must be running (via `pnpm dev`) for the MCP server to work.
 
 ---
 

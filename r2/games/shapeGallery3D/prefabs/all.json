@@ -1,0 +1,82 @@
+[
+	{
+		"id": "floor",
+		"tags": ["floor"],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#E0E0E0",
+			"size": { "x": 30, "y": 0.2, "z": 30 }
+		},
+		"physics": { "bodyType": "static" },
+		"collider": { "shape": "box", "width": 30, "height": 0.2, "depth": 30 }
+	},
+	{
+		"id": "box",
+		"tags": ["shape"],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#FF6B35",
+			"size": { "x": 1.2, "y": 1.2, "z": 1.2 },
+			"roughness": 0.3,
+			"metallic": 0.7
+		},
+		"physics": { "bodyType": "static" }
+	},
+	{
+		"id": "sphere",
+		"tags": ["shape"],
+		"visual": {
+			"type": "primitive",
+			"shape": "sphere",
+			"color": "#4ECDC4",
+			"radius": 0.7,
+			"roughness": 0.1,
+			"metallic": 0.9
+		},
+		"physics": { "bodyType": "static" }
+	},
+	{
+		"id": "cylinder",
+		"tags": ["shape"],
+		"visual": {
+			"type": "primitive",
+			"shape": "cylinder",
+			"color": "#FFE66D",
+			"radius": 0.5,
+			"height": 1.6,
+			"roughness": 0.5,
+			"metallic": 0.4
+		},
+		"physics": { "bodyType": "static" }
+	},
+	{
+		"id": "capsule",
+		"tags": ["shape"],
+		"visual": {
+			"type": "primitive",
+			"shape": "capsule",
+			"color": "#A855F7",
+			"radius": 0.4,
+			"height": 1.4,
+			"roughness": 0.2,
+			"metallic": 0.6
+		},
+		"physics": { "bodyType": "static" }
+	},
+	{
+		"id": "bigSphere",
+		"tags": ["shape"],
+		"visual": {
+			"type": "primitive",
+			"shape": "sphere",
+			"color": "#EF4444",
+			"radius": 1.0,
+			"roughness": 0.8,
+			"metallic": 0.0
+		},
+		"physics": { "bodyType": "dynamic", "mass": 5 },
+		"collider": { "shape": "sphere", "radius": 1.0 }
+	}
+]

@@ -1,0 +1,30 @@
+{
+	"name": "shape-gallery-3d",
+	"version": "1.0.0",
+	"title": "Shape Gallery 3D",
+	"description": "All 3D primitives with metallic/roughness materials",
+	"instructions": "Observe all 3D primitive shapes with varying material properties.",
+	"sceneType": "3d",
+	"world": {
+		"gravity": { "x": 0, "y": -9.8, "z": 0 },
+		"floor": {
+			"enabled": true,
+			"size": 30,
+			"color": "#E0E0E0"
+		},
+		"sky": {
+			"type": "gradient",
+			"topColor": "#1A1A2E",
+			"bottomColor": "#16213E"
+		},
+		"lighting": "studio"
+	},
+	"camera3d": {
+		"type": "perspective",
+		"position": { "x": 8, "y": 6, "z": 12 },
+		"lookAt": { "x": 0, "y": 1.5, "z": 0 },
+		"fov": 55
+	},
+	"variables": {},
+	"slug": "shapeGallery3D"
+}

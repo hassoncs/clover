@@ -1,18 +1,23 @@
 {
-  "$schema": "https://opencode.ai/config.json",
-  "permission": {
-    "read": {
-      "*": "allow"
-    }
-  },
-  "mcp": {
-    "backlog": {
-      "type": "local",
-      "command": ["node_modules/.bin/backlog", "mcp", "start"]
-    },
-    "game-inspector": {
-      "type": "local",
-      "command": ["node", "packages/game-inspector-mcp/dist/index.js"]
-    }
-  }
+	"$schema": "https://opencode.ai/config.json",
+	"permission": {
+		"read": {
+			"*": "allow"
+		}
+	},
+	"mcp": {
+		"backlog": {
+			"type": "local",
+			"command": ["node_modules/.bin/backlog", "mcp", "start"]
+		},
+		"game-inspector": {
+			"type": "local",
+			"command": ["node", "packages/game-inspector-mcp/dist/index.js"]
+		},
+		"slopcade-api": {
+			"type": "local",
+			"command": ["npx", "mcp-remote", "http://localhost:8789/mcp"],
+			"enabled": true
+		}
+	}
 }
