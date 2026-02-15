@@ -1,5 +1,5 @@
 import { loadContentPack, shufflePrompts } from "../content/prompt-loader";
-import type { PartyTemplateRunner } from "../PartyRoomDO";
+import type { ServerScriptRoom } from "../ServerScriptRunner";
 import {
 	buildScoreboard,
 	delay,
@@ -35,7 +35,7 @@ const NO_ANSWER = "(no answer)";
 const POINTS_PER_VOTE = 100;
 const CLEAN_SWEEP_BONUS = 50;
 
-export const runCrowdComedy: PartyTemplateRunner = async (room) => {
+export const runCrowdComedy = async (room: ServerScriptRoom) => {
 	await room.setPhase("playing");
 
 	const allPrompts = shufflePrompts(loadContentPack("quip"));

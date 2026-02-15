@@ -3,7 +3,7 @@ import {
 	type QuipPrompt,
 	shufflePrompts,
 } from "../content/prompt-loader";
-import type { PartyTemplateRunner } from "../PartyRoomDO";
+import type { ServerScriptRoom } from "../ServerScriptRunner";
 import { buildScoreboard, delay, startCountdown } from "./utils";
 
 type Prompt = QuipPrompt;
@@ -45,7 +45,7 @@ function createMatchups(
 	return matchups;
 }
 
-export const runQuiplash: PartyTemplateRunner = async (room) => {
+export const runQuiplash = async (room: ServerScriptRoom) => {
 	await room.setPhase("playing");
 
 	const allPrompts = shufflePrompts(loadContentPack("quip"));
