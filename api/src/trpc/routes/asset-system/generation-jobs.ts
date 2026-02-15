@@ -12,6 +12,11 @@ import {
 	InsufficientBalanceError,
 	WalletService,
 } from "@/economy/wallet-service";
+import { AuditService } from "@/services/audit-service";
+import {
+	MODERATION_ERROR_MESSAGE,
+	ModerationService,
+} from "@/services/moderation-service";
 import { protectedProcedure, router } from "../../index";
 import type { GenerationJobRow, GenerationTaskRow } from "./types";
 import { promptDefaultsSchema } from "./types";
@@ -80,6 +85,43 @@ export const generationJobsRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const moderationService = new ModerationService();
+			const promptsToCheck: string[] = [];
+			if (input.promptDefaults.themePrompt) {
+				promptsToCheck.push(input.promptDefaults.themePrompt);
+			}
+			if (input.promptDefaults.styleOverride) {
+				promptsToCheck.push(input.promptDefaults.styleOverride);
+			}
+			if (input.prefabOverrides) {
+				for (const override of Object.values(input.prefabOverrides)) {
+					if (override.entityPrompt) {
+						promptsToCheck.push(override.entityPrompt);
+					}
+					if (override.styleOverride) {
+						promptsToCheck.push(override.styleOverride);
+					}
+				}
+			}
+			const moderationResult = moderationService.checkMultiple(promptsToCheck);
+			if (!moderationResult.allowed) {
+				const auditService = new AuditService(ctx.env.DB);
+				const rejectionLog = await moderationService.createRejectionLog(
+					promptsToCheck.join(" | "),
+					moderationResult,
+				);
+				await auditService.logEvent({
+					actorId: ctx.user.id,
+					action: "moderation.reject",
+					targetType: "prompt",
+					metadata: rejectionLog,
+				});
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: MODERATION_ERROR_MESSAGE,
+				});
+			}
+
 			const walletService = new WalletService(ctx.env.DB);
 
 			const gameRow = await ctx.env.DB.prepare(

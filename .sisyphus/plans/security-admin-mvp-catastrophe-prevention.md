@@ -194,7 +194,7 @@ Critical Path: 1 -> 2 -> 5 -> 7
   - [ ] Ingress inventory file/checklist committed in plan notes.
   - [ ] Explicit blocked list documented with rationale.
 
-- [ ] 2. Implement MVP prompt moderation pre-filter at ingress
+- [x] 2. Implement MVP prompt moderation pre-filter at ingress
 
   **What to do**:
   - Add `ModerationService` (keyword/regex denylist) with deterministic error response.
@@ -255,7 +255,7 @@ Critical Path: 1 -> 2 -> 5 -> 7
   - [ ] Audit table migration applied.
   - [ ] Admin action writes one audit row with actor/action metadata.
 
-- [ ] 4. Complete endpoint-by-endpoint billing enforcement audit + fixes
+- [x] 4. Complete endpoint-by-endpoint billing enforcement audit + fixes
 
   **What to do**:
   - Build matrix for each user-facing AI-cost endpoint: auth check, balance check, debit timing, refund behavior.
@@ -318,7 +318,7 @@ Critical Path: 1 -> 2 -> 5 -> 7
   - [ ] All gate checks pass with captured evidence.
   - [ ] Go/no-go summary written.
 
-- [ ] 6. Configure Cloudflare anomaly alerts + incident runbook
+- [x] 6. Configure Cloudflare anomaly alerts + incident runbook
 
   **What to do**:
   - Configure alerts for: API error spike, generation velocity spike, billing anomaly rate.

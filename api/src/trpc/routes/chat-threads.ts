@@ -10,7 +10,14 @@ import {
 	type MessageRow,
 	type ThreadRow,
 } from "@/chat/chat-handler";
+import { microsToSparks, USER_COSTS } from "@/economy/pricing";
+import { WalletService } from "@/economy/wallet-service";
+import { AuditService } from "@/services/audit-service";
 import { GitService } from "@/services/git/GitService";
+import {
+	MODERATION_ERROR_MESSAGE,
+	ModerationService,
+} from "@/services/moderation-service";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
 import { pathsToTree } from "@/utils/file-tree";
 import type { Env } from "../context";
@@ -208,6 +215,26 @@ export const chatThreadsRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const moderationService = new ModerationService();
+			const moderationResult = moderationService.check(input.text);
+			if (!moderationResult.allowed) {
+				const auditService = new AuditService(ctx.env.DB);
+				const rejectionLog = await moderationService.createRejectionLog(
+					input.text,
+					moderationResult,
+				);
+				await auditService.logEvent({
+					actorId: ctx.user.id,
+					action: "moderation.reject",
+					targetType: "prompt",
+					metadata: rejectionLog,
+				});
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: MODERATION_ERROR_MESSAGE,
+				});
+			}
+
 			const game = await ctx.env.DB.prepare(
 				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
 			)
@@ -218,6 +245,21 @@ export const chatThreadsRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
 			if (game.user_id !== ctx.user.id) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Not your game" });
+			}
+
+			// Billing: Pre-check minimum balance before starting chat
+			// Chat uses metered billing (billed after generation), but we require minimum balance
+			const walletService = new WalletService(ctx.env.DB);
+			const minimumBalanceMicros = USER_COSTS.GAME_GENERATION_BASE;
+			const hasFunds = await walletService.hasSufficientBalance(
+				ctx.user.id,
+				minimumBalanceMicros,
+			);
+			if (!hasFunds) {
+				throw new TRPCError({
+					code: "PRECONDITION_FAILED",
+					message: `Insufficient balance. Need at least ${microsToSparks(minimumBalanceMicros)} Sparks to start a chat.`,
+				});
 			}
 
 			let threadId = input.threadId;
@@ -279,6 +321,26 @@ export const chatThreadsRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const moderationService = new ModerationService();
+			const moderationResult = moderationService.check(input.answer);
+			if (!moderationResult.allowed) {
+				const auditService = new AuditService(ctx.env.DB);
+				const rejectionLog = await moderationService.createRejectionLog(
+					input.answer,
+					moderationResult,
+				);
+				await auditService.logEvent({
+					actorId: ctx.user.id,
+					action: "moderation.reject",
+					targetType: "prompt",
+					metadata: rejectionLog,
+				});
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: MODERATION_ERROR_MESSAGE,
+				});
+			}
+
 			const thread = await ctx.env.DB.prepare(
 				"SELECT * FROM threads WHERE id = ? AND user_id = ?",
 			)

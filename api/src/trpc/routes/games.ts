@@ -5,16 +5,28 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
 	classifyPrompt,
+	type GenerationResult,
 	generateGame,
 	getAIConfigFromEnv,
 	getClassificationConfidence,
 	getValidationSummary,
+	type RefinementResult,
 	refineGame,
 	validateGameDefinition,
 } from "@/ai";
 import { ArtifactManager } from "@/ai/agent/artifact-manager";
+import { microsToSparks, USER_COSTS } from "@/economy/pricing";
+import {
+	InsufficientBalanceError,
+	WalletService,
+} from "@/economy/wallet-service";
+import { AuditService } from "@/services/audit-service";
 import { ForkService } from "@/services/ForkService";
 import { GitService } from "@/services/git/GitService";
+import {
+	MODERATION_ERROR_MESSAGE,
+	ModerationService,
+} from "@/services/moderation-service";
 import { WorkspaceCopyService } from "@/services/WorkspaceCopyService";
 import { WorkspaceScaffoldService } from "@/services/WorkspaceScaffoldService";
 import {
@@ -748,6 +760,26 @@ export const gamesRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const moderationService = new ModerationService();
+			const moderationResult = moderationService.check(input.prompt);
+			if (!moderationResult.allowed) {
+				const auditService = new AuditService(ctx.env.DB);
+				const rejectionLog = await moderationService.createRejectionLog(
+					input.prompt,
+					moderationResult,
+				);
+				await auditService.logEvent({
+					actorId: ctx.user.id,
+					action: "moderation.reject",
+					targetType: "prompt",
+					metadata: rejectionLog,
+				});
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: MODERATION_ERROR_MESSAGE,
+				});
+			}
+
 			const aiConfig = getAIConfigFromEnv(ctx.env);
 			if (!aiConfig) {
 				throw new TRPCError({
@@ -757,12 +789,62 @@ export const gamesRouter = router({
 				});
 			}
 
-			const result = await generateGame(input.prompt, aiConfig, {
-				maxRetries: 2,
-				temperature: 0.7,
-			});
+			// Billing: Prepaid model - charge base cost before generation
+			const walletService = new WalletService(ctx.env.DB);
+			const estimatedCostMicros = USER_COSTS.GAME_GENERATION_BASE;
+			const generationId = crypto.randomUUID();
+
+			try {
+				await walletService.debit({
+					userId: ctx.user.id,
+					type: "generation_debit",
+					amountMicros: -estimatedCostMicros,
+					referenceType: "game_generation",
+					referenceId: generationId,
+					idempotencyKey: `game_gen_${generationId}`,
+					description: "Game generation",
+				});
+			} catch (err) {
+				if (err instanceof InsufficientBalanceError) {
+					throw new TRPCError({
+						code: "PRECONDITION_FAILED",
+						message: `Insufficient balance. Need ${microsToSparks(estimatedCostMicros)} Sparks for game generation.`,
+					});
+				}
+				throw err;
+			}
+
+			let result: GenerationResult;
+			try {
+				result = await generateGame(input.prompt, aiConfig, {
+					maxRetries: 2,
+					temperature: 0.7,
+				});
+			} catch (genError) {
+				// Refund on generation failure
+				await walletService.credit({
+					userId: ctx.user.id,
+					type: "generation_refund",
+					amountMicros: estimatedCostMicros,
+					referenceType: "game_generation",
+					referenceId: generationId,
+					idempotencyKey: `game_gen_refund_${generationId}`,
+					description: "Refund: game generation failed",
+				});
+				throw genError;
+			}
 
 			if (!result.success || !result.game) {
+				// Refund on generation failure
+				await walletService.credit({
+					userId: ctx.user.id,
+					type: "generation_refund",
+					amountMicros: estimatedCostMicros,
+					referenceType: "game_generation",
+					referenceId: generationId,
+					idempotencyKey: `game_gen_refund_${generationId}`,
+					description: "Refund: game generation returned no result",
+				});
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: result.error?.message ?? "Failed to generate game",
@@ -870,6 +952,26 @@ export const gamesRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const moderationService = new ModerationService();
+			const moderationResult = moderationService.check(input.request);
+			if (!moderationResult.allowed) {
+				const auditService = new AuditService(ctx.env.DB);
+				const rejectionLog = await moderationService.createRejectionLog(
+					input.request,
+					moderationResult,
+				);
+				await auditService.logEvent({
+					actorId: ctx.user.id,
+					action: "moderation.reject",
+					targetType: "prompt",
+					metadata: rejectionLog,
+				});
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: MODERATION_ERROR_MESSAGE,
+				});
+			}
+
 			const aiConfig = getAIConfigFromEnv(ctx.env);
 			if (!aiConfig) {
 				throw new TRPCError({
@@ -889,13 +991,63 @@ export const gamesRouter = router({
 				});
 			}
 
-			const result = await refineGame(
-				currentGame as Parameters<typeof refineGame>[0],
-				input.request,
-				aiConfig,
-			);
+			// Billing: Prepaid model - charge base cost before refinement
+			const walletService = new WalletService(ctx.env.DB);
+			const estimatedCostMicros = USER_COSTS.GAME_GENERATION_BASE;
+			const refinementId = crypto.randomUUID();
+
+			try {
+				await walletService.debit({
+					userId: ctx.user.id,
+					type: "generation_debit",
+					amountMicros: -estimatedCostMicros,
+					referenceType: "game_refinement",
+					referenceId: refinementId,
+					idempotencyKey: `game_refine_${refinementId}`,
+					description: "Game refinement",
+				});
+			} catch (err) {
+				if (err instanceof InsufficientBalanceError) {
+					throw new TRPCError({
+						code: "PRECONDITION_FAILED",
+						message: `Insufficient balance. Need ${microsToSparks(estimatedCostMicros)} Sparks for game refinement.`,
+					});
+				}
+				throw err;
+			}
+
+			let result: RefinementResult;
+			try {
+				result = await refineGame(
+					currentGame as Parameters<typeof refineGame>[0],
+					input.request,
+					aiConfig,
+				);
+			} catch (genError) {
+				// Refund on refinement failure
+				await walletService.credit({
+					userId: ctx.user.id,
+					type: "generation_refund",
+					amountMicros: estimatedCostMicros,
+					referenceType: "game_refinement",
+					referenceId: refinementId,
+					idempotencyKey: `game_refine_refund_${refinementId}`,
+					description: "Refund: game refinement failed",
+				});
+				throw genError;
+			}
 
 			if (!result.success || !result.game) {
+				// Refund on refinement failure
+				await walletService.credit({
+					userId: ctx.user.id,
+					type: "generation_refund",
+					amountMicros: estimatedCostMicros,
+					referenceType: "game_refinement",
+					referenceId: refinementId,
+					idempotencyKey: `game_refine_refund_${refinementId}`,
+					description: "Refund: game refinement returned no result",
+				});
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: result.error?.message ?? "Failed to refine game",
@@ -931,6 +1083,15 @@ export const gamesRouter = router({
 	analyze: publicProcedure
 		.input(z.object({ prompt: z.string().min(5).max(500) }))
 		.query(({ input }) => {
+			const moderationService = new ModerationService();
+			const moderationResult = moderationService.check(input.prompt);
+			if (!moderationResult.allowed) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: MODERATION_ERROR_MESSAGE,
+				});
+			}
+
 			const intent = classifyPrompt(input.prompt);
 			const confidence = getClassificationConfidence(input.prompt);
 
