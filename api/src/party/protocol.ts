@@ -18,6 +18,7 @@ const VALID_MESSAGE_TYPES = new Set([
 	"host_reconnect",
 	"player_reconnect",
 	"start_game",
+	"private_state",
 ]);
 
 export function encodeMessage(msg: PartyMessage): string {
@@ -79,4 +80,10 @@ export function errorMessage(code: string, message: string): PartyMessage {
 
 export function playerReconnectMessage(playerId: string): PartyMessage {
 	return { type: "player_reconnect", playerId };
+}
+
+export function privateStateMessage(
+	data: Record<string, unknown>,
+): PartyMessage {
+	return { type: "private_state", data };
 }

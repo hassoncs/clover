@@ -14,6 +14,7 @@ import {
 	playerJoinedMessage,
 	playerLeftMessage,
 	playerReconnectMessage,
+	privateStateMessage,
 	stateUpdateMessage,
 } from "./protocol";
 import { TEMPLATE_REGISTRY } from "./templates/registry";
@@ -482,6 +483,26 @@ export class PartyRoomDO {
 				resolve(responses);
 			}, timeLimit * 1000);
 		});
+	}
+
+	async sendToPlayer(
+		playerId: string,
+		data: Record<string, unknown>,
+	): Promise<void> {
+		const message = encodeMessage(privateStateMessage(data));
+
+		for (const ws of this.sockets) {
+			const meta = this.socketMetadata.get(ws);
+			if (
+				meta?.role === "player" &&
+				meta.playerId === playerId &&
+				ws.readyState === WebSocket.OPEN
+			) {
+				try {
+					ws.send(message);
+				} catch {}
+			}
+		}
 	}
 
 	private async handleStartGame(ws: WebSocket): Promise<void> {

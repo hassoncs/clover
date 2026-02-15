@@ -13,6 +13,7 @@ import {
 	playerJoinedMessage,
 	playerLeftMessage,
 	playerReconnectMessage,
+	privateStateMessage,
 	stateUpdateMessage,
 } from "../protocol";
 
@@ -94,6 +95,13 @@ describe("protocol", () => {
 
 		it("round-trips player_reconnect message", () => {
 			const msg = playerReconnectMessage("p2");
+			const encoded = encodeMessage(msg);
+			const decoded = decodeMessage(encoded);
+			expect(decoded).toEqual(msg);
+		});
+
+		it("round-trips private_state message", () => {
+			const msg = privateStateMessage({ secret: "value", scoreDelta: 5 });
 			const encoded = encodeMessage(msg);
 			const decoded = decodeMessage(encoded);
 			expect(decoded).toEqual(msg);

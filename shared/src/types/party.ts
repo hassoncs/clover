@@ -98,6 +98,11 @@ export interface StartGameMessage {
 	type: "start_game";
 }
 
+export interface PrivateStateMessage {
+	type: "private_state";
+	data: Record<string, unknown>;
+}
+
 export type PartyMessage =
 	| StateUpdateMessage
 	| PlayerJoinedMessage
@@ -108,4 +113,5 @@ export type PartyMessage =
 	| ErrorMessage
 	| HostReconnectMessage
 	| PlayerReconnectMessage
-	| StartGameMessage;
+	| StartGameMessage
+	| PrivateStateMessage;
