@@ -200,7 +200,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] selectForRound respects usedIds exclusion.
     - [ ] Unit tests pass.
 
-- [ ] 14. Add server-side script sandbox in PartyRoomDO
+- [x] 14. Add server-side script sandbox in PartyRoomDO
   - **What to do**:
     - Import `UnsafeScriptSandbox` (or equivalent V8-compatible sandbox) into API package.
     - In `PartyRoomDO`, when a game starts:
@@ -221,7 +221,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] Script errors are caught and reported without crashing the DO.
     - [ ] Tests cover: basic script execution, module require, error handling.
 
-- [ ] 15. Migrate quiplash to R2 GameDefinition + server script
+- [x] 15. Migrate quiplash to R2 GameDefinition + server script
   - **What to do**:
     - Create `r2/games/quiplash/definition.json` with `party` config and `modules.server`.
     - Port `api/src/party/templates/quiplash.ts` logic to JS script using `slopcade/party` and `slopcade/content`.
@@ -236,7 +236,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] Scoring logic produces identical results to the original template.
     - [ ] Game uses `slopcade/party` module for scoreboard/matchups.
 
-- [ ] 16. Migrate crowd-comedy to R2 GameDefinition + server script
+- [x] 16. Migrate crowd-comedy to R2 GameDefinition + server script
   - **What to do**:
     - Same pattern as quiplash migration.
     - Create `r2/games/crowd-comedy/definition.json`.
@@ -247,6 +247,41 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] Crowd Comedy runs through all phases with correct scoring.
     - [ ] Uses `slopcade/party` and `slopcade/content` modules.
     - [ ] Pattern validates — two games successfully migrated proves the architecture.
+
+### Active (Wave C - Cleanup & Documentation)
+
+- [x] 17. Clean up PartyRoomDO legacy tech debt
+  - **What to do**:
+    - Remove `TEMPLATE_REGISTRY` import and all template runner logic from PartyRoomDO.
+    - Remove `templateRunner` field, `setTemplateRunner()` method, and `template` init path.
+    - Remove `currentRound`/`maxRounds` from core DO state (move to sharedData in scripts).
+    - Remove `DEFAULT_ANSWER_TIMEOUT`/`DEFAULT_VOTE_TIMEOUT` constants (scripts control their own timeouts).
+    - Update `registry.ts` to ONLY use ServerScriptRunner-based entries (all games load from definitions).
+    - Ensure crowd-comedy and question-answer also have R2 definitions (or are wired through ServerScriptRunner).
+    - Delete `PartyTemplateRunner` type export.
+  - **References**:
+    - `api/src/party/PartyRoomDO.ts` (lines: 21, 29-30, 52, 60-61, 63, 98-100, 122, 142-144, 627-629, 703-704, 747-748, 762-763)
+    - `api/src/party/templates/registry.ts`
+  - **Acceptance criteria**:
+    - [ ] No references to `TEMPLATE_REGISTRY` or `templateRunner` remain in PartyRoomDO.
+    - [ ] `currentRound`/`maxRounds` not in core DO state.
+    - [ ] All games in registry use ServerScriptRunner path.
+    - [ ] Existing tests still pass.
+
+- [ ] 18. Write summary document and test plan
+  - **What to do**:
+    - Create `.sisyphus/plans/party-platform-summary.md` with:
+      - High-level overview of what was built
+      - Architecture diagram (text-based)
+      - Module inventory with descriptions
+      - Test coverage analysis (what's tested, what's not)
+      - Integration test recommendations
+      - Manual QA checklist
+      - Next steps and recommendations
+  - **Acceptance criteria**:
+    - [ ] Document covers all modules built in this plan.
+    - [ ] Test plan distinguishes unit/integration/manual testing.
+    - [ ] Next steps section includes Phase 3-4 priorities.
 
 ### Deferred (removed from this plan)
 
