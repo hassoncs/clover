@@ -469,7 +469,7 @@ function buildGameDefinition(
 	} | null,
 ): GameDefinition {
 	const metadata: GameMetadata = {
-		id: (manifest?.name as string) || "unnamed-game",
+		id: (manifest?.id as string) || (manifest?.name as string) || "unnamed-game",
 		title:
 			(manifest?.title as string) ||
 			(manifest?.name as string) ||

@@ -1,10 +1,6 @@
 import type { ResourceGraph, ResourceNode } from "./resources";
 import { buildResourceGraph } from "./resources";
 import { getShaderGlsl } from "./shaderLibrary";
-import {
-	needsScreenTextureRewrite,
-	rewriteScreenShaderForSubViewport,
-} from "./shaderRewrite";
 import type {
 	CompiledPass,
 	CompiledPlan,
@@ -209,15 +205,12 @@ function toResourceRef(node: ResourceNode): ResourceRef {
 // Shader source resolution — builtin effectType → inline GLSL
 // ---------------------------------------------------------------------------
 
-function resolveShaderSource(node: EffectNode, scope: string): ShaderSource {
+function resolveShaderSource(node: EffectNode): ShaderSource {
 	const customGlsl =
 		typeof node.params.shaderSource === "string"
 			? node.params.shaderSource
 			: null;
-	let glsl = customGlsl || getShaderGlsl(node.type) || "";
-	if (scope === "screen" && needsScreenTextureRewrite(glsl)) {
-		glsl = rewriteScreenShaderForSubViewport(glsl);
-	}
+	const glsl = customGlsl || getShaderGlsl(node.type) || "";
 	return { glsl };
 }
 
@@ -252,7 +245,7 @@ function buildCompiledPass(
 	requires.sort((a, b) => a.id.localeCompare(b.id));
 	provides.sort((a, b) => a.id.localeCompare(b.id));
 
-	const shaderSource: ShaderSource = resolveShaderSource(node, scope);
+	const shaderSource: ShaderSource = resolveShaderSource(node);
 
 	const { shaderSource: _stripShaderSource, ...runtimeParams } = node.params;
 

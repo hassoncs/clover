@@ -37,21 +37,6 @@ function compilePlans(
 	return compiled;
 }
 
-function selectPrimaryPlan(
-	plans: Record<string, CompiledPlan> | undefined,
-): CompiledPlan | null {
-	if (!plans) {
-		return null;
-	}
-
-	const keys = Object.keys(plans).sort((a, b) => a.localeCompare(b));
-	if (keys.length === 0) {
-		return null;
-	}
-
-	return plans[keys[0]] ?? null;
-}
-
 function extractStructureSignature(plan: CompiledPlan): unknown {
 	const planWithOptionalTopology = plan as CompiledPlan & {
 		topologyHash?: string;
@@ -124,20 +109,18 @@ export const effectsHandler: TagHotReloadHandler<EffectsPayload> = {
 			return;
 		}
 
-		const oldPlan = selectPrimaryPlan(oldCompiledPlans);
-		const newPlan = selectPrimaryPlan(newCompiledPlans);
-		const structuralChanged = hasStructuralPlanChange(oldPlan, newPlan);
-
-		if (structuralChanged && newPlan) {
-			try {
-				await context.bridge.applyGraph(newPlan);
-			} catch (error) {
-				console.error(
-					"[effects-handler] Failed to apply compiled graph",
-					error,
-				);
+		for (const [graphId, newPlan] of Object.entries(newCompiledPlans)) {
+			const oldPlan = oldCompiledPlans[graphId] ?? null;
+			if (hasStructuralPlanChange(oldPlan, newPlan)) {
+				try {
+					await context.bridge.applyGraph(newPlan);
+				} catch (error) {
+					console.error(
+						`[effects-handler] Failed to apply graph '${graphId}'`,
+						error,
+					);
+				}
 			}
-			return;
 		}
 
 		const changedShaders = getChangedShaders(
@@ -157,17 +140,15 @@ export const effectsHandler: TagHotReloadHandler<EffectsPayload> = {
 			return;
 		}
 
-		const nextPlan = selectPrimaryPlan(compiledPlans);
-		if (nextPlan) {
+		const plans = Object.values(compiledPlans);
+		for (const plan of plans) {
 			try {
-				await context.bridge.applyGraph(nextPlan);
-				return;
+				await context.bridge.applyGraph(plan);
 			} catch (error) {
 				console.error(
 					"[effects-handler] Failed to apply compiled graph during full reload",
 					error,
 				);
-				return;
 			}
 		}
 

@@ -1,0 +1,15 @@
+{
+	"name": "e7b8c4d2-9f3a-4e61-8c2d-1a5b6e7f8c90",
+	"version": "1.0.0",
+	"title": "Kishimisu Swirl",
+	"description": "A mesmerizing fractal swirl shader by Kishimisu — a classic GLSL tutorial example",
+	"instructions": "Watch the hypnotic fractal patterns evolve.",
+	"world": {
+		"gravity": { "x": 0, "y": 0 },
+		"pixelsPerMeter": 50,
+		"bounds": { "width": 12, "height": 16 }
+	},
+	"background": { "type": "static", "color": "#000000" },
+	"camera": { "type": "fixed", "zoom": 1 },
+	"slug": "kishimisuSwirl"
+}

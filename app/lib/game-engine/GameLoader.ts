@@ -195,8 +195,14 @@ export class GameLoader {
 	applyEffects(definition: GameDefinition): void {
 		if (!this.bridge || !definition.effects) return;
 
-		if (definition.effects.graph) {
-			const graph = definition.effects.graph as EffectGraphSpec;
+		const graphs: EffectGraphSpec[] = [];
+		if (definition.effects.graphs) {
+			graphs.push(...(definition.effects.graphs as EffectGraphSpec[]));
+		} else if (definition.effects.graph) {
+			graphs.push(definition.effects.graph as EffectGraphSpec);
+		}
+
+		for (const graph of graphs) {
 			const result = compileGraph(graph);
 			if (result.success && result.plan) {
 				this.bridge.applyGraph(result.plan).catch((error) => {
@@ -213,6 +219,16 @@ export class GameLoader {
 		if (definition.effects.shaders) {
 			for (const [id, entry] of Object.entries(definition.effects.shaders)) {
 				this.bridge.hotSwapShader(id, entry.glsl);
+			}
+		}
+
+		if (definition.effects.entityEffects) {
+			for (const effect of definition.effects.entityEffects) {
+				this.bridge.applySpriteEffect(
+					effect.entityId,
+					effect.glsl,
+					effect.params,
+				);
 			}
 		}
 	}

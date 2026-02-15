@@ -208,18 +208,25 @@ async function syncLocalR2(): Promise<void> {
 
 function seedLocalD1(games: EmbeddedGameEntry[]): void {
 	const now = Date.now();
+	const d1StateDir = join(
+		API_ROOT,
+		".wrangler",
+		"state",
+		"v3",
+		"d1",
+		"miniflare-D1DatabaseObject",
+	);
+
+	// Reset D1 entirely (wrangler doesn't respect PRAGMA foreign_keys in file execution)
+	// This is safe because embedded games are the source of truth
+	if (existsSync(d1StateDir)) {
+		rmSync(d1StateDir, { recursive: true });
+	}
+
+	// Re-create schema (includes system user: 00000000-0000-0000-0000-000000000001)
+	wrangler(`d1 execute slopcade-db --local --file=schema.sql`);
+
 	const statements: string[] = [];
-
-	statements.push(
-		`INSERT OR IGNORE INTO users (id, email, display_name, created_at, updated_at) ` +
-			`VALUES ('${SYSTEM_USER_ID}', 'system@slopcade.local', 'System', ${now}, ${now});`,
-	);
-
-	statements.push(
-		`PRAGMA foreign_keys = OFF;`,
-		`DELETE FROM games WHERE user_id = '${SYSTEM_USER_ID}';`,
-		`PRAGMA foreign_keys = ON;`,
-	);
 
 	for (const game of games) {
 		const metadataPath = join(R2_GAMES_DIR, game.gameId, "metadata.json");
@@ -228,7 +235,7 @@ function seedLocalD1(games: EmbeddedGameEntry[]): void {
 		const description = escapeSql(metadata.description ?? "");
 
 		statements.push(
-			`INSERT OR REPLACE INTO games (` +
+			`INSERT INTO games (` +
 				`id, user_id, title, description, r2_prefix, ` +
 				`is_public, play_count, created_at, updated_at, base_game_id, ` +
 				`validation_valid` +
@@ -240,8 +247,6 @@ function seedLocalD1(games: EmbeddedGameEntry[]): void {
 				`);`,
 		);
 	}
-
-	wrangler(`d1 execute slopcade-db --local --file=schema.sql`);
 
 	const tmpFile = join(API_ROOT, ".seed-local.sql");
 	writeFileSync(tmpFile, statements.join("\n"));

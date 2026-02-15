@@ -20,7 +20,7 @@ var _stroke_overlay_tex: ImageTexture = null
 var _stroke_overlay_dirty: bool = false
 var _screen_overlay_layer: CanvasLayer = null
 var _screen_overlay_rect: TextureRect = null
-var _current_scope: String = ""
+var _current_scope: String = "" # vestigial — scope is implicit per executor
 var _game_capture_viewport = null
 var _game_capture_container = null
 
@@ -134,7 +134,15 @@ func _register_query_handlers() -> void:
 		return {"success": false, "error": "Missing plan argument"}
 	)
 
-	qs.register_handler("effects.clearGraph", func(_args):
+	qs.register_handler("effects.clearGraph", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			var scope = str(args[0].get("scope", ""))
+			if scope == "screen":
+				clear_screen_plan()
+				return {"success": true}
+			elif scope == "entity":
+				clear_entity_plan()
+				return {"success": true}
 		clear_plan()
 		return {"success": true}
 	)
@@ -369,14 +377,75 @@ func _set_last_result(result: Dictionary) -> void:
 # PUBLIC API - SPRITE EFFECTS
 # ============================================================
 
+var _entity_effects: Dictionary = {} # entity_id -> { "material": ShaderMaterial, "canvas_item": CanvasItem }
+
 func apply_sprite_effect(entity_id: String, effect_name: String, params = {}) -> void:
-	push_warning("[GameBridgeEffects] apply_sprite_effect not implemented in v2 - use graph_executor.apply_plan() instead")
+	var canvas_item: CanvasItem = _get_entity_sprite(entity_id)
+	if canvas_item == null:
+		push_warning("[GameBridgeEffects] No canvas item found for entity '%s'" % entity_id)
+		return
+
+	var glsl: String = ""
+
+	# Check if effect_name is raw GLSL (starts with "shader_type")
+	if effect_name.begins_with("shader_type"):
+		glsl = effect_name
+	else:
+		glsl = _shader_warmer_lookup(effect_name)
+
+	if glsl == "":
+		push_warning("[GameBridgeEffects] Unknown sprite effect: '%s'" % effect_name)
+		return
+
+	var shader := Shader.new()
+	shader.code = glsl
+
+	var material := ShaderMaterial.new()
+	material.shader = shader
+
+	if params is Dictionary:
+		for key in params.keys():
+			material.set_shader_parameter(str(key), _convert_effect_param(params[key]))
+
+	canvas_item.material = material
+	_entity_effects[entity_id] = { "material": material, "canvas_item": canvas_item }
 
 func update_sprite_effect_param(entity_id: String, param_name: String, value) -> void:
-	push_warning("[GameBridgeEffects] update_sprite_effect_param not implemented in v2 - use graph_executor.update_params() instead")
+	if not _entity_effects.has(entity_id):
+		return
+	var entry: Dictionary = _entity_effects[entity_id]
+	var material: ShaderMaterial = entry.get("material")
+	if material != null:
+		material.set_shader_parameter(param_name, _convert_effect_param(value))
 
 func clear_sprite_effect(entity_id: String) -> void:
-	push_warning("[GameBridgeEffects] clear_sprite_effect not implemented in v2 - use graph_executor.clear_plan() instead")
+	if not _entity_effects.has(entity_id):
+		return
+	var entry: Dictionary = _entity_effects[entity_id]
+	var canvas_item: CanvasItem = entry.get("canvas_item")
+	if canvas_item != null and is_instance_valid(canvas_item):
+		canvas_item.material = null
+	_entity_effects.erase(entity_id)
+
+func _convert_effect_param(value):
+	if value is Array:
+		match value.size():
+			2: return Vector2(float(value[0]), float(value[1]))
+			3: return Vector3(float(value[0]), float(value[1]), float(value[2]))
+			4: return Color(float(value[0]), float(value[1]), float(value[2]), float(value[3]))
+	if value is int or value is float:
+		return float(value)
+	return value
+
+func _shader_warmer_lookup(effect_name: String) -> String:
+	# Shader library lives on the TS side. For direct bridge calls,
+	# TS resolves name → GLSL and sends via apply_sprite_effect.
+	# This lookup is a fallback for any Godot-side shader cache.
+	if graph_executor != null and graph_executor._shader_warmer != null:
+		var shader: Shader = graph_executor._shader_warmer.get_builtin_shader(effect_name)
+		if shader != null:
+			return shader.code
+	return ""
 
 # ============================================================
 # PUBLIC API - POST-PROCESSING
@@ -423,20 +492,43 @@ func flash_screen(r: float = 1.0, g: float = 1.0, b: float = 1.0, a: float = 1.0
 # PUBLIC API - DYNAMIC SHADERS
 # ============================================================
 
+var _dynamic_shaders: Dictionary = {} # shader_id -> Shader
+
 func create_dynamic_shader(shader_id: String, shader_code: String) -> Dictionary:
-	push_warning("[GameBridgeEffects] create_dynamic_shader not implemented in v2 - use graph_executor with custom shader source instead")
-	return {"success": false, "error": "Not implemented in v2"}
+	var code := shader_code
+	if not code.contains("shader_type"):
+		code = "shader_type canvas_item;\n" + code
+
+	var shader := Shader.new()
+	shader.code = code
+	_dynamic_shaders[shader_id] = shader
+	return {"success": true}
 
 func apply_dynamic_shader_to_entity(entity_id: String, shader_id: String, params = {}) -> void:
-	push_warning("[GameBridgeEffects] apply_dynamic_shader_to_entity not implemented in v2 - use graph_executor.apply_plan() with custom shader instead")
+	if not _dynamic_shaders.has(shader_id):
+		push_warning("[GameBridgeEffects] Unknown dynamic shader: '%s'" % shader_id)
+		return
+
+	var canvas_item: CanvasItem = _get_entity_sprite(entity_id)
+	if canvas_item == null:
+		push_warning("[GameBridgeEffects] No canvas item found for entity '%s'" % entity_id)
+		return
+
+	var shader: Shader = _dynamic_shaders[shader_id]
+	var material := ShaderMaterial.new()
+	material.shader = shader
+
+	if params is Dictionary:
+		for key in params.keys():
+			material.set_shader_parameter(str(key), _convert_effect_param(params[key]))
+
+	canvas_item.material = material
+	_entity_effects[entity_id] = { "material": material, "canvas_item": canvas_item }
 
 func apply_dynamic_post_shader(shader_code: String, params = {}) -> void:
 	push_warning("[GameBridgeEffects] apply_dynamic_post_shader not implemented in v2 - use graph_executor.apply_plan() with custom shader instead")
 
 func apply_plan(plan_json) -> Dictionary:
-	if graph_executor == null:
-		return {"success": false, "error": "GraphExecutor not initialized"}
-
 	var plan_dict: Dictionary = {}
 	if plan_json is Dictionary:
 		plan_dict = plan_json
@@ -452,16 +544,10 @@ func apply_plan(plan_json) -> Dictionary:
 	var scope: String = str(plan_dict.get("scope", ""))
 
 	if scope == "screen":
-		_setup_game_capture_viewport()
-		if _game_capture_viewport != null:
-			_screen_executor.set_source_viewport(_game_capture_viewport)
-		var result = _screen_executor.apply_plan(plan_dict)
-		if bool(result.get("success", false)):
-			_create_screen_overlay()
-			_screen_executor.start()
-		return result
+		return _apply_simple_screen_effect(plan_dict)
 
-	_current_scope = "entity"
+	if graph_executor == null:
+		return {"success": false, "error": "GraphExecutor not initialized"}
 
 	var entity_tex: Texture2D = _find_entity_texture()
 	if entity_tex != null:
@@ -474,6 +560,55 @@ func apply_plan(plan_json) -> Dictionary:
 		_init_stroke_overlay()
 
 	return result
+
+func _apply_simple_screen_effect(plan_dict: Dictionary) -> Dictionary:
+	_destroy_screen_overlay()
+
+	var passes: Array = plan_dict.get("passes", [])
+	if passes.size() == 0:
+		return {"success": false, "error": "No passes in plan"}
+
+	var pass_data: Dictionary = passes[0]
+
+	var shader_source = pass_data.get("shaderSource", {})
+	if not (shader_source is Dictionary):
+		return {"success": false, "error": "Missing shaderSource"}
+
+	var glsl: String = str(shader_source.get("glsl", ""))
+	if glsl == "":
+		return {"success": false, "error": "Empty GLSL"}
+
+	if not glsl.contains("shader_type"):
+		glsl = "shader_type canvas_item;\n" + glsl
+
+	var shader := Shader.new()
+	shader.code = glsl
+
+	var material := ShaderMaterial.new()
+	material.shader = shader
+
+	var params = pass_data.get("params", {})
+	if params is Dictionary:
+		for key in params.keys():
+			var key_str := str(key)
+			if key_str == "inputBindings" or key_str == "shaderSource":
+				continue
+			material.set_shader_parameter(key_str, params[key])
+
+	_screen_overlay_layer = CanvasLayer.new()
+	_screen_overlay_layer.name = "ScreenEffectsOverlay"
+	_screen_overlay_layer.layer = 100
+	add_child(_screen_overlay_layer)
+
+	var rect := ColorRect.new()
+	rect.name = "ScreenEffectsColorRect"
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.material = material
+	_screen_overlay_layer.add_child(rect)
+
+	_current_scope = "screen"
+	return {"success": true}
 
 func _setup_game_capture_viewport() -> void:
 	if _game_capture_viewport != null:
@@ -628,8 +763,11 @@ func _init_stroke_overlay() -> void:
 	_stroke_overlay_dirty = false
 
 func clear_plan() -> void:
+	clear_entity_plan()
+	clear_screen_plan()
+
+func clear_entity_plan() -> void:
 	_restore_entity_display()
-	_current_scope = ""
 	if graph_executor:
 		graph_executor.clear()
 

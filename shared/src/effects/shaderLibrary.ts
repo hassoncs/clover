@@ -1,4 +1,4 @@
-import type { EffectType } from './types';
+import type { EffectType } from "./types";
 
 // ---------------------------------------------------------------------------
 // Shader Library — Inline GLSL transcribed from godot_project/shaders/
@@ -10,12 +10,11 @@ import type { EffectType } from './types';
 // ---------------------------------------------------------------------------
 
 export const SHADER_LIBRARY: Record<string, string> = {
+	// =========================================================================
+	// SPRITE SHADERS (godot_project/shaders/sprite/)
+	// =========================================================================
 
-  // =========================================================================
-  // SPRITE SHADERS (godot_project/shaders/sprite/)
-  // =========================================================================
-
-  silhouette: `shader_type canvas_item;
+	silhouette: `shader_type canvas_item;
 
 uniform vec4 silhouette_color : source_color = vec4(0.0, 0.0, 0.0, 0.5);
 uniform float alpha_threshold : hint_range(0.0, 1.0) = 0.1;
@@ -30,7 +29,7 @@ void fragment() {
 \t}
 }`,
 
-  tint: `shader_type canvas_item;
+	tint: `shader_type canvas_item;
 
 uniform vec4 tint_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float tint_amount : hint_range(0.0, 1.0) = 0.5;
@@ -64,7 +63,7 @@ void fragment() {
 \tCOLOR = vec4(mix(tex.rgb, result, tint_amount), tex.a * tint_color.a);
 }`,
 
-  waveDistortion: `shader_type canvas_item;
+	waveDistortion: `shader_type canvas_item;
 
 uniform float amplitude_x : hint_range(0.0, 0.2) = 0.02;
 uniform float amplitude_y : hint_range(0.0, 0.2) = 0.02;
@@ -85,7 +84,7 @@ void fragment() {
 \tCOLOR = texture(TEXTURE, uv);
 }`,
 
-  rimLight: `shader_type canvas_item;
+	rimLight: `shader_type canvas_item;
 
 uniform vec4 rim_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float rim_width : hint_range(0.0, 20.0) = 3.0;
@@ -138,7 +137,7 @@ void fragment() {
 \t}
 }`,
 
-  rainbow: `shader_type canvas_item;
+	rainbow: `shader_type canvas_item;
 
 uniform float speed : hint_range(0.0, 5.0) = 1.0;
 uniform float saturation_boost : hint_range(0.0, 1.0) = 0.5;
@@ -176,7 +175,7 @@ void fragment() {
 \tCOLOR = vec4(hsv_to_rgb(hsv), tex.a);
 }`,
 
-  pixelate: `shader_type canvas_item;
+	pixelate: `shader_type canvas_item;
 
 uniform float pixel_size : hint_range(2.0, 64.0) = 8.0;
 
@@ -187,7 +186,7 @@ void fragment() {
 \tCOLOR = texture(TEXTURE, pixel_uv);
 }`,
 
-  posterize: `shader_type canvas_item;
+	posterize: `shader_type canvas_item;
 
 uniform float color_levels : hint_range(2.0, 32.0) = 4.0;
 
@@ -197,7 +196,7 @@ void fragment() {
 \tCOLOR = vec4(color, tex.a);
 }`,
 
-  outline: `shader_type canvas_item;
+	outline: `shader_type canvas_item;
 
 uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 0.0, 1.0);
 uniform float outline_width : hint_range(0.0, 10.0) = 2.0;
@@ -233,7 +232,7 @@ void fragment() {
 \tCOLOR = final_color;
 }`,
 
-  innerGlow: `shader_type canvas_item;
+	innerGlow: `shader_type canvas_item;
 
 uniform vec4 glow_color : source_color = vec4(1.0, 0.5, 0.0, 1.0);
 uniform float glow_width : hint_range(0.0, 20.0) = 5.0;
@@ -244,43 +243,43 @@ uniform bool additive = true;
 void fragment() {
 \tvec4 tex = texture(TEXTURE, UV);
 \t
+\t// WebGL doesn't support early return in fragment(), use if-else instead
 \tif (tex.a < 0.1) {
 \t\tCOLOR = tex;
-\t\treturn;
-\t}
-\t
-\t// Find distance to edge by sampling outward
-\tfloat min_dist = glow_width;
-\t
-\tfor (float angle = 0.0; angle < 6.28318; angle += 0.5) {
-\t\tvec2 dir = vec2(cos(angle), sin(angle));
+\t} else {
+\t\t// Find distance to edge by sampling outward
+\t\tfloat min_dist = glow_width;
 \t\t
-\t\tfor (float dist = 1.0; dist <= glow_width; dist += 1.0) {
-\t\t\tvec2 sample_uv = UV + dir * dist * TEXTURE_PIXEL_SIZE;
-\t\t\tfloat sample_alpha = texture(TEXTURE, sample_uv).a;
+\t\tfor (float angle = 0.0; angle < 6.28318; angle += 0.5) {
+\t\t\tvec2 dir = vec2(cos(angle), sin(angle));
 \t\t\t
-\t\t\tif (sample_alpha < 0.1) {
-\t\t\t\tmin_dist = min(min_dist, dist);
-\t\t\t\tbreak;
+\t\t\tfor (float dist = 1.0; dist <= glow_width; dist += 1.0) {
+\t\t\t\tvec2 sample_uv = UV + dir * dist * TEXTURE_PIXEL_SIZE;
+\t\t\t\tfloat sample_alpha = texture(TEXTURE, sample_uv).a;
+\t\t\t\t
+\t\t\t\tif (sample_alpha < 0.1) {
+\t\t\t\t\tmin_dist = min(min_dist, dist);
+\t\t\t\t\tbreak;
+\t\t\t\t}
 \t\t\t}
 \t\t}
+\t\t
+\t\t// Calculate glow based on distance to edge
+\t\tfloat glow = 1.0 - (min_dist / glow_width);
+\t\tglow = pow(glow, glow_falloff) * glow_intensity;
+\t\t
+\t\tvec3 result;
+\t\tif (additive) {
+\t\t\tresult = tex.rgb + glow_color.rgb * glow;
+\t\t} else {
+\t\t\tresult = mix(tex.rgb, glow_color.rgb, glow);
+\t\t}
+\t\t
+\t\tCOLOR = vec4(result, tex.a);
 \t}
-\t
-\t// Calculate glow based on distance to edge
-\tfloat glow = 1.0 - (min_dist / glow_width);
-\tglow = pow(glow, glow_falloff) * glow_intensity;
-\t
-\tvec3 result;
-\tif (additive) {
-\t\tresult = tex.rgb + glow_color.rgb * glow;
-\t} else {
-\t\tresult = mix(tex.rgb, glow_color.rgb, glow);
-\t}
-\t
-\tCOLOR = vec4(result, tex.a);
 }`,
 
-  holographic: `shader_type canvas_item;
+	holographic: `shader_type canvas_item;
 
 uniform float speed : hint_range(0.0, 5.0) = 1.0;
 uniform float scan_line_count : hint_range(10.0, 200.0) = 50.0;
@@ -335,7 +334,7 @@ void fragment() {
 \tCOLOR = vec4(color, final_alpha * hologram_tint.a);
 }`,
 
-  glow: `shader_type canvas_item;
+	glow: `shader_type canvas_item;
 
 uniform vec4 glow_color : source_color = vec4(1.0, 0.8, 0.2, 1.0);
 uniform float glow_intensity : hint_range(0.0, 5.0) = 1.5;
@@ -380,7 +379,7 @@ void fragment() {
 \tCOLOR = vec4(final_rgb, sprite_color.a);
 }`,
 
-  dropShadow: `shader_type canvas_item;
+	dropShadow: `shader_type canvas_item;
 
 uniform vec4 shadow_color : source_color = vec4(0.0, 0.0, 0.0, 0.5);
 uniform vec2 shadow_offset = vec2(4.0, 4.0);
@@ -422,7 +421,7 @@ void fragment() {
 \t}
 }`,
 
-  flash: `shader_type canvas_item;
+	flash: `shader_type canvas_item;
 
 uniform vec4 flash_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float flash_amount : hint_range(0.0, 1.0) = 0.5;
@@ -433,7 +432,7 @@ void fragment() {
 \tCOLOR = vec4(result, tex_color.a);
 }`,
 
-  dissolve: `shader_type canvas_item;
+	dissolve: `shader_type canvas_item;
 
 uniform float dissolve_amount : hint_range(0.0, 1.0) = 0.0;
 uniform float edge_width : hint_range(0.0, 0.3) = 0.1;
@@ -487,7 +486,7 @@ void fragment() {
 \t}
 }`,
 
-  colorMatrix: `shader_type canvas_item;
+	colorMatrix: `shader_type canvas_item;
 
 // Color matrix: each row transforms one output channel
 // [r_to_r, g_to_r, b_to_r, offset_r]
@@ -566,11 +565,11 @@ void fragment() {
 \tCOLOR = vec4(clamp(result, 0.0, 1.0), tex.a);
 }`,
 
-  // =========================================================================
-  // POST-PROCESS SHADERS (godot_project/shaders/post_process/)
-  // =========================================================================
+	// =========================================================================
+	// POST-PROCESS SHADERS (godot_project/shaders/post_process/)
+	// =========================================================================
 
-  underwater: `shader_type canvas_item;
+	underwater: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_repeat_linear;
 uniform float intensity : hint_range(0.0, 1.0) = 0.5;
@@ -603,7 +602,7 @@ void fragment() {
     COLOR = vec4(tinted + vec3(caustics), color.a);
 }`,
 
-  vignette: `shader_type canvas_item;
+	vignette: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -633,7 +632,7 @@ void fragment() {
 \tCOLOR = vec4(result, 1.0);
 }`,
 
-  thermalVision: `shader_type canvas_item;
+	thermalVision: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform float intensity : hint_range(0.0, 1.0) = 1.0;
@@ -668,7 +667,7 @@ void fragment() {
     COLOR = vec4(mix(color.rgb, thermal, intensity), color.a);
 }`,
 
-  speedLines: `shader_type canvas_item;
+	speedLines: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform float intensity : hint_range(0.0, 1.0) = 0.5;
@@ -706,7 +705,7 @@ void fragment() {
     COLOR = vec4(color.rgb + vec3(effect), color.a);
 }`,
 
-  shockwave: `shader_type canvas_item;
+	shockwave: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -758,7 +757,7 @@ void fragment() {
 \tCOLOR = texture(SCREEN_TEXTURE, uv);
 }`,
 
-  shimmer: `shader_type canvas_item;
+	shimmer: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -789,7 +788,7 @@ void fragment() {
 \tCOLOR = texture(SCREEN_TEXTURE, uv);
 }`,
 
-  ripple: `shader_type canvas_item;
+	ripple: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 // This texture should be provided by the game engine (Splat Map)
@@ -836,7 +835,7 @@ void fragment() {
     COLOR = texture(SCREEN_TEXTURE, uv);
 }`,
 
-  scanlines: `shader_type canvas_item;
+	scanlines: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -883,7 +882,7 @@ void fragment() {
 \tCOLOR = vec4(result, 1.0);
 }`,
 
-  oldFilm: `shader_type canvas_item;
+	oldFilm: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -929,7 +928,7 @@ void fragment() {
     COLOR = color;
 }`,
 
-  pixelateScreen: `shader_type canvas_item;
+	pixelateScreen: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_nearest;
 
@@ -976,7 +975,7 @@ void fragment() {
 \tCOLOR = vec4(color, 1.0);
 }`,
 
-  motionBlur: `shader_type canvas_item;
+	motionBlur: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1012,7 +1011,7 @@ void fragment() {
 \tCOLOR = color / total_weight;
 }`,
 
-  nightVision: `shader_type canvas_item;
+	nightVision: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform float intensity : hint_range(0.0, 1.0) = 0.5;
@@ -1056,7 +1055,7 @@ void fragment() {
     COLOR = vec4(mix(color.rgb, vision_color, intensity), color.a);
 }`,
 
-  fogOfWar: `shader_type canvas_item;
+	fogOfWar: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 // Mask: R = Explored (Permanent), G = Visible (Current)
@@ -1097,7 +1096,7 @@ void fragment() {
     COLOR = vec4(result, color.a);
 }`,
 
-  crt: `shader_type canvas_item;
+	crt: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1168,7 +1167,7 @@ void fragment() {
 \tCOLOR = vec4(clamp(color, 0.0, 1.0), 1.0);
 }`,
 
-  halftone: `shader_type canvas_item;
+	halftone: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1231,7 +1230,7 @@ void fragment() {
     COLOR = vec4(mix(tex_color.rgb, result, intensity), tex_color.a);
 }`,
 
-  glitch: `shader_type canvas_item;
+	glitch: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1297,7 +1296,7 @@ void fragment() {
 \tCOLOR = vec4(color, 1.0);
 }`,
 
-  chromaticAberration: `shader_type canvas_item;
+	chromaticAberration: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1327,7 +1326,7 @@ void fragment() {
 \tCOLOR = vec4(r, g, b, 1.0);
 }`,
 
-  colorGrading: `shader_type canvas_item;
+	colorGrading: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1429,7 +1428,7 @@ void fragment() {
 \tCOLOR = vec4(clamp(color, 0.0, 1.0), 1.0);
 }`,
 
-  blur: `shader_type canvas_item;
+	blur: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
@@ -1475,7 +1474,7 @@ void fragment() {
 \tCOLOR = color / total_weight;
 }`,
 
-  bloom: `shader_type canvas_item;
+	bloom: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform float threshold : hint_range(0.0, 1.0) = 0.8;
@@ -1514,7 +1513,7 @@ void fragment() {
     COLOR = vec4(color.rgb + bloom * intensity, color.a);
 }`,
 
-  ascii: `shader_type canvas_item;
+	ascii: `shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_nearest;
 uniform float pixel_size : hint_range(4.0, 32.0) = 8.0;
@@ -1587,11 +1586,11 @@ void fragment() {
     COLOR = vec4(out_color, 1.0);
 }`,
 
-  // =========================================================================
-  // GRID SHADER (godot_project/shaders/grid.gdshader)
-  // =========================================================================
+	// =========================================================================
+	// GRID SHADER (godot_project/shaders/grid.gdshader)
+	// =========================================================================
 
-  grid: `shader_type spatial;
+	grid: `shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_opaque, cull_disabled;
 
 varying vec3 world_pos;
@@ -1647,7 +1646,6 @@ void fragment() {
 \tALBEDO = final_color;
 \tALPHA = final_alpha * alpha * color.a;
 }`,
-
 };
 
 // ---------------------------------------------------------------------------
@@ -1655,17 +1653,17 @@ void fragment() {
 // ---------------------------------------------------------------------------
 
 export function getShaderGlsl(effectType: string): string | null {
-  return SHADER_LIBRARY[effectType] ?? null;
+	return SHADER_LIBRARY[effectType] ?? null;
 }
 
 export function getShaderGlslStrict(effectType: EffectType): string {
-  const glsl = SHADER_LIBRARY[effectType];
-  if (!glsl) {
-    throw new Error(`Unknown effect type in shader library: ${effectType}`);
-  }
-  return glsl;
+	const glsl = SHADER_LIBRARY[effectType];
+	if (!glsl) {
+		throw new Error(`Unknown effect type in shader library: ${effectType}`);
+	}
+	return glsl;
 }
 
 export function getAvailableShaderKeys(): string[] {
-  return Object.keys(SHADER_LIBRARY);
+	return Object.keys(SHADER_LIBRARY);
 }

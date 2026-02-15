@@ -8,9 +8,15 @@
     "slug": "shaderFullscreen"
   },
   "world": {
-    "gravity": { "x": 0, "y": 0 },
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
     "pixelsPerMeter": 50,
-    "bounds": { "width": 12, "height": 16 }
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
   },
   "prefabs": {},
   "entities": [],

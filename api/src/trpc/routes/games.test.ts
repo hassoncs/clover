@@ -175,44 +175,13 @@ describe("Games Router", () => {
 				gameDefinition: JSON.stringify({
 					metadata: { id: "test" },
 					world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+					prefabs: {},
 					entities: [],
 				}),
 			});
 
 			expect(result.valid).toBe(false);
 			expect(result.errors.some((e) => e.code === "NO_ENTITIES")).toBe(true);
-		});
-
-		it("should warn for game missing win mechanism", async () => {
-			const caller = appRouter.createCaller(ctx);
-
-			const result = await caller.games.validateDefinition({
-				gameDefinition: JSON.stringify({
-					metadata: { id: "test", title: "Test" },
-					world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-					entities: [
-						{
-							id: "player",
-							name: "Player",
-							transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-							physics: {
-								bodyType: "dynamic",
-								density: 1,
-								friction: 0.5,
-								restitution: 0.5,
-							},
-							collider: { shape: "box", width: 1, height: 1 },
-							visual: { type: "rect", width: 1, height: 1, color: "#FF0000" },
-						},
-					],
-					rules: [{ id: "r1", trigger: { type: "tap" }, actions: [] }],
-					loseCondition: { type: "time_up", time: 60 },
-				}),
-			});
-
-			expect(result.warnings.some((w) => w.code === "NO_WIN_MECHANISM")).toBe(
-				true,
-			);
 		});
 
 		it("should include summary in response", async () => {

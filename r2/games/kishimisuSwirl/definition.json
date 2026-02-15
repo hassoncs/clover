@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "id": "e7b8c4d2-9f3a-4e61-8c2d-1a5b6e7f8c90",
+    "title": "Kishimisu Swirl",
+    "description": "A mesmerizing fractal swirl shader by Kishimisu — a classic GLSL tutorial example",
+    "version": "1.0.0",
+    "instructions": "Watch the hypnotic fractal patterns evolve.",
+    "slug": "kishimisuSwirl"
+  },
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "prefabs": {},
+  "entities": [],
+  "effects": {
+    "graph": {
+      "id": "kishimisu-swirl",
+      "version": "1.0.0",
+      "engineApiVersion": "1.0.0",
+      "scope": "screen",
+      "nodes": [
+        {
+          "id": "kishimisu_swirl",
+          "type": "custom",
+          "family": "generator",
+          "inputSlots": [],
+          "params": {
+            "shaderSource": "shader_type canvas_item;\n\n// https://iquilezles.org/articles/palettes/\nvec3 palette(float t) {\n\tvec3 a = vec3(0.5, 0.5, 0.5);\n\tvec3 b = vec3(0.5, 0.5, 0.5);\n\tvec3 c = vec3(1.0, 1.0, 1.0);\n\tvec3 d = vec3(0.263, 0.416, 0.557);\n\treturn a + b * cos(6.28318 * (c * t + d));\n}\n\nvoid fragment() {\n\tvec2 uv = UV * 2.0 - 1.0;\n\tuv.x *= TEXTURE_SIZE.x / TEXTURE_SIZE.y;\n\tvec2 uv0 = uv;\n\tvec3 finalColor = vec3(0.0);\n\n\tfor (float i = 0.0; i < 4.0; i++) {\n\t\tuv = fract(uv * 1.5) - 0.5;\n\t\tfloat d = length(uv) * exp(-length(uv0));\n\t\tvec3 col = palette(length(uv0) + i * 0.4 + TIME * 0.4);\n\t\td = sin(d * 8.0 + TIME) / 8.0;\n\t\td = abs(d);\n\t\td = pow(0.01 / d, 1.2);\n\t\tfinalColor += col * d;\n\t}\n\n\tCOLOR = vec4(finalColor, 1.0);\n}"
+          },
+          "outputTarget": {
+            "bufferId": "output",
+            "format": "rgba8",
+            "resolution": "full"
+          },
+          "flags": {
+            "stateful": false,
+            "fusible": "never"
+          }
+        }
+      ],
+      "connections": [],
+      "feedbackEdges": [],
+      "lifecycle": {
+        "autoStart": true,
+        "stopMode": "clear"
+      }
+    }
+  },
+  "background": {
+    "type": "static",
+    "color": "#000000"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  }
+}

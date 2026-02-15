@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { compileGraph } from "../compiler";
-import { getShaderGlslStrict } from "../shaderLibrary";
-import {
-	needsScreenTextureRewrite,
-	rewriteScreenShaderForSubViewport,
-} from "../shaderRewrite";
+import { getAvailableShaderKeys, SHADER_LIBRARY } from "../shaderLibrary";
 import type { EffectGraphSpec, EffectNode } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -899,419 +895,183 @@ describe("named buffers", () => {
 	});
 });
 
-describe("screen-scope shader rewrite contract", () => {
-	function extractSamplerUniforms(glsl: string): string[] {
-		const matches = glsl.matchAll(/uniform\s+sampler2D\s+(\w+)/g);
-		return [...matches].map((m) => m[1]);
+// ---------------------------------------------------------------------------
+// Godot GLES3 GLSL compatibility — catches patterns that compile on desktop
+// but fail on web (GLES3/WebGL)
+// ---------------------------------------------------------------------------
+
+describe("Godot GLES3 compatibility", () => {
+	/**
+	 * Detects bare `return;` or `return <expr>;` inside void fragment() body.
+	 * Returns in helper functions are fine — only the processor function is restricted.
+	 */
+	function findReturnInFragment(glsl: string): boolean {
+		const lines = glsl.split("\n");
+		let inFragment = false;
+		let braceDepth = 0;
+		let fragmentBraceDepth = -1;
+
+		for (const line of lines) {
+			const trimmed = line.trim();
+
+			if (!inFragment && /^void\s+fragment\s*\(/.test(trimmed)) {
+				inFragment = true;
+				// fragment() opening brace may be on same line or next
+				if (trimmed.includes("{")) {
+					fragmentBraceDepth = braceDepth;
+					braceDepth++;
+				}
+				continue;
+			}
+
+			if (inFragment && fragmentBraceDepth === -1 && trimmed === "{") {
+				fragmentBraceDepth = braceDepth;
+				braceDepth++;
+				continue;
+			}
+
+			if (inFragment) {
+				for (const ch of trimmed) {
+					if (ch === "{") braceDepth++;
+					if (ch === "}") braceDepth--;
+				}
+
+				// Only flag return at the direct fragment() body level
+				// (one brace deeper than where fragment was declared)
+				const bodyDepth = fragmentBraceDepth + 1;
+				const codeOnly = trimmed.replace(/\/\/.*$/, "").trim();
+				if (braceDepth === bodyDepth && /\breturn\b/.test(codeOnly)) {
+					return true;
+				}
+
+				if (braceDepth <= fragmentBraceDepth) {
+					inFragment = false;
+					fragmentBraceDepth = -1;
+				}
+			}
+		}
+		return false;
 	}
 
-	it("screen-scope underwater shader is pre-rewritten with 'input' uniform matching inputBindings", () => {
-		const graph: EffectGraphSpec = {
-			id: "test",
-			version: "1.0.0",
-			engineApiVersion: "1.0.0",
-			scope: "screen",
-			nodes: [
-				{
-					id: "underwater_node",
-					type: "underwater",
-					family: "filter",
-					inputSlots: [
-						{ name: "input", dataType: "texture", connectedTo: null },
-					],
-					params: {
-						intensity: 0.5,
-						wave_speed: 1.0,
-						wave_frequency: 10.0,
-						wave_amplitude: 0.01,
-					},
-					outputTarget: {
-						bufferId: "wave_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-			],
-			connections: [],
-			feedbackEdges: [],
-			lifecycle: { autoStart: true, stopMode: "clear" },
-		};
-
-		const result = compileGraph(graph);
-		expect(result.success).toBe(true);
-
-		const pass = result.plan!.passes[0];
-		const bindings = pass.params.inputBindings as Record<string, string>;
-		expect(bindings).toHaveProperty("input");
-
-		const glsl = pass.shaderSource.glsl;
-		expect(needsScreenTextureRewrite(glsl)).toBe(false);
-
-		const uniforms = extractSamplerUniforms(glsl);
-		expect(uniforms).toContain("input");
-		expect(uniforms).not.toContain("SCREEN_TEXTURE");
-
-		for (const uniformName of Object.keys(bindings)) {
-			expect(uniforms).toContain(uniformName);
-		}
-	});
-
-	it("rewritten shader replaces SCREEN_UV with UV", () => {
-		const glsl = getShaderGlslStrict("scanlines");
-		expect(glsl).toContain("SCREEN_UV");
-
-		const rewritten = rewriteScreenShaderForSubViewport(glsl);
-		expect(rewritten).not.toContain("SCREEN_UV");
-		expect(rewritten).toContain("UV");
-	});
-
-	it("rewritten shader replaces SCREEN_PIXEL_SIZE with screen_pixel_size", () => {
-		const glsl = getShaderGlslStrict("vignette");
-		expect(glsl).toContain("SCREEN_PIXEL_SIZE");
-
-		const rewritten = rewriteScreenShaderForSubViewport(glsl);
-		expect(rewritten).not.toContain("SCREEN_PIXEL_SIZE");
-		expect(rewritten).toContain("screen_pixel_size");
-		expect(rewritten).toContain("uniform vec2 screen_pixel_size");
-	});
-
-	it("multi-node screen graph: all passes have inputBindings keys matching rewritten uniforms", () => {
-		const graph: EffectGraphSpec = {
-			id: "multi-pass-screen",
-			version: "1.0.0",
-			engineApiVersion: "1.0.0",
-			scope: "screen",
-			nodes: [
-				{
-					id: "wave_node",
-					type: "underwater",
-					family: "filter",
-					inputSlots: [
-						{ name: "input", dataType: "texture", connectedTo: null },
-					],
-					params: {
-						intensity: 0.5,
-						wave_speed: 1.0,
-						wave_frequency: 6.0,
-						wave_amplitude: 0.005,
-					},
-					outputTarget: {
-						bufferId: "wave_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-				{
-					id: "scanlines_node",
-					type: "scanlines",
-					family: "filter",
-					inputSlots: [
-						{
-							name: "input",
-							dataType: "texture",
-							connectedTo: { nodeId: "wave_node", output: "wave_buf" },
-						},
-					],
-					params: { scanline_count: 200, scanline_opacity: 0.2 },
-					outputTarget: {
-						bufferId: "scanlines_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-			],
-			connections: [
-				{
-					from: { nodeId: "wave_node", output: "wave_buf" },
-					to: { nodeId: "scanlines_node", input: "input" },
-				},
-			],
-			feedbackEdges: [],
-			lifecycle: { autoStart: true, stopMode: "clear" },
-		};
-
-		const result = compileGraph(graph);
-		expect(result.success).toBe(true);
-		expect(result.plan!.passes).toHaveLength(2);
-
-		for (const pass of result.plan!.passes) {
-			const bindings = pass.params.inputBindings as Record<string, string>;
-			const glsl = pass.shaderSource.glsl;
-
-			expect(glsl).not.toContain("SCREEN_TEXTURE");
-			expect(glsl).not.toContain("hint_screen_texture");
-
-			const uniforms = extractSamplerUniforms(glsl);
-			for (const uniformName of Object.keys(bindings)) {
-				expect(uniforms).toContain(uniformName);
-			}
-		}
-	});
-
-	it("3-node screen chain: uniform contract holds for all passes", () => {
-		const graph: EffectGraphSpec = {
-			id: "three-pass-screen",
-			version: "1.0.0",
-			engineApiVersion: "1.0.0",
-			scope: "screen",
-			nodes: [
-				{
-					id: "pass_a",
-					type: "underwater",
-					family: "filter",
-					inputSlots: [
-						{ name: "input", dataType: "texture", connectedTo: null },
-					],
-					params: {},
-					outputTarget: {
-						bufferId: "buf_a",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-				{
-					id: "pass_b",
-					type: "scanlines",
-					family: "filter",
-					inputSlots: [
-						{
-							name: "input",
-							dataType: "texture",
-							connectedTo: { nodeId: "pass_a", output: "buf_a" },
-						},
-					],
-					params: {},
-					outputTarget: {
-						bufferId: "buf_b",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-				{
-					id: "pass_c",
-					type: "vignette",
-					family: "filter",
-					inputSlots: [
-						{
-							name: "input",
-							dataType: "texture",
-							connectedTo: { nodeId: "pass_b", output: "buf_b" },
-						},
-					],
-					params: {},
-					outputTarget: {
-						bufferId: "buf_c",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-			],
-			connections: [
-				{
-					from: { nodeId: "pass_a", output: "buf_a" },
-					to: { nodeId: "pass_b", input: "input" },
-				},
-				{
-					from: { nodeId: "pass_b", output: "buf_b" },
-					to: { nodeId: "pass_c", input: "input" },
-				},
-			],
-			feedbackEdges: [],
-			lifecycle: { autoStart: true, stopMode: "clear" },
-		};
-
-		const result = compileGraph(graph);
-		expect(result.success).toBe(true);
-		expect(result.plan!.passes).toHaveLength(3);
-
-		for (const pass of result.plan!.passes) {
-			const bindings = pass.params.inputBindings as Record<string, string>;
-			const glsl = pass.shaderSource.glsl;
-
-			expect(glsl).not.toContain("SCREEN_TEXTURE");
-			expect(glsl).not.toContain("hint_screen_texture");
-
-			const uniforms = extractSamplerUniforms(glsl);
-			for (const key of Object.keys(bindings)) {
-				expect(uniforms).toContain(key);
-			}
-		}
-	});
-
-	it("sprite-scope shaders are NOT rewritten (no hint_screen_texture)", () => {
-		const glsl = getShaderGlslStrict("glow");
-		expect(needsScreenTextureRewrite(glsl)).toBe(false);
-	});
-
-	it("rewrite is idempotent", () => {
-		const glsl = getShaderGlslStrict("underwater");
-		const once = rewriteScreenShaderForSubViewport(glsl);
-		const twice = rewriteScreenShaderForSubViewport(once);
-		expect(twice).toBe(once);
+	it.each(
+		getAvailableShaderKeys(),
+	)("library shader '%s' has no return in fragment()", (shaderKey) => {
+		const glsl = SHADER_LIBRARY[shaderKey];
+		expect(
+			findReturnInFragment(glsl),
+			`Shader "${shaderKey}" uses return inside fragment() — Godot GLES3 forbids this. Use if-else instead.`,
+		).toBe(false);
 	});
 });
 
-describe("screen-scope compiler pre-rewrites GLSL (single source of truth)", () => {
-	it("screen-scope plan contains pre-rewritten GLSL with no SCREEN_TEXTURE", () => {
-		const graph: EffectGraphSpec = {
-			id: "screen-prerewrite",
-			version: "1.0.0",
-			engineApiVersion: "2.0.0",
-			scope: "screen",
-			nodes: [
-				{
-					id: "wave",
-					type: "underwater",
-					family: "filter",
-					inputSlots: [
-						{ name: "input", dataType: "texture", connectedTo: null },
-					],
-					params: {},
-					outputTarget: {
-						bufferId: "wave_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
+// ---------------------------------------------------------------------------
+// Real game definition compilation — compile actual game effect graphs
+// ---------------------------------------------------------------------------
+
+describe("real game definition compilation", () => {
+	const fullscreenGraph: EffectGraphSpec = {
+		id: "rainbow-swirl",
+		version: "1.0.0",
+		engineApiVersion: "1.0.0",
+		scope: "screen",
+		nodes: [
+			{
+				id: "rainbow_swirl",
+				type: "custom",
+				family: "generator",
+				inputSlots: [],
+				params: {
+					shaderSource:
+						"shader_type canvas_item;\nuniform float speed : hint_range(0.0, 5.0) = 1.0;\nvoid fragment() {\n\tCOLOR = vec4(UV, sin(TIME * speed), 1.0);\n}",
 				},
-			],
-			connections: [],
-			feedbackEdges: [],
-			lifecycle: { autoStart: true, stopMode: "clear" },
-		};
+				outputTarget: {
+					bufferId: "output",
+					format: "rgba8",
+					resolution: "full",
+				},
+				flags: { stateful: false, fusible: "never" },
+			},
+		],
+		connections: [],
+		feedbackEdges: [],
+		lifecycle: { autoStart: true, stopMode: "clear" },
+	};
 
-		const result = compileGraph(graph);
+	const crtGraph: EffectGraphSpec = {
+		id: "crt-effect",
+		version: "1.0.0",
+		engineApiVersion: "1.0.0",
+		scope: "screen",
+		nodes: [
+			{
+				id: "crt_screen",
+				type: "custom",
+				family: "filter",
+				inputSlots: [],
+				params: {
+					shaderSource:
+						"shader_type canvas_item;\nuniform sampler2D screen_texture : hint_screen_texture;\nvoid fragment() {\n\tvec3 col = texture(screen_texture, SCREEN_UV).rgb;\n\tCOLOR = vec4(col, 1.0);\n}",
+				},
+				outputTarget: {
+					bufferId: "output",
+					format: "rgba8",
+					resolution: "full",
+				},
+				flags: { stateful: false, fusible: "never" },
+			},
+		],
+		connections: [],
+		feedbackEdges: [],
+		lifecycle: { autoStart: true, stopMode: "clear" },
+	};
+
+	it("compiles fullscreen generator graph", () => {
+		const result = compileGraph(fullscreenGraph);
 		expect(result.success).toBe(true);
-
-		const pass = result.plan!.passes[0];
-		expect(pass.shaderSource.glsl).not.toContain("SCREEN_TEXTURE");
-		expect(pass.shaderSource.glsl).not.toContain("hint_screen_texture");
-		expect(pass.shaderSource.glsl).not.toContain("SCREEN_UV");
-		expect(pass.shaderSource.glsl).toContain("uniform sampler2D input");
+		expect(result.plan).toBeDefined();
+		expect(result.plan!.scope).toBe("screen");
+		expect(result.plan!.passes).toHaveLength(1);
 	});
 
-	it("entity-scope plan keeps original GLSL unchanged", () => {
-		const graph: EffectGraphSpec = {
-			id: "entity-no-rewrite",
-			version: "1.0.0",
-			engineApiVersion: "2.0.0",
-			scope: "entity",
-			nodes: [
-				{
-					id: "glow_node",
-					type: "glow",
-					family: "filter",
-					inputSlots: [
-						{ name: "input", dataType: "texture", connectedTo: null },
-					],
-					params: {},
-					outputTarget: {
-						bufferId: "glow_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-			],
-			connections: [],
-			feedbackEdges: [],
-			lifecycle: { autoStart: true, stopMode: "clear" },
-		};
-
-		const result = compileGraph(graph);
+	it("compiles CRT post-process graph", () => {
+		const result = compileGraph(crtGraph);
 		expect(result.success).toBe(true);
-
-		const pass = result.plan!.passes[0];
-		const originalGlsl = getShaderGlslStrict("glow");
-		expect(pass.shaderSource.glsl).toBe(originalGlsl);
+		expect(result.plan).toBeDefined();
+		expect(result.plan!.scope).toBe("screen");
+		expect(result.plan!.passes).toHaveLength(1);
 	});
 
-	it("ballSort 2-pass screen graph: both passes have pre-rewritten GLSL and correct inputBindings", () => {
-		const graph: EffectGraphSpec = {
-			id: "ballSort_wavy_scanlines",
-			version: "1.0.0",
-			engineApiVersion: "2.0.0",
-			scope: "screen",
+	it("custom shaderSource is passed through to compiled plan", () => {
+		const result = compileGraph(fullscreenGraph);
+		const pass = result.plan!.passes[0];
+		expect(pass.shaderSource.glsl).toContain("shader_type canvas_item");
+		expect(pass.shaderSource.glsl).toContain("speed");
+	});
+
+	it("shaderSource is stripped from runtime params", () => {
+		const result = compileGraph(fullscreenGraph);
+		const pass = result.plan!.passes[0];
+		expect(pass.params).not.toHaveProperty("shaderSource");
+	});
+
+	it("builtin library type resolves to GLSL", () => {
+		const graph = makeGraph({
 			nodes: [
-				{
-					id: "wave_node",
-					type: "underwater",
+				makeNode({
+					id: "crt_builtin",
+					type: "crt",
 					family: "filter",
 					inputSlots: [
 						{ name: "input", dataType: "texture", connectedTo: null },
 					],
-					params: { intensity: 0.0, wave_speed: 1.0 },
-					outputTarget: {
-						bufferId: "wave_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
-				{
-					id: "scanlines_node",
-					type: "scanlines",
-					family: "filter",
-					inputSlots: [
-						{
-							name: "input",
-							dataType: "texture",
-							connectedTo: {
-								nodeId: "wave_node",
-								output: "wave_buf",
-							},
-						},
-					],
-					params: { scanline_count: 200 },
-					outputTarget: {
-						bufferId: "scanlines_buf",
-						format: "rgba8",
-						resolution: "full",
-					},
-					flags: { stateful: false, fusible: "conditional" },
-				},
+				}),
 			],
-			connections: [
-				{
-					from: { nodeId: "wave_node", output: "wave_buf" },
-					to: { nodeId: "scanlines_node", input: "input" },
-				},
-			],
-			feedbackEdges: [],
-			lifecycle: { autoStart: true, stopMode: "clear" },
-		};
-
+			connections: [],
+		});
 		const result = compileGraph(graph);
 		expect(result.success).toBe(true);
-		expect(result.plan!.passes).toHaveLength(2);
-
-		for (const pass of result.plan!.passes) {
-			expect(pass.shaderSource.glsl).not.toContain("SCREEN_TEXTURE");
-			expect(pass.shaderSource.glsl).not.toContain("hint_screen_texture");
-			expect(pass.shaderSource.glsl).toContain("uniform sampler2D input");
-		}
-
-		const wavePass = result.plan!.passes.find((p) => p.id === "wave_node")!;
-		const scanPass = result.plan!.passes.find(
-			(p) => p.id === "scanlines_node",
-		)!;
-
-		const waveBindings = wavePass.params.inputBindings as Record<
-			string,
-			string
-		>;
-		expect(waveBindings.input).toBe("__screenColor");
-
-		const scanBindings = scanPass.params.inputBindings as Record<
-			string,
-			string
-		>;
-		expect(scanBindings.input).toBe("wave_node:wave_buf");
+		const pass = result.plan!.passes[0];
+		expect(pass.shaderSource.glsl).toContain("shader_type canvas_item");
+		expect(pass.shaderSource.glsl).toContain("scanline");
 	});
 });
