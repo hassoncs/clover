@@ -10,19 +10,19 @@ import {
 import { useTree } from "@headless-tree/react";
 import type React from "react";
 import { useCallback, useEffect, useRef } from "react";
-import type { FileTreeNode, FileTreeProps } from "./types";
 import {
-	FolderIcon,
+	CSSIcon,
 	FileIcon,
-	TSIcon,
+	FolderIcon,
+	GodotIcon,
+	HTMLIcon,
+	ImageIcon,
 	JSIcon,
 	JSONIcon,
 	MDIcon,
-	GodotIcon,
-	ImageIcon,
-	CSSIcon,
-	HTMLIcon,
+	TSIcon,
 } from "./FileIcons";
+import type { FileTreeNode, FileTreeProps } from "./types";
 
 const VIRTUAL_ROOT_ID = "__virtual_root__";
 
@@ -196,7 +196,7 @@ const TreeItemRow: React.FC<TreeItemRowProps> = ({ item, onSelectFile }) => {
 
 	const itemStyle: React.CSSProperties = {
 		...baseItemStyle,
-		paddingLeft: `${Math.max(0, meta.level - 1) * 16 + 12}px`,
+		paddingLeft: `${meta.level * 16 + 12}px`,
 		...(isSelected
 			? { backgroundColor: "#374151", borderLeftColor: "#6366F1" }
 			: {}),
@@ -282,9 +282,7 @@ export const FileTreeWeb: React.FC<FileTreeProps> = ({
 			},
 			canDrop: (items: any[], target: any) => target.isFolder(),
 		},
-		hotkeys: {
-			customRename: ["F2"],
-		},
+		hotkeys: {},
 		dataLoader: {
 			getItem: (itemId: any) => {
 				if (itemId === VIRTUAL_ROOT_ID) {

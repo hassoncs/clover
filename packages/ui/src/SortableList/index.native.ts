@@ -1,2 +1,2 @@
-export * from '@/SortableList/types'
-export { default as SortableList } from '@/SortableList/SortableList.native'
+export { default as SortableList } from "./SortableList.native";
+export * from "./types";
