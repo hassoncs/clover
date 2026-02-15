@@ -154,7 +154,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] Non-target players do not receive the request.
     - [ ] Tests cover: subset delivery, timeout with partial responses, empty subset.
 
-- [ ] 8. Generalize phase-router for game-specific views
+- [x] 8. Generalize phase-router for game-specific views
   - **What to do**:
     - Create a phase renderer registry: `Record<gameTemplate, Record<phase, Component>>`.
     - Replace hardcoded switch in `play.tsx` with registry lookup.
@@ -169,7 +169,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
 
 ### Active (Wave B - R2 Orientation)
 
-- [ ] 12. Create `slopcade/party` module
+- [x] 12. Create `slopcade/party` module
   - **What to do**:
     - Add to `shared/src/scripting/modules/index.ts` as `PARTY_MODULE_SOURCE`.
     - Functions: `createScoreboard(scores, playerNames)`, `createMatchups(playerIds, items)`, `tallyVotes(responses, excludeSelfVotes, authorMap)`, `calculatePoints(voteCounts, opts)`.
@@ -186,7 +186,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] `tallyVotes` correctly excludes self-votes.
     - [ ] Unit tests pass.
 
-- [ ] 13. Create `slopcade/content` module
+- [x] 13. Create `slopcade/content` module
   - **What to do**:
     - Add to `shared/src/scripting/modules/index.ts` as `CONTENT_MODULE_SOURCE`.
     - Functions: `shuffle(arr)`, `selectForRound(pool, count, usedIds)`, `markUsed(usedIds, items)`.
