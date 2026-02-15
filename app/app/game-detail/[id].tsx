@@ -149,7 +149,7 @@ export default function GameDetailScreen() {
 				if (!localDef) throw new Error("Game not found locally");
 				definition = localDef;
 			} else {
-				const game = await trpc.games.get.query({ id: gameInfo.id });
+				const game = await trpc.games.getPublic.query({ id: gameInfo.id });
 				definition = JSON.parse(game.definition) as GameDefinition;
 			}
 
