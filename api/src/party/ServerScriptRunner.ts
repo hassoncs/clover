@@ -4,6 +4,8 @@ import type {
 	PartyInputResponse,
 } from "@slopcade/shared/types/party";
 
+const SCRIPT_EXECUTION_TIMEOUT_MS = 30 * 60 * 1000;
+
 export interface RoomAPI {
 	setPhase(phase: string): Promise<void>;
 	updateSharedData(data: Record<string, unknown>): Promise<void>;
@@ -98,7 +100,28 @@ export class ServerScriptRunner {
 		) as ScriptExports;
 
 		if (typeof exportsResult.run === "function") {
-			await exportsResult.run(this.roomAPI, config);
+			let timeoutId: ReturnType<typeof setTimeout> | null = null;
+			let timeoutReject: ((reason: Error) => void) | null = null;
+
+			const timeoutPromise = new Promise<never>((_, reject) => {
+				timeoutReject = reject;
+				timeoutId = setTimeout(() => {
+					reject(new Error("Script execution timeout"));
+				}, SCRIPT_EXECUTION_TIMEOUT_MS);
+			});
+
+			try {
+				await Promise.race([
+					exportsResult.run(this.roomAPI, config),
+					timeoutPromise,
+				]);
+			} finally {
+				if (timeoutId) {
+					clearTimeout(timeoutId);
+				}
+				// Prevent unhandled rejection if timeout already fired
+				timeoutReject = null;
+			}
 		}
 	}
 

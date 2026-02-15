@@ -167,24 +167,3 @@ export function selectPromptsForRound<T extends { id: string }>(
 	return pool.filter((p) => !usedIds.has(p.id)).slice(0, count);
 }
 
-// ============================================================================
-// Backward Compatibility - Quiplash-specific functions
-// ============================================================================
-
-/**
- * Legacy QuiplashPrompt interface for backward compatibility.
- * @deprecated Use QuipPrompt from @slopcade/content-pipeline instead
- */
-export interface QuiplashPrompt {
-	id: string;
-	text: string;
-	category: string;
-}
-
-/**
- * Load all Quiplash prompts.
- * @deprecated Use loadContentPack("quip") instead
- */
-export function loadPromptPool(): QuiplashPrompt[] {
-	return loadContentPack("quip");
-}

@@ -20,10 +20,11 @@ import {
 } from "./protocol";
 import { ServerScriptRunner } from "./ServerScriptRunner";
 
-const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000;
-const RECONNECT_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT_WINDOW_MS = 1000;
-const RATE_LIMIT_MAX_MESSAGES = 10;
+// Timeout constants (all in milliseconds)
+const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000; // 4 hours - room lifetime
+const RECONNECT_WINDOW_MS = 60 * 1000; // 60 seconds - player reconnect window
+const RATE_LIMIT_WINDOW_MS = 1000; // 1 second - rate limit window
+const RATE_LIMIT_MAX_MESSAGES = 10; // Max messages per window
 const DEFAULT_MIN_PLAYERS = 3;
 
 interface SessionRecord {
@@ -266,7 +267,6 @@ export class PartyRoomDO {
 		name: string,
 	): Promise<void> {
 		let playerId: string | undefined;
-		let isReconnect = false;
 
 		if (token) {
 			const session = await this.state.storage.get<SessionRecord>(
@@ -274,7 +274,6 @@ export class PartyRoomDO {
 			);
 			if (session?.role === "player") {
 				playerId = session.playerId;
-				isReconnect = this.players.has(playerId);
 			}
 		}
 
@@ -287,14 +286,13 @@ export class PartyRoomDO {
 			meta.playerId = playerId;
 		}
 
-		await this.handlePlayerConnect(ws, playerId, name, isReconnect);
+		await this.handlePlayerConnect(ws, playerId, name);
 	}
 
 	private async handlePlayerConnect(
 		ws: WebSocket,
 		playerId: string,
 		name: string,
-		isReconnect: boolean,
 	): Promise<void> {
 		const existing = this.players.get(playerId);
 		if (existing) {

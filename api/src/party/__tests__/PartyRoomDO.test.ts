@@ -324,6 +324,776 @@ describe("PartyRoomDO", () => {
 				.find((m: { type: string }) => m.type === "player_left");
 			expect(leftMsg).toBeUndefined();
 		});
+
+		it("reconnecting player receives active input request", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Dave", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+
+			playerClientWs.sent.length = 0;
+
+			hostClientWs.send(
+				JSON.stringify({
+					type: "input_request",
+					requestId: "req-1",
+					request: {
+						prompt: "What is your answer?",
+						inputType: "text",
+						timeLimit: 60,
+					},
+				}),
+			);
+
+			await vi.advanceTimersByTimeAsync(100);
+
+			const inputReqMsg = playerClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_request");
+			expect(inputReqMsg).toBeDefined();
+			expect(inputReqMsg.requestId).toBe("req-1");
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(100);
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.advanceTimersByTimeAsync(100);
+
+			const reconnInputReq = reconnClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_request");
+			expect(reconnInputReq).toBeDefined();
+			expect(reconnInputReq.requestId).toBe("req-1");
+			expect(reconnInputReq.request.prompt).toBe("What is your answer?");
+		});
+
+		it("player who already responded does not receive duplicate input request", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Eve", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+
+			hostClientWs.send(
+				JSON.stringify({
+					type: "input_request",
+					requestId: "req-2",
+					request: {
+						prompt: "Choose a number",
+						inputType: "number",
+						timeLimit: 30,
+					},
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			playerClientWs.send(
+				JSON.stringify({
+					type: "input_response",
+					requestId: "req-2",
+					response: { value: 42, timestamp: Date.now() },
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(100);
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const inputReqCount = reconnClientWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "input_request").length;
+			expect(inputReqCount).toBe(0);
+		});
+
+		it("host reconnect maintains room state without reset", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Frank", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerId = tokenMsg.playerId;
+
+			hostClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(100);
+
+			playerClientWs.sent.length = 0;
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnHostWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const stateMsg = reconnHostWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "state_update");
+			expect(stateMsg).toBeDefined();
+			expect(stateMsg.state.phase).toBe("lobby");
+			expect(stateMsg.state.players).toHaveLength(2);
+
+			const playerInState = stateMsg.state.players.find(
+				(p: { id: string }) => p.id === playerId,
+			);
+			expect(playerInState).toBeDefined();
+		});
+
+		it("host can continue controlling game after reconnect", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Player1", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			hostClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(100);
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnHostWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+			playerClientWs.sent.length = 0;
+
+			reconnHostWs.send(
+				JSON.stringify({
+					type: "phase_change",
+					phase: "playing",
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const phaseMsg = playerClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "phase_change");
+			expect(phaseMsg).toBeDefined();
+			expect(phaseMsg.phase).toBe("playing");
+		});
+
+		it("player reconnects with same playerId", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+			const originalPlayerId = tokenMsg.playerId;
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(30_000);
+
+			hostClientWs.sent.length = 0;
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const reconnectMsg = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_reconnect");
+			expect(reconnectMsg).toBeDefined();
+			expect(reconnectMsg.playerId).toBe(originalPlayerId);
+
+			const stateMsg = JSON.parse(
+				reconnClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			const player = stateMsg.state.players.find(
+				(p: { id: string }) => p.id === originalPlayerId,
+			);
+			expect(player).toBeDefined();
+			expect(player.connected).toBe(true);
+		});
+
+		it("player score is preserved after reconnect", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Bob", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+			const playerId = tokenMsg.playerId;
+
+			await dobj.updatePlayerScore(playerId, 100);
+
+			hostClientWs.sent.length = 0;
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(30_000);
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const stateMsg = JSON.parse(
+				reconnClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			const player = stateMsg.state.players.find(
+				(p: { id: string }) => p.id === playerId,
+			);
+			expect(player).toBeDefined();
+			expect(player.score).toBe(100);
+		});
+
+		it("player can submit response after reconnect during active input request", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Charlie", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+
+			hostClientWs.send(
+				JSON.stringify({
+					type: "input_request",
+					requestId: "req-submit-test",
+					request: {
+						prompt: "What is your answer?",
+						inputType: "text",
+						timeLimit: 60,
+					},
+				}),
+			);
+
+			await vi.advanceTimersByTimeAsync(100);
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(100);
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.advanceTimersByTimeAsync(100);
+
+			const inputReqMsg = reconnClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_request");
+			expect(inputReqMsg).toBeDefined();
+			expect(inputReqMsg.requestId).toBe("req-submit-test");
+
+			hostClientWs.sent.length = 0;
+			reconnClientWs.send(
+				JSON.stringify({
+					type: "input_response",
+					requestId: "req-submit-test",
+					response: { value: "my answer", timestamp: Date.now() },
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const responseMsg = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; requestId?: string }) =>
+						m.type === "input_response" && m.requestId === "req-submit-test",
+				);
+			expect(responseMsg).toBeDefined();
+			expect(responseMsg.response.value).toBe("my answer");
+		});
+
+		it("invalid token creates new player instead of reconnect", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+			hostClientWs.sent.length = 0;
+
+			const reconnRes = await dobj.fetch(
+				makeRequest(
+					"GET",
+					"/ws?role=player&token=invalid-token-xyz&name=NewPlayer",
+					undefined,
+					{
+						Upgrade: "websocket",
+					},
+				),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const joinMsg = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_joined");
+			expect(joinMsg).toBeDefined();
+			expect(joinMsg.player.name).toBe("NewPlayer");
+
+			const stateMsg = JSON.parse(
+				reconnClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			expect(stateMsg.state.players).toHaveLength(2);
+		});
+
+		it("reconnect after 60s window reuses playerId as new player", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=David", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+			const originalPlayerId = tokenMsg.playerId;
+
+			playerClientWs.close(1000, "bye");
+			hostClientWs.sent.length = 0;
+
+			await vi.advanceTimersByTimeAsync(60_000);
+
+			const leftMsg = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_left");
+			expect(leftMsg).toBeDefined();
+			expect(leftMsg.playerId).toBe(originalPlayerId);
+
+			hostClientWs.sent.length = 0;
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const joinMsg = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_joined");
+			expect(joinMsg).toBeDefined();
+
+			const stateMsg = JSON.parse(
+				reconnClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			const player = stateMsg.state.players.find(
+				(p: { id: string }) => p.id === originalPlayerId,
+			);
+			expect(player).toBeDefined();
+			expect(player.connected).toBe(true);
+		});
+
+		it("multiple players disconnect and reconnect simultaneously", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const p1Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Player1", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p1Ws = (p1Res as any).webSocket as MockWebSocket;
+
+			const p2Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Player2", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p2Ws = (p2Res as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const p1Token = JSON.parse(
+				p1Ws.sent.find((s) => s.includes("player_token"))!,
+			).token;
+			const p2Token = JSON.parse(
+				p2Ws.sent.find((s) => s.includes("player_token"))!,
+			).token;
+
+			p1Ws.close(1000, "bye");
+			p2Ws.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(30_000);
+
+			hostClientWs.sent.length = 0;
+
+			const p1ReconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${p1Token}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p1ReconnWs = (p1ReconnRes as any).webSocket as MockWebSocket;
+
+			const p2ReconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${p2Token}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p2ReconnWs = (p2ReconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const reconnectMsgs = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "player_reconnect");
+			expect(reconnectMsgs).toHaveLength(2);
+
+			const leftMsgs = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "player_left");
+			expect(leftMsgs).toHaveLength(0);
+		});
+
+		it("player reconnects multiple times in quick succession", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=MultiReconnect", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+			const originalPlayerId = tokenMsg.playerId;
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(10_000);
+
+			let reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			let reconnWs = (reconnRes as any).webSocket as MockWebSocket;
+			await vi.runAllTimersAsync();
+
+			reconnWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(10_000);
+
+			reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			reconnWs = (reconnRes as any).webSocket as MockWebSocket;
+			await vi.runAllTimersAsync();
+
+			reconnWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(10_000);
+
+			reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			reconnWs = (reconnRes as any).webSocket as MockWebSocket;
+			await vi.runAllTimersAsync();
+
+			const stateMsg = JSON.parse(
+				reconnWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			const player = stateMsg.state.players.find(
+				(p: { id: string }) => p.id === originalPlayerId,
+			);
+			expect(player).toBeDefined();
+			expect(player.connected).toBe(true);
+
+			const leftMsgs = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "player_left");
+			expect(leftMsgs).toHaveLength(0);
+		});
+
+		it("host and player both disconnect and reconnect", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			let hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=BothDisconnect", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			let playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+			const playerId = tokenMsg.playerId;
+
+			hostClientWs.close(1000, "bye");
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(30_000);
+
+			const hostReconnRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			hostClientWs = (hostReconnRes as any).webSocket as MockWebSocket;
+
+			const playerReconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			playerClientWs = (playerReconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const hostStateMsg = JSON.parse(
+				hostClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			expect(hostStateMsg.state.players).toHaveLength(2);
+
+			const playerStateMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			const player = playerStateMsg.state.players.find(
+				(p: { id: string }) => p.id === playerId,
+			);
+			expect(player).toBeDefined();
+			expect(player.connected).toBe(true);
+
+			const leftMsgs = hostClientWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "player_left");
+			expect(leftMsgs).toHaveLength(0);
+		});
+
+		it("no duplicate player seat on successful reconnect reclaim", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=NoDuplicate", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = JSON.parse(
+				playerClientWs.sent.find((s) => s.includes("player_token"))!,
+			);
+			const playerToken = tokenMsg.token;
+			const originalPlayerId = tokenMsg.playerId;
+
+			playerClientWs.close(1000, "bye");
+			await vi.advanceTimersByTimeAsync(30_000);
+
+			const reconnRes = await dobj.fetch(
+				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+
+			await vi.runAllTimersAsync();
+
+			const stateMsg = JSON.parse(
+				reconnClientWs.sent.find((s) => s.includes("state_update"))!,
+			);
+			const playersWithOriginalId = stateMsg.state.players.filter(
+				(p: { id: string }) => p.id === originalPlayerId,
+			);
+			expect(playersWithOriginalId).toHaveLength(1);
+
+			const nonHostPlayers = stateMsg.state.players.filter(
+				(p: { isHost?: boolean }) => !p.isHost,
+			);
+			expect(nonHostPlayers).toHaveLength(1);
+		});
 	});
 
 	describe("Rate limiting", () => {

@@ -20,6 +20,7 @@ This document formalizes the authentication and authorization policies for party
 | `RECONNECT_WINDOW_MS` | 60 seconds | Player disconnect window before removal |
 | `RATE_LIMIT_WINDOW_MS` | 1 second | Rate limiting window |
 | `RATE_LIMIT_MAX_MESSAGES` | 10 | Max messages per rate limit window |
+| `SCRIPT_EXECUTION_TIMEOUT_MS` | 30 minutes (30 × 60 × 1000) | Maximum server script execution time |
 
 ---
 

@@ -9,7 +9,7 @@ import {
 
 type PartyTemplateRunner = (room: ServerScriptRoom) => Promise<void>;
 
-type QuiplashDefinition = {
+type PartyGameDefinition = {
 	party?: {
 		serverScript?: string;
 		contentPacks?: ContentType[];
@@ -18,13 +18,13 @@ type QuiplashDefinition = {
 	modules?: Record<string, string>;
 };
 
-const r2QuiplashDefinition = quiplashDefinition as QuiplashDefinition;
-const r2CrowdComedyDefinition = crowdComedyDefinition as QuiplashDefinition;
+const r2PartyGameDefinition = quiplashDefinition as PartyGameDefinition;
+const r2CrowdComedyDefinition = crowdComedyDefinition as PartyGameDefinition;
 const r2QuestionAnswerDefinition =
-	questionAnswerDefinition as QuiplashDefinition;
+	questionAnswerDefinition as PartyGameDefinition;
 
 const runFromDefinition =
-	(templateName: string, definition: QuiplashDefinition): PartyTemplateRunner =>
+	(templateName: string, definition: PartyGameDefinition): PartyTemplateRunner =>
 	async (room) => {
 		const serverScriptName = definition.party?.serverScript ?? "server";
 		const scriptCode = definition.modules?.[serverScriptName];
@@ -49,7 +49,7 @@ const runFromDefinition =
 
 const runQuiplashFromDefinition = runFromDefinition(
 	"Quiplash",
-	r2QuiplashDefinition,
+	r2PartyGameDefinition,
 );
 const runCrowdComedyFromDefinition = runFromDefinition(
 	"Crowd Comedy",

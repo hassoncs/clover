@@ -57,12 +57,12 @@ Deliver a production-ready party platform where server, host, and players mainta
 - End-to-end test matrix validating reconnect behavior and game flow
 
 ### Definition of Done
-- [ ] Host reconnect recovers same host control session after refresh.
-- [ ] Player reconnect recovers same player identity/seat after refresh.
-- [ ] Active prompt is restored on reconnect when input window still open.
-- [ ] `state_update` includes monotonic state version.
-- [ ] Integration tests pass for quiplash, crowd-comedy, question-answer reconnect paths.
-- [ ] No MVP path depends on full entity or physics snapshot mirroring.
+- [x] Host reconnect recovers same host control session after refresh.
+- [x] Player reconnect recovers same player identity/seat after refresh.
+- [x] Active prompt is restored on reconnect when input window still open.
+- [x] `state_update` includes monotonic state version.
+- [x] Integration tests pass for quiplash, crowd-comedy, question-answer reconnect paths.
+- [x] No MVP path depends on full entity or physics snapshot mirroring.
 
 ### Must Have
 - Server-authoritative state contract with minimal synchronized data.
@@ -143,10 +143,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `app/lib/party/usePartyConnection.ts` - Client reconnect/retry behavior.
 
   **Acceptance Criteria**:
-  - [ ] Contract doc section in plan is unambiguous for all three surfaces.
-  - [ ] Explicit MVP exclusions list includes entity/physics mirroring.
+  - [x] Contract doc section in plan is unambiguous for all three surfaces.
+  - [x] Explicit MVP exclusions list includes entity/physics mirroring.
 
-- [ ] 2. Implement player reconnect identity reclaim flow
+- [x] 2. Implement player reconnect identity reclaim flow
 
   **What to do**:
   - Add player reconnect token handshake (issue token, persist, return, reuse).
@@ -172,10 +172,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `app/lib/party/usePartyConnection.ts` - Reconnect query/token handling.
 
   **Acceptance Criteria**:
-  - [ ] Player refresh rejoins same seat in <= reconnect window.
-  - [ ] Duplicate "ghost player" entries no longer created for successful reclaim.
+  - [x] Player refresh rejoins same seat in <= reconnect window.
+  - [x] Duplicate "ghost player" entries no longer created for successful reclaim.
 
-- [ ] 3. Define guest/auth session policy and storage lifecycle
+- [x] 3. Define guest/auth session policy and storage lifecycle
 
   **What to do**:
   - Formalize host auth policy and guest player policy.
@@ -200,8 +200,8 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `api/src/index.ts` - Room creation and token issuance path.
 
   **Acceptance Criteria**:
-  - [ ] Policy defines host authenticated path + guest player path.
-  - [ ] Token expiration aligns with room cleanup lifecycle.
+  - [x] Policy defines host authenticated path + guest player path.
+  - [x] Token expiration aligns with room cleanup lifecycle.
 
 - [x] 4. Establish canonical synchronized state schema (minimal gameplay state)
 
@@ -229,10 +229,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `app/lib/party/defaultPhases.tsx` - Current UI consumption pattern.
 
   **Acceptance Criteria**:
-  - [ ] State contract clearly marks durable/ephemeral/private/derived fields.
-  - [ ] Existing phase UIs can render from normalized schema.
+  - [x] State contract clearly marks durable/ephemeral/private/derived fields.
+  - [x] Existing phase UIs can render from normalized schema.
 
-- [ ] 5. Add state versioning and protocol compatibility safeguards
+- [x] 5. Add state versioning and protocol compatibility safeguards
 
   **What to do**:
   - Add monotonic `stateVersion` on authoritative snapshots.
@@ -257,10 +257,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `api/src/party/__tests__/protocol.test.ts` - Existing round-trip coverage.
 
   **Acceptance Criteria**:
-  - [ ] `state_update` carries a strictly increasing version.
-  - [ ] Protocol tests validate only the new canonical MVP protocol.
+  - [x] `state_update` carries a strictly increasing version.
+  - [x] Protocol tests validate only the new canonical MVP protocol.
 
-- [ ] 6. Implement reconnect replay behavior for active gameplay context
+- [x] 6. Implement reconnect replay behavior for active gameplay context
 
   **What to do**:
   - On reconnect, send fresh room snapshot and restore active input request context.
@@ -285,10 +285,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `app/lib/party/usePartyConnection.ts` - Input request + reconnect state handling.
 
   **Acceptance Criteria**:
-  - [ ] Reconnected player sees correct pending prompt when window remains open.
-  - [ ] Reconnected host resumes control without room reset.
+  - [x] Reconnected player sees correct pending prompt when window remains open.
+  - [x] Reconnected host resumes control without room reset.
 
-- [ ] 7. Add runtime timeout/TTL and cleanup policy hardening
+- [x] 7. Add runtime timeout/TTL and cleanup policy hardening
 
   **What to do**:
   - Define room-level inactivity timeout and script execution timeout boundaries.
@@ -313,10 +313,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `api/src/party/ServerScriptRunner.ts` - Script execution boundaries.
 
   **Acceptance Criteria**:
-  - [ ] Timeout values and behavior are documented and enforced.
-  - [ ] Expired rooms clear state/session keys deterministically.
+  - [x] Timeout values and behavior are documented and enforced.
+  - [x] Expired rooms clear state/session keys deterministically.
 
-- [ ] 8. Build reconnect integration test matrix (host + players)
+- [x] 8. Build reconnect integration test matrix (host + players)
 
   **What to do**:
   - Add integration tests for host refresh, player refresh, and mid-input reconnect.
@@ -341,10 +341,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `api/src/party/__tests__/PartyRoomDO.requestInputFromSubset.test.ts` - Input timing edge patterns.
 
   **Acceptance Criteria**:
-  - [ ] Automated tests cover happy + failure reconnect scenarios.
-  - [ ] Reconnect tests validate exact-seat restoration.
+  - [x] Automated tests cover happy + failure reconnect scenarios.
+  - [x] Reconnect tests validate exact-seat restoration.
 
-- [ ] 9. Add end-to-end game flow stability tests for migrated games
+- [x] 9. Add end-to-end game flow stability tests for migrated games
 
   **What to do**:
   - Add/expand R2 execution integration tests for quiplash, crowd-comedy, question-answer.
@@ -369,10 +369,10 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `r2/games/question-answer/definition.json` - Target game script flow.
 
   **Acceptance Criteria**:
-  - [ ] All 3 games have reconnect-resilient automated flow tests.
-  - [ ] Score and winner outcomes remain deterministic after reconnect events.
+  - [x] All 3 games have reconnect-resilient automated flow tests.
+  - [x] Score and winner outcomes remain deterministic after reconnect events.
 
-- [ ] 10. Cleanup, docs alignment, and production readiness gate
+- [x] 10. Cleanup, docs alignment, and production readiness gate
 
   **What to do**:
   - Remove/update legacy template-era failing tests.
@@ -398,8 +398,8 @@ Wave 4 (Validation + Cleanup): Tasks 8, 9, 10
   - `.sisyphus/plans/party-platform-phase1-2-official-plan.md` - Completed baseline context.
 
   **Acceptance Criteria**:
-  - [ ] No known legacy failing tests remain in active suite.
-  - [ ] Verification commands pass and results are captured.
+  - [x] No known legacy failing tests remain in active suite.
+  - [x] Verification commands pass and results are captured.
 
 ---
 
@@ -428,8 +428,8 @@ npx tsc --noEmit --project api/tsconfig.json
 ```
 
 ### Final Checklist
-- [ ] Host refresh/reconnect preserves control role and room continuity.
-- [ ] Player refresh/reconnect restores same seat identity.
-- [ ] No full entity/physics mirroring introduced for MVP.
-- [ ] Reconnect reliability validated across all migrated party games.
-- [ ] Cleanup/documentation consistency completed.
+- [x] Host refresh/reconnect preserves control role and room continuity.
+- [x] Player refresh/reconnect restores same seat identity.
+- [x] No full entity/physics mirroring introduced for MVP.
+- [x] Reconnect reliability validated across all migrated party games.
+- [x] Cleanup/documentation consistency completed.
