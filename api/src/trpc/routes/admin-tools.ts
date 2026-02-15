@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import type { LanguageModel } from "ai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { AuditService } from "@/services/audit-service";
 import { adminProcedure, router } from "@/trpc/index";
 
 const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1";
@@ -249,6 +250,13 @@ export const adminToolsRouter = router({
 				httpMetadata: { contentType: "audio/mpeg" },
 			});
 
+			const audit = new AuditService(ctx.env.DB);
+			await audit.logEvent({
+				actorId: ctx.user.id,
+				action: "admin.generate_sound",
+				metadata: { outputName: input.outputName, sizeBytes: audio.byteLength },
+			});
+
 			return {
 				url: `/assets/${key}`,
 				sizeBytes: audio.byteLength,
@@ -308,6 +316,17 @@ export const adminToolsRouter = router({
 					voicePreset: input.voicePreset,
 					voiceName: preset.name,
 					voiceId: preset.voiceId,
+				},
+			});
+
+			const audit = new AuditService(ctx.env.DB);
+			await audit.logEvent({
+				actorId: ctx.user.id,
+				action: "admin.generate_voice",
+				metadata: {
+					outputName: input.outputName,
+					voicePreset: input.voicePreset,
+					sizeBytes: audio.byteLength,
 				},
 			});
 
@@ -386,6 +405,13 @@ export const adminToolsRouter = router({
 				categories[prompt.category] = (categories[prompt.category] ?? 0) + 1;
 			}
 
+			const audit = new AuditService(ctx.env.DB);
+			await audit.logEvent({
+				actorId: ctx.user.id,
+				action: "admin.generate_party_content",
+				metadata: { game: input.game, promptCount: finalPrompts.length },
+			});
+
 			return {
 				promptCount: finalPrompts.length,
 				categories,
@@ -455,6 +481,13 @@ VALUES
 				await ctx.env.DB.exec(themesSql);
 				seeded.push("themes");
 			}
+
+			const audit = new AuditService(ctx.env.DB);
+			await audit.logEvent({
+				actorId: ctx.user.id,
+				action: "admin.seed_database",
+				metadata: { targets: input.targets, seeded },
+			});
 
 			return { seeded };
 		}),

@@ -668,6 +668,25 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_blocks_unique ON blocks(blocker_id, blocke
 CREATE INDEX IF NOT EXISTS idx_blocks_blocker ON blocks(blocker_id);
 
 -- =============================================================================
+-- AUDIT EVENTS - Centralized logging for sensitive/admin actions
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS audit_events (
+  id TEXT PRIMARY KEY,
+  actor_id TEXT NOT NULL,              -- User who performed the action
+  action TEXT NOT NULL,                -- Action type (e.g., 'admin.seed_database', 'admin.generate_sound')
+  target_type TEXT,                    -- Type of target (e.g., 'game', 'user', 'asset')
+  target_id TEXT,                      -- ID of the target entity
+  metadata_json TEXT,                  -- JSON: additional context (no PII)
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_events_actor ON audit_events(actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);
+CREATE INDEX IF NOT EXISTS idx_audit_events_created_at ON audit_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_events_target ON audit_events(target_type, target_id);
+
+-- =============================================================================
 -- NOTIFICATIONS
 -- =============================================================================
 
@@ -723,6 +742,25 @@ CREATE TABLE IF NOT EXISTS generations (
 CREATE INDEX IF NOT EXISTS idx_generations_user ON generations(user_id);
 CREATE INDEX IF NOT EXISTS idx_generations_type ON generations(type);
 CREATE INDEX IF NOT EXISTS idx_generations_created ON generations(created_at);
+
+-- =============================================================================
+-- AUDIT EVENTS (Sensitive Action Logging)
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS audit_events (
+  id TEXT PRIMARY KEY,
+  actor_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  metadata_json TEXT,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_events_actor ON audit_events(actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);
+CREATE INDEX IF NOT EXISTS idx_audit_events_created_at ON audit_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_events_target ON audit_events(target_type, target_id);
 
 -- =============================================================================
 -- DEV SEED DATA
