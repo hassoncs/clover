@@ -1,5 +1,6 @@
 import type { GameDefinition } from "../types/GameDefinition";
 import type { ValidationError, ValidationWarning } from "./gameDefinitionTypes";
+import { validateShaders } from "./shaderLinter";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null && !Array.isArray(value);
@@ -254,4 +255,6 @@ export function validateSemantic(
 	if (constants.size > 0) {
 		walkConstantRefs(game, constants, errors, "");
 	}
+
+	validateShaders(game, errors, warnings);
 }

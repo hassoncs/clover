@@ -2,10 +2,9 @@
 	"entityEffects": [
 		{
 			"entityId": "ball",
-			"glsl": "shader_type canvas_item;\nuniform vec4 glow_color : source_color = vec4(0.0, 1.0, 0.5, 1.0);\nuniform float glow_speed : hint_range(0.5, 5.0) = 2.0;\nuniform float glow_min : hint_range(0.0, 1.0) = 0.4;\nuniform float glow_max : hint_range(1.0, 3.0) = 1.8;\n\nvoid fragment() {\n\tfloat pulse = mix(glow_min, glow_max, (sin(TIME * glow_speed) * 0.5 + 0.5));\n\tCOLOR = vec4(COLOR.rgb * glow_color.rgb * pulse, COLOR.a);\n}",
+			"glsl": "shader_type canvas_item;\nuniform float pulse_speed : hint_range(0.5, 8.0) = 3.0;\n\nvoid fragment() {\n\tfloat pulse = sin(TIME * pulse_speed) * 0.5 + 0.5;\n\tvec3 hot = vec3(1.0, 0.3, 0.0);\n\tvec3 cool = vec3(0.0, 1.0, 0.5);\n\tCOLOR = vec4(mix(cool, hot, pulse) * (1.0 + pulse * 0.5), COLOR.a);\n}",
 			"params": {
-				"glow_color": [0.0, 1.0, 0.5, 1.0],
-				"glow_speed": 2.0
+				"pulse_speed": 3.0
 			}
 		}
 	],
