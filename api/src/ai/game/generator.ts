@@ -236,6 +236,24 @@ IMPORTANT: This is a Tetris game. You MUST:
 4. Do NOT include rotationRule, lineClearing, or pieceSpawner slots`;
 	}
 
+	if (intent.gameType === "3d") {
+		basePrompt += `
+
+IMPORTANT: This is a 3D game. You MUST:
+1. Set sceneType: "3d" at the top level
+2. Use a 3D world config with gravity: { x: 0, y: -9.8, z: 0 }
+3. Include camera3d with an appropriate type (first-person, third-person, orbit, or fixed)
+4. Use 3D transforms on all entities: { x, y, z, rotationX, rotationY, rotationZ, scaleX, scaleY, scaleZ }
+5. Use 3D physics: { bodyType, collider: { type: "box" | "sphere" | "capsule", size: { x, y, z } } }
+6. Use 3D visuals: { type: "primitive", primitive: "box" | "sphere" | "cylinder" | "capsule", color, size: { x, y, z } }
+7. Include input3d with movement config for WASD/mouse controls
+8. Create a player entity with bodyType: "kinematic" and a floor entity with bodyType: "static"
+9. Units are in meters (1 unit = 1 meter). A character is about 1.8m tall, floors should be large (50x50 or more)
+10. Y-axis is up. Ground level is y=0. Place entities above ground.
+11. Do NOT include 2D-specific fields: pixelsPerMeter, camera (use camera3d), parallaxConfig
+12. For voxel/minecraft games, create entities with visual type "primitive" primitive "box" - voxel batches are created at runtime via scripts`;
+	}
+
 	if (shouldIncludeEconomyGuidance(prompt, intent)) {
 		basePrompt += ECONOMY_GUIDANCE;
 	}

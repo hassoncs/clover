@@ -129,6 +129,252 @@ const NODE_CATALOG: NodeCatalogEntry[] = [
 			{ id: "output", direction: "output", dataType: "texture" },
 		],
 	},
+	{
+		type: "ramp",
+		label: "Ramp",
+		category: "generator",
+		defaultPorts: [{ id: "output", direction: "output", dataType: "texture" }],
+	},
+	{
+		type: "lfo",
+		label: "LFO",
+		category: "generator",
+		defaultPorts: [{ id: "output", direction: "output", dataType: "texture" }],
+	},
+	{
+		type: "constantColor",
+		label: "Constant Color",
+		category: "generator",
+		defaultPorts: [{ id: "output", direction: "output", dataType: "texture" }],
+	},
+	{
+		type: "circle",
+		label: "Circle",
+		category: "generator",
+		defaultPorts: [{ id: "output", direction: "output", dataType: "texture" }],
+	},
+	{
+		type: "rectangle",
+		label: "Rectangle",
+		category: "generator",
+		defaultPorts: [{ id: "output", direction: "output", dataType: "texture" }],
+	},
+	{
+		type: "level",
+		label: "Level",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "transform",
+		label: "Transform",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "displace",
+		label: "Displace",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "lookup",
+		label: "Lookup",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "math",
+		label: "Math",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "threshold",
+		label: "Threshold",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "hsvAdjust",
+		label: "HSV Adjust",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "edge",
+		label: "Edge Detect",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "channelMix",
+		label: "Channel Mix",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "crossFade",
+		label: "Cross Fade",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "over",
+		label: "Over",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "mirror",
+		label: "Mirror",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "crop",
+		label: "Crop",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "resize",
+		label: "Resize",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "invert",
+		label: "Invert",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "emboss",
+		label: "Emboss",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "sharpen",
+		label: "Sharpen",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "convolve",
+		label: "Convolve",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "kaleidoscope",
+		label: "Kaleidoscope",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "duotone",
+		label: "Duotone",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "gradientMap",
+		label: "Gradient Map",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "filmGrain",
+		label: "Film Grain",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "barrelDistort",
+		label: "Barrel Distort",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
+	{
+		type: "mosaic",
+		label: "Mosaic",
+		category: "filter",
+		defaultPorts: [
+			{ id: "input", direction: "input", dataType: "texture" },
+			{ id: "output", direction: "output", dataType: "texture" },
+		],
+	},
 ];
 
 const INSPECTOR_CONFIGS: Record<string, InspectorConfig> = {

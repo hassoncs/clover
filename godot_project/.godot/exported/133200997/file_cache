@@ -29,3 +29,4 @@ res://addons/gdUnit4/test/mocker/resources/scenes/TestScene.tscn::f73052c2248051
 res://addons/gdUnit4/test/mocker/resources/scenes/TestSceneWithoutScript.tscn::2981a014b6cbd77861812abec7663a13::1770873658::res://.godot/exported/133200997/export-18479245dbafc8d3f094b06427aa5bfa-TestSceneWithoutScript.scn
 res://addons/gdUnit4/test/mocker/resources/capsuleshape2d.tres::6e84ba638f743d872ca42812d7f49091::1770873658::res://.godot/exported/133200997/export-467b7bea84135f329393653f898296c4-capsuleshape2d.res
 res://addons/gdUnit4/test/update/bbcodeView.tscn::e510912cda7e24f3383ab63fee8cb63c::1770873658::res://.godot/exported/133200997/export-8dbfd267244aa07ceb01aa5ebdf6f761-bbcodeView.scn
+res://scenes/Main3D.tscn::06f05369b3b42c73a35ea93a8dc73df5::1771139312::res://.godot/exported/133200997/export-95111f9c5f4f9882c913f8e79a7291dd-Main3D.scn

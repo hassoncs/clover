@@ -6,7 +6,7 @@ import type {
 	WorldEntityQuery,
 	WorldOps,
 } from "@slopcade/shared/types";
-import type { Vec2 } from "@slopcade/shared/types/common";
+import type { Vec2, Vec3 } from "@slopcade/shared/types/common";
 import type { InputEvents } from "@/lib/game-engine/BehaviorContext";
 
 export interface ScriptBudgetConfig {
@@ -69,6 +69,16 @@ export interface ScriptContext extends SyncWorldOps {
 	clamp(value: number, min: number, max: number): number;
 	lerp(a: number, b: number, t: number): number;
 	distance(a: Vec2, b: Vec2): number;
+	vec3(x: number, y: number, z: number): Vec3;
+	addVec3(a: Vec3, b: Vec3): Vec3;
+	subVec3(a: Vec3, b: Vec3): Vec3;
+	scaleVec3(v: Vec3, s: number): Vec3;
+	normalizeVec3(v: Vec3): Vec3;
+	dotVec3(a: Vec3, b: Vec3): number;
+	crossVec3(a: Vec3, b: Vec3): Vec3;
+	lengthVec3(v: Vec3): number;
+	distance3D(a: Vec3, b: Vec3): number;
+	lerpVec3(a: Vec3, b: Vec3, t: number): Vec3;
 }
 
 export interface InputSnapshot {

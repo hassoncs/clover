@@ -1,4 +1,10 @@
-import type { GameDefinition, GameEntity, GameJoint } from "@slopcade/shared";
+import type {
+	EntityPrefab,
+	GameDefinition,
+	GameEntity,
+	GameJoint,
+	WorldConfig,
+} from "@slopcade/shared";
 import type { EffectGraphSpec } from "@slopcade/shared/effects";
 import { compileGraph } from "@slopcade/shared/effects";
 import type { GodotBridge } from "../godot/types";
@@ -33,16 +39,20 @@ export class GameLoader {
 	}
 
 	load(definition: GameDefinition): LoadedGame {
-		const pixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+		// GameLoader is 2D-only — 3D games bypass EntityManager/Physics2D entirely
+		const world = definition.world as WorldConfig;
+		const prefabs = definition.prefabs as Record<string, EntityPrefab>;
+		const entities = definition.entities as GameEntity[];
+		const pixelsPerMeter = world.pixelsPerMeter ?? 50;
 
-		this.physics.createWorld(definition.world.gravity);
+		this.physics.createWorld(world.gravity);
 
 		const entityManager = new EntityManager({
-			prefabs: definition.prefabs,
+			prefabs,
 			bridge: this.bridge,
 		});
 
-		entityManager.loadEntities(definition.entities);
+		entityManager.loadEntities(entities);
 
 		const joints = new Map<string, JointId>();
 		if (definition.joints) {
@@ -147,20 +157,24 @@ export class GameLoader {
 	}
 
 	loadSectioned(definition: GameDefinition): LoadedGame {
-		const pixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+		// GameLoader is 2D-only — 3D games bypass EntityManager/Physics2D entirely
+		const world = definition.world as WorldConfig;
+		const prefabs = definition.prefabs as Record<string, EntityPrefab>;
+		const entities = definition.entities as GameEntity[];
+		const pixelsPerMeter = world.pixelsPerMeter ?? 50;
 
-		this.physics.createWorld(definition.world.gravity);
+		this.physics.createWorld(world.gravity);
 
 		this.bridge?.setupWorld(definition.world, definition.background);
 		this.bridge?.registerPrefabs(definition.prefabs);
 		this.bridge?.loadEntities(definition.entities);
 
 		const entityManager = new EntityManager({
-			prefabs: definition.prefabs,
+			prefabs,
 			bridge: this.bridge,
 		});
 
-		entityManager.loadEntities(definition.entities);
+		entityManager.loadEntities(entities);
 
 		const joints = new Map<string, JointId>();
 		if (definition.joints) {

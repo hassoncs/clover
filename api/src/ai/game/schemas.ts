@@ -329,17 +329,182 @@ export const TileMapSchema = z.object({
 
 export const AIEconomyGraphSchema = EconomyGraphSchema;
 
+export const Vec3Schema = z.object({
+	x: z.number(),
+	y: z.number(),
+	z: z.number(),
+});
+
+export const World3DConfigSchema = z.object({
+	gravity: Vec3Schema.optional().default({ x: 0, y: -9.8, z: 0 }),
+	bounds: z
+		.object({
+			width: z.number().positive(),
+			height: z.number().positive(),
+			depth: z.number().positive(),
+		})
+		.optional(),
+	sky: z
+		.object({
+			type: z.enum(["color", "procedural"]).optional().default("procedural"),
+			color: z.string().optional(),
+			topColor: z.string().optional(),
+			bottomColor: z.string().optional(),
+		})
+		.optional(),
+	lighting: z
+		.object({
+			preset: z
+				.enum(["noon", "sunset", "overcast", "night", "dawn"])
+				.optional()
+				.default("noon"),
+		})
+		.optional(),
+	fog: z
+		.object({
+			enabled: z.boolean().optional().default(false),
+			color: z.string().optional(),
+			density: z.number().min(0).max(1).optional(),
+		})
+		.optional(),
+});
+
+export const Camera3DConfigSchema = z.object({
+	type: z.enum(["first-person", "third-person", "orbit", "fixed", "follow"]),
+	fov: z.number().min(30).max(120).optional().default(70),
+	follow: z
+		.object({
+			target: z.string(),
+			offset: Vec3Schema.optional(),
+			smoothing: z.number().optional(),
+		})
+		.optional(),
+});
+
+export const InputConfig3DSchema = z.object({
+	movement: z
+		.object({
+			enabled: z.boolean().optional().default(true),
+			speed: z.number().positive().optional().default(5),
+			sprintMultiplier: z.number().positive().optional().default(1.5),
+			jumpForce: z.number().positive().optional().default(5),
+			target: z.string().optional(),
+		})
+		.optional(),
+	mouseLook: z
+		.object({
+			enabled: z.boolean().optional().default(true),
+			sensitivity: z.number().positive().optional().default(0.002),
+		})
+		.optional(),
+});
+
+export const TransformComponent3DSchema = z.object({
+	x: z.number().optional().default(0),
+	y: z.number().optional().default(0),
+	z: z.number().optional().default(0),
+	rotationX: z.number().optional().default(0),
+	rotationY: z.number().optional().default(0),
+	rotationZ: z.number().optional().default(0),
+	scaleX: z.number().optional().default(1),
+	scaleY: z.number().optional().default(1),
+	scaleZ: z.number().optional().default(1),
+});
+
+export const PhysicsComponent3DSchema = z.object({
+	bodyType: z.enum(["static", "dynamic", "kinematic"]),
+	mass: z.number().positive().optional(),
+	friction: z.number().min(0).max(1).optional(),
+	restitution: z.number().min(0).max(1).optional(),
+	collider: z
+		.object({
+			type: z.enum(["box", "sphere", "capsule", "cylinder"]),
+			size: Vec3Schema.optional(),
+			radius: z.number().positive().optional(),
+			height: z.number().positive().optional(),
+		})
+		.optional(),
+});
+
+export const VisualComponent3DSchema = z.object({
+	type: z.enum(["primitive", "voxels", "model", "sprite3d"]),
+	primitive: z
+		.enum(["box", "sphere", "cylinder", "capsule", "plane"])
+		.optional(),
+	size: Vec3Schema.optional(),
+	radius: z.number().positive().optional(),
+	height: z.number().positive().optional(),
+	color: z.string().optional(),
+	metallic: z.number().min(0).max(1).optional(),
+	roughness: z.number().min(0).max(1).optional(),
+	voxels: z
+		.array(
+			z.object({
+				x: z.number(),
+				y: z.number(),
+				z: z.number(),
+				color: z.string().optional(),
+			}),
+		)
+		.optional(),
+});
+
+export const EntityPrefab3DSchema = z.object({
+	id: z.string(),
+	name: z.string().optional(),
+	tags: z.array(z.string()).optional(),
+	transform: TransformComponent3DSchema.optional(),
+	physics: PhysicsComponent3DSchema.optional(),
+	visual: VisualComponent3DSchema.optional(),
+	scriptRef: z.string().optional(),
+	children: z
+		.array(
+			z.object({
+				prefabId: z.string(),
+				transform: TransformComponent3DSchema.optional(),
+			}),
+		)
+		.optional(),
+});
+
+export const GameEntity3DSchema = z.object({
+	id: z.string(),
+	prefabId: z.string(),
+	name: z.string().optional(),
+	tags: z.array(z.string()).optional(),
+	transform: TransformComponent3DSchema.optional(),
+	physics: PhysicsComponent3DSchema.optional(),
+	visual: VisualComponent3DSchema.optional(),
+	scriptRef: z.string().optional(),
+});
+
 export const GameDefinitionSchema = z.object({
 	metadata: GameMetadataSchema,
-	world: WorldConfigSchema,
+	sceneType: z.enum(["2d", "3d"]).optional().default("2d"),
+	world: z.union([WorldConfigSchema, World3DConfigSchema]),
 	presentation: PresentationConfigSchema.optional(),
 	camera: CameraConfigSchema.optional(),
-	prefabs: z.record(z.string(), EntityPrefabSchema),
-	entities: z.array(GameEntitySchema).min(1),
+	camera3d: Camera3DConfigSchema.optional(),
+	prefabs: z.record(
+		z.string(),
+		z.union([EntityPrefabSchema, EntityPrefab3DSchema]),
+	),
+	entities: z.array(z.union([GameEntitySchema, GameEntity3DSchema])).min(1),
 	parallaxConfig: ParallaxConfigSchema.optional(),
 	tileSheets: z.array(TileSheetSchema).optional(),
 	tileMaps: z.array(TileMapSchema).optional(),
 	economy: AIEconomyGraphSchema.optional(),
+	input3d: InputConfig3DSchema.optional(),
+	sounds: z
+		.record(
+			z.string(),
+			z.object({
+				url: z.string().optional(),
+				assetRef: z.string().optional(),
+				volume: z.number().min(0).max(1).optional(),
+			}),
+		)
+		.optional(),
 });
 
 export type GameDefinitionGenerated = z.infer<typeof GameDefinitionSchema>;

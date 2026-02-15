@@ -1,4 +1,4 @@
-import type { GameDefinition } from "@slopcade/shared";
+import type { EntityPrefab, GameDefinition } from "@slopcade/shared";
 import type { ImageVisualComponent } from "@slopcade/shared/types/visual";
 
 /**
@@ -75,7 +75,7 @@ export async function resolveAssetIds(
 				const assetId = (prefab.visual as ImageVisualComponent).assetId!;
 				if (resolvedUrls[assetId]) {
 					newDefinition.prefabs[id] = {
-						...prefab,
+						...(prefab as EntityPrefab),
 						visual: {
 							...prefab.visual,
 							url: resolvedUrls[assetId],

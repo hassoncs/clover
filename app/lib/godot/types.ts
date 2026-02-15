@@ -2,12 +2,14 @@ import type {
 	GameDefinition,
 	PropertySyncPayload,
 	Vec2 as SharedVec2,
+	Vec3 as SharedVec3,
 } from "@slopcade/shared";
 import type { CompiledPlan } from "@slopcade/shared/effects";
 
 export type GameRule = Record<string, unknown>;
 export type { GameDefinition, PropertySyncPayload, CompiledPlan };
 export type Vec2 = SharedVec2;
+export type Vec3 = SharedVec3;
 
 export type JsonParam<T> = T;
 
@@ -67,6 +69,34 @@ export interface RaycastHit {
 	point: Vec2;
 	normal: Vec2;
 	fraction: number;
+}
+
+export interface EntityTransform3D {
+	x: number;
+	y: number;
+	z: number;
+	rotationX: number;
+	rotationY: number;
+	rotationZ: number;
+}
+
+export interface Vec3Param {
+	x: number;
+	y: number;
+	z: number;
+}
+
+export interface RaycastHit3D {
+	entityId: string;
+	point: Vec3;
+	normal: Vec3;
+	fraction: number;
+}
+
+export interface SpawnEntityRequest3D {
+	prefabId: string;
+	position: Vec3;
+	entityId: string;
 }
 
 export interface DynamicShaderResult {
@@ -635,6 +665,52 @@ export interface GodotBridge extends EffectsBridge {
 	// External Input (for effect graphs)
 	setExternalInput(name: string, imageData: string): void;
 	setScreenInput(enable: boolean): void;
+
+	// 3D Engine
+	spawnEntity3D(
+		prefabId: string,
+		x: number,
+		y: number,
+		z: number,
+	): string | null;
+	setPosition3D(entityId: string, x: number, y: number, z: number): void;
+	getPosition3D(entityId: string): Promise<Vec3 | null>;
+	setRotation3D(entityId: string, x: number, y: number, z: number): void;
+	getRotation3D(entityId: string): Promise<Vec3 | null>;
+	setScale3D(entityId: string, x: number, y: number, z: number): void;
+	getScale3D(entityId: string): Promise<Vec3 | null>;
+	setVisible3D(entityId: string, visible: boolean): void;
+	setVelocity3D(entityId: string, x: number, y: number, z: number): void;
+	getVelocity3D(entityId: string): Promise<Vec3 | null>;
+	applyImpulse3D(entityId: string, x: number, y: number, z: number): void;
+	applyForce3D(entityId: string, x: number, y: number, z: number): void;
+	destroyEntity3D(entityId: string): void;
+	setCamera3DPosition(x: number, y: number, z: number): void;
+	setCamera3DLookAt(x: number, y: number, z: number): void;
+	setCamera3DFov(fov: number): void;
+	setCamera3DFollowTarget(entityId: string): void;
+	camera3DShake(intensity: number, duration: number): void;
+	set3DGravity(x: number, y: number, z: number): void;
+	set3DFog(enabled: boolean): void;
+	raycast3D(
+		fromX: number,
+		fromY: number,
+		fromZ: number,
+		toX: number,
+		toY: number,
+		toZ: number,
+	): Promise<RaycastHit3D | null>;
+	setMovementEnabled3D(enabled: boolean): void;
+	setMovementSpeed3D(speed: number): void;
+	setMouseSensitivity3D(sensitivity: number): void;
+	setMovementTarget3D(entityId: string): void;
+	setVirtualJoystick3D(x: number, y: number): void;
+	setTouchLook3D(deltaX: number, deltaY: number): void;
+	createVoxelBatch(voxelsJson: string): string;
+	updateVoxelBatch(batchId: string, voxelsJson: string): void;
+	destroyVoxelBatch(batchId: string): void;
+	placeVoxel(x: number, y: number, z: number, color: string): string;
+	removeVoxel(voxelId: string): void;
 }
 
 export interface GodotViewProps {

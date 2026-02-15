@@ -41,6 +41,7 @@ export * from "./sync-world-ops";
 export * from "./system-phase";
 export * from "./targeting";
 export * from "./tilemap";
+export * from "./types3d";
 export * from "./user-question";
 export * from "./visual";
 export * from "./voice-handle";

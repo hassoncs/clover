@@ -1,4 +1,4 @@
-import type { Bounds, Vec2 } from "./common";
+import type { Vec2, Vec3 } from "./common";
 import type { HapticStyle, NotificationStyle } from "./haptics";
 import type { VoiceHandleId, VoicePrepareOptions } from "./voice-handle";
 import type {
@@ -55,6 +55,54 @@ export interface SyncWorldOps {
 	setEntityAngularVelocity(entityId: string, velocity: number): void;
 	applyImpulse(entityId: string, impulse: Vec2): void;
 	applyForce(entityId: string, force: Vec2): void;
+
+	// ═══════════════════════════════════════════════════════════════
+	// 3D Entity Lifecycle
+	// ═══════════════════════════════════════════════════════════════
+	spawnEntity3D(
+		prefabId: string,
+		position: Vec3,
+		opts?: SpawnOptions,
+	): string | null;
+	destroyEntity3D(entityId: string): void;
+
+	// ═══════════════════════════════════════════════════════════════
+	// 3D Transform
+	// ═══════════════════════════════════════════════════════════════
+	getEntityPosition3D(entityId: string): Vec3 | null;
+	setEntityPosition3D(entityId: string, position: Vec3): void;
+	getEntityRotation3D(entityId: string): Vec3 | null;
+	setEntityRotation3D(entityId: string, rotation: Vec3): void;
+	getEntityScale3D(entityId: string): Vec3 | null;
+	setEntityScale3D(entityId: string, scale: Vec3): void;
+	setEntityVisible3D(entityId: string, visible: boolean): void;
+
+	// ═══════════════════════════════════════════════════════════════
+	// 3D Physics
+	// ═══════════════════════════════════════════════════════════════
+	getEntityVelocity3D(entityId: string): Vec3 | null;
+	setEntityVelocity3D(entityId: string, velocity: Vec3): void;
+	applyImpulse3D(entityId: string, impulse: Vec3): void;
+	applyForce3D(entityId: string, force: Vec3): void;
+
+	// ═══════════════════════════════════════════════════════════════
+	// 3D Camera
+	// ═══════════════════════════════════════════════════════════════
+	setCameraPosition3D(position: Vec3): void;
+	setCameraLookAt3D(target: Vec3): void;
+	setCameraFov3D(fov: number): void;
+	setCameraTarget3D(entityId: string): void;
+	cameraShake3D(intensity: number, duration: number): void;
+	createVoxelBatch(
+		voxels: Array<{ x: number; y: number; z: number; color: string }>,
+	): string;
+	updateVoxelBatch(
+		batchId: string,
+		voxels: Array<{ x: number; y: number; z: number; color: string }>,
+	): void;
+	destroyVoxelBatch(batchId: string): void;
+	placeVoxel(x: number, y: number, z: number, color: string): string;
+	removeVoxel(voxelId: string): void;
 
 	// ═══════════════════════════════════════════════════════════════
 	// Entity Metadata

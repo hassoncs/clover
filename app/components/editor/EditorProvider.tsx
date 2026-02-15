@@ -1,5 +1,6 @@
 import type {
 	AssetPlacement,
+	EntityPrefab,
 	GameDefinition,
 	GameEntity,
 	PreviewContext,
@@ -313,7 +314,7 @@ function editorReducer(
 				selectedEntityId: state.selectedEntityId,
 			};
 
-			const originalEntity = newDocument.entities[entityIndex];
+			const originalEntity = newDocument.entities[entityIndex] as GameEntity;
 			const newId = `${originalEntity.id}_copy_${Date.now()}`;
 			const duplicatedEntity: GameEntity = {
 				...originalEntity,
@@ -358,7 +359,9 @@ function editorReducer(
 		}
 
 		case "ADD_ENTITY_FROM_PREFAB": {
-			const template = state.document.prefabs[action.prefabId];
+			const template = state.document.prefabs[action.prefabId] as
+				| EntityPrefab
+				| undefined;
 			if (!template) return state;
 
 			const historyEntry: HistoryEntry = {
@@ -788,11 +791,12 @@ export function EditorProvider({
 		[],
 	);
 
-	const selectedEntity = useMemo(() => {
+	const selectedEntity = useMemo((): GameEntity | null => {
 		if (!state.selectedEntityId) return null;
 		return (
-			state.document.entities.find((e) => e.id === state.selectedEntityId) ??
-			null
+			(state.document.entities.find((e) => e.id === state.selectedEntityId) as
+				| GameEntity
+				| undefined) ?? null
 		);
 	}, [state.selectedEntityId, state.document.entities]);
 

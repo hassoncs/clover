@@ -1,3 +1,4 @@
+import type { EntityPrefab } from "@slopcade/shared";
 import { STYLE_PRESET_OPTIONS } from "@slopcade/shared/types/style-presets";
 import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
@@ -23,7 +24,7 @@ export function AssetGalleryPanel({ onPrefabPress }: AssetGalleryPanelProps) {
 	const prefabs = useMemo(() => {
 		return Object.entries(document.prefabs ?? {}).map(([id, prefab]) => ({
 			id,
-			prefab,
+			prefab: prefab as EntityPrefab,
 		}));
 	}, [document.prefabs]);
 

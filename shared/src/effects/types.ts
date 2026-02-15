@@ -50,7 +50,39 @@ export type EffectType =
 	| "rbShapeBlur"
 	| "rbSilk"
 	| "rbThreads"
-	| "fogOfWar";
+	| "fogOfWar"
+	// Tier 1: Core primitives (TouchDesigner-inspired)
+	| "level"
+	| "ramp"
+	| "lfo"
+	| "constantColor"
+	| "circle"
+	| "rectangle"
+	| "transform"
+	| "displace"
+	| "lookup"
+	| "math"
+	| "threshold"
+	// Tier 2: Power user nodes
+	| "hsvAdjust"
+	| "edge"
+	| "channelMix"
+	| "crossFade"
+	| "over"
+	| "mirror"
+	| "crop"
+	| "resize"
+	| "invert"
+	// Tier 3: Advanced/creative
+	| "emboss"
+	| "sharpen"
+	| "convolve"
+	| "kaleidoscope"
+	| "duotone"
+	| "gradientMap"
+	| "filmGrain"
+	| "barrelDistort"
+	| "mosaic";
 
 export type UniformType =
 	| "float"

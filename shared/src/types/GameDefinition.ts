@@ -1,9 +1,16 @@
 import type { ExpressionValueType, Value } from "../expressions/types";
 import type { AssetSource } from "./asset-system";
-import type { Vec2 } from "./common";
+import type { Vec2, Vec3 } from "./common";
 import type { EntityPrefab, GameEntity } from "./entity";
 import type { OverlayConfig } from "./overlay";
 import type { TileMap, TileSheet } from "./tilemap";
+import type {
+	Camera3DConfig,
+	EntityPrefab3D,
+	GameEntity3D,
+	InputConfig3D,
+	World3DConfig,
+} from "./types3d";
 
 /**
  * Dual-field image reference for backwards compatibility.
@@ -245,6 +252,7 @@ export type GameVariableValue =
 	| boolean
 	| string
 	| Vec2
+	| Vec3
 	| Value<ExpressionValueType>;
 
 /**
@@ -467,13 +475,15 @@ export interface TetrisConfig {
 
 export interface GameDefinition {
 	metadata: GameMetadata;
-	world: WorldConfig;
+	sceneType?: "2d" | "3d";
+	world: WorldConfig | World3DConfig;
 	presentation?: PresentationConfig;
 	camera?: CameraConfig;
+	camera3d?: Camera3DConfig;
 	background?: BackgroundConfig;
 	variables?: Record<string, GameVariable>;
-	prefabs: Record<string, EntityPrefab>;
-	entities: GameEntity[];
+	prefabs: Record<string, EntityPrefab | EntityPrefab3D>;
+	entities: Array<GameEntity | GameEntity3D>;
 	joints?: GameJoint[];
 	/** @deprecated Use background with type: 'parallax' instead */
 	parallaxConfig?: ParallaxConfig;
@@ -483,6 +493,7 @@ export interface GameDefinition {
 	loadingScreen?: LoadingScreenConfig;
 	sounds?: Record<string, SoundAsset>;
 	input?: InputConfig;
+	input3d?: InputConfig3D;
 	match3?: Match3Config;
 	tetris?: TetrisConfig;
 	/**

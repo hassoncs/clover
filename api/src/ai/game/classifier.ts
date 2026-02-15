@@ -12,7 +12,8 @@ export type GameType =
 	| "falling_objects"
 	| "rope_physics"
 	| "match3"
-	| "tetris";
+	| "tetris"
+	| "3d";
 
 // Local type for classifier - the actual WinCondition in game engine uses expressions
 export type WinConditionType =
@@ -30,7 +31,8 @@ export type ControlIntent =
 	| "drag_to_move"
 	| "tilt_to_move"
 	| "tilt_gravity"
-	| "buttons";
+	| "buttons"
+	| "wasd";
 
 export interface GameIntent {
 	gameType: GameType;
@@ -161,6 +163,35 @@ const GAME_TYPE_KEYWORDS: KeywordMatch[] = [
 		value: "tetris",
 		weight: 15,
 	},
+	{
+		keywords: [
+			"3d",
+			"voxel",
+			"minecraft",
+			"first-person",
+			"first person",
+			"third-person",
+			"third person",
+			"walk around",
+			"3d world",
+			"explore",
+			"fps",
+		],
+		value: "3d",
+		weight: 10,
+	},
+	{
+		keywords: [
+			"minecraft clone",
+			"voxel builder",
+			"3d platformer",
+			"3d shooter",
+			"walking simulator",
+			"open world",
+		],
+		value: "3d",
+		weight: 15,
+	},
 ];
 
 const CONTROL_TYPE_KEYWORDS: KeywordMatch[] = [
@@ -185,6 +216,18 @@ const CONTROL_TYPE_KEYWORDS: KeywordMatch[] = [
 		keywords: ["buttons", "left right", "d-pad", "arrows"],
 		value: "buttons",
 		weight: 10,
+	},
+	{
+		keywords: [
+			"wasd",
+			"keyboard",
+			"walk",
+			"first-person",
+			"first person",
+			"fps",
+		],
+		value: "wasd",
+		weight: 12,
 	},
 ];
 
@@ -348,6 +391,7 @@ function extractPlayerAction(prompt: string, gameType: GameType): string {
 		rope_physics: ["swing", "cut", "grab", "release", "hang"],
 		match3: ["swap", "match", "connect", "slide", "drag"],
 		tetris: ["rotate", "move", "drop", "hold"],
+		"3d": ["walk", "aim", "shoot", "explore", "build"],
 	};
 
 	const normalized = normalizePrompt(prompt);
@@ -372,6 +416,7 @@ function extractTargetAction(prompt: string, gameType: GameType): string {
 		rope_physics: ["deliver", "reach", "collect", "swing to"],
 		match3: ["clear gems", "reach score", "clear board", "match pieces"],
 		tetris: ["clear lines", "reach score", "survive"],
+		"3d": ["explore", "survive", "eliminate enemies", "build"],
 	};
 
 	const normalized = normalizePrompt(prompt);
@@ -462,6 +507,7 @@ function getDefaultControlIntent(gameType: GameType): ControlIntent {
 		rope_physics: "tap_to_flip",
 		match3: "drag_to_move",
 		tetris: "buttons",
+		"3d": "wasd",
 	};
 	return defaults[gameType];
 }
@@ -476,6 +522,7 @@ function getDefaultWinCondition(gameType: GameType): WinConditionType {
 		rope_physics: "collect_all",
 		match3: "score",
 		tetris: "score",
+		"3d": "reach_entity",
 	};
 	return defaults[gameType];
 }
@@ -490,6 +537,7 @@ function getDefaultLoseCondition(gameType: GameType): LoseConditionType {
 		rope_physics: "entity_destroyed",
 		match3: "time_up",
 		tetris: "custom",
+		"3d": "entity_destroyed",
 	};
 	return defaults[gameType];
 }

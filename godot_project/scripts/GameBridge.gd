@@ -4,6 +4,8 @@ signal game_loaded(game_data: Dictionary)
 signal entity_spawned(entity_id: String, node: Node2D)
 signal entity_destroyed(entity_id: String)
 signal collision_occurred(entity_a: String, entity_b: String, impulse: float)
+signal sensor_entered(sensor_id: String, body_id: String)
+signal sensor_exited(sensor_id: String, body_id: String)
 signal query_result(request_id: int, result: Variant)
 signal joint_created(request_id: int, joint_id: int)
 
@@ -38,6 +40,14 @@ var _camera_receiver: Node = null
 var _camera_manager: Node = null
 var _pixel_buffer_manager: PixelBufferManager = null
 
+var _entity_factory_3d: EntityFactory3D = null
+var _world_3d_system: World3DSystem = null
+var _visual_renderer_3d: VisualRenderer3D = null
+var _voxel_system: VoxelSystem = null
+var _camera_3d_controller: CameraController3D = null
+var _movement_controller_3d = null
+var _collision_system_3d: CollisionSystem3D = null
+
 # ============================================================================
 # CORE STATE
 # ============================================================================
@@ -47,6 +57,11 @@ var prefabs: Dictionary = {}
 var pixels_per_meter: float = 50.0
 var game_root: Node2D = null
 var camera: Camera2D = null
+var game_root_3d: Node3D = null
+var camera_3d: Camera3D = null
+var _main_3d_scene: Node3D = null
+var _entities_3d: Dictionary = {}
+var _is_3d: bool = false
 
 # Backward compatibility: entities property that maps to entity_registry nodes
 var entities: Dictionary:
@@ -76,7 +91,7 @@ func get_record(entity_id: String) -> EntityRecord:
 	if record and record.is_valid(): return record
 	return null
 
-func get_entity_node(entity_id: String) -> Node2D:
+func get_entity_node(entity_id: String) -> Node:
 	var record = get_record(entity_id)
 	return record.node if record else null
 
@@ -104,6 +119,12 @@ func _finalize_js_bridge() -> void:
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)
+
+func emit_sensor_entered(sensor_id: String, body_id: String) -> void:
+	sensor_entered.emit(sensor_id, body_id)
+
+func emit_sensor_exited(sensor_id: String, body_id: String) -> void:
+	sensor_exited.emit(sensor_id, body_id)
 
 func pause_physics() -> void: Engine.time_scale = 0.0
 func resume_physics() -> void: Engine.time_scale = 1.0
@@ -177,6 +198,19 @@ func _init_modules() -> void:
 	_collision_system = CollisionSystem.new(self, _event_emitter)
 	_world_system = WorldSystem.new(self)
 	_pixel_buffer_manager = PixelBufferManager.new(self)
+	_entity_factory_3d = EntityFactory3D.new(self)
+	_world_3d_system = World3DSystem.new(self)
+	_visual_renderer_3d = VisualRenderer3D.new(self)
+	_voxel_system = VoxelSystem.new()
+	_camera_3d_controller = CameraController3D.new()
+	_camera_3d_controller.name = "CameraController3D"
+	_camera_3d_controller.set_bridge(self)
+	add_child(_camera_3d_controller)
+	_movement_controller_3d = load("res://scripts/input/MovementController3D.gd").new()
+	_movement_controller_3d.name = "MovementController3D"
+	_movement_controller_3d.set_bridge(self)
+	add_child(_movement_controller_3d)
+	_collision_system_3d = CollisionSystem3D.new(self)
 
 	_camera_receiver = load("res://scripts/camera/WebCameraReceiver.gd").new()
 	_camera_receiver.name = "WebCameraReceiver"
@@ -231,6 +265,7 @@ func _build_method_map() -> void:
 		_visual_renderer, _ui_manager, _camera_controller, _input_router,
 		_sync_system, _property_collector, _event_emitter, _physics_queries,
 		_pixel_buffer_manager, _debug_bridge, _viewport_3d,
+		_entity_factory_3d, _camera_3d_controller, _movement_controller_3d, _world_3d_system, _collision_system_3d, _voxel_system,
 	])
 
 
@@ -280,6 +315,8 @@ func native_dispatch(method_name: String, args_json: String) -> Variant:
 	return result
 
 func _input(event: InputEvent) -> void:
+	if _is_3d:
+		return
 	if not _input_router: return
 	var input_data = _input_router.process_input_event(event)
 	if input_data.has("type"):
@@ -498,10 +535,18 @@ func load_game_json(json_string: String) -> bool:
 		push_error("[GameBridge] Failed to parse game JSON")
 		return false
 	game_data = json.data
+	var scene_type = str(game_data.get("sceneType", "2d")).to_lower()
+	var next_is_3d = scene_type == "3d"
 	clear_game()
-	setup_world(game_data.get("world", {}), game_data.get("background", {}))
-	register_prefabs(game_data.get("prefabs", {}))
-	load_entities(game_data.get("entities", []))
+	_is_3d = next_is_3d
+	if _is_3d:
+		_load_game_3d(game_data)
+	else:
+		if game_root:
+			game_root.visible = true
+		setup_world(game_data.get("world", {}), game_data.get("background", {}))
+		register_prefabs(game_data.get("prefabs", {}))
+		load_entities(game_data.get("entities", []))
 	game_loaded.emit(game_data)
 	return true
 
@@ -528,6 +573,15 @@ func load_entities(entities_data: Array) -> int:
 	return created_count
 
 func clear_entities() -> void:
+	if _is_3d:
+		for entity_id in _entities_3d.keys():
+			var node = _entities_3d[entity_id]
+			if node and is_instance_valid(node):
+				node.queue_free()
+		_entities_3d.clear()
+		entity_registry.clear()
+		return
+
 	if _joint_manager: _joint_manager.clear_all()
 	if _entity_manager: _entity_manager.clear_all()
 	entity_registry.clear()
@@ -586,20 +640,49 @@ func spawn_entity_with_id(prefab_id: String, x: float, y: float, entity_id: Stri
 	if _entity_manager: return _entity_manager.spawn_entity(prefab_id, x, y, entity_id)
 	return null
 
-func destroy_entity(entity_id: String) -> void: if _entity_manager: _entity_manager.destroy_entity(entity_id)
-func get_entity(entity_id: String) -> Node2D: return get_entity_node(entity_id)
+func destroy_entity(entity_id: String) -> void:
+	if _is_3d:
+		var node = _entities_3d.get(entity_id, null)
+		if node and is_instance_valid(node):
+			node.queue_free()
+		_entities_3d.erase(entity_id)
+		entity_registry.erase(entity_id)
+		entity_destroyed.emit(entity_id)
+		return
+	if _entity_manager:
+		_entity_manager.destroy_entity(entity_id)
+
+func get_entity(entity_id: String) -> Node:
+	return get_entity_node(entity_id)
 
 func clear_game() -> void:
-	if _joint_manager: _joint_manager.clear_all()
-	if _entity_manager: _entity_manager.clear_all()
+	if _is_3d:
+		clear_entities()
+		_cleanup_3d_scene()
+	else:
+		if _joint_manager: _joint_manager.clear_all()
+		if _entity_manager: _entity_manager.clear_all()
 	entity_registry.clear()
+	_entities_3d.clear()
 	prefabs.clear()
 	var effects_bridge = get_node_or_null("/root/GameBridgeEffects")
 	if effects_bridge and effects_bridge.has_method("clear_plan"):
 		effects_bridge.clear_plan()
 		effects_bridge.reset_graph()
 
+	if game_root:
+		game_root.visible = true
+
+func _cleanup_3d_scene() -> void:
+	if _main_3d_scene and is_instance_valid(_main_3d_scene):
+		_main_3d_scene.queue_free()
+	_main_3d_scene = null
+	game_root_3d = null
+	camera_3d = null
+
 func _physics_process(delta: float) -> void:
+	if _is_3d:
+		return
 	if _sync_system: _sync_system.process_sync()
 	if _joint_manager: _joint_manager.process_mouse_joints(delta)
 	if _physics_controller: _physics_controller.process_physics(delta, entity_registry)
@@ -610,13 +693,113 @@ func _queue_event(event_type: String, data: Dictionary) -> void:
 func poll_events() -> String: return _event_queue_module.poll_events() if _event_queue_module else "[]"
 
 func _get_entity_transform_impl(entity_id: String) -> Variant:
-	var node = get_entity_node(entity_id)
+	var record = get_record(entity_id)
+	if not record:
+		return null
+	var node = record.node
 	if not node: return null
+	if node is Node3D:
+		return {
+			"x": node.position.x,
+			"y": node.position.y,
+			"z": node.position.z,
+			"rotationX": node.rotation_degrees.x,
+			"rotationY": node.rotation_degrees.y,
+			"rotationZ": node.rotation_degrees.z
+		}
 	var game_pos = godot_to_game_pos(node.position)
 	return {"x": game_pos.x, "y": game_pos.y, "angle": -node.rotation}
 
 func _screen_to_world_impl(screen_x: float, screen_y: float) -> Dictionary:
+	if _is_3d and camera_3d:
+		var origin = camera_3d.project_ray_origin(Vector2(screen_x, screen_y))
+		var direction = camera_3d.project_ray_normal(Vector2(screen_x, screen_y))
+		if abs(direction.y) > 0.0001:
+			var t = -origin.y / direction.y
+			var world_pos = origin + direction * t
+			return {"x": world_pos.x, "y": world_pos.y, "z": world_pos.z}
+		return {"x": origin.x, "y": origin.y, "z": origin.z}
 	var screen_pos = Vector2(screen_x, screen_y)
 	var godot_world_pos = get_viewport().get_canvas_transform().affine_inverse() * screen_pos
 	var game_pos = godot_to_game_pos(godot_world_pos)
 	return {"x": game_pos.x, "y": game_pos.y}
+
+func _resolve_movement_target_3d(input3d_data: Dictionary, camera_data: Dictionary, entities_data: Array, prefabs_data: Dictionary) -> String:
+	var movement_cfg = input3d_data.get("movement", {})
+	if movement_cfg is Dictionary:
+		var explicit_target = str(movement_cfg.get("target", ""))
+		if explicit_target != "":
+			return explicit_target
+
+	var follow_cfg = camera_data.get("follow", {})
+	if follow_cfg is Dictionary:
+		var follow_target = str(follow_cfg.get("target", ""))
+		if follow_target != "":
+			return follow_target
+
+	for entity_data in entities_data:
+		if not (entity_data is Dictionary):
+			continue
+
+		var physics_data = entity_data.get("physics", null)
+		if physics_data == null:
+			var prefab_id = str(entity_data.get("prefab", ""))
+			if prefab_id != "":
+				var prefab_data = prefabs_data.get(prefab_id, null)
+				if prefab_data is Dictionary:
+					physics_data = prefab_data.get("physics", null)
+
+		if physics_data is Dictionary and str(physics_data.get("bodyType", "")) == "kinematic":
+			return str(entity_data.get("id", ""))
+
+	return ""
+
+func _load_game_3d(data: Dictionary) -> void:
+	_cleanup_3d_scene()
+
+	var main_3d_scene_resource = load("res://scenes/Main3D.tscn")
+	if not (main_3d_scene_resource is PackedScene):
+		push_error("[GameBridge] Failed to load Main3D scene")
+		return
+
+	_main_3d_scene = main_3d_scene_resource.instantiate()
+	if get_tree().current_scene:
+		get_tree().current_scene.add_child(_main_3d_scene)
+	else:
+		add_child(_main_3d_scene)
+
+	game_root_3d = _main_3d_scene.get_node_or_null("GameRoot3D")
+	camera_3d = _main_3d_scene.get_node_or_null("Camera3D")
+	var env_node: WorldEnvironment = _main_3d_scene.get_node_or_null("WorldEnvironment")
+	var light_node: DirectionalLight3D = _main_3d_scene.get_node_or_null("DirectionalLight3D")
+
+	if game_root:
+		game_root.visible = false
+
+	var world_data = data.get("world", {})
+	var camera_data = data.get("camera3d", {})
+	var input3d_data = data.get("input3d", {})
+	var prefabs_data = data.get("prefabs", {})
+	var entities_data = data.get("entities", [])
+
+	prefabs = prefabs_data
+	_entities_3d.clear()
+	entity_registry.clear()
+
+	_entity_factory_3d.setup(_entities_3d, prefabs_data, game_root_3d)
+	_world_3d_system.setup(world_data, game_root_3d, env_node, light_node)
+	_voxel_system.setup(game_root_3d)
+
+	_camera_3d_controller.set_bridge(self)
+	_camera_3d_controller.setup(camera_data, camera_3d)
+
+	for entity_data in entities_data:
+		var record = _entity_factory_3d.create_entity(entity_data)
+		if record:
+			entity_registry[record.entity_id] = record
+
+	_camera_3d_controller.bind_target_from_entities(_entities_3d)
+
+	if _movement_controller_3d:
+		var movement_target_id = _resolve_movement_target_3d(input3d_data, camera_data, entities_data, prefabs_data)
+		_movement_controller_3d.setup(input3d_data, camera_3d, _camera_3d_controller, _entities_3d, movement_target_id)

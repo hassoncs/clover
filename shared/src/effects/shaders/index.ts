@@ -2,32 +2,80 @@ import type { EffectParamSchema, EffectType } from "../types";
 
 import asciiGlsl from "./post/ascii.glsl";
 import { meta as asciiMeta } from "./post/ascii.meta";
+import barrelDistortGlsl from "./post/barrelDistort.glsl";
+import { meta as barrelDistortMeta } from "./post/barrelDistort.meta";
 import bloomGlsl from "./post/bloom.glsl";
 import { meta as bloomMeta } from "./post/bloom.meta";
 import blurGlsl from "./post/blur.glsl";
 import { meta as blurMeta } from "./post/blur.meta";
+import channelMixGlsl from "./post/channelMix.glsl";
+import { meta as channelMixMeta } from "./post/channelMix.meta";
 import chromaticAberrationGlsl from "./post/chromaticAberration.glsl";
 import { meta as chromaticAberrationMeta } from "./post/chromaticAberration.meta";
+import circleGlsl from "./post/circle.glsl";
+import { meta as circleMeta } from "./post/circle.meta";
 import colorGradingGlsl from "./post/colorGrading.glsl";
 import { meta as colorGradingMeta } from "./post/colorGrading.meta";
+import constantColorGlsl from "./post/constantColor.glsl";
+import { meta as constantColorMeta } from "./post/constantColor.meta";
+import convolveGlsl from "./post/convolve.glsl";
+import { meta as convolveMeta } from "./post/convolve.meta";
+import cropGlsl from "./post/crop.glsl";
+import { meta as cropMeta } from "./post/crop.meta";
+import crossFadeGlsl from "./post/crossFade.glsl";
+import { meta as crossFadeMeta } from "./post/crossFade.meta";
 import crtGlsl from "./post/crt.glsl";
 import { meta as crtMeta } from "./post/crt.meta";
+import displaceGlsl from "./post/displace.glsl";
+import { meta as displaceMeta } from "./post/displace.meta";
+import duotoneGlsl from "./post/duotone.glsl";
+import { meta as duotoneMeta } from "./post/duotone.meta";
+import edgeGlsl from "./post/edge.glsl";
+import { meta as edgeMeta } from "./post/edge.meta";
+import embossGlsl from "./post/emboss.glsl";
+import { meta as embossMeta } from "./post/emboss.meta";
+import filmGrainGlsl from "./post/filmGrain.glsl";
+import { meta as filmGrainMeta } from "./post/filmGrain.meta";
 import fogOfWarGlsl from "./post/fogOfWar.glsl";
 import { meta as fogOfWarMeta } from "./post/fogOfWar.meta";
 import glitchGlsl from "./post/glitch.glsl";
 import { meta as glitchMeta } from "./post/glitch.meta";
+import gradientMapGlsl from "./post/gradientMap.glsl";
+import { meta as gradientMapMeta } from "./post/gradientMap.meta";
 import gridGlsl from "./post/grid.glsl";
 import { meta as gridMeta } from "./post/grid.meta";
 import halftoneGlsl from "./post/halftone.glsl";
 import { meta as halftoneMeta } from "./post/halftone.meta";
+import hsvAdjustGlsl from "./post/hsvAdjust.glsl";
+import { meta as hsvAdjustMeta } from "./post/hsvAdjust.meta";
+import invertGlsl from "./post/invert.glsl";
+import { meta as invertMeta } from "./post/invert.meta";
+import kaleidoscopeGlsl from "./post/kaleidoscope.glsl";
+import { meta as kaleidoscopeMeta } from "./post/kaleidoscope.meta";
+import levelGlsl from "./post/level.glsl";
+import { meta as levelMeta } from "./post/level.meta";
+import lfoGlsl from "./post/lfo.glsl";
+import { meta as lfoMeta } from "./post/lfo.meta";
+import lookupGlsl from "./post/lookup.glsl";
+import { meta as lookupMeta } from "./post/lookup.meta";
+import mathGlsl from "./post/math.glsl";
+import { meta as mathMeta } from "./post/math.meta";
+import mirrorGlsl from "./post/mirror.glsl";
+import { meta as mirrorMeta } from "./post/mirror.meta";
+import mosaicGlsl from "./post/mosaic.glsl";
+import { meta as mosaicMeta } from "./post/mosaic.meta";
 import motionBlurGlsl from "./post/motionBlur.glsl";
 import { meta as motionBlurMeta } from "./post/motionBlur.meta";
 import nightVisionGlsl from "./post/nightVision.glsl";
 import { meta as nightVisionMeta } from "./post/nightVision.meta";
 import oldFilmGlsl from "./post/oldFilm.glsl";
 import { meta as oldFilmMeta } from "./post/oldFilm.meta";
+import overGlsl from "./post/over.glsl";
+import { meta as overMeta } from "./post/over.meta";
 import pixelateScreenGlsl from "./post/pixelateScreen.glsl";
 import { meta as pixelateScreenMeta } from "./post/pixelateScreen.meta";
+import rampGlsl from "./post/ramp.glsl";
+import { meta as rampMeta } from "./post/ramp.meta";
 import rbAuroraGlsl from "./post/rbAurora.glsl";
 import { meta as rbAuroraMeta } from "./post/rbAurora.meta";
 import rbBalatroGlsl from "./post/rbBalatro.glsl";
@@ -68,10 +116,16 @@ import rbSilkGlsl from "./post/rbSilk.glsl";
 import { meta as rbSilkMeta } from "./post/rbSilk.meta";
 import rbThreadsGlsl from "./post/rbThreads.glsl";
 import { meta as rbThreadsMeta } from "./post/rbThreads.meta";
+import rectangleGlsl from "./post/rectangle.glsl";
+import { meta as rectangleMeta } from "./post/rectangle.meta";
+import resizeGlsl from "./post/resize.glsl";
+import { meta as resizeMeta } from "./post/resize.meta";
 import rippleGlsl from "./post/ripple.glsl";
 import { meta as rippleMeta } from "./post/ripple.meta";
 import scanlinesGlsl from "./post/scanlines.glsl";
 import { meta as scanlinesMeta } from "./post/scanlines.meta";
+import sharpenGlsl from "./post/sharpen.glsl";
+import { meta as sharpenMeta } from "./post/sharpen.meta";
 import shimmerGlsl from "./post/shimmer.glsl";
 import { meta as shimmerMeta } from "./post/shimmer.meta";
 import shockwaveGlsl from "./post/shockwave.glsl";
@@ -80,6 +134,10 @@ import speedLinesGlsl from "./post/speedLines.glsl";
 import { meta as speedLinesMeta } from "./post/speedLines.meta";
 import thermalVisionGlsl from "./post/thermalVision.glsl";
 import { meta as thermalVisionMeta } from "./post/thermalVision.meta";
+import thresholdGlsl from "./post/threshold.glsl";
+import { meta as thresholdMeta } from "./post/threshold.meta";
+import transformGlsl from "./post/transform.glsl";
+import { meta as transformMeta } from "./post/transform.meta";
 import underwaterGlsl from "./post/underwater.glsl";
 import { meta as underwaterMeta } from "./post/underwater.meta";
 import vignetteGlsl from "./post/vignette.glsl";
@@ -196,6 +254,35 @@ export const SHADER_LIBRARY: Record<string, string> = {
 	silhouette: silhouetteGlsl,
 	tint: tintGlsl,
 	waveDistortion: waveDistortionGlsl,
+	level: levelGlsl,
+	ramp: rampGlsl,
+	lfo: lfoGlsl,
+	constantColor: constantColorGlsl,
+	circle: circleGlsl,
+	rectangle: rectangleGlsl,
+	transform: transformGlsl,
+	displace: displaceGlsl,
+	lookup: lookupGlsl,
+	math: mathGlsl,
+	threshold: thresholdGlsl,
+	hsvAdjust: hsvAdjustGlsl,
+	edge: edgeGlsl,
+	channelMix: channelMixGlsl,
+	crossFade: crossFadeGlsl,
+	over: overGlsl,
+	mirror: mirrorGlsl,
+	crop: cropGlsl,
+	resize: resizeGlsl,
+	invert: invertGlsl,
+	emboss: embossGlsl,
+	sharpen: sharpenGlsl,
+	convolve: convolveGlsl,
+	kaleidoscope: kaleidoscopeGlsl,
+	duotone: duotoneGlsl,
+	gradientMap: gradientMapGlsl,
+	filmGrain: filmGrainGlsl,
+	barrelDistort: barrelDistortGlsl,
+	mosaic: mosaicGlsl,
 };
 
 export const SHADER_REGISTRY: Record<string, ShaderLibraryEntry> = {
@@ -256,6 +343,35 @@ export const SHADER_REGISTRY: Record<string, ShaderLibraryEntry> = {
 	silhouette: silhouetteMeta,
 	tint: tintMeta,
 	waveDistortion: waveDistortionMeta,
+	level: levelMeta,
+	ramp: rampMeta,
+	lfo: lfoMeta,
+	constantColor: constantColorMeta,
+	circle: circleMeta,
+	rectangle: rectangleMeta,
+	transform: transformMeta,
+	displace: displaceMeta,
+	lookup: lookupMeta,
+	math: mathMeta,
+	threshold: thresholdMeta,
+	hsvAdjust: hsvAdjustMeta,
+	edge: edgeMeta,
+	channelMix: channelMixMeta,
+	crossFade: crossFadeMeta,
+	over: overMeta,
+	mirror: mirrorMeta,
+	crop: cropMeta,
+	resize: resizeMeta,
+	invert: invertMeta,
+	emboss: embossMeta,
+	sharpen: sharpenMeta,
+	convolve: convolveMeta,
+	kaleidoscope: kaleidoscopeMeta,
+	duotone: duotoneMeta,
+	gradientMap: gradientMapMeta,
+	filmGrain: filmGrainMeta,
+	barrelDistort: barrelDistortMeta,
+	mosaic: mosaicMeta,
 };
 
 export function getShaderGlsl(effectType: string): string | null {

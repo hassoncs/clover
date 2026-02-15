@@ -1,6 +1,6 @@
 import { SystemPhase } from "@slopcade/shared";
 import type { AsyncWorldOps } from "@slopcade/shared/types/async-world-ops";
-import type { Vec2 } from "@slopcade/shared/types/common";
+import type { Vec2, Vec3 } from "@slopcade/shared/types/common";
 import type {
 	HapticStyle,
 	NotificationStyle,
@@ -1261,6 +1261,115 @@ export class ScriptSandboxRuntimeSystem
 				bridge.applyForce(entityId, force);
 			},
 
+			spawnEntity3D: (
+				prefabId: string,
+				position: Vec3,
+				_opts?: SpawnOptions,
+			): string | null => {
+				return bridge.spawnEntity3D(
+					prefabId,
+					position.x,
+					position.y,
+					position.z,
+				) as string | null;
+			},
+
+			destroyEntity3D: (entityId: string): void => {
+				bridge.destroyEntity3D(entityId);
+			},
+
+			getEntityPosition3D: (_entityId: string): Vec3 | null => {
+				// TODO: 3D entity state tracking for sync getters (Godot-side state is not accessible synchronously)
+				return null;
+			},
+
+			setEntityPosition3D: (entityId: string, position: Vec3): void => {
+				bridge.setPosition3D(entityId, position.x, position.y, position.z);
+			},
+
+			getEntityRotation3D: (_entityId: string): Vec3 | null => {
+				return null;
+			},
+
+			setEntityRotation3D: (entityId: string, rotation: Vec3): void => {
+				bridge.setRotation3D(entityId, rotation.x, rotation.y, rotation.z);
+			},
+
+			getEntityScale3D: (_entityId: string): Vec3 | null => {
+				return null;
+			},
+
+			setEntityScale3D: (entityId: string, scale: Vec3): void => {
+				bridge.setScale3D(entityId, scale.x, scale.y, scale.z);
+			},
+
+			setEntityVisible3D: (entityId: string, visible: boolean): void => {
+				bridge.setVisible3D(entityId, visible);
+			},
+
+			getEntityVelocity3D: (_entityId: string): Vec3 | null => {
+				return null;
+			},
+
+			setEntityVelocity3D: (entityId: string, velocity: Vec3): void => {
+				bridge.setVelocity3D(entityId, velocity.x, velocity.y, velocity.z);
+			},
+
+			applyImpulse3D: (entityId: string, impulse: Vec3): void => {
+				bridge.applyImpulse3D(entityId, impulse.x, impulse.y, impulse.z);
+			},
+
+			applyForce3D: (entityId: string, force: Vec3): void => {
+				bridge.applyForce3D(entityId, force.x, force.y, force.z);
+			},
+
+			setCameraPosition3D: (position: Vec3): void => {
+				bridge.setCamera3DPosition(position.x, position.y, position.z);
+			},
+
+			setCameraLookAt3D: (target: Vec3): void => {
+				bridge.setCamera3DLookAt(target.x, target.y, target.z);
+			},
+
+			setCameraFov3D: (fov: number): void => {
+				bridge.setCamera3DFov(fov);
+			},
+
+			setCameraTarget3D: (entityId: string): void => {
+				bridge.setCamera3DFollowTarget(entityId);
+			},
+
+			cameraShake3D: (intensity: number, duration: number): void => {
+				bridge.camera3DShake(intensity, duration);
+			},
+
+			createVoxelBatch: (
+				voxels: Array<{ x: number; y: number; z: number; color: string }>,
+			): string => {
+				return (
+					(bridge.createVoxelBatch(JSON.stringify(voxels)) as string) || ""
+				);
+			},
+
+			updateVoxelBatch: (
+				batchId: string,
+				voxels: Array<{ x: number; y: number; z: number; color: string }>,
+			): void => {
+				bridge.updateVoxelBatch(batchId, JSON.stringify(voxels));
+			},
+
+			destroyVoxelBatch: (batchId: string): void => {
+				bridge.destroyVoxelBatch(batchId);
+			},
+
+			placeVoxel: (x: number, y: number, z: number, color: string): string => {
+				return (bridge.placeVoxel(x, y, z, color) as string) || "";
+			},
+
+			removeVoxel: (voxelId: string): void => {
+				bridge.removeVoxel(voxelId);
+			},
+
 			getEntityTags: (entityId: string): string[] =>
 				em.getEntity(entityId)?.tags ?? [],
 
@@ -1379,6 +1488,43 @@ export class ScriptSandboxRuntimeSystem
 			lerp: (a: number, b: number, t: number) => a + (b - a) * t,
 			distance: (a: Vec2, b: Vec2) =>
 				Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2),
+			vec3: (x: number, y: number, z: number): Vec3 => ({ x, y, z }),
+			addVec3: (a: Vec3, b: Vec3): Vec3 => ({
+				x: a.x + b.x,
+				y: a.y + b.y,
+				z: a.z + b.z,
+			}),
+			subVec3: (a: Vec3, b: Vec3): Vec3 => ({
+				x: a.x - b.x,
+				y: a.y - b.y,
+				z: a.z - b.z,
+			}),
+			scaleVec3: (v: Vec3, s: number): Vec3 => ({
+				x: v.x * s,
+				y: v.y * s,
+				z: v.z * s,
+			}),
+			normalizeVec3: (v: Vec3): Vec3 => {
+				const len = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+				return len > 0
+					? { x: v.x / len, y: v.y / len, z: v.z / len }
+					: { x: 0, y: 0, z: 0 };
+			},
+			dotVec3: (a: Vec3, b: Vec3): number => a.x * b.x + a.y * b.y + a.z * b.z,
+			crossVec3: (a: Vec3, b: Vec3): Vec3 => ({
+				x: a.y * b.z - a.z * b.y,
+				y: a.z * b.x - a.x * b.z,
+				z: a.x * b.y - a.y * b.x,
+			}),
+			lengthVec3: (v: Vec3): number =>
+				Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z),
+			distance3D: (a: Vec3, b: Vec3): number =>
+				Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2 + (b.z - a.z) ** 2),
+			lerpVec3: (a: Vec3, b: Vec3, t: number): Vec3 => ({
+				x: a.x + (b.x - a.x) * t,
+				y: a.y + (b.y - a.y) * t,
+				z: a.z + (b.z - a.z) * t,
+			}),
 			createPixelBuffer: () => {},
 			pixelBufferDraw: () => {},
 			pixelBufferClear: () => {},

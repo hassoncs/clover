@@ -1,9 +1,6 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/react-bits-shader-reproduction.md",
-  "started_at": "2026-02-15T03:49:45.302Z",
-  "session_ids": [
-    "ses_3a094d342ffe07lebmgEnWABTK"
-  ],
-  "plan_name": "react-bits-shader-reproduction",
-  "agent": "atlas"
+	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/3d-engine-support.md",
+	"started_at": "2026-02-15T06:58:33.146Z",
+	"session_ids": ["ses_39fec1db4ffetYRVmbfV7WfssN"],
+	"plan_name": "3d-engine-support"
 }
