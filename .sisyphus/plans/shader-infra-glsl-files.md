@@ -67,15 +67,15 @@ Refactor shader storage from two monolith TypeScript files into per-shader `.gls
 - All existing tests pass unchanged
 
 ### Definition of Done
-- [ ] Every shader from current `shaderLibrary.ts` exists as an individual `.glsl` file
-- [ ] Every shader from current `shaderRegistry.ts` has a co-located `.meta.ts`
-- [ ] `SHADER_LIBRARY` and `SHADER_REGISTRY` exports are identical in shape and content
-- [ ] `#include` works for at least one shared utility function
-- [ ] `vite-plugin-glsl` is configured and imports resolve at build time
-- [ ] Metro config updated for `.glsl` source extension support
-- [ ] All existing effect tests pass
-- [ ] `tsc --noEmit` passes for `shared/` package
-- [ ] Runtime behavior is unchanged (GraphExecutor, compiler, UI controls all work)
+- [x] Every shader from current `shaderLibrary.ts` exists as an individual `.glsl` file
+- [x] Every shader from current `shaderRegistry.ts` has a co-located `.meta.ts`
+- [x] `SHADER_LIBRARY` and `SHADER_REGISTRY` exports are identical in shape and content
+- [x] `#include` works for at least one shared utility function
+- [x] `vite-plugin-glsl` is configured and imports resolve at build time
+- [x] Metro config updated for `.glsl` source extension support
+- [x] All existing effect tests pass
+- [x] `tsc --noEmit` passes for `shared/` package
+- [x] Runtime behavior is unchanged (GraphExecutor, compiler, UI controls all work)
 
 ### Must Have
 - Exact same `SHADER_LIBRARY` and `SHADER_REGISTRY` object shapes as current code
@@ -174,10 +174,10 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
   - `https://github.com/UstymUkhman/vite-plugin-glsl` — plugin documentation.
 
   **Acceptance Criteria**:
-  - [ ] `vite-plugin-glsl` is installed and configured in Vite config.
-  - [ ] Metro config supports `.glsl` source extension (or gap documented).
-  - [ ] Type declaration file exists and `tsc --noEmit` passes.
-  - [ ] A test `.glsl` file imports successfully as a string in a smoke test.
+  - [x] `vite-plugin-glsl` is installed and configured in Vite config.
+  - [x] Metro config supports `.glsl` source extension (or gap documented).
+  - [x] Type declaration file exists and `tsc --noEmit` passes.
+  - [x] A test `.glsl` file imports successfully as a string in a smoke test.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -239,9 +239,9 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
   - Existing noise/hash functions inline in dissolve, glitch, shimmer, nightVision shaders.
 
   **Acceptance Criteria**:
-  - [ ] Directory structure exists as specified.
-  - [ ] At least one `_lib/*.glsl` utility file exists with extracted common code.
-  - [ ] `_lib/` files are syntactically valid GLSL fragments.
+  - [x] Directory structure exists as specified.
+  - [x] At least one `_lib/*.glsl` utility file exists with extracted common code.
+  - [x] `_lib/` files are syntactically valid GLSL fragments.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -293,10 +293,10 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
   - `shared/src/effects/types.ts` — `EffectParamSchema`, `ShaderCategory` types.
 
   **Acceptance Criteria**:
-  - [ ] 15 `.glsl` files exist in `sprite/`.
-  - [ ] 15 `.meta.ts` files exist in `sprite/`.
-  - [ ] Each `.glsl` file content matches the corresponding `SHADER_LIBRARY` entry exactly (or differs only by `#include` substitution of identical utility code).
-  - [ ] Each `.meta.ts` exports a typed object matching the corresponding `SHADER_REGISTRY` entry.
+  - [x] 15 `.glsl` files exist in `sprite/`.
+  - [x] 15 `.meta.ts` files exist in `sprite/`.
+  - [x] Each `.glsl` file content matches the corresponding `SHADER_LIBRARY` entry exactly (or differs only by `#include` substitution of identical utility code).
+  - [x] Each `.meta.ts` exports a typed object matching the corresponding `SHADER_REGISTRY` entry.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -347,9 +347,9 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
   - `shared/src/effects/shaderRegistry.ts` lines 510-1308 — post-process shader metadata.
 
   **Acceptance Criteria**:
-  - [ ] 22 `.glsl` files exist in `post/` (21 post-process + 1 grid).
-  - [ ] 22 `.meta.ts` files exist in `post/`.
-  - [ ] Content matches source (same verification as Task 3).
+  - [x] 22 `.glsl` files exist in `post/` (21 post-process + 1 grid).
+  - [x] 22 `.meta.ts` files exist in `post/`.
+  - [x] Content matches source (same verification as Task 3).
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -405,11 +405,11 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
   - `shared/src/effects/index.ts` — package barrel that re-exports effects module.
 
   **Acceptance Criteria**:
-  - [ ] `SHADER_LIBRARY` from barrel has identical keys and values to current monolith.
-  - [ ] `SHADER_REGISTRY` from barrel has identical entries to current monolith.
-  - [ ] All helper functions produce identical results.
-  - [ ] `tsc --noEmit` passes for the shared package.
-  - [ ] All existing imports resolve without errors.
+  - [x] `SHADER_LIBRARY` from barrel has identical keys and values to current monolith.
+  - [x] `SHADER_REGISTRY` from barrel has identical entries to current monolith.
+  - [x] All helper functions produce identical results.
+  - [x] `tsc --noEmit` passes for the shared package.
+  - [x] All existing imports resolve without errors.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -466,12 +466,12 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
   - `shared/src/effects/shaderRegistry.ts` — old monolith to clean up.
 
   **Acceptance Criteria**:
-  - [ ] All existing tests pass with recorded output.
-  - [ ] `tsc --noEmit` passes.
-  - [ ] Vite build succeeds.
-  - [ ] Old monolith files are either thin re-exports or removed.
-  - [ ] No consumer code behavior has changed.
-  - [ ] Evidence index exists: `.sisyphus/evidence/shader-infra-summary.md`.
+  - [x] All existing tests pass with recorded output.
+  - [x] `tsc --noEmit` passes.
+  - [x] Vite build succeeds.
+  - [x] Old monolith files are either thin re-exports or removed.
+  - [x] No consumer code behavior has changed.
+  - [x] Evidence index exists: `.sisyphus/evidence/shader-infra-summary.md`.
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -538,12 +538,12 @@ pnpm build --filter shared  # or relevant Vite workspace build
 ```
 
 ### Final Checklist
-- [ ] All Must Have items satisfied
-- [ ] All Must NOT Have violations absent
-- [ ] 37 shaders extracted into individual files
-- [ ] Barrel produces identical `SHADER_LIBRARY` and `SHADER_REGISTRY`
-- [ ] `#include` works for shared utilities
-- [ ] All tests pass
-- [ ] TypeScript compiles cleanly
-- [ ] Build succeeds
-- [ ] Evidence artifacts complete
+- [x] All Must Have items satisfied
+- [x] All Must NOT Have violations absent
+- [x] 37 shaders extracted into individual files
+- [x] Barrel produces identical `SHADER_LIBRARY` and `SHADER_REGISTRY`
+- [x] `#include` works for shared utilities
+- [x] All tests pass
+- [x] TypeScript compiles cleanly
+- [x] Build succeeds
+- [x] Evidence artifacts complete
