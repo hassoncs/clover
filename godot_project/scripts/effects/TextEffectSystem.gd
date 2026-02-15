@@ -78,40 +78,60 @@ func _create_subviewport_node(text_config: Dictionary, font_config: Dictionary, 
 
 func _load_font(font_config: Dictionary) -> FontFile:
     var url = font_config.get("url", "")
+    var weight = font_config.get("weight", "normal")
     
     if url == "":
         return ThemeDB.fallback_font
     
-    if _font_cache.has(url):
-        return _font_cache[url]
+    var cache_key = "%s_%s" % [url, weight]
+    if _font_cache.has(cache_key):
+        return _font_cache[cache_key]
     
-    var cache_path = "user://fonts/%s.ttf" % url.md5_text()
+    var cache_path = "user://fonts/%s.ttf" % cache_key.md5_text()
     
     if FileAccess.file_exists(cache_path):
         var cached_font = FontFile.new()
         cached_font.load_dynamic_font(cache_path)
-        _font_cache[url] = cached_font
+        _font_cache[cache_key] = cached_font
         return cached_font
     
     var font = FontFile.new()
     var http = HTTPRequest.new()
     
-    var result = await _download_font(url, http)
+    var weight_url = _get_weight_url(url, weight)
+    
+    var result = await _download_font(weight_url, http)
     if result.success:
         font.data = result.data
+        
+        if font_config.get("isVariable", false):
+            var variation = FontVariation.new()
+            variation.base_font = font
+            variation.variation_opentype = {
+                "wght": 400 if weight == "normal" else 700
+            }
+            _font_cache[cache_key] = variation
+            http.queue_free()
+            return variation
         
         DirAccess.make_dir_recursive_absolute("user://fonts")
         var f = FileAccess.open(cache_path, FileAccess.WRITE)
         f.store_buffer(result.data)
         f.close()
         
-        _font_cache[url] = font
+        _font_cache[cache_key] = font
     else:
-        push_warning("[TextEffectSystem] Failed to download font from %s, using fallback" % url)
+        push_warning("[TextEffectSystem] Failed to download font from %s, using fallback" % weight_url)
         font = ThemeDB.fallback_font
     
     http.queue_free()
     return font
+
+func _get_weight_url(url: String, weight: String) -> String:
+    if weight == "bold":
+        var bold_url = url.replace("Regular", "Bold").replace("-Regular.", "-Bold.")
+        return bold_url
+    return url
 
 func _download_font(url: String, http: HTTPRequest) -> Dictionary:
     var result = { "success": false, "data": PackedByteArray() }
