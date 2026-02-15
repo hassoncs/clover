@@ -1,5 +1,6 @@
 import React from "react";
 import { Switch, Text, View } from "react-native";
+import { haptics } from "./haptics";
 import type { KnobToggleProps } from "./types";
 
 export function KnobToggle({
@@ -20,7 +21,10 @@ export function KnobToggle({
 				</View>
 				<Switch
 					value={value}
-					onValueChange={onChange}
+					onValueChange={(val) => {
+						haptics.light();
+						onChange(val);
+					}}
 					disabled={disabled}
 					trackColor={{ false: "#374151", true: "#a855f7" }}
 					thumbColor="#fff"

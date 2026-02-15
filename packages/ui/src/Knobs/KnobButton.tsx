@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { haptics } from "./haptics";
 import type { KnobButtonProps } from "./types";
 
 export function KnobButton({
@@ -12,7 +13,10 @@ export function KnobButton({
 	return (
 		<View className="mb-4 bg-gray-900/95 p-4 rounded-lg">
 			<Pressable
-				onPress={() => onAction(action)}
+				onPress={() => {
+					haptics.medium();
+					onAction(action);
+				}}
 				disabled={disabled}
 				className={`w-full py-3 rounded-lg items-center justify-center ${
 					disabled ? "opacity-50" : ""

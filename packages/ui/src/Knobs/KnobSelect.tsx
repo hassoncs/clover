@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { haptics } from "./haptics";
 import type { KnobSelectProps } from "./types";
 
 export function KnobSelect({
@@ -16,7 +17,12 @@ export function KnobSelect({
 		return (
 			<Pressable
 				key={option.value}
-				onPress={() => !disabled && onChange(option.value)}
+				onPress={() => {
+					if (!disabled) {
+						haptics.selection();
+						onChange(option.value);
+					}
+				}}
 				className={`
           ${isScrollable ? "mr-2 px-4 rounded-full" : "flex-1 rounded-md"}
           py-2 items-center justify-center border border-gray-600

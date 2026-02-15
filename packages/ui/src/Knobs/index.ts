@@ -1,3 +1,4 @@
+export * from "./haptics";
 export * from "./KnobButton";
 export * from "./KnobCategoryGroup";
 export * from "./KnobColor";

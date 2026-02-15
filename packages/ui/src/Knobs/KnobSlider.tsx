@@ -1,6 +1,7 @@
 import Slider from "@react-native-community/slider";
 import React, { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
+import { haptics } from "./haptics";
 import type { KnobSliderProps } from "./types";
 
 export function KnobSlider({
@@ -90,6 +91,7 @@ export function KnobSlider({
 					maximumValue={max}
 					step={step}
 					onValueChange={onChange}
+					onSlidingComplete={() => haptics.selection()}
 					minimumTrackTintColor="#a855f7"
 					maximumTrackTintColor="#374151"
 					thumbTintColor="#a855f7"

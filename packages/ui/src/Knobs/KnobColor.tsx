@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
+import { haptics } from "./haptics";
 import type { KnobColorProps } from "./types";
 
 const DEFAULT_PRESETS = [
@@ -29,6 +30,7 @@ export function KnobColor({
 
 	const handlePresetPress = (color: string) => {
 		if (disabled) return;
+		haptics.selection();
 		onChange(color);
 	};
 
