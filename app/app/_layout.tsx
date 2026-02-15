@@ -10,6 +10,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import { ToastHost } from "@/components/toast/ToastHost";
 import { AuthProvider } from "@/hooks/useAuth";
+import { preloadEditorModules } from "@/lib/editor/hooks/useEditorPreloader";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { TRPCProvider } from "@/lib/trpc/react";
@@ -118,6 +119,12 @@ function RootLayout() {
 		setColorScheme("dark");
 	}, [setColorScheme]);
 
+	const handleSplashComplete = () => {
+		preloadEditorModules().catch((err) => {
+			console.warn("[EditorPreloader] Failed to preload:", err);
+		});
+	};
+
 	return (
 		<GestureHandlerRootView
 			style={{ flex: 1 }}
@@ -126,7 +133,7 @@ function RootLayout() {
 			<TRPCProvider>
 				<AuthProvider>
 					<SafeAreaProvider>
-						<AnimatedSplashScreen>
+						<AnimatedSplashScreen onAnimationComplete={handleSplashComplete}>
 							<RootLayoutContent />
 						</AnimatedSplashScreen>
 						<ToastHost />

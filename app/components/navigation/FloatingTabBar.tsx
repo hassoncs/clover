@@ -1,8 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { tokens } from "@slopcade/theme";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+	getEditorPreloadState,
+	subscribeToEditorPreload,
+} from "@/lib/editor/hooks/useEditorPreloader";
 
 const ROUTE_ICON_MAP: Record<
 	string,
@@ -20,6 +25,7 @@ const ROUTE_ICON_MAP: Record<
 interface FloatingTabBarProps extends BottomTabBarProps {
 	onPrimaryPress: () => void;
 	isAuthenticated: boolean;
+	isCreating?: boolean;
 }
 
 export function FloatingTabBar({
@@ -28,8 +34,23 @@ export function FloatingTabBar({
 	navigation,
 	onPrimaryPress,
 	isAuthenticated,
+	isCreating = false,
 }: FloatingTabBarProps) {
 	const insets = useSafeAreaInsets();
+	const [preloadState, setPreloadState] = useState(getEditorPreloadState);
+
+	useEffect(() => {
+		const unsubscribe = subscribeToEditorPreload(() => {
+			setPreloadState(getEditorPreloadState());
+		});
+		return () => {
+			unsubscribe();
+		};
+	}, []);
+
+	const showPreloadProgress =
+		!preloadState.isReady &&
+		(preloadState.isPreloading || preloadState.progress > 0);
 
 	return (
 		<View
@@ -94,14 +115,50 @@ export function FloatingTabBar({
 					})}
 				</View>
 
-				<Pressable
-					style={styles.primaryButton}
-					onPress={onPrimaryPress}
-					accessibilityRole="button"
-					accessibilityLabel="Create new game"
-				>
-					<Ionicons name="add" size={34} color={tokens.colors.text.tertiary} />
-				</Pressable>
+				<View style={styles.primaryButtonWrapper}>
+					{showPreloadProgress && (
+						<View style={styles.progressRing}>
+							<View
+								style={[
+									styles.progressArc,
+									{
+										transform: [
+											{ rotate: `${(preloadState.progress / 100) * 360}deg` },
+										],
+									},
+								]}
+							/>
+						</View>
+					)}
+					<Pressable
+						style={[
+							styles.primaryButton,
+							isCreating && styles.primaryButtonLoading,
+						]}
+						onPress={onPrimaryPress}
+						disabled={isCreating}
+						accessibilityRole="button"
+						accessibilityLabel={
+							isCreating ? "Creating game..." : "Create new game"
+						}
+						accessibilityState={isCreating ? { busy: true } : {}}
+					>
+						{isCreating ? (
+							<View style={styles.loadingContainer}>
+								<ActivityIndicator
+									size="small"
+									color={tokens.colors.text.inverse}
+								/>
+							</View>
+						) : (
+							<Ionicons
+								name="add"
+								size={34}
+								color={tokens.colors.text.tertiary}
+							/>
+						)}
+					</Pressable>
+				</View>
 			</View>
 		</View>
 	);
@@ -150,5 +207,37 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		opacity: 0.96,
+	},
+	primaryButtonLoading: {
+		opacity: 0.7,
+	},
+	loadingContainer: {
+		width: 34,
+		height: 34,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	primaryButtonWrapper: {
+		position: "relative",
+	},
+	progressRing: {
+		position: "absolute",
+		width: 72,
+		height: 72,
+		borderRadius: 36,
+		borderWidth: 2,
+		borderColor: "rgba(99, 102, 241, 0.3)",
+	},
+	progressArc: {
+		position: "absolute",
+		top: -2,
+		left: -2,
+		width: 72,
+		height: 72,
+		borderRadius: 36,
+		borderWidth: 2,
+		borderColor: tokens.colors.primary[500],
+		borderLeftColor: "transparent",
+		borderBottomColor: "transparent",
 	},
 });

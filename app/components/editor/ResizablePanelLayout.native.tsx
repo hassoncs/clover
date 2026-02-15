@@ -1,9 +1,15 @@
-import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Suspense, useMemo, useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { InspectOverlay } from "./inspector/InspectOverlay";
 import { PanelTabBar } from "./PanelTabBar";
 import { getPanelById, PANEL_REGISTRY } from "./panels/registry";
 import { StageArea } from "./StageArea";
+
+const PanelLoadingFallback = () => (
+	<View style={styles.loadingFallback}>
+		<ActivityIndicator size="large" color="#6366F1" />
+	</View>
+);
 
 export function ResizablePanelLayout() {
 	const [activeRightPanel, setActiveRightPanel] = useState("explorer");
@@ -37,7 +43,11 @@ export function ResizablePanelLayout() {
 					onTabPress={setActiveRightPanel}
 				/>
 				<View style={styles.panelContent}>
-					{ActivePanel ? <ActivePanel /> : null}
+					{ActivePanel ? (
+						<Suspense fallback={<PanelLoadingFallback />}>
+							<ActivePanel />
+						</Suspense>
+					) : null}
 				</View>
 			</View>
 		</View>
@@ -71,5 +81,10 @@ const styles = StyleSheet.create({
 	},
 	panelContent: {
 		flex: 1,
+	},
+	loadingFallback: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
 	},
 });
