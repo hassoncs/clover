@@ -256,6 +256,36 @@ export type GameVariableValue =
 	| Value<ExpressionValueType>;
 
 /**
+ * Discriminated union for knob control configuration.
+ * Used by the KnobsPanel to render appropriate UI controls.
+ */
+export type KnobConfig =
+	| { controlType: "slider"; min: number; max: number; step?: number }
+	| { controlType: "toggle" }
+	| {
+			controlType: "select";
+			options: Array<{ label: string; value: string | number }>;
+	  }
+	| { controlType: "color"; presets?: string[] }
+	| {
+			controlType: "button";
+			action: string;
+			variant?: "default" | "destructive";
+	  }
+	| {
+			controlType: "vec2";
+			min?: { x: number; y: number };
+			max?: { x: number; y: number };
+	  }
+	| {
+			controlType: "vec3";
+			min?: { x: number; y: number; z: number };
+			max?: { x: number; y: number; z: number };
+	  }
+	| { controlType: "gradient"; minStops?: number; maxStops?: number }
+	| { controlType: "text"; maxLength?: number; placeholder?: string };
+
+/**
  * Variable with tuning metadata for live editing
  */
 export interface VariableWithTuning {
@@ -268,6 +298,9 @@ export interface VariableWithTuning {
 		max: number;
 		step: number;
 	};
+
+	/** Rich control type for KnobsPanel (optional) */
+	knob?: KnobConfig;
 
 	/** Category for grouping in UI (optional) */
 	category?: "physics" | "gameplay" | "visuals" | "economy" | "ai";
@@ -326,6 +359,25 @@ export function getLabel(key: string, v: GameVariable): string {
 		.replace(/([A-Z])/g, " $1")
 		.replace(/^./, (str) => str.toUpperCase())
 		.trim();
+}
+
+export function inferKnob(
+	variable: VariableWithTuning,
+): KnobConfig | undefined {
+	if (variable.knob) return variable.knob;
+	if (variable.tuning) {
+		return {
+			controlType: "slider",
+			min: variable.tuning.min,
+			max: variable.tuning.max,
+			step: variable.tuning.step,
+		};
+	}
+	const val = variable.value;
+	if (typeof val === "boolean") return { controlType: "toggle" };
+	if (typeof val === "string" && val.startsWith("#") && val.length === 7)
+		return { controlType: "color" };
+	return undefined;
 }
 
 export interface MultiplayerConfig {

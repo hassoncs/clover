@@ -5,6 +5,7 @@ import {
 	inferKnob,
 	isVariableWithTuning,
 	type KnobConfig,
+	type VariableWithTuning,
 } from "@slopcade/shared";
 import clsx from "clsx";
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
@@ -45,7 +46,7 @@ export const KnobsPanel = forwardRef<KnobsPanelHandle, KnobsPanelProps>(
 		const groupedVariables = useMemo(() => {
 			const groups: Record<
 				string,
-				Array<{ key: string; config: KnobConfig; variable: any }>
+				Array<{ key: string; config: KnobConfig; variable: VariableWithTuning }>
 			> = {};
 
 			Object.entries(variables).forEach(([key, variable]) => {
