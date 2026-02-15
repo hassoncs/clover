@@ -62,12 +62,12 @@ Build the infrastructure that lets party games be R2 games — same script sandb
 - [x] Shared template utilities extracted and content loader abstracted.
 - [x] Per-player private state can be sent from server (`sendToPlayer` + protocol).
 - [x] Buzzer input component integrated into party flow.
-- [ ] Client receives and exposes `privateState` in React context.
-- [ ] Subset input request flow works for target-player-only prompts.
-- [ ] `slopcade/party` and `slopcade/content` modules available via `require()`.
-- [ ] PartyRoomDO can load a GameDefinition and execute its server script in-process.
-- [ ] At least one party game (quiplash) runs as an R2 game definition.
-- [ ] Phase-router supports game-specific view registration.
+- [x] Client receives and exposes `privateState` in React context.
+- [x] Subset input request flow works for target-player-only prompts.
+- [x] `slopcade/party` and `slopcade/content` modules available via `require()`.
+- [x] PartyRoomDO can load a GameDefinition and execute its server script in-process.
+- [x] At least one party game (quiplash) runs as an R2 game definition.
+- [x] Phase-router supports game-specific view registration.
 
 ---
 
@@ -139,8 +139,8 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `app/lib/party/usePartyConnection.ts` (line ~118, switch statement)
     - `app/lib/party/PartyContext.tsx`
   - **Acceptance criteria**:
-    - [ ] Target player receives private data and context updates.
-    - [ ] Other players' contexts remain unchanged.
+    - [x] Target player receives private data and context updates.
+    - [x] Other players' contexts remain unchanged.
 
 - [x] 6. Add `requestInputFromSubset` in PartyRoomDO
   - **What to do**:
@@ -150,9 +150,9 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
   - **References**:
     - `api/src/party/PartyRoomDO.ts` (existing `requestInput` method as template)
   - **Acceptance criteria**:
-    - [ ] Subset input request works with partial participant targeting.
-    - [ ] Non-target players do not receive the request.
-    - [ ] Tests cover: subset delivery, timeout with partial responses, empty subset.
+    - [x] Subset input request works with partial participant targeting.
+    - [x] Non-target players do not receive the request.
+    - [x] Tests cover: subset delivery, timeout with partial responses, empty subset.
 
 - [x] 8. Generalize phase-router for game-specific views
   - **What to do**:
@@ -164,8 +164,8 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `app/app/party/play.tsx` (giant switch on `gamePhase`)
     - `app/app/party/host.tsx`
   - **Acceptance criteria**:
-    - [ ] Existing game renders continue to work.
-    - [ ] New game can register phase renderer without editing play.tsx/host.tsx.
+    - [x] Existing game renders continue to work.
+    - [x] New game can register phase renderer without editing play.tsx/host.tsx.
 
 ### Active (Wave B - R2 Orientation)
 
@@ -180,11 +180,11 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `api/src/party/templates/utils.ts` (logic to extract)
     - `api/src/party/templates/quiplash.ts` (matchup/scoring logic)
   - **Acceptance criteria**:
-    - [ ] `require("slopcade/party")` works in UnsafeScriptSandbox.
-    - [ ] `createScoreboard` returns sorted entries.
-    - [ ] `createMatchups` generates round-robin pairings.
-    - [ ] `tallyVotes` correctly excludes self-votes.
-    - [ ] Unit tests pass.
+    - [x] `require("slopcade/party")` works in UnsafeScriptSandbox.
+    - [x] `createScoreboard` returns sorted entries.
+    - [x] `createMatchups` generates round-robin pairings.
+    - [x] `tallyVotes` correctly excludes self-votes.
+    - [x] Unit tests pass.
 
 - [x] 13. Create `slopcade/content` module
   - **What to do**:
@@ -195,10 +195,10 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `shared/src/scripting/modules/index.ts`
     - `api/src/party/content/prompt-loader.ts` (shufflePrompts, selectPromptsForRound)
   - **Acceptance criteria**:
-    - [ ] `require("slopcade/content")` works in UnsafeScriptSandbox.
-    - [ ] Shuffle produces valid permutations.
-    - [ ] selectForRound respects usedIds exclusion.
-    - [ ] Unit tests pass.
+    - [x] `require("slopcade/content")` works in UnsafeScriptSandbox.
+    - [x] Shuffle produces valid permutations.
+    - [x] selectForRound respects usedIds exclusion.
+    - [x] Unit tests pass.
 
 - [x] 14. Add server-side script sandbox in PartyRoomDO
   - **What to do**:
@@ -216,10 +216,10 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `api/src/party/PartyRoomDO.ts` (existing template runner)
     - `api/src/party/templates/registry.ts` (current registry)
   - **Acceptance criteria**:
-    - [ ] PartyRoomDO can execute a script that calls `room.setPhase`, `room.requestInput`, etc.
-    - [ ] Script has access to `require("slopcade/party")` and `require("slopcade/content")`.
-    - [ ] Script errors are caught and reported without crashing the DO.
-    - [ ] Tests cover: basic script execution, module require, error handling.
+    - [x] PartyRoomDO can execute a script that calls `room.setPhase`, `room.requestInput`, etc.
+    - [x] Script has access to `require("slopcade/party")` and `require("slopcade/content")`.
+    - [x] Script errors are caught and reported without crashing the DO.
+    - [x] Tests cover: basic script execution, module require, error handling.
 
 - [x] 15. Migrate quiplash to R2 GameDefinition + server script
   - **What to do**:
@@ -232,9 +232,9 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `api/src/party/templates/quiplash.ts` (source logic)
     - `r2/games/ballSort/` (reference R2 game structure)
   - **Acceptance criteria**:
-    - [ ] Quiplash runs through all phases (answering → voting → reveal → scores → winner).
-    - [ ] Scoring logic produces identical results to the original template.
-    - [ ] Game uses `slopcade/party` module for scoreboard/matchups.
+    - [x] Quiplash runs through all phases (answering → voting → reveal → scores → winner).
+    - [x] Scoring logic produces identical results to the original template.
+    - [x] Game uses `slopcade/party` module for scoreboard/matchups.
 
 - [x] 16. Migrate crowd-comedy to R2 GameDefinition + server script
   - **What to do**:
@@ -244,9 +244,9 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
   - **References**:
     - `api/src/party/templates/crowd-comedy.ts`
   - **Acceptance criteria**:
-    - [ ] Crowd Comedy runs through all phases with correct scoring.
-    - [ ] Uses `slopcade/party` and `slopcade/content` modules.
-    - [ ] Pattern validates — two games successfully migrated proves the architecture.
+    - [x] Crowd Comedy runs through all phases with correct scoring.
+    - [x] Uses `slopcade/party` and `slopcade/content` modules.
+    - [x] Pattern validates — two games successfully migrated proves the architecture.
 
 ### Active (Wave C - Cleanup & Documentation)
 
@@ -263,10 +263,10 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - `api/src/party/PartyRoomDO.ts` (lines: 21, 29-30, 52, 60-61, 63, 98-100, 122, 142-144, 627-629, 703-704, 747-748, 762-763)
     - `api/src/party/templates/registry.ts`
   - **Acceptance criteria**:
-    - [ ] No references to `TEMPLATE_REGISTRY` or `templateRunner` remain in PartyRoomDO.
-    - [ ] `currentRound`/`maxRounds` not in core DO state.
-    - [ ] All games in registry use ServerScriptRunner path.
-    - [ ] Existing tests still pass.
+    - [x] No references to `TEMPLATE_REGISTRY` or `templateRunner` remain in PartyRoomDO.
+    - [x] `currentRound`/`maxRounds` not in core DO state.
+    - [x] All games in registry use ServerScriptRunner path.
+    - [x] Existing tests still pass.
 
 - [x] 18. Write summary document and test plan
   - **What to do**:
@@ -279,9 +279,9 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
       - Manual QA checklist
       - Next steps and recommendations
   - **Acceptance criteria**:
-    - [ ] Document covers all modules built in this plan.
-    - [ ] Test plan distinguishes unit/integration/manual testing.
-    - [ ] Next steps section includes Phase 3-4 priorities.
+    - [x] Document covers all modules built in this plan.
+    - [x] Test plan distinguishes unit/integration/manual testing.
+    - [x] Next steps section includes Phase 3-4 priorities.
 
 ### Deferred (removed from this plan)
 
@@ -355,9 +355,9 @@ This includes: DrawingInput, teams, audience role, bracket engine, hidden-role f
 - [x] Shared template utilities extracted and content loader abstracted.
 - [x] Per-player private state protocol and server method implemented.
 - [x] Buzzer input component available for party games.
-- [ ] Client `privateState` wired end-to-end.
-- [ ] Subset input collection works for asymmetric mechanics.
-- [ ] `slopcade/party` and `slopcade/content` modules available as shared libraries.
-- [ ] Server-side script sandbox executes game logic in PartyRoomDO.
-- [ ] At least one party game fully migrated to R2 GameDefinition format.
-- [ ] Phase-router generalized for extensible game UI.
+- [x] Client `privateState` wired end-to-end.
+- [x] Subset input collection works for asymmetric mechanics.
+- [x] `slopcade/party` and `slopcade/content` modules available as shared libraries.
+- [x] Server-side script sandbox executes game logic in PartyRoomDO.
+- [x] At least one party game fully migrated to R2 GameDefinition format.
+- [x] Phase-router generalized for extensible game UI.
