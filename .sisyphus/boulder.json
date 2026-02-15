@@ -1,6 +1,9 @@
 {
-	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.worktrees/party-platform/.sisyphus/plans/party-platform-phase1-2-official-plan.md",
-	"started_at": "2026-02-15T19:06:43.080Z",
-	"session_ids": ["ses_39d4d5216ffe3xHSaiLAZEbF7t"],
-	"plan_name": "party-platform-phase1-2-official-plan"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.worktrees/party-platform/.sisyphus/plans/party-platform-phase3-4-completion-plan.md",
+  "started_at": "2026-02-15T20:55:05.691Z",
+  "session_ids": [
+    "ses_39cea192dffe6dl1A2eqUt5a4O"
+  ],
+  "plan_name": "party-platform-phase3-4-completion-plan",
+  "agent": "atlas"
 }

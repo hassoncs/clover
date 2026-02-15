@@ -14,6 +14,7 @@ import {
 	playerJoinedMessage,
 	playerLeftMessage,
 	playerReconnectMessage,
+	playerTokenMessage,
 	privateStateMessage,
 	stateUpdateMessage,
 } from "./protocol";
@@ -58,6 +59,7 @@ export class PartyRoomDO {
 	private disconnectTimers: Map<string, ReturnType<typeof setTimeout>> =
 		new Map();
 	private activeInputCollector: InputCollector | null = null;
+	private stateVersion = 0;
 	private initialized = false;
 	private sockets: Set<WebSocket> = new Set();
 	private socketMetadata: WeakMap<
@@ -170,8 +172,8 @@ export class PartyRoomDO {
 			return jsonResponse({ error: "token required for host" }, 401);
 		}
 
-		if (role === "player" && !name) {
-			return jsonResponse({ error: "name required for player" }, 400);
+		if (role === "player" && !name && !token) {
+			return jsonResponse({ error: "name required for new player" }, 400);
 		}
 
 		const pair = new WebSocketPair();
@@ -183,7 +185,7 @@ export class PartyRoomDO {
 
 		const meta = {
 			role,
-			playerId: role === "player" ? crypto.randomUUID() : undefined,
+			playerId: undefined as string | undefined,
 			name: name ?? undefined,
 		};
 		this.socketMetadata.set(server, meta);
@@ -193,13 +195,11 @@ export class PartyRoomDO {
 				if (role === "host") {
 					await this.handleHostConnect(server, token ?? undefined);
 				} else {
-					if (meta.playerId) {
-						await this.handlePlayerConnect(
-							server,
-							meta.playerId,
-							meta.name ?? "Player",
-						);
-					}
+					await this.handlePlayerConnectWithToken(
+						server,
+						token ?? undefined,
+						name ?? "Player",
+					);
 				}
 			} catch (e) {
 				server.close(1011, "Internal Error");
@@ -260,10 +260,41 @@ export class PartyRoomDO {
 		await this.saveState();
 	}
 
+	private async handlePlayerConnectWithToken(
+		ws: WebSocket,
+		token: string | undefined,
+		name: string,
+	): Promise<void> {
+		let playerId: string | undefined;
+		let isReconnect = false;
+
+		if (token) {
+			const session = await this.state.storage.get<SessionRecord>(
+				`session:${token}`,
+			);
+			if (session?.role === "player") {
+				playerId = session.playerId;
+				isReconnect = this.players.has(playerId);
+			}
+		}
+
+		if (!playerId) {
+			playerId = crypto.randomUUID();
+		}
+
+		const meta = this.socketMetadata.get(ws);
+		if (meta) {
+			meta.playerId = playerId;
+		}
+
+		await this.handlePlayerConnect(ws, playerId, name, isReconnect);
+	}
+
 	private async handlePlayerConnect(
 		ws: WebSocket,
 		playerId: string,
 		name: string,
+		isReconnect: boolean,
 	): Promise<void> {
 		const existing = this.players.get(playerId);
 		if (existing) {
@@ -278,6 +309,17 @@ export class PartyRoomDO {
 
 			this.broadcastToAll(encodeMessage(playerReconnectMessage(playerId)));
 			ws.send(encodeMessage(stateUpdateMessage(this.buildRoomState())));
+
+			if (this.activeInputCollector) {
+				const { requestId, request, expectedPlayerIds, responses } =
+					this.activeInputCollector;
+				const isExpected =
+					expectedPlayerIds === null || expectedPlayerIds.has(playerId);
+				const hasNotResponded = !responses.has(playerId);
+				if (isExpected && hasNotResponded) {
+					ws.send(encodeMessage(inputRequestMessage(requestId, request)));
+				}
+			}
 		} else {
 			const player: PartyPlayer = {
 				id: playerId,
@@ -294,6 +336,7 @@ export class PartyRoomDO {
 			};
 			await this.state.storage.put(`session:${sessionToken}`, session);
 
+			ws.send(encodeMessage(playerTokenMessage(sessionToken, playerId)));
 			ws.send(encodeMessage(stateUpdateMessage(this.buildRoomState())));
 			this.broadcastToAll(encodeMessage(playerJoinedMessage(player)));
 		}
@@ -679,6 +722,7 @@ export class PartyRoomDO {
 			hostId: this.hostId ?? "",
 			roomCode: this.roomCode ?? undefined,
 			sharedData: this.sharedData,
+			stateVersion: this.stateVersion,
 		};
 	}
 
@@ -715,6 +759,7 @@ export class PartyRoomDO {
 	}
 
 	private async saveState(): Promise<void> {
+		this.stateVersion++;
 		await this.state.storage.put("room", {
 			phase: this.phase,
 			hostId: this.hostId,
@@ -724,6 +769,7 @@ export class PartyRoomDO {
 			minPlayers: this.minPlayers,
 			serverScriptCode: this.serverScriptCode,
 			serverScriptConfig: this.serverScriptConfig,
+			stateVersion: this.stateVersion,
 		});
 	}
 
@@ -737,6 +783,7 @@ export class PartyRoomDO {
 			minPlayers: number | undefined;
 			serverScriptCode: string | null;
 			serverScriptConfig: Record<string, unknown> | undefined;
+			stateVersion: number | undefined;
 		}>("room");
 
 		if (saved) {
@@ -745,6 +792,7 @@ export class PartyRoomDO {
 			this.roomCode = saved.roomCode ?? null;
 			this.players = new Map(saved.players);
 			this.sharedData = saved.sharedData;
+			this.stateVersion = saved.stateVersion ?? 0;
 			if (saved.minPlayers !== undefined) {
 				this.minPlayers = saved.minPlayers;
 			}
