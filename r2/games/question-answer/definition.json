@@ -1,0 +1,33 @@
+{
+	"metadata": {
+		"id": "question-answer",
+		"slug": "question-answer",
+		"title": "Question Answer",
+		"description": "A simple prompt-and-reveal party game with open text answers.",
+		"instructions": "Answer each question before time runs out, then enjoy the reveal.",
+		"version": "1.0.0"
+	},
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"prefabs": {},
+	"entities": [],
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 1,
+		"serverScript": "server",
+		"phases": ["lobby", "question", "reveal", "done"],
+		"inputTypes": ["text"]
+	},
+	"modules": {
+		"server": "var content = require(\"slopcade/content\");\n\nvar QUESTIONS = [\n  \"What's the worst superpower you can think of?\",\n  \"If you could only eat one food for the rest of your life, what would it be?\",\n  \"What's the most useless talent you have?\",\n  \"If animals could talk, which would be the rudest?\",\n  \"What would be the worst thing to hear as you're going under anesthesia?\"\n];\n\nvar QUESTION_TIME_LIMIT = 30;\nvar REVEAL_DURATION_MS = 5000;\n\nexports.run = async function(room) {\n  await room.setPhase(\"playing\");\n\n  var prompts = content.shuffle(QUESTIONS);\n\n  for (var i = 0; i < prompts.length; i++) {\n    var prompt = prompts[i];\n\n    await room.updateSharedData({\n      qaPhase: \"question\",\n      questionIndex: i,\n      totalQuestions: prompts.length,\n      prompt: prompt,\n      answersJson: \"[]\",\n      timerRemaining: QUESTION_TIME_LIMIT\n    });\n\n    var responses = await room.requestInput(\"question-\" + i, {\n      type: \"text\",\n      prompt: prompt,\n      timeLimit: QUESTION_TIME_LIMIT\n    });\n\n    var answers = [];\n    responses.forEach(function(response, playerId) {\n      answers.push({\n        playerName: response && response.playerId ? String(response.playerId) : playerId,\n        answer: String(response && response.value !== undefined ? response.value : \"\")\n      });\n    });\n\n    await room.updateSharedData({\n      qaPhase: \"reveal\",\n      questionIndex: i,\n      totalQuestions: prompts.length,\n      prompt: prompt,\n      answersJson: JSON.stringify(answers),\n      timerRemaining: 0\n    });\n\n    await room.delay(REVEAL_DURATION_MS);\n  }\n\n  await room.updateSharedData({\n    qaPhase: \"done\",\n    totalQuestions: prompts.length,\n    questionIndex: prompts.length,\n    prompt: \"Game Over!\",\n    answersJson: \"[]\",\n    timerRemaining: 0\n  });\n\n  await room.setPhase(\"ended\");\n};"
+	}
+}
