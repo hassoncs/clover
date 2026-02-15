@@ -42,6 +42,7 @@ interface RateLimitEntry {
 interface InputCollector {
 	requestId: string;
 	request: PartyInputRequest;
+	expectedPlayerIds: Set<string> | null;
 	responses: Map<string, PartyInputResponse>;
 	timeoutId: ReturnType<typeof setTimeout> | null;
 	resolve: ((responses: Map<string, PartyInputResponse>) => void) | null;
@@ -458,6 +459,7 @@ export class PartyRoomDO {
 		this.activeInputCollector = {
 			requestId,
 			request,
+			expectedPlayerIds: null,
 			responses: new Map(),
 			timeoutId: null,
 			resolve: null,
@@ -466,6 +468,58 @@ export class PartyRoomDO {
 		this.broadcastToPlayers(
 			encodeMessage(inputRequestMessage(requestId, request)),
 		);
+
+		return new Promise((resolve) => {
+			const timeLimit = request.timeLimit ?? 30;
+			const collector = this.activeInputCollector;
+			if (!collector) {
+				resolve(new Map());
+				return;
+			}
+
+			collector.resolve = resolve;
+
+			collector.timeoutId = setTimeout(() => {
+				const responses = collector.responses;
+				this.activeInputCollector = null;
+				resolve(responses);
+			}, timeLimit * 1000);
+		});
+	}
+
+	async requestInputFromSubset(
+		requestId: string,
+		request: PartyInputRequest,
+		targetPlayerIds: string[],
+	): Promise<Map<string, PartyInputResponse>> {
+		const expectedPlayerIds = new Set(targetPlayerIds);
+		if (expectedPlayerIds.size === 0) {
+			return new Map();
+		}
+
+		this.activeInputCollector = {
+			requestId,
+			request,
+			expectedPlayerIds,
+			responses: new Map(),
+			timeoutId: null,
+			resolve: null,
+		};
+
+		const message = encodeMessage(inputRequestMessage(requestId, request));
+		for (const ws of this.sockets) {
+			const meta = this.socketMetadata.get(ws);
+			if (
+				meta?.role === "player" &&
+				meta.playerId &&
+				expectedPlayerIds.has(meta.playerId) &&
+				ws.readyState === WebSocket.OPEN
+			) {
+				try {
+					ws.send(message);
+				} catch {}
+			}
+		}
 
 		return new Promise((resolve) => {
 			const timeLimit = request.timeLimit ?? 30;
@@ -550,6 +604,11 @@ export class PartyRoomDO {
 			return;
 		}
 
+		const expectedPlayerIds = this.activeInputCollector.expectedPlayerIds;
+		if (expectedPlayerIds && !expectedPlayerIds.has(playerId)) {
+			return;
+		}
+
 		this.activeInputCollector.responses.set(playerId, response);
 
 		this.broadcastToHost(
@@ -560,9 +619,11 @@ export class PartyRoomDO {
 			}),
 		);
 
-		const playerCount = Array.from(this.players.values()).filter(
-			(p) => p.connected && !p.isHost,
-		).length;
+		const playerCount = expectedPlayerIds
+			? expectedPlayerIds.size
+			: Array.from(this.players.values()).filter(
+					(p) => p.connected && !p.isHost,
+				).length;
 
 		if (this.activeInputCollector.responses.size >= playerCount) {
 			if (this.activeInputCollector.timeoutId) {
