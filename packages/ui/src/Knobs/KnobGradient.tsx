@@ -68,7 +68,7 @@ export function KnobGradient({
 		const count = 40;
 		return Array.from({ length: count }).map((_, i) => {
 			const pos = i / (count - 1);
-			return getGradientColor(pos, value);
+			return { id: i.toString(), color: getGradientColor(pos, value) };
 		});
 	}, [value]);
 
@@ -125,7 +125,10 @@ export function KnobGradient({
 	};
 
 	return (
-		<View className="mb-4 bg-gray-900/95 p-4 rounded-lg">
+		<View
+			className="mb-4 bg-gray-900/95 p-4 rounded-lg"
+			accessibilityLabel={label}
+		>
 			<View className="flex-row justify-between mb-2 items-center">
 				<Text className="text-white font-medium">{label}</Text>
 			</View>
@@ -133,18 +136,22 @@ export function KnobGradient({
 				<Text className="text-gray-400 text-xs mb-3">{description}</Text>
 			)}
 
-			<View className="h-12 w-full rounded-md overflow-hidden flex-row mb-6 relative border border-gray-700">
-				{segments.map((color, i) => (
-					// eslint-disable-next-line react/no-array-index-key
+			<View
+				className="h-12 w-full rounded-md overflow-hidden flex-row mb-6 relative border border-gray-700"
+				accessibilityRole="adjustable"
+				accessibilityLabel="Gradient preview"
+			>
+				{segments.map((segment) => (
 					<View
-						key={`segment-${i}`}
-						style={{ backgroundColor: color, flex: 1 }}
+						key={segment.id}
+						style={{ backgroundColor: segment.color, flex: 1 }}
 					/>
 				))}
 			</View>
 
 			<View className="h-0 w-full relative -mt-9 mb-6">
 				{value.map((stop, index) => (
+					// eslint-disable-next-line react/no-array-index-key
 					<Pressable
 						key={`${stop.position}-${stop.color}-${index}`}
 						onPress={() => handleStopPress(index)}
@@ -158,6 +165,10 @@ export function KnobGradient({
 							left: `${stop.position * 100}%`,
 							top: 12,
 						}}
+						accessibilityRole="button"
+						accessibilityLabel={`Stop ${index + 1} at ${Math.round(
+							stop.position * 100,
+						)}%`}
 					>
 						<View
 							className="w-3 h-3 rounded-full"
@@ -175,7 +186,11 @@ export function KnobGradient({
 							{Math.round(value[selectedStopIndex].position * 100)}%)
 						</Text>
 						{value.length > minStops && (
-							<Pressable onPress={handleDeleteStop}>
+							<Pressable
+								onPress={handleDeleteStop}
+								accessibilityRole="button"
+								accessibilityLabel="Delete stop"
+							>
 								<Text className="text-red-400 text-xs">Delete</Text>
 							</Pressable>
 						)}
@@ -192,6 +207,8 @@ export function KnobGradient({
 				<Pressable
 					onPress={handleAddStop}
 					className="mt-2 py-2 items-center border border-gray-700 rounded border-dashed active:bg-gray-800"
+					accessibilityRole="button"
+					accessibilityLabel="Add color stop"
 				>
 					<Text className="text-gray-400 text-xs">+ Add Stop</Text>
 				</Pressable>

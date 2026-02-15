@@ -72,6 +72,12 @@ export function KnobVec2({
 					className="bg-gray-800 rounded border border-gray-700 overflow-hidden relative"
 					style={{ width: size, height: size }}
 					{...panResponder.panHandlers}
+					accessibilityRole="adjustable"
+					accessibilityLabel={label}
+					accessibilityHint="Drag to adjust X and Y values"
+					accessibilityValue={{
+						text: `X: ${value.x.toFixed(2)}, Y: ${value.y.toFixed(2)}`,
+					}}
 				>
 					<View className="absolute inset-0 justify-center items-center opacity-20">
 						<View className="w-full h-[1px] bg-gray-500" />

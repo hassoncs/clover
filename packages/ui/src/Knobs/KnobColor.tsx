@@ -60,6 +60,7 @@ export function KnobColor({
 							value === color ? "border-white" : "border-transparent"
 						}`}
 						style={{ backgroundColor: color, opacity: disabled ? 0.5 : 1 }}
+						accessibilityRole="button"
 						accessibilityLabel={`Select color ${color}`}
 						accessibilityState={{ selected: value === color }}
 						disabled={disabled}
@@ -71,6 +72,8 @@ export function KnobColor({
 				<View
 					className="w-8 h-8 rounded border border-gray-600"
 					style={{ backgroundColor: value, opacity: disabled ? 0.5 : 1 }}
+					accessibilityRole="none"
+					accessibilityLabel="Current color preview"
 				/>
 				<TextInput
 					className="flex-1 bg-gray-800 text-white p-2 rounded border border-gray-700 font-mono"
@@ -81,6 +84,7 @@ export function KnobColor({
 					editable={!disabled}
 					autoCapitalize="characters"
 					maxLength={7}
+					accessibilityLabel="Enter hex color code"
 				/>
 			</View>
 		</View>

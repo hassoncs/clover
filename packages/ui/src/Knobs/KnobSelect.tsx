@@ -29,6 +29,9 @@ export function KnobSelect({
           ${isSelected ? "bg-purple-500 border-purple-500" : "bg-gray-700 border-gray-600"}
           ${disabled ? "opacity-50" : ""}
         `}
+				accessibilityRole="radio"
+				accessibilityState={{ selected: isSelected, disabled }}
+				accessibilityLabel={option.label}
 			>
 				<View className="flex-row items-center gap-2">
 					{option.icon && <Text className="text-xs">{option.icon}</Text>}
@@ -57,11 +60,19 @@ export function KnobSelect({
 					showsHorizontalScrollIndicator={false}
 					className="flex-row"
 					contentContainerStyle={{ paddingRight: 16 }}
+					accessibilityRole="radiogroup"
+					accessibilityLabel={label}
 				>
-					{options.map(renderOption)}
+					{options.map((option) => renderOption(option))}
 				</ScrollView>
 			) : (
-				<View className="flex-row gap-2">{options.map(renderOption)}</View>
+				<View
+					className="flex-row gap-2"
+					accessibilityRole="radiogroup"
+					accessibilityLabel={label}
+				>
+					{options.map((option) => renderOption(option))}
+				</View>
 			)}
 		</View>
 	);

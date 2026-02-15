@@ -25,6 +25,9 @@ export function KnobButton({
 						? "bg-red-500 active:bg-red-400"
 						: "bg-purple-500 active:bg-purple-400"
 				}`}
+				accessibilityRole="button"
+				accessibilityLabel={label}
+				accessibilityHint={disabled ? "Disabled" : `Triggers ${action} action`}
 			>
 				<Text className="text-white font-medium font-mono">{label}</Text>
 			</Pressable>

@@ -30,6 +30,7 @@ export function KnobToggle({
 					thumbColor="#fff"
 					accessibilityLabel={label}
 					accessibilityHint={description}
+					accessibilityRole="switch"
 				/>
 			</View>
 		</View>

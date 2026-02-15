@@ -11,3 +11,4 @@ export * from "./KnobToggle";
 export * from "./KnobVec2";
 export * from "./KnobVec3";
 export * from "./types";
+export * from "./useHaptics";

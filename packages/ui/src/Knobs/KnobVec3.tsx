@@ -10,6 +10,7 @@ const AxisSlider = ({
 	max,
 	step = 0.1,
 	onChange,
+	accessibilityLabel,
 }: {
 	label: string;
 	value: number;
@@ -17,6 +18,7 @@ const AxisSlider = ({
 	max: number;
 	step?: number;
 	onChange: (val: number) => void;
+	accessibilityLabel: string;
 }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editValue, setEditValue] = useState(value.toString());
@@ -93,6 +95,9 @@ const AxisSlider = ({
 				maximumTrackTintColor="#374151"
 				thumbTintColor="#a855f7"
 				style={{ height: 20 }}
+				accessibilityRole="adjustable"
+				accessibilityLabel={accessibilityLabel}
+				accessibilityHint="Swipe up or down to adjust"
 			/>
 		</View>
 	);
@@ -125,6 +130,7 @@ export function KnobVec3({
 				max={max.x}
 				step={step}
 				onChange={(v) => handleChange("x", v)}
+				accessibilityLabel={`${label} X axis`}
 			/>
 			<AxisSlider
 				label="Y"
@@ -133,6 +139,7 @@ export function KnobVec3({
 				max={max.y}
 				step={step}
 				onChange={(v) => handleChange("y", v)}
+				accessibilityLabel={`${label} Y axis`}
 			/>
 			<AxisSlider
 				label="Z"
@@ -141,6 +148,7 @@ export function KnobVec3({
 				max={max.z}
 				step={step}
 				onChange={(v) => handleChange("z", v)}
+				accessibilityLabel={`${label} Z axis`}
 			/>
 		</View>
 	);

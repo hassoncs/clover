@@ -72,6 +72,8 @@ export function KnobSlider({
 							setIsEditing(true);
 						}}
 						hitSlop={8}
+						accessibilityRole="button"
+						accessibilityLabel="Edit value"
 					>
 						<Text className="font-mono text-white py-1 px-2 bg-gray-800/50 rounded overflow-hidden">
 							{getDisplayValue()}
@@ -97,6 +99,19 @@ export function KnobSlider({
 					thumbTintColor="#a855f7"
 					accessibilityLabel={`${label} slider`}
 					accessibilityValue={{ min, max, now: value }}
+					accessibilityRole="adjustable"
+					accessibilityHint="Swipe up or down to adjust"
+					accessibilityActions={[
+						{ name: "increment", label: "Increment" },
+						{ name: "decrement", label: "Decrement" },
+					]}
+					onAccessibilityAction={(event) => {
+						if (event.nativeEvent.actionName === "increment") {
+							onChange(Math.min(max, value + (step || 1)));
+						} else if (event.nativeEvent.actionName === "decrement") {
+							onChange(Math.max(min, value - (step || 1)));
+						}
+					}}
 				/>
 			</View>
 
