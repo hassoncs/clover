@@ -210,7 +210,11 @@ function toResourceRef(node: ResourceNode): ResourceRef {
 // ---------------------------------------------------------------------------
 
 function resolveShaderSource(node: EffectNode, scope: string): ShaderSource {
-	let glsl = getShaderGlsl(node.type) || "";
+	const customGlsl =
+		typeof node.params.shaderSource === "string"
+			? node.params.shaderSource
+			: null;
+	let glsl = customGlsl || getShaderGlsl(node.type) || "";
 	if (scope === "screen" && needsScreenTextureRewrite(glsl)) {
 		glsl = rewriteScreenShaderForSubViewport(glsl);
 	}
@@ -250,12 +254,14 @@ function buildCompiledPass(
 
 	const shaderSource: ShaderSource = resolveShaderSource(node, scope);
 
+	const { shaderSource: _stripShaderSource, ...runtimeParams } = node.params;
+
 	return {
 		id: node.id,
 		shaderSource,
 		requires,
 		provides,
-		params: { ...node.params, inputBindings },
+		params: { ...runtimeParams, inputBindings },
 		paramsSchema: [],
 		persistence: node.flags.stateful ? "pingPong" : "none",
 		qualityTier: "medium",
@@ -391,4 +397,42 @@ export function compileGraph(
 	};
 
 	return { success: true, plan, errors: [] };
+}
+
+// ---------------------------------------------------------------------------
+// wrapShadersAsPlan — wrap standalone shaders into a minimal screen-scoped plan
+// ---------------------------------------------------------------------------
+
+export function wrapShadersAsPlan(
+	shaders: Record<string, string>,
+	scope: "screen" | "entity" = "screen",
+): CompiledPlan {
+	const passes: CompiledPass[] = Object.entries(shaders).map(
+		([id, glsl]) => ({
+			id,
+			shaderSource: { glsl },
+			requires: [],
+			provides: [],
+			params: {},
+			paramsSchema: [],
+			persistence: "none" as const,
+			qualityTier: "medium" as const,
+			constraints: {},
+		}),
+	);
+
+	const hash = stableHash({ scope, passes });
+
+	return {
+		id: `standalone:${hash}`,
+		graphId: "standalone",
+		graphVersion: "1.0.0",
+		engineApiVersion: "1.0.0",
+		scope,
+		passes,
+		resourceMap: {},
+		feedbackPolicies: {},
+		hash,
+		compiledAt: new Date().toISOString(),
+	};
 }

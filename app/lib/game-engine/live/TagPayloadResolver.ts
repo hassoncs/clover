@@ -263,12 +263,28 @@ export class TagPayloadResolver {
 
 		const wrapped = parsed as {
 			plans?: TagPayloads["effects"]["plans"];
-			shaders?: Record<string, string>;
+			shaders?: Record<string, unknown>;
 		};
+
+		const shaders: Record<string, string> = {};
+		if (wrapped.shaders) {
+			for (const [id, value] of Object.entries(wrapped.shaders)) {
+				if (typeof value === "string") {
+					shaders[id] = value;
+				} else if (
+					value &&
+					typeof value === "object" &&
+					"glsl" in value &&
+					typeof (value as { glsl: unknown }).glsl === "string"
+				) {
+					shaders[id] = (value as { glsl: string }).glsl;
+				}
+			}
+		}
 
 		return {
 			plans: wrapped.plans ?? {},
-			shaders: wrapped.shaders ?? {},
+			shaders,
 		};
 	}
 

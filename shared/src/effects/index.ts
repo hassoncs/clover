@@ -36,7 +36,7 @@ export type {
 	CompilerOptions,
 	OrderingConstraints,
 } from "./compiler";
-export { compileGraph } from "./compiler";
+export { compileGraph, wrapShadersAsPlan } from "./compiler";
 export type {
 	GraphValidationError,
 	GraphValidationErrorCode,

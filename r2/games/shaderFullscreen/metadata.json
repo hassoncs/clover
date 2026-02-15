@@ -1,0 +1,9 @@
+{
+  "id": "26510497-a864-46b9-8536-67fe8933a1c2",
+  "slug": "shaderFullscreen",
+  "title": "Fullscreen Shader",
+  "description": "A full-screen rainbow swirl shader with no entities or physics — pure shader MVP",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "updatedAt": 1771039877027
+}

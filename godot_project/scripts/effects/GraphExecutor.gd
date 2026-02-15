@@ -628,9 +628,10 @@ func _apply_material_params(material: ShaderMaterial, params: Dictionary) -> voi
 	if material == null or not (params is Dictionary):
 		return
 	for key in params.keys():
-		if str(key) == "inputBindings":
+		var key_str := str(key)
+		if key_str == "inputBindings" or key_str == "shaderSource":
 			continue
-		material.set_shader_parameter(str(key), _convert_param(params[key]))
+		material.set_shader_parameter(key_str, _convert_param(params[key]))
 
 func _convert_param(value):
 	if value is Array:
