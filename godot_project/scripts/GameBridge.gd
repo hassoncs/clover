@@ -233,6 +233,7 @@ func _build_method_map() -> void:
 		_pixel_buffer_manager, _debug_bridge, _viewport_3d,
 	])
 
+
 func _validate_method_map() -> void:
 	var camel_map: Dictionary = {}
 	for key in _method_map: camel_map[_to_camel_case(key)] = true
@@ -263,15 +264,20 @@ func dispatch_raw(method_name: String, args: Array) -> Variant:
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	if not _method_map.has(method_name):
-		return {"error": "unknown_method", "method": method_name}
+		return JSON.stringify({"error": "unknown_method", "method": method_name})
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
 		var json = JSON.new()
 		if json.parse(args_json) != OK:
 			push_warning("[GameBridge] Invalid JSON in args: " + args_json.substr(0, 100))
-			return {"error": "invalid_json", "message": json.get_error_message()}
+			return JSON.stringify({"error": "invalid_json", "message": json.get_error_message()})
 		args = json.data if json.data is Array else [json.data]
-	return _method_map[method_name].call(args)
+	var result = _method_map[method_name].call(args)
+	if result == null:
+		return "null"
+	if result is Dictionary or result is Array:
+		return JSON.stringify(result)
+	return result
 
 func _input(event: InputEvent) -> void:
 	if not _input_router: return

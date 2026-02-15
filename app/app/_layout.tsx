@@ -107,6 +107,7 @@ function RootLayoutContent() {
 					presentation: "fullScreenModal",
 				}}
 			/>
+			<Stack.Screen name="party" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

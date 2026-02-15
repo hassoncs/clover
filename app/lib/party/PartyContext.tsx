@@ -1,7 +1,10 @@
 import type React from "react";
 import { createContext, useContext, useMemo } from "react";
-import type { PartyPlayer, PartyRoomState } from "./types";
-import type { ConnectionStatus } from "./usePartyConnection";
+import type { PartyInputRequest, PartyPlayer, PartyRoomState } from "./types";
+import type {
+	ActiveInputRequest,
+	ConnectionStatus,
+} from "./usePartyConnection";
 import { usePartyConnection } from "./usePartyConnection";
 
 export interface PartyContextValue {
@@ -10,7 +13,9 @@ export interface PartyContextValue {
 	privateState: unknown | null;
 	connectionStatus: ConnectionStatus;
 	players: PartyPlayer[];
-	sendInput: (input: unknown) => void;
+	activeInputRequest: ActiveInputRequest | null;
+	sendInput: (value: unknown) => void;
+	sendStartGame: () => void;
 }
 
 const PartyContext = createContext<PartyContextValue | null>(null);

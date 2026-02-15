@@ -193,7 +193,22 @@ export class GameLoader {
 	}
 
 	applyEffects(definition: GameDefinition): void {
-		if (!this.bridge || !definition.effects) return;
+		if (!this.bridge || !definition.effects) {
+			console.log(
+				"[GameLoader] applyEffects: skipped (bridge=" +
+					!!this.bridge +
+					", effects=" +
+					!!definition.effects +
+					")",
+			);
+			return;
+		}
+		console.log(
+			"[GameLoader] applyEffects: starting, has graph=" +
+				!!(definition.effects.graph || definition.effects.graphs) +
+				", has shaders=" +
+				!!definition.effects.shaders,
+		);
 
 		const graphs: EffectGraphSpec[] = [];
 		if (definition.effects.graphs) {
@@ -203,11 +218,31 @@ export class GameLoader {
 		}
 
 		for (const graph of graphs) {
+			console.log(
+				"[GameLoader] Compiling graph, scope=" +
+					graph.scope +
+					", nodes=" +
+					(graph.nodes?.length ?? 0),
+			);
 			const result = compileGraph(graph);
 			if (result.success && result.plan) {
-				this.bridge.applyGraph(result.plan).catch((error) => {
-					console.error("[GameLoader] Failed to apply effects graph:", error);
-				});
+				console.log(
+					"[GameLoader] Compiled OK, plan passes=" +
+						result.plan.passes?.length +
+						", scope=" +
+						result.plan.scope,
+				);
+				this.bridge
+					.applyGraph(result.plan)
+					.then((r) => {
+						console.log(
+							"[GameLoader] applyGraph result:",
+							JSON.stringify(r).substring(0, 200),
+						);
+					})
+					.catch((error) => {
+						console.error("[GameLoader] Failed to apply effects graph:", error);
+					});
 			} else {
 				console.error(
 					"[GameLoader] Failed to compile effects graph:",

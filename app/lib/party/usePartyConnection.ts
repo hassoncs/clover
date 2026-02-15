@@ -3,6 +3,7 @@ import { getAuthToken } from "@/lib/auth/token";
 import { env } from "@/lib/config/env";
 import type {
 	InputResponseMessage,
+	PartyInputRequest,
 	PartyMessage,
 	PartyPlayer,
 	PartyRoomState,
@@ -24,12 +25,19 @@ export interface UsePartyConnectionParams {
 	hostToken?: string;
 }
 
+export interface ActiveInputRequest {
+	requestId: string;
+	request: PartyInputRequest;
+}
+
 export interface UsePartyConnectionResult {
 	roomState: PartyRoomState | null;
 	privateState: unknown | null;
 	connectionStatus: ConnectionStatus;
 	players: PartyPlayer[];
-	sendInput: (input: unknown) => void;
+	activeInputRequest: ActiveInputRequest | null;
+	sendInput: (value: unknown) => void;
+	sendStartGame: () => void;
 }
 
 export function usePartyConnection({
@@ -42,6 +50,8 @@ export function usePartyConnection({
 	const [privateState, setPrivateState] = useState<unknown>(null);
 	const [connectionStatus, setConnectionStatus] =
 		useState<ConnectionStatus>("connecting");
+	const [activeInputRequest, setActiveInputRequest] =
+		useState<ActiveInputRequest | null>(null);
 
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -129,6 +139,21 @@ export function usePartyConnection({
 								};
 							});
 							break;
+						case "input_request":
+							setActiveInputRequest({
+								requestId: message.requestId,
+								request: message.request,
+							});
+							break;
+						case "phase_change":
+							setRoomState((prev) => {
+								if (!prev) return prev;
+								return { ...prev, phase: message.phase };
+							});
+							if (message.phase === "ended") {
+								setActiveInputRequest(null);
+							}
+							break;
 						case "error":
 							console.error(
 								"[usePartyConnection] Server error:",
@@ -183,21 +208,41 @@ export function usePartyConnection({
 		setConnectionStatus("disconnected");
 	}, []);
 
-	const sendInput = useCallback((input: unknown) => {
-		const message: InputResponseMessage = {
-			type: "input_response",
-			response: {
-				playerId: "",
-				value: input,
-				timestamp: Date.now(),
-			},
-			requestId: "",
-		};
+	const sendInput = useCallback(
+		(value: unknown) => {
+			const currentRequest = activeInputRequest;
+			if (!currentRequest) {
+				console.warn(
+					"[usePartyConnection] sendInput called with no active input request",
+				);
+				return;
+			}
 
+			const message: InputResponseMessage = {
+				type: "input_response",
+				response: {
+					playerId: "",
+					value,
+					timestamp: Date.now(),
+				},
+				requestId: currentRequest.requestId,
+			};
+
+			setActiveInputRequest(null);
+
+			if (wsRef.current?.readyState === WebSocket.OPEN) {
+				wsRef.current.send(JSON.stringify(message));
+			} else {
+				inputQueueRef.current.push(message);
+			}
+		},
+		[activeInputRequest],
+	);
+
+	const sendStartGame = useCallback(() => {
+		const message = { type: "start_game" };
 		if (wsRef.current?.readyState === WebSocket.OPEN) {
 			wsRef.current.send(JSON.stringify(message));
-		} else {
-			inputQueueRef.current.push(message);
 		}
 	}, []);
 
@@ -213,6 +258,8 @@ export function usePartyConnection({
 		privateState,
 		connectionStatus,
 		players: roomState?.players ?? [],
+		activeInputRequest,
 		sendInput,
+		sendStartGame,
 	};
 }

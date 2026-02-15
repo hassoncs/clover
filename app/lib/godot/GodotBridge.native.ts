@@ -75,7 +75,6 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
 	if (isDisposing || !isGodotInitialized) {
 		return;
 	}
-
 	const argsJson = JSON.stringify(args);
 	getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
 		if (isDisposing) {
@@ -88,18 +87,9 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
 				.get_root()
 				.get_node("GameBridge");
 			if (gameBridge) {
-				const result = gameBridge.native_dispatch(methodName, argsJson);
-				if (
-					result &&
-					typeof result === "object" &&
-					"error" in (result as object)
-				) {
-					console.warn(
-						"[callGameBridge] Error for",
-						methodName,
-						":",
-						JSON.stringify(result),
-					);
+				const raw = gameBridge.native_dispatch(methodName, argsJson);
+				if (typeof raw === "string" && raw.includes('"error"')) {
+					console.warn("[callGameBridge] Error for", methodName, ":", raw);
 				}
 			} else {
 				console.warn("[callGameBridge] gameBridge not found for", methodName);
@@ -162,6 +152,11 @@ function callEffectsBridge(methodName: string, ...args: unknown[]) {
 				.get_node("GameBridgeEffects");
 			if (effectsBridge) {
 				effectsBridge.native_dispatch(methodName, argsJson);
+			} else {
+				console.warn(
+					"[callEffectsBridge] GameBridgeEffects not found for",
+					methodName,
+				);
 			}
 		});
 	});
@@ -371,9 +366,10 @@ export function createNativeGodotBridge(): GodotBridge {
 		params?: Record<string, unknown>,
 		mapData?: (rawData: unknown) => T,
 	): Promise<import("./types").EffectsResult<T>> => {
+		console.log(`[executeEffects] RPC ${method}`);
 		try {
 			const response = await callGameBridgeAsync(
-				"callRpc",
+				"call_rpc",
 				JSON.stringify({ method, params }),
 			);
 			const parsed =
@@ -395,7 +391,15 @@ export function createNativeGodotBridge(): GodotBridge {
 		},
 		async async<T>(snakeName: string, ...args: unknown[]): Promise<T> {
 			const actualArgs = Array.isArray(args[0]) ? (args[0] as unknown[]) : args;
-			return callGameBridgeAsync(snakeName, ...actualArgs);
+			const result = await callGameBridgeAsync(snakeName, ...actualArgs);
+			if (typeof result === "string") {
+				try {
+					return JSON.parse(result) as T;
+				} catch {
+					return result as T;
+				}
+			}
+			return result as T;
 		},
 		effectsSync(snakeName: string, ...args: unknown[]) {
 			callEffectsBridge(snakeName, ...args);
@@ -686,7 +690,8 @@ export function createNativeGodotBridge(): GodotBridge {
 
 		// Custom response handling
 		async getAllProperties(): Promise<PropertySyncPayload> {
-			const result = await callGameBridgeAsync("get_all_properties");
+			const raw = await callGameBridgeAsync("get_all_properties");
+			const result = typeof raw === "string" ? JSON.parse(raw) : raw;
 			if (result && typeof result === "object") {
 				return result as PropertySyncPayload;
 			}
@@ -989,10 +994,11 @@ export function createNativeGodotBridge(): GodotBridge {
 				def.stiffness ?? 5,
 				def.damping ?? 0.7,
 			);
-			return typeof result === "number" ? result : -1;
+			const parsed = typeof result === "string" ? JSON.parse(result) : result;
+			return typeof parsed === "number" ? parsed : -1;
 		},
 
-		// RPC routing (uses callRpc/callGameBridgeAsync("callRpc", ...) not standard dispatch)
+		// RPC routing (uses callRpc/callGameBridgeAsync("call_rpc", ...) not standard dispatch)
 		loadRules(rules) {
 			this.callRpc("load_rules", { rules });
 		},
@@ -1010,7 +1016,7 @@ export function createNativeGodotBridge(): GodotBridge {
 			frames: number,
 		): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
 			const response = await callGameBridgeAsync(
-				"callRpc",
+				"call_rpc",
 				JSON.stringify({
 					method: "time.step",
 					params: { frames },
@@ -1026,7 +1032,7 @@ export function createNativeGodotBridge(): GodotBridge {
 
 		async callRpc(method: string, params?: unknown): Promise<any> {
 			const response = await callGameBridgeAsync(
-				"callRpc",
+				"call_rpc",
 				JSON.stringify({ method, params }),
 			);
 			const parsed = JSON.parse(response);
