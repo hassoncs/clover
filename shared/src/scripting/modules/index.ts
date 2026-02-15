@@ -474,10 +474,156 @@ module.exports = {
 };
 `;
 
+const PARTY_MODULE_SOURCE = `
+function createScoreboard(scores, playerNames) {
+  var entries = [];
+  var playerId;
+  for (playerId in scores) {
+    if (scores.hasOwnProperty(playerId)) {
+      entries.push({
+        playerId: playerId,
+        playerName: playerNames[playerId] || playerId,
+        score: scores[playerId],
+      });
+    }
+  }
+  entries.sort(function(a, b) {
+    return b.score - a.score;
+  });
+  return entries;
+}
+
+function createMatchups(playerIds, items) {
+  var n = playerIds.length;
+  var matchups = [];
+  var i;
+  for (i = 0; i < n; i++) {
+    var playerA = playerIds[i];
+    var playerB = playerIds[(i + 1) % n];
+    var item = items[i];
+    matchups.push({
+      playerA: playerA,
+      playerB: playerB,
+      item: item,
+    });
+  }
+  return matchups;
+}
+
+function tallyVotes(responses, excludeSelf, authorMap) {
+  var counts = {};
+  var voterId;
+  for (voterId in responses) {
+    if (responses.hasOwnProperty(voterId)) {
+      var response = responses[voterId];
+      var choiceId = response.value;
+      if (excludeSelf) {
+        var author = authorMap[choiceId];
+        if (author === voterId) {
+          continue;
+        }
+      }
+      if (!counts[choiceId]) {
+        counts[choiceId] = 0;
+      }
+      counts[choiceId] = counts[choiceId] + 1;
+    }
+  }
+  return counts;
+}
+
+function calculatePoints(voteCounts, opts) {
+  var basePoints = opts.basePoints || 100;
+  var roundMultiplier = opts.roundMultiplier || 1;
+  var cleanSweepMultiplier = opts.cleanSweepMultiplier || 1.25;
+  var points = {};
+  var totalVotes = 0;
+  var choiceId;
+  for (choiceId in voteCounts) {
+    if (voteCounts.hasOwnProperty(choiceId)) {
+      totalVotes = totalVotes + voteCounts[choiceId];
+    }
+  }
+  for (choiceId in voteCounts) {
+    if (voteCounts.hasOwnProperty(choiceId)) {
+      var count = voteCounts[choiceId];
+      var earned = 0;
+      if (totalVotes > 0) {
+        earned = Math.round((count / totalVotes) * basePoints * roundMultiplier);
+        if (count === totalVotes) {
+          earned = Math.round(earned * cleanSweepMultiplier);
+        }
+      }
+      points[choiceId] = earned;
+    }
+  }
+  return points;
+}
+
+module.exports = {
+  createScoreboard: createScoreboard,
+  createMatchups: createMatchups,
+  tallyVotes: tallyVotes,
+  calculatePoints: calculatePoints,
+};
+`;
+
+const CONTENT_MODULE_SOURCE = `
+function shuffle(arr) {
+  var result = [];
+  var i;
+  for (i = 0; i < arr.length; i++) {
+    result.push(arr[i]);
+  }
+  for (i = result.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = result[i];
+    result[i] = result[j];
+    result[j] = temp;
+  }
+  return result;
+}
+
+function selectForRound(pool, count, usedIds) {
+  var available = [];
+  var i;
+  for (i = 0; i < pool.length; i++) {
+    var item = pool[i];
+    var id = item.id;
+    if (!usedIds[id]) {
+      available.push(item);
+    }
+  }
+  var selected = [];
+  for (i = 0; i < count && i < available.length; i++) {
+    selected.push(available[i]);
+  }
+  return selected;
+}
+
+function markUsed(usedIds, items) {
+  var i;
+  for (i = 0; i < items.length; i++) {
+    var item = items[i];
+    if (item.id) {
+      usedIds[item.id] = true;
+    }
+  }
+}
+
+module.exports = {
+  shuffle: shuffle,
+  selectForRound: selectForRound,
+  markUsed: markUsed,
+};
+`;
+
 export const SLOPCADE_MODULES: Record<string, string> = {
 	"slopcade/grid": GRID_MODULE_SOURCE,
 	"slopcade/containers": CONTAINERS_MODULE_SOURCE,
 	"slopcade/state-machine": STATE_MACHINE_MODULE_SOURCE,
 	"slopcade/timer": TIMER_MODULE_SOURCE,
 	"slopcade/math": MATH_MODULE_SOURCE,
+	"slopcade/party": PARTY_MODULE_SOURCE,
+	"slopcade/content": CONTENT_MODULE_SOURCE,
 };
