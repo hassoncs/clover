@@ -24,7 +24,7 @@ export const CHAT_MODELS: Record<ChatModelTier, ChatModelOption> = {
 		outputPricePer1M: 10.0,
 	},
 	quality: {
-		id: "anthropic/claude-sonnet-4-20250514",
+		id: "anthropic/claude-sonnet-4",
 		tier: "quality",
 		label: "Quality (Claude Sonnet 4)",
 		inputPricePer1M: 3.0,
