@@ -31,6 +31,23 @@ export const adminDashboardRouter = router({
 			.bind(sevenDaysAgo)
 			.first<{ total: number }>();
 
+		const dailySpendResult = await ctx.env.DB.prepare(
+			`SELECT 
+        strftime('%Y-%m-%d', datetime(created_at / 1000, 'unixepoch')) as day, 
+        SUM(amount_micros) as total 
+      FROM credit_transactions 
+      WHERE amount_micros < 0 AND created_at >= ? 
+      GROUP BY day 
+      ORDER BY day ASC`,
+		)
+			.bind(sevenDaysAgo)
+			.all<{ day: string; total: number }>();
+
+		const dailySpend = dailySpendResult.results.map((r) => ({
+			day: r.day,
+			amount: Math.abs(r.total),
+		}));
+
 		// 3. Moderation Rejects
 		const moderationEvents = await ctx.env.DB.prepare(
 			"SELECT metadata_json FROM audit_events WHERE action = 'moderation.reject' AND created_at >= ?",
@@ -50,8 +67,15 @@ export const adminDashboardRouter = router({
 		}
 
 		// 4. Generation Velocity (admin generation actions)
-		const generationCountResult = await ctx.env.DB.prepare(
+		const adminGenerationCountResult = await ctx.env.DB.prepare(
 			"SELECT COUNT(*) as count FROM audit_events WHERE action LIKE 'admin.generate_%' AND created_at >= ?",
+		)
+			.bind(oneDayAgo)
+			.first<{ count: number }>();
+
+		// 5. User Generation Velocity (game generations)
+		const userGenerationCountResult = await ctx.env.DB.prepare(
+			"SELECT COUNT(*) as count FROM credit_transactions WHERE type = 'generation_debit' AND created_at >= ?",
 		)
 			.bind(oneDayAgo)
 			.first<{ count: number }>();
@@ -61,7 +85,9 @@ export const adminDashboardRouter = router({
 			newUsersToday: newUsersTodayResult?.count ?? 0,
 			spend24h: Math.abs(spend24hResult?.total ?? 0),
 			spend7d: Math.abs(spend7dResult?.total ?? 0),
-			generationCount24h: generationCountResult?.count ?? 0,
+			dailySpend,
+			adminGenerationCount24h: adminGenerationCountResult?.count ?? 0,
+			userGenerationCount24h: userGenerationCountResult?.count ?? 0,
 			moderationRejects24h: moderationRejects,
 		};
 	}),
