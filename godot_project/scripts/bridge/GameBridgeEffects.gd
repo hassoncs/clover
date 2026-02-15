@@ -377,55 +377,128 @@ func _set_last_result(result: Dictionary) -> void:
 # PUBLIC API - SPRITE EFFECTS
 # ============================================================
 
-var _entity_effects: Dictionary = {} # entity_id -> { "material": ShaderMaterial, "canvas_item": CanvasItem }
+var _entity_effects: Dictionary = {} # entity_id -> { "material": ShaderMaterial, "canvas_item": CanvasItem, "cache_key": String }
+var _material_cache: Dictionary = {} # cache_key -> { "material": ShaderMaterial, "refcount": int }
+func _get_or_create_shader(glsl: String) -> Shader:
+	# Use graph_executor's ShaderWarmer if available (shared cache, pre-compiled)
+	if graph_executor != null and graph_executor._shader_warmer != null:
+		var warmed: Shader = graph_executor._shader_warmer.warm_custom_shader(glsl)
+		if warmed != null:
+			return warmed
+	# Fallback: compile directly
+	var shader := Shader.new()
+	shader.code = glsl
+	return shader
+
+func _material_cache_key(glsl: String, params: Dictionary) -> String:
+	# Same GLSL + same params = same material (enables Godot batching)
+	var sorted_keys: Array = params.keys()
+	sorted_keys.sort()
+	var param_sig := ""
+	for key in sorted_keys:
+		param_sig += "%s=%s;" % [str(key), str(params[key])]
+	return "%d|%s" % [glsl.hash(), param_sig]
+
+func _get_or_create_material(glsl: String, params: Dictionary) -> Array:
+	# Returns [ShaderMaterial, cache_key]
+	var cache_key := _material_cache_key(glsl, params)
+	if _material_cache.has(cache_key):
+		var entry: Dictionary = _material_cache[cache_key]
+		entry["refcount"] += 1
+		return [entry["material"], cache_key]
+
+	var shader := _get_or_create_shader(glsl)
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	for key in params.keys():
+		material.set_shader_parameter(str(key), _convert_effect_param(params[key]))
+
+	_material_cache[cache_key] = { "material": material, "refcount": 1 }
+	return [material, cache_key]
+
+func _release_cached_material(cache_key: String) -> void:
+	if not _material_cache.has(cache_key):
+		return
+	var entry: Dictionary = _material_cache[cache_key]
+	entry["refcount"] -= 1
+	if entry["refcount"] <= 0:
+		_material_cache.erase(cache_key)
 
 func apply_sprite_effect(entity_id: String, effect_name: String, params = {}) -> void:
 	var canvas_item: CanvasItem = _get_entity_sprite(entity_id)
 	if canvas_item == null:
-		push_warning("[GameBridgeEffects] No canvas item found for entity '%s'" % entity_id)
+		push_warning("[GBE] No canvas item for entity '%s'" % entity_id)
 		return
 
 	var glsl: String = ""
-
-	# Check if effect_name is raw GLSL (starts with "shader_type")
 	if effect_name.begins_with("shader_type"):
 		glsl = effect_name
 	else:
 		glsl = _shader_warmer_lookup(effect_name)
 
 	if glsl == "":
-		push_warning("[GameBridgeEffects] Unknown sprite effect: '%s'" % effect_name)
+		push_warning("[GBE] Unknown sprite effect: '%s'" % effect_name)
 		return
 
-	var shader := Shader.new()
-	shader.code = glsl
+	# Release previous material if this entity already had one
+	if _entity_effects.has(entity_id):
+		_release_cached_material(_entity_effects[entity_id].get("cache_key", ""))
 
-	var material := ShaderMaterial.new()
-	material.shader = shader
-
+	var parsed_params := {}
 	if params is Dictionary:
-		for key in params.keys():
-			material.set_shader_parameter(str(key), _convert_effect_param(params[key]))
+		parsed_params = params
+
+	var result: Array = _get_or_create_material(glsl, parsed_params)
+	var material: ShaderMaterial = result[0]
+	var cache_key: String = result[1]
 
 	canvas_item.material = material
-	_entity_effects[entity_id] = { "material": material, "canvas_item": canvas_item }
+	_entity_effects[entity_id] = { "material": material, "canvas_item": canvas_item, "cache_key": cache_key }
+
+	# Propagate to child CanvasItems via use_parent_material for batching
+	var propagate: bool = false
+	if params is Dictionary:
+		propagate = bool(parsed_params.get("_propagateToChildren", false))
+	if propagate:
+		_set_children_use_parent_material(canvas_item, true)
 
 func update_sprite_effect_param(entity_id: String, param_name: String, value) -> void:
 	if not _entity_effects.has(entity_id):
 		return
 	var entry: Dictionary = _entity_effects[entity_id]
-	var material: ShaderMaterial = entry.get("material")
-	if material != null:
-		material.set_shader_parameter(param_name, _convert_effect_param(value))
+	var old_material: ShaderMaterial = entry.get("material")
+	if old_material == null:
+		return
+
+	var cache_key: String = entry.get("cache_key", "")
+	var cache_entry: Dictionary = _material_cache.get(cache_key, {})
+
+	# If shared (refcount > 1), clone to avoid mutating other entities
+	if cache_entry.get("refcount", 0) > 1:
+		_release_cached_material(cache_key)
+		var new_material := old_material.duplicate() as ShaderMaterial
+		new_material.set_shader_parameter(param_name, _convert_effect_param(value))
+		var canvas_item: CanvasItem = entry.get("canvas_item")
+		canvas_item.material = new_material
+		_entity_effects[entity_id] = { "material": new_material, "canvas_item": canvas_item, "cache_key": "" }
+	else:
+		old_material.set_shader_parameter(param_name, _convert_effect_param(value))
 
 func clear_sprite_effect(entity_id: String) -> void:
 	if not _entity_effects.has(entity_id):
 		return
 	var entry: Dictionary = _entity_effects[entity_id]
+	_release_cached_material(entry.get("cache_key", ""))
 	var canvas_item: CanvasItem = entry.get("canvas_item")
 	if canvas_item != null and is_instance_valid(canvas_item):
 		canvas_item.material = null
 	_entity_effects.erase(entity_id)
+
+func _set_children_use_parent_material(node: Node, enabled: bool) -> void:
+	for child in node.get_children():
+		if child is CanvasItem:
+			(child as CanvasItem).use_parent_material = enabled
+		_set_children_use_parent_material(child, enabled)
 
 func _convert_effect_param(value):
 	if value is Array:

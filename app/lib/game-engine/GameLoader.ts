@@ -227,7 +227,7 @@ export class GameLoader {
 				this.bridge.applySpriteEffect(
 					effect.entityId,
 					effect.glsl,
-					effect.params,
+					effect.params ?? {},
 				);
 			}
 		}
