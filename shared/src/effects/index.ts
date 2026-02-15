@@ -88,10 +88,21 @@ export {
 	resolveEffectiveResolution,
 } from "./resources";
 export { getBuiltInSeeds, registerBuiltInSeeds } from "./seeds/index";
+export type { ShaderCategory, ShaderLibraryEntry } from "./shaderRegistry";
+export {
+	getAllShaderCategories,
+	getCombinableShaders,
+	getShaderCount,
+	getShaderEntry,
+	listShadersByCategory,
+	SHADER_REGISTRY,
+	searchShaders,
+} from "./shaderRegistry";
 export {
 	needsScreenTextureRewrite,
 	rewriteScreenShaderForSubViewport,
 } from "./shaderRewrite";
+export { getShaderGlsl } from "./shaders/index";
 export type {
 	EffectsSnapshot,
 	FeedbackSnapshotState,
