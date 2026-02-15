@@ -79,11 +79,13 @@ export function KnobColor({
 					className="flex-1 bg-gray-800 text-white p-2 rounded border border-gray-700 font-mono"
 					value={customValue}
 					onChangeText={handleCustomChange}
+					onBlur={() => setCustomValue(value)}
 					placeholder="#RRGGBB"
 					placeholderTextColor="#6B7280"
 					editable={!disabled}
 					autoCapitalize="characters"
 					maxLength={7}
+					returnKeyType="done"
 					accessibilityLabel="Enter hex color code"
 				/>
 			</View>
