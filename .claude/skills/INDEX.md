@@ -1,3 +1,8 @@
+---
+name: INDEX
+description: "Index of all available skills for the Slopcade project. Lists skills by category with brief descriptions."
+---
+
 # Skill Index
 
 Updated: 2026-02-12 (post-audit)

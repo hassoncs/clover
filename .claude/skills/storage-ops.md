@@ -1,4 +1,5 @@
 ---
+name: storage-ops
 description: "Database and storage operations. Covers Cloudflare D1 (SQLite), R2 object storage, Supabase auth, migrations, BlobStore, asset uploads, and wallet transactions. Use when working on database queries, migrations, blob storage, or auth."
 ---
 

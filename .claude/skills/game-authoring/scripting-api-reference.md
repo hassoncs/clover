@@ -1,4 +1,5 @@
 ---
+name: game-authoring/scripting-api-reference
 description: "Scripting API reference for QuickJS sandbox. Covers ScriptContext, lifecycle hooks (onStart, onUpdate, onInput, onCollision), WorldOps, and the scripting runtime. Use when writing game scripts or debugging script behavior."
 ---
 

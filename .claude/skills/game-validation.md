@@ -1,4 +1,5 @@
 ---
+name: game-validation
 description: Use when validating game definitions, checking game playability, semantic validation, expression validation, or debugging validation errors
 ---
 

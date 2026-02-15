@@ -1,3 +1,8 @@
+---
+name: nativewind-theming
+description: "CSS-variable-based semantic theming for NativeWind 4.x. Covers light/dark mode colors, theme tokens, and cross-platform theming. Use when working on theming, colors, or dark mode."
+---
+
 # NativeWind Theming
 
 ## Overview

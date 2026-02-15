@@ -1,4 +1,5 @@
 ---
+name: agent-orchestration
 description: "Chat streaming, SSE endpoints, AG-UI protocol, tool calling, HITL (askUser), agent billing, settlement, streamText, chat flow. Use when working on chat, streaming, billing, or AI agent orchestration."
 ---
 

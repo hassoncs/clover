@@ -1,4 +1,5 @@
 ---
+name: testing-patterns
 description: "Testing patterns and infrastructure. Covers Vitest, GDUnit4, tRPC testing, D1/R2 mocking, fixtures, E2E bridge tests, and pre-commit hooks. Use when writing tests, debugging test failures, or setting up test infrastructure."
 ---
 

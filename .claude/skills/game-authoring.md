@@ -1,4 +1,5 @@
 ---
+name: game-authoring
 description: "Building and modifying games using the Slopcade game engine. Covers GameDefinition, prefabs, entities, scripts, physics, containers, and input configuration. Use when creating new games, modifying existing games, or debugging game logic."
 ---
 

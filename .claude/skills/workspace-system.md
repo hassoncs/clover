@@ -1,4 +1,5 @@
 ---
+name: workspace-system
 description: Use when working with workspace management, Git operations (commit, branch, tag, fork), workspace scaffolding, copying workspaces, or git-based game storage
 ---
 

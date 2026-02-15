@@ -1,4 +1,5 @@
 ---
+name: game-inspector
 description: "MCP-based game debugging and testing tools. Covers entity inspection, property editing, physics queries, time control, event subscriptions, and screenshots via Playwright. Use when debugging game state, inspecting entities, or testing games via the inspector."
 ---
 

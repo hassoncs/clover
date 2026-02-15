@@ -1,4 +1,5 @@
 ---
+name: effects-system
 description: "Multi-pass shader effects system for visual post-processing. Covers shader graphs, effect compilation, ping-pong feedback buffers, GraphExecutor, and GPU scene-graph compositing. Use when creating visual effects, writing shaders, or debugging effect rendering."
 ---
 

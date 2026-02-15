@@ -1,4 +1,5 @@
 ---
+name: game-authoring/examples
 description: "Game authoring patterns extracted from production games. Covers Flappy Bird, Breakout, Ball Sort, Snake, and other game implementations. Use as reference when implementing similar game mechanics or patterns."
 ---
 

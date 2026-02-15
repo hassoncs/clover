@@ -1,4 +1,5 @@
 ---
+name: game-authoring/game-definition-reference
 description: "Complete field-by-field reference for the GameDefinition interface. Covers metadata, world config, prefabs, entities, variables, and all game definition fields. Use when authoring games or understanding the GameDefinition schema."
 ---
 

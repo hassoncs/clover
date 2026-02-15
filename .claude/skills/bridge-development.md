@@ -1,4 +1,5 @@
 ---
+name: bridge-development
 description: "Godot-TypeScript bridge communication layer. Covers method registration, dispatch mechanisms, web vs native bridge, QuerySystem RPC, debug bridge. Use when adding bridge methods, debugging TS↔Godot communication, or working with GodotBridge/GodotDebugBridge."
 ---
 

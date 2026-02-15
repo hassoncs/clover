@@ -1,4 +1,5 @@
 ---
+name: physics
 description: "Physics system covering bodies, collision, joints, gravity, density, friction, restitution, damping, sensors, coordinates, and PPM (pixels-per-meter). Use when configuring physics, debugging collisions, adding joints, or tuning world settings."
 ---
 

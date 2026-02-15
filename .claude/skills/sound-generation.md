@@ -1,4 +1,5 @@
 ---
+name: sound-generation
 description: "Sound and audio generation pipeline. Covers ElevenLabs SFX API, audio assets, GameDefinition sound configuration, Godot AudioManager, and sound playback. Use when generating sound effects, adding audio to games, or working with the audio pipeline."
 ---
 

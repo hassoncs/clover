@@ -1,4 +1,5 @@
 ---
+name: godot-engine
 description: "Godot 4 engine patterns for Slopcade. Covers GDScript, scenes, .tscn/.gd files, GameBridge, autoloads, WASM export, PCK building, coordinate system, signals, and scene tree. Use when working on Godot scripts, scenes, or engine-level code."
 ---
 

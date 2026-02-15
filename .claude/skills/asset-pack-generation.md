@@ -1,4 +1,5 @@
 ---
+name: asset-pack-generation
 description: "AI image generation pipeline for game assets. Covers Scenario.com, theme planning, silhouette-to-sprite, background removal, R2 upload, and asset pack management. Use when generating, debugging, or modifying game asset images."
 ---
 

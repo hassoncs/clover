@@ -1,4 +1,5 @@
 ---
+name: ecs-architecture
 description: "Entity-Component-System architecture for the game engine. Covers prefabs, entities, components, spawning, GameDefinition, EntityManager, scriptRef, archetypes, and world settings. Use when working on game logic, entity management, or the scripting system."
 ---
 

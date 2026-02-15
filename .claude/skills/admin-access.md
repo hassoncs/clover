@@ -1,3 +1,8 @@
+---
+name: admin-access
+description: "Admin access management for Slopcade API. Covers ADMIN_EMAILS configuration, admin procedure, and access control. Use when working on admin features or checking admin permissions."
+---
+
 # Admin Access Management
 
 This skill provides guidance for managing admin access in the Slopcade API.
