@@ -372,7 +372,7 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
     Evidence: .sisyphus/evidence/task-4-post-diff.txt
   ```
 
-- [ ] 5. Build barrel index, wire imports, verify snapshot parity
+- [x] 5. Build barrel index, wire imports, verify snapshot parity
 
   **What to do**:
   - Create `shared/src/effects/shaders/index.ts` that:
