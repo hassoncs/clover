@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnswerInput } from "@/components/party/AnswerInput";
+import { BuzzerInput } from "@/components/party/BuzzerInput";
 import { PromptCard } from "@/components/party/PromptCard";
 import { Scoreboard } from "@/components/party/Scoreboard";
 import { Timer } from "@/components/party/Timer";
@@ -39,6 +40,16 @@ function GameContent() {
 	}
 
 	const renderPhaseContent = () => {
+		if (activeInputRequest?.request.type === "buzzer") {
+			return (
+				<BuzzerInput
+					onPress={() => sendInput(true)}
+					disabled={!activeInputRequest}
+					prompt={activeInputRequest.request.prompt}
+				/>
+			);
+		}
+
 		switch (gamePhase) {
 			case "answering":
 				return (
