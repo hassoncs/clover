@@ -264,7 +264,7 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
     Evidence: .sisyphus/evidence/task-2-lib-check.txt
   ```
 
-- [ ] 3. Extract sprite shaders (15) into .glsl + .meta.ts files
+- [x] 3. Extract sprite shaders (15) into .glsl + .meta.ts files
 
   **What to do**:
   - For each of the 15 sprite shaders in `shaderLibrary.ts`:
@@ -322,7 +322,7 @@ Critical Path: Task 1 → Task 3 → Task 5 → Task 6
     Evidence: .sisyphus/evidence/task-3-sprite-diff.txt
   ```
 
-- [ ] 4. Extract post-process shaders (21 + 1 grid) into .glsl + .meta.ts files
+- [x] 4. Extract post-process shaders (21 + 1 grid) into .glsl + .meta.ts files
 
   **What to do**:
   - Same process as Task 3 but for the 22 post-process and utility shaders.
