@@ -54,6 +54,7 @@ function makeRoomState(overrides?: Partial<PartyRoomState>): PartyRoomState {
 		hostId: "host-1",
 		sharedData: {},
 		currentRound: 0,
+		stateVersion: 0,
 		...overrides,
 	};
 }

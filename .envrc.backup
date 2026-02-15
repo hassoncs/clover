@@ -1,0 +1,17 @@
+# Add local node_modules bin to PATH for hush and other CLI tools
+PATH_add node_modules/.bin
+
+# Add devmux to PATH if it exists
+if [ -d "$PWD/devmux" ]; then
+    PATH_add devmux
+fi
+
+# Add any local scripts directory
+if [ -d "$PWD/scripts" ]; then
+    PATH_add scripts
+fi
+
+# Incremental codesearch re-index (background, near-instant after first run)
+# if command -v codesearch &> /dev/null && [ -d ".codesearch.db" ]; then
+#     codesearch index &> /dev/null &
+# fi

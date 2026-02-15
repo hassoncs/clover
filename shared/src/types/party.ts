@@ -27,6 +27,7 @@ export interface PartyRoomState {
 	sharedData?: Record<string, unknown>;
 	currentRound?: number;
 	maxRounds?: number;
+	stateVersion: number;
 }
 
 export type PartyInputType = "text" | "choice" | "drawing" | "buzzer";
@@ -48,6 +49,7 @@ export interface PartyInputResponse {
 export interface StateUpdateMessage {
 	type: "state_update";
 	state: PartyRoomState;
+	stateVersion: number;
 }
 
 export interface PlayerJoinedMessage {
@@ -98,6 +100,17 @@ export interface StartGameMessage {
 	type: "start_game";
 }
 
+export interface PrivateStateMessage {
+	type: "private_state";
+	data: Record<string, unknown>;
+}
+
+export interface PlayerTokenMessage {
+	type: "player_token";
+	token: string;
+	playerId: string;
+}
+
 export type PartyMessage =
 	| StateUpdateMessage
 	| PlayerJoinedMessage
@@ -108,4 +121,6 @@ export type PartyMessage =
 	| ErrorMessage
 	| HostReconnectMessage
 	| PlayerReconnectMessage
-	| StartGameMessage;
+	| StartGameMessage
+	| PrivateStateMessage
+	| PlayerTokenMessage;

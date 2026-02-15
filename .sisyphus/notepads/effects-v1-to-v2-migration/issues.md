@@ -1,3 +1,0 @@
-- 2026-02-08: Effects v2 runtime wiring issues on Godot side were fixed in-place.
-- Root causes: `GraphExecutor.gd` had class-level var indentation drift (parse hazard), `ResourceGraph.gd`/`PingPongManager.gd` still exported stale `EffectsV2*` class names, and `GameBridgeEffects.gd` did not register `effectsV2.*` QuerySystem handlers used by TypeScript `queryAsync()`.
-- Verification: `godot --headless --path "godot_project" --script <file> --check-only` passes for `scripts/effects/GraphExecutor.gd`, `scripts/effects/ResourceGraph.gd`, `scripts/effects/PingPongManager.gd`, and `scripts/bridge/GameBridgeEffects.gd` (no syntax errors reported).

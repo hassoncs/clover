@@ -144,10 +144,15 @@ export default function PartyHostScreen() {
 		);
 	}
 
-	return (
-		// eslint-disable-next-line jsx-a11y/aria-role
-		<PartyProvider code={params.code} role="host" hostToken={params.hostToken}>
+	const content = (
+		<PartyProvider
+			code={params.code}
+			role="host" // eslint-disable-line jsx-a11y/aria-role
+			hostToken={params.hostToken}
+		>
 			<HostLobbyContent code={params.code} hostToken={params.hostToken} />
 		</PartyProvider>
 	);
+
+	return content;
 }

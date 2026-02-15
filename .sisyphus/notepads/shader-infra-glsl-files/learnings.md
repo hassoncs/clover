@@ -1,4 +1,0 @@
-- ast_grep_replace may not work reliably for exact string replacements in import statements; sed with find -exec is more reliable for bulk string replacements
-- Not all .meta.ts files had the wrong import; some already imported from shaderRegistry, so the task affected only 17 out of 37 files
-- TypeScript compilation passes after fixing the imports, confirming ShaderLibraryEntry is correctly exported from shaderRegistry.ts
-- The new barrel at shared/src/effects/shaders/index.ts must define ShaderCategory and ShaderLibraryEntry locally; importing those types from shaderRegistry.ts causes a circular type alias error once shaderRegistry becomes a re-export shim.

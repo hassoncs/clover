@@ -33,6 +33,7 @@ export const env = {
 	assetCdnUrl: "https://slopcade-api.hassoncs.workers.dev/assets",
 	/** When true, bundled games are copied to offline storage on startup (native only) */
 	embedGames: process.env.EXPO_PUBLIC_EMBED_GAMES === "true",
+	stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 };
 
 const ASSET_CDN_URL = env.assetCdnUrl;

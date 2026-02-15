@@ -18,6 +18,8 @@ const VALID_MESSAGE_TYPES = new Set([
 	"host_reconnect",
 	"player_reconnect",
 	"start_game",
+	"private_state",
+	"player_token",
 ]);
 
 export function encodeMessage(msg: PartyMessage): string {
@@ -41,7 +43,7 @@ export function decodeMessage(raw: string | ArrayBuffer): PartyMessage | null {
 }
 
 export function stateUpdateMessage(state: PartyRoomState): PartyMessage {
-	return { type: "state_update", state };
+	return { type: "state_update", state, stateVersion: state.stateVersion };
 }
 
 export function playerJoinedMessage(player: PartyPlayer): PartyMessage {
@@ -79,4 +81,17 @@ export function errorMessage(code: string, message: string): PartyMessage {
 
 export function playerReconnectMessage(playerId: string): PartyMessage {
 	return { type: "player_reconnect", playerId };
+}
+
+export function privateStateMessage(
+	data: Record<string, unknown>,
+): PartyMessage {
+	return { type: "private_state", data };
+}
+
+export function playerTokenMessage(
+	token: string,
+	playerId: string,
+): PartyMessage {
+	return { type: "player_token", token, playerId };
 }

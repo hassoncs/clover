@@ -15,5 +15,6 @@ export type {
 	PlayerJoinedMessage,
 	PlayerLeftMessage,
 	PlayerReconnectMessage,
+	PlayerTokenMessage,
 	StateUpdateMessage,
 } from "@slopcade/shared/types/party";

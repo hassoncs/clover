@@ -1,0 +1,15 @@
+## Final Cleanup and Production Readiness (2026-02-15)
+- **Legacy Cleanup**: Removed legacy template-era files and tests that were superseded by the R2 script-first architecture.
+  - Removed: `api/src/party/templates/quiplash.ts`, `crowd-comedy.ts`, `question-answer.ts`, `utils.ts`
+  - Removed: `api/src/party/templates/__tests__/quiplash.test.ts`, `crowd-comedy.test.ts`, `question-answer.test.ts`
+- **Test Stability**: Fixed unhandled rejection warnings in `ServerScriptRunner.test.ts` by properly awaiting `vi.advanceTimersByTimeAsync()` promises.
+- **Verification**:
+  - Full test suite in `api/src/party/` passes (54 tests).
+  - Type check (`tsc --noEmit`) passes for the API package.
+  - R2-based quiplash execution verified via `registry-quiplash-r2.test.ts`.
+- **Production Readiness**:
+  - Reconnect identity model is stable for both host and players.
+  - Authoritative state sync with versioning is implemented.
+  - Script execution is bounded by timeouts.
+  - Game logic is fully migrated to R2 definitions.
+  - No full entity/physics mirroring is required for MVP.

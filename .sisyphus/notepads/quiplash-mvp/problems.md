@@ -1,2 +1,0 @@
-## Quiplash MVP — Problems
-

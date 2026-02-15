@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAuthToken } from "@/lib/auth/token";
 import { env } from "@/lib/config/env";
+import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import type {
 	InputResponseMessage,
 	PartyInputRequest,
@@ -11,6 +12,10 @@ import type {
 
 const INITIAL_RECONNECT_DELAY = 1000;
 const MAX_RECONNECT_DELAY = 30000;
+
+function getPlayerTokenKey(roomCode: string): string {
+	return `party_player_token:${roomCode}`;
+}
 
 export type ConnectionStatus =
 	| "connecting"
@@ -36,6 +41,7 @@ export interface UsePartyConnectionResult {
 	connectionStatus: ConnectionStatus;
 	players: PartyPlayer[];
 	activeInputRequest: ActiveInputRequest | null;
+	playerId: string | null;
 	sendInput: (value: unknown) => void;
 	sendStartGame: () => void;
 }
@@ -52,6 +58,7 @@ export function usePartyConnection({
 		useState<ConnectionStatus>("connecting");
 	const [activeInputRequest, setActiveInputRequest] =
 		useState<ActiveInputRequest | null>(null);
+	const [playerId, setPlayerId] = useState<string | null>(null);
 
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -60,6 +67,7 @@ export function usePartyConnection({
 	const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY);
 	const isConnectingRef = useRef(false);
 	const inputQueueRef = useRef<unknown[]>([]);
+	const playerTokenRef = useRef<string | null>(null);
 
 	const connect = useCallback(async () => {
 		if (
@@ -85,8 +93,18 @@ export function usePartyConnection({
 			params.set("role", role);
 			if (role === "host" && hostToken) {
 				params.set("token", hostToken);
-			} else if (role === "player" && name) {
-				params.set("name", name);
+			} else if (role === "player") {
+				if (name) {
+					params.set("name", name);
+				}
+				const storedToken = await getStorageItem<string | null>(
+					getPlayerTokenKey(code),
+					null,
+				);
+				if (storedToken) {
+					playerTokenRef.current = storedToken;
+					params.set("token", storedToken);
+				}
 			}
 			if (token) {
 				params.set("token", token);
@@ -153,6 +171,14 @@ export function usePartyConnection({
 							if (message.phase === "ended") {
 								setActiveInputRequest(null);
 							}
+							break;
+						case "private_state":
+							setPrivateState(message.data);
+							break;
+						case "player_token":
+							playerTokenRef.current = message.token;
+							setPlayerId(message.playerId);
+							setStorageItem(getPlayerTokenKey(code), message.token);
 							break;
 						case "error":
 							console.error(
@@ -259,6 +285,7 @@ export function usePartyConnection({
 		connectionStatus,
 		players: roomState?.players ?? [],
 		activeInputRequest,
+		playerId,
 		sendInput,
 		sendStartGame,
 	};

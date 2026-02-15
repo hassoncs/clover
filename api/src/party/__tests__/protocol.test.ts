@@ -13,6 +13,7 @@ import {
 	playerJoinedMessage,
 	playerLeftMessage,
 	playerReconnectMessage,
+	privateStateMessage,
 	stateUpdateMessage,
 } from "../protocol";
 
@@ -23,6 +24,7 @@ function makeRoomState(overrides?: Partial<PartyRoomState>): PartyRoomState {
 		hostId: "host-1",
 		sharedData: {},
 		currentRound: 0,
+		stateVersion: 1,
 		...overrides,
 	};
 }
@@ -98,6 +100,13 @@ describe("protocol", () => {
 			const decoded = decodeMessage(encoded);
 			expect(decoded).toEqual(msg);
 		});
+
+		it("round-trips private_state message", () => {
+			const msg = privateStateMessage({ secret: "value", scoreDelta: 5 });
+			const encoded = encodeMessage(msg);
+			const decoded = decodeMessage(encoded);
+			expect(decoded).toEqual(msg);
+		});
 	});
 
 	describe("decodeMessage edge cases", () => {
@@ -129,9 +138,11 @@ describe("protocol", () => {
 	});
 
 	describe("message factory functions", () => {
-		it("stateUpdateMessage has correct type", () => {
-			const msg = stateUpdateMessage(makeRoomState());
+		it("stateUpdateMessage has correct type and stateVersion", () => {
+			const state = makeRoomState({ stateVersion: 42 });
+			const msg = stateUpdateMessage(state);
 			expect(msg.type).toBe("state_update");
+			expect((msg as any).stateVersion).toBe(42);
 		});
 
 		it("phaseChangeMessage includes optional metadata", () => {
