@@ -1,6 +1,5 @@
 import type { ResourceGraph, ResourceNode } from "./resources";
 import { buildResourceGraph } from "./resources";
-import { getShaderGlsl } from "./shaderLibrary";
 import type {
 	CompiledPass,
 	CompiledPlan,
@@ -27,6 +26,7 @@ export interface OrderingConstraints {
 export interface CompilerOptions {
 	platformTier?: PlatformTier;
 	orderingConstraints?: OrderingConstraints;
+	shaderLookup?: (effectType: string) => string | null;
 }
 
 export interface CompileError {
@@ -205,12 +205,15 @@ function toResourceRef(node: ResourceNode): ResourceRef {
 // Shader source resolution — builtin effectType → inline GLSL
 // ---------------------------------------------------------------------------
 
-function resolveShaderSource(node: EffectNode): ShaderSource {
+function resolveShaderSource(
+	node: EffectNode,
+	shaderLookup?: (effectType: string) => string | null,
+): ShaderSource {
 	const customGlsl =
 		typeof node.params.shaderSource === "string"
 			? node.params.shaderSource
 			: null;
-	const glsl = customGlsl || getShaderGlsl(node.type) || "";
+	const glsl = customGlsl || shaderLookup?.(node.type) || "";
 	return { glsl };
 }
 
@@ -222,6 +225,7 @@ function buildCompiledPass(
 	node: EffectNode,
 	resourceGraph: ResourceGraph,
 	scope: string,
+	shaderLookup?: (effectType: string) => string | null,
 ): CompiledPass {
 	const requires: ResourceRef[] = [];
 	const provides: ResourceRef[] = [];
@@ -245,7 +249,7 @@ function buildCompiledPass(
 	requires.sort((a, b) => a.id.localeCompare(b.id));
 	provides.sort((a, b) => a.id.localeCompare(b.id));
 
-	const shaderSource: ShaderSource = resolveShaderSource(node);
+	const shaderSource: ShaderSource = resolveShaderSource(node, shaderLookup);
 
 	const { shaderSource: _stripShaderSource, ...runtimeParams } = node.params;
 
@@ -340,7 +344,9 @@ export function compileGraph(
 
 	for (const nodeId of topoResult.sorted) {
 		const node = nodeMap.get(nodeId)!;
-		passes.push(buildCompiledPass(node, resourceGraph, graph.scope));
+		passes.push(
+			buildCompiledPass(node, resourceGraph, graph.scope, options.shaderLookup),
+		);
 	}
 
 	const resourceMap: Record<string, ResourceRef> = {};
@@ -400,19 +406,17 @@ export function wrapShadersAsPlan(
 	shaders: Record<string, string>,
 	scope: "screen" | "entity" = "screen",
 ): CompiledPlan {
-	const passes: CompiledPass[] = Object.entries(shaders).map(
-		([id, glsl]) => ({
-			id,
-			shaderSource: { glsl },
-			requires: [],
-			provides: [],
-			params: {},
-			paramsSchema: [],
-			persistence: "none" as const,
-			qualityTier: "medium" as const,
-			constraints: {},
-		}),
-	);
+	const passes: CompiledPass[] = Object.entries(shaders).map(([id, glsl]) => ({
+		id,
+		shaderSource: { glsl },
+		requires: [],
+		provides: [],
+		params: {},
+		paramsSchema: [],
+		persistence: "none" as const,
+		qualityTier: "medium" as const,
+		constraints: {},
+	}));
 
 	const hash = stableHash({ scope, passes });
 

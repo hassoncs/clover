@@ -23,12 +23,11 @@ baseConfig.resolver.nodeModulesPaths = [
 	path.resolve(monorepoRoot, "node_modules"),
 ];
 
-// Add .glsl support for shader imports
-// Note: Metro doesn't have a built-in transformer for .glsl files.
-// For now, .glsl files are handled by Vite in shared/ package.
-// If .glsl imports are needed in React Native code, a custom transformer
-// would be required (e.g., raw-loader equivalent for Metro).
 baseConfig.resolver.sourceExts = [...baseConfig.resolver.sourceExts, "glsl"];
+
+baseConfig.transformer.babelTransformerPath = require.resolve(
+	"./metro-glsl-transformer",
+);
 
 function getPackageCjsPath(packageName, moduleName, root) {
 	const directPath = path.resolve(root, "node_modules", packageName);

@@ -89,22 +89,6 @@ export {
 } from "./resources";
 export { getBuiltInSeeds, registerBuiltInSeeds } from "./seeds/index";
 export {
-	getAvailableShaderKeys,
-	getShaderGlsl,
-	getShaderGlslStrict,
-	SHADER_LIBRARY,
-} from "./shaderLibrary";
-export type { ShaderCategory, ShaderLibraryEntry } from "./shaderRegistry";
-export {
-	getAllShaderCategories,
-	getCombinableShaders,
-	getShaderCount,
-	getShaderEntry,
-	listShadersByCategory,
-	SHADER_REGISTRY,
-	searchShaders,
-} from "./shaderRegistry";
-export {
 	needsScreenTextureRewrite,
 	rewriteScreenShaderForSubViewport,
 } from "./shaderRewrite";
