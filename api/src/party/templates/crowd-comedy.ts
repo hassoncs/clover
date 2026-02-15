@@ -1,12 +1,12 @@
-import promptsData from "../content/quiplash-prompts.json";
+import { loadContentPack, shufflePrompts } from "../content/prompt-loader";
 import type { PartyTemplateRunner } from "../PartyRoomDO";
-import { DEFAULT_ANSWER_TIMEOUT, DEFAULT_VOTE_TIMEOUT } from "../PartyRoomDO";
-
-interface Prompt {
-	id: string;
-	text: string;
-	category: string;
-}
+import {
+	buildScoreboard,
+	delay,
+	generateId,
+	shuffle,
+	startCountdown,
+} from "./utils";
 
 interface AnonymousAnswer {
 	id: string;
@@ -25,14 +25,8 @@ interface RoundResult {
 	points: number;
 }
 
-interface ScoreEntry {
-	playerId: string;
-	playerName: string;
-	score: number;
-}
-
-const ANSWER_TIME_LIMIT = DEFAULT_ANSWER_TIMEOUT / 1000;
-const VOTE_TIME_LIMIT = DEFAULT_VOTE_TIMEOUT / 1000;
+const ANSWER_TIME_LIMIT = 30;
+const VOTE_TIME_LIMIT = 15;
 const REVEAL_DURATION_MS = 3_000;
 const RESULTS_DURATION_MS = 5_000;
 const SCORES_DURATION_MS = 5_000;
@@ -41,57 +35,10 @@ const NO_ANSWER = "(no answer)";
 const POINTS_PER_VOTE = 100;
 const CLEAN_SWEEP_BONUS = 50;
 
-function shuffle<T>(arr: T[]): T[] {
-	const result = [...arr];
-	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[result[i], result[j]] = [result[j], result[i]];
-	}
-	return result;
-}
-
-function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function generateId(): string {
-	return Math.random().toString(36).slice(2, 10);
-}
-
-function startCountdown(
-	room: Parameters<PartyTemplateRunner>[0],
-	seconds: number,
-): ReturnType<typeof setInterval> {
-	let remaining = seconds;
-	const interval = setInterval(async () => {
-		remaining--;
-		if (remaining >= 0) {
-			await room.updateSharedData({ timerRemaining: remaining });
-		}
-	}, 1000);
-	return interval;
-}
-
-function buildScoreboard(
-	scores: Map<string, number>,
-	playerNames: Map<string, string>,
-): ScoreEntry[] {
-	const entries: ScoreEntry[] = [];
-	for (const [playerId, score] of scores) {
-		entries.push({
-			playerId,
-			playerName: playerNames.get(playerId) ?? playerId,
-			score,
-		});
-	}
-	entries.sort((a, b) => b.score - a.score);
-	return entries;
-}
-
 export const runCrowdComedy: PartyTemplateRunner = async (room) => {
 	await room.setPhase("playing");
 
-	const allPrompts = shuffle(promptsData as Prompt[]);
+	const allPrompts = shufflePrompts(loadContentPack("quip"));
 	let promptIndex = 0;
 
 	const readyResponses = await room.requestInput("ready-check", {

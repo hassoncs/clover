@@ -1,12 +1,12 @@
-import promptsData from "../content/quiplash-prompts.json";
+import {
+	loadContentPack,
+	type QuipPrompt,
+	shufflePrompts,
+} from "../content/prompt-loader";
 import type { PartyTemplateRunner } from "../PartyRoomDO";
-import { DEFAULT_ANSWER_TIMEOUT, DEFAULT_VOTE_TIMEOUT } from "../PartyRoomDO";
+import { buildScoreboard, delay, startCountdown } from "./utils";
 
-interface Prompt {
-	id: string;
-	text: string;
-	category: string;
-}
+type Prompt = QuipPrompt;
 
 interface Matchup {
 	promptText: string;
@@ -16,61 +16,12 @@ interface Matchup {
 	answerB: string;
 }
 
-interface ScoreEntry {
-	playerId: string;
-	playerName: string;
-	score: number;
-}
-
-const ANSWER_TIME_LIMIT = DEFAULT_ANSWER_TIMEOUT / 1000;
-const VOTE_TIME_LIMIT = DEFAULT_VOTE_TIMEOUT / 1000;
+const ANSWER_TIME_LIMIT = 30;
+const VOTE_TIME_LIMIT = 15;
 const REVEAL_DURATION_MS = 5_000;
 const SCORES_DURATION_MS = 5_000;
 const ROUND_COUNT = 3;
 const NO_ANSWER = "(no answer)";
-
-function shuffle<T>(arr: T[]): T[] {
-	const result = [...arr];
-	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[result[i], result[j]] = [result[j], result[i]];
-	}
-	return result;
-}
-
-function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function startCountdown(
-	room: Parameters<PartyTemplateRunner>[0],
-	seconds: number,
-): ReturnType<typeof setInterval> {
-	let remaining = seconds;
-	const interval = setInterval(async () => {
-		remaining--;
-		if (remaining >= 0) {
-			await room.updateSharedData({ timerRemaining: remaining });
-		}
-	}, 1000);
-	return interval;
-}
-
-function buildScoreboard(
-	scores: Map<string, number>,
-	playerNames: Map<string, string>,
-): ScoreEntry[] {
-	const entries: ScoreEntry[] = [];
-	for (const [playerId, score] of scores) {
-		entries.push({
-			playerId,
-			playerName: playerNames.get(playerId) ?? playerId,
-			score,
-		});
-	}
-	entries.sort((a, b) => b.score - a.score);
-	return entries;
-}
 
 function createMatchups(
 	playerIds: string[],
@@ -97,7 +48,7 @@ function createMatchups(
 export const runQuiplash: PartyTemplateRunner = async (room) => {
 	await room.setPhase("playing");
 
-	const allPrompts = shuffle(promptsData as Prompt[]);
+	const allPrompts = shufflePrompts(loadContentPack("quip"));
 	let promptIndex = 0;
 
 	const readyResponses = await room.requestInput("ready-check", {

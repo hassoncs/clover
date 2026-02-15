@@ -1,4 +1,5 @@
 import type { PartyRoomDO } from "../PartyRoomDO";
+import { delay } from "./utils";
 
 const QUESTIONS = [
 	"What's the worst superpower you can think of?",
@@ -69,8 +70,4 @@ export async function runQuestionAnswer(room: PartyRoomDO): Promise<void> {
 		timerRemaining: 0,
 	});
 	await room.setPhase("ended");
-}
-
-function delay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
