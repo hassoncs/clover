@@ -120,7 +120,7 @@ pnpm content cli -- stats
     - [ ] Existing templates load content through shared loader path.
     - [ ] No behavior regression in existing templates.
 
-- [ ] 3. Add `sendToPlayer` server capability
+- [x] 3. Add `sendToPlayer` server capability
   - **What to do**:
     - Add player-targeted send method in `PartyRoomDO`.
     - Add protocol message for private-state updates.
@@ -143,7 +143,7 @@ pnpm content cli -- stats
     - [ ] Target player receives private data and context updates.
     - [ ] Other players' contexts remain unchanged.
 
-- [ ] 5. Add reusable `BuzzerInput` component
+- [x] 5. Add reusable `BuzzerInput` component
   - **What to do**:
     - Build reusable party buzzer input component.
     - Integrate into party play rendering for `type: buzzer`.

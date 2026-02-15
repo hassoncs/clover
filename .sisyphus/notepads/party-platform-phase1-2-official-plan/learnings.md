@@ -66,3 +66,26 @@
 - Both `quiplash.ts` and `crowd-comedy.ts` now use `loadPromptPool()` from shared loader
 - Removed direct JSON imports from templates
 - Templates use `type Prompt = QuiplashPrompt` for local type alias
+
+## 2026-02-15 Private State Targeting
+
+### PartyRoomDO Targeted Messaging
+- Added `sendToPlayer(playerId, data)` in `PartyRoomDO` to send a `private_state` message only to sockets where metadata is `{ role: "player", playerId }`
+- Method is a graceful no-op when no matching player socket exists (no throw/crash)
+
+### Protocol Extension
+- Added `private_state` to protocol validation (`VALID_MESSAGE_TYPES`)
+- Added `privateStateMessage(data)` factory with shape `{ type: "private_state", data }`
+- Added `PrivateStateMessage` to shared `PartyMessage` union
+
+### Test Pattern
+- Added isolated `PartyRoomDO.sendToPlayer` tests by injecting mocked sockets + metadata directly into private maps/sets
+- Verified target player receives payload, non-target player and host do not, and missing player ID is handled safely
+
+## 2026-02-15 Buzzer Input Component
+
+### Reusable Buzzer Component
+- Created `BuzzerInput` as a reusable component for party games.
+- Integrated into `play.tsx` by checking `activeInputRequest.request.type === "buzzer"`.
+- This allows the buzzer to be used in any game phase where input is requested.
+- Uses `NativeWind` for styling and `Ionicons` for visual feedback.
