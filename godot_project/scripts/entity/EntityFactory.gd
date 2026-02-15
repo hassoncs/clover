@@ -153,8 +153,11 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	var archetype = _determine_archetype(physics_data, collider_data)
 	var record = EntityRecord.new(entity_id, node, archetype)
 	record.prefab = prefab_id
-	if merged.has("tags"):
-		record.tags = merged.tags if merged.tags is Array else []
+	if merged.has("tags") and merged.tags is Array:
+		var typed_tags: Array[String] = []
+		for t in merged.tags:
+			typed_tags.append(str(t))
+		record.tags = typed_tags
 	return record
 
 
@@ -223,8 +226,11 @@ func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dict
 	var archetype = _determine_archetype(physics_data, collider_data)
 	var record = EntityRecord.new(child_id, node, archetype)
 	record.prefab = child_prefab_id
-	if merged.has("tags"):
-		record.tags = merged.tags if merged.tags is Array else []
+	if merged.has("tags") and merged.tags is Array:
+		var typed_tags: Array[String] = []
+		for t in merged.tags:
+			typed_tags.append(str(t))
+		record.tags = typed_tags
 	
 	if _bridge:
 		_bridge.entity_registry[child_id] = record

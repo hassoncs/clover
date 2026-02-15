@@ -118,13 +118,13 @@ func _get_viewport_size() -> Vector2:
 
 func setup_camera() -> void:
 	var camera_script = load("res://scripts/camera/CameraEffects.gd")
-	var camera = Camera2D.new()
-	camera.set_script(camera_script)
-	camera.name = "GameCamera"
-	camera.enabled = true
-	camera.global_position = Vector2.ZERO
-	_bridge.add_child(camera)
-	camera.make_current()
-	if camera.has_method("move_to"):
-		camera._target_position = Vector2.ZERO
-	_bridge.camera = camera
+	var cam = Camera2D.new()
+	cam.set_script(camera_script)
+	cam.name = "GameCamera"
+	cam.enabled = true
+	cam.global_position = Vector2.ZERO
+	_bridge.add_child(cam)
+	cam.make_current()
+	if cam.has_method("move_to"):
+		cam._target_position = Vector2.ZERO
+	_bridge.camera = cam

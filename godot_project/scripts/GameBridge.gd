@@ -46,6 +46,7 @@ var entity_registry: Dictionary = {}  # entity_id -> EntityRecord (single source
 var prefabs: Dictionary = {}
 var pixels_per_meter: float = 50.0
 var game_root: Node2D = null
+var camera: Camera2D = null
 
 # Backward compatibility: entities property that maps to entity_registry nodes
 var entities: Dictionary:
@@ -587,6 +588,10 @@ func clear_game() -> void:
 	if _entity_manager: _entity_manager.clear_all()
 	entity_registry.clear()
 	prefabs.clear()
+	var effects_bridge = get_node_or_null("/root/GameBridgeEffects")
+	if effects_bridge and effects_bridge.has_method("clear_plan"):
+		effects_bridge.clear_plan()
+		effects_bridge.reset_graph()
 
 func _physics_process(delta: float) -> void:
 	if _sync_system: _sync_system.process_sync()
