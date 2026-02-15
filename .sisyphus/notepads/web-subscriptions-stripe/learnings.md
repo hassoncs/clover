@@ -20,3 +20,10 @@
 - `STIPEND_MAX_MICROS = 10_000_000` (10 Sparks)
 - `STIPEND_CEILING_MICROS = 15_000_000` (15 Sparks)
 - Stipend formula: `grant = min(10M, max(0, 15M - currentBalance))`
+
+## 2026-02-15 Billing Service Test Implementation
+
+### Schema/Test Environment Gotcha
+- `initTestDatabase()` currently loads `schema.sql` that does not include the newer Stripe/entitlement tables and columns from `20260215_*` migrations
+- Billing tests must bootstrap missing structures in `beforeAll` (`users` entitlement columns, `stripe_subscriptions`, `stripe_webhook_events`, `party_hosting_sessions`)
+- `credit_transactions` in `schema.sql` may miss `'subscription_stipend'` in its type CHECK; tests that exercise `StipendService` need to reconcile this in test setup to avoid constraint failures

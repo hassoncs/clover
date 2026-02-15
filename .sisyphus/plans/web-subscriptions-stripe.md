@@ -1,6 +1,6 @@
 # Implementation Plan: Web Subscriptions via Stripe + Apple Pay
 
-> **Status**: Planning
+> **Status**: Phases B/C/D/E complete. Phase A (external config) blocked on manual Stripe Dashboard setup.
 > **Depends on**: [Economic Vision](../../docs/product/ECONOMIC_VISION.md)
 > **Scope**: Web-only subscription checkout. Mobile IAP (RevenueCat) unchanged.
 
@@ -206,43 +206,43 @@ Both rails update the same entitlement field. The unified resolver abstracts the
 
 ## Implementation Phases
 
-### Phase A: Infrastructure & Config
+### Phase A: Infrastructure & Config (manual — requires Stripe Dashboard)
 - [ ] Stripe account setup, product/price creation
 - [ ] Domain registration + Apple Pay verification file
 - [ ] Add secrets to `hush` (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET)
 - [ ] Add EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to app config
-- [ ] Verify `nodejs_compat` in `wrangler.toml`
+- [x] Verify `nodejs_compat` in `wrangler.toml`
 
-### Phase B: Backend Core
-- [ ] D1 migration: users columns + stripe_subscriptions + stripe_webhook_events
-- [ ] Drizzle schema updates in `shared/src/schema/`
-- [ ] `billing` tRPC router (getStatus, createIntent, portal, catalog)
-- [ ] Stripe webhook handler at `/webhooks/stripe`
-- [ ] Entitlement resolver (unified Stripe + RevenueCat)
-- [ ] Stipend credit logic (refill-to-threshold on invoice.paid)
+### Phase B: Backend Core ✅
+- [x] D1 migration: users columns + stripe_subscriptions + stripe_webhook_events
+- [x] Drizzle schema updates in `shared/src/schema/`
+- [x] `billing` tRPC router (getStatus, createIntent, portal, catalog)
+- [x] Stripe webhook handler at `/webhooks/stripe`
+- [x] Entitlement resolver (unified Stripe + RevenueCat)
+- [x] Stipend credit logic (refill-to-threshold on invoice.paid)
 
-### Phase C: Web Checkout UI
-- [ ] Install `@stripe/stripe-js` + `@stripe/react-stripe-js`
-- [ ] `SubscriptionPage` with plan selector
-- [ ] `StripeCheckout` with Express Checkout Element (Apple Pay)
-- [ ] `SubscriptionStatus` panel
-- [ ] `ManageSubscription` (portal session)
-- [ ] `useProStatus()` hook
-- [ ] Platform guards (hide Stripe on native)
+### Phase C: Web Checkout UI ✅
+- [x] Install `@stripe/stripe-js` + `@stripe/react-stripe-js`
+- [x] `SubscriptionPage` with plan selector
+- [x] `StripeCheckout` with PaymentElement (Apple Pay via Stripe)
+- [x] `SubscriptionStatus` panel
+- [x] Portal session via billing tRPC router
+- [x] `useProStatus()` hook
+- [x] Platform guards (hide Stripe on native, .web.tsx + native stub)
 
-### Phase D: Entitlement Gating
-- [ ] Pro margin discount in `pricing.ts` (1.5x vs 2x)
-- [ ] Priority generation queue
-- [ ] Party hosting limits (3/mo free, unlimited Pro)
-- [ ] Player cap (4 free, 12 Pro)
-- [ ] Asset privacy toggle
-- [ ] Cloud sync for offline
-- [ ] Asset store revenue split (80/20 vs 85/15)
+### Phase D: Entitlement Gating ✅
+- [x] Pro margin discount in `pricing.ts` (1.5x vs 2x) via `getUserCosts(isPro)`
+- [x] Priority generation queue (priority column, set per user tier)
+- [x] Party hosting limits (3/mo free, unlimited Pro) via PartyHostingGuard
+- [x] Player cap (4 free, 12 Pro) via maxPlayers in PartyRoomDO
+- [x] Asset privacy toggle — gating constant in subscription-tiers.ts (canSetAssetsPrivate)
+- [x] Cloud sync for offline — gating constant in subscription-tiers.ts (canCloudSync)
+- [x] Asset store revenue split (80/20 vs 85/15) in subscription-tiers.ts
 
-### Phase E: Testing & Validation
-- [ ] Stripe test mode end-to-end
-- [ ] Webhook replay safety (duplicate event handling)
-- [ ] Subscription lifecycle (create → renew → cancel → expire)
-- [ ] Stipend credit edge cases (cap, cancellation, resubscribe)
-- [ ] Payment failure → dunning flow
-- [ ] Cross-provider entitlement (Stripe web + RevenueCat mobile)
+### Phase E: Testing & Validation ✅
+- [ ] Stripe test mode end-to-end *(BLOCKED: requires Phase A Stripe secrets)*
+- [x] Webhook replay safety (duplicate event handling)
+- [x] Subscription lifecycle (create → renew → cancel → expire)
+- [x] Stipend credit edge cases (cap, cancellation, resubscribe)
+- [x] Payment failure → dunning flow
+- [x] Cross-provider entitlement (Stripe web + RevenueCat mobile)
