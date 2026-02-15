@@ -97,7 +97,7 @@ pnpm content cli -- stats
 
 ## TODOs (Implementation + Verification)
 
-- [ ] 1. Extract shared template utility module
+- [x] 1. Extract shared template utility module
   - **What to do**:
     - Create `api/src/party/templates/utils.ts`.
     - Move duplicated helpers from `quiplash.ts` and `crowd-comedy.ts` (`shuffle`, `delay`, `startCountdown`, `buildScoreboard`, `generateId`).
@@ -109,7 +109,7 @@ pnpm content cli -- stats
     - [ ] `bun test api/src/party/templates/__tests__/quiplash.test.ts` passes.
     - [ ] `bun test api/src/party/templates/__tests__/crowd-comedy.test.ts` passes.
 
-- [ ] 2. Add generic content loader abstraction
+- [x] 2. Add generic content loader abstraction
   - **What to do**:
     - Implement loader API for content packs by game/content type.
     - Remove hard-coupling to `quiplash-prompts.json` in templates where possible.
