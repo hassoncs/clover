@@ -28,6 +28,46 @@ import oldFilmGlsl from "./post/oldFilm.glsl";
 import { meta as oldFilmMeta } from "./post/oldFilm.meta";
 import pixelateScreenGlsl from "./post/pixelateScreen.glsl";
 import { meta as pixelateScreenMeta } from "./post/pixelateScreen.meta";
+import rbAuroraGlsl from "./post/rbAurora.glsl";
+import { meta as rbAuroraMeta } from "./post/rbAurora.meta";
+import rbBalatroGlsl from "./post/rbBalatro.glsl";
+import { meta as rbBalatroMeta } from "./post/rbBalatro.meta";
+import rbColorBendsGlsl from "./post/rbColorBends.glsl";
+import { meta as rbColorBendsMeta } from "./post/rbColorBends.meta";
+import rbDarkVeilGlsl from "./post/rbDarkVeil.glsl";
+import { meta as rbDarkVeilMeta } from "./post/rbDarkVeil.meta";
+import rbFaultyTerminalGlsl from "./post/rbFaultyTerminal.glsl";
+import { meta as rbFaultyTerminalMeta } from "./post/rbFaultyTerminal.meta";
+import rbFloatingLinesGlsl from "./post/rbFloatingLines.glsl";
+import { meta as rbFloatingLinesMeta } from "./post/rbFloatingLines.meta";
+import rbGalaxyGlsl from "./post/rbGalaxy.glsl";
+import { meta as rbGalaxyMeta } from "./post/rbGalaxy.meta";
+import rbGradientBlindsGlsl from "./post/rbGradientBlinds.glsl";
+import { meta as rbGradientBlindsMeta } from "./post/rbGradientBlinds.meta";
+import rbGrainientGlsl from "./post/rbGrainient.glsl";
+import { meta as rbGrainientMeta } from "./post/rbGrainient.meta";
+import rbIridescenceGlsl from "./post/rbIridescence.glsl";
+import { meta as rbIridescenceMeta } from "./post/rbIridescence.meta";
+import rbLightningGlsl from "./post/rbLightning.glsl";
+import { meta as rbLightningMeta } from "./post/rbLightning.meta";
+import rbLightRaysGlsl from "./post/rbLightRays.glsl";
+import { meta as rbLightRaysMeta } from "./post/rbLightRays.meta";
+import rbLiquidChromeGlsl from "./post/rbLiquidChrome.glsl";
+import { meta as rbLiquidChromeMeta } from "./post/rbLiquidChrome.meta";
+import rbMetaBallsGlsl from "./post/rbMetaBalls.glsl";
+import { meta as rbMetaBallsMeta } from "./post/rbMetaBalls.meta";
+import rbOrbGlsl from "./post/rbOrb.glsl";
+import { meta as rbOrbMeta } from "./post/rbOrb.meta";
+import rbPlasmaGlsl from "./post/rbPlasma.glsl";
+import { meta as rbPlasmaMeta } from "./post/rbPlasma.meta";
+import rbPrismGlsl from "./post/rbPrism.glsl";
+import { meta as rbPrismMeta } from "./post/rbPrism.meta";
+import rbShapeBlurGlsl from "./post/rbShapeBlur.glsl";
+import { meta as rbShapeBlurMeta } from "./post/rbShapeBlur.meta";
+import rbSilkGlsl from "./post/rbSilk.glsl";
+import { meta as rbSilkMeta } from "./post/rbSilk.meta";
+import rbThreadsGlsl from "./post/rbThreads.glsl";
+import { meta as rbThreadsMeta } from "./post/rbThreads.meta";
 import rippleGlsl from "./post/ripple.glsl";
 import { meta as rippleMeta } from "./post/ripple.meta";
 import scanlinesGlsl from "./post/scanlines.glsl";
@@ -113,6 +153,26 @@ export const SHADER_LIBRARY: Record<string, string> = {
 	nightVision: nightVisionGlsl,
 	oldFilm: oldFilmGlsl,
 	pixelateScreen: pixelateScreenGlsl,
+	rbAurora: rbAuroraGlsl,
+	rbBalatro: rbBalatroGlsl,
+	rbColorBends: rbColorBendsGlsl,
+	rbDarkVeil: rbDarkVeilGlsl,
+	rbFaultyTerminal: rbFaultyTerminalGlsl,
+	rbFloatingLines: rbFloatingLinesGlsl,
+	rbGalaxy: rbGalaxyGlsl,
+	rbGradientBlinds: rbGradientBlindsGlsl,
+	rbGrainient: rbGrainientGlsl,
+	rbIridescence: rbIridescenceGlsl,
+	rbLightRays: rbLightRaysGlsl,
+	rbLightning: rbLightningGlsl,
+	rbLiquidChrome: rbLiquidChromeGlsl,
+	rbMetaBalls: rbMetaBallsGlsl,
+	rbOrb: rbOrbGlsl,
+	rbPlasma: rbPlasmaGlsl,
+	rbPrism: rbPrismGlsl,
+	rbShapeBlur: rbShapeBlurGlsl,
+	rbSilk: rbSilkGlsl,
+	rbThreads: rbThreadsGlsl,
 	ripple: rippleGlsl,
 	scanlines: scanlinesGlsl,
 	shimmer: shimmerGlsl,
@@ -153,6 +213,26 @@ export const SHADER_REGISTRY: Record<string, ShaderLibraryEntry> = {
 	nightVision: nightVisionMeta,
 	oldFilm: oldFilmMeta,
 	pixelateScreen: pixelateScreenMeta,
+	rbAurora: rbAuroraMeta,
+	rbBalatro: rbBalatroMeta,
+	rbColorBends: rbColorBendsMeta,
+	rbDarkVeil: rbDarkVeilMeta,
+	rbFaultyTerminal: rbFaultyTerminalMeta,
+	rbFloatingLines: rbFloatingLinesMeta,
+	rbGalaxy: rbGalaxyMeta,
+	rbGradientBlinds: rbGradientBlindsMeta,
+	rbGrainient: rbGrainientMeta,
+	rbIridescence: rbIridescenceMeta,
+	rbLightRays: rbLightRaysMeta,
+	rbLightning: rbLightningMeta,
+	rbLiquidChrome: rbLiquidChromeMeta,
+	rbMetaBalls: rbMetaBallsMeta,
+	rbOrb: rbOrbMeta,
+	rbPlasma: rbPlasmaMeta,
+	rbPrism: rbPrismMeta,
+	rbShapeBlur: rbShapeBlurMeta,
+	rbSilk: rbSilkMeta,
+	rbThreads: rbThreadsMeta,
 	ripple: rippleMeta,
 	scanlines: scanlinesMeta,
 	shimmer: shimmerMeta,

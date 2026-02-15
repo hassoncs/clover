@@ -1,0 +1,23 @@
+Task 4 schema completeness check
+===============================
+
+Scope checked:
+- Tier A candidates: 12
+- Tier B candidates: 8
+- Tier C candidates intentionally excluded from schema mapping: 4
+
+Validation rules:
+1) Each Tier A/B row has tier assignment and rationale context.
+2) Each Tier A/B row includes extracted custom uniform list.
+3) Each Tier A/B row includes built-in normalization mapping (TIME, resolution, mouse handling).
+4) Each Tier A/B row includes risk classification.
+5) Each Tier A/B row includes paramsSchema mapping in `{key, uniformName, type, defaultValue, ui}` shape.
+
+Result:
+- PASS: 20/20 Tier A/B candidates include complete schema mapping fields.
+- PASS: No Tier C candidate includes paramsSchema mapping in the matrix.
+- PASS: Exclusions are documented separately with specific reasons.
+
+Open items for Task 5 implementation stage:
+- Convert selected Tier A/B GLSL to Godot syntax (`shader_type canvas_item;`, `fragment()`, `COLOR`).
+- Decide final bridge strategy for optional mouse-driven uniforms where noted.

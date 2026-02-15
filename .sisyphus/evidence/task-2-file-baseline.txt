@@ -1,0 +1,9 @@
+=== Task 2: File Baseline ===
+✓ EXISTS: shared/src/effects/compiler.ts
+✓ EXISTS: shared/src/effects/shaderLibrary.ts
+✓ EXISTS: shared/src/effects/shaderRegistry.ts
+✓ EXISTS: shared/src/effects/shaders/index.ts
+✓ EXISTS: shared/src/effects/types.ts
+✓ EXISTS: godot_project/scripts/effects/GraphExecutor.gd
+✓ EXISTS: app/components/effects/EffectTuningPanel.tsx
+✓ EXISTS: app/components/effects/EffectParamControl.tsx
