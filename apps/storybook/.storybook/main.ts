@@ -54,6 +54,12 @@ const config: StorybookConfig = {
 			],
 		});
 
+		// GLSL shader files - import as raw strings
+		config.module.rules.push({
+			test: /\.(glsl|vert|frag|vs|fs)$/,
+			type: "asset/source",
+		});
+
 		config.module.rules.push({
 			test: /\.(ts|tsx)$/,
 			include: [packagesPath, sharedPath, path.resolve(__dirname, "../")],
