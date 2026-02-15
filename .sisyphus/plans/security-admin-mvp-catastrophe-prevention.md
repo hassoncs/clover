@@ -345,7 +345,7 @@ Critical Path: 1 -> 2 -> 5 -> 7
   - [ ] Alert definitions exist and are test-triggered.
   - [ ] Runbook includes escalation contacts and rollback levers.
 
-- [ ] 7. Add tiny admin-only platform security dashboard
+- [x] 7. Add tiny admin-only platform security dashboard
 
   **What to do**:
 - Add admin-only route/page that surfaces:

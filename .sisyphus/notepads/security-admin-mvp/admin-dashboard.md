@@ -9,16 +9,19 @@ Added a lightweight, web-only admin dashboard to surface key metrics without nee
    - Uses `adminProcedure` for security (checks `ADMIN_EMAILS`).
    - Aggregates data from `users`, `credit_transactions`, and `audit_events`.
 
-2. **Frontend**: `app/app/admin/dashboard.tsx`
+2. **Frontend**: `app/app/(web-admin)/admin/dashboard.tsx`
    - Web-only route (checks `Platform.OS === 'web'`).
    - Uses `trpcReact` to fetch stats.
-   - Displays simple cards for metrics.
+   - Displays simple cards for metrics and a bar chart for daily spend.
    - Handles 403 Forbidden gracefully.
 
 ## Metrics
 - **Users**: Total and new today.
 - **Economy**: Spend in last 24h and 7d (sum of negative transactions).
-- **Operations**: Generation count in last 24h (from audit events).
+- **Daily Spend**: Bar chart of spend over last 7 days.
+- **Operations**: 
+  - Admin Generation count in last 24h (from audit events).
+  - User Generation count in last 24h (from `generation_debit` transactions).
 - **Moderation**: Rejects by category in last 24h (from audit events).
 
 ## Security
