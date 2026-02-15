@@ -1,9 +1,0 @@
-{
-  "id": "03c70657-5789-4550-b38d-787d4219a91b",
-  "slug": "ballSort",
-  "title": "Ball Sort",
-  "description": "Sort colored balls into tubes - each tube should contain only one color",
-  "version": "2.0.0",
-  "thumbnailUrl": null,
-  "updatedAt": 1771135267298
-}

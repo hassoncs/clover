@@ -6,6 +6,22 @@
 - When the user describes an architecture or design direction, confirm understanding before implementing. Pay close attention to directionality (e.g., which entity references which, which file is canonical vs symlinked). If unsure, ask rather than guess.
 - When cleaning up or deleting code/UI, be conservative. Only remove what was explicitly requested. Do not opportunistically delete adjacent code, UI sections, or features that weren't mentioned.
 
+### Architecture & Code Quality Standards
+
+- **Right architecture, not easy architecture.** When choosing between approaches, pick the one that's actually correct — not the quickest hack. If the "right" way takes meaningfully more effort, flag it and let the user decide, but always present the proper solution first.
+- **No dead weight.** Every implementation plan should include a final cleanup step: remove tech debt introduced during the work, delete deprecated code paths that were replaced, and clean up any legacy patterns that the new work makes obsolete. Don't leave behind scaffolding.
+- **Single source of truth.** Never duplicate logic. If something exists in one place, reference it — don't copy it. If you find duplicated logic during work, consolidate it.
+- **Name things for what they are.** Variables, functions, files, and modules should describe their purpose precisely. Vague names (`utils`, `helpers`, `misc`, `data`, `handle`) are a code smell — be specific.
+- **Small surface area.** Export only what's needed. Keep interfaces narrow. Prefer explicit over implicit. The less surface area a module exposes, the easier it is to change later.
+- **Delete, don't comment out.** Dead code gets deleted. Git remembers everything — commented-out blocks are clutter, not safety nets.
+- **Dependencies are liabilities.** Every dependency is a maintenance burden. Before adding one, ask: can we do this in <50 lines ourselves? If yes, do that. If the dependency genuinely saves significant complexity, add it.
+- **Leave it better than you found it.** When touching a file, fix small adjacent issues (stale imports, inconsistent formatting, obvious type improvements) — but don't refactor the whole file uninvited. Boy Scout Rule, not scorched earth.
+- **Split large files eagerly.** If a file is growing past ~300-400 lines, split it proactively. Don't wait for it to become unmanageable. Smaller files are easier to navigate, review, and delegate across agents.
+- **Fix easy broken tests.** If you encounter a failing test that's trivial to fix (< 5 minutes), just fix it — even if you didn't break it. Don't spend significant time on it though; if it's non-trivial, note it and move on.
+- **Never revert uncommitted changes from git.** Other sub-agents may be working in parallel and their in-progress changes will show up in `git status`/`git diff`. Never revert, checkout, or discard changes you didn't make — you could be destroying another agent's work.
+- **Think forward, build for now.** Design interfaces and abstractions that can grow, but don't build the growth yet. Leave seams for extension without over-engineering. Ask: "will this be easy to extend when the time comes?" — not "let me build for every possible future."
+- **You are a team, not a solo dev.** This codebase is worked on by multiple agents in parallel. Don't be intimidated by scale — break large tasks into independent pieces, delegate aggressively, and trust that the system handles coordination. A 20-file change across 5 agents is routine, not exceptional.
+
 ## Git & Commits
 
 - When asked to commit, just commit. Do not review, analyze, or summarize changes before committing unless explicitly asked to review first.
@@ -211,7 +227,7 @@ Only one script remains as a CLI — it requires direct local filesystem access:
 
 | Script | Why it stays |
 |--------|-------------|
-| `api/scripts/sync-r2.ts` | Infrastructure script for syncing `r2/` directory to local wrangler (used by devmux) |
+| `api/scripts/sync-r2.ts` | Compiles games from source files, then syncs `r2/` to local wrangler R2 (used by devmux `games-watcher`) |
 
 ### MCP configuration
 
@@ -252,6 +268,9 @@ src/
 ```
 
 **Usage**: Import from `index.ts` - the platform-appropriate file loads automatically via Metro bundler resolution.
+
+### Game Source Files (r2/games/)
+Games are authored as directories of source files (`manifest.json`, `scripts/`, `prefabs/`, `entities/`). `definition.json` and `metadata.json` are auto-generated build outputs (gitignored) — never edit them directly. The `games-watcher` devmux service recompiles on source file change via `api/scripts/sync-r2.ts`.
 
 ### Asset Pipeline Debug Output
 When debugging asset generation, save intermediate files to:
