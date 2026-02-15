@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import {
-	Panel,
-	PanelGroup,
-	PanelResizeHandle,
-} from "react-native-resizable-panels";
 import { InspectOverlay } from "./inspector/InspectOverlay";
 import { PanelTabBar } from "./PanelTabBar";
 import { getPanelById, PANEL_REGISTRY } from "./panels/registry";
@@ -26,32 +21,25 @@ export function ResizablePanelLayout() {
 
 	return (
 		<View style={styles.container}>
-			<PanelGroup direction="horizontal" style={styles.panelGroup}>
-				<Panel defaultSize={65} minSize={40} style={styles.leftPanel}>
-					<StageArea />
-					<InspectOverlay />
-				</Panel>
+			<View style={styles.leftPanel}>
+				<StageArea />
+				<InspectOverlay />
+			</View>
 
-				<PanelResizeHandle style={styles.resizeHandle}>
-					<View style={styles.grabber} />
-				</PanelResizeHandle>
+			<View style={styles.resizeHandle}>
+				<View style={styles.grabber} />
+			</View>
 
-				<Panel
-					defaultSize={35}
-					minSize={20}
-					maxSize={50}
-					style={styles.rightPanel}
-				>
-					<PanelTabBar
-						tabs={tabs}
-						activeTab={activeRightPanel}
-						onTabPress={setActiveRightPanel}
-					/>
-					<View style={styles.panelContent}>
-						{ActivePanel ? <ActivePanel /> : null}
-					</View>
-				</Panel>
-			</PanelGroup>
+			<View style={styles.rightPanel}>
+				<PanelTabBar
+					tabs={tabs}
+					activeTab={activeRightPanel}
+					onTabPress={setActiveRightPanel}
+				/>
+				<View style={styles.panelContent}>
+					{ActivePanel ? <ActivePanel /> : null}
+				</View>
+			</View>
 		</View>
 	);
 }
@@ -59,13 +47,11 @@ export function ResizablePanelLayout() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		flexDirection: "row",
 		backgroundColor: "#1F2937",
 	},
-	panelGroup: {
-		flex: 1,
-	},
 	leftPanel: {
-		flex: 1,
+		flex: 65,
 	},
 	resizeHandle: {
 		width: 6,
@@ -80,7 +66,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#6B7280",
 	},
 	rightPanel: {
-		flex: 1,
+		flex: 35,
 		backgroundColor: "#1F2937",
 	},
 	panelContent: {

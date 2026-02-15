@@ -11,41 +11,53 @@ import { useTree } from "@headless-tree/react";
 import type React from "react";
 import { useCallback, useEffect, useRef } from "react";
 import type { FileTreeNode, FileTreeProps } from "./types";
+import {
+	FolderIcon,
+	FileIcon,
+	TSIcon,
+	JSIcon,
+	JSONIcon,
+	MDIcon,
+	GodotIcon,
+	ImageIcon,
+	CSSIcon,
+	HTMLIcon,
+} from "./FileIcons";
 
 const VIRTUAL_ROOT_ID = "__virtual_root__";
 
-const getFileIcon = (node: FileTreeNode): string => {
-	if (node.type === "folder") return "📁";
+const getFileIcon = (node: FileTreeNode): React.ReactNode => {
+	if (node.type === "folder") return <FolderIcon />;
 	const ext = node.name.split(".").pop()?.toLowerCase();
 	switch (ext) {
 		case "ts":
 		case "tsx":
-			return "🔷";
+			return <TSIcon />;
 		case "js":
 		case "jsx":
-			return "🟡";
+			return <JSIcon />;
 		case "json":
-			return "📋";
+			return <JSONIcon />;
 		case "md":
-			return "📝";
+			return <MDIcon />;
 		case "gd":
 		case "tscn":
-			return "🎮";
+			return <GodotIcon />;
 		case "gdshader":
-			return "🎨";
+			return <GodotIcon />;
 		case "png":
 		case "jpg":
 		case "jpeg":
 		case "gif":
 		case "svg":
-			return "🖼️";
+			return <ImageIcon />;
 		case "css":
 		case "scss":
-			return "🎭";
+			return <CSSIcon />;
 		case "html":
-			return "🌐";
+			return <HTMLIcon />;
 		default:
-			return "📄";
+			return <FileIcon />;
 	}
 };
 
@@ -85,8 +97,10 @@ const chevronBaseStyle: React.CSSProperties = {
 };
 
 const iconStyle: React.CSSProperties = {
-	marginRight: "6px",
-	fontSize: "14px",
+	marginRight: "8px",
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center",
 	flexShrink: 0,
 };
 
@@ -182,7 +196,7 @@ const TreeItemRow: React.FC<TreeItemRowProps> = ({ item, onSelectFile }) => {
 
 	const itemStyle: React.CSSProperties = {
 		...baseItemStyle,
-		paddingLeft: `${Math.max(0, meta.level - 1) * 20 + 12}px`,
+		paddingLeft: `${Math.max(0, meta.level - 1) * 16 + 12}px`,
 		...(isSelected
 			? { backgroundColor: "#374151", borderLeftColor: "#6366F1" }
 			: {}),
@@ -222,7 +236,7 @@ const TreeItemRow: React.FC<TreeItemRowProps> = ({ item, onSelectFile }) => {
 			</button>
 
 			<span style={iconStyle}>
-				{isFolder && isExpanded ? "📂" : getFileIcon(data)}
+				{isFolder ? <FolderIcon expanded={isExpanded} /> : getFileIcon(data)}
 			</span>
 
 			{isRenaming ? (

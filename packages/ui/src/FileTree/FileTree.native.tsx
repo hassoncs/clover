@@ -146,13 +146,60 @@ const FileTreeItem = React.memo(
 					return "code-slash";
 				case "md":
 					return "document-text";
+				case "gd":
+				case "tscn":
+				case "gdshader":
+					return "game-controller";
 				case "png":
 				case "jpg":
 				case "jpeg":
 				case "gif":
+				case "svg":
 					return "image";
+				case "css":
+				case "scss":
+					return "brush";
+				case "html":
+					return "globe";
 				default:
 					return "document";
+			}
+		};
+
+		const getIconColor = () => {
+			if (selected) return "#FFFFFF";
+			const nodeData = item.getItemData();
+			if (nodeData.type === "folder") return "#6366F1";
+			
+			const ext = nodeData.name.split(".").pop()?.toLowerCase();
+			switch (ext) {
+				case "ts":
+				case "tsx":
+					return "#3178C6";
+				case "js":
+				case "jsx":
+					return "#F7DF1E";
+				case "json":
+					return "#A3E635";
+				case "md":
+					return "#60A5FA";
+				case "gd":
+				case "tscn":
+				case "gdshader":
+					return "#478CBF";
+				case "png":
+				case "jpg":
+				case "jpeg":
+				case "gif":
+				case "svg":
+					return "#F472B6";
+				case "css":
+				case "scss":
+					return "#3B82F6";
+				case "html":
+					return "#F97316";
+				default:
+					return "#9CA3AF";
 			}
 		};
 
@@ -163,7 +210,7 @@ const FileTreeItem = React.memo(
 				layout={LinearTransition}
 				entering={FadeInDown}
 				exiting={FadeOutUp}
-				style={{ paddingLeft: Math.max(0, (depth - 1) * 20) }}
+				style={{ paddingLeft: Math.max(0, (depth - 1) * 16 + 12) }}
 			>
 				<View
 					style={[
@@ -196,13 +243,7 @@ const FileTreeItem = React.memo(
 						<Ionicons
 							name={getIcon() as any}
 							size={20}
-							color={
-								selected
-									? "#FFFFFF"
-									: nodeData.type === "folder"
-										? "#6366F1"
-										: "#9CA3AF"
-							}
+							color={getIconColor()}
 							style={styles.icon}
 						/>
 
@@ -362,9 +403,13 @@ export const FileTreeNative = ({
 
 	useEffect(() => {
 		if (onSelectFile && state.selectedItems && state.selectedItems.length > 0) {
-			onSelectFile(state.selectedItems[0]);
+			const selected = state.selectedItems[0];
+			const node = data[selected];
+			if (node && node.type === "file") {
+				onSelectFile(selected);
+			}
 		}
-	}, [state.selectedItems, onSelectFile]);
+	}, [state.selectedItems, onSelectFile, data]);
 
 	const dataRef = useRef(data);
 	dataRef.current = data;
