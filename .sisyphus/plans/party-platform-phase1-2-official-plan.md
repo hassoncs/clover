@@ -268,7 +268,7 @@ npx vitest run src/scripting/ --reporter=verbose  # from shared/ (module tests)
     - [ ] All games in registry use ServerScriptRunner path.
     - [ ] Existing tests still pass.
 
-- [ ] 18. Write summary document and test plan
+- [x] 18. Write summary document and test plan
   - **What to do**:
     - Create `.sisyphus/plans/party-platform-summary.md` with:
       - High-level overview of what was built
