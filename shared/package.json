@@ -26,7 +26,10 @@
 		"./scripting/modules": "./src/scripting/modules/index.ts",
 		"./graph-core": "./src/graph-core/index.ts",
 		"./graph-adapters": "./src/graph-adapters/index.ts",
-		"./effects": "./src/effects/index.ts"
+		"./effects": "./src/effects/index.ts",
+		"./effects/text": "./src/effects/text/index.ts",
+		"./chat": "./src/chat/index.ts",
+		"./constants/*": "./src/constants/*.ts"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.38.3",

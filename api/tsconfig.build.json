@@ -1,33 +1,30 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "lib": ["ES2022"],
-    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
-    "resolveJsonModule": true,
-    "composite": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "declarationDir": "dist-types",
-    "rootDir": "src",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@slopcade/shared/*": ["../shared/src/*"]
-    }
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": [
-    "node_modules",
-    "**/*.test.ts",
-    "**/__tests__/**",
-    "**/__fixtures__/**"
-  ],
-  "references": [
-    { "path": "../shared" }
-  ]
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"lib": ["ES2022"],
+		"types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
+		"resolveJsonModule": true,
+		"composite": true,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"declarationDir": "dist-types",
+		"rootDir": "src",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		}
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": [
+		"node_modules",
+		"**/*.test.ts",
+		"**/__tests__/**",
+		"**/__fixtures__/**"
+	],
+	"references": [{ "path": "../shared" }]
 }

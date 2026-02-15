@@ -14,7 +14,7 @@ echo "Building type declarations..."
 pnpm build:types
 
 echo "Running TypeScript type check..."
-cd app && pnpm tsc --noEmit && cd ..
+(cd app && pnpm tsc --noEmit)
 echo "TypeScript check passed."
 
 echo "Linting GDScript..."

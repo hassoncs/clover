@@ -4,14 +4,9 @@
 		"strict": true,
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./*"],
-			"@slopcade/shared/*": ["../shared/src/*"],
-			"@slopcade/economy-engine": ["../packages/economy-engine/src/index.ts"],
-			"@slopcade/economy-engine/*": ["../packages/economy-engine/src/*"]
-		},
-		"jsx": "react-jsx",
-		"skipLibCheck": true
+			"@/*": ["./*"]
+		}
 	},
-	"include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"],
+	"include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts", "../types/*.d.ts"],
 	"exclude": ["node_modules"]
 }
