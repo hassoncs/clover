@@ -20,6 +20,7 @@ Updated: 2026-02-12 (post-audit)
 
 ### Auth & Users
 - [auth-system](auth-system.md) - Supabase auth, platform-specific storage, dev mode, tRPC context
+- [admin-access](admin-access.md) - Admin procedure, ADMIN_EMAILS configuration, access control
 
 ### Godot & Bridge
 - [godot-engine](godot-engine.md) - GDScript patterns, scene composition, exports, coordinate system

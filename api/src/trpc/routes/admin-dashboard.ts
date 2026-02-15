@@ -1,0 +1,68 @@
+import { adminProcedure, router } from "../index";
+
+export const adminDashboardRouter = router({
+	getStats: adminProcedure.query(async ({ ctx }) => {
+		const now = Date.now();
+		const oneDayAgo = now - 24 * 60 * 60 * 1000;
+		const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+		const startOfDay = new Date().setHours(0, 0, 0, 0);
+
+		// 1. User Stats
+		const totalUsersResult = await ctx.env.DB.prepare(
+			"SELECT COUNT(*) as count FROM users",
+		).first<{ count: number }>();
+
+		const newUsersTodayResult = await ctx.env.DB.prepare(
+			"SELECT COUNT(*) as count FROM users WHERE created_at >= ?",
+		)
+			.bind(startOfDay)
+			.first<{ count: number }>();
+
+		// 2. Spend Stats (Debit transactions are negative)
+		const spend24hResult = await ctx.env.DB.prepare(
+			"SELECT SUM(amount_micros) as total FROM credit_transactions WHERE amount_micros < 0 AND created_at >= ?",
+		)
+			.bind(oneDayAgo)
+			.first<{ total: number }>();
+
+		const spend7dResult = await ctx.env.DB.prepare(
+			"SELECT SUM(amount_micros) as total FROM credit_transactions WHERE amount_micros < 0 AND created_at >= ?",
+		)
+			.bind(sevenDaysAgo)
+			.first<{ total: number }>();
+
+		// 3. Moderation Rejects
+		const moderationEvents = await ctx.env.DB.prepare(
+			"SELECT metadata_json FROM audit_events WHERE action = 'moderation.reject' AND created_at >= ?",
+		)
+			.bind(oneDayAgo)
+			.all<{ metadata_json: string }>();
+
+		const moderationRejects: Record<string, number> = {};
+		for (const event of moderationEvents.results) {
+			try {
+				const metadata = JSON.parse(event.metadata_json);
+				const category = metadata.category || "UNKNOWN";
+				moderationRejects[category] = (moderationRejects[category] || 0) + 1;
+			} catch {
+				// Ignore parse errors
+			}
+		}
+
+		// 4. Generation Velocity (admin generation actions)
+		const generationCountResult = await ctx.env.DB.prepare(
+			"SELECT COUNT(*) as count FROM audit_events WHERE action LIKE 'admin.generate_%' AND created_at >= ?",
+		)
+			.bind(oneDayAgo)
+			.first<{ count: number }>();
+
+		return {
+			totalUsers: totalUsersResult?.count ?? 0,
+			newUsersToday: newUsersTodayResult?.count ?? 0,
+			spend24h: Math.abs(spend24hResult?.total ?? 0),
+			spend7d: Math.abs(spend7dResult?.total ?? 0),
+			generationCount24h: generationCountResult?.count ?? 0,
+			moderationRejects24h: moderationRejects,
+		};
+	}),
+});

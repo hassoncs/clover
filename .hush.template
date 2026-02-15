@@ -40,6 +40,14 @@ OPENROUTER_API_KEY=
 # ANTHROPIC_API_KEY=
 # OPENAI_API_KEY=
 
+# =============================================================================
+# Access Control
+# =============================================================================
+
+# Admin emails (comma-separated) - users who can access admin-only endpoints
+ADMIN_EMAILS=hassoncs@gmail.com
+
+# =============================================================================
 # Optional: Override default model
 # AI_PROVIDER=openrouter
 # AI_MODEL=openai/gpt-4o

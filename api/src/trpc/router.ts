@@ -1,5 +1,6 @@
 import { publicProcedure, router } from "./index";
 import { adminRouter } from "./routes/admin";
+import { adminDashboardRouter } from "./routes/admin-dashboard";
 import { adminToolsRouter } from "./routes/admin-tools";
 import { assetSystemRouter } from "./routes/asset-system";
 import { blobAssetsRouter } from "./routes/blob-assets";
@@ -20,6 +21,7 @@ import { usersRouter } from "./routes/users";
 
 export const appRouter = router({
 	admin: adminRouter,
+	adminDashboard: adminDashboardRouter,
 	adminTools: adminToolsRouter,
 	games: gamesRouter,
 	users: usersRouter,

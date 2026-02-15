@@ -285,7 +285,7 @@ Critical Path: 1 -> 2 -> 5 -> 7
   - [ ] For each endpoint, insufficient-balance test blocks operation.
   - [ ] For each endpoint, successful operation records expected ledger entries.
 
-- [ ] 5. Run MVP catastrophe-prevention launch gate
+- [x] 5. Run MVP catastrophe-prevention launch gate
 
   **What to do**:
   - Execute consolidated security smoke suite:

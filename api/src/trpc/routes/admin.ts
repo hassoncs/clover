@@ -15,6 +15,12 @@ export const adminRouter = router({
 				.all<{ id: string; r2_key: string }>();
 
 			if (!assets.results || assets.results.length === 0) {
+				const audit = new AuditService(ctx.env.DB);
+				await audit.logEvent({
+					actorId: ctx.user.id,
+					action: "admin.backfill_content_hash",
+					metadata: { batchSize: input.batchSize, processed: 0, skipped: 0 },
+				});
 				return { processed: 0, skipped: 0, errors: [] };
 			}
 

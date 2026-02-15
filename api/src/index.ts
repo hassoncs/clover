@@ -10,6 +10,7 @@ import { createModel } from "@/ai/model-factory";
 import type { MessageRow } from "@/chat/chat-handler";
 import { handleChatStream } from "@/chat/stream-handler";
 import { GameRepoDO } from "@/durable-objects/GameRepoDO";
+import { USER_COSTS } from "@/economy/pricing";
 import { WalletService } from "@/economy/wallet-service";
 import { autoSeedGamesFromR2 } from "@/lib/auto-seed";
 import { handleMcpRequest } from "@/mcp/server";
@@ -276,6 +277,16 @@ app.get("/api/chat/stream", async (c) => {
 	const model = createModel({ apiKey, model: chatModel.id });
 	const walletService = new WalletService(c.env.DB);
 	const gitService = new GitService(c.env.GAME_REPO);
+
+	// Pre-flight balance check - require minimum balance to start generation
+	const minBalanceMicros = USER_COSTS.GAME_GENERATION_BASE;
+	const hasBalance = await walletService.hasSufficientBalance(
+		userId,
+		minBalanceMicros,
+	);
+	if (!hasBalance) {
+		return c.text("Insufficient balance. Please add Sparks to continue.", 402);
+	}
 
 	const history = await c.env.DB.prepare(
 		"SELECT * FROM messages WHERE thread_id = ? ORDER BY seq ASC",
