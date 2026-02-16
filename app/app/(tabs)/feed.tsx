@@ -473,6 +473,25 @@ export default function FeedScreen() {
 			<View
 				style={{ flex: 1, backgroundColor: "#000000", paddingTop: insets.top }}
 			>
+				{activeBrand.features.partyGamesOnly && (
+					<View
+						style={{
+							paddingVertical: 8,
+							alignItems: "center",
+							backgroundColor: activeBrand.theme.colors.primary,
+						}}
+					>
+						<Text
+							style={{
+								color: "#FFFFFF",
+								fontWeight: "bold",
+								fontSize: 14,
+							}}
+						>
+							Party Games Only
+						</Text>
+					</View>
+				)}
 				<FlatList
 					data={feedGames}
 					renderItem={renderItem}

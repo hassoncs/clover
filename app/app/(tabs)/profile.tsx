@@ -6,6 +6,7 @@ import {
 	ActivityIndicator,
 	Alert,
 	Image,
+	Linking,
 	Modal,
 	Pressable,
 	RefreshControl,
@@ -588,6 +589,16 @@ export default function ProfileScreen() {
 								Blocked Users
 							</Text>
 						</Pressable>
+						{activeBrand.appStoreReviewUrl ? (
+							<Pressable
+								className="mb-3 bg-theme-surface-elevated h-12 rounded-full items-center justify-center border border-theme-border"
+								onPress={() => Linking.openURL(activeBrand.appStoreReviewUrl!)}
+							>
+								<Text className="text-theme-text text-base font-semibold">
+									Rate Us
+								</Text>
+							</Pressable>
+						) : null}
 						{activeBrand.features.organizations && (
 							<Pressable
 								className="mb-3 bg-theme-surface-elevated h-12 rounded-full items-center justify-center border border-theme-border"
