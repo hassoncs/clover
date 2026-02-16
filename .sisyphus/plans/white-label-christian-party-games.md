@@ -967,7 +967,7 @@ Every piece of generated content is scored on:
 **Lane C (Content)**
 - [x] Set up content pipeline adapters for API.Bible + BibleQuizzle
 - [x] Ingest BibleQuizzle trivia dataset (~500 items)
-- [ ] Ingest Theographic Bible character/place data
+- [x] Ingest Theographic Bible character/place data
 - [ ] Begin AI generation: 2,000 trivia questions
 - [ ] Begin AI generation: 1,000 quip prompts
 - [x] Define content review rubric and Red/Yellow/Green zone guidelines
@@ -1005,7 +1005,7 @@ Every piece of generated content is scored on:
 - [ ] Finalize app icon, splash screen, store assets
 - [x] Write store listing copy (description, keywords, category)
 - [ ] Set up social media accounts (@amengames on Instagram, TikTok, X)
-- [ ] Identify 10-20 youth pastor influencers for outreach
+- [x] Identify 10-20 youth pastor influencers for outreach
 
 ### Week 3: Mar 2-8 — Content Depth + App Review
 
@@ -1095,7 +1095,7 @@ Every piece of generated content is scored on:
 - [x] "Daily Scripture" feature for Holy Week (optional engagement hook)
 
 **Lane D (GTM)**
-- [ ] Distribute press/influencer kits (app promo codes, screenshots, talking points)
+- [x] Distribute press/influencer kits (app promo codes, screenshots, talking points)
 - [ ] Partner churches announce amen.games to their congregations
 - [ ] Holy Week social media campaign: daily Bible trivia clips
 - [x] Email blast to waitlist: "Amen launches this Easter!"
