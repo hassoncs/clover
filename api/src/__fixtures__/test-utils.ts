@@ -58,6 +58,7 @@ export function createPublicContext(installId?: string): Context {
 		env: env,
 		installId: installId ?? null,
 		authToken: null,
+		brandId: "slopcade",
 	} as Context;
 }
 
@@ -68,6 +69,7 @@ export function createInstalledContext(
 		env: env,
 		installId,
 		authToken: null,
+		brandId: "slopcade",
 	} as Context;
 }
 
@@ -80,6 +82,7 @@ export function createAuthenticatedContext(
 		installId,
 		authToken: "test-token",
 		user,
+		brandId: "slopcade",
 	} as AuthenticatedContext;
 }
 
