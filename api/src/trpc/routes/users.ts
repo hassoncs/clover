@@ -101,7 +101,7 @@ export const usersRouter = router({
 			if (!invite) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "This email has not been invited to Slopcade.",
+					message: "This email has not been invited.",
 				});
 			}
 

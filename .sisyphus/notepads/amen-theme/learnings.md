@@ -1,0 +1,4 @@
+- **Theme Implementation**: Implemented Amen brand theme using CSS variables in `app/global.css`.
+- **Pattern**: Used `.brand-amen` class to override `--color-theme-*` variables.
+- **Gotcha**: `Tabs` screenOptions `sceneStyle` had a hardcoded background color which blocked the theme background. Changed to `transparent`.
+- **RGB Format**: CSS variables must be space-separated RGB values for alpha support (e.g., `255 255 255`).

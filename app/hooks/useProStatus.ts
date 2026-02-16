@@ -4,7 +4,7 @@ import { trpcReact } from "@/lib/trpc/react";
 export interface ProStatus {
 	isPro: boolean;
 	proUntil: number | null;
-	source: "stripe" | "revenuecat" | null;
+	source: "stripe" | "revenuecat" | "org" | null;
 	hasStripeCustomer: boolean;
 	isLoading: boolean;
 }

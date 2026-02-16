@@ -79,6 +79,8 @@ export interface Context {
 	env: Env;
 	authToken: string | null;
 	brandId: string;
+	req?: Request;
+	rawBody?: string;
 	[key: string]: unknown;
 }
 
@@ -88,9 +90,15 @@ export interface AuthenticatedContext extends Context {
 }
 
 export async function createContext(
-	_opts: { req: Request; resHeaders: Headers },
+	opts: { req: Request; resHeaders: Headers },
 	honoContext: HonoContext<{ Bindings: Env }>,
 ): Promise<Context> {
+	const shouldCaptureRawBody = opts.req.url.includes(
+		"/trpc/billing.stripeOrgWebhook",
+	);
+	const rawBody = shouldCaptureRawBody
+		? await opts.req.clone().text()
+		: undefined;
 	const authHeader = honoContext.req.header("Authorization");
 	const authToken = authHeader?.startsWith("Bearer ")
 		? authHeader.slice(7)
@@ -102,5 +110,7 @@ export async function createContext(
 		env: honoContext.env,
 		authToken,
 		brandId,
+		req: opts.req,
+		rawBody,
 	};
 }

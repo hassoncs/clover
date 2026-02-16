@@ -5,7 +5,7 @@ import { activeBrand } from "@/lib/brand";
 interface SubscriptionStatusProps {
 	isPro: boolean;
 	proUntil: number | null;
-	source: "stripe" | "revenuecat" | null;
+	source: "stripe" | "revenuecat" | "org" | null;
 	onManage: () => void;
 }
 
@@ -63,6 +63,17 @@ export default function SubscriptionStatus({
 		);
 	}
 
+	const proFeatures = [
+		"1,000 Sparks/month ($10 value)",
+		"Unlimited party hosting",
+		"Cloud sync & offline play",
+		"85/15 asset store split",
+	];
+
+	if (activeBrand.features.aiGeneration) {
+		proFeatures.splice(2, 0, "Priority asset generation");
+	}
+
 	return (
 		<View className="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6">
 			<View className="flex-row items-center justify-between mb-4">
@@ -78,13 +89,7 @@ export default function SubscriptionStatus({
 			</View>
 
 			<View className="mb-6 space-y-3">
-				{[
-					"1,000 Sparks/month ($10 value)",
-					"Unlimited party hosting",
-					"Priority AI generation",
-					"Cloud sync & offline play",
-					"85/15 asset store split",
-				].map((feature) => (
+				{proFeatures.map((feature) => (
 					<View key={feature} className="flex-row items-center mb-2">
 						<Ionicons
 							name="checkmark-circle"

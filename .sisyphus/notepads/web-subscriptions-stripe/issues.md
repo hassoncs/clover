@@ -18,3 +18,16 @@
 ### BLOCKED: Add EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to app config
 - Requires the publishable key from Stripe Dashboard
 - Depends on Stripe account setup being complete
+
+## 2026-02-16 Verification Issue
+
+### Billing tests currently fail in baseline fixture setup
+- Running `pnpm --filter @slopcade/api test:run src/billing/__tests__/billing-services.test.ts` fails before assertions in `initTestDatabase()` with:
+  - `D1_ERROR: Cannot add a REFERENCES column with non-NULL default value: SQLITE_ERROR`
+- This appears to be pre-existing test fixture/schema drift unrelated to the org billing route changes (type-check and build:types pass).
+
+## 2026-02-16 Additional Verification Notes
+
+### Existing billing test-suite bootstrap still fails
+- `pnpm exec vitest run src/billing/__tests__/billing-services.test.ts` fails with the same `initTestDatabase()` migration/bootstrap error (`Cannot add a REFERENCES column with non-NULL default value`).
+- This is pre-existing and unrelated to `OrgWebhookHandler` or `billing.stripeOrgWebhook` changes.

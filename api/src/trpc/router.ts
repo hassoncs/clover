@@ -12,6 +12,7 @@ import { gamesRouter } from "./routes/games";
 import { invitesRouter } from "./routes/invites";
 import { moderationRouter } from "./routes/moderation";
 import { notificationsRouter } from "./routes/notifications";
+import { organizationsRouter } from "./routes/organizations";
 import { packageCompilerRouter } from "./routes/package-compiler";
 import { packageReadinessRouter } from "./routes/package-readiness";
 import { searchRouter } from "./routes/search";
@@ -38,6 +39,7 @@ export const appRouter = router({
 	social: socialRouter,
 	socialExtra: socialExtraRouter,
 	notifications: notificationsRouter,
+	organizations: organizationsRouter,
 	moderation: moderationRouter,
 	packageReadiness: packageReadinessRouter,
 	packageCompiler: packageCompilerRouter,

@@ -100,7 +100,9 @@ function LoginScreen() {
 					resizeMode="contain"
 				/>
 				<Text className="text-theme-text-secondary text-center mb-8">
-					Sign in to create and save your games
+					{activeBrand.features.userGeneratedContent
+						? "Sign in to create and save your games"
+						: "Sign in to save your favorites and follow creators"}
 				</Text>
 
 				{magicLinkSent ? (
@@ -239,8 +241,9 @@ function LoginScreen() {
 
 				<View className="mt-8 p-4 bg-theme-surface-elevated/50 rounded-xl">
 					<Text className="text-theme-text-secondary text-center text-sm">
-						You can browse and play public games without signing in. Sign in to
-						create, save, and manage your own games.
+						{activeBrand.features.userGeneratedContent
+							? "You can browse and play public games without signing in. Sign in to create, save, and manage your own games."
+							: "You can browse and play public games without signing in. Sign in to save favorites and follow creators."}
 					</Text>
 				</View>
 			</View>
@@ -625,9 +628,11 @@ export default function ProfileScreen() {
 								<Text className="text-theme-text text-xl font-semibold">
 									No games yet
 								</Text>
-								<Text className="text-theme-text-secondary text-base mt-2 text-center">
-									Tap the + button to create your first game!
-								</Text>
+								{activeBrand.features.userGeneratedContent && (
+									<Text className="text-theme-text-secondary text-base mt-2 text-center">
+										Tap the + button to create your first game!
+									</Text>
+								)}
 							</View>
 						) : (
 							<View>

@@ -1,13 +1,18 @@
+import { OrgEntitlementService } from "./org-entitlement-service";
+
 type D1Database = import("@cloudflare/workers-types").D1Database;
 
 export interface ProEntitlement {
 	isPro: boolean;
 	proUntil: number | null;
-	source: "stripe" | "revenuecat" | null;
+	source: "stripe" | "revenuecat" | "org" | null;
 }
 
 export class EntitlementService {
-	constructor(private db: D1Database) {}
+	constructor(
+		private db: D1Database,
+		private brandId?: string,
+	) {}
 
 	async resolveEntitlement(userId: string): Promise<ProEntitlement> {
 		const row = await this.db
@@ -26,8 +31,40 @@ export class EntitlementService {
 				? row.pro_source
 				: null;
 
+		const hasIndividualEntitlement = proUntil !== null && proUntil > Date.now();
+		if (hasIndividualEntitlement) {
+			return {
+				isPro: true,
+				proUntil,
+				source,
+			};
+		}
+
+		if (!this.brandId) {
+			return {
+				isPro: false,
+				proUntil,
+				source,
+			};
+		}
+
+		const orgEntitlementService = new OrgEntitlementService(
+			this.db,
+			this.brandId,
+		);
+		const orgEntitlement =
+			await orgEntitlementService.resolveOrgEntitlement(userId);
+
+		if (orgEntitlement.hasOrgEntitlement) {
+			return {
+				isPro: true,
+				proUntil: null,
+				source: "org",
+			};
+		}
+
 		return {
-			isPro: proUntil !== null && proUntil > Date.now(),
+			isPro: false,
 			proUntil,
 			source,
 		};
