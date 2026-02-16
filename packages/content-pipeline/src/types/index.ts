@@ -10,7 +10,14 @@ export const ModerationStatusSchema = z.enum([
 export type ModerationStatus = z.infer<typeof ModerationStatusSchema>;
 
 export const ProvenanceSchema = z.object({
-	source: z.enum(["ai", "human", "curated", "imported", "biblequizzle"]),
+	source: z.enum([
+		"ai",
+		"human",
+		"curated",
+		"imported",
+		"biblequizzle",
+		"theographic",
+	]),
 	generatedAt: z.string().datetime().optional(),
 	generatedBy: z.string().optional(), // model name or user id
 	prompt: z.string().optional(),

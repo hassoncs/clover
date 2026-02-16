@@ -3,3 +3,4 @@ export {
 	fetchBibleQuizzle,
 } from "./biblequizzle.js";
 export { fetchOpenTDB } from "./opentdb.js";
+export { fetchTheographic } from "./theographic.js";

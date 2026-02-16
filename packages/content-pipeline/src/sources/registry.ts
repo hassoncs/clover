@@ -19,6 +19,16 @@ export const APPROVED_SOURCES: Record<string, Source> = {
 		attributionTemplate:
 			"Questions from BibleQuizzle (https://github.com/BibleQuizzle/BibleQuizzle) licensed under MIT",
 	},
+	theographic: {
+		id: "theographic",
+		name: "Theographic Bible Metadata",
+		url: "https://github.com/robertrouse/theographic-bible-metadata",
+		license: SPDX_LICENSE.CC_BY_SA_4_0,
+		description:
+			"Neo4j-derived Bible people, places, events, and relationships metadata",
+		attributionTemplate:
+			"Data from Theographic Bible Metadata (https://github.com/robertrouse/theographic-bible-metadata) licensed under CC BY-SA 4.0",
+	},
 	wikidata: {
 		id: "wikidata",
 		name: "Wikidata",

@@ -8,6 +8,7 @@ import {
 	fetchBibleQuizzle,
 } from "../ingest/adapters/biblequizzle.js";
 import { fetchOpenTDB } from "../ingest/adapters/opentdb.js";
+import { fetchTheographic } from "../ingest/adapters/theographic.js";
 import type { ContentItem } from "../types/index.js";
 
 export interface IngestOptions {
@@ -24,7 +25,8 @@ export function builder(yargs: Argv): Argv {
 			alias: "s",
 			type: "string",
 			demandOption: true,
-			description: "Source id ('opentdb', 'biblequizzle') or file path (JSON)",
+			description:
+				"Source id ('opentdb', 'biblequizzle', 'theographic') or file path (JSON)",
 		})
 		.option("game-type", {
 			alias: "t",
@@ -41,7 +43,7 @@ export function builder(yargs: Argv): Argv {
 		.option("file", {
 			type: "string",
 			description:
-				"Local JSON file path for source datasets (e.g. biblequizzle)",
+				"Local JSON file path for source datasets (e.g. biblequizzle, theographic)",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -63,6 +65,12 @@ export async function handler(
 			filePath: args.file,
 			dataPath:
 				process.env.BIBLEQUIZZLE_DATA_PATH ?? DEFAULT_BIBLEQUIZZLE_DATA_PATH,
+			gameType: args.gameType,
+		});
+	} else if (args.source === "theographic") {
+		items = await fetchTheographic({
+			count: args.count || 10,
+			filePath: args.file,
 			gameType: args.gameType,
 		});
 	} else {
