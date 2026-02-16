@@ -491,10 +491,10 @@ headers: () => ({
 - [x] Gate game editor UI behind `activeBrand.features.gameEditor`
 - [x] Gate AI generation UI behind `activeBrand.features.aiGeneration`
 - [x] Hide "Create Game" flows when `activeBrand.features.userGeneratedContent === false`
-- [ ] Show only party games when `activeBrand.features.partyGamesOnly === true`
+- [x] Show only party games when `activeBrand.features.partyGamesOnly === true`
 - [x] Apply brand-specific Terms/Privacy URLs from manifest
 - [x] No cross-brand links, logos, or legal references anywhere in the UI
-- [ ] Brand-specific app store review URL
+- [x] Brand-specific app store review URL
 - [x] Brand-specific support/contact email
 
 ---
@@ -965,7 +965,7 @@ Every piece of generated content is scored on:
 - [x] First pass: audit all hardcoded "Slopcade" strings in app
 
 **Lane C (Content)**
-- [ ] Set up content pipeline adapters for API.Bible + BibleQuizzle
+- [x] Set up content pipeline adapters for API.Bible + BibleQuizzle
 - [ ] Ingest BibleQuizzle trivia dataset (~500 items)
 - [ ] Ingest Theographic Bible character/place data
 - [ ] Begin AI generation: 2,000 trivia questions
@@ -1013,7 +1013,7 @@ Every piece of generated content is scored on:
 - [x] Organization join flow (join link + join code)
 - [x] Org entitlement checking (member of org with active sub → full access)
 - [x] Stripe webhook integration for org subscriptions
-- [ ] Individual subscription support (RevenueCat + Stripe)
+- [x] Individual subscription support (RevenueCat + Stripe)
 
 **Lane B (Frontend)**
 - [x] Organization join UI (enter code / deep link handling)
@@ -1088,7 +1088,7 @@ Every piece of generated content is scored on:
 
 **Lane B (Frontend)**
 - [ ] Final build approved on App Store + Play Store
-- [ ] Deep link testing: join codes, join links, universal links
+- [x] Deep link testing: join codes, join links, universal links
 
 **Lane C (Content)**
 - [ ] Easter Special content pack deployed (activate Holy Monday)

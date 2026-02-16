@@ -111,9 +111,9 @@ export const chatThreadsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string }>();
 
 			if (!game)
@@ -236,9 +236,9 @@ export const chatThreadsRouter = router({
 			}
 
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string }>();
 
 			if (!game)
@@ -399,9 +399,9 @@ export const chatThreadsRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string }>();
 
 			if (!game || game.user_id !== ctx.user.id) {
@@ -424,9 +424,9 @@ export const chatThreadsRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string }>();
 
 			if (!game || game.user_id !== ctx.user.id) {
@@ -455,9 +455,9 @@ export const chatThreadsRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string }>();
 
 			if (!game || game.user_id !== ctx.user.id) {
@@ -478,9 +478,9 @@ export const chatThreadsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id, title FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id, title FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string; title: string | null }>();
 
 			if (!game || game.user_id !== ctx.user.id) {
@@ -505,9 +505,9 @@ export const chatThreadsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL",
+				"SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?",
 			)
-				.bind(input.gameId)
+				.bind(input.gameId, ctx.brandId)
 				.first<{ id: string; user_id: string }>();
 
 			if (!game || game.user_id !== ctx.user.id) {

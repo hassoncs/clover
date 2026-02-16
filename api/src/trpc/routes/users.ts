@@ -13,9 +13,9 @@ export const usersRouter = router({
 
 	getProfile: protectedProcedure.query(async ({ ctx }) => {
 		const result = await ctx.env.DB.prepare(
-			`SELECT id, email, display_name, avatar_url, bio, created_at FROM users WHERE id = ?`,
+			`SELECT id, email, display_name, avatar_url, bio, created_at FROM users WHERE id = ? AND brand_id = ?`,
 		)
-			.bind(ctx.user.id)
+			.bind(ctx.user.id, ctx.brandId)
 			.first<{
 				id: string;
 				email: string;
@@ -75,9 +75,10 @@ export const usersRouter = router({
 			sets.push("updated_at = ?");
 			values.push(now);
 			values.push(ctx.user.id);
+			values.push(ctx.brandId);
 
 			await ctx.env.DB.prepare(
-				`UPDATE users SET ${sets.join(", ")} WHERE id = ?`,
+				`UPDATE users SET ${sets.join(", ")} WHERE id = ? AND brand_id = ?`,
 			)
 				.bind(...values)
 				.run();
@@ -93,9 +94,18 @@ export const usersRouter = router({
 
 		if (requireInvite && !isDev) {
 			const invite = await ctx.env.DB.prepare(
-				`SELECT id, status FROM email_invites WHERE invitee_email = ? AND status != 'revoked'`,
+				`SELECT ei.id, ei.status
+				 FROM email_invites ei
+				 LEFT JOIN users inviter ON inviter.id = ei.inviter_user_id
+				 LEFT JOIN users redeemed ON redeemed.id = ei.redeemed_user_id
+				 WHERE ei.invitee_email = ?
+				 AND ei.status != 'revoked'
+				 AND (
+				 	(ei.inviter_user_id IS NOT NULL AND inviter.brand_id = ?)
+				 	OR (ei.redeemed_user_id IS NOT NULL AND redeemed.brand_id = ?)
+				 )`,
 			)
-				.bind(ctx.user.email.toLowerCase())
+				.bind(ctx.user.email.toLowerCase(), ctx.brandId, ctx.brandId)
 				.first<{ id: string; status: string }>();
 
 			if (!invite) {

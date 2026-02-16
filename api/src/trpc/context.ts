@@ -1,3 +1,4 @@
+import { DEFAULT_BRAND_ID, isValidBrandId } from "@slopcade/brands";
 import type { Context as HonoContext } from "hono";
 
 type D1Database = import("@cloudflare/workers-types").D1Database;
@@ -106,7 +107,11 @@ export async function createContext(
 		? authHeader.slice(7)
 		: null;
 
-	const brandId = honoContext.req.header("x-brand-id") || "slopcade";
+	const requestedBrandId =
+		honoContext.req.header("x-brand-id") || DEFAULT_BRAND_ID;
+	const brandId = isValidBrandId(requestedBrandId)
+		? requestedBrandId
+		: DEFAULT_BRAND_ID;
 
 	return {
 		env: honoContext.env,

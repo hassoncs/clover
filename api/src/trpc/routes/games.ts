@@ -217,9 +217,9 @@ export const gamesRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.query(async ({ ctx, input }) => {
 			const result = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!result) {
@@ -244,9 +244,9 @@ export const gamesRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.query(async ({ ctx, input }) => {
 			const result = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!result) {
@@ -275,9 +275,9 @@ export const gamesRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const game = await ctx.env.DB.prepare(
-				`SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<{ id: string; user_id: string | null }>();
 
 			if (!game) {
@@ -416,9 +416,9 @@ export const gamesRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const existing = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!existing) {
@@ -498,9 +498,10 @@ export const gamesRouter = router({
 			updates.push("updated_at = ?");
 			values.push(now);
 			values.push(input.id);
+			values.push(ctx.brandId);
 
 			await ctx.env.DB.prepare(
-				`UPDATE games SET ${updates.join(", ")} WHERE id = ?`,
+				`UPDATE games SET ${updates.join(", ")} WHERE id = ? AND brand_id = ?`,
 			)
 				.bind(...values)
 				.run();
@@ -532,9 +533,9 @@ export const gamesRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const existing = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!existing) {
@@ -553,9 +554,9 @@ export const gamesRouter = router({
 			const newVersion = input.version ?? existing.version ?? "1.0.0";
 
 			await ctx.env.DB.prepare(
-				`UPDATE games SET is_public = 1, version = ?, build_number = ?, updated_at = ? WHERE id = ?`,
+				`UPDATE games SET is_public = 1, version = ?, build_number = ?, updated_at = ? WHERE id = ? AND brand_id = ?`,
 			)
-				.bind(newVersion, newBuildNumber, now, input.id)
+				.bind(newVersion, newBuildNumber, now, input.id, ctx.brandId)
 				.run();
 
 			return {
@@ -571,9 +572,9 @@ export const gamesRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
 			const existing = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!existing) {
@@ -587,8 +588,10 @@ export const gamesRouter = router({
 				});
 			}
 
-			await ctx.env.DB.prepare(`UPDATE games SET deleted_at = ? WHERE id = ?`)
-				.bind(Date.now(), input.id)
+			await ctx.env.DB.prepare(
+				`UPDATE games SET deleted_at = ? WHERE id = ? AND brand_id = ?`,
+			)
+				.bind(Date.now(), input.id, ctx.brandId)
 				.run();
 
 			return { success: true };
@@ -598,9 +601,9 @@ export const gamesRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.env.DB.prepare(
-				`UPDATE games SET play_count = play_count + 1 WHERE id = ? AND deleted_at IS NULL`,
+				`UPDATE games SET play_count = play_count + 1 WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.run();
 
 			return { success: true };
@@ -689,9 +692,9 @@ export const gamesRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
 			const existing = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!existing) {
@@ -731,7 +734,7 @@ export const gamesRouter = router({
           validation_valid = ?,
           validation_updated_at = ?,
           validator_version = ?
-        WHERE id = ?`,
+        WHERE id = ? AND brand_id = ?`,
 			)
 				.bind(
 					getValidationReportJson(validationReport),
@@ -742,6 +745,7 @@ export const gamesRouter = router({
 					now,
 					validationReport.validatorVersion,
 					input.id,
+					ctx.brandId,
 				)
 				.run();
 
@@ -1156,9 +1160,9 @@ export const gamesRouter = router({
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
 			const existing = await ctx.env.DB.prepare(
-				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`,
+				`SELECT * FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 			)
-				.bind(input.id)
+				.bind(input.id, ctx.brandId)
 				.first<GameRow>();
 
 			if (!existing) {
@@ -1331,9 +1335,9 @@ export const gamesRouter = router({
 					});
 
 					const existing = await ctx.env.DB.prepare(
-						`SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL`,
+						`SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL AND brand_id = ?`,
 					)
-						.bind(template.id)
+						.bind(template.id, ctx.brandId)
 						.first<{ id: string; user_id: string }>();
 
 					if (existing) {
@@ -1351,7 +1355,7 @@ export const gamesRouter = router({
                 validation_valid = ?,
                 validation_updated_at = ?,
                 validator_version = ?
-              WHERE id = ?`,
+              WHERE id = ? AND brand_id = ?`,
 						)
 							.bind(
 								template.title,
@@ -1367,6 +1371,7 @@ export const gamesRouter = router({
 								now,
 								validationReport.validatorVersion,
 								template.id,
+								ctx.brandId,
 							)
 							.run();
 

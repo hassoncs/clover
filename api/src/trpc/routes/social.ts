@@ -52,14 +52,15 @@ export const socialRouter = router({
 					body: input.body,
 					bodyJson: input.bodyJson,
 					parentId: input.parentId,
+					brandId: ctx.brandId,
 				});
 
 				const notifSvc = getNotificationService(ctx.env.DB);
 				if (input.parentId) {
 					const parent = await ctx.env.DB.prepare(
-						"SELECT user_id FROM comments WHERE id = ?",
+						"SELECT c.user_id FROM comments c INNER JOIN games g ON g.id = c.game_id WHERE c.id = ? AND g.brand_id = ?",
 					)
-						.bind(input.parentId)
+						.bind(input.parentId, ctx.brandId)
 						.first<{ user_id: string }>();
 					if (parent && parent.user_id !== ctx.user.id) {
 						await notifSvc
@@ -76,9 +77,9 @@ export const socialRouter = router({
 					}
 				} else {
 					const game = await ctx.env.DB.prepare(
-						"SELECT user_id FROM games WHERE id = ?",
+						"SELECT user_id FROM games WHERE id = ? AND brand_id = ?",
 					)
-						.bind(input.gameId)
+						.bind(input.gameId, ctx.brandId)
 						.first<{ user_id: string | null }>();
 					if (game?.user_id && game.user_id !== ctx.user.id) {
 						await notifSvc
@@ -123,6 +124,7 @@ export const socialRouter = router({
 				limit: input.limit,
 				cursor: input.cursor,
 				userId,
+				brandId: ctx.brandId,
 			});
 
 			if (userId) {
@@ -156,6 +158,7 @@ export const socialRouter = router({
 					ctx.user.id,
 					input.body,
 					input.bodyJson,
+					ctx.brandId,
 				);
 			} catch (e) {
 				if (e instanceof CommentNotFoundError)
@@ -171,7 +174,7 @@ export const socialRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const svc = getCommentService(ctx.env.DB);
 			try {
-				await svc.deleteComment(input.commentId, ctx.user.id);
+				await svc.deleteComment(input.commentId, ctx.user.id, ctx.brandId);
 				return { deleted: true };
 			} catch (e) {
 				if (e instanceof CommentNotFoundError)
@@ -194,11 +197,36 @@ export const socialRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const svc = getCommentService(ctx.env.DB);
+
+			if (input.targetType === "game") {
+				const scopedGame = await ctx.env.DB.prepare(
+					"SELECT id FROM games WHERE id = ? AND brand_id = ?",
+				)
+					.bind(input.targetId, ctx.brandId)
+					.first<{ id: string }>();
+				if (!scopedGame) {
+					throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
+				}
+			} else {
+				const scopedComment = await ctx.env.DB.prepare(
+					"SELECT c.id FROM comments c INNER JOIN games g ON g.id = c.game_id WHERE c.id = ? AND g.brand_id = ? AND c.deleted_at IS NULL",
+				)
+					.bind(input.targetId, ctx.brandId)
+					.first<{ id: string }>();
+				if (!scopedComment) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: "Comment not found",
+					});
+				}
+			}
+
 			const result = await svc.addReaction(
 				ctx.user.id,
 				input.targetType,
 				input.targetId,
 				input.reactionType,
+				ctx.brandId,
 			);
 
 			if (result.added) {
@@ -207,16 +235,16 @@ export const socialRouter = router({
 
 				if (input.targetType === "game") {
 					const game = await ctx.env.DB.prepare(
-						"SELECT user_id FROM games WHERE id = ?",
+						"SELECT user_id FROM games WHERE id = ? AND brand_id = ?",
 					)
-						.bind(input.targetId)
+						.bind(input.targetId, ctx.brandId)
 						.first<{ user_id: string | null }>();
 					ownerId = game?.user_id ?? null;
 				} else {
 					const comment = await ctx.env.DB.prepare(
-						"SELECT user_id, game_id FROM comments WHERE id = ?",
+						"SELECT c.user_id, c.game_id FROM comments c INNER JOIN games g ON g.id = c.game_id WHERE c.id = ? AND g.brand_id = ?",
 					)
-						.bind(input.targetId)
+						.bind(input.targetId, ctx.brandId)
 						.first<{ user_id: string; game_id: string }>();
 					ownerId = comment?.user_id ?? null;
 				}
@@ -253,6 +281,7 @@ export const socialRouter = router({
 				input.targetType,
 				input.targetId,
 				input.reactionType,
+				ctx.brandId,
 			);
 		}),
 
@@ -308,6 +337,26 @@ export const socialRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			if (input.targetType === "user") {
+				const targetUser = await ctx.env.DB.prepare(
+					"SELECT id FROM users WHERE id = ? AND brand_id = ?",
+				)
+					.bind(input.targetId, ctx.brandId)
+					.first<{ id: string }>();
+				if (!targetUser) {
+					throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+				}
+			} else {
+				const targetGame = await ctx.env.DB.prepare(
+					"SELECT id FROM games WHERE id = ? AND brand_id = ? AND deleted_at IS NULL",
+				)
+					.bind(input.targetId, ctx.brandId)
+					.first<{ id: string }>();
+				if (!targetGame) {
+					throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
+				}
+			}
+
 			const svc = getFollowService(ctx.env.DB);
 			const result = await svc.follow(
 				ctx.user.id,
@@ -338,6 +387,26 @@ export const socialRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			if (input.targetType === "user") {
+				const targetUser = await ctx.env.DB.prepare(
+					"SELECT id FROM users WHERE id = ? AND brand_id = ?",
+				)
+					.bind(input.targetId, ctx.brandId)
+					.first<{ id: string }>();
+				if (!targetUser) {
+					throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+				}
+			} else {
+				const targetGame = await ctx.env.DB.prepare(
+					"SELECT id FROM games WHERE id = ? AND brand_id = ? AND deleted_at IS NULL",
+				)
+					.bind(input.targetId, ctx.brandId)
+					.first<{ id: string }>();
+				if (!targetGame) {
+					throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
+				}
+			}
+
 			const svc = getFollowService(ctx.env.DB);
 			return svc.unfollow(ctx.user.id, input.targetType, input.targetId);
 		}),
@@ -353,7 +422,12 @@ export const socialRouter = router({
 			const userId = (ctx as { user?: { id: string } }).user?.id;
 			if (!userId) return {};
 			const svc = getFollowService(ctx.env.DB);
-			return svc.isFollowing(userId, input.targetType, input.targetIds);
+			return svc.isFollowing(
+				userId,
+				input.targetType,
+				input.targetIds,
+				ctx.brandId,
+			);
 		}),
 
 	getUserProfile: publicProcedure
@@ -363,9 +437,9 @@ export const socialRouter = router({
 			const [userRow, followSvc] = [
 				await db
 					.prepare(
-						"SELECT id, display_name, avatar_url, bio, created_at FROM users WHERE id = ?",
+						"SELECT id, display_name, avatar_url, bio, created_at FROM users WHERE id = ? AND brand_id = ?",
 					)
-					.bind(input.userId)
+					.bind(input.userId, ctx.brandId)
 					.first<{
 						id: string;
 						display_name: string | null;
@@ -380,7 +454,7 @@ export const socialRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
 
 			const [counts, games] = await Promise.all([
-				followSvc.getUserFollowCounts(input.userId),
+				followSvc.getUserFollowCounts(input.userId, ctx.brandId),
 				db
 					.prepare(`
           SELECT id, title, description, thumbnail_url, play_count, like_count, comment_count,
@@ -408,9 +482,12 @@ export const socialRouter = router({
 			const currentUserId = (ctx as { user?: { id: string } }).user?.id;
 			let isFollowing = false;
 			if (currentUserId && currentUserId !== input.userId) {
-				const status = await followSvc.isFollowing(currentUserId, "user", [
-					input.userId,
-				]);
+				const status = await followSvc.isFollowing(
+					currentUserId,
+					"user",
+					[input.userId],
+					ctx.brandId,
+				);
 				isFollowing = status[input.userId] ?? false;
 			}
 
@@ -449,7 +526,12 @@ export const socialRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const svc = getFollowService(ctx.env.DB);
-			return svc.getFollowers(input.userId, input.limit, input.offset);
+			return svc.getFollowers(
+				input.userId,
+				input.limit,
+				input.offset,
+				ctx.brandId,
+			);
 		}),
 
 	getFollowing: publicProcedure
@@ -462,7 +544,12 @@ export const socialRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const svc = getFollowService(ctx.env.DB);
-			return svc.getFollowing(input.userId, input.limit, input.offset);
+			return svc.getFollowing(
+				input.userId,
+				input.limit,
+				input.offset,
+				ctx.brandId,
+			);
 		}),
 
 	// ─── Bookmarks ────────────────────────────────────────────
@@ -471,14 +558,14 @@ export const socialRouter = router({
 		.input(z.object({ gameId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const svc = getBookmarkService(ctx.env.DB);
-			return svc.bookmark(ctx.user.id, input.gameId);
+			return svc.bookmark(ctx.user.id, input.gameId, ctx.brandId);
 		}),
 
 	unbookmark: protectedProcedure
 		.input(z.object({ gameId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const svc = getBookmarkService(ctx.env.DB);
-			return svc.unbookmark(ctx.user.id, input.gameId);
+			return svc.unbookmark(ctx.user.id, input.gameId, ctx.brandId);
 		}),
 
 	isBookmarked: publicProcedure
@@ -487,7 +574,7 @@ export const socialRouter = router({
 			const userId = (ctx as { user?: { id: string } }).user?.id;
 			if (!userId) return {};
 			const svc = getBookmarkService(ctx.env.DB);
-			return svc.isBookmarked(userId, input.gameIds);
+			return svc.isBookmarked(userId, input.gameIds, ctx.brandId);
 		}),
 
 	listBookmarks: protectedProcedure
@@ -499,7 +586,12 @@ export const socialRouter = router({
 		)
 		.query(async ({ ctx, input }) => {
 			const svc = getBookmarkService(ctx.env.DB);
-			return svc.listBookmarks(ctx.user.id, input.limit, input.offset);
+			return svc.listBookmarks(
+				ctx.user.id,
+				input.limit,
+				input.offset,
+				ctx.brandId,
+			);
 		}),
 
 	// ─── Social Feed ──────────────────────────────────────────
@@ -573,12 +665,17 @@ export const socialRouter = router({
 						"game",
 						gameIds,
 					),
-					getBookmarkService(db).isBookmarked(currentUserId, gameIds),
+					getBookmarkService(db).isBookmarked(
+						currentUserId,
+						gameIds,
+						ctx.brandId,
+					),
 					creatorIds.length > 0
 						? getFollowService(db).isFollowing(
 								currentUserId,
 								"user",
 								creatorIds,
+								ctx.brandId,
 							)
 						: Promise.resolve({} as Record<string, boolean>),
 				]);

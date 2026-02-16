@@ -39,12 +39,24 @@ export const socialExtraRouter = router({
         FROM games g
         LEFT JOIN users u ON g.user_id = u.id
         WHERE g.is_public = 1 AND g.deleted_at IS NULL AND g.brand_id = ?
-          AND g.user_id IN (SELECT target_id FROM follows WHERE follower_id = ? AND target_type = 'user')
+          AND g.user_id IN (
+            SELECT f.target_id
+            FROM follows f
+            INNER JOIN users u2 ON u2.id = f.target_id
+            WHERE f.follower_id = ? AND f.target_type = 'user' AND u2.brand_id = ?
+          )
           AND (g.user_id IS NULL OR g.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = ?))
         ORDER BY g.created_at DESC
         LIMIT ? OFFSET ?
       `)
-				.bind(ctx.brandId, userId, userId, input.limit + 1, input.offset)
+				.bind(
+					ctx.brandId,
+					userId,
+					ctx.brandId,
+					userId,
+					input.limit + 1,
+					input.offset,
+				)
 				.all<{
 					id: string;
 					title: string;
@@ -77,9 +89,14 @@ export const socialExtraRouter = router({
 			if (gameIds.length > 0) {
 				const [likes, bookmarks, follows] = await Promise.all([
 					getCommentService(db).getReactionStatus(userId, "game", gameIds),
-					getBookmarkService(db).isBookmarked(userId, gameIds),
+					getBookmarkService(db).isBookmarked(userId, gameIds, ctx.brandId),
 					creatorIds.length > 0
-						? getFollowService(db).isFollowing(userId, "user", creatorIds)
+						? getFollowService(db).isFollowing(
+								userId,
+								"user",
+								creatorIds,
+								ctx.brandId,
+							)
 						: Promise.resolve({} as Record<string, boolean>),
 				]);
 				likedSet = new Set(
@@ -162,9 +179,9 @@ export const socialExtraRouter = router({
 							.first<{ count: number }>(),
 						db
 							.prepare(
-								"SELECT COUNT(*) as count FROM follows WHERE target_id = ? AND target_type = ?",
+								"SELECT COUNT(*) as count FROM follows f INNER JOIN users uf ON uf.id = f.follower_id WHERE f.target_id = ? AND f.target_type = ? AND uf.brand_id = ?",
 							)
-							.bind(u.id, "user")
+							.bind(u.id, "user", ctx.brandId)
 							.first<{ count: number }>(),
 					]);
 
@@ -236,9 +253,9 @@ export const socialExtraRouter = router({
 				rows.map(async (u) => {
 					const followerCountResult = await db
 						.prepare(
-							"SELECT COUNT(*) as count FROM follows WHERE target_id = ? AND target_type = ?",
+							"SELECT COUNT(*) as count FROM follows f INNER JOIN users uf ON uf.id = f.follower_id WHERE f.target_id = ? AND f.target_type = ? AND uf.brand_id = ?",
 						)
-						.bind(u.id, "user")
+						.bind(u.id, "user", ctx.brandId)
 						.first<{ count: number }>();
 
 					return {

@@ -49,7 +49,16 @@ export class OrgWebhookHandler {
 		const subscriptionId = getStringId(session.subscription);
 		const customerId = getStringId(session.customer);
 
-		if (!orgId || !planId || !subscriptionId) {
+		if (!orgId || !brandId || !planId || !subscriptionId) {
+			return;
+		}
+
+		const scopedOrg = await db
+			.prepare("SELECT id FROM organizations WHERE id = ? AND brand_id = ?")
+			.bind(orgId, brandId)
+			.first<{ id: string }>();
+
+		if (!scopedOrg) {
 			return;
 		}
 
@@ -97,21 +106,11 @@ export class OrgWebhookHandler {
 			)
 			.run();
 
-		if (brandId) {
-			await db
-				.prepare(
-					"UPDATE organizations SET status = ?, updated_at = ? WHERE id = ? AND brand_id = ? AND status = ?",
-				)
-				.bind("active", now, orgId, brandId, "trial")
-				.run();
-			return;
-		}
-
 		await db
 			.prepare(
-				"UPDATE organizations SET status = ?, updated_at = ? WHERE id = ? AND status = ?",
+				"UPDATE organizations SET status = ?, updated_at = ? WHERE id = ? AND brand_id = ? AND status = ?",
 			)
-			.bind("active", now, orgId, "trial")
+			.bind("active", now, orgId, brandId, "trial")
 			.run();
 	}
 
