@@ -5,7 +5,7 @@ import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
 import { useAuth } from "@/hooks/useAuth";
-import { activeBrand } from "@/lib/brand";
+import { activeBrand, brandCssClass } from "@/lib/brand";
 import { trpc } from "@/lib/trpc/client";
 
 const TAB_HEADER_CONFIG: Record<
@@ -101,7 +101,10 @@ export default function TabLayout() {
 	}, [router]);
 
 	return (
-		<View style={{ flex: 1, backgroundColor: "#050608" }}>
+		<View
+			style={{ flex: 1 }}
+			className={`bg-theme-background ${brandCssClass}`}
+		>
 			<Tabs
 				tabBar={(props) => (
 					<FloatingTabBar
@@ -143,7 +146,7 @@ export default function TabLayout() {
 						);
 					},
 					sceneStyle: {
-						backgroundColor: "#050608",
+						backgroundColor: "transparent",
 					},
 					tabBarShowLabel: false,
 				})}

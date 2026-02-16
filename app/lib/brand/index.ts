@@ -29,3 +29,9 @@ export function isBrandFeatureEnabled(
 ): boolean {
 	return activeBrand.features[feature];
 }
+
+/**
+ * CSS class name for the active brand's theme.
+ * Returns 'brand-amen' for Amen, empty string for Slopcade (default).
+ */
+export const brandCssClass = activeBrand.id === "amen" ? "brand-amen" : "";
