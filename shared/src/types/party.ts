@@ -13,6 +13,7 @@ export interface PartyPlayer {
 	avatar?: string;
 	connected: boolean;
 	role?: string;
+	team?: string;
 	score?: number;
 	isHost?: boolean;
 }
@@ -30,7 +31,7 @@ export interface PartyRoomState {
 	stateVersion: number;
 }
 
-export type PartyInputType = "text" | "choice" | "drawing" | "buzzer";
+export type PartyInputType = "text" | "choice" | "drawing" | "buzzer" | "mic";
 
 export interface PartyInputRequest {
 	type: PartyInputType;
