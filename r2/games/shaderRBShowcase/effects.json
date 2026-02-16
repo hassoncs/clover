@@ -1,0 +1,1434 @@
+{
+  "graph": {
+    "id": "rb-showcase",
+    "version": "1.0.0",
+    "engineApiVersion": "1.0.0",
+    "scope": "screen",
+    "nodes": [
+      {
+        "id": "rbAurora",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_amplitude : hint_range(0.0, 3.0) = 1.0;\nuniform float u_blend : hint_range(0.0, 1.0) = 0.5;\nuniform vec3 u_color_stop_a : source_color = vec3(0.3216, 0.1529, 1.0);\nuniform vec3 u_color_stop_b : source_color = vec3(0.4863, 1.0, 0.4039);\nuniform vec3 u_color_stop_c : source_color = vec3(0.3216, 0.1529, 1.0);\n\nvec3 permute(vec3 x) {\n    return mod(((x * 34.0) + 1.0) * x, 289.0);\n}\n\nfloat snoise(vec2 v) {\n    const vec4 C = vec4(\n        0.211324865405187,\n        0.366025403784439,\n        -0.577350269189626,\n        0.024390243902439\n    );\n    vec2 i = floor(v + dot(v, C.yy));\n    vec2 x0 = v - i + dot(i, C.xx);\n    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);\n    vec4 x12 = x0.xyxy + C.xxzz;\n    x12.xy -= i1;\n    i = mod(i, 289.0);\n\n    vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));\n\n    vec3 m = max(\n        0.5 - vec3(\n            dot(x0, x0),\n            dot(x12.xy, x12.xy),\n            dot(x12.zw, x12.zw)\n        ),\n        0.0\n    );\n    m = m * m;\n    m = m * m;\n\n    vec3 x = 2.0 * fract(p * C.www) - 1.0;\n    vec3 h = abs(x) - 0.5;\n    vec3 ox = floor(x + 0.5);\n    vec3 a0 = x - ox;\n    m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);\n\n    vec3 g;\n    g.x = a0.x * x0.x + h.x * x0.y;\n    g.yz = a0.yz * x12.xz + h.yz * x12.yw;\n    return 130.0 * dot(m, g);\n}\n\nvec3 color_ramp(float t) {\n    if (t <= 0.5) {\n        float f = smoothstep(0.0, 0.5, t);\n        return mix(u_color_stop_a, u_color_stop_b, f);\n    }\n\n    float f = smoothstep(0.5, 1.0, t);\n    return mix(u_color_stop_b, u_color_stop_c, f);\n}\n\nvoid fragment() {\n    vec2 uv = SCREEN_UV;\n    vec3 ramp_color = color_ramp(uv.x);\n\n    float height = snoise(vec2(uv.x * 2.0 + TIME * 0.1, TIME * 0.25)) * 0.5 * u_amplitude;\n    height = exp(height);\n    height = uv.y * 2.0 - height + 0.2;\n    float intensity = 0.6 * height;\n\n    float mid_point = 0.20;\n    float aurora_alpha = smoothstep(mid_point - u_blend * 0.5, mid_point + u_blend * 0.5, intensity);\n    vec3 aurora_color = intensity * ramp_color;\n\n    COLOR = vec4(aurora_color * aurora_alpha, aurora_alpha);\n}\n",
+          "u_amplitude": 1,
+          "u_blend": 0.5,
+          "u_color_stop_a": "#5227ff",
+          "u_color_stop_b": "#7cff67",
+          "u_color_stop_c": "#5227ff"
+        },
+        "outputTarget": {
+          "bufferId": "rbAurora_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbBalatro",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_spin_rotation : hint_range(-10.0, 10.0) = -2.0;\nuniform float u_spin_speed : hint_range(0.0, 20.0) = 7.0;\nuniform float u_contrast : hint_range(0.5, 8.0) = 3.5;\nuniform float u_lighting : hint_range(0.0, 2.0) = 0.4;\nuniform float u_spin_amount : hint_range(0.0, 1.0) = 0.25;\nuniform vec3 u_color1 : source_color = vec3(0.8706, 0.2667, 0.2314);\nuniform vec3 u_color2 : source_color = vec3(0.0, 0.4196, 0.7059);\nuniform vec3 u_color3 : source_color = vec3(0.0863, 0.1373, 0.1451);\n\nvec3 effect(vec2 screen_size, vec2 screen_coords) {\n    float pixel_filter = 745.0;\n    float spin_ease = 1.0;\n    vec2 offset = vec2(0.0, 0.0);\n\n    float pixel_size = length(screen_size) / pixel_filter;\n    vec2 uv = (floor(screen_coords * (1.0 / pixel_size)) * pixel_size - 0.5 * screen_size) / length(screen_size) - offset;\n    float uv_len = length(uv);\n\n    float speed = u_spin_rotation * spin_ease * 0.2 + 302.2;\n    float new_pixel_angle = atan(uv.y, uv.x) + speed - spin_ease * 20.0 * (u_spin_amount * uv_len + (1.0 - u_spin_amount));\n    vec2 mid = (screen_size / length(screen_size)) / 2.0;\n    uv = vec2(uv_len * cos(new_pixel_angle) + mid.x, uv_len * sin(new_pixel_angle) + mid.y) - mid;\n\n    uv *= 30.0;\n    speed = TIME * u_spin_speed;\n    vec2 uv2 = vec2(uv.x + uv.y);\n\n    for (int i = 0; i < 5; i++) {\n        uv2 += sin(max(uv.x, uv.y)) + uv;\n        uv += 0.5 * vec2(\n            cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121),\n            sin(uv2.x - 0.113 * speed)\n        );\n        uv -= cos(uv.x + uv.y) - sin(uv.x * 0.711 - uv.y);\n    }\n\n    float safe_contrast = max(u_contrast, 0.001);\n    float contrast_mod = 0.25 * safe_contrast + 0.5 * u_spin_amount + 1.2;\n    float paint_res = min(2.0, max(0.0, length(uv) * 0.035 * contrast_mod));\n    float c1p = max(0.0, 1.0 - contrast_mod * abs(1.0 - paint_res));\n    float c2p = max(0.0, 1.0 - contrast_mod * abs(paint_res));\n    float c3p = 1.0 - min(1.0, c1p + c2p);\n    float light = (u_lighting - 0.2) * max(c1p * 5.0 - 4.0, 0.0) + u_lighting * max(c2p * 5.0 - 4.0, 0.0);\n\n    vec3 mixed = u_color1 * c1p + u_color2 * c2p + (c3p * u_color3);\n    return (0.3 / safe_contrast) * u_color1 + (1.0 - 0.3 / safe_contrast) * mixed + vec3(light);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = SCREEN_UV * resolution;\n    COLOR = vec4(effect(resolution, uv), 1.0);\n}\n",
+          "u_spin_rotation": -2,
+          "u_spin_speed": 7,
+          "u_contrast": 3.5,
+          "u_lighting": 0.4,
+          "u_spin_amount": 0.25,
+          "u_color1": "#de443b",
+          "u_color2": "#006bb4",
+          "u_color3": "#162325"
+        },
+        "outputTarget": {
+          "bufferId": "rbBalatro_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_1",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_1 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_1_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbColorBends",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_speed : hint_range(0.0, 5.0) = 0.2;\nuniform float u_scale : hint_range(0.1, 4.0) = 1.0;\nuniform float u_frequency : hint_range(0.1, 4.0) = 1.0;\nuniform float u_warp_strength : hint_range(0.0, 2.0) = 1.0;\nuniform float u_mouse_influence : hint_range(0.0, 2.0) = 1.0;\nuniform float u_parallax : hint_range(0.0, 2.0) = 0.5;\nuniform float u_noise : hint_range(0.0, 1.0) = 0.1;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nfloat hash12(vec2 p) {\n    vec3 p3 = fract(vec3(p.xyx) * 0.1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    float t = TIME * u_speed;\n\n    vec2 p = SCREEN_UV * 2.0 - 1.0;\n    p.x *= resolution.x / resolution.y;\n    p += (u_mouse - vec2(0.5, 0.5)) * u_parallax;\n\n    vec2 q = p / max(u_scale, 0.0001);\n    q /= 0.5 + 0.2 * dot(q, q);\n    q += 0.2 * cos(t) - 7.56;\n    q += ((u_mouse - vec2(0.5, 0.5)) * 2.0 - p) * u_mouse_influence * 0.2;\n\n    vec3 col = vec3(0.0);\n    vec2 s = q;\n\n    for (int i = 0; i < 3; i++) {\n        s -= 0.01;\n        vec2 r = sin(1.5 * (s.yx * u_frequency) + 2.0 * cos(s * u_frequency));\n        float m0 = length(r + sin(5.0 * r.y * u_frequency - 3.0 * t + float(i)) / 4.0);\n\n        float k_below = clamp(u_warp_strength, 0.0, 1.0);\n        float k_mix = pow(k_below, 0.3);\n        float gain = 1.0 + max(u_warp_strength - 1.0, 0.0);\n\n        vec2 disp = (r - s) * k_below;\n        vec2 warped = s + disp * gain;\n        float m1 = length(warped + sin(5.0 * warped.y * u_frequency - 3.0 * t + float(i)) / 4.0);\n        float m = mix(m0, m1, k_mix);\n\n        col[i] = 1.0 - exp(-6.0 / exp(6.0 * m));\n    }\n\n    if (u_noise > 0.0001) {\n        float n = hash12(FRAGCOORD.xy + vec2(TIME));\n        col += (n - 0.5) * u_noise;\n    }\n\n    COLOR = vec4(clamp(col, 0.0, 1.0), 1.0);\n}\n",
+          "u_speed": 0.2,
+          "u_scale": 1,
+          "u_frequency": 1,
+          "u_warp_strength": 1,
+          "u_mouse_influence": 1,
+          "u_parallax": 0.5,
+          "u_noise": 0.1
+        },
+        "outputTarget": {
+          "bufferId": "rbColorBends_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_2",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_2 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_2_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbDarkVeil",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_hue_shift : hint_range(-180.0, 180.0) = 0.0;\nuniform float u_noise : hint_range(0.0, 0.3) = 0.0;\nuniform float u_scan : hint_range(0.0, 1.0) = 0.0;\nuniform float u_scan_freq : hint_range(0.0, 0.5) = 0.0;\nuniform float u_warp : hint_range(0.0, 1.0) = 0.0;\n\nfloat hash12(vec2 p) {\n    vec3 p3 = fract(vec3(p.xyx) * 0.1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nmat2 rot(float a) {\n    float c = cos(a);\n    float s = sin(a);\n    return mat2(c, -s, s, c);\n}\n\nfloat noise(vec2 p) {\n    vec2 i = floor(p);\n    vec2 f = fract(p);\n    vec2 u = f * f * (3.0 - 2.0 * f);\n\n    float a = hash12(i);\n    float b = hash12(i + vec2(1.0, 0.0));\n    float c = hash12(i + vec2(0.0, 1.0));\n    float d = hash12(i + vec2(1.0, 1.0));\n\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\n\nfloat fbm(vec2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 5; i++) {\n        v += a * noise(p);\n        p = rot(0.6) * p * 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\nvec3 rgb2yiq(vec3 c) {\n    return vec3(\n        dot(c, vec3(0.299, 0.587, 0.114)),\n        dot(c, vec3(0.596, -0.274, -0.322)),\n        dot(c, vec3(0.211, -0.523, 0.312))\n    );\n}\n\nvec3 yiq2rgb(vec3 c) {\n    return vec3(\n        c.x + 0.956 * c.y + 0.621 * c.z,\n        c.x - 0.272 * c.y - 0.647 * c.z,\n        c.x - 1.106 * c.y + 1.703 * c.z\n    );\n}\n\nvec3 hue_shift_rgb(vec3 col, float deg) {\n    vec3 yiq = rgb2yiq(col);\n    float rad = deg * PI / 180.0;\n    float c = cos(rad);\n    float s = sin(rad);\n    vec2 iq = vec2(yiq.y * c - yiq.z * s, yiq.y * s + yiq.z * c);\n    return clamp(yiq2rgb(vec3(yiq.x, iq.x, iq.y)), 0.0, 1.0);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = SCREEN_UV * 2.0 - 1.0;\n    uv.x *= resolution.x / resolution.y;\n    uv += u_warp * vec2(sin(uv.y * 6.283 + TIME * 0.5), cos(uv.x * 6.283 + TIME * 0.5)) * 0.05;\n\n    float t = TIME * 0.4;\n    float n0 = fbm(uv * 1.3 + vec2(t, -t * 0.7));\n    float n1 = fbm(uv * 2.7 - vec2(t * 0.4, t));\n    float veil = smoothstep(0.25, 0.85, n0 * 0.75 + n1 * 0.45);\n\n    vec3 deep = vec3(0.02, 0.02, 0.05);\n    vec3 neon = vec3(0.18, 0.55, 0.92);\n    vec3 col = mix(deep, neon, veil);\n    col = hue_shift_rgb(col, u_hue_shift);\n\n    float scan = sin(FRAGCOORD.y * u_scan_freq) * 0.5 + 0.5;\n    col *= 1.0 - (scan * scan) * u_scan;\n\n    float grain = hash12(FRAGCOORD.xy + vec2(TIME));\n    col += (grain - 0.5) * u_noise;\n\n    COLOR = vec4(clamp(col, 0.0, 1.0), 1.0);\n}\n",
+          "u_hue_shift": 0,
+          "u_noise": 0,
+          "u_scan": 0,
+          "u_scan_freq": 0,
+          "u_warp": 0
+        },
+        "outputTarget": {
+          "bufferId": "rbDarkVeil_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_3",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_3 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_3_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbFaultyTerminal",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_scale : hint_range(0.5, 4.0) = 1.0;\nuniform float u_digit_size : hint_range(0.5, 3.0) = 1.5;\nuniform float u_scanline_intensity : hint_range(0.0, 1.0) = 0.3;\nuniform float u_glitch_amount : hint_range(0.0, 2.0) = 1.0;\nuniform float u_chromatic_aberration : hint_range(0.0, 8.0) = 0.0;\nuniform float u_curvature : hint_range(0.0, 0.4) = 0.2;\nuniform float u_brightness : hint_range(0.0, 2.0) = 1.0;\n\nfloat hash21(vec2 p) {\n    p = fract(p * 234.56);\n    p += dot(p, p + 34.56);\n    return fract(p.x * p.y);\n}\n\nvec2 barrel(vec2 uv) {\n    vec2 c = uv * 2.0 - 1.0;\n    float r2 = dot(c, c);\n    c *= 1.0 + u_curvature * r2;\n    return c * 0.5 + 0.5;\n}\n\nfloat digit_cell(vec2 uv) {\n    vec2 grid = vec2(30.0, 20.0);\n    vec2 cell = floor(uv * grid);\n    vec2 local = fract(uv * grid) * u_digit_size;\n\n    float n = hash21(cell + floor(TIME * 2.0));\n    float glyph = step(0.45, n);\n\n    float px = floor(local.x * 5.0);\n    float py = floor((1.0 - local.y) * 7.0);\n    float mask = step(0.0, px) * step(px, 4.0) * step(0.0, py) * step(py, 6.0);\n\n    float stroke = step(0.4, hash21(cell + vec2(px, py) * 0.17 + vec2(13.0, 7.0)));\n    return glyph * stroke * mask;\n}\n\nvec3 terminal_color(vec2 uv) {\n    float scan = 1.0 - (sin(FRAGCOORD.y * 1.7) * 0.5 + 0.5) * u_scanline_intensity;\n\n    float glitch_band = sin(TIME * 8.0 + uv.y * 80.0);\n    float disp = glitch_band * 0.01 * u_glitch_amount;\n\n    float middle = digit_cell(uv + vec2(disp, 0.0));\n    float glow = (\n        digit_cell(uv + vec2(disp - 0.002, -0.002)) +\n        digit_cell(uv + vec2(disp + 0.002, -0.002)) +\n        digit_cell(uv + vec2(disp - 0.002, 0.002)) +\n        digit_cell(uv + vec2(disp + 0.002, 0.002))\n    ) * 0.25;\n\n    vec3 col = vec3(0.85, 0.95, 1.0) * middle + vec3(0.2, 0.45, 1.0) * glow * 0.8;\n    col *= scan;\n    return col;\n}\n\nvoid fragment() {\n    vec2 uv = SCREEN_UV;\n    uv = barrel(uv);\n    uv *= u_scale;\n\n    vec3 col = terminal_color(uv);\n\n    if (u_chromatic_aberration > 0.0) {\n        vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n        vec2 ca = vec2(u_chromatic_aberration) / resolution;\n        col.r = terminal_color(uv + ca).r;\n        col.b = terminal_color(uv - ca).b;\n    }\n\n    float dither = hash21(FRAGCOORD.xy + vec2(TIME)) - 0.5;\n    col += dither * 0.004;\n    col *= u_brightness;\n\n    COLOR = vec4(clamp(col, 0.0, 1.0), 1.0);\n}\n",
+          "u_scale": 1,
+          "u_digit_size": 1.5,
+          "u_scanline_intensity": 0.3,
+          "u_glitch_amount": 1,
+          "u_chromatic_aberration": 0,
+          "u_curvature": 0.2,
+          "u_brightness": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbFaultyTerminal_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_4",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_4 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_4_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbFloatingLines",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_animation_speed : hint_range(0.0, 5.0) = 1.0;\nuniform float u_bend_radius : hint_range(0.5, 20.0) = 5.0;\nuniform float u_bend_strength : hint_range(-2.0, 2.0) = -0.5;\nuniform float u_parallax_strength : hint_range(0.0, 1.0) = 0.2;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nmat2 rotate2d(float a) {\n    float c = cos(a);\n    float s = sin(a);\n    return mat2(c, -s, s, c);\n}\n\nvec3 gradient_bg(vec2 uv) {\n    vec3 pink = vec3(233.0, 71.0, 245.0) / 255.0;\n    vec3 blue = vec3(47.0, 75.0, 162.0) / 255.0;\n    float y = sin(uv.x - 0.2) * 0.3 - 0.1;\n    float m = uv.y - y;\n    vec3 col = vec3(0.0);\n    col += mix(blue, vec3(0.0), smoothstep(0.0, 1.0, abs(m)));\n    col += mix(pink, vec3(0.0), smoothstep(0.0, 1.0, abs(m - 0.8)));\n    return col * 0.45;\n}\n\nfloat wave(vec2 uv, float offset, vec2 screen_uv, vec2 mouse_uv) {\n    float t = TIME * u_animation_speed;\n    float amp = sin(offset + t * 0.2) * 0.3;\n    float y = sin(uv.x + offset + t * 0.1) * amp;\n\n    vec2 d = screen_uv - mouse_uv;\n    float influence = exp(-dot(d, d) * u_bend_radius);\n    y += (mouse_uv.y - screen_uv.y) * influence * u_bend_strength;\n\n    float m = uv.y - y;\n    return 0.0175 / max(abs(m) + 0.01, 0.001) + 0.01;\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = (2.0 * FRAGCOORD.xy - resolution.xy) / resolution.y;\n    uv.y *= -1.0;\n\n    vec2 mouse_uv = (u_mouse * 2.0 - 1.0);\n    mouse_uv.x *= resolution.x / resolution.y;\n    uv += (u_mouse - vec2(0.5, 0.5)) * u_parallax_strength;\n\n    vec3 col = gradient_bg(uv);\n\n    for (int i = 0; i < 6; i++) {\n        float fi = float(i);\n        float t = fi / 5.0;\n        vec3 line_col = mix(vec3(0.2, 0.4, 1.0), vec3(1.0, 0.4, 0.9), t) * 0.5;\n\n        vec2 ruv = uv * rotate2d(0.2 * log(length(uv) + 1.0));\n        col += line_col * wave(ruv + vec2(0.05 * fi + 1.2, -0.2), 1.0 + 0.2 * fi, uv, mouse_uv) * 0.18;\n\n        vec2 ruv2 = uv * rotate2d(-0.25 * log(length(uv) + 1.0));\n        col += line_col * wave(ruv2 + vec2(0.06 * fi + 0.4, 0.35), 1.8 + 0.15 * fi, uv, mouse_uv) * 0.12;\n    }\n\n    COLOR = vec4(clamp(col, 0.0, 1.0), 1.0);\n}\n",
+          "u_animation_speed": 1,
+          "u_bend_radius": 5,
+          "u_bend_strength": -0.5,
+          "u_parallax_strength": 0.2
+        },
+        "outputTarget": {
+          "bufferId": "rbFloatingLines_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_5",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_5 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_5_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbGalaxy",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_density : hint_range(0.1, 4.0) = 1.0;\nuniform float u_hue_shift : hint_range(0.0, 360.0) = 140.0;\nuniform float u_glow_intensity : hint_range(0.0, 2.0) = 0.3;\nuniform float u_twinkle_intensity : hint_range(0.0, 2.0) = 0.3;\nuniform float u_rotation_speed : hint_range(-2.0, 2.0) = 0.1;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\n#define NUM_LAYER 4.0\n#define STAR_COLOR_CUTOFF 0.2\n\nfloat hash21(vec2 p) {\n    p = fract(p * vec2(123.34, 456.21));\n    p += dot(p, p + 45.32);\n    return fract(p.x * p.y);\n}\n\nfloat tri(float x) {\n    return abs(fract(x) * 2.0 - 1.0);\n}\n\nfloat tris(float x) {\n    float t = fract(x);\n    return 1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0));\n}\n\nfloat trisn(float x) {\n    float t = fract(x);\n    return 2.0 * (1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0))) - 1.0;\n}\n\nvec3 hsv2rgb(vec3 c) {\n    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nfloat star_fn(vec2 uv, float flare) {\n    float d = max(length(uv), 0.0001);\n    float m = (0.05 * u_glow_intensity) / d;\n    float rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));\n    m += rays * flare * u_glow_intensity;\n    mat2 rot45 = mat2(0.7071, -0.7071, 0.7071, 0.7071);\n    uv *= rot45;\n    rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));\n    m += rays * 0.3 * flare * u_glow_intensity;\n    m *= smoothstep(1.0, 0.2, d);\n    return m;\n}\n\nvec3 star_layer(vec2 uv) {\n    vec3 col = vec3(0.0);\n    vec2 gv = fract(uv) - 0.5;\n    vec2 id = floor(uv);\n\n    for (int y = -1; y <= 1; y++) {\n        for (int x = -1; x <= 1; x++) {\n            vec2 offset = vec2(float(x), float(y));\n            vec2 si = id + offset;\n            float seed = hash21(si);\n            float size = fract(seed * 345.32);\n            float gloss_local = tri(TIME / (3.0 * seed + 1.0));\n            float flare_size = smoothstep(0.9, 1.0, size) * gloss_local;\n\n            float red = smoothstep(STAR_COLOR_CUTOFF, 1.0, hash21(si + 1.0)) + STAR_COLOR_CUTOFF;\n            float blu = smoothstep(STAR_COLOR_CUTOFF, 1.0, hash21(si + 3.0)) + STAR_COLOR_CUTOFF;\n            float grn = min(red, blu) * seed;\n            vec3 base = vec3(red, grn, blu);\n\n            float hue = atan(base.g - base.r, base.b - base.r) / (2.0 * PI) + 0.5;\n            hue = fract(hue + u_hue_shift / 360.0);\n            float sat = length(base - vec3(dot(base, vec3(0.299, 0.587, 0.114))));\n            float val = max(max(base.r, base.g), base.b);\n            base = hsv2rgb(vec3(hue, sat, val));\n\n            vec2 pad = vec2(\n                tris(seed * 34.0 + TIME / 10.0),\n                tris(seed * 38.0 + TIME / 30.0)\n            ) - 0.5;\n\n            float star = star_fn(gv - offset - pad, flare_size);\n            float twinkle = trisn(TIME + seed * 6.2831) * 0.5 + 1.0;\n            twinkle = mix(1.0, twinkle, u_twinkle_intensity);\n            col += star * twinkle * size * base;\n        }\n    }\n\n    return col;\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = SCREEN_UV * 2.0 - 1.0;\n    uv.x *= resolution.x / resolution.y;\n\n    uv += (u_mouse - vec2(0.5)) * 0.1;\n\n    float angle = TIME * u_rotation_speed;\n    mat2 rot = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));\n    uv = rot * uv;\n\n    vec3 col = vec3(0.0);\n    for (float i = 0.0; i < 1.0; i += 1.0 / NUM_LAYER) {\n        float depth = fract(i + TIME * 0.05);\n        float scale = mix(20.0 * u_density, 0.5 * u_density, depth);\n        float fade = depth * smoothstep(1.0, 0.9, depth);\n        col += star_layer(uv * scale + i * 453.32) * fade;\n    }\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_density": 1,
+          "u_hue_shift": 140,
+          "u_glow_intensity": 0.3,
+          "u_twinkle_intensity": 0.3,
+          "u_rotation_speed": 0.1
+        },
+        "outputTarget": {
+          "bufferId": "rbGalaxy_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_6",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_6 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_6_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbGradientBlinds",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_angle : hint_range(-180.0, 180.0) = 0.0;\nuniform float u_noise : hint_range(0.0, 1.0) = 0.3;\nuniform float u_blind_count : hint_range(1.0, 64.0) = 16.0;\nuniform float u_distort : hint_range(0.0, 4.0) = 0.0;\nuniform float u_spotlight_opacity : hint_range(0.0, 2.0) = 1.0;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nfloat rand(vec2 co) {\n    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvec2 rotate2d(vec2 p, float a) {\n    float c = cos(a);\n    float s = sin(a);\n    return mat2(c, -s, s, c) * p;\n}\n\nvoid fragment() {\n    vec2 uv0 = SCREEN_UV;\n    vec2 p = uv0 * 2.0 - 1.0;\n    vec2 pr = rotate2d(p, radians(u_angle));\n    vec2 uv = pr * 0.5 + 0.5;\n\n    vec2 uv_mod = uv;\n    if (u_distort > 0.0) {\n        float a = uv_mod.y * 6.0;\n        float b = uv_mod.x * 6.0;\n        float w = 0.01 * u_distort;\n        uv_mod.x += sin(a) * w;\n        uv_mod.y += cos(b) * w;\n    }\n\n    vec3 color_a = vec3(1.0, 0.6235, 0.9882);\n    vec3 color_b = vec3(0.3216, 0.1529, 1.0);\n    vec3 base = mix(color_a, color_b, clamp(uv_mod.x, 0.0, 1.0));\n\n    float d = length(uv0 - u_mouse);\n    float dn = d / 0.5;\n    float spot = (1.0 - 2.0 * pow(dn, 1.0)) * u_spotlight_opacity;\n\n    float stripe = fract(uv_mod.x * max(u_blind_count, 1.0));\n    vec3 col = vec3(spot) + base - vec3(stripe);\n    col += (rand(FRAGCOORD.xy + TIME) - 0.5) * u_noise;\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_angle": 0,
+          "u_noise": 0.3,
+          "u_blind_count": 16,
+          "u_distort": 0,
+          "u_spotlight_opacity": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbGradientBlinds_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_7",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_7 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_7_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbGrainient",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_time_speed : hint_range(0.0, 3.0) = 0.25;\nuniform float u_warp_strength : hint_range(0.0, 3.0) = 1.0;\nuniform float u_warp_frequency : hint_range(0.1, 20.0) = 5.0;\nuniform float u_grain_amount : hint_range(0.0, 1.0) = 0.1;\nuniform float u_contrast : hint_range(0.1, 4.0) = 1.5;\nuniform float u_saturation : hint_range(0.0, 2.0) = 1.0;\nuniform vec3 u_color1 : source_color = vec3(1.0, 0.6235, 0.9882);\nuniform vec3 u_color2 : source_color = vec3(0.3216, 0.1529, 1.0);\nuniform vec3 u_color3 : source_color = vec3(0.6941, 0.6196, 0.9373);\n\nvec2 hash(vec2 p) {\n    p = vec2(dot(p, vec2(2127.1, 81.17)), dot(p, vec2(1269.5, 283.37)));\n    return fract(sin(p) * 43758.5453);\n}\n\nfloat noise_fn(vec2 p) {\n    vec2 i = floor(p);\n    vec2 f = fract(p);\n    vec2 u = f * f * (3.0 - 2.0 * f);\n    float n = mix(\n        mix(dot(-1.0 + 2.0 * hash(i + vec2(0.0, 0.0)), f - vec2(0.0, 0.0)), dot(-1.0 + 2.0 * hash(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0)), u.x),\n        mix(dot(-1.0 + 2.0 * hash(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0)), dot(-1.0 + 2.0 * hash(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0)), u.x),\n        u.y\n    );\n    return 0.5 + 0.5 * n;\n}\n\nmat2 rot(float a) {\n    float s = sin(a);\n    float c = cos(a);\n    return mat2(c, -s, s, c);\n}\n\nvoid fragment() {\n    vec2 uv = SCREEN_UV;\n    vec2 centered = uv - 0.5;\n    float t = TIME * u_time_speed;\n\n    float degree = noise_fn(vec2(t * 0.1, centered.x * centered.y) * 2.0);\n    centered *= rot(radians((degree - 0.5) * 500.0 + 180.0));\n\n    float ws = max(u_warp_strength, 0.001);\n    float amplitude = 50.0 / ws;\n    centered.x += sin(centered.y * u_warp_frequency + t * 2.0) / amplitude;\n    centered.y += sin(centered.x * (u_warp_frequency * 1.5) + t * 2.0) / (amplitude * 0.5);\n\n    float edge0 = -0.35;\n    float edge1 = 0.25;\n    vec3 layer1 = mix(u_color3, u_color2, smoothstep(edge0, edge1, centered.x));\n    vec3 layer2 = mix(u_color2, u_color1, smoothstep(edge0, edge1, centered.x));\n    vec3 col = mix(layer1, layer2, smoothstep(0.5, -0.35, centered.y));\n\n    float grain = fract(sin(dot(uv * 2.0 + vec2(TIME * 0.05), vec2(12.9898, 78.233))) * 43758.5453);\n    col += (grain - 0.5) * u_grain_amount;\n\n    col = (col - 0.5) * u_contrast + 0.5;\n    float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));\n    col = mix(vec3(luma), col, u_saturation);\n    col = clamp(col, 0.0, 1.0);\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_time_speed": 0.25,
+          "u_warp_strength": 1,
+          "u_warp_frequency": 5,
+          "u_grain_amount": 0.1,
+          "u_contrast": 1.5,
+          "u_saturation": 1,
+          "u_color1": "#ff9ffc",
+          "u_color2": "#5227ff",
+          "u_color3": "#b19eef"
+        },
+        "outputTarget": {
+          "bufferId": "rbGrainient_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_8",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_8 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_8_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbIridescence",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_color : source_color = vec3(1.0, 1.0, 1.0);\nuniform float u_amplitude : hint_range(0.0, 1.0) = 0.1;\nuniform float u_speed : hint_range(0.0, 5.0) = 1.0;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    float mr = min(resolution.x, resolution.y);\n    vec2 uv = (SCREEN_UV * 2.0 - 1.0) * resolution / mr;\n\n    uv += (u_mouse - vec2(0.5, 0.5)) * u_amplitude;\n\n    float d = -TIME * 0.5 * u_speed;\n    float a = 0.0;\n    for (float i = 0.0; i < 8.0; i += 1.0) {\n        a += cos(i - d - a * uv.x);\n        d += sin(uv.y * i + a);\n    }\n\n    d += TIME * 0.5 * u_speed;\n\n    vec2 xy = cos(uv * vec2(d, a)) * 0.6 + 0.4;\n    vec3 col = vec3(xy, cos(a + d) * 0.5 + 0.5);\n    col = cos(col * cos(vec3(d, a, 2.5)) * 0.5 + 0.5) * u_color;\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_color": "#ffffff",
+          "u_amplitude": 0.1,
+          "u_speed": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbIridescence_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_9",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_9 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_9_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbLightRays",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_rays_color : source_color = vec3(1.0, 1.0, 1.0);\nuniform float u_rays_speed : hint_range(0.0, 5.0) = 1.0;\nuniform float u_light_spread : hint_range(0.05, 3.0) = 1.0;\nuniform float u_ray_length : hint_range(0.1, 4.0) = 2.0;\nuniform float u_fade_distance : hint_range(0.1, 3.0) = 1.0;\nuniform float u_noise_amount : hint_range(0.0, 1.0) = 0.0;\nuniform float u_distortion : hint_range(0.0, 2.0) = 0.0;\n\nfloat hash12(vec2 p) {\n    vec3 p3 = fract(vec3(p.xyx) * 0.1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nfloat ray_strength(vec2 source, vec2 dir_ref, vec2 coord, float seed_a, float seed_b) {\n    vec2 to_coord = coord - source;\n    float dist = length(to_coord);\n    vec2 dir_norm = to_coord / max(dist, 0.0001);\n\n    float c = dot(dir_norm, normalize(dir_ref));\n    float warped = c + u_distortion * sin(TIME * 2.0 + dist * 7.0) * 0.2;\n    float spread = pow(max(warped, 0.0), 1.0 / max(u_light_spread, 0.001));\n\n    float len_falloff = clamp((u_ray_length - dist) / max(u_ray_length, 0.001), 0.0, 1.0);\n    float fade = clamp((u_fade_distance - dist) / max(u_fade_distance, 0.001), 0.0, 1.0);\n\n    float pulse = 0.85 + 0.15 * sin(TIME * u_rays_speed * 3.0);\n    float base = clamp(\n        (0.45 + 0.15 * sin(warped * seed_a + TIME * u_rays_speed)) +\n        (0.3 + 0.2 * cos(-warped * seed_b + TIME * u_rays_speed)),\n        0.0,\n        1.0\n    );\n\n    return base * len_falloff * fade * spread * pulse;\n}\n\nvoid fragment() {\n    vec2 uv = SCREEN_UV;\n    vec2 source = vec2(0.5, -0.2);\n    vec2 dir = vec2(0.0, 1.0);\n    vec2 coord = uv;\n\n    vec3 rays = vec3(0.0);\n    rays += ray_strength(source, dir, coord, 36.2214, 21.11349) * 0.5;\n    rays += ray_strength(source, dir, coord, 22.3991, 18.0234) * 0.4;\n\n    float brightness = 1.0 - uv.y;\n    vec3 col = rays * vec3(0.1 + brightness * 0.8, 0.3 + brightness * 0.6, 0.5 + brightness * 0.5);\n    col *= u_rays_color;\n\n    if (u_noise_amount > 0.0001) {\n        float n = hash12(FRAGCOORD.xy * 0.01 + vec2(TIME * 0.1));\n        col *= 1.0 - u_noise_amount + u_noise_amount * n;\n    }\n\n    COLOR = vec4(clamp(col, 0.0, 1.0), 1.0);\n}\n",
+          "u_rays_color": "#ffffff",
+          "u_rays_speed": 1,
+          "u_light_spread": 1,
+          "u_ray_length": 2,
+          "u_fade_distance": 1,
+          "u_noise_amount": 0,
+          "u_distortion": 0
+        },
+        "outputTarget": {
+          "bufferId": "rbLightRays_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_10",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_10 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_10_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbLightning",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_hue : hint_range(0.0, 360.0) = 230.0;\nuniform float u_x_offset : hint_range(-2.0, 2.0) = 0.0;\nuniform float u_speed : hint_range(0.0, 5.0) = 1.0;\nuniform float u_intensity : hint_range(0.0, 5.0) = 1.0;\nuniform float u_size : hint_range(0.1, 5.0) = 1.0;\n\n#define OCTAVE_COUNT 10\n\nvec3 hsv2rgb(vec3 c) {\n    vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);\n    return c.z * mix(vec3(1.0), rgb, c.y);\n}\n\nfloat hash11(float p) {\n    p = fract(p * 0.1031);\n    p *= p + 33.33;\n    p *= p + p;\n    return fract(p);\n}\n\nfloat hash12(vec2 p) {\n    vec3 p3 = fract(vec3(p.xyx) * 0.1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nmat2 rotate2d(float theta) {\n    float c = cos(theta);\n    float s = sin(theta);\n    return mat2(c, -s, s, c);\n}\n\nfloat noise(vec2 p) {\n    vec2 ip = floor(p);\n    vec2 fp = fract(p);\n    float a = hash12(ip);\n    float b = hash12(ip + vec2(1.0, 0.0));\n    float c = hash12(ip + vec2(0.0, 1.0));\n    float d = hash12(ip + vec2(1.0, 1.0));\n\n    vec2 t = smoothstep(0.0, 1.0, fp);\n    return mix(mix(a, b, t.x), mix(c, d, t.x), t.y);\n}\n\nfloat fbm(vec2 p) {\n    float value = 0.0;\n    float amplitude = 0.5;\n    for (int i = 0; i < OCTAVE_COUNT; i++) {\n        value += amplitude * noise(p);\n        p *= rotate2d(0.45);\n        p *= 2.0;\n        amplitude *= 0.5;\n    }\n    return value;\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = SCREEN_UV;\n\n    uv = 2.0 * uv - 1.0;\n    uv.x *= resolution.x / resolution.y;\n    uv.x += u_x_offset;\n\n    uv += 2.0 * fbm(uv * u_size + 0.8 * TIME * u_speed) - 1.0;\n\n    float dist = max(abs(uv.x), 0.001);\n    vec3 base_color = hsv2rgb(vec3(u_hue / 360.0, 0.7, 0.8));\n    vec3 col = base_color * pow(mix(0.0, 0.07, hash11(TIME * u_speed)) / dist, 1.0) * u_intensity;\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_hue": 230,
+          "u_x_offset": 0,
+          "u_speed": 1,
+          "u_intensity": 1,
+          "u_size": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbLightning_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_11",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_11 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_11_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbLiquidChrome",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_base_color : source_color = vec3(0.1, 0.1, 0.1);\nuniform float u_amplitude : hint_range(0.0, 1.0) = 0.3;\nuniform float u_frequency_x : hint_range(0.1, 10.0) = 3.0;\nuniform float u_frequency_y : hint_range(0.1, 10.0) = 3.0;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nvec4 render_image(vec2 uv_coord, vec2 resolution) {\n    vec2 frag_coord = uv_coord * resolution;\n    vec2 uv = (2.0 * frag_coord - resolution) / min(resolution.x, resolution.y);\n\n    for (float i = 1.0; i < 10.0; i += 1.0) {\n        uv.x += u_amplitude / i * cos(i * u_frequency_x * uv.y + TIME + u_mouse.x * 3.14159);\n        uv.y += u_amplitude / i * cos(i * u_frequency_y * uv.x + TIME + u_mouse.y * 3.14159);\n    }\n\n    vec2 diff = uv_coord - u_mouse;\n    float dist = length(diff);\n    float falloff = exp(-dist * 20.0);\n    float ripple = sin(10.0 * dist - TIME * 2.0) * 0.03;\n    uv += (diff / (dist + 0.0001)) * ripple * falloff;\n\n    float denom = max(abs(sin(TIME - uv.y - uv.x)), 0.01);\n    vec3 color = u_base_color / denom;\n    return vec4(color, 1.0);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec4 col = vec4(0.0);\n    int samples = 0;\n\n    for (int i = -1; i <= 1; i++) {\n        for (int j = -1; j <= 1; j++) {\n            vec2 offset = vec2(float(i), float(j)) * (1.0 / min(resolution.x, resolution.y));\n            col += render_image(SCREEN_UV + offset, resolution);\n            samples += 1;\n        }\n    }\n\n    COLOR = col / float(samples);\n}\n",
+          "u_base_color": "#1a1a1a",
+          "u_amplitude": 0.3,
+          "u_frequency_x": 3,
+          "u_frequency_y": 3
+        },
+        "outputTarget": {
+          "bufferId": "rbLiquidChrome_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_12",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_12 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_12_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbMetaBalls",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_color : source_color = vec3(1.0, 1.0, 1.0);\nuniform vec3 u_cursor_color : source_color = vec3(1.0, 1.0, 1.0);\nuniform float u_cursor_ball_size : hint_range(0.1, 8.0) = 3.0;\nuniform float u_clump_factor : hint_range(0.1, 3.0) = 1.0;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nfloat hash11(float p) {\n    p = fract(p * 0.1031);\n    p *= p + 33.33;\n    p *= p + p;\n    return fract(p);\n}\n\nfloat metaball_value(vec2 center, float radius, vec2 p) {\n    vec2 d = p - center;\n    float dist2 = max(dot(d, d), 0.0001);\n    return (radius * radius) / dist2;\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 fc = FRAGCOORD.xy;\n\n    float animation_size = 30.0;\n    float scale = animation_size / resolution.y;\n    vec2 coord = (fc - resolution * 0.5) * scale;\n    vec2 mouse_w = (u_mouse * resolution - resolution * 0.5) * scale;\n\n    float m1 = 0.0;\n    const int ball_count = 15;\n    for (int i = 0; i < ball_count; i++) {\n        float idx = float(i) + 1.0;\n        float st = hash11(idx * 1.7) * TAU;\n        float dt_factor = mix(0.1 * PI, 0.4 * PI, hash11(idx * 2.3));\n        float base_scale = mix(5.0, 10.0, hash11(idx * 3.1));\n        float toggle = floor(hash11(idx * 4.2) * 2.0);\n        float radius = mix(0.5, 2.0, hash11(idx * 5.3));\n\n        float dt = TIME * 0.3 * dt_factor;\n        float th = st + dt;\n        float x = cos(th);\n        float y = sin(th + dt * toggle);\n        vec2 pos = vec2(x, y) * base_scale * u_clump_factor;\n        m1 += metaball_value(pos, radius, coord);\n    }\n\n    float m2 = metaball_value(mouse_w, u_cursor_ball_size, coord);\n    float total = m1 + m2;\n    float f = smoothstep(-1.0, 1.0, (total - 1.3) / max(min(1.0, fwidth(total)), 0.001));\n\n    vec3 c_final = vec3(0.0);\n    if (total > 0.0) {\n        float alpha1 = m1 / total;\n        float alpha2 = m2 / total;\n        c_final = u_color * alpha1 + u_cursor_color * alpha2;\n    }\n\n    COLOR = vec4(c_final * f, f);\n}\n",
+          "u_color": "#ffffff",
+          "u_cursor_color": "#ffffff",
+          "u_cursor_ball_size": 3,
+          "u_clump_factor": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbMetaBalls_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_13",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_13 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_13_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbOrb",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_hue_shift : hint_range(0.0, 360.0) = 0.0;\nuniform float u_hover_intensity : hint_range(0.0, 1.0) = 0.2;\nuniform float u_rotation : hint_range(-6.2832, 6.2832) = 0.0;\nuniform vec3 u_background_color : source_color = vec3(0.0, 0.0, 0.0);\n\nvec3 rgb2yiq(vec3 c) {\n    float y = dot(c, vec3(0.299, 0.587, 0.114));\n    float i = dot(c, vec3(0.596, -0.274, -0.322));\n    float q = dot(c, vec3(0.211, -0.523, 0.312));\n    return vec3(y, i, q);\n}\n\nvec3 yiq2rgb(vec3 c) {\n    float r = c.x + 0.956 * c.y + 0.621 * c.z;\n    float g = c.x - 0.272 * c.y - 0.647 * c.z;\n    float b = c.x - 1.106 * c.y + 1.703 * c.z;\n    return vec3(r, g, b);\n}\n\nvec3 adjust_hue(vec3 color, float hue_deg) {\n    float hue_rad = hue_deg * PI / 180.0;\n    vec3 yiq = rgb2yiq(color);\n    float cos_a = cos(hue_rad);\n    float sin_a = sin(hue_rad);\n    float i = yiq.y * cos_a - yiq.z * sin_a;\n    float q = yiq.y * sin_a + yiq.z * cos_a;\n    yiq.y = i;\n    yiq.z = q;\n    return yiq2rgb(yiq);\n}\n\nvec3 hash33(vec3 p3) {\n    p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787));\n    p3 += dot(p3, p3.yxz + 19.19);\n    return -1.0 + 2.0 * fract(vec3(\n        p3.x + p3.y,\n        p3.x + p3.z,\n        p3.y + p3.z\n    ) * p3.zyx);\n}\n\nfloat snoise3(vec3 p) {\n    const float K1 = 0.333333333;\n    const float K2 = 0.166666667;\n    vec3 i = floor(p + (p.x + p.y + p.z) * K1);\n    vec3 d0 = p - (i - (i.x + i.y + i.z) * K2);\n    vec3 e = step(vec3(0.0), d0 - d0.yzx);\n    vec3 i1 = e * (1.0 - e.zxy);\n    vec3 i2 = 1.0 - e.zxy * (1.0 - e);\n    vec3 d1 = d0 - (i1 - K2);\n    vec3 d2 = d0 - (i2 - K1);\n    vec3 d3 = d0 - 0.5;\n    vec4 h = max(0.6 - vec4(dot(d0, d0), dot(d1, d1), dot(d2, d2), dot(d3, d3)), 0.0);\n    vec4 n = h * h * h * h * vec4(\n        dot(d0, hash33(i)),\n        dot(d1, hash33(i + i1)),\n        dot(d2, hash33(i + i2)),\n        dot(d3, hash33(i + 1.0))\n    );\n    return dot(vec4(31.316), n);\n}\n\nvec4 extract_alpha(vec3 color_in) {\n    float a = max(max(color_in.r, color_in.g), color_in.b);\n    return vec4(color_in / (a + 1e-5), a);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = SCREEN_UV;\n    vec2 centered = (uv * resolution - resolution * 0.5) / min(resolution.x, resolution.y) * 2.0;\n\n    float s = sin(u_rotation);\n    float c = cos(u_rotation);\n    centered = vec2(c * centered.x - s * centered.y, s * centered.x + c * centered.y);\n\n    centered.x += u_hover_intensity * 0.1 * sin(centered.y * 10.0 + TIME);\n    centered.y += u_hover_intensity * 0.1 * sin(centered.x * 10.0 + TIME);\n\n    vec3 color1 = adjust_hue(vec3(0.611765, 0.262745, 0.996078), u_hue_shift);\n    vec3 color2 = adjust_hue(vec3(0.298039, 0.760784, 0.913725), u_hue_shift);\n    vec3 color3 = adjust_hue(vec3(0.062745, 0.078431, 0.6), u_hue_shift);\n\n    float inner_radius = 0.6;\n    float noise_scale = 0.65;\n    float ang = atan(centered.y, centered.x);\n    float len = length(centered);\n    float inv_len = len > 0.0 ? 1.0 / len : 0.0;\n\n    float bg_luminance = dot(u_background_color, vec3(0.299, 0.587, 0.114));\n    float n0 = snoise3(vec3(centered * noise_scale, TIME * 0.5)) * 0.5 + 0.5;\n    float r0 = mix(mix(inner_radius, 1.0, 0.4), mix(inner_radius, 1.0, 0.6), n0);\n    float d0 = distance(centered, (r0 * inv_len) * centered);\n    float v0 = (1.0 / (1.0 + d0 * 10.0)) * smoothstep(r0 * 1.05, r0, len);\n\n    float a = -TIME;\n    vec2 pos = vec2(cos(a), sin(a)) * r0;\n    float d = distance(centered, pos);\n    float v1 = (1.5 / (1.0 + d * d * 5.0)) * (1.0 / (1.0 + d0 * 50.0));\n\n    float v2 = smoothstep(1.0, mix(inner_radius, 1.0, n0 * 0.5), len);\n    float v3 = smoothstep(inner_radius, mix(inner_radius, 1.0, 0.5), len);\n\n    float cl = cos(ang + TIME * 2.0) * 0.5 + 0.5;\n    vec3 col_base = mix(color1, color2, cl);\n    vec3 dark_col = clamp((mix(color3, col_base, v0) + v1) * v2 * v3, 0.0, 1.0);\n    vec3 light_col = clamp(mix(u_background_color, (col_base + v1), v0), 0.0, 1.0);\n    vec3 final_col = mix(dark_col, light_col, bg_luminance);\n\n    vec4 alpha_col = extract_alpha(final_col);\n    COLOR = vec4(alpha_col.rgb * alpha_col.a, alpha_col.a);\n}\n",
+          "u_hue_shift": 0,
+          "u_hover_intensity": 0.2,
+          "u_rotation": 0,
+          "u_background_color": "#000000"
+        },
+        "outputTarget": {
+          "bufferId": "rbOrb_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_14",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_14 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_14_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbPlasma",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_color : source_color = vec3(1.0, 1.0, 1.0);\nuniform float u_speed : hint_range(0.0, 5.0) = 1.0;\nuniform float u_direction : hint_range(-1.0, 1.0) = 1.0;\nuniform float u_scale : hint_range(0.1, 4.0) = 1.0;\nuniform float u_opacity : hint_range(0.0, 1.0) = 1.0;\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 center = resolution * 0.5;\n    vec2 c = FRAGCOORD.xy;\n    c = (c - center) / max(u_scale, 0.001) + center;\n\n    float z = 0.0;\n    float t = TIME * u_speed * u_direction;\n    vec3 accum = vec3(0.0);\n\n    for (float i = 1.0; i <= 48.0; i += 1.0) {\n        vec3 p = z * normalize(vec3(c - 0.5 * resolution, resolution.y));\n        p.z -= 4.0;\n        vec3 s = p;\n        float d = p.y - t;\n\n        p.x += 0.4 * (1.0 + p.y) * sin(d + p.x * 0.1) * cos(0.34 * d + p.x * 0.05);\n        float cs = cos(p.y - t);\n        float sn = sin(p.y - t);\n        mat2 m = mat2(cs, -sn, sn, cs);\n        vec2 q = m * p.xz;\n\n        d = abs(length(q) - 0.25 * (5.0 + s.y)) / 3.0 + 0.0008;\n        z += d;\n\n        vec3 sample_col = sin(vec3(s.y + p.z * 0.5 - length(s - p)) + vec3(2.0, 1.0, 0.0)) + 1.0;\n        accum += sample_col / max(d, 0.0001);\n    }\n\n    vec3 rgb = tanh(accum / 10000.0);\n    float intensity = (rgb.r + rgb.g + rgb.b) / 3.0;\n    vec3 final_color = mix(rgb, intensity * u_color, step(0.0001, length(u_color - vec3(1.0))));\n    float alpha = clamp(length(rgb) * u_opacity, 0.0, 1.0);\n\n    COLOR = vec4(clamp(final_color, 0.0, 1.0), alpha);\n}\n",
+          "u_color": "#ffffff",
+          "u_speed": 1,
+          "u_direction": 1,
+          "u_scale": 1,
+          "u_opacity": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbPlasma_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_15",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_15 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_15_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbPrism",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_height : hint_range(0.5, 8.0) = 3.5;\nuniform float u_base_width : hint_range(0.5, 10.0) = 5.5;\nuniform float u_glow : hint_range(0.0, 3.0) = 1.0;\nuniform float u_noise : hint_range(0.0, 1.0) = 0.5;\nuniform float u_hue_shift : hint_range(-3.1416, 3.1416) = 0.0;\nuniform float u_color_frequency : hint_range(0.1, 4.0) = 1.0;\nuniform float u_bloom : hint_range(0.0, 3.0) = 1.0;\n\nfloat hash12(vec2 p) {\n    vec3 p3 = fract(vec3(p.xyx) * 0.1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nmat3 hue_rotation(float a) {\n    float c = cos(a);\n    float s = sin(a);\n    mat3 w = mat3(\n        vec3(0.299, 0.299, 0.299),\n        vec3(0.587, 0.587, 0.587),\n        vec3(0.114, 0.114, 0.114)\n    );\n    mat3 u = mat3(\n        vec3(0.701, -0.299, -0.300),\n        vec3(-0.587, 0.413, -0.588),\n        vec3(-0.114, -0.114, 0.886)\n    );\n    mat3 v = mat3(\n        vec3(0.168, 0.328, -0.497),\n        vec3(-0.331, 0.035, 0.296),\n        vec3(0.500, -0.500, 0.201)\n    );\n    return w + c * u + s * v;\n}\n\nfloat sd_prism(vec3 p, float h, float base_half) {\n    vec3 q = vec3(abs(p.x) / base_half, abs(p.y) / h, abs(p.z) / base_half);\n    float oct = (q.x + q.y + q.z - 1.0) * min(base_half, h) * 0.577350269;\n    return max(oct, -p.y);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    float px_scale = 1.0 / (max(resolution.y, 1.0) * 0.1 * 3.6);\n    vec2 f = (FRAGCOORD.xy - 0.5 * resolution) * px_scale;\n\n    float z = 5.0;\n    vec3 accum = vec3(0.0);\n    float t = TIME * 0.5;\n\n    for (int i = 0; i < 90; i++) {\n        vec3 p = vec3(f, z);\n        float c0 = cos(t + 0.3 * p.y);\n        float s0 = sin(t + 0.3 * p.y);\n        p.xz = mat2(c0, -s0, s0, c0) * p.xz;\n\n        vec3 q = p;\n        q.y += u_height * 0.25;\n\n        float d = 0.1 + 0.2 * abs(sd_prism(q, max(u_height, 0.001), max(u_base_width * 0.5, 0.001)));\n        z -= d;\n\n        vec3 sample_col = sin((p.y + z) * u_color_frequency + vec3(0.0, 1.0, 2.0)) + 1.0;\n        accum += sample_col / max(d, 0.0001);\n    }\n\n    vec3 col = tanh(accum * accum * (u_glow * max(u_bloom, 0.001)) / 100000.0);\n    col = clamp(hue_rotation(u_hue_shift) * col, 0.0, 1.0);\n\n    float n = hash12(FRAGCOORD.xy + vec2(TIME));\n    col += (n - 0.5) * u_noise;\n    col = clamp(col, 0.0, 1.0);\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_height": 3.5,
+          "u_base_width": 5.5,
+          "u_glow": 1,
+          "u_noise": 0.5,
+          "u_hue_shift": 0,
+          "u_color_frequency": 1,
+          "u_bloom": 1
+        },
+        "outputTarget": {
+          "bufferId": "rbPrism_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_16",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_16 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_16_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbShapeBlur",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform float u_shape_size : hint_range(0.1, 3.0) = 1.2;\nuniform float u_roundness : hint_range(0.0, 1.0) = 0.4;\nuniform float u_border_size : hint_range(0.0, 0.2) = 0.05;\nuniform float u_circle_size : hint_range(0.0, 1.0) = 0.3;\nuniform float u_circle_edge : hint_range(0.0, 1.0) = 0.5;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\nvec2 coord(vec2 p, vec2 resolution) {\n    p = p / resolution;\n    if (resolution.x > resolution.y) {\n        p.x *= resolution.x / resolution.y;\n        p.x += (resolution.y - resolution.x) / resolution.y / 2.0;\n    } else {\n        p.y *= resolution.y / resolution.x;\n        p.y += (resolution.x - resolution.y) / resolution.x / 2.0;\n    }\n    p -= 0.5;\n    p *= vec2(-1.0, 1.0);\n    return p;\n}\n\nfloat sd_round_rect(vec2 p, vec2 b, float r) {\n    vec2 d = abs(p - 0.5) * 4.2 - b + vec2(r);\n    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - r;\n}\n\nfloat sd_circle(vec2 st, vec2 center) {\n    return length(st - center) * 2.0;\n}\n\nfloat stroke_aa(float x, float size, float w, float edge) {\n    float afwidth = length(vec2(dFdx(x), dFdy(x))) * 0.70710678;\n    float d = smoothstep(size - edge - afwidth, size + edge + afwidth, x + w * 0.5)\n        - smoothstep(size - edge - afwidth, size + edge + afwidth, x - w * 0.5);\n    return clamp(d, 0.0, 1.0);\n}\n\nfloat fill_fn(float x, float size, float edge) {\n    return 1.0 - smoothstep(size - edge, size + edge, x);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 st = coord(FRAGCOORD.xy, resolution) + 0.5;\n    vec2 pos_mouse = coord(u_mouse * resolution, resolution) * vec2(1.0, -1.0) + 0.5;\n\n    float sdf_circle = fill_fn(sd_circle(st, pos_mouse), u_circle_size, u_circle_edge);\n    float sdf = sd_round_rect(st, vec2(u_shape_size), u_roundness);\n    sdf = stroke_aa(sdf, 0.0, u_border_size, sdf_circle) * 4.0;\n\n    COLOR = vec4(vec3(1.0), sdf);\n}\n",
+          "u_shape_size": 1.2,
+          "u_roundness": 0.4,
+          "u_border_size": 0.05,
+          "u_circle_size": 0.3,
+          "u_circle_edge": 0.5
+        },
+        "outputTarget": {
+          "bufferId": "rbShapeBlur_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_17",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_17 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_17_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbSilk",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_color : source_color = vec3(0.4824, 0.4549, 0.5059);\nuniform float u_speed : hint_range(0.0, 10.0) = 5.0;\nuniform float u_scale : hint_range(0.1, 4.0) = 1.0;\nuniform float u_rotation : hint_range(-6.2832, 6.2832) = 0.0;\nuniform float u_noise_intensity : hint_range(0.0, 3.0) = 1.5;\n\nfloat hash12(vec2 p) {\n    vec3 p3 = fract(vec3(p.xyx) * 0.1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nmat2 rotate2d(float angle) {\n    float c = cos(angle);\n    float s = sin(angle);\n    return mat2(c, -s, s, c);\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    float min_res = min(resolution.x, resolution.y);\n    vec2 uv = (SCREEN_UV * 2.0 - 1.0) * resolution / min_res;\n    uv = rotate2d(u_rotation) * uv;\n    uv *= u_scale;\n\n    float t = TIME * u_speed;\n    vec2 tex = uv;\n    tex.y += 0.03 * sin(8.0 * tex.x - t);\n\n    float pattern = 0.6 +\n        0.4 * sin(5.0 * (tex.x + tex.y + cos(3.0 * tex.x + 5.0 * tex.y) + 0.02 * t)\n        + sin(20.0 * (tex.x + tex.y - 0.1 * t)));\n\n    float n = hash12(FRAGCOORD.xy + vec2(TIME));\n    vec3 col = u_color * pattern;\n    col -= (n / 15.0) * u_noise_intensity;\n    col = clamp(col, 0.0, 1.0);\n\n    COLOR = vec4(col, 1.0);\n}\n",
+          "u_color": "#7b7481",
+          "u_speed": 5,
+          "u_scale": 1,
+          "u_rotation": 0,
+          "u_noise_intensity": 1.5
+        },
+        "outputTarget": {
+          "bufferId": "rbSilk_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_18",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_18 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "mix_18_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "rbThreads",
+        "type": "custom",
+        "family": "generator",
+        "inputSlots": [],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\n\nuniform vec3 u_color : source_color = vec3(1.0, 1.0, 1.0);\nuniform float u_amplitude : hint_range(0.0, 2.0) = 1.0;\nuniform float u_distance : hint_range(-1.0, 1.0) = 0.0;\nuniform vec2 u_mouse = vec2(0.5, 0.5);\n\n#define PI 3.1415926538\n\nconst int U_LINE_COUNT = 40;\nconst float U_LINE_WIDTH = 7.0;\nconst float U_LINE_BLUR = 10.0;\n\nfloat perlin2d(vec2 p) {\n    vec2 pi = floor(p);\n    vec4 pf_pfmin1 = p.xyxy - vec4(pi, pi + 1.0);\n    vec4 pt = vec4(pi.xy, pi.xy + 1.0);\n    pt = pt - floor(pt * (1.0 / 71.0)) * 71.0;\n    pt += vec2(26.0, 161.0).xyxy;\n    pt *= pt;\n    pt = pt.xzxz * pt.yyww;\n    vec4 hash_x = fract(pt * (1.0 / 951.135664));\n    vec4 hash_y = fract(pt * (1.0 / 642.949883));\n    vec4 grad_x = hash_x - 0.49999;\n    vec4 grad_y = hash_y - 0.49999;\n    vec4 grad_results = inversesqrt(grad_x * grad_x + grad_y * grad_y)\n        * (grad_x * pf_pfmin1.xzxz + grad_y * pf_pfmin1.yyww);\n    grad_results *= 1.4142135623730950;\n    vec2 blend = pf_pfmin1.xy * pf_pfmin1.xy * pf_pfmin1.xy\n        * (pf_pfmin1.xy * (pf_pfmin1.xy * 6.0 - 15.0) + 10.0);\n    vec4 blend2 = vec4(blend, vec2(1.0 - blend));\n    return dot(grad_results, blend2.zxzx * blend2.wwyy);\n}\n\nfloat pixel(float count, vec2 resolution) {\n    return (1.0 / max(resolution.x, resolution.y)) * count;\n}\n\nfloat line_fn(\n    vec2 st,\n    float width,\n    float perc,\n    vec2 mouse,\n    float time,\n    float amplitude,\n    float distance,\n    vec2 resolution\n) {\n    float split_offset = perc * 0.4;\n    float split_point = 0.1 + split_offset;\n\n    float amplitude_normal = smoothstep(split_point, 0.7, st.x);\n    float amplitude_strength = 0.5;\n    float final_amplitude = amplitude_normal * amplitude_strength\n        * amplitude * (1.0 + (mouse.y - 0.5) * 0.2);\n\n    float time_scaled = time / 10.0 + (mouse.x - 0.5) * 1.0;\n    float blur = smoothstep(split_point, split_point + 0.05, st.x) * perc;\n\n    float xnoise = mix(\n        perlin2d(vec2(time_scaled, st.x + perc) * 2.5),\n        perlin2d(vec2(time_scaled, st.x + time_scaled) * 3.5) / 1.5,\n        st.x * 0.3\n    );\n\n    float y = 0.5 + (perc - 0.5) * distance + xnoise / 2.0 * final_amplitude;\n\n    float line_start = smoothstep(\n        y + (width / 2.0) + (U_LINE_BLUR * pixel(1.0, resolution) * blur),\n        y,\n        st.y\n    );\n\n    float line_end = smoothstep(\n        y,\n        y - (width / 2.0) - (U_LINE_BLUR * pixel(1.0, resolution) * blur),\n        st.y\n    );\n\n    return clamp(\n        (line_start - line_end) * (1.0 - smoothstep(0.0, 1.0, pow(perc, 0.3))),\n        0.0,\n        1.0\n    );\n}\n\nvoid fragment() {\n    vec2 resolution = 1.0 / SCREEN_PIXEL_SIZE;\n    vec2 uv = SCREEN_UV;\n\n    float line_strength = 1.0;\n    for (int i = 0; i < U_LINE_COUNT; i++) {\n        float p = float(i) / float(U_LINE_COUNT);\n        line_strength *= (1.0 - line_fn(\n            uv,\n            U_LINE_WIDTH * pixel(1.0, resolution) * (1.0 - p),\n            p,\n            u_mouse,\n            TIME,\n            u_amplitude,\n            u_distance,\n            resolution\n        ));\n    }\n\n    float color_val = 1.0 - line_strength;\n    COLOR = vec4(u_color * color_val, color_val);\n}\n",
+          "u_color": "#ffffff",
+          "u_amplitude": 1,
+          "u_distance": 0
+        },
+        "outputTarget": {
+          "bufferId": "rbThreads_out",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      },
+      {
+        "id": "mix_19",
+        "type": "custom",
+        "family": "filter",
+        "inputSlots": [
+          {
+            "id": "input1",
+            "dataType": "texture"
+          },
+          {
+            "id": "input2",
+            "dataType": "texture"
+          }
+        ],
+        "params": {
+          "shaderSource": "shader_type canvas_item;\nuniform sampler2D input1;\nuniform sampler2D input2;\nuniform float mix_factor;\nvoid fragment() {\n    vec4 c1 = texture(input1, UV);\n    vec4 c2 = texture(input2, UV);\n    COLOR = mix(c1, c2, mix_factor);\n}",
+          "mix_factor": {
+            "expr": "variables.mix_19 || 0"
+          }
+        },
+        "outputTarget": {
+          "bufferId": "output",
+          "format": "rgba8",
+          "resolution": "full"
+        },
+        "flags": {
+          "stateful": false,
+          "fusible": "never"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "from": {
+          "nodeId": "rbAurora",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_1",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbBalatro",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_1",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_1",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_2",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbColorBends",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_2",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_2",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_3",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbDarkVeil",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_3",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_3",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_4",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbFaultyTerminal",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_4",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_4",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_5",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbFloatingLines",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_5",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_5",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_6",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbGalaxy",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_6",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_6",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_7",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbGradientBlinds",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_7",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_7",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_8",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbGrainient",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_8",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_8",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_9",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbIridescence",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_9",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_9",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_10",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbLightRays",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_10",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_10",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_11",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbLightning",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_11",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_11",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_12",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbLiquidChrome",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_12",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_12",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_13",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbMetaBalls",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_13",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_13",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_14",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbOrb",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_14",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_14",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_15",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbPlasma",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_15",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_15",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_16",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbPrism",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_16",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_16",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_17",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbShapeBlur",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_17",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_17",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_18",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbSilk",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_18",
+          "slotId": "input2"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "mix_18",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_19",
+          "slotId": "input1"
+        }
+      },
+      {
+        "from": {
+          "nodeId": "rbThreads",
+          "slotId": "output"
+        },
+        "to": {
+          "nodeId": "mix_19",
+          "slotId": "input2"
+        }
+      }
+    ],
+    "feedbackEdges": [],
+    "lifecycle": {
+      "autoStart": true,
+      "stopMode": "clear"
+    }
+  }
+}

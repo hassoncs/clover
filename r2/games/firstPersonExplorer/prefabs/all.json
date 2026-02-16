@@ -1,0 +1,117 @@
+[
+	{
+		"id": "player",
+		"tags": [
+			"player",
+			"controlled"
+		],
+		"visual": {
+			"type": "primitive",
+			"shape": "capsule",
+			"color": "#4ECDC4",
+			"radius": 0.4,
+			"height": 1.8
+		},
+		"physics": {
+			"bodyType": "kinematic"
+		}
+	},
+	{
+		"id": "floor",
+		"tags": [
+			"floor"
+		],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#2D4A2D",
+			"size": {
+				"x": 50,
+				"y": 0.5,
+				"z": 50
+			}
+		},
+		"physics": {
+			"bodyType": "static"
+		},
+		"collider": {
+			"shape": "box",
+			"width": 50,
+			"height": 0.5,
+			"depth": 50
+		}
+	},
+	{
+		"id": "pillar",
+		"tags": [
+			"obstacle"
+		],
+		"visual": {
+			"type": "primitive",
+			"shape": "cylinder",
+			"color": "#8B4513",
+			"radius": 0.5,
+			"height": 3
+		},
+		"physics": {
+			"bodyType": "static"
+		},
+		"collider": {
+			"shape": "cylinder",
+			"radius": 0.5,
+			"height": 3
+		}
+	},
+	{
+		"id": "crate",
+		"tags": [
+			"obstacle",
+			"pushable"
+		],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#DEB887",
+			"size": {
+				"x": 1,
+				"y": 1,
+				"z": 1
+			}
+		},
+		"physics": {
+			"bodyType": "dynamic",
+			"mass": 2
+		},
+		"collider": {
+			"shape": "box",
+			"width": 1,
+			"height": 1,
+			"depth": 1
+		}
+	},
+	{
+		"id": "ramp",
+		"tags": [
+			"obstacle"
+		],
+		"visual": {
+			"type": "primitive",
+			"shape": "box",
+			"color": "#696969",
+			"size": {
+				"x": 3,
+				"y": 0.3,
+				"z": 4
+			}
+		},
+		"physics": {
+			"bodyType": "static"
+		},
+		"collider": {
+			"shape": "box",
+			"width": 3,
+			"height": 0.3,
+			"depth": 4
+		}
+	}
+]

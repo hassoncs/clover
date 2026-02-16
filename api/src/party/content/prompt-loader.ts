@@ -20,8 +20,9 @@ import type {
 	WordGamePrompt,
 	WouldYouRather,
 } from "@slopcade/content-pipeline";
-
+import fakeWordsData from "./fake-words.json";
 import quiplashPromptsData from "./quiplash-prompts.json";
+import triviaPromptsData from "./trivia-prompts.json";
 
 // ============================================================================
 // Content Type Definitions
@@ -39,7 +40,14 @@ export type ContentType =
 	| "estimation"
 	| "fibbage"
 	| "caption"
-	| "wordgame";
+	| "wordgame"
+	| "FakeWord";
+
+export interface FakeWord {
+	id: string;
+	word: string;
+	phonetic: string;
+}
 
 /**
  * Maps content types to their corresponding TypeScript types.
@@ -54,6 +62,7 @@ export interface ContentTypeMap {
 	fibbage: FibbageQuestion;
 	caption: CaptionPrompt;
 	wordgame: WordGamePrompt;
+	FakeWord: FakeWord;
 }
 
 /**
@@ -77,8 +86,9 @@ const contentPacks: Partial<{
 	[K in ContentType]: unknown[];
 }> = {
 	quip: quiplashPromptsData as QuipPrompt[],
+	trivia: triviaPromptsData as TriviaQuestion[],
+	FakeWord: fakeWordsData as FakeWord[],
 	// Other content types will be added as JSON files are generated:
-	// trivia: triviaData as TriviaQuestion[],
 	// drawing: drawingData as DrawingPrompt[],
 	// wyr: wyrData as WouldYouRather[],
 	// estimation: estimationData as EstimationQuestion[],
@@ -166,4 +176,3 @@ export function selectPromptsForRound<T extends { id: string }>(
 ): T[] {
 	return pool.filter((p) => !usedIds.has(p.id)).slice(0, count);
 }
-

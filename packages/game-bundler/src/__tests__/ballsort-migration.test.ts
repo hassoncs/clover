@@ -3,10 +3,7 @@ import { describe, expect, it } from "vitest";
 import { compileBundle, compileSectioned } from "../compiler";
 import { NodeFileReader } from "../FileReader";
 
-const BUNDLE_PATH = path.resolve(
-	__dirname,
-	"../../../../r2/games/ballSort/bundle",
-);
+const BUNDLE_PATH = path.resolve(__dirname, "../../../../r2/games/ballSort");
 
 describe("Ball Sort Migration", () => {
 	const fileReader = new NodeFileReader();
@@ -23,7 +20,7 @@ describe("Ball Sort Migration", () => {
 		const result = compileBundle(BUNDLE_PATH, { fileReader });
 		const def = result.gameDefinition!;
 
-		expect(def.metadata.id).toBe("ballSort");
+		expect(def.metadata.id).toBe("03c70657-5789-4550-b38d-787d4219a91b");
 		expect(def.metadata.title).toBe("Ball Sort");
 		expect(def.metadata.description).toBe(
 			"Sort colored balls into tubes - each tube should contain only one color",

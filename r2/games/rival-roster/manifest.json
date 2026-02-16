@@ -1,0 +1,35 @@
+{
+	"name": "rival-roster",
+	"version": "1.0.0",
+	"title": "Rival Roster",
+	"description": "A drawing battle where Champions are drawn for mysterious titles, and Challengers must guess what they're up against. Vote on the winner!",
+	"instructions": "Draw a Champion for a title, then see if your Challenger can defeat you - without knowing what you're supposed to be!",
+	"slug": "rival-roster",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [],
+		"phases": [
+			"lobby",
+			"champion_phase",
+			"challenger_phase",
+			"battle_reveal",
+			"voting",
+			"winner"
+		],
+		"inputTypes": ["drawing", "choice"],
+		"roundCount": 2
+	}
+}

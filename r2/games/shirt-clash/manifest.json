@@ -1,0 +1,34 @@
+{
+	"name": "shirt-clash",
+	"version": "1.0.0",
+	"title": "Shirt Clash",
+	"description": "A drawing/design tournament where players draw icons and write slogans, then they're randomly paired into t-shirt brands that compete in a bracket.",
+	"instructions": "Draw icons and write slogans. Watch as the Algorithm mashes them into chaotic t-shirt brands. Vote on which shirts you'd actually wear!",
+	"slug": "shirt-clash",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [],
+		"phases": [
+			"lobby",
+			"creation",
+			"assembly",
+			"tournament_round",
+			"championship",
+			"winner"
+		],
+		"inputTypes": ["drawing", "text", "choice"]
+	}
+}

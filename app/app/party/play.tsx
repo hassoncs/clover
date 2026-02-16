@@ -3,11 +3,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PartyGameRenderer } from "@/components/party/PartyGameRenderer";
+import { registerChromaCluesPhases } from "@/lib/party/chromaCluesPhases";
 import { registerDefaultPhases } from "@/lib/party/defaultPhases";
 import { PartyProvider, useParty } from "@/lib/party/PartyContext";
 
-// Register default phases
 registerDefaultPhases();
+registerChromaCluesPhases();
 
 function GameContent() {
 	const router = useRouter();

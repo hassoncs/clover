@@ -18,7 +18,8 @@ import {
 	privateStateMessage,
 	stateUpdateMessage,
 } from "./protocol";
-import { ServerScriptRunner } from "./ServerScriptRunner";
+import { QuickJSServerRunner } from "./QuickJSServerRunner";
+import { TEMPLATE_REGISTRY } from "./templates/registry";
 
 // Timeout constants (all in milliseconds)
 const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000; // 4 hours - room lifetime
@@ -29,7 +30,7 @@ const DEFAULT_MIN_PLAYERS = 3;
 
 interface SessionRecord {
 	playerId: string;
-	role: "host" | "player";
+	role: "host" | "player" | "audience";
 	expiresAt: number;
 }
 
@@ -54,6 +55,7 @@ export class PartyRoomDO {
 	private roomCode: string | null = null;
 	private sharedData: Record<string, unknown> = {};
 	private minPlayers = DEFAULT_MIN_PLAYERS;
+	private templateId: string | null = null;
 	private serverScriptCode: string | null = null;
 	private serverScriptConfig: Record<string, unknown> = {};
 	private rateLimits: Map<string, RateLimitEntry> = new Map();
@@ -99,7 +101,10 @@ export class PartyRoomDO {
 
 	getPlayers(): string[] {
 		return Array.from(this.players.values())
-			.filter((player) => player.connected && !player.isHost)
+			.filter(
+				(player) =>
+					player.connected && !player.isHost && player.role !== "audience",
+			)
 			.map((player) => player.id);
 	}
 
@@ -109,6 +114,7 @@ export class PartyRoomDO {
 			hostToken?: string;
 			roomCode?: string;
 			minPlayers?: number;
+			template?: string;
 			modules?: Record<string, string>;
 			scriptConfig?: Record<string, unknown>;
 			gameDefinition?: {
@@ -127,6 +133,9 @@ export class PartyRoomDO {
 		}
 		if (body.minPlayers !== undefined) {
 			this.minPlayers = body.minPlayers;
+		}
+		if (body.template) {
+			this.templateId = body.template;
 		}
 
 		const serverScript =
@@ -165,16 +174,19 @@ export class PartyRoomDO {
 		const token = url.searchParams.get("token");
 		const name = url.searchParams.get("name");
 
-		if (role !== "host" && role !== "player") {
-			return jsonResponse({ error: "role must be 'host' or 'player'" }, 400);
+		if (role !== "host" && role !== "player" && role !== "audience") {
+			return jsonResponse(
+				{ error: "role must be 'host', 'player', or 'audience'" },
+				400,
+			);
 		}
 
 		if (role === "host" && !token) {
 			return jsonResponse({ error: "token required for host" }, 401);
 		}
 
-		if (role === "player" && !name && !token) {
-			return jsonResponse({ error: "name required for new player" }, 400);
+		if ((role === "player" || role === "audience") && !name && !token) {
+			return jsonResponse({ error: "name required for new participant" }, 400);
 		}
 
 		const pair = new WebSocketPair();
@@ -200,6 +212,7 @@ export class PartyRoomDO {
 						server,
 						token ?? undefined,
 						name ?? "Player",
+						role as "player" | "audience",
 					);
 				}
 			} catch (e) {
@@ -265,6 +278,7 @@ export class PartyRoomDO {
 		ws: WebSocket,
 		token: string | undefined,
 		name: string,
+		role: "player" | "audience" = "player",
 	): Promise<void> {
 		let playerId: string | undefined;
 
@@ -272,7 +286,7 @@ export class PartyRoomDO {
 			const session = await this.state.storage.get<SessionRecord>(
 				`session:${token}`,
 			);
-			if (session?.role === "player") {
+			if (session?.role === role) {
 				playerId = session.playerId;
 			}
 		}
@@ -286,17 +300,19 @@ export class PartyRoomDO {
 			meta.playerId = playerId;
 		}
 
-		await this.handlePlayerConnect(ws, playerId, name);
+		await this.handlePlayerConnect(ws, playerId, name, role);
 	}
 
 	private async handlePlayerConnect(
 		ws: WebSocket,
 		playerId: string,
 		name: string,
+		role: "player" | "audience",
 	): Promise<void> {
 		const existing = this.players.get(playerId);
 		if (existing) {
 			existing.connected = true;
+			existing.role = role;
 			this.players.set(playerId, existing);
 
 			const timer = this.disconnectTimers.get(playerId);
@@ -308,7 +324,7 @@ export class PartyRoomDO {
 			this.broadcastToAll(encodeMessage(playerReconnectMessage(playerId)));
 			ws.send(encodeMessage(stateUpdateMessage(this.buildRoomState())));
 
-			if (this.activeInputCollector) {
+			if (this.activeInputCollector && role === "player") {
 				const { requestId, request, expectedPlayerIds, responses } =
 					this.activeInputCollector;
 				const isExpected =
@@ -323,13 +339,14 @@ export class PartyRoomDO {
 				id: playerId,
 				name,
 				connected: true,
+				role,
 			};
 			this.players.set(playerId, player);
 
 			const sessionToken = crypto.randomUUID();
 			const session: SessionRecord = {
 				playerId,
-				role: "player",
+				role,
 				expiresAt: Date.now() + CLEANUP_ALARM_MS,
 			};
 			await this.state.storage.put(`session:${sessionToken}`, session);
@@ -587,6 +604,67 @@ export class PartyRoomDO {
 		});
 	}
 
+	async assignTeams(
+		teamCount: number,
+		mode: "random" | "balanced" | "manual" = "random",
+	): Promise<void> {
+		if (mode === "manual") return;
+
+		const players = Array.from(this.players.values()).filter(
+			(p) => !p.isHost && p.role !== "audience",
+		);
+
+		for (let i = players.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[players[i], players[j]] = [players[j], players[i]];
+		}
+
+		players.forEach((player, index) => {
+			const teamIndex = index % teamCount;
+			player.team = `Team ${teamIndex + 1}`;
+			this.players.set(player.id, player);
+		});
+
+		this.broadcastToAll(
+			encodeMessage(stateUpdateMessage(this.buildRoomState())),
+		);
+		await this.saveState();
+	}
+
+	getTeamPlayers(team: string): PartyPlayer[] {
+		return Array.from(this.players.values()).filter((p) => p.team === team);
+	}
+
+	async updateTeamScore(team: string, delta: number): Promise<void> {
+		const teamPlayers = this.getTeamPlayers(team);
+		for (const player of teamPlayers) {
+			player.score = (player.score ?? 0) + delta;
+			this.players.set(player.id, player);
+		}
+		this.broadcastToAll(
+			encodeMessage(stateUpdateMessage(this.buildRoomState())),
+		);
+		await this.saveState();
+	}
+
+	broadcastToTeam(team: string, message: string): void {
+		for (const ws of this.sockets) {
+			const meta = this.socketMetadata.get(ws);
+			if (
+				meta?.role === "player" &&
+				meta.playerId &&
+				ws.readyState === WebSocket.OPEN
+			) {
+				const player = this.players.get(meta.playerId);
+				if (player && player.team === team) {
+					try {
+						ws.send(message);
+					} catch {}
+				}
+			}
+		}
+	}
+
 	async sendToPlayer(
 		playerId: string,
 		data: Record<string, unknown>,
@@ -618,7 +696,7 @@ export class PartyRoomDO {
 		}
 
 		const playerCount = Array.from(this.players.values()).filter(
-			(p) => p.connected && !p.isHost,
+			(p) => p.connected && !p.isHost && p.role !== "audience",
 		).length;
 
 		if (playerCount < this.minPlayers) {
@@ -633,8 +711,20 @@ export class PartyRoomDO {
 			return;
 		}
 
+		if (this.templateId && TEMPLATE_REGISTRY[this.templateId]) {
+			const runner = TEMPLATE_REGISTRY[this.templateId];
+			runner(this).catch(async (error) => {
+				const message = error instanceof Error ? error.message : String(error);
+				console.error("[PartyRoomDO] Template runner failed:", error);
+				ws.send(encodeMessage(errorMessage("SCRIPT_ERROR", message)));
+				await this.updateSharedData({ scriptError: message });
+				await this.setPhase("ended");
+			});
+			return;
+		}
+
 		if (this.serverScriptCode) {
-			const runner = new ServerScriptRunner(this);
+			const runner = new QuickJSServerRunner(this);
 			runner
 				.execute(this.serverScriptCode, this.serverScriptConfig)
 				.catch(async (error) => {
@@ -668,7 +758,14 @@ export class PartyRoomDO {
 			return;
 		}
 
-		this.activeInputCollector.responses.set(playerId, response);
+		const player = this.players.get(playerId);
+		const enrichedResponse = {
+			...response,
+			playerId,
+			playerName: player?.name ?? playerId.slice(0, 6),
+		};
+
+		this.activeInputCollector.responses.set(playerId, enrichedResponse);
 
 		this.broadcastToHost(
 			encodeMessage({
@@ -681,7 +778,7 @@ export class PartyRoomDO {
 		const playerCount = expectedPlayerIds
 			? expectedPlayerIds.size
 			: Array.from(this.players.values()).filter(
-					(p) => p.connected && !p.isHost,
+					(p) => p.connected && !p.isHost && p.role !== "audience",
 				).length;
 
 		if (this.activeInputCollector.responses.size >= playerCount) {
@@ -765,6 +862,7 @@ export class PartyRoomDO {
 			players: Array.from(this.players.entries()),
 			sharedData: this.sharedData,
 			minPlayers: this.minPlayers,
+			templateId: this.templateId,
 			serverScriptCode: this.serverScriptCode,
 			serverScriptConfig: this.serverScriptConfig,
 			stateVersion: this.stateVersion,
@@ -779,6 +877,7 @@ export class PartyRoomDO {
 			players: Array<[string, PartyPlayer]>;
 			sharedData: Record<string, unknown>;
 			minPlayers: number | undefined;
+			templateId: string | null;
 			serverScriptCode: string | null;
 			serverScriptConfig: Record<string, unknown> | undefined;
 			stateVersion: number | undefined;
@@ -793,6 +892,9 @@ export class PartyRoomDO {
 			this.stateVersion = saved.stateVersion ?? 0;
 			if (saved.minPlayers !== undefined) {
 				this.minPlayers = saved.minPlayers;
+			}
+			if (saved.templateId) {
+				this.templateId = saved.templateId;
 			}
 			if (typeof saved.serverScriptCode === "string") {
 				this.serverScriptCode = saved.serverScriptCode;

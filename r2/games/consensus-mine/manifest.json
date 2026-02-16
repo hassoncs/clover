@@ -1,0 +1,28 @@
+{
+	"name": "consensus-mine",
+	"version": "1.0.0",
+	"title": "Consensus Mine",
+	"description": "Predict the 'Hive Mind'—the collective preferences of everyone in the room. If you can't read the room, you'll be stuck in the mines forever.",
+	"instructions": "Everyone ranks a list of items. Then, teams take turns guessing the most popular items. Avoid the traps!",
+	"slug": "consensus-mine",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 10,
+		"minPlayers": 2,
+		"serverScript": "server",
+		"contentPacks": ["ranking-poll"],
+		"phases": ["lobby", "survey", "team_turns", "reveal_list", "winner"],
+		"inputTypes": ["choice"],
+		"roundCount": 1
+	}
+}

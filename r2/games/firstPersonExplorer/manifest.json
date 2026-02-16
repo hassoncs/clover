@@ -1,0 +1,68 @@
+{
+	"name": "first-person-explorer",
+	"version": "1.0.0",
+	"title": "First Person Explorer",
+	"description": "WASD movement + mouse/touch look in a 3D environment",
+	"slug": "firstPersonExplorer",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": -9.8,
+			"z": 0
+		},
+		"floor": {
+			"enabled": true,
+			"size": 50,
+			"color": "#3D5A3D"
+		},
+		"sky": {
+			"type": "gradient",
+			"topColor": "#1a1a2e",
+			"bottomColor": "#16213e"
+		},
+		"lighting": "bright-day"
+	},
+	"sceneType": "3d",
+	"camera3d": {
+		"type": "perspective",
+		"position": {
+			"x": 0,
+			"y": 1.6,
+			"z": 0
+		},
+		"lookAt": {
+			"x": 0,
+			"y": 1.6,
+			"z": -1
+		},
+		"fov": 70,
+		"follow": {
+			"target": "player",
+			"offset": {
+				"x": 0,
+				"y": 1.6,
+				"z": 0
+			},
+			"smoothing": 24,
+			"mode": "first-person"
+		}
+	},
+	"input3d": {
+		"movement": {
+			"enabled": true,
+			"speed": 5,
+			"sprintMultiplier": 1.5,
+			"jumpForce": 5
+		},
+		"mouseLook": {
+			"enabled": true,
+			"sensitivity": 0.3,
+			"invertY": false
+		},
+		"touchLook": {
+			"enabled": true,
+			"sensitivity": 0.5
+		}
+	},
+	"variables": {}
+}

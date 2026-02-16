@@ -272,6 +272,10 @@ export class GameLoader {
 		}
 
 		if (definition.effects.entityEffects) {
+			console.log(
+				"[GameLoader] Applying entityEffects: count=" +
+					definition.effects.entityEffects.length,
+			);
 			for (const effect of definition.effects.entityEffects) {
 				this.bridge.applySpriteEffect(
 					effect.entityId,

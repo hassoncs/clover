@@ -1,0 +1,28 @@
+{
+	"name": "half-and-half",
+	"version": "1.0.0",
+	"title": "Half and Half",
+	"description": "A high-stakes negotiation in a futuristic 'Neutral Zone' space station. Fill in the second half to split the room 50/50.",
+	"instructions": "Fill in the second half of the scenario to make the choice as close to a 50/50 split as possible.",
+	"slug": "half-and-half",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": ["quip"],
+		"phases": ["lobby", "drafting", "voting", "reveal", "scores", "winner"],
+		"inputTypes": ["text", "choice"],
+		"roundCount": 2
+	}
+}

@@ -318,5 +318,105 @@
 		"id": "q064",
 		"text": "The most useless thing you could 3D-print: _____",
 		"category": "technology"
+	},
+	{
+		"id": "q065",
+		"text": "A warning label that would make you want the product more: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q066",
+		"text": "The worst thing to hear from your surgeon: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q067",
+		"text": "A terrible theme for a escape room: _____",
+		"category": "entertainment"
+	},
+	{
+		"id": "q068",
+		"text": "The worst prize for winning a game show: _____",
+		"category": "entertainment"
+	},
+	{
+		"id": "q069",
+		"text": "A cancelled Olympic sport that explains itself: _____",
+		"category": "sports"
+	},
+	{
+		"id": "q070",
+		"text": "The worst halftime show performance: _____",
+		"category": "sports"
+	},
+	{
+		"id": "q071",
+		"text": "A euphemism for getting fired that would confuse everyone: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q072",
+		"text": "The most passive-aggressive office kitchen note: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q073",
+		"text": "A fitness class that would immediately get sued: _____",
+		"category": "lifestyle"
+	},
+	{
+		"id": "q074",
+		"text": "The worst thing to whisper in someone's ear at a library: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q075",
+		"text": "A conspiracy theory so dumb even conspiracy theorists would deny it: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q076",
+		"text": "The worst excuse for being late to your own wedding: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q077",
+		"text": "Something you should never say during a job interview Zoom call: _____",
+		"category": "workplace"
+	},
+	{
+		"id": "q078",
+		"text": "A terrible name for a sensitive personal hygiene product: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q079",
+		"text": "The worst thing to find in a fortune cookie: _____",
+		"category": "food"
+	},
+	{
+		"id": "q080",
+		"text": "A rude awakening that involves no actual waking: _____",
+		"category": "absurd"
+	},
+	{
+		"id": "q081",
+		"text": "The worst thing to name your child that would be legally allowed: _____",
+		"category": "relationships"
+	},
+	{
+		"id": "q082",
+		"text": "A terrible theme for a children's book: _____",
+		"category": "entertainment"
+	},
+	{
+		"id": "q083",
+		"text": "The most unhelpful advice a GPS could give: _____",
+		"category": "technology"
+	},
+	{
+		"id": "q084",
+		"text": "A meal that would immediately end a first date: _____",
+		"category": "relationships"
 	}
 ]

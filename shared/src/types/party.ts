@@ -31,7 +31,15 @@ export interface PartyRoomState {
 	stateVersion: number;
 }
 
-export type PartyInputType = "text" | "choice" | "drawing" | "buzzer" | "mic";
+export type PartyInputType =
+	| "text"
+	| "choice"
+	| "drawing"
+	| "buzzer"
+	| "mic"
+	| "investment"
+	| "matching"
+	| "wheel";
 
 export interface PartyInputRequest {
 	type: PartyInputType;

@@ -1,0 +1,37 @@
+{
+	"name": "drawful-animate",
+	"version": "1.0.0",
+	"title": "Flicker Frames",
+	"description": "Create two-frame animations that loop forever! Draw your action prompt, then watch the flickering masterpiece as others try to guess what's happening.",
+	"instructions": "Draw two frames of animation based on your action prompt. Others will see your flickering animation and write fake titles. Can you make them guess right?",
+	"slug": "drawful-animate",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [],
+		"phases": [
+			"lobby",
+			"drawing_f1",
+			"drawing_f2",
+			"bluffing",
+			"voting",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"inputTypes": ["drawing", "text", "choice"],
+		"roundCount": 2
+	}
+}

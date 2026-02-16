@@ -83,6 +83,7 @@ import {
 	ViewportRuntimeSystem,
 } from "./systems/runner/wrappers";
 import { TapZoneOverlay } from "./TapZoneOverlay";
+import { TouchLookOverlay } from "./TouchLookOverlay";
 import {
 	buildBindingContext,
 	ensureStateDialogs,
@@ -448,6 +449,7 @@ export function GameRuntimeGodot({
 		handleJoystickMove,
 		handleJoystickRelease,
 		handleDPadPress,
+		handleTouchLook,
 	} = inputHandlers;
 
 	const activeDialogVariable =
@@ -1908,6 +1910,23 @@ export function GameRuntimeGodot({
 					enableHaptics={definition.input.enableHaptics}
 				/>
 			)}
+
+			{hasViewport &&
+				"input3d" in definition &&
+				(definition as { input3d?: { touchLook?: { enabled?: boolean } } })
+					.input3d?.touchLook?.enabled && (
+					<TouchLookOverlay
+						viewportRect={viewportRect}
+						onTouchLook={handleTouchLook}
+						sensitivity={
+							(
+								definition as {
+									input3d?: { touchLook?: { sensitivity?: number } };
+								}
+							).input3d?.touchLook?.sensitivity ?? 1.0
+						}
+					/>
+				)}
 
 			<InputDebugOverlay inputRef={inputRef} viewportRect={viewportRect} />
 

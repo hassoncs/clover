@@ -117,3 +117,5 @@ export const WordGamePromptSchema = z.object({
 	difficulty: z.enum(["easy", "medium", "hard"]).optional(),
 });
 export type WordGamePrompt = z.infer<typeof WordGamePromptSchema>;
+
+export * from "./chroma-clues.js";

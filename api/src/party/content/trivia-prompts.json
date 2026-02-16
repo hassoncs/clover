@@ -1,0 +1,37 @@
+[
+	{
+		"id": "lab-001",
+		"question": "What is the chemical symbol for Gold?",
+		"correctAnswer": "Au",
+		"incorrectAnswers": ["Ag", "Fe", "Gd"],
+		"category": "Science"
+	},
+	{
+		"id": "lab-002",
+		"question": "Which particle has a negative charge?",
+		"correctAnswer": "Electron",
+		"incorrectAnswers": ["Proton", "Neutron", "Positron"],
+		"category": "Science"
+	},
+	{
+		"id": "lab-003",
+		"question": "What is the powerhouse of the cell?",
+		"correctAnswer": "Mitochondria",
+		"incorrectAnswers": ["Nucleus", "Ribosome", "Golgi Apparatus"],
+		"category": "Science"
+	},
+	{
+		"id": "lab-004",
+		"question": "Who developed the theory of relativity?",
+		"correctAnswer": "Albert Einstein",
+		"incorrectAnswers": ["Isaac Newton", "Nikola Tesla", "Marie Curie"],
+		"category": "Science"
+	},
+	{
+		"id": "lab-005",
+		"question": "What is the most abundant gas in Earth's atmosphere?",
+		"correctAnswer": "Nitrogen",
+		"incorrectAnswers": ["Oxygen", "Carbon Dioxide", "Argon"],
+		"category": "Science"
+	}
+]

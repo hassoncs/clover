@@ -1,0 +1,130 @@
+[
+	{
+		"id": "ground",
+		"name": "Ground",
+		"prefab": "floor",
+		"transform": {
+			"x": 0,
+			"y": -0.25,
+			"z": 0,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "player",
+		"name": "Player",
+		"prefab": "player",
+		"transform": {
+			"x": 0,
+			"y": 0.9,
+			"z": 0,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "pillar1",
+		"name": "Pillar 1",
+		"prefab": "pillar",
+		"transform": {
+			"x": 5,
+			"y": 1.5,
+			"z": -5,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "pillar2",
+		"name": "Pillar 2",
+		"prefab": "pillar",
+		"transform": {
+			"x": -5,
+			"y": 1.5,
+			"z": -5,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "pillar3",
+		"name": "Pillar 3",
+		"prefab": "pillar",
+		"transform": {
+			"x": 0,
+			"y": 1.5,
+			"z": -10,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "crate1",
+		"name": "Crate 1",
+		"prefab": "crate",
+		"transform": {
+			"x": 3,
+			"y": 0.5,
+			"z": 3,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "crate2",
+		"name": "Crate 2",
+		"prefab": "crate",
+		"transform": {
+			"x": -3,
+			"y": 0.5,
+			"z": 5,
+			"rotationX": 0,
+			"rotationY": 15,
+			"rotationZ": 0,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	},
+	{
+		"id": "ramp1",
+		"name": "Ramp 1",
+		"prefab": "ramp",
+		"transform": {
+			"x": 8,
+			"y": 0.5,
+			"z": 0,
+			"rotationX": 0,
+			"rotationY": 0,
+			"rotationZ": -10,
+			"scaleX": 1,
+			"scaleY": 1,
+			"scaleZ": 1
+		}
+	}
+]

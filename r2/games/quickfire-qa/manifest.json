@@ -1,0 +1,28 @@
+{
+	"name": "quickfire-qa",
+	"version": "1.0.0",
+	"title": "Quickfire Q&A",
+	"description": "A fast-paced trivia game set in a high-tech research facility. Answer quickly to score more points!",
+	"instructions": "Select the correct answer as quickly as possible. The faster you answer, the more points you get.",
+	"slug": "quickfire-qa",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 12,
+		"minPlayers": 2,
+		"serverScript": "server",
+		"contentPacks": ["trivia"],
+		"phases": ["lobby", "question", "answering", "reveal", "scores"],
+		"inputTypes": ["choice"],
+		"roundCount": 3
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"name": "3fceb1f0-1131-42c7-b343-0ec91997e2dd",
+	"version": "1.0.0",
+	"title": "Distortion Showcase",
+	"description": "A showcase of various distortion shaders: barrel, kaleidoscope, displace, ripple, mirror, transform.",
+	"instructions": "Tap to cycle through distortion effects.",
+	"world": {
+		"gravity": { "x": 0, "y": 0 },
+		"pixelsPerMeter": 50,
+		"bounds": { "width": 12, "height": 16 }
+	},
+	"background": {
+		"type": "static",
+		"color": "#000000"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"slug": "shaderDistortShowcase"
+}

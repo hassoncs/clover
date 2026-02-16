@@ -84,28 +84,27 @@ exports.customFunction = function(ctx) {
 
 ### How Games Get Built and Served
 
-1. **Source**: Game files in `r2/games/{slug}/` (bundle format)
-2. **Build**: `api/scripts/build-games.ts` compiles each game:
-   - Loads via `game-registry.ts` which detects format and compiles
-   - Bundles `scripts/*.js` into `definition.script`
-   - Writes `definition.json` + `metadata.json` to `r2/games/{slug}/`
-3. **Sync**: `syncLocalR2()` pushes everything to local Miniflare R2
-4. **Seed**: Seeds local D1 database with game metadata
-5. **Serve**: API reads `definition.json` from R2 bucket via tRPC routes
+1. **Source**: Game files in `r2/games/{slug}/` (bundle format: `manifest.json`, `scripts/`, `prefabs/`, `entities/`)
+2. **Build**: `api/scripts/sync-r2.ts` runs `compileBundle()` on each game directory that has a `manifest.json`
+3. **Output**: Writes `definition.json` + `metadata.json` as build outputs to the game directory (gitignored)
+4. **Sync**: Copies all files from `r2/` to the local Miniflare R2 bucket
+5. **Seed**: On API boot, `autoSeedGamesFromR2` reads `metadata.json` from R2 and inserts game rows into D1
+6. **Serve**: API reads `definition.json` from R2 bucket via `trpc.games.getPublic`
+
+**Important**: `definition.json` and `metadata.json` are auto-generated build outputs. Never edit them directly — edit the source files (`manifest.json`, `scripts/*.js`, `prefabs/*.json`, `entities/*.json`) instead.
 
 ### Watch Mode
 
-The `games-watcher` devmux service (`api/scripts/watch-games.ts`) watches `r2/games/` recursively and triggers `pnpm run build:games` on any file change (except build outputs `definition.json` and `metadata.json`).
+The `games-watcher` devmux service (`api/scripts/sync-r2.ts --watch`) watches `r2/games/` recursively. When source files change, it recompiles all games and re-syncs to R2. Changes to `definition.json` and `metadata.json` are ignored to avoid infinite loops.
 
 ### Key Files
 
 | File | Purpose |
 |------|---------|
-| `api/src/lib/game-registry.ts` | Discovers and loads games from `r2/games/` |
-| `api/scripts/build-games.ts` | Compiles games, syncs to local R2, seeds D1 |
-| `api/scripts/watch-games.ts` | File watcher that triggers rebuilds |
-| `packages/game-bundler/src/compiler.ts` | Bundle format compiler |
-| `packages/game-bundler/src/unified-loader.ts` | Format detection (bundle vs TS) |
+| `api/scripts/sync-r2.ts` | Compiles games from source, syncs to local R2 |
+| `packages/game-bundler/src/compiler.ts` | Bundle format compiler (`compileBundle()`) |
+| `packages/game-bundler/src/unified-loader.ts` | Format detection and loading |
+| `api/src/lib/auto-seed.ts` | Seeds D1 with game metadata from R2 on API boot |
 
 ## Shader & Effect System
 

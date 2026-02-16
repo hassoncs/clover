@@ -1,22 +1,48 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import {
+	ActivityIndicator,
+	Pressable,
+	ScrollView,
+	Text,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createPartyRoom } from "@/lib/party/api";
+
+const AVAILABLE_GAMES = [
+	{
+		id: "crowd-comedy",
+		name: "Crowd Comedy",
+		description: "The party game where you write the punchlines!",
+		icon: "game-controller" as const,
+		color: "#A855F7",
+	},
+	{
+		id: "chroma-clues",
+		name: "Chroma Clues",
+		description: "A color-guessing party game. Give word clues!",
+		icon: "color-palette" as const,
+		color: "#EC4899",
+	},
+];
 
 export default function PartyIndexScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const [isCreating, setIsCreating] = useState(false);
+	const [selectedGameIndex, setSelectedGameIndex] = useState(0);
+
+	const selectedGame = AVAILABLE_GAMES[selectedGameIndex];
 
 	const handleHostGame = async () => {
 		try {
 			setIsCreating(true);
-			const { code, hostToken } = await createPartyRoom();
+			const { code, hostToken } = await createPartyRoom(selectedGame.id);
 			router.push({
 				pathname: "/party/host",
-				params: { code, hostToken },
+				params: { code, hostToken, template: selectedGame.id },
 			});
 		} catch (error) {
 			console.error("Failed to create room:", error);
@@ -26,37 +52,61 @@ export default function PartyIndexScreen() {
 
 	return (
 		<View
-			className="flex-1 bg-theme-background items-center justify-center p-6"
+			className="flex-1 bg-theme-background p-6"
 			style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
 		>
-			<View
-				className="absolute top-4 left-4 z-10"
-				style={{ top: insets.top + 16 }}
-			>
+			<View className="flex-row items-center justify-between mb-8">
 				<Pressable
 					onPress={() => router.back()}
 					className="p-2 rounded-full bg-theme-surface active:opacity-80"
 				>
 					<Ionicons name="arrow-back" size={24} color="white" />
 				</Pressable>
+				<Text className="text-xl font-bold text-theme-text">Party Games</Text>
+				<View className="w-10" />
 			</View>
 
-			<View className="items-center mb-12">
-				<Ionicons
-					name="game-controller"
-					size={64}
-					color="#A855F7"
-					className="mb-4"
-				/>
-				<Text className="text-4xl font-bold text-theme-text text-center">
-					Crowd Comedy
-				</Text>
-				<Text className="text-lg text-theme-text-secondary text-center mt-2">
-					The party game where you write the punchlines!
-				</Text>
-			</View>
+			<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+				<View className="items-center mb-8">
+					<Ionicons
+						name={selectedGame.icon}
+						size={80}
+						color={selectedGame.color}
+						className="mb-4"
+					/>
+					<Text className="text-4xl font-bold text-theme-text text-center">
+						{selectedGame.name}
+					</Text>
+					<Text className="text-lg text-theme-text-secondary text-center mt-2">
+						{selectedGame.description}
+					</Text>
+				</View>
 
-			<View className="w-full max-w-sm gap-4">
+				<View className="flex-row flex-wrap justify-center gap-4 mb-12">
+					{AVAILABLE_GAMES.map((game, index) => (
+						<Pressable
+							key={game.id}
+							onPress={() => setSelectedGameIndex(index)}
+							className={`p-4 rounded-2xl items-center justify-center border-2 ${selectedGameIndex === index ? "bg-theme-surface border-theme-primary" : "bg-theme-surface/50 border-transparent"}`}
+							style={{ width: "45%" }}
+						>
+							<Ionicons
+								name={game.icon}
+								size={32}
+								color={selectedGameIndex === index ? game.color : "#666"}
+								className="mb-2"
+							/>
+							<Text
+								className={`font-bold text-center ${selectedGameIndex === index ? "text-theme-text" : "text-theme-text-secondary"}`}
+							>
+								{game.name}
+							</Text>
+						</Pressable>
+					))}
+				</View>
+			</ScrollView>
+
+			<View className="w-full max-w-sm self-center gap-4">
 				<Pressable
 					onPress={handleHostGame}
 					disabled={isCreating}

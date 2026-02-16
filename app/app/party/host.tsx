@@ -5,6 +5,11 @@ import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PartyProvider, useParty } from "@/lib/party/PartyContext";
 
+const GAME_NAMES: Record<string, string> = {
+	"crowd-comedy": "Crowd Comedy",
+	"chroma-clues": "Chroma Clues",
+};
+
 function HostLobbyContent({
 	code,
 	hostToken,
@@ -15,6 +20,9 @@ function HostLobbyContent({
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { roomState, players, sendStartGame, connectionStatus } = useParty();
+	const { template } = useLocalSearchParams<{ template: string }>();
+
+	const gameName = GAME_NAMES[template || "crowd-comedy"] || "Crowd Comedy";
 
 	useEffect(() => {
 		if (roomState?.phase === "playing") {
@@ -28,7 +36,7 @@ function HostLobbyContent({
 	const handleShare = async () => {
 		try {
 			await Share.share({
-				message: `Join my Crowd Comedy game! Code: ${code}`,
+				message: `Join my ${gameName} game! Code: ${code}`,
 			});
 		} catch (error) {
 			console.error(error);

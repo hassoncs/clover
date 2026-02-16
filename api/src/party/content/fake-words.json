@@ -1,0 +1,12 @@
+[
+	{ "id": "fw1", "word": "Grumbletonian", "phonetic": "grum-bul-toh-nee-un" },
+	{ "id": "fw2", "word": "Flibbertigibbet", "phonetic": "flib-er-tee-jib-it" },
+	{ "id": "fw3", "word": "Mumblecrust", "phonetic": "mum-bul-krust" },
+	{ "id": "fw4", "word": "Snollygoster", "phonetic": "snol-ee-gos-ter" },
+	{ "id": "fw5", "word": "Absquatulate", "phonetic": "ab-skwot-choo-leyt" },
+	{ "id": "fw6", "word": "Bumfuzzle", "phonetic": "bum-fuh-zul" },
+	{ "id": "fw7", "word": "Collywobbles", "phonetic": "kol-ee-wob-ulz" },
+	{ "id": "fw8", "word": "Dillydally", "phonetic": "dil-ee-dal-ee" },
+	{ "id": "fw9", "word": "Gobbledygook", "phonetic": "gob-ul-dee-gook" },
+	{ "id": "fw10", "word": "Hocus-pocus", "phonetic": "hoh-kus-poh-kus" }
+]

@@ -1,0 +1,6 @@
+{
+	"id": "shaderPostShowcase",
+	"name": "Shader Post Showcase",
+	"description": "Demo of 12 post-processing shaders",
+	"version": "1.0.0"
+}

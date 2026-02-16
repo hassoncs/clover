@@ -1,27 +1,27 @@
 {
-  "name": "@slopcade/game-bundler",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "Game bundler - compiles TypeScript games and JSON bundles to GameDefinition",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./compiler": "./src/compiler.ts",
-    "./loader": "./src/loader.ts",
-    "./types": "./src/types.ts"
-  },
-  "scripts": {
-    "build": "tsx scripts/build-games.ts",
-    "type-check": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@slopcade/shared": "workspace:*"
-  },
-  "devDependencies": {
-    "typescript": "~5.9.3",
-    "vitest": "^3.2.4"
-  }
+	"name": "@slopcade/game-bundler",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "Game bundler - compiles TypeScript games and JSON bundles to GameDefinition",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./compiler": "./src/compiler.ts",
+		"./loader": "./src/loader.ts",
+		"./types": "./src/types.ts"
+	},
+	"scripts": {
+		"build": "echo 'No build step needed — games are compiled by api/scripts/sync-r2.ts'",
+		"type-check": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"@slopcade/shared": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "~5.9.3",
+		"vitest": "^3.2.4"
+	}
 }

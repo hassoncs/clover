@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -15,6 +16,7 @@ export function BuzzerInput({
 
 	const handlePress = () => {
 		if (disabled || pressed) return;
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 		setPressed(true);
 		onPress();
 	};

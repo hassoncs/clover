@@ -1,0 +1,37 @@
+{
+	"name": "chain-reaction",
+	"version": "1.0.0",
+	"title": "Chain Reaction",
+	"description": "A high-speed particle accelerator where players must keep the word reaction going. The theme is Atomic Lab — glowing tubes, warning sirens, and hazmat suits.",
+	"instructions": "Provide a related word to keep the chain going. Challenge others if their association is weak!",
+	"slug": "chain-reaction",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 2,
+		"serverScript": "server",
+		"contentPacks": ["quip"],
+		"phases": [
+			"lobby",
+			"reaction",
+			"challenge",
+			"justification",
+			"voting",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"inputTypes": ["text", "buzzer", "choice"],
+		"roundCount": 3
+	}
+}

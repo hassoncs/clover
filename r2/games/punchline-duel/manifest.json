@@ -1,0 +1,26 @@
+{
+	"name": "punchline-duel",
+	"version": "1.0.0",
+	"title": "Punchline Duel",
+	"description": "A high-stakes underground comedy club where players battle it out with their sharpest wit. Neon Noir style.",
+	"instructions": "Write the funniest response to your prompts. Vote for the best in each head-to-head duel!",
+	"slug": "punchline-duel",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": ["quip"],
+		"roundCount": 2
+	}
+}

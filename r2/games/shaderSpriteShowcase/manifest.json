@@ -1,0 +1,27 @@
+{
+	"name": "shader-sprite-showcase",
+	"version": "1.0.0",
+	"title": "Shader Sprite Showcase",
+	"description": "Showcase of sprite-level shader effects",
+	"instructions": "Observe the different shader effects applied to each entity.",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": -5
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 16,
+			"height": 20
+		}
+	},
+	"background": {
+		"type": "static",
+		"color": "#1a1a2e"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"slug": "shaderSpriteShowcase"
+}

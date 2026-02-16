@@ -37,6 +37,9 @@ function isConstantRef(value: unknown): value is ConstantRef {
 
 const BUNDLE_SUBDIRS = ["prefabs", "entities"] as const;
 
+const IGNORED_DIRS = new Set(["bundle", "lib", "node_modules", ".bundle"]);
+const IGNORED_FILES = new Set(["definition.json", "metadata.json"]);
+
 interface ResolvedConstant {
 	value: number | string | boolean;
 	path: string[];
@@ -52,9 +55,13 @@ function scanForJsonFiles(
 	for (const entry of entries) {
 		const fullPath = path.join(dir, entry.name);
 		if (entry.isDirectory()) {
-			scanForJsonFiles(fullPath, fileReader, files);
+			if (!IGNORED_DIRS.has(entry.name)) {
+				scanForJsonFiles(fullPath, fileReader, files);
+			}
 		} else if (entry.isFile() && entry.name.endsWith(".json")) {
-			files.push(fullPath);
+			if (!IGNORED_FILES.has(entry.name)) {
+				files.push(fullPath);
+			}
 		}
 	}
 
@@ -469,7 +476,8 @@ function buildGameDefinition(
 	} | null,
 ): GameDefinition {
 	const metadata: GameMetadata = {
-		id: (manifest?.id as string) || (manifest?.name as string) || "unnamed-game",
+		id:
+			(manifest?.id as string) || (manifest?.name as string) || "unnamed-game",
 		title:
 			(manifest?.title as string) ||
 			(manifest?.name as string) ||
@@ -842,6 +850,10 @@ export function compileBundle(
 		gameDefinition.effects = rawData.effects;
 	}
 
+	if (rawData.scripts != null && Object.keys(rawData.scripts).length > 0) {
+		gameDefinition.modules = rawData.scripts;
+	}
+
 	if (rawData.manifest) {
 		const manifest = rawData.manifest as Record<string, unknown>;
 		const MANIFEST_PASSTHROUGH_KEYS: Array<keyof GameDefinition> = [
@@ -856,6 +868,7 @@ export function compileBundle(
 			"persistence",
 			"hoverHighlight",
 			"dialogs",
+			"party",
 		];
 		for (const key of MANIFEST_PASSTHROUGH_KEYS) {
 			const systems = manifest.systems as Record<string, unknown> | undefined;
