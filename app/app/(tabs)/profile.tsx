@@ -588,6 +588,16 @@ export default function ProfileScreen() {
 								Blocked Users
 							</Text>
 						</Pressable>
+						{activeBrand.features.organizations && (
+							<Pressable
+								className="mb-3 bg-theme-surface-elevated h-12 rounded-full items-center justify-center border border-theme-border"
+								onPress={() => router.push("/settings/my-org")}
+							>
+								<Text className="text-theme-text text-base font-semibold">
+									My Church
+								</Text>
+							</Pressable>
+						)}
 						<View className="flex-row gap-3">
 							<Pressable
 								className="flex-1 bg-theme-success h-12 rounded-full items-center justify-center"
