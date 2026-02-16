@@ -999,11 +999,11 @@ Every piece of generated content is scored on:
 - [ ] Generate drawing prompts (500), fibbage facts (500), history events (300)
 - [ ] Run automated moderation on all generated content
 - [ ] Begin scripture reference validation (API.Bible lookup)
-- [ ] Wire first content packs to Tier 1 games for testing
+- [x] Wire first content packs to Tier 1 games for testing
 
 **Lane D (GTM)**
 - [ ] Finalize app icon, splash screen, store assets
-- [ ] Write store listing copy (description, keywords, category)
+- [x] Write store listing copy (description, keywords, category)
 - [ ] Set up social media accounts (@amengames on Instagram, TikTok, X)
 - [ ] Identify 10-20 youth pastor influencers for outreach
 
@@ -1062,7 +1062,7 @@ Every piece of generated content is scored on:
 **Lane A (Backend)**
 - [ ] Production environment finalized (monitoring, error tracking, alerting)
 - [ ] Scaling check: can Cloudflare Workers handle projected load?
-- [ ] Final security review: brand isolation, data leakage prevention
+- [x] Final security review: brand isolation, data leakage prevention
 
 **Lane B (Frontend)**
 - [ ] Content freeze for v1 core packs

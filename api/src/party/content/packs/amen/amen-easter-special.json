@@ -1,0 +1,510 @@
+{
+	"trivia": [
+		{
+			"id": "amen-easter-triv-001",
+			"question": "What did the crowd spread on the road as Jesus entered Jerusalem on Palm Sunday? (John 12:13)",
+			"correctAnswer": "Palm branches",
+			"incorrectAnswers": ["Olive branches", "Flowers", "Cloaks and palms"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-002",
+			"question": "In which garden was Jesus arrested? (Matthew 26:36)",
+			"correctAnswer": "Gethsemane",
+			"incorrectAnswers": ["Eden", "Bethany", "Mount of Olives"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-003",
+			"question": "Who was the Roman governor who sentenced Jesus to death? (Matthew 27:2)",
+			"correctAnswer": "Pontius Pilate",
+			"incorrectAnswers": ["Herod Antipas", "Caiaphas", "Augustus Caesar"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-004",
+			"question": "What was the name of the hill where Jesus was crucified? (John 19:17)",
+			"correctAnswer": "Golgotha",
+			"incorrectAnswers": ["Mount Sinai", "Mount Tabor", "Mount of Olives"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-005",
+			"question": "Who helped Jesus carry the cross? (Luke 23:26)",
+			"correctAnswer": "Simon of Cyrene",
+			"incorrectAnswers": ["Joseph of Arimathea", "Peter", "John the Apostle"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-006",
+			"question": "What did the sign above Jesus' head on the cross say? (Matthew 27:37)",
+			"correctAnswer": "This is Jesus, the King of the Jews",
+			"incorrectAnswers": [
+				"The Son of God",
+				"The Prophet of Nazareth",
+				"Behold the King"
+			],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-007",
+			"question": "Who was the first person to see the risen Jesus? (John 20:14-16)",
+			"correctAnswer": "Mary Magdalene",
+			"incorrectAnswers": ["Peter", "John", "Mary the mother of Jesus"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-008",
+			"question": "For how many pieces of silver did Judas betray Jesus? (Matthew 26:15)",
+			"correctAnswer": "30",
+			"incorrectAnswers": ["20", "50", "100"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-009",
+			"question": "Which disciple denied Jesus three times before the rooster crowed? (Matthew 26:75)",
+			"correctAnswer": "Peter",
+			"incorrectAnswers": ["Thomas", "Andrew", "James"],
+			"category": "Holy Week"
+		},
+		{
+			"id": "amen-easter-triv-010",
+			"question": "What happened to the curtain in the Temple when Jesus died? (Matthew 27:51)",
+			"correctAnswer": "It was torn in two",
+			"incorrectAnswers": ["It caught fire", "It turned black", "It fell down"],
+			"category": "Holy Week"
+		}
+	],
+	"quip": [
+		{
+			"id": "amen-easter-quip-001",
+			"text": "A rejected Easter egg flavor: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-002",
+			"text": "What the disciples were really whispering about at the Last Supper: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-003",
+			"text": "The real reason the stone was rolled away: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-004",
+			"text": "Something you shouldn't say to a Roman soldier on Good Friday: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-005",
+			"text": "If the Easter Bunny was in the Bible, his job would be: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-006",
+			"text": "The most awkward thing to find in your Easter basket: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-007",
+			"text": "What Peter was thinking while he was hiding after the denial: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-008",
+			"text": "A modern-day miracle for Easter morning: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-009",
+			"text": "The title of the disciples' group chat during Holy Week: _____",
+			"category": "Easter Humor"
+		},
+		{
+			"id": "amen-easter-quip-010",
+			"text": "What the angels were doing while waiting for Sunday morning: _____",
+			"category": "Easter Humor"
+		}
+	],
+	"fibbage": [
+		{
+			"id": "amen-easter-fib-001",
+			"question": "In some European traditions, the 'Easter Bunny' was originally an 'Easter _____' (a different animal).",
+			"answer": "Fox",
+			"category": "Easter Traditions",
+			"alternateSpellings": ["fox", "foxes"]
+		},
+		{
+			"id": "amen-easter-fib-002",
+			"question": "The word 'Easter' is thought to be derived from the name of an Anglo-Saxon goddess named _____. ",
+			"answer": "Eostre",
+			"category": "Easter History",
+			"alternateSpellings": ["Ostara", "Eastre"]
+		},
+		{
+			"id": "amen-easter-fib-003",
+			"question": "The first recorded use of decorated Easter eggs was in the year _____, ordered by King Edward I.",
+			"answer": "1290",
+			"category": "Easter History",
+			"alternateSpellings": ["twelve ninety"]
+		},
+		{
+			"id": "amen-easter-fib-004",
+			"question": "In medieval times, a popular Easter game involved throwing a _____ in church between the choir boys.",
+			"answer": "Hard-boiled egg",
+			"category": "Easter Traditions",
+			"alternateSpellings": ["egg", "boiled egg"]
+		},
+		{
+			"id": "amen-easter-fib-005",
+			"question": "The largest Easter egg ever made weighed over _____ pounds (over 7,000 kg).",
+			"answer": "15000",
+			"category": "Easter Facts",
+			"alternateSpellings": ["15,000", "fifteen thousand"]
+		},
+		{
+			"id": "amen-easter-fib-006",
+			"question": "In Bermuda, it is a popular tradition to fly _____ on Good Friday to represent Christ's ascension.",
+			"answer": "Kites",
+			"category": "Easter Traditions",
+			"alternateSpellings": ["kite"]
+		},
+		{
+			"id": "amen-easter-fib-007",
+			"question": "The white lily, a symbol of the resurrection, is often called the '_____ of the garden.'",
+			"answer": "Apostle",
+			"category": "Easter Symbols",
+			"alternateSpellings": ["apostles"]
+		},
+		{
+			"id": "amen-easter-fib-008",
+			"question": "In the 13th century, the Church prohibited eating _____ during Holy Week, leading to the tradition of decorating them for Easter.",
+			"answer": "Eggs",
+			"category": "Easter History",
+			"alternateSpellings": ["egg"]
+		}
+	],
+	"estimation": [
+		{
+			"id": "amen-easter-hist-001",
+			"question": "In what year did the Crucifixion and Resurrection of Jesus most likely occur?",
+			"answer": 30,
+			"unit": "Year",
+			"category": "Holy Week",
+			"acceptableRange": { "min": 29, "max": 33 }
+		},
+		{
+			"id": "amen-easter-hist-002",
+			"question": "In what year did the Council of Nicaea formally set the method for determining the date of Easter?",
+			"answer": 325,
+			"unit": "Year",
+			"category": "Church History",
+			"acceptableRange": { "min": 320, "max": 330 }
+		},
+		{
+			"id": "amen-easter-hist-003",
+			"question": "In what year was the Shroud of Turin first historically recorded in France?",
+			"answer": 1354,
+			"unit": "Year",
+			"category": "Church History",
+			"acceptableRange": { "min": 1350, "max": 1360 }
+		},
+		{
+			"id": "amen-easter-hist-004",
+			"question": "In what year did Pope Gregory XIII introduce the calendar that changed how Easter dates are calculated?",
+			"answer": 1582,
+			"unit": "Year",
+			"category": "Church History",
+			"acceptableRange": { "min": 1580, "max": 1590 }
+		},
+		{
+			"id": "amen-easter-hist-005",
+			"question": "In what year was the first White House Easter Egg Roll held?",
+			"answer": 1878,
+			"unit": "Year",
+			"category": "Easter Traditions",
+			"acceptableRange": { "min": 1870, "max": 1880 }
+		},
+		{
+			"id": "amen-easter-hist-006",
+			"question": "In what year did the first recorded 'Easter Egg' hunt take place in Germany?",
+			"answer": 1572,
+			"unit": "Year",
+			"category": "Easter Traditions",
+			"acceptableRange": { "min": 1500, "max": 1600 }
+		},
+		{
+			"id": "amen-easter-hist-007",
+			"question": "In what year was the first chocolate Easter egg produced in the UK by Fry's?",
+			"answer": 1873,
+			"unit": "Year",
+			"category": "Easter Traditions",
+			"acceptableRange": { "min": 1870, "max": 1880 }
+		},
+		{
+			"id": "amen-easter-hist-008",
+			"question": "In what year did the famous Oberammergau Passion Play first begin as a vow to God?",
+			"answer": 1634,
+			"unit": "Year",
+			"category": "Easter Traditions",
+			"acceptableRange": { "min": 1630, "max": 1640 }
+		}
+	],
+	"drawing": [
+		{
+			"id": "amen-easter-draw-001",
+			"prompt": "The Empty Tomb",
+			"category": "Easter",
+			"difficulty": "easy"
+		},
+		{
+			"id": "amen-easter-draw-002",
+			"prompt": "A Crown of Thorns",
+			"category": "Easter",
+			"difficulty": "easy"
+		},
+		{
+			"id": "amen-easter-draw-003",
+			"prompt": "Palm Branches",
+			"category": "Easter",
+			"difficulty": "easy"
+		},
+		{
+			"id": "amen-easter-draw-004",
+			"prompt": "The Last Supper Table",
+			"category": "Easter",
+			"difficulty": "medium"
+		},
+		{
+			"id": "amen-easter-draw-005",
+			"prompt": "Three Crosses on a Hill",
+			"category": "Easter",
+			"difficulty": "medium"
+		},
+		{
+			"id": "amen-easter-draw-006",
+			"prompt": "An Angel at the Tomb",
+			"category": "Easter",
+			"difficulty": "medium"
+		},
+		{
+			"id": "amen-easter-draw-007",
+			"prompt": "A Loaf of Bread and a Cup",
+			"category": "Easter",
+			"difficulty": "easy"
+		},
+		{
+			"id": "amen-easter-draw-008",
+			"prompt": "The Stone Rolled Away",
+			"category": "Easter",
+			"difficulty": "medium"
+		}
+	],
+	"ranking": [
+		{
+			"id": "amen-easter-rank-001",
+			"topic": "Rank these Holy Week events in chronological order (First to Last)",
+			"items": [
+				"Palm Sunday",
+				"The Last Supper",
+				"The Crucifixion",
+				"The Resurrection"
+			]
+		},
+		{
+			"id": "amen-easter-rank-002",
+			"topic": "Rank these people by their proximity to Jesus during the crucifixion (Closest to Farthest)",
+			"items": [
+				"Mary Mother of Jesus",
+				"John the Apostle",
+				"The Centurion",
+				"Peter"
+			]
+		},
+		{
+			"id": "amen-easter-rank-003",
+			"topic": "Rank these Easter traditions by historical age (Oldest to Newest)",
+			"items": [
+				"Decorating Eggs",
+				"Easter Bunny",
+				"Sunrise Services",
+				"Chocolate Eggs"
+			]
+		},
+		{
+			"id": "amen-easter-rank-004",
+			"topic": "Rank these items by their importance in the Passion narrative (Most to Least mentioned)",
+			"items": [
+				"The Cross",
+				"Crown of Thorns",
+				"30 Pieces of Silver",
+				"The Rooster"
+			]
+		},
+		{
+			"id": "amen-easter-rank-005",
+			"topic": "Rank these locations by their distance from the Temple in Jerusalem (Closest to Farthest)",
+			"items": ["Golgotha", "Gethsemane", "Bethany", "Bethlehem"]
+		}
+	],
+	"wyr": [
+		{
+			"id": "amen-easter-dil-001",
+			"optionA": "Witness the Triumphal Entry on Palm Sunday",
+			"optionB": "Witness the Resurrection on Easter Sunday",
+			"category": "Easter Events"
+		},
+		{
+			"id": "amen-easter-dil-002",
+			"optionA": "Be Simon of Cyrene (carry the cross)",
+			"optionB": "Be Joseph of Arimathea (provide the tomb)",
+			"category": "Easter Roles"
+		},
+		{
+			"id": "amen-easter-dil-003",
+			"optionA": "Have a meal at the Last Supper",
+			"optionB": "Have breakfast on the beach with the risen Jesus",
+			"category": "Easter Meals"
+		},
+		{
+			"id": "amen-easter-dil-004",
+			"optionA": "Hear the Sermon on the Mount",
+			"optionB": "Hear the Seven Last Words from the Cross",
+			"category": "Jesus' Words"
+		},
+		{
+			"id": "amen-easter-dil-005",
+			"optionA": "Be the first to find the empty tomb",
+			"optionB": "Be the one to tell the disciples the news",
+			"category": "Easter News"
+		}
+	],
+	"headsup": [
+		{
+			"id": "amen-easter-hu-001",
+			"name": "Holy Week Characters",
+			"words": [
+				"Jesus",
+				"Peter",
+				"Judas",
+				"Pilate",
+				"Mary Magdalene",
+				"Simon of Cyrene",
+				"Barabbas",
+				"Caiaphas",
+				"John",
+				"Joseph of Arimathea"
+			]
+		},
+		{
+			"id": "amen-easter-hu-002",
+			"name": "Symbols of Easter",
+			"words": [
+				"Cross",
+				"Empty Tomb",
+				"Palm Branch",
+				"Bread",
+				"Wine",
+				"Thorns",
+				"Lily",
+				"Lamb",
+				"Egg",
+				"Donkey"
+			]
+		},
+		{
+			"id": "amen-easter-hu-003",
+			"name": "Places of the Passion",
+			"words": [
+				"Jerusalem",
+				"Gethsemane",
+				"Golgotha",
+				"Upper Room",
+				"Praetorium",
+				"Bethany",
+				"Mount of Olives",
+				"Kidron Valley",
+				"Temple",
+				"Tomb"
+			]
+		},
+		{
+			"id": "amen-easter-hu-004",
+			"name": "Easter Traditions",
+			"words": [
+				"Sunrise Service",
+				"Egg Hunt",
+				"Passion Play",
+				"Lent",
+				"Palm Sunday",
+				"Good Friday",
+				"Maundy Thursday",
+				"Holy Saturday",
+				"Easter Monday",
+				"Pentecost"
+			]
+		},
+		{
+			"id": "amen-easter-hu-005",
+			"name": "Miracles of the Resurrection",
+			"words": [
+				"Stone Rolled Away",
+				"Empty Shroud",
+				"Angels Appearing",
+				"Jesus Appearing",
+				"Walking through Walls",
+				"Breakfast on the Beach",
+				"Ascension",
+				"Great Commission",
+				"Emmaus Road",
+				"Doubting Thomas"
+			]
+		},
+		{
+			"id": "amen-easter-hu-006",
+			"name": "Biblical Plants & Food",
+			"words": [
+				"Palm",
+				"Olive",
+				"Thorn",
+				"Hyssop",
+				"Bread",
+				"Wine",
+				"Vinegar",
+				"Bitter Herbs",
+				"Lamb",
+				"Honey"
+			]
+		},
+		{
+			"id": "amen-easter-hu-007",
+			"name": "Roman & Jewish Leaders",
+			"words": [
+				"Pontius Pilate",
+				"Herod Antipas",
+				"Caiaphas",
+				"Annas",
+				"Centurion",
+				"Sanhedrin",
+				"Pharisees",
+				"Sadducees",
+				"Scribes",
+				"Soldiers"
+			]
+		},
+		{
+			"id": "amen-easter-hu-008",
+			"name": "The Seven Last Words",
+			"words": [
+				"Father forgive them",
+				"Today in paradise",
+				"Behold your son",
+				"Why forsaken me",
+				"I thirst",
+				"It is finished",
+				"Into your hands"
+			]
+		}
+	]
+}
