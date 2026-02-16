@@ -953,16 +953,16 @@ Every piece of generated content is scored on:
 ### Week 1: Feb 16-22 — Foundation
 
 **Lane A (Backend)**
-- [ ] Create DB migration: brands, organizations, org_members, org_subscriptions tables
-- [ ] Add brand_id to users, games, themes tables
+- [x] Create DB migration: brands, organizations, org_members, org_subscriptions tables
+- [x] Add brand_id to users, games, themes tables
 - [ ] Create new Supabase project for amen.games
-- [ ] Wire brand resolution in tRPC context
+- [x] Wire brand resolution in tRPC context
 
 **Lane B (Frontend)**
-- [ ] Create `packages/brands/` with types, manifests, registry
-- [ ] Wire `BRAND_ID` into `app.config.ts`
-- [ ] Create `app/assets/brands/amen/` directory structure
-- [ ] First pass: audit all hardcoded "Slopcade" strings in app
+- [x] Create `packages/brands/` with types, manifests, registry
+- [x] Wire `BRAND_ID` into `app.config.ts`
+- [x] Create `app/assets/brands/amen/` directory structure
+- [x] First pass: audit all hardcoded "Slopcade" strings in app
 
 **Lane C (Content)**
 - [ ] Set up content pipeline adapters for API.Bible + BibleQuizzle
@@ -970,10 +970,10 @@ Every piece of generated content is scored on:
 - [ ] Ingest Theographic Bible character/place data
 - [ ] Begin AI generation: 2,000 trivia questions
 - [ ] Begin AI generation: 1,000 quip prompts
-- [ ] Define content review rubric and Red/Yellow/Green zone guidelines
+- [x] Define content review rubric and Red/Yellow/Green zone guidelines
 
 **Lane D (GTM)**
-- [ ] Lock brand name, tagline, color palette (DONE — amen.games)
+- [x] Lock brand name, tagline, color palette (DONE — amen.games)
 - [ ] Register App Store Connect app + Google Play Console listing
 - [ ] Commission app icon and splash screen design
 - [ ] Set up amen.games landing page (simple "Coming Easter 2026" + email capture)
@@ -990,7 +990,7 @@ Every piece of generated content is scored on:
 - [ ] Create amen.games theme tokens (colors, fonts, border radii)
 - [ ] Apply brand theme via CSS variable overrides in global.css
 - [ ] Replace hardcoded strings with `activeBrand.*` references
-- [ ] Add EAS build profiles for amen brand
+- [x] Add EAS build profiles for amen brand
 - [ ] Gate game editor / AI features behind feature flags
 - [ ] **First internal build of amen.games app variant**
 

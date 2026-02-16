@@ -15,6 +15,7 @@ import StripeCheckout from "@/components/billing/StripeCheckout";
 import SubscriptionStatus from "@/components/billing/SubscriptionStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { useProStatus } from "@/hooks/useProStatus";
+import { activeBrand } from "@/lib/brand";
 import { trpc } from "@/lib/trpc/client";
 import { trpcReact } from "@/lib/trpc/react";
 
@@ -100,7 +101,7 @@ export default function SubscriptionScreen() {
 				{checkoutSuccess && (
 					<View className="bg-green-900/30 p-4 rounded-xl border border-green-700 mb-4">
 						<Text className="text-green-400 text-center font-medium">
-							Welcome to Slopcade Pro!
+							Welcome to {activeBrand.displayName} Pro!
 						</Text>
 					</View>
 				)}

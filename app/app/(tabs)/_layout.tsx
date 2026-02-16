@@ -5,6 +5,7 @@ import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
 import { useAuth } from "@/hooks/useAuth";
+import { activeBrand } from "@/lib/brand";
 import { trpc } from "@/lib/trpc/client";
 
 const TAB_HEADER_CONFIG: Record<
@@ -22,7 +23,7 @@ const TAB_HEADER_CONFIG: Record<
 		rightIcons: [],
 	},
 	browse: {
-		title: "Slopcade",
+		title: activeBrand.displayName,
 		showHeader: true,
 		leftIcons: ["menu", "search"],
 		rightIcons: ["notifications-outline", "person-add-outline"],
@@ -105,7 +106,9 @@ export default function TabLayout() {
 				tabBar={(props) => (
 					<FloatingTabBar
 						{...props}
-						onPrimaryPress={goToCreateGame}
+						onPrimaryPress={
+							activeBrand.features.gameEditor ? goToCreateGame : undefined
+						}
 						isAuthenticated={isAuthenticated}
 						isCreating={isCreating}
 					/>
@@ -148,7 +151,13 @@ export default function TabLayout() {
 				<Tabs.Screen name="feed" options={{ title: "Feed" }} />
 				<Tabs.Screen name="browse" options={{ title: "Browse" }} />
 				<Tabs.Screen name="chat" options={{ title: "Chat", href: null }} />
-				<Tabs.Screen name="lab" options={{ title: "Lab" }} />
+				<Tabs.Screen
+					name="lab"
+					options={{
+						title: "Lab",
+						href: activeBrand.features.gameEditor ? undefined : null,
+					}}
+				/>
 				<Tabs.Screen name="maker" options={{ title: "Maker", href: null }} />
 				<Tabs.Screen name="profile" options={{ title: "Profile" }} />
 			</Tabs>

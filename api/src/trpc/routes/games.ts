@@ -205,9 +205,9 @@ async function initGitRepoWithWorkspace(
 export const gamesRouter = router({
 	list: protectedProcedure.query(async ({ ctx }) => {
 		const result = await ctx.env.DB.prepare(
-			`SELECT * FROM games WHERE user_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC`,
+			`SELECT * FROM games WHERE user_id = ? AND deleted_at IS NULL AND brand_id = ? ORDER BY updated_at DESC`,
 		)
-			.bind(ctx.user.id)
+			.bind(ctx.user.id, ctx.brandId)
 			.all<GameRow>();
 
 		return result.results.map((row) => toClientGameIndex(row));
@@ -355,8 +355,8 @@ export const gamesRouter = router({
           created_at, updated_at, base_game_id,
           validation_report, validation_score, validation_critical_count,
           validation_warning_count, validation_valid, validation_updated_at, validator_version,
-          version, build_number
-        ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					version, build_number, brand_id
+				) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 				.bind(
 					id,
@@ -377,6 +377,7 @@ export const gamesRouter = router({
 					validationReport.validatorVersion,
 					input.version ?? "1.0.0",
 					1,
+					ctx.brandId,
 				)
 				.run();
 
@@ -620,7 +621,7 @@ export const gamesRouter = router({
 			const offset = input?.offset ?? 0;
 			const includeCritical = input?.includeCritical ?? false;
 
-			let query = `SELECT * FROM games WHERE is_public = 1 AND deleted_at IS NULL`;
+			let query = `SELECT * FROM games WHERE is_public = 1 AND deleted_at IS NULL AND brand_id = ?`;
 
 			if (!includeCritical) {
 				query += ` AND (validation_valid = 1 OR validation_valid IS NULL)`;
@@ -629,7 +630,7 @@ export const gamesRouter = router({
 			query += ` ORDER BY play_count DESC, created_at DESC LIMIT ? OFFSET ?`;
 
 			const result = await ctx.env.DB.prepare(query)
-				.bind(limit, offset)
+				.bind(ctx.brandId, limit, offset)
 				.all<GameRow>();
 
 			return result.results.map((row) => toClientGameIndex(row));
@@ -669,12 +670,13 @@ export const gamesRouter = router({
 			const result = await ctx.env.DB.prepare(
 				`SELECT * FROM games
 				WHERE is_public = 1 AND deleted_at IS NULL
+				AND brand_id = ?
 				AND (validation_valid = 1 OR validation_valid IS NULL)
 				AND (title LIKE ? OR description LIKE ?)
 				ORDER BY ${orderBy}
 				LIMIT ? OFFSET ?`,
 			)
-				.bind(searchTerm, searchTerm, input.limit, input.offset)
+				.bind(ctx.brandId, searchTerm, searchTerm, input.limit, input.offset)
 				.all<GameRow>();
 
 			return {
@@ -882,8 +884,8 @@ export const gamesRouter = router({
             created_at, updated_at, base_game_id,
             validation_report, validation_score, validation_critical_count,
             validation_warning_count, validation_valid, validation_updated_at, validator_version,
-            version, build_number
-          ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+						version, build_number, brand_id
+					) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				)
 					.bind(
 						id,
@@ -903,6 +905,7 @@ export const gamesRouter = router({
 						validationReport.validatorVersion,
 						result.game.metadata.version ?? "1.0.0",
 						1,
+						ctx.brandId,
 					)
 					.run();
 
@@ -1379,8 +1382,8 @@ export const gamesRouter = router({
                 created_at, updated_at, base_game_id,
                 validation_report, validation_score, validation_critical_count,
                 validation_warning_count, validation_valid, validation_updated_at, validator_version,
-                version, build_number
-              ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+							version, build_number, brand_id
+						) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						)
 							.bind(
 								template.id,
@@ -1401,6 +1404,7 @@ export const gamesRouter = router({
 								validationReport.validatorVersion,
 								template.version ?? "1.0.0",
 								1,
+								ctx.brandId,
 							)
 							.run();
 

@@ -23,7 +23,7 @@ const ROUTE_ICON_MAP: Record<
 };
 
 interface FloatingTabBarProps extends BottomTabBarProps {
-	onPrimaryPress: () => void;
+	onPrimaryPress?: () => void;
 	isAuthenticated: boolean;
 	isCreating?: boolean;
 }
@@ -115,50 +115,52 @@ export function FloatingTabBar({
 					})}
 				</View>
 
-				<View style={styles.primaryButtonWrapper}>
-					{showPreloadProgress && (
-						<View style={styles.progressRing}>
-							<View
-								style={[
-									styles.progressArc,
-									{
-										transform: [
-											{ rotate: `${(preloadState.progress / 100) * 360}deg` },
-										],
-									},
-								]}
-							/>
-						</View>
-					)}
-					<Pressable
-						style={[
-							styles.primaryButton,
-							isCreating && styles.primaryButtonLoading,
-						]}
-						onPress={onPrimaryPress}
-						disabled={isCreating}
-						accessibilityRole="button"
-						accessibilityLabel={
-							isCreating ? "Creating game..." : "Create new game"
-						}
-						accessibilityState={isCreating ? { busy: true } : {}}
-					>
-						{isCreating ? (
-							<View style={styles.loadingContainer}>
-								<ActivityIndicator
-									size="small"
-									color={tokens.colors.text.inverse}
+				{onPrimaryPress && (
+					<View style={styles.primaryButtonWrapper}>
+						{showPreloadProgress && (
+							<View style={styles.progressRing}>
+								<View
+									style={[
+										styles.progressArc,
+										{
+											transform: [
+												{ rotate: `${(preloadState.progress / 100) * 360}deg` },
+											],
+										},
+									]}
 								/>
 							</View>
-						) : (
-							<Ionicons
-								name="add"
-								size={34}
-								color={tokens.colors.text.tertiary}
-							/>
 						)}
-					</Pressable>
-				</View>
+						<Pressable
+							style={[
+								styles.primaryButton,
+								isCreating && styles.primaryButtonLoading,
+							]}
+							onPress={onPrimaryPress}
+							disabled={isCreating}
+							accessibilityRole="button"
+							accessibilityLabel={
+								isCreating ? "Creating game..." : "Create new game"
+							}
+							accessibilityState={isCreating ? { busy: true } : {}}
+						>
+							{isCreating ? (
+								<View style={styles.loadingContainer}>
+									<ActivityIndicator
+										size="small"
+										color={tokens.colors.text.inverse}
+									/>
+								</View>
+							) : (
+								<Ionicons
+									name="add"
+									size={34}
+									color={tokens.colors.text.tertiary}
+								/>
+							)}
+						</Pressable>
+					</View>
+				)}
 			</View>
 		</View>
 	);

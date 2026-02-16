@@ -115,14 +115,22 @@ export const usersRouter = router({
 		}
 
 		await ctx.env.DB.prepare(
-			`INSERT INTO users (id, email, display_name, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET
-         email = excluded.email,
-         display_name = excluded.display_name,
-         updated_at = excluded.updated_at`,
+			`INSERT INTO users (id, email, display_name, created_at, updated_at, brand_id)
+		VALUES (?, ?, ?, ?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+		  email = excluded.email,
+		  display_name = excluded.display_name,
+		  brand_id = excluded.brand_id,
+		  updated_at = excluded.updated_at`,
 		)
-			.bind(ctx.user.id, ctx.user.email, ctx.user.displayName ?? null, now, now)
+			.bind(
+				ctx.user.id,
+				ctx.user.email,
+				ctx.user.displayName ?? null,
+				now,
+				now,
+				ctx.brandId,
+			)
 			.run();
 
 		return { synced: true };

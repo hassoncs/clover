@@ -18,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CreditBalance } from "@/components/economy/CreditBalance";
 import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import { useAuth } from "@/hooks/useAuth";
+import { activeBrand } from "@/lib/brand";
 import { trpc } from "@/lib/trpc/client";
 import { trpcReact } from "@/lib/trpc/react";
 
@@ -68,7 +69,7 @@ function LoginScreen() {
 
 		if (inviteStatus?.invited === false) {
 			setLoginError(
-				"This email hasn't been invited to Slopcade yet. Invited users can sign in.",
+				`This email hasn't been invited to ${activeBrand.displayName} yet. Invited users can sign in.`,
 			);
 			return;
 		}
@@ -394,7 +395,8 @@ export default function ProfileScreen() {
 	}, []);
 
 	const displayName = useMemo(() => {
-		const emailName = user?.email?.split("@")[0] ?? "Slopcade Creator";
+		const emailName =
+			user?.email?.split("@")[0] ?? `${activeBrand.displayName} Creator`;
 		return emailName;
 	}, [user?.email]);
 
@@ -750,8 +752,8 @@ export default function ProfileScreen() {
 						</View>
 
 						<Text className="text-theme-text-secondary mb-4">
-							Invite someone to join Slopcade by email. They will be able to
-							sign in once invited.
+							Invite someone to join {activeBrand.displayName} by email. They
+							will be able to sign in once invited.
 						</Text>
 
 						<TextInput

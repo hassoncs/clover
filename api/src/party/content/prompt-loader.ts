@@ -75,79 +75,104 @@ export type ContentItem<T extends ContentType> = ContentTypeMap[T];
 // ============================================================================
 
 /**
- * Content pack file mapping.
- * Maps content types to their JSON file imports.
+ * Content pack registry with brand namespacing.
+ * Maps brand IDs to their content packs, where each pack maps content types to arrays.
  *
- * To add a new content pack:
- * 1. Import the JSON file: `import triviaData from "./trivia-prompts.json";`
- * 2. Add to contentPacks: `trivia: triviaData as TriviaQuestion[],`
+ * Resolution order:
+ * 1. Brand-specific pack: contentPacks[brandId][type]
+ * 2. Fallback to default (slopcade) pack
+ *
+ * To add a new content pack for a brand:
+ * 1. Import the JSON file: `import amenTriviaData from "./amen/trivia-prompts.json";`
+ * 2. Add to contentPacks under the brand namespace:
+ *    amen: { trivia: amenTriviaData as TriviaQuestion[] }
  */
-const contentPacks: Partial<{
-	[K in ContentType]: unknown[];
-}> = {
-	quip: quiplashPromptsData as QuipPrompt[],
-	trivia: triviaPromptsData as TriviaQuestion[],
-	FakeWord: fakeWordsData as FakeWord[],
-	// Other content types will be added as JSON files are generated:
-	// drawing: drawingData as DrawingPrompt[],
-	// wyr: wyrData as WouldYouRather[],
-	// estimation: estimationData as EstimationQuestion[],
+const contentPacks: Record<
+	string,
+	Partial<{ [K in ContentType]: unknown[] }>
+> = {
+	slopcade: {
+		quip: quiplashPromptsData as QuipPrompt[],
+		trivia: triviaPromptsData as TriviaQuestion[],
+		FakeWord: fakeWordsData as FakeWord[],
+		// Other content types will be added as JSON files are generated:
+		// drawing: drawingData as DrawingPrompt[],
+		// wyr: wyrData as WouldYouRather[],
+		// estimation: estimationData as EstimationQuestion[],
+	},
+	// Brand-specific packs will be added as JSON files are generated:
+	// amen: {
+	//   trivia: amenTriviaData as TriviaQuestion[],
+	//   quip: amenQuipData as QuipPrompt[],
+	// },
 };
 
 // ============================================================================
 // Content Loading Functions
 // ============================================================================
 
+const DEFAULT_BRAND = "slopcade";
+
 /**
- * Load a content pack by type.
+ * Load a content pack by type, optionally scoped to a brand.
  *
- * @param type - The content type to load
- * @returns Array of content items for the specified type
- * @throws Error if the content pack doesn't exist
- *
- * @example
- * ```ts
- * const quips = loadContentPack("quip");
- * // quips: QuipPrompt[]
- *
- * const trivia = loadContentPack("trivia");
- * // trivia: TriviaQuestion[]
- * ```
+ * Resolution order:
+ * 1. Look for brand-specific pack: contentPacks[brandId][type]
+ * 2. If not found, fall back to default (slopcade) pack
+ * 3. If neither exists, throw error
  */
 export function loadContentPack<T extends ContentType>(
 	type: T,
+	brandId?: string,
 ): ContentItem<T>[] {
-	const pack = contentPacks[type];
+	const brand = brandId || DEFAULT_BRAND;
 
-	if (!pack) {
-		throw new Error(
-			`Content pack not found for type "${type}". ` +
-				`Available types: ${Object.keys(contentPacks).join(", ") || "none"}`,
-		);
+	const brandPacks = contentPacks[brand];
+	if (brandPacks?.[type]) {
+		return [...brandPacks[type]] as ContentItem<T>[];
 	}
 
-	return [...pack] as ContentItem<T>[];
+	const defaultPacks = contentPacks[DEFAULT_BRAND];
+	if (defaultPacks?.[type]) {
+		return [...defaultPacks[type]] as ContentItem<T>[];
+	}
+
+	throw new Error(
+		`Content pack not found for type "${type}" (brand: ${brand}). ` +
+			`Available types: ${getAvailableContentTypes(brand).join(", ") || "none"}`,
+	);
 }
 
 /**
- * Check if a content pack exists for a given type.
- *
- * @param type - The content type to check
- * @returns true if the content pack exists
+ * Check if a content pack exists for a given type and brand.
  */
-export function hasContentPack(type: ContentType): boolean {
-	return type in contentPacks && contentPacks[type] !== undefined;
+export function hasContentPack(type: ContentType, brandId?: string): boolean {
+	const brand = brandId || DEFAULT_BRAND;
+	const brandPacks = contentPacks[brand];
+	if (brandPacks?.[type]) return true;
+	const defaultPacks = contentPacks[DEFAULT_BRAND];
+	return defaultPacks?.[type] !== undefined;
 }
 
 /**
- * Get list of available content types.
- *
- * @returns Array of content types that have loaded content packs
+ * Get list of available content types for a brand.
  */
-export function getAvailableContentTypes(): ContentType[] {
-	return Object.keys(contentPacks).filter(
-		(key) => contentPacks[key as ContentType] !== undefined,
-	) as ContentType[];
+export function getAvailableContentTypes(brandId?: string): ContentType[] {
+	const brand = brandId || DEFAULT_BRAND;
+	const brandPacks = contentPacks[brand] || {};
+	const defaultPacks = contentPacks[DEFAULT_BRAND] || {};
+
+	const allTypes = new Set([
+		...Object.keys(brandPacks),
+		...Object.keys(defaultPacks),
+	]);
+
+	return [...allTypes].filter((key) => {
+		return (
+			brandPacks[key as ContentType] !== undefined ||
+			defaultPacks[key as ContentType] !== undefined
+		);
+	}) as ContentType[];
 }
 
 // ============================================================================

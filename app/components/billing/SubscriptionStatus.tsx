@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
+import { activeBrand } from "@/lib/brand";
 
 interface SubscriptionStatusProps {
 	isPro: boolean;
@@ -28,7 +29,7 @@ export default function SubscriptionStatus({
 				<View className="flex-row items-center justify-between mb-4">
 					<View>
 						<Text className="text-white text-lg font-semibold mb-1">
-							Slopcade Pro
+							{activeBrand.displayName} Pro
 						</Text>
 						<View className="flex-row items-center">
 							<View className="bg-indigo-600/20 border border-indigo-500 px-2 py-0.5 rounded text-xs mr-2">
