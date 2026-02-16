@@ -40,7 +40,12 @@ export default function JoinOrgScreen() {
 	return (
 		<SafeAreaView className="flex-1 bg-gray-900">
 			<View className="flex-row items-center px-4 py-3 border-b border-gray-800">
-				<Pressable onPress={() => router.back()} className="mr-3">
+				<Pressable
+					onPress={() => router.back()}
+					className="mr-3"
+					accessibilityLabel="Go back"
+					accessibilityRole="button"
+				>
 					<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
 				</Pressable>
 				<Text className="text-white font-semibold text-lg">
@@ -50,11 +55,18 @@ export default function JoinOrgScreen() {
 
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<View className="flex-1 p-6 items-center pt-12">
-					<View className="w-16 h-16 bg-gray-800 rounded-2xl items-center justify-center mb-6">
+					<View
+						className="w-16 h-16 bg-gray-800 rounded-2xl items-center justify-center mb-6"
+						accessible={true}
+						accessibilityLabel="Organization icon"
+					>
 						<Ionicons name="people" size={32} color="#E4E4E7" />
 					</View>
 
-					<Text className="text-white text-2xl font-bold text-center mb-2">
+					<Text
+						className="text-white text-2xl font-bold text-center mb-2"
+						accessibilityRole="header"
+					>
 						Enter Join Code
 					</Text>
 					<Text className="text-gray-400 text-center mb-8 px-4">
@@ -82,10 +94,17 @@ export default function JoinOrgScreen() {
 							maxLength={6}
 							returnKeyType="go"
 							onSubmitEditing={handleJoin}
+							accessibilityLabel="Enter 6-character join code"
+							accessibilityHint="Type the code provided by your organization leader"
 						/>
 
 						{error && (
-							<View className="bg-red-900/30 p-3 rounded-lg border border-red-800 mb-4">
+							<View
+								className="bg-red-900/30 p-3 rounded-lg border border-red-800 mb-4"
+								accessible={true}
+								accessibilityLabel={`Error: ${error}`}
+								accessibilityLiveRegion="polite"
+							>
 								<Text className="text-red-400 text-center text-sm">
 									{error}
 								</Text>
@@ -100,6 +119,12 @@ export default function JoinOrgScreen() {
 							}`}
 							onPress={handleJoin}
 							disabled={joinMutation.isPending || code.length !== 6}
+							accessibilityLabel="Join Organization"
+							accessibilityRole="button"
+							accessibilityState={{
+								disabled: joinMutation.isPending || code.length !== 6,
+								busy: joinMutation.isPending,
+							}}
 						>
 							{joinMutation.isPending ? (
 								<ActivityIndicator color="white" />

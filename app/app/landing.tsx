@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Redirect } from "expo-router";
 import { useState } from "react";
 import {
+	ActivityIndicator,
 	Image,
 	Linking,
 	Platform,
@@ -46,10 +47,16 @@ export default function LandingPage() {
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 				<View className="bg-[#1B3A6B] px-6 py-12 md:py-20 items-center">
 					<View className="max-w-4xl w-full items-center">
-						<Text className="text-[#C9A84C] font-bold text-xl tracking-widest mb-4 uppercase">
+						<Text
+							className="text-[#C9A84C] font-bold text-xl tracking-widest mb-4 uppercase"
+							accessibilityRole="header"
+						>
 							Amen Games
 						</Text>
-						<Text className="text-white text-4xl md:text-6xl font-bold text-center mb-6 leading-tight">
+						<Text
+							className="text-white text-4xl md:text-6xl font-bold text-center mb-6 leading-tight"
+							accessibilityRole="header"
+						>
 							Scripture. Fellowship. Fun.
 						</Text>
 						<Text className="text-gray-300 text-lg md:text-xl text-center max-w-2xl mb-10 leading-relaxed">
@@ -86,7 +93,10 @@ export default function LandingPage() {
 						</View>
 
 						<View className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-[#E6DCC8] items-center mb-20">
-							<Text className="text-[#1B3A6B] text-3xl font-bold mb-4 text-center">
+							<Text
+								className="text-[#1B3A6B] text-3xl font-bold mb-4 text-center"
+								accessibilityRole="header"
+							>
 								Join the Waitlist
 							</Text>
 							<Text className="text-gray-600 text-center mb-8 max-w-lg">
@@ -96,11 +106,7 @@ export default function LandingPage() {
 
 							{submitted ? (
 								<View className="bg-[#5B7F3B]/10 p-6 rounded-xl items-center w-full max-w-md">
-									<Ionicons
-										name="checkmark-circle"
-										size={48}
-										color="#5B7F3B"
-									/>
+									<Ionicons name="checkmark-circle" size={48} color="#5B7F3B" />
 									<Text className="text-[#5B7F3B] font-bold text-xl mt-4 mb-2">
 										You're on the list!
 									</Text>
@@ -119,6 +125,8 @@ export default function LandingPage() {
 											onChangeText={setEmail}
 											autoCapitalize="none"
 											keyboardType="email-address"
+											accessibilityLabel="Email address"
+											accessibilityHint="Enter your email to join the waitlist"
 										/>
 										<Pressable
 											className={`bg-[#1B3A6B] px-8 py-3 rounded-lg justify-center items-center ${
@@ -126,14 +134,27 @@ export default function LandingPage() {
 											}`}
 											onPress={handleSubmit}
 											disabled={joinWaitlist.isPending}
+											accessibilityLabel="Join Waitlist"
+											accessibilityRole="button"
+											accessibilityState={{
+												disabled: joinWaitlist.isPending,
+												busy: joinWaitlist.isPending,
+											}}
 										>
-											<Text className="text-white font-bold text-lg">
-												{joinWaitlist.isPending ? "Joining..." : "Notify Me"}
-											</Text>
+											{joinWaitlist.isPending ? (
+												<ActivityIndicator color="white" />
+											) : (
+												<Text className="text-white font-bold text-lg">
+													Notify Me
+												</Text>
+											)}
 										</Pressable>
 									</View>
 									{error && (
-										<Text className="text-[#B84233] mt-3 text-center">
+										<Text
+											className="text-[#B84233] mt-3 text-center"
+											accessibilityLiveRegion="polite"
+										>
 											{error}
 										</Text>
 									)}
@@ -142,7 +163,10 @@ export default function LandingPage() {
 						</View>
 
 						<View className="mb-12">
-							<Text className="text-[#1B3A6B] text-3xl font-bold mb-4 text-center">
+							<Text
+								className="text-[#1B3A6B] text-3xl font-bold mb-4 text-center"
+								accessibilityRole="header"
+							>
 								Church Subscriptions
 							</Text>
 							<Text className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
@@ -156,14 +180,23 @@ export default function LandingPage() {
 									price="$199"
 									period="/year"
 									description="For church plants and small congregations."
-									features={["Up to 50 members", "All 8 launch games", "Admin dashboard"]}
+									features={[
+										"Up to 50 members",
+										"All 8 launch games",
+										"Admin dashboard",
+									]}
 								/>
 								<PricingCard
 									title="Medium Church"
 									price="$499"
 									period="/year"
 									description="Perfect for growing churches and youth groups."
-									features={["Up to 200 members", "All 8 launch games", "Admin dashboard", "Priority support"]}
+									features={[
+										"Up to 200 members",
+										"All 8 launch games",
+										"Admin dashboard",
+										"Priority support",
+									]}
 									highlighted
 								/>
 								<PricingCard
@@ -171,7 +204,13 @@ export default function LandingPage() {
 									price="$999"
 									period="/year"
 									description="For established churches with multiple ministries."
-									features={["Unlimited members", "All 8 launch games", "Admin dashboard", "Priority support", "Custom branding"]}
+									features={[
+										"Unlimited members",
+										"All 8 launch games",
+										"Admin dashboard",
+										"Priority support",
+										"Custom branding",
+									]}
 								/>
 							</View>
 						</View>

@@ -105,6 +105,8 @@ export default function JoinOrgScreen() {
 						borderWidth: 1,
 						borderColor: activeBrand.theme.colors.textSecondary,
 					}}
+					accessibilityLabel="Go Home"
+					accessibilityRole="button"
 				>
 					<Text
 						style={{
@@ -221,6 +223,8 @@ export default function JoinOrgScreen() {
 								width: "100%",
 								alignItems: "center",
 							}}
+							accessibilityLabel="Go to Profile"
+							accessibilityRole="button"
 						>
 							<Text
 								style={{
@@ -245,6 +249,12 @@ export default function JoinOrgScreen() {
 							width: "100%",
 							alignItems: "center",
 							opacity: joinMutation.isPending ? 0.7 : 1,
+						}}
+						accessibilityLabel={`Join ${org.name}`}
+						accessibilityRole="button"
+						accessibilityState={{
+							disabled: joinMutation.isPending,
+							busy: joinMutation.isPending,
 						}}
 					>
 						{joinMutation.isPending ? (
@@ -282,6 +292,8 @@ export default function JoinOrgScreen() {
 						marginTop: 24,
 						padding: 12,
 					}}
+					accessibilityLabel="Cancel joining"
+					accessibilityRole="button"
 				>
 					<Text
 						style={{

@@ -72,7 +72,12 @@ export default function SubscriptionScreen() {
 		return (
 			<SafeAreaView className="flex-1 bg-gray-900">
 				<View className="flex-row items-center px-4 py-3 border-b border-gray-800">
-					<Pressable onPress={() => router.back()} className="mr-3">
+					<Pressable
+						onPress={() => router.back()}
+						className="mr-3"
+						accessibilityLabel="Go back"
+						accessibilityRole="button"
+					>
 						<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
 					</Pressable>
 					<Text className="text-white font-semibold text-lg">Subscription</Text>
@@ -90,7 +95,12 @@ export default function SubscriptionScreen() {
 	return (
 		<SafeAreaView className="flex-1 bg-gray-900">
 			<View className="flex-row items-center px-4 py-3 border-b border-gray-800">
-				<Pressable onPress={() => router.back()} className="mr-3">
+				<Pressable
+					onPress={() => router.back()}
+					className="mr-3"
+					accessibilityLabel="Go back"
+					accessibilityRole="button"
+				>
 					<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
 				</Pressable>
 				<Text className="text-white font-semibold text-lg flex-1">
@@ -111,9 +121,17 @@ export default function SubscriptionScreen() {
 				)}
 
 				{error && (
-					<View className="bg-red-900/30 p-4 rounded-xl border border-red-700 mb-4">
+					<View
+						className="bg-red-900/30 p-4 rounded-xl border border-red-700 mb-4"
+						accessibilityLiveRegion="polite"
+					>
 						<Text className="text-red-400 text-center">{error}</Text>
-						<Pressable onPress={() => setError(null)} className="mt-2">
+						<Pressable
+							onPress={() => setError(null)}
+							className="mt-2"
+							accessibilityLabel="Dismiss error"
+							accessibilityRole="button"
+						>
 							<Text className="text-red-500 text-center text-sm underline">
 								Dismiss
 							</Text>
@@ -141,6 +159,9 @@ export default function SubscriptionScreen() {
 									className={`flex-1 py-2 rounded-md items-center ${
 										selectedPlan === "monthly" ? "bg-gray-700" : ""
 									}`}
+									accessibilityLabel="Monthly plan, $4.99 per month"
+									accessibilityRole="button"
+									accessibilityState={{ selected: selectedPlan === "monthly" }}
 								>
 									<Text
 										className={`font-medium ${
@@ -157,6 +178,9 @@ export default function SubscriptionScreen() {
 									className={`flex-1 py-2 rounded-md items-center ${
 										selectedPlan === "yearly" ? "bg-gray-700" : ""
 									}`}
+									accessibilityLabel="Yearly plan, $39.99 per year"
+									accessibilityRole="button"
+									accessibilityState={{ selected: selectedPlan === "yearly" }}
 								>
 									<Text
 										className={`font-medium ${

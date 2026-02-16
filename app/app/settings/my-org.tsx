@@ -47,6 +47,8 @@ function OrgMemberItem({
 				<Pressable
 					onPress={() => onRemove(member.userId)}
 					className="bg-red-900/30 px-3 py-1 rounded-lg border border-red-900"
+					accessibilityLabel={`Remove ${member.displayName || member.email || "member"}`}
+					accessibilityRole="button"
 				>
 					<Text className="text-red-400 text-xs font-bold">Remove</Text>
 				</Pressable>
@@ -185,6 +187,8 @@ function OrgDetail({ org }: { org: Org }) {
 						<Pressable
 							onPress={handleShareCode}
 							className="flex-row items-center bg-indigo-600/20 px-4 py-2 rounded-lg border border-indigo-600/50"
+							accessibilityLabel="Share join code"
+							accessibilityRole="button"
 						>
 							<Ionicons name="share-outline" size={16} color="#818CF8" />
 							<Text className="text-indigo-400 font-bold ml-2">Share</Text>
@@ -193,8 +197,18 @@ function OrgDetail({ org }: { org: Org }) {
 							onPress={handleRegenerateCode}
 							disabled={regenerateCodeMutation.isPending}
 							className="flex-row items-center bg-gray-700 px-4 py-2 rounded-lg"
+							accessibilityLabel="Regenerate join code"
+							accessibilityRole="button"
+							accessibilityState={{
+								disabled: regenerateCodeMutation.isPending,
+								busy: regenerateCodeMutation.isPending,
+							}}
 						>
-							<Ionicons name="refresh" size={16} color="#9CA3AF" />
+							{regenerateCodeMutation.isPending ? (
+								<ActivityIndicator size="small" color="#9CA3AF" />
+							) : (
+								<Ionicons name="refresh" size={16} color="#9CA3AF" />
+							)}
 							<Text className="text-gray-400 font-bold ml-2">Reset</Text>
 						</Pressable>
 					</View>
@@ -226,6 +240,12 @@ function OrgDetail({ org }: { org: Org }) {
 				onPress={handleLeave}
 				disabled={leaveMutation.isPending}
 				className="w-full py-3 rounded-xl items-center bg-red-900/20 border border-red-900/50 active:bg-red-900/30"
+				accessibilityLabel="Leave Organization"
+				accessibilityRole="button"
+				accessibilityState={{
+					disabled: leaveMutation.isPending,
+					busy: leaveMutation.isPending,
+				}}
 			>
 				{leaveMutation.isPending ? (
 					<ActivityIndicator color="#F87171" />
@@ -249,7 +269,12 @@ export default function MyOrgScreen() {
 	return (
 		<SafeAreaView className="flex-1 bg-gray-900">
 			<View className="flex-row items-center px-4 py-3 border-b border-gray-800">
-				<Pressable onPress={() => router.back()} className="mr-3">
+				<Pressable
+					onPress={() => router.back()}
+					className="mr-3"
+					accessibilityLabel="Go back"
+					accessibilityRole="button"
+				>
 					<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
 				</Pressable>
 				<Text className="text-white font-semibold text-lg">
@@ -259,6 +284,8 @@ export default function MyOrgScreen() {
 				<Pressable
 					onPress={() => router.push("/settings/join-org")}
 					className="bg-indigo-600 px-3 py-1.5 rounded-lg"
+					accessibilityLabel="Join another organization"
+					accessibilityRole="button"
 				>
 					<Text className="text-white font-bold text-xs">Join Another</Text>
 				</Pressable>
@@ -293,6 +320,8 @@ export default function MyOrgScreen() {
 						<Pressable
 							onPress={() => router.push("/settings/join-org")}
 							className="bg-indigo-600 px-8 py-4 rounded-xl active:bg-indigo-700"
+							accessibilityLabel="Join Organization"
+							accessibilityRole="button"
 						>
 							<Text className="text-white font-bold text-lg">
 								Join Organization
