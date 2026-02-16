@@ -119,6 +119,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.17.4
         version: 1.26.0(zod@3.25.76)
+      '@slopcade/brands':
+        specifier: workspace:*
+        version: link:../packages/brands
       '@slopcade/economy-engine':
         specifier: workspace:*
         version: link:../packages/economy-engine

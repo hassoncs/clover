@@ -30,6 +30,7 @@
 		"@cf-wasm/quickjs": "^0.2.4",
 		"@hono/trpc-server": "^0.3.4",
 		"@modelcontextprotocol/sdk": "^1.17.4",
+		"@slopcade/brands": "workspace:*",
 		"@slopcade/economy-engine": "workspace:*",
 		"@slopcade/game-bundler": "workspace:*",
 		"@slopcade/shared": "workspace:*",

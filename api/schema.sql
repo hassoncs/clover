@@ -881,3 +881,15 @@ CREATE TABLE IF NOT EXISTS org_subscriptions (
 
 CREATE INDEX IF NOT EXISTS idx_org_subs_org ON org_subscriptions(org_id);
 CREATE INDEX IF NOT EXISTS idx_org_subs_stripe ON org_subscriptions(stripe_subscription_id);
+
+-- =============================================================================
+-- WAITLIST SYSTEM
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS email_waitlist (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id),
+  created_at INTEGER NOT NULL,
+  UNIQUE(email, brand_id)
+);

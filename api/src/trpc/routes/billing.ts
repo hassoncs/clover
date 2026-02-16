@@ -1,7 +1,9 @@
+import { getBrandManifest } from "@slopcade/brands";
 import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 import { z } from "zod";
 import { EntitlementService } from "@/billing/entitlement-service";
+import { FreeTierGuard } from "@/billing/free-tier-guard";
 import {
 	ORG_SUBSCRIPTION_TIERS,
 	type OrgSubscriptionTierId,
@@ -116,6 +118,21 @@ export const billingRouter = router({
 			proUntil: entitlement.proUntil,
 			source: entitlement.source,
 			hasStripeCustomer: !!stripeCustomerId,
+		};
+	}),
+
+	getFreeSessionsRemaining: protectedProcedure.query(async ({ ctx }) => {
+		const freeTierGuard = new FreeTierGuard(
+			ctx.env.DB,
+			ctx.brandId,
+			ctx.user.id,
+		);
+		const result = await freeTierGuard.check();
+
+		return {
+			sessionsUsed: result.sessionsUsed,
+			sessionsLimit: result.sessionsLimit,
+			resetsAt: result.resetsAt,
 		};
 	}),
 
@@ -357,17 +374,18 @@ export const billingRouter = router({
 		return { received: true };
 	}),
 
-	getCatalog: publicProcedure.query(() => {
+	getCatalog: publicProcedure.query(({ ctx }) => {
+		const brand = getBrandManifest(ctx.brandId);
 		return {
 			plans: [
 				{
 					id: "pro_monthly",
-					name: "Slopcade Pro",
+					name: `${brand.displayName} Pro`,
 					priceDisplay: "$9.99/mo",
 					features: [
 						"1,000 Sparks/month",
 						"Unlimited party hosting",
-						"Priority AI generation",
+						"Priority asset generation",
 						"Cloud sync",
 						"Private assets",
 						"85/15 asset store split",
@@ -376,4 +394,17 @@ export const billingRouter = router({
 			],
 		};
 	}),
+
+	joinWaitlist: publicProcedure
+		.input(z.object({ email: z.string().email() }))
+		.mutation(async ({ ctx, input }) => {
+			await ctx.env.DB.prepare(
+				`INSERT OR IGNORE INTO email_waitlist (id, email, brand_id, created_at)
+				 VALUES (?, ?, ?, ?)`,
+			)
+				.bind(crypto.randomUUID(), input.email, ctx.brandId, Date.now())
+				.run();
+
+			return { success: true };
+		}),
 });
