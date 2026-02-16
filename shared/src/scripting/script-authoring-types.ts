@@ -51,3 +51,10 @@ export type ScriptFunction<TArgs = Record<string, unknown>> = (
 	ctx: ScriptContext,
 	args?: TArgs,
 ) => unknown;
+
+export type {
+	EffectStateGroup,
+	SpriteEffectConfig,
+	SpriteEffectParams,
+	SpriteEffectType,
+} from "../types/effects";

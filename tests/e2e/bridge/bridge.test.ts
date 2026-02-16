@@ -46,7 +46,13 @@ describe("Godot Bridge E2E", () => {
 
 	describe("bridge registry", () => {
 		it("get_bridge_methods returns the full method registry", async () => {
-			const registry = await bridge.callRpc("get_bridge_methods");
+			const registry = (await driver.call("_query", [
+				"get_bridge_methods",
+			])) as {
+				methods: Array<{ name: string }>;
+				byModule: Record<string, string[]>;
+				total: number;
+			};
 
 			expect(registry).toBeDefined();
 			expect(registry.methods).toBeDefined();
@@ -146,6 +152,47 @@ describe("Godot Bridge E2E", () => {
 
 			const after = await bridge.getEntityTransform("test-box-destroy");
 			expect(after).toBeNull();
+		});
+
+		it("destroy_entity clears sprite effect registry and material cache", async () => {
+			const passthroughShader = [
+				"shader_type canvas_item;",
+				"void fragment() {",
+				"  COLOR = texture(TEXTURE, UV);",
+				"}",
+			].join("\n");
+
+			await bridge.spawnEntity({
+				entityId: "effect-destroy-box",
+				prefabId: "box",
+				position: { x: 0, y: 5 },
+			});
+			await bridge.applySpriteEffect(
+				"effect-destroy-box",
+				passthroughShader,
+				{},
+			);
+
+			const before = await driver.query<{
+				trackedEntityCount: number;
+				trackedEntities: string[];
+				materialCacheSize: number;
+			}>("effects.getSpriteEffectDiagnostics");
+			expect(before.trackedEntities).toContain("effect-destroy-box");
+			expect(before.trackedEntityCount).toBeGreaterThan(0);
+			expect(before.materialCacheSize).toBeGreaterThan(0);
+
+			await bridge.destroyEntity("effect-destroy-box");
+			await sleep(100);
+
+			const after = await driver.query<{
+				trackedEntityCount: number;
+				trackedEntities: string[];
+				materialCacheSize: number;
+			}>("effects.getSpriteEffectDiagnostics");
+			expect(after.trackedEntities).not.toContain("effect-destroy-box");
+			expect(after.trackedEntityCount).toBe(0);
+			expect(after.materialCacheSize).toBe(0);
 		});
 	});
 

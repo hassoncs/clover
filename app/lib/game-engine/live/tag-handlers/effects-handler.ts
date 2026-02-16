@@ -109,11 +109,13 @@ export const effectsHandler: TagHotReloadHandler<EffectsPayload> = {
 			return;
 		}
 
+		let graphApplied = false;
 		for (const [graphId, newPlan] of Object.entries(newCompiledPlans)) {
 			const oldPlan = oldCompiledPlans[graphId] ?? null;
 			if (hasStructuralPlanChange(oldPlan, newPlan)) {
 				try {
 					await context.bridge.applyGraph(newPlan);
+					graphApplied = true;
 				} catch (error) {
 					console.error(
 						`[effects-handler] Failed to apply graph '${graphId}'`,
@@ -123,13 +125,15 @@ export const effectsHandler: TagHotReloadHandler<EffectsPayload> = {
 			}
 		}
 
-		const changedShaders = getChangedShaders(
-			oldPayload.shaders,
-			newPayload.shaders,
-		);
+		if (!graphApplied) {
+			const changedShaders = getChangedShaders(
+				oldPayload.shaders,
+				newPayload.shaders,
+			);
 
-		for (const [shaderId, source] of changedShaders) {
-			context.bridge.hotSwapShader(shaderId, source);
+			for (const [shaderId, source] of changedShaders) {
+				context.bridge.hotSwapShader(shaderId, source);
+			}
 		}
 	},
 
@@ -141,19 +145,21 @@ export const effectsHandler: TagHotReloadHandler<EffectsPayload> = {
 		}
 
 		const plans = Object.values(compiledPlans);
-		for (const plan of plans) {
-			try {
-				await context.bridge.applyGraph(plan);
-			} catch (error) {
-				console.error(
-					"[effects-handler] Failed to apply compiled graph during full reload",
-					error,
-				);
+		if (plans.length > 0) {
+			for (const plan of plans) {
+				try {
+					await context.bridge.applyGraph(plan);
+				} catch (error) {
+					console.error(
+						"[effects-handler] Failed to apply compiled graph during full reload",
+						error,
+					);
+				}
 			}
-		}
-
-		for (const [shaderId, source] of Object.entries(payload.shaders)) {
-			context.bridge.hotSwapShader(shaderId, source);
+		} else {
+			for (const [shaderId, source] of Object.entries(payload.shaders)) {
+				context.bridge.hotSwapShader(shaderId, source);
+			}
 		}
 	},
 };

@@ -1,0 +1,262 @@
+# Task 4: Script API Design Evidence
+
+## Summary
+
+Designed script-sandbox effect API surface that feeds through the canonical dispatcher pathway.
+
+## API Surface Design
+
+### SyncWorldOps Extensions
+
+```typescript
+// Add to shared/src/types/sync-world-ops.ts
+
+// ═══════════════════════════════════════════════════════════════
+// Sprite Effects
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Apply a sprite effect to an entity.
+ * Script-applied effects have HIGHEST precedence (override declarative effects).
+ * @param entityId - Target entity ID
+ * @param effect - Effect type from SpriteEffectType
+ * @param params - Effect-specific parameters (color, intensity, etc.)
+ * @returns Effect instance ID for later updates/clear
+ */
+applySpriteEffect(
+  entityId: string,
+  effect: SpriteEffectType,
+  params?: SpriteEffectParams,
+): string;
+
+/**
+ * Update a parameter on an active sprite effect.
+ * @param entityId - Target entity ID
+ * @param effectId - Effect instance ID returned from applySpriteEffect
+ * @param paramName - Parameter name to update (e.g., 'intensity', 'color')
+ * @param value - New parameter value
+ */
+updateSpriteEffectParam(
+  entityId: string,
+  effectId: string,
+  paramName: string,
+  value: unknown,
+): void;
+
+/**
+ * Clear a sprite effect from an entity.
+ * If effectId is omitted, clears ALL script-applied effects on the entity.
+ * @param entityId - Target entity ID
+ * @param effectId - Optional effect instance ID (clears all if omitted)
+ */
+clearSpriteEffect(entityId: string, effectId?: string): void;
+```
+
+### Effect Types
+
+Uses existing `SpriteEffectType` from `shared/src/types/behavior.ts`:
+```typescript
+export type SpriteEffectType = 
+  | 'outline'
+  | 'glow'
+  | 'tint'
+  | 'flash'
+  | 'pixelate'
+  | 'posterize'
+  | 'rim_light'
+  | 'color_matrix'
+  | 'inner_glow'
+  | 'drop_shadow'
+  | 'fade_out';
+```
+
+### Parameter Types
+
+```typescript
+// New type to define in shared/src/types/effects.ts
+
+export interface BaseSpriteEffectParams {
+  duration?: number;  // Duration in seconds (for timed effects)
+}
+
+export interface GlowEffectParams extends BaseSpriteEffectParams {
+  color?: [number, number, number];  // RGB 0-255
+  intensity?: number;  // 0-1, default 0.5
+  pulse?: boolean;
+}
+
+export interface TintEffectParams extends BaseSpriteEffectParams {
+  color?: [number, number, number];  // RGB 0-255
+  intensity?: number;  // 0-1, default 1.0
+}
+
+export interface FlashEffectParams extends BaseSpriteEffectParams {
+  color?: [number, number, number];  // RGB 0-255
+  duration?: number;  // Required for flash
+}
+
+export interface OutlineEffectParams extends BaseSpriteEffectParams {
+  color?: [number, number, number];
+  thickness?: number;  // Pixels
+}
+
+export type SpriteEffectParams = 
+  | GlowEffectParams
+  | TintEffectParams
+  | FlashEffectParams
+  | OutlineEffectParams
+  | Record<string, unknown>;  // Fallback for custom effects
+```
+
+## Precedence Rules
+
+```
+Script Override (HIGHEST)
+    ↓ overrides
+Entity-Level Declarative
+    ↓ overrides
+Prefab-Level Declarative (LOWEST)
+```
+
+### Conflict Resolution
+
+1. Script-applied effects ALWAYS win over declarative effects
+2. When script clears an effect, declarative effect (if any) becomes active
+3. Multiple script effects on same entity: last-applied wins per effect type
+4. Entity destroy clears ALL effects (script + declarative)
+
+## Dispatcher Integration
+
+Script operations feed through the same canonical dispatcher:
+
+```
+Script API Call
+    ↓
+EffectDispatcher.applyScriptEffect()
+    ↓
+Update EntityEffectState
+    ↓
+Diff & Bridge Calls
+```
+
+**Key Point**: Script API does NOT call bridge directly. It updates dispatcher state, which handles diffing and bridge calls.
+
+## Usage Examples
+
+### Basic Glow Effect
+
+```javascript
+// In game script
+exports.onCollision = function(ctx, collision) {
+  if (ctx.hasTag(collision.entityB, 'powerup')) {
+    // Apply glow to player
+    const effectId = ctx.applySpriteEffect(
+      collision.entityA,
+      'glow',
+      { color: [255, 200, 0], intensity: 0.8, pulse: true }
+    );
+    
+    // Store for later cleanup
+    ctx.setVariable('powerupGlow', effectId);
+  }
+};
+
+exports.onUpdate = function(ctx, dt) {
+  // Update effect intensity based on power level
+  const effectId = ctx.getVariable('powerupGlow');
+  if (effectId) {
+    const power = ctx.getVariable('power') || 0;
+    ctx.updateSpriteEffectParam(
+      ctx.getVariable('playerId'),
+      effectId,
+      'intensity',
+      power / 100
+    );
+  }
+};
+```
+
+### Flash on Hit
+
+```javascript
+exports.onCollision = function(ctx, collision) {
+  if (ctx.hasTag(collision.entityB, 'enemy')) {
+    // Flash red on hit
+    ctx.applySpriteEffect(
+      collision.entityA,
+      'flash',
+      { color: [255, 0, 0], duration: 0.2 }
+    );
+    // Auto-clears after duration
+  }
+};
+```
+
+### Clear All Effects
+
+```javascript
+exports.onGameEvent = function(ctx, event) {
+  if (event.name === 'powerup_expired') {
+    // Clear all script effects on player
+    ctx.clearSpriteEffect(ctx.getVariable('playerId'));
+    // Declarative effects (if any) become active again
+  }
+};
+```
+
+### Multiple Effects
+
+```javascript
+exports.onStart = function(ctx) {
+  const playerId = ctx.getVariable('playerId');
+  
+  // Apply multiple effects
+  const glowId = ctx.applySpriteEffect(playerId, 'glow', { color: [0, 255, 128] });
+  const outlineId = ctx.applySpriteEffect(playerId, 'outline', { color: [255, 255, 255], thickness: 2 });
+  
+  ctx.setVariable('playerGlow', glowId);
+  ctx.setVariable('playerOutline', outlineId);
+};
+
+exports.onUpdate = function(ctx, dt) {
+  const playerId = ctx.getVariable('playerId');
+  const glowId = ctx.getVariable('playerGlow');
+  
+  // Pulse glow based on health
+  const health = ctx.getVariable('health') || 100;
+  ctx.updateSpriteEffectParam(playerId, glowId, 'intensity', health / 100);
+};
+```
+
+## Implementation Notes
+
+### Files to Modify (Wave 2)
+
+1. `shared/src/types/sync-world-ops.ts` - Add effect methods
+2. `shared/src/types/effects.ts` - New file for param types
+3. `shared/src/scripting/script-authoring-types.ts` - ScriptContext inherits from SyncWorldOps
+4. `app/lib/game-engine/systems/runner/wrappers/ScriptSandboxRuntimeSystem.ts` - Implement methods in createScriptContext()
+
+### Integration with Task 3 (Dispatcher)
+
+The script API implementation will:
+1. Call `EffectDispatcher.applyScriptEffect()` instead of bridge directly
+2. Dispatcher maintains `EntityEffectState` with script override tracking
+3. Dispatcher handles diffing and issues bridge calls
+
+### Testing Strategy
+
+1. Unit tests for API surface (mock dispatcher)
+2. Integration tests with dispatcher (verify state updates)
+3. E2E tests with bridge (verify actual effect application)
+
+## Verification Checklist
+
+- [x] Scripts can apply/update/clear sprite effects without bypassing dispatcher
+- [x] Script operations participate in same conflict/precedence rules as declarative effects
+- [x] Script API surface designed and documented
+- [x] Evidence file created
+
+## Related Decisions
+
+See `.sisyphus/notepads/sprite-effects-canonical-runtime/decisions.md` for detailed design decisions.

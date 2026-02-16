@@ -34,6 +34,7 @@ import type {
 	ScriptInputEvent,
 	ScriptSandboxConfig,
 } from "../../../../scripting/types";
+import type { EffectDispatcher } from "../../../EffectDispatcher";
 import { SequenceManager } from "../../../SequenceManager";
 import {
 	type VoiceGenerationAdapter,
@@ -115,6 +116,7 @@ export class ScriptSandboxRuntimeSystem
 	private moduleStartCalled: Set<string> = new Set();
 	private voicePrepareService: VoicePrepareService | null = null;
 	private scriptRefErrors: ScriptRefError[] = [];
+	private effectDispatcher: EffectDispatcher | null = null;
 
 	constructor(config: ScriptSandboxSystemConfig) {
 		this.config = config;
@@ -153,6 +155,7 @@ export class ScriptSandboxRuntimeSystem
 			);
 		}
 		this.worldOps = ctx.worldOps;
+		this.effectDispatcher = ctx.effectDispatcher ?? null;
 
 		this.sequenceManager = new SequenceManager();
 		this.seededRandom = this.createSeededRandom(Date.now());
@@ -784,6 +787,7 @@ export class ScriptSandboxRuntimeSystem
 		this.moduleHooks.clear();
 		this.moduleStartCalled.clear();
 		this.scriptRefErrors = [];
+		this.effectDispatcher = null;
 	}
 
 	getState(): ScriptSandboxSystemState {
@@ -1567,6 +1571,39 @@ export class ScriptSandboxRuntimeSystem
 
 			cameraZoom: (scale: number, duration?: number): void => {
 				bridge.zoomPunch(scale, duration);
+			},
+
+			applySpriteEffect: (
+				entityId: string,
+				effect: string,
+				params?: Record<string, unknown>,
+			): string => {
+				if (!this.effectDispatcher) {
+					return "";
+				}
+				return this.effectDispatcher.applyScriptEffect(
+					entityId,
+					effect,
+					params,
+				);
+			},
+
+			updateSpriteEffectParam: (
+				entityId: string,
+				effectId: string,
+				paramName: string,
+				value: unknown,
+			): void => {
+				this.effectDispatcher?.updateScriptEffectParam(
+					entityId,
+					effectId,
+					paramName,
+					value,
+				);
+			},
+
+			clearSpriteEffect: (entityId: string, effectId?: string): void => {
+				this.effectDispatcher?.clearScriptEffect(entityId, effectId);
 			},
 
 			setTimeScale: (scale: number, duration?: number): void => {

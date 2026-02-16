@@ -1,0 +1,10 @@
+Command: pnpm tsc --noEmit
+Result: success (exit code 0)
+Output:
+tsc ok
+
+Verification command: grep "entityEffects" shared/src/types
+Result: no matches
+
+Verification command: grep "entityEffects" shared/src/scripting
+Result: no matches

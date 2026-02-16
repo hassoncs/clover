@@ -4,32 +4,5 @@
 			"filename": "rainbow_wave.gdshader",
 			"glsl": "shader_type canvas_item;\n\nuniform float speed : hint_range(0.0, 5.0) = 1.5;\nuniform float frequency : hint_range(1.0, 20.0) = 6.0;\nuniform float saturation : hint_range(0.0, 1.0) = 0.85;\nuniform float brightness : hint_range(0.0, 1.0) = 0.95;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat wave = sin(UV.x * frequency + UV.y * frequency * 0.7 + TIME * speed) * 0.5 + 0.5;\n\tfloat hue = fract(wave + TIME * 0.1);\n\tvec3 rainbow = hsv2rgb(vec3(hue, saturation, brightness));\n\tCOLOR = vec4(rainbow * tex.rgb, tex.a);\n}"
 		}
-	},
-	"entityEffects": [
-		{
-			"entityId": "cube1",
-			"glsl": "shader_type canvas_item;\n\nuniform float speed : hint_range(0.0, 5.0) = 1.5;\nuniform float frequency : hint_range(1.0, 20.0) = 6.0;\nuniform float saturation : hint_range(0.0, 1.0) = 0.85;\nuniform float brightness : hint_range(0.0, 1.0) = 0.95;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat wave = sin(UV.x * frequency + UV.y * frequency * 0.7 + TIME * speed) * 0.5 + 0.5;\n\tfloat hue = fract(wave + TIME * 0.1);\n\tvec3 rainbow = hsv2rgb(vec3(hue, saturation, brightness));\n\tCOLOR = vec4(rainbow * tex.rgb, tex.a);\n}",
-			"params": {}
-		},
-		{
-			"entityId": "cube2",
-			"glsl": "shader_type canvas_item;\n\nuniform float speed : hint_range(0.0, 5.0) = 1.5;\nuniform float frequency : hint_range(1.0, 20.0) = 6.0;\nuniform float saturation : hint_range(0.0, 1.0) = 0.85;\nuniform float brightness : hint_range(0.0, 1.0) = 0.95;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat wave = sin(UV.x * frequency + UV.y * frequency * 0.7 + TIME * speed) * 0.5 + 0.5;\n\tfloat hue = fract(wave + TIME * 0.1);\n\tvec3 rainbow = hsv2rgb(vec3(hue, saturation, brightness));\n\tCOLOR = vec4(rainbow * tex.rgb, tex.a);\n}",
-			"params": {}
-		},
-		{
-			"entityId": "circle1",
-			"glsl": "shader_type canvas_item;\n\nuniform float speed : hint_range(0.0, 5.0) = 1.5;\nuniform float frequency : hint_range(1.0, 20.0) = 6.0;\nuniform float saturation : hint_range(0.0, 1.0) = 0.85;\nuniform float brightness : hint_range(0.0, 1.0) = 0.95;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat wave = sin(UV.x * frequency + UV.y * frequency * 0.7 + TIME * speed) * 0.5 + 0.5;\n\tfloat hue = fract(wave + TIME * 0.1);\n\tvec3 rainbow = hsv2rgb(vec3(hue, saturation, brightness));\n\tCOLOR = vec4(rainbow * tex.rgb, tex.a);\n}",
-			"params": {}
-		},
-		{
-			"entityId": "circle2",
-			"glsl": "shader_type canvas_item;\n\nuniform float speed : hint_range(0.0, 5.0) = 1.5;\nuniform float frequency : hint_range(1.0, 20.0) = 6.0;\nuniform float saturation : hint_range(0.0, 1.0) = 0.85;\nuniform float brightness : hint_range(0.0, 1.0) = 0.95;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat wave = sin(UV.x * frequency + UV.y * frequency * 0.7 + TIME * speed) * 0.5 + 0.5;\n\tfloat hue = fract(wave + TIME * 0.1);\n\tvec3 rainbow = hsv2rgb(vec3(hue, saturation, brightness));\n\tCOLOR = vec4(rainbow * tex.rgb, tex.a);\n}",
-			"params": {}
-		},
-		{
-			"entityId": "circle3",
-			"glsl": "shader_type canvas_item;\n\nuniform float speed : hint_range(0.0, 5.0) = 1.5;\nuniform float frequency : hint_range(1.0, 20.0) = 6.0;\nuniform float saturation : hint_range(0.0, 1.0) = 0.85;\nuniform float brightness : hint_range(0.0, 1.0) = 0.95;\n\nvec3 hsv2rgb(vec3 c) {\n\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n\treturn c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n}\n\nvoid fragment() {\n\tvec4 tex = texture(TEXTURE, UV);\n\tfloat wave = sin(UV.x * frequency + UV.y * frequency * 0.7 + TIME * speed) * 0.5 + 0.5;\n\tfloat hue = fract(wave + TIME * 0.1);\n\tvec3 rainbow = hsv2rgb(vec3(hue, saturation, brightness));\n\tCOLOR = vec4(rainbow * tex.rgb, tex.a);\n}",
-			"params": {}
-		}
-	]
+	}
 }

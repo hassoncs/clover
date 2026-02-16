@@ -73,6 +73,33 @@ EffectGraphSpec
 | `__feedback:{from}->{to}` | Feedback connection | `"__feedback:fx->fx"` |
 | `__pingpong:{passId}` | Internal ping-pong pair | Created by PingPongManager |
 
+## Sprite Effects (Canonical)
+
+Sprite effects are per-entity visual modifications. They use a predefined vocabulary and are managed by the `EffectDispatcher`.
+
+### Declarative Usage
+
+```typescript
+// In EntityPrefab or GameEntity
+effects: [{ effect: 'outline', params: { color: '#fff' } }],
+effectStates: [
+  {
+    when: { hasTag: 'active' },
+    priority: 1,
+    effects: [{ effect: 'glow', params: { pulse: true } }]
+  }
+]
+```
+
+### Scripting Usage
+
+```typescript
+// Script-applied effects have HIGHEST precedence
+const id = ctx.applySpriteEffect(entityId, 'tint', { color: '#f00' });
+ctx.updateSpriteEffectParam(entityId, id, 'intensity', 0.5);
+ctx.clearSpriteEffect(entityId, id);
+```
+
 ## Common Patterns
 
 ### Basic Effect Graph

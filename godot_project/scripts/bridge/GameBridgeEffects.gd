@@ -40,6 +40,7 @@ func _ready() -> void:
 
 	# Find GameBridge autoload
 	_game_bridge = get_node_or_null("/root/GameBridge")
+	_connect_lifecycle_hooks()
 
 	_build_effects_method_map()
 	_register_query_handlers()
@@ -190,6 +191,10 @@ func _register_query_handlers() -> void:
 		if args.size() > 0 and args[0] is Dictionary:
 			return restore_snapshot(args[0].get("snapshot", args[0]))
 		return {"success": false, "error": "Missing snapshot argument"}
+	)
+
+	qs.register_handler("effects.getSpriteEffectDiagnostics", func(_args):
+		return get_sprite_effect_diagnostics()
 	)
 
 	# NOTE: drawToActiveBuffer, setExternalInput, setScreenInput, and
@@ -378,6 +383,26 @@ func _set_last_result(result: Dictionary) -> void:
 	# Store result for JS to retrieve
 	JavaScriptBridge.eval("window.GodotBridge._lastResult = %s;" % JSON.stringify(result))
 
+func _connect_lifecycle_hooks() -> void:
+	if _game_bridge == null:
+		return
+	if _game_bridge.has_signal("entity_destroyed"):
+		var hook = Callable(self, "_on_entity_destroyed")
+		if not _game_bridge.entity_destroyed.is_connected(hook):
+			_game_bridge.entity_destroyed.connect(hook)
+
+func _on_entity_destroyed(entity_id: String) -> void:
+	var existing: Dictionary = _entity_effects.get(entity_id, {})
+	var canvas_item: CanvasItem = existing.get("canvas_item")
+	clear_sprite_effect(entity_id)
+	if canvas_item != null and canvas_item == _entity_sprite:
+		_entity_sprite = null
+		_entity_original_texture = null
+		_entity_original_scale = Vector2.ONE
+
+func _on_effect_canvas_item_tree_exited(entity_id: String) -> void:
+	clear_sprite_effect(entity_id)
+
 # ============================================================
 # PUBLIC API - SPRITE EFFECTS
 # ============================================================
@@ -459,6 +484,7 @@ func apply_sprite_effect(entity_id: String, effect_name: String, params = {}) ->
 
 	canvas_item.material = material
 	_entity_effects[entity_id] = { "material": material, "canvas_item": canvas_item, "cache_key": cache_key }
+	canvas_item.tree_exited.connect(_on_effect_canvas_item_tree_exited.bind(entity_id), CONNECT_ONE_SHOT)
 
 	# Propagate to child CanvasItems via use_parent_material for batching
 	var propagate: bool = false
@@ -498,6 +524,32 @@ func clear_sprite_effect(entity_id: String) -> void:
 	if canvas_item != null and is_instance_valid(canvas_item):
 		canvas_item.material = null
 	_entity_effects.erase(entity_id)
+
+func clear_all_sprite_effects() -> void:
+	for entity_id in _entity_effects.keys().duplicate():
+		clear_sprite_effect(str(entity_id))
+
+func get_sprite_effect_diagnostics() -> Dictionary:
+	var tracked_entities: Array[String] = []
+	for entity_id in _entity_effects.keys():
+		tracked_entities.append(str(entity_id))
+	tracked_entities.sort()
+
+	var material_ref_counts := {}
+	var total_material_refs := 0
+	for cache_key in _material_cache.keys():
+		var entry: Dictionary = _material_cache[cache_key]
+		var refcount = int(entry.get("refcount", 0))
+		material_ref_counts[str(cache_key)] = refcount
+		total_material_refs += refcount
+
+	return {
+		"trackedEntityCount": tracked_entities.size(),
+		"trackedEntities": tracked_entities,
+		"materialCacheSize": _material_cache.size(),
+		"materialRefCounts": material_ref_counts,
+		"totalMaterialRefs": total_material_refs,
+	}
 
 func _set_children_use_parent_material(node: Node, enabled: bool) -> void:
 	for child in node.get_children():

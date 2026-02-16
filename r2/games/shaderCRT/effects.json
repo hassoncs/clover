@@ -1,13 +1,4 @@
 {
-	"entityEffects": [
-		{
-			"entityId": "ball",
-			"glsl": "shader_type canvas_item;\nuniform float pulse_speed : hint_range(0.5, 8.0) = 3.0;\n\nvoid fragment() {\n\tfloat pulse = sin(TIME * pulse_speed) * 0.5 + 0.5;\n\tvec3 hot = vec3(1.0, 0.3, 0.0);\n\tvec3 cool = vec3(0.0, 1.0, 0.5);\n\tCOLOR = vec4(mix(cool, hot, pulse) * (1.0 + pulse * 0.5), COLOR.a);\n}",
-			"params": {
-				"pulse_speed": 3.0
-			}
-		}
-	],
 	"graph": {
 		"id": "crt-effect",
 		"version": "1.0.0",

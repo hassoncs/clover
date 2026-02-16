@@ -571,11 +571,6 @@ export interface GameDefinition {
 		graph?: unknown;
 		graphs?: unknown[];
 		shaders?: Record<string, { filename: string; glsl: string }>;
-		entityEffects?: Array<{
-			entityId: string;
-			glsl: string;
-			params?: Record<string, unknown>;
-		}>;
 	};
 
 	hoverHighlight?: HoverHighlightConfig;

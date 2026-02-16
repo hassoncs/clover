@@ -821,6 +821,17 @@ export class EffectsGraphAdapter
 	}
 
 	getInspectorConfig(nodeType: string): InspectorConfig | null {
-		return INSPECTOR_CONFIGS[nodeType] ?? null;
+		const config = INSPECTOR_CONFIGS[nodeType];
+		if (config) return config;
+
+		const inCatalog = NODE_CATALOG.some((entry) => entry.type === nodeType);
+		if (inCatalog) {
+			return {
+				nodeType,
+				sections: [{ label: "Parameters", fields: [] }],
+			};
+		}
+
+		return null;
 	}
 }

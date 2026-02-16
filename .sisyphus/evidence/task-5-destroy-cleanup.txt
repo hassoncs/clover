@@ -1,0 +1,68 @@
+Task 5 Evidence: Godot Sprite Effect Destroy/Reset Cleanup
+Date: 2026-02-16
+
+Scope
+- Verified and patched Godot lifecycle integration for canonical sprite effect state.
+- Ensured no second material cache path was introduced.
+
+Code Changes
+1) Entity metadata persistence (canonical fields)
+   - File: godot_project/scripts/entity/EntityFactory.gd
+   - Added `_set_canonical_effect_metadata(node, merged)` and invoked it in both:
+     - root entity creation path
+     - child entity creation path
+   - Persisted node metadata keys:
+     - `effects`
+     - `effectStates`
+
+2) Destroy lifecycle cleanup hooks for sprite effect state
+   - File: godot_project/scripts/bridge/GameBridgeEffects.gd
+   - Added lifecycle hookup in `_ready()` via `_connect_lifecycle_hooks()`.
+   - Connected to `GameBridge.entity_destroyed` and clear per-entity sprite effects on destroy.
+   - Added tree-exit fallback hook in `apply_sprite_effect()` to clear stale entries when canvas leaves scene tree.
+   - Added reset helper `clear_all_sprite_effects()` to clean all tracked entity/material entries.
+
+3) Reset path cleanup
+   - File: godot_project/scripts/GameBridge.gd
+   - `clear_game()` now invokes `effects_bridge.clear_all_sprite_effects()` before graph clear/reset.
+
+4) Diagnostics endpoint for cleanup assertions
+   - File: godot_project/scripts/bridge/GameBridgeEffects.gd
+   - Added query handler: `effects.getSpriteEffectDiagnostics`
+   - Returns:
+     - `trackedEntityCount`
+     - `trackedEntities`
+     - `materialCacheSize`
+     - `materialRefCounts`
+     - `totalMaterialRefs`
+
+5) Automated scenario test coverage
+   - File: tests/e2e/bridge/bridge.test.ts
+   - Added test:
+     - `destroy_entity clears sprite effect registry and material cache`
+   - Test flow matches task scenario:
+     1. Spawn entity
+     2. Apply sprite effect
+     3. Query diagnostics
+     4. Destroy entity
+     5. Query diagnostics and assert no residual state
+
+Verification Outputs
+1) LSP diagnostics (errors only) on changed files
+   - godot_project/scripts/entity/EntityFactory.gd -> no errors
+   - godot_project/scripts/bridge/GameBridgeEffects.gd -> no errors
+   - godot_project/scripts/GameBridge.gd -> no errors
+   - tests/e2e/bridge/bridge.test.ts -> no errors
+
+2) Bridge test execution status
+   - Command attempted:
+     `pnpm test:bridge -- tests/e2e/bridge/bridge.test.ts -t "destroy_entity clears sprite effect registry and material cache"`
+   - Environment result:
+     - `vitest: command not found`
+     - pnpm warning: local package exists but `node_modules` missing
+   - Conclusion: runtime E2E execution blocked by missing dependency installation in this worktree.
+
+Conclusion
+- Entity destroy/reset paths now actively clear sprite effect registry/material cache state through the existing cache model.
+- Destroyed entities no longer retain expected residual entries in `_entity_effects` when lifecycle hooks fire.
+- No parallel cache implementation was introduced.

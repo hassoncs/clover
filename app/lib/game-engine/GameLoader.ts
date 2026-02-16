@@ -270,20 +270,6 @@ export class GameLoader {
 				this.bridge.hotSwapShader(id, entry.glsl);
 			}
 		}
-
-		if (definition.effects.entityEffects) {
-			console.log(
-				"[GameLoader] Applying entityEffects: count=" +
-					definition.effects.entityEffects.length,
-			);
-			for (const effect of definition.effects.entityEffects) {
-				this.bridge.applySpriteEffect(
-					effect.entityId,
-					effect.glsl,
-					effect.params ?? {},
-				);
-			}
-		}
 	}
 
 	reload(game: LoadedGame): LoadedGame {

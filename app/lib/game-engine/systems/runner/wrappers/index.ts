@@ -58,6 +58,11 @@ export type {
 } from "./ScriptSandboxRuntimeSystem";
 export { ScriptSandboxRuntimeSystem } from "./ScriptSandboxRuntimeSystem";
 export type {
+	SpriteEffectsSystemConfig,
+	SpriteEffectsSystemState,
+} from "./SpriteEffectsRuntimeSystem";
+export { SpriteEffectsRuntimeSystem } from "./SpriteEffectsRuntimeSystem";
+export type {
 	TargetPositionSystemConfig,
 	TargetPositionSystemState,
 } from "./TargetPositionRuntimeSystem";

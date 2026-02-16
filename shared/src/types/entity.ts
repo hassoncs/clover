@@ -1,4 +1,5 @@
 import type { CharacterComponent } from "./character";
+import type { EffectStateGroup, SpriteEffectConfig } from "./effects";
 import type {
 	ColliderComponent,
 	EntityArchetype,
@@ -75,6 +76,8 @@ export interface GameEntity {
 	physics?: PhysicsComponent;
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
+	effects?: SpriteEffectConfig[];
+	effectStates?: EffectStateGroup[];
 
 	tags?: string[];
 	layer?: number;
@@ -121,6 +124,8 @@ export interface BaseEntityPrefab {
 	physics?: PhysicsComponent;
 	collider?: ColliderComponent;
 	character?: CharacterComponent;
+	effects?: SpriteEffectConfig[];
+	effectStates?: EffectStateGroup[];
 
 	tags?: string[];
 	layer?: number;
