@@ -1041,16 +1041,16 @@ Every piece of generated content is scored on:
 - [x] Rate limiting and abuse prevention for free tier
 
 **Lane B (Frontend)**
-- [ ] UI polish: animations, loading states, error handling
+- [x] UI polish: animations, loading states, error handling
 - [ ] Test all 8 Tier 1 games end-to-end with real content
-- [ ] Accessibility check (font sizes, contrast ratios, screen reader)
+- [x] Accessibility check (font sizes, contrast ratios, screen reader)
 - [ ] Fix any App Store review feedback
 
 **Lane C (Content)**
 - [ ] Complete human QA review
 - [ ] Fix/replace any flagged content items
 - [ ] Begin Tier 2 game content generation (if capacity allows)
-- [ ] Create "Easter Special" content pack (Holy Week themed)
+- [x] Create "Easter Special" content pack (Holy Week themed)
 
 **Lane D (GTM)**
 - [ ] **Pilot test with 3-5 church/family groups** (recruit from personal network + online communities)
@@ -1078,7 +1078,7 @@ Every piece of generated content is scored on:
 - [ ] Marketing landing page live at amen.games (features, pricing, signup)
 - [ ] Begin organic social media content (Bible trivia clips, game previews)
 - [ ] Outreach to Christian bloggers, podcasters, and media outlets
-- [ ] Create "Church Starter Kit" — PDF guide for pastors on how to use the app
+- [x] Create "Church Starter Kit" — PDF guide for pastors on how to use the app
 
 ### Week 6: Mar 23-29 — Holy Week Prep
 
