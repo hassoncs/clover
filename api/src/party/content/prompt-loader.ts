@@ -21,8 +21,10 @@ import type {
 	WouldYouRather,
 } from "@slopcade/content-pipeline";
 import fakeWordsData from "./fake-words.json";
+import { getActivePacksForType } from "./pack-scheduler";
 import amenDilemmaData from "./packs/amen/amen-dilemma.json";
 import amenDrawingData from "./packs/amen/amen-drawing.json";
+import amenEasterSpecialData from "./packs/amen/amen-easter-special.json";
 import amenFibbageData from "./packs/amen/amen-fibbage.json";
 import amenHeadsUpData from "./packs/amen/amen-headsup.json";
 import amenHistoryData from "./packs/amen/amen-history.json";
@@ -136,6 +138,15 @@ const contentPacks: Record<
 	},
 };
 
+const scheduledContentPacks: Record<
+	string,
+	Partial<{ [K in ContentType]: unknown[] }>
+> = {
+	"amen-easter-special": amenEasterSpecialData as Partial<{
+		[K in ContentType]: unknown[];
+	}>,
+};
+
 // ============================================================================
 // Content Loading Functions
 // ============================================================================
@@ -155,21 +166,33 @@ export function loadContentPack<T extends ContentType>(
 	brandId?: string,
 ): ContentItem<T>[] {
 	const brand = brandId || DEFAULT_BRAND;
+	const brandPacks = contentPacks[brand] ?? {};
+	const defaultPacks = contentPacks[DEFAULT_BRAND] ?? {};
+	const basePack =
+		(brandPacks[type] as ContentItem<T>[] | undefined) ??
+		(defaultPacks[type] as ContentItem<T>[] | undefined);
 
-	const brandPacks = contentPacks[brand];
-	if (brandPacks?.[type]) {
-		return [...brandPacks[type]] as ContentItem<T>[];
+	if (!basePack) {
+		throw new Error(
+			`Content pack not found for type "${type}" (brand: ${brand}). ` +
+				`Available types: ${getAvailableContentTypes(brand).join(", ") || "none"}`,
+		);
 	}
 
-	const defaultPacks = contentPacks[DEFAULT_BRAND];
-	if (defaultPacks?.[type]) {
-		return [...defaultPacks[type]] as ContentItem<T>[];
+	const mergedPack = [...basePack];
+	const activeSeasonalPacks = getActivePacksForType(brand, type);
+
+	for (const seasonalPack of activeSeasonalPacks) {
+		const seasonalContent = scheduledContentPacks[seasonalPack.packId]?.[
+			type
+		] as ContentItem<T>[] | undefined;
+
+		if (seasonalContent) {
+			mergedPack.push(...seasonalContent);
+		}
 	}
 
-	throw new Error(
-		`Content pack not found for type "${type}" (brand: ${brand}). ` +
-			`Available types: ${getAvailableContentTypes(brand).join(", ") || "none"}`,
-	);
+	return mergedPack;
 }
 
 /**

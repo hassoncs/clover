@@ -11,6 +11,7 @@ import { economyGraphRouter } from "./routes/economy-graph";
 import { gamesRouter } from "./routes/games";
 import { invitesRouter } from "./routes/invites";
 import { moderationRouter } from "./routes/moderation";
+import { monitoringRouter } from "./routes/monitoring";
 import { notificationsRouter } from "./routes/notifications";
 import { organizationsRouter } from "./routes/organizations";
 import { packageCompilerRouter } from "./routes/package-compiler";
@@ -41,6 +42,7 @@ export const appRouter = router({
 	notifications: notificationsRouter,
 	organizations: organizationsRouter,
 	moderation: moderationRouter,
+	monitoring: monitoringRouter,
 	packageReadiness: packageReadinessRouter,
 	packageCompiler: packageCompilerRouter,
 

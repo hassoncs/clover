@@ -10,7 +10,12 @@ import {
 } from "@/billing/org-subscription-tiers";
 import { OrgWebhookHandler } from "@/billing/org-webhook-handler";
 import { StripeService } from "@/billing/stripe-service";
-import { protectedProcedure, publicProcedure, router } from "../index";
+import {
+	adminProcedure,
+	protectedProcedure,
+	publicProcedure,
+	router,
+} from "../index";
 
 type D1Database = import("@cloudflare/workers-types").D1Database;
 
@@ -454,4 +459,31 @@ export const billingRouter = router({
 
 			return { success: true };
 		}),
+
+	getWaitlistCount: publicProcedure.query(async ({ ctx }) => {
+		const result = await ctx.env.DB.prepare(
+			"SELECT COUNT(*) as count FROM email_waitlist WHERE brand_id = ?",
+		)
+			.bind(ctx.brandId)
+			.first<{ count: number }>();
+
+		return {
+			count: result?.count ?? 0,
+		};
+	}),
+
+	getWaitlistEmails: adminProcedure.query(async ({ ctx }) => {
+		const result = await ctx.env.DB.prepare(
+			"SELECT email FROM email_waitlist WHERE brand_id = ? ORDER BY created_at DESC",
+		)
+			.bind(ctx.brandId)
+			.all<{ email: string }>();
+
+		const emails = result.results.map((row) => row.email);
+
+		return {
+			emails,
+			count: emails.length,
+		};
+	}),
 });
