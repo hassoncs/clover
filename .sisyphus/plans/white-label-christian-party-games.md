@@ -1060,7 +1060,7 @@ Every piece of generated content is scored on:
 ### Week 5: Mar 16-22 — Content Freeze + Marketing Push
 
 **Lane A (Backend)**
-- [ ] Production environment finalized (monitoring, error tracking, alerting)
+- [x] Production environment finalized (monitoring, error tracking, alerting)
 - [ ] Scaling check: can Cloudflare Workers handle projected load?
 - [x] Final security review: brand isolation, data leakage prevention
 
@@ -1072,10 +1072,10 @@ Every piece of generated content is scored on:
 **Lane C (Content)**
 - [ ] Content freeze — no new content after this week
 - [ ] Final review of all deployed packs
-- [ ] Easter Special pack finalized and staged for Holy Week
+- [x] Easter Special pack finalized and staged for Holy Week
 
 **Lane D (GTM)**
-- [ ] Marketing landing page live at amen.games (features, pricing, signup)
+- [x] Marketing landing page live at amen.games (features, pricing, signup)
 - [ ] Begin organic social media content (Bible trivia clips, game previews)
 - [ ] Outreach to Christian bloggers, podcasters, and media outlets
 - [x] Create "Church Starter Kit" — PDF guide for pastors on how to use the app
@@ -1084,21 +1084,21 @@ Every piece of generated content is scored on:
 
 **Lane A (Backend)**
 - [ ] Production readiness: load testing, failover, backup verification
-- [ ] Monitoring dashboards for launch day (error rates, signup velocity, game sessions)
+- [x] Monitoring dashboards for launch day (error rates, signup velocity, game sessions)
 
 **Lane B (Frontend)**
 - [ ] Final build approved on App Store + Play Store
 - [x] Deep link testing: join codes, join links, universal links
 
 **Lane C (Content)**
-- [ ] Easter Special content pack deployed (activate Holy Monday)
-- [ ] "Daily Scripture" feature for Holy Week (optional engagement hook)
+- [x] Easter Special content pack deployed (activate Holy Monday)
+- [x] "Daily Scripture" feature for Holy Week (optional engagement hook)
 
 **Lane D (GTM)**
 - [ ] Distribute press/influencer kits (app promo codes, screenshots, talking points)
 - [ ] Partner churches announce amen.games to their congregations
 - [ ] Holy Week social media campaign: daily Bible trivia clips
-- [ ] Email blast to waitlist: "Amen launches this Easter!"
+- [x] Email blast to waitlist: "Amen launches this Easter!"
 
 ### Week 7: Mar 30 - Apr 5 — LAUNCH
 
