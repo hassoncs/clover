@@ -67,6 +67,7 @@ export const amenManifest: BrandManifest = {
 	termsUrl: "https://amen.games/terms",
 	privacyUrl: "https://amen.games/privacy",
 	supportEmail: "support@amen.games",
+	appStoreReviewUrl: "",
 
 	monetization: {
 		hasIndividualSub: true,

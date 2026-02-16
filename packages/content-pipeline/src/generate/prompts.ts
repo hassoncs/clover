@@ -10,6 +10,7 @@ import {
 	WordGamePromptSchema,
 	WouldYouRatherSchema,
 } from "../types/index.js";
+import { AMEN_GAME_TYPE_CONFIGS } from "./amen-prompts.js";
 
 export interface GameTypeConfig {
 	schema: z.ZodType<{ items: unknown[] }>;
@@ -96,4 +97,5 @@ export const GAME_TYPE_CONFIGS: Record<string, GameTypeConfig> = {
 		promptTemplate: (count) =>
 			`Generate ${count} color clue packs. Each pack should have: clues (5 distinct 1-word clues for a color), bannedColorNames (list any basic color words that would be cheating to use). Cover various hues and saturations across the color spectrum.`,
 	},
+	...AMEN_GAME_TYPE_CONFIGS,
 };

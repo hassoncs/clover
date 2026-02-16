@@ -86,6 +86,7 @@ export interface BrandManifest {
 	termsUrl: string;
 	privacyUrl: string;
 	supportEmail: string;
+	appStoreReviewUrl?: string;
 
 	// Monetization
 	monetization: BrandMonetization;

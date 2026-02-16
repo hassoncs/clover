@@ -1,4 +1,6 @@
 interface StripeCheckoutProps {
+	priceId?: string;
+	priceDisplay?: string;
 	onSuccess: () => void;
 	onError: (error: string) => void;
 }

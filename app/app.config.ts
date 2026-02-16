@@ -37,10 +37,25 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		ios: {
 			...baseConfig.ios,
 			bundleIdentifier: brand.ios.bundleIdentifier,
+			associatedDomains: [`applinks:${brand.domain}`],
 		},
 		android: {
 			...baseConfig.android,
 			package: brand.android.package,
+			intentFilters: [
+				{
+					action: "VIEW",
+					autoVerify: true,
+					data: [
+						{
+							scheme: "https",
+							host: brand.domain,
+							pathPrefix: "/join",
+						},
+					],
+					category: ["BROWSABLE", "DEFAULT"],
+				},
+			],
 		},
 
 		icon: `./assets/brands/${brand.id}/icon.png`,

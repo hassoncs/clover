@@ -487,15 +487,15 @@ headers: () => ({
 
 ### UI Isolation Checklist
 
-- [ ] Replace all hardcoded "Slopcade" strings with `activeBrand.displayName`
-- [ ] Gate game editor UI behind `activeBrand.features.gameEditor`
-- [ ] Gate AI generation UI behind `activeBrand.features.aiGeneration`
-- [ ] Hide "Create Game" flows when `activeBrand.features.userGeneratedContent === false`
+- [x] Replace all hardcoded "Slopcade" strings with `activeBrand.displayName`
+- [x] Gate game editor UI behind `activeBrand.features.gameEditor`
+- [x] Gate AI generation UI behind `activeBrand.features.aiGeneration`
+- [x] Hide "Create Game" flows when `activeBrand.features.userGeneratedContent === false`
 - [ ] Show only party games when `activeBrand.features.partyGamesOnly === true`
-- [ ] Apply brand-specific Terms/Privacy URLs from manifest
-- [ ] No cross-brand links, logos, or legal references anywhere in the UI
+- [x] Apply brand-specific Terms/Privacy URLs from manifest
+- [x] No cross-brand links, logos, or legal references anywhere in the UI
 - [ ] Brand-specific app store review URL
-- [ ] Brand-specific support/contact email
+- [x] Brand-specific support/contact email
 
 ---
 
@@ -976,22 +976,22 @@ Every piece of generated content is scored on:
 - [x] Lock brand name, tagline, color palette (DONE — amen.games)
 - [ ] Register App Store Connect app + Google Play Console listing
 - [ ] Commission app icon and splash screen design
-- [ ] Set up amen.games landing page (simple "Coming Easter 2026" + email capture)
+- [x] Set up amen.games landing page (simple "Coming Easter 2026" + email capture)
 
 ### Week 2: Feb 23 - Mar 1 — Integration
 
 **Lane A (Backend)**
-- [ ] Complete tRPC brand-scoped routing (all list/read endpoints filtered)
-- [ ] Wire brand-aware content pack loading
-- [ ] Create organization CRUD endpoints (create org, join, leave, manage)
-- [ ] Set up Stripe products for church subscription tiers
+- [x] Complete tRPC brand-scoped routing (all list/read endpoints filtered)
+- [x] Wire brand-aware content pack loading
+- [x] Create organization CRUD endpoints (create org, join, leave, manage)
+- [x] Set up Stripe products for church subscription tiers
 
 **Lane B (Frontend)**
-- [ ] Create amen.games theme tokens (colors, fonts, border radii)
-- [ ] Apply brand theme via CSS variable overrides in global.css
-- [ ] Replace hardcoded strings with `activeBrand.*` references
+- [x] Create amen.games theme tokens (colors, fonts, border radii)
+- [x] Apply brand theme via CSS variable overrides in global.css
+- [x] Replace hardcoded strings with `activeBrand.*` references
 - [x] Add EAS build profiles for amen brand
-- [ ] Gate game editor / AI features behind feature flags
+- [x] Gate game editor / AI features behind feature flags
 - [ ] **First internal build of amen.games app variant**
 
 **Lane C (Content)**
@@ -1010,15 +1010,15 @@ Every piece of generated content is scored on:
 ### Week 3: Mar 2-8 — Content Depth + App Review
 
 **Lane A (Backend)**
-- [ ] Organization join flow (join link + join code)
-- [ ] Org entitlement checking (member of org with active sub → full access)
-- [ ] Stripe webhook integration for org subscriptions
+- [x] Organization join flow (join link + join code)
+- [x] Org entitlement checking (member of org with active sub → full access)
+- [x] Stripe webhook integration for org subscriptions
 - [ ] Individual subscription support (RevenueCat + Stripe)
 
 **Lane B (Frontend)**
-- [ ] Organization join UI (enter code / deep link handling)
-- [ ] Organization admin dashboard (member list, usage stats, billing)
-- [ ] Free tier rate limiting UI (show "2 of 2 free sessions used this week")
+- [x] Organization join UI (enter code / deep link handling)
+- [x] Organization admin dashboard (member list, usage stats, billing)
+- [x] Free tier rate limiting UI (show "2 of 2 free sessions used this week")
 - [ ] **Submit to App Store / Play Store review** (allow 3-5 days for review)
 
 **Lane C (Content)**
@@ -1038,7 +1038,7 @@ Every piece of generated content is scored on:
 **Lane A (Backend)**
 - [ ] Bug fixes from testing
 - [ ] Performance testing with concurrent party game sessions
-- [ ] Rate limiting and abuse prevention for free tier
+- [x] Rate limiting and abuse prevention for free tier
 
 **Lane B (Frontend)**
 - [ ] UI polish: animations, loading states, error handling

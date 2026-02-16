@@ -34,6 +34,16 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 	},
 };
 
+export const AMEN_INDIVIDUAL_TIERS = {
+	amen_plus_monthly: { name: "Amen+ Monthly", price: 499, interval: "month" },
+	amen_plus_yearly: {
+		name: "Amen+ Yearly",
+		price: 3999,
+		interval: "year",
+		savings: "33%",
+	},
+};
+
 export function getTierLimits(isPro: boolean): TierLimits {
 	return TIER_LIMITS[isPro ? "pro" : "free"];
 }

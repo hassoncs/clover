@@ -7,6 +7,7 @@ import {
 import { loadStripe } from "@stripe/stripe-js";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { activeBrand } from "@/lib/brand";
 import { env } from "@/lib/config/env";
 import { trpc } from "@/lib/trpc/client";
 
@@ -16,11 +17,17 @@ const stripePromise = env.stripePublishableKey
 	: null;
 
 interface StripeCheckoutProps {
+	priceId?: string;
+	priceDisplay?: string;
 	onSuccess: () => void;
 	onError: (error: string) => void;
 }
 
-function CheckoutForm({ onSuccess, onError }: StripeCheckoutProps) {
+function CheckoutForm({
+	onSuccess,
+	onError,
+	priceDisplay,
+}: StripeCheckoutProps) {
 	const stripe = useStripe();
 	const elements = useElements();
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -59,6 +66,12 @@ function CheckoutForm({ onSuccess, onError }: StripeCheckoutProps) {
 		}
 	};
 
+	const isAmen = activeBrand.id === "amen";
+	const buttonColor = isAmen ? "bg-[#1B3A6B]" : "bg-indigo-600";
+	const buttonActiveColor = isAmen
+		? "active:bg-[#152C52]"
+		: "active:bg-indigo-700";
+
 	return (
 		<View className="w-full">
 			<View className="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-4">
@@ -79,14 +92,14 @@ function CheckoutForm({ onSuccess, onError }: StripeCheckoutProps) {
 				className={`py-4 rounded-xl items-center ${
 					!stripe || isProcessing
 						? "bg-gray-700"
-						: "bg-indigo-600 active:bg-indigo-700"
+						: `${buttonColor} ${buttonActiveColor}`
 				}`}
 			>
 				{isProcessing ? (
 					<ActivityIndicator size="small" color="#FFFFFF" />
 				) : (
 					<Text className="text-white font-semibold text-lg">
-						Subscribe — $9.99/mo
+						Subscribe — {priceDisplay || "$9.99/mo"}
 					</Text>
 				)}
 			</Pressable>
@@ -112,7 +125,9 @@ export default function StripeCheckout(props: StripeCheckoutProps) {
 
 		async function initPayment() {
 			try {
-				const result = await trpc.billing.createSubscriptionIntent.mutate({});
+				const result = await trpc.billing.createSubscriptionIntent.mutate({
+					priceId: props.priceId,
+				});
 				if (mounted) {
 					if (result.clientSecret) {
 						setClientSecret(result.clientSecret);
@@ -140,7 +155,7 @@ export default function StripeCheckout(props: StripeCheckoutProps) {
 		return () => {
 			mounted = false;
 		};
-	}, []);
+	}, [props.priceId]);
 
 	if (isLoading) {
 		return (

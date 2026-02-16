@@ -285,6 +285,34 @@ export const organizationsRouter = router({
 			};
 		}),
 
+	getBySlug: protectedProcedure
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const org = await ctx.env.DB.prepare(
+				`SELECT * FROM organizations WHERE slug = ? AND brand_id = ?`,
+			)
+				.bind(input.slug, ctx.brandId)
+				.first<OrganizationRow>();
+
+			if (!org) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Organization not found",
+				});
+			}
+
+			const membership = await ctx.env.DB.prepare(
+				`SELECT role FROM organization_members WHERE org_id = ? AND user_id = ?`,
+			)
+				.bind(org.id, ctx.user.id)
+				.first<{ role: "admin" | "leader" | "member" }>();
+
+			return {
+				...toClientOrganization(org),
+				memberRole: membership?.role ?? null,
+			};
+		}),
+
 	update: protectedProcedure
 		.input(updateOrgInputSchema)
 		.mutation(async ({ ctx, input }) => {
@@ -458,6 +486,52 @@ export const organizationsRouter = router({
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: "Invalid or expired join code",
+				});
+			}
+
+			const existingMembership = await ctx.env.DB.prepare(
+				`SELECT org_id FROM organization_members WHERE org_id = ? AND user_id = ?`,
+			)
+				.bind(org.id, ctx.user.id)
+				.first<{ org_id: string }>();
+
+			if (existingMembership) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "You are already a member of this organization",
+				});
+			}
+
+			await ctx.env.DB.prepare(
+				`INSERT INTO organization_members (org_id, user_id, role, joined_at, invited_by)
+					 VALUES (?, ?, 'member', ?, NULL)`,
+			)
+				.bind(org.id, ctx.user.id, Date.now())
+				.run();
+
+			return {
+				organization: toClientOrganization(org),
+				memberRole: "member" as const,
+			};
+		}),
+
+	joinBySlug: protectedProcedure
+		.input(z.object({ slug: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const org = await ctx.env.DB.prepare(
+				`SELECT * FROM organizations
+					 WHERE slug = ?
+					 AND brand_id = ?
+					 AND join_link_enabled = 1
+					 AND status IN ('active', 'trial')`,
+			)
+				.bind(input.slug, ctx.brandId)
+				.first<OrganizationRow>();
+
+			if (!org) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Organization not found or join link disabled",
 				});
 			}
 

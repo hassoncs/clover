@@ -118,4 +118,7 @@ export const WordGamePromptSchema = z.object({
 });
 export type WordGamePrompt = z.infer<typeof WordGamePromptSchema>;
 
+export * from "./bible-fibbage.js";
+export * from "./bible-quip.js";
+export * from "./bible-trivia.js";
 export * from "./chroma-clues.js";

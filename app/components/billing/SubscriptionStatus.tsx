@@ -29,7 +29,9 @@ export default function SubscriptionStatus({
 				<View className="flex-row items-center justify-between mb-4">
 					<View>
 						<Text className="text-white text-lg font-semibold mb-1">
-							{activeBrand.displayName} Pro
+							{activeBrand.id === "amen"
+								? "Amen+"
+								: `${activeBrand.displayName} Pro`}
 						</Text>
 						<View className="flex-row items-center">
 							<View className="bg-indigo-600/20 border border-indigo-500 px-2 py-0.5 rounded text-xs mr-2">
@@ -63,14 +65,22 @@ export default function SubscriptionStatus({
 		);
 	}
 
-	const proFeatures = [
-		"1,000 Sparks/month ($10 value)",
-		"Unlimited party hosting",
-		"Cloud sync & offline play",
-		"85/15 asset store split",
-	];
+	const proFeatures =
+		activeBrand.id === "amen"
+			? [
+					"Unlimited games",
+					"No ads",
+					"All game types",
+					"Cloud sync & offline play",
+				]
+			: [
+					"1,000 Sparks/month ($10 value)",
+					"Unlimited party hosting",
+					"Cloud sync & offline play",
+					"85/15 asset store split",
+				];
 
-	if (activeBrand.features.aiGeneration) {
+	if (activeBrand.features.aiGeneration && activeBrand.id !== "amen") {
 		proFeatures.splice(2, 0, "Priority asset generation");
 	}
 
@@ -103,7 +113,9 @@ export default function SubscriptionStatus({
 			</View>
 
 			<View className="bg-indigo-600/10 border border-indigo-500/30 py-3 rounded-xl items-center">
-				<Text className="text-indigo-400 font-semibold">$9.99/month</Text>
+				<Text className="text-indigo-400 font-semibold">
+					{activeBrand.id === "amen" ? "$4.99/month" : "$9.99/month"}
+				</Text>
 			</View>
 		</View>
 	);

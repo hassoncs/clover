@@ -52,6 +52,8 @@ export interface Env {
 	STRIPE_SECRET_KEY?: string;
 	STRIPE_WEBHOOK_SECRET?: string;
 	STRIPE_PRICE_ID_PRO_MONTHLY?: string;
+	STRIPE_PRICE_ID_AMEN_MONTHLY?: string;
+	STRIPE_PRICE_ID_AMEN_YEARLY?: string;
 
 	AI_EDITING_ENABLED?: string;
 	AI_EDITING_ALLOWED_USERS?: string;

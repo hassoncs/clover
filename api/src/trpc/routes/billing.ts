@@ -146,7 +146,23 @@ export const billingRouter = router({
 				});
 			}
 
-			const priceId = input.priceId ?? ctx.env.STRIPE_PRICE_ID_PRO_MONTHLY;
+			let priceId = input.priceId;
+
+			// Map internal plan IDs to Stripe Price IDs
+			if (priceId === "amen_plus_monthly")
+				priceId = ctx.env.STRIPE_PRICE_ID_AMEN_MONTHLY;
+			if (priceId === "amen_plus_yearly")
+				priceId = ctx.env.STRIPE_PRICE_ID_AMEN_YEARLY;
+			if (priceId === "pro_monthly")
+				priceId = ctx.env.STRIPE_PRICE_ID_PRO_MONTHLY;
+
+			if (!priceId) {
+				priceId =
+					ctx.brandId === "amen"
+						? ctx.env.STRIPE_PRICE_ID_AMEN_MONTHLY
+						: ctx.env.STRIPE_PRICE_ID_PRO_MONTHLY;
+			}
+
 			if (!priceId) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
@@ -376,6 +392,37 @@ export const billingRouter = router({
 
 	getCatalog: publicProcedure.query(({ ctx }) => {
 		const brand = getBrandManifest(ctx.brandId);
+
+		if (ctx.brandId === "amen") {
+			return {
+				plans: [
+					{
+						id: "amen_plus_monthly",
+						name: "Amen+ Monthly",
+						priceDisplay: "$4.99/mo",
+						features: [
+							"Unlimited games",
+							"No ads",
+							"All game types",
+							"Cloud sync",
+						],
+					},
+					{
+						id: "amen_plus_yearly",
+						name: "Amen+ Yearly",
+						priceDisplay: "$39.99/yr",
+						features: [
+							"Unlimited games",
+							"No ads",
+							"All game types",
+							"Cloud sync",
+							"Save 33%",
+						],
+					},
+				],
+			};
+		}
+
 		return {
 			plans: [
 				{

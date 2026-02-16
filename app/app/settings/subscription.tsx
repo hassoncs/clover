@@ -26,8 +26,12 @@ export default function SubscriptionScreen() {
 	const utils = trpcReact.useUtils();
 	const [error, setError] = useState<string | null>(null);
 	const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+	const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
+		"monthly",
+	);
 
 	const isWeb = Platform.OS === "web";
+	const isAmen = activeBrand.id === "amen";
 
 	const handleManage = async () => {
 		if (!isWeb) return;
@@ -127,9 +131,59 @@ export default function SubscriptionScreen() {
 				{!isPro && isWeb && (
 					<View className="mt-6">
 						<Text className="text-white font-semibold text-lg mb-4">
-							Upgrade to Pro
+							{isAmen ? "Upgrade to Amen+" : "Upgrade to Pro"}
 						</Text>
+
+						{isAmen && (
+							<View className="flex-row mb-4 bg-gray-800 p-1 rounded-lg">
+								<Pressable
+									onPress={() => setSelectedPlan("monthly")}
+									className={`flex-1 py-2 rounded-md items-center ${
+										selectedPlan === "monthly" ? "bg-gray-700" : ""
+									}`}
+								>
+									<Text
+										className={`font-medium ${
+											selectedPlan === "monthly"
+												? "text-white"
+												: "text-gray-400"
+										}`}
+									>
+										Monthly ($4.99)
+									</Text>
+								</Pressable>
+								<Pressable
+									onPress={() => setSelectedPlan("yearly")}
+									className={`flex-1 py-2 rounded-md items-center ${
+										selectedPlan === "yearly" ? "bg-gray-700" : ""
+									}`}
+								>
+									<Text
+										className={`font-medium ${
+											selectedPlan === "yearly" ? "text-white" : "text-gray-400"
+										}`}
+									>
+										Yearly ($39.99)
+									</Text>
+								</Pressable>
+							</View>
+						)}
+
 						<StripeCheckout
+							priceId={
+								isAmen
+									? selectedPlan === "monthly"
+										? "amen_plus_monthly"
+										: "amen_plus_yearly"
+									: undefined
+							}
+							priceDisplay={
+								isAmen
+									? selectedPlan === "monthly"
+										? "$4.99/mo"
+										: "$39.99/yr"
+									: "$9.99/mo"
+							}
 							onSuccess={handleCheckoutSuccess}
 							onError={handleCheckoutError}
 						/>

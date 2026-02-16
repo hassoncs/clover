@@ -66,6 +66,7 @@ export const slopcadeManifest: BrandManifest = {
 	termsUrl: "https://slopcade.com/terms",
 	privacyUrl: "https://slopcade.com/privacy",
 	supportEmail: "support@slopcade.com",
+	appStoreReviewUrl: "https://apps.apple.com/app/slopcade/id6744387937",
 
 	monetization: {
 		hasIndividualSub: true,
