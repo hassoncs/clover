@@ -966,7 +966,7 @@ Every piece of generated content is scored on:
 
 **Lane C (Content)**
 - [x] Set up content pipeline adapters for API.Bible + BibleQuizzle
-- [ ] Ingest BibleQuizzle trivia dataset (~500 items)
+- [x] Ingest BibleQuizzle trivia dataset (~500 items)
 - [ ] Ingest Theographic Bible character/place data
 - [ ] Begin AI generation: 2,000 trivia questions
 - [ ] Begin AI generation: 1,000 quip prompts
@@ -998,7 +998,7 @@ Every piece of generated content is scored on:
 - [ ] Continue generation: target 5,000 total items
 - [ ] Generate drawing prompts (500), fibbage facts (500), history events (300)
 - [ ] Run automated moderation on all generated content
-- [ ] Begin scripture reference validation (API.Bible lookup)
+- [x] Begin scripture reference validation (API.Bible lookup)
 - [x] Wire first content packs to Tier 1 games for testing
 
 **Lane D (GTM)**
@@ -1061,7 +1061,7 @@ Every piece of generated content is scored on:
 
 **Lane A (Backend)**
 - [x] Production environment finalized (monitoring, error tracking, alerting)
-- [ ] Scaling check: can Cloudflare Workers handle projected load?
+- [x] Scaling check: can Cloudflare Workers handle projected load?
 - [x] Final security review: brand isolation, data leakage prevention
 
 **Lane B (Frontend)**
@@ -1083,7 +1083,7 @@ Every piece of generated content is scored on:
 ### Week 6: Mar 23-29 — Holy Week Prep
 
 **Lane A (Backend)**
-- [ ] Production readiness: load testing, failover, backup verification
+- [x] Production readiness: load testing, failover, backup verification
 - [x] Monitoring dashboards for launch day (error rates, signup velocity, game sessions)
 
 **Lane B (Frontend)**
@@ -1109,7 +1109,7 @@ Every piece of generated content is scored on:
 - [ ] Hotfix window: rapid response to any critical issues
 
 **Friday (Good Friday)**
-- [ ] Reflective content: Passion narrative trivia, crossroads moral dilemmas
+- [x] Reflective content: Passion narrative trivia, crossroads moral dilemmas
 - [ ] Marketing: "This Easter, bring your church together for game night"
 
 **Sunday (Easter — April 5)**
