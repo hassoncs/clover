@@ -81,6 +81,10 @@ export interface SpawnEntityOptions {
 	entityId?: string;
 }
 
+type EntitySpawnedListener = (entity: RuntimeEntity) => void;
+type EntityDestroyedListener = (entityId: string) => void;
+type EntityTagsChangedListener = (entityId: string) => void;
+
 function generateEntityId(): string {
 	return `e_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -91,6 +95,11 @@ export class EntityManager {
 	private bridge: GodotBridge | null = null;
 
 	private entitiesByTagId = new Map<number, Set<string>>();
+	private readonly entitySpawnedListeners = new Set<EntitySpawnedListener>();
+	private readonly entityDestroyedListeners =
+		new Set<EntityDestroyedListener>();
+	private readonly entityTagsChangedListeners =
+		new Set<EntityTagsChangedListener>();
 
 	constructor(options: EntityManagerOptions = {}) {
 		this.bridge = options.bridge ?? null;
@@ -111,6 +120,27 @@ export class EntityManager {
 
 	getPrefab(id: string): EntityPrefab | undefined {
 		return this.prefabs.get(id);
+	}
+
+	onEntitySpawned(listener: EntitySpawnedListener): () => void {
+		this.entitySpawnedListeners.add(listener);
+		return () => {
+			this.entitySpawnedListeners.delete(listener);
+		};
+	}
+
+	onEntityDestroyed(listener: EntityDestroyedListener): () => void {
+		this.entityDestroyedListeners.add(listener);
+		return () => {
+			this.entityDestroyedListeners.delete(listener);
+		};
+	}
+
+	onEntityTagsChanged(listener: EntityTagsChangedListener): () => void {
+		this.entityTagsChangedListeners.add(listener);
+		return () => {
+			this.entityTagsChangedListeners.delete(listener);
+		};
 	}
 
 	/**
@@ -179,6 +209,10 @@ export class EntityManager {
 			scaleY: number;
 		},
 		extraTags?: string[],
+		effectConfig?: {
+			effects?: RuntimeEntity["effects"];
+			effectStates?: RuntimeEntity["effectStates"];
+		},
 	): RuntimeEntity | null {
 		if (this.entities.has(entityId)) {
 			return this.entities.get(entityId)!;
@@ -200,6 +234,12 @@ export class EntityManager {
 			physics: prefab?.physics ? structuredClone(prefab.physics) : undefined,
 			collider: prefab?.collider ? structuredClone(prefab.collider) : undefined,
 			tags,
+			effects: effectConfig?.effects
+				? structuredClone(effectConfig.effects)
+				: undefined,
+			effectStates: effectConfig?.effectStates
+				? structuredClone(effectConfig.effectStates)
+				: undefined,
 			tagBits: new Set(),
 			layer: prefab?.layer ?? 0,
 			visible: true,
@@ -217,6 +257,9 @@ export class EntityManager {
 		}
 
 		this.entities.set(entityId, runtime);
+		for (const listener of this.entitySpawnedListeners) {
+			listener(runtime);
+		}
 		return runtime;
 	}
 
@@ -242,6 +285,9 @@ export class EntityManager {
 		}
 
 		this.entities.delete(entityId);
+		for (const listener of this.entityDestroyedListeners) {
+			listener(entityId);
+		}
 	}
 
 	destroyEntity(id: string, options: { recursive?: boolean } = {}): void {
@@ -284,6 +330,9 @@ export class EntityManager {
 		}
 
 		this.entities.delete(id);
+		for (const listener of this.entityDestroyedListeners) {
+			listener(id);
+		}
 	}
 
 	getEntity(id: string): RuntimeEntity | undefined {
@@ -330,6 +379,9 @@ export class EntityManager {
 			this.entitiesByTagId.set(tagId, new Set());
 		}
 		this.entitiesByTagId.get(tagId)!.add(entityId);
+		for (const listener of this.entityTagsChangedListeners) {
+			listener(entityId);
+		}
 
 		return true;
 	}
@@ -347,6 +399,9 @@ export class EntityManager {
 		if (tagId !== undefined) {
 			entity.tagBits.delete(tagId);
 			this.entitiesByTagId.get(tagId)?.delete(entityId);
+		}
+		for (const listener of this.entityTagsChangedListeners) {
+			listener(entityId);
 		}
 
 		return true;
@@ -380,8 +435,15 @@ export class EntityManager {
 
 	loadEntities(entities: GameEntity[]): void {
 		for (const e of entities) {
+			const effectEntity = e as GameEntity & {
+				effects?: RuntimeEntity["effects"];
+				effectStates?: RuntimeEntity["effectStates"];
+			};
 			const entityId = e.id || generateEntityId();
-			this.cacheEntity(entityId, e.prefab ?? "", e.transform, e.tags);
+			this.cacheEntity(entityId, e.prefab ?? "", e.transform, e.tags, {
+				effects: effectEntity.effects,
+				effectStates: effectEntity.effectStates,
+			});
 		}
 	}
 

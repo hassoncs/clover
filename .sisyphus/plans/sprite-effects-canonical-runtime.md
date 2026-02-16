@@ -56,11 +56,11 @@ Deliver one canonical sprite-effects architecture that is easy for authors, perf
 - New automated tests and agent-executed QA scenarios for canonical behavior.
 
 ### Definition of Done
-- [ ] No runtime references to `effects.entityEffects` remain in canonical load/apply paths.
-- [ ] Declarative prefab effects and script API both apply effects through the same runtime dispatcher.
-- [ ] Effect lifecycle works for spawn, tag/state transitions, param updates, and entity destruction.
-- [ ] New tests for canonical path pass.
-- [ ] Legacy-path tests removed or replaced.
+- [x] No runtime references to `effects.entityEffects` remain in canonical load/apply paths.
+- [x] Declarative prefab effects and script API both apply effects through the same runtime dispatcher.
+- [x] Effect lifecycle works for spawn, tag/state transitions, param updates, and entity destruction.
+- [x] New tests for canonical path pass.
+- [x] Legacy-path tests removed or replaced.
 
 ### Must Have
 - Single source of truth for sprite-level effects (no dual pathways).
@@ -136,7 +136,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
 
 ## TODOs
 
-- [ ] 1. Finalize canonical sprite-effects contract (single pathway)
+- [x] 1. Finalize canonical sprite-effects contract (single pathway)
 
   **What to do**:
   - Define one canonical declarative shape for prefab/entity sprite effects (base effects + state/condition effects + params).
@@ -187,7 +187,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: grep output capture in .sisyphus/evidence/task-1-schema-consistency.txt
   ```
 
-- [ ] 2. Implement shared type/schema changes for canonical API
+- [x] 2. Implement shared type/schema changes for canonical API
 
   **What to do**:
   - Add canonical sprite-effects fields/types in shared entity/game types.
@@ -231,7 +231,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: .sisyphus/evidence/task-2-tsc.txt
   ```
 
-- [ ] 3. Build runtime sprite-effect dispatcher (state evaluator + diff apply/update/clear)
+- [x] 3. Build runtime sprite-effect dispatcher (state evaluator + diff apply/update/clear)
 
   **What to do**:
   - Add TS runtime system that computes desired effects per entity from canonical declarative state + script overrides.
@@ -277,7 +277,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: .sisyphus/evidence/task-3-tag-dispatch.txt
   ```
 
-- [ ] 4. Expose script-sandbox effect API on the same canonical pathway
+- [x] 4. Expose script-sandbox effect API on the same canonical pathway
 
   **What to do**:
   - Add script runtime operations for apply/update/clear sprite effects.
@@ -319,7 +319,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: .sisyphus/evidence/task-4-script-api.txt
   ```
 
-- [ ] 5. Integrate Godot-side metadata/lifecycle hooks for canonical state model
+- [x] 5. Integrate Godot-side metadata/lifecycle hooks for canonical state model
 
   **What to do**:
   - Ensure entity creation path persists needed canonical effect metadata (if runtime reads via bridge/entity meta).
@@ -362,7 +362,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: .sisyphus/evidence/task-5-destroy-cleanup.txt
   ```
 
-- [ ] 6. Remove legacy path and migrate game content to canonical model
+- [x] 6. Remove legacy path and migrate game content to canonical model
 
   **What to do**:
   - Remove `GameLoader` legacy `entityEffects` application path.
@@ -405,7 +405,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: .sisyphus/evidence/task-6-migration.txt
   ```
 
-- [ ] 7. Add new-system automated tests and remove obsolete legacy tests
+- [x] 7. Add new-system automated tests and remove obsolete legacy tests
 
   **What to do**:
   - Add unit/integration tests for canonical dispatcher and effect-state resolution.
@@ -449,7 +449,7 @@ Critical Path: 1 -> 2 -> 3 -> 5 -> 6 -> 8
     Evidence: .sisyphus/evidence/task-7-tests.txt
   ```
 
-- [ ] 8. Documentation + final validation + cleanup
+- [x] 8. Documentation + final validation + cleanup
 
   **What to do**:
   - Update effect authoring docs for canonical API (declarative + script examples).
@@ -515,8 +515,8 @@ pnpm test:bridge
 ```
 
 ### Final Checklist
-- [ ] All Must Have items present
-- [ ] All Must NOT Have items absent
-- [ ] Canonical sprite-effect API works from declarative and script surfaces
-- [ ] Legacy entityEffects path removed from runtime and docs
-- [ ] New-system tests pass
+- [x] All Must Have items present
+- [x] All Must NOT Have items absent
+- [x] Canonical sprite-effect API works from declarative and script surfaces
+- [x] Legacy entityEffects path removed from runtime and docs
+- [x] New-system tests pass

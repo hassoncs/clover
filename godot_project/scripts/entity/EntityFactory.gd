@@ -136,6 +136,7 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	# Set metadata for selectors
 	if prefab_id != "":
 		node.set_meta("prefab", prefab_id)
+	_set_canonical_effect_metadata(node, merged)
 	if merged.has("tags"):
 		node.set_meta("tags", merged.tags if merged.tags is Array else [])
 	if merged.has("behaviors"):
@@ -216,6 +217,7 @@ func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dict
 	# Set metadata
 	if child_prefab_id != "":
 		node.set_meta("prefab", child_prefab_id)
+	_set_canonical_effect_metadata(node, merged)
 	if merged.has("tags"):
 		node.set_meta("tags", merged.tags if merged.tags is Array else [])
 	if merged.has("behaviors"):
@@ -580,6 +582,13 @@ func _determine_archetype(physics_data, collider_data) -> String:
 		return "sensor" if is_sensor else "hitbox"
 	else:
 		return "visual"
+
+
+func _set_canonical_effect_metadata(node: Node2D, merged: Dictionary) -> void:
+	if merged.has("effects"):
+		node.set_meta("effects", merged.effects if merged.effects is Array else [])
+	if merged.has("effectStates"):
+		node.set_meta("effectStates", merged.effectStates if merged.effectStates is Array else [])
 
 
 func destroy_entity(entity_id: String) -> void:

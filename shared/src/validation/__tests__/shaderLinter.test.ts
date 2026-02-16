@@ -132,23 +132,6 @@ describe("extractShaderSources", () => {
 		expect(shaders[0].id).toBe("glow");
 	});
 
-	it("extracts from effects.entityEffects", () => {
-		const game = {
-			effects: {
-				entityEffects: [
-					{
-						entityId: "player",
-						glsl: "shader_type canvas_item; void fragment() {}",
-					},
-				],
-			},
-		} as GameDefinition;
-
-		const shaders = extractShaderSources(game);
-		expect(shaders).toHaveLength(1);
-		expect(shaders[0].id).toBe("player");
-	});
-
 	it("returns empty array when no effects", () => {
 		const game = {} as GameDefinition;
 		const shaders = extractShaderSources(game);

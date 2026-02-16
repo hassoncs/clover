@@ -73,12 +73,65 @@ Resources are identified by string IDs with conventions:
 | Pattern | Meaning | Example |
 |---------|---------|---------|
 | `__screenColor` | The screen's current render | Always available for screen-scoped effects |
-| `__entityTexture` | The pixel buffer's ImageTexture | ⚠️ Legacy — replaced by `externalInputs` + `set_input_buffer()` in Phase 3 |
 | `{nodeId}:{bufferId}` | An intermediate buffer | `"fx:canvas"` |
 | `__feedback:{from}->{to}` | A feedback connection | `"__feedback:fx->fx"` |
 | `__pingpong:{passId}` | Internal ping-pong buffer pair | Created by PingPongManager |
 
-## Compilation Pipeline
+## Sprite Effects (Canonical)
+
+Sprite effects are per-entity visual modifications applied via `ShaderMaterial` on individual sprites. They are the primary way to add visual feedback to game entities.
+
+### Authoring (Declarative)
+
+Effects can be defined directly on prefabs or entities:
+
+```typescript
+// Base effects (always active)
+effects: [
+  { effect: 'outline', params: { color: '#FFFFFF', thickness: 2 } }
+],
+
+// Conditional effects (state-driven)
+effectStates: [
+  {
+    when: { hasTag: 'held' },
+    priority: 10,
+    effects: [
+      { effect: 'glow', params: { color: '#FFCC00', pulse: true } }
+    ]
+  }
+]
+```
+
+### Authoring (Scripting)
+
+Scripts have highest precedence and can override declarative effects:
+
+```typescript
+// Apply an effect
+const effectId = ctx.applySpriteEffect(entityId, 'tint', { color: '#FF0000', intensity: 0.8 });
+
+// Update a parameter
+ctx.updateSpriteEffectParam(entityId, effectId, 'intensity', 0.5);
+
+// Clear the effect
+ctx.clearSpriteEffect(entityId, effectId);
+```
+
+### Precedence & Merging
+
+1. **Script Overrides** (Highest): Explicitly applied via `ctx.applySpriteEffect`.
+2. **Entity Overrides**: Defined in `entity.effects` or `entity.effectStates`.
+3. **Prefab Defaults** (Lowest): Defined in `prefab.effects` or `prefab.effectStates`.
+
+When a script clears an effect, the system automatically falls back to the declarative state.
+
+### Predefined Vocabulary
+
+The system supports a fixed vocabulary of optimized sprite effects:
+- `outline`, `glow`, `tint`, `flash`, `pixelate`, `posterize`, `rim_light`, `color_matrix`, `inner_glow`, `drop_shadow`, `fade_out`.
+
+## Boundary: Sprite Effects vs Graph Effects
 
 ```
 EffectGraphSpec

@@ -666,9 +666,12 @@ func clear_game() -> void:
 	_entities_3d.clear()
 	prefabs.clear()
 	var effects_bridge = get_node_or_null("/root/GameBridgeEffects")
-	if effects_bridge and effects_bridge.has_method("clear_plan"):
-		effects_bridge.clear_plan()
-		effects_bridge.reset_graph()
+	if effects_bridge:
+		if effects_bridge.has_method("clear_all_sprite_effects"):
+			effects_bridge.clear_all_sprite_effects()
+		if effects_bridge.has_method("clear_plan"):
+			effects_bridge.clear_plan()
+			effects_bridge.reset_graph()
 
 	if game_root:
 		game_root.visible = true

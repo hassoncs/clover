@@ -9,6 +9,23 @@ import type {
 } from "@slopcade/shared";
 import type { GodotBridge } from "../godot/types";
 
+interface RuntimeSpriteEffectConfig {
+	effect: string;
+	params?: Record<string, unknown>;
+}
+
+interface RuntimeEffectStateGroup {
+	when: {
+		hasTag?: string;
+		hasAnyTag?: string[];
+		hasAllTags?: string[];
+		lacksTag?: string;
+		expr?: string;
+	};
+	priority: number;
+	effects: RuntimeSpriteEffectConfig[];
+}
+
 /**
  * EngineServices - Core primitives available to all game systems.
  * Part of the 5 core engine primitives (Unity-validated architecture).
@@ -67,6 +84,8 @@ export interface RuntimeEntity {
 	};
 
 	behaviors?: RuntimeBehavior[];
+	effects?: RuntimeSpriteEffectConfig[];
+	effectStates?: RuntimeEffectStateGroup[];
 	tags: string[];
 	/** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */
 	tagBits: Set<number>;

@@ -35,6 +35,19 @@ export interface DragSnapshot {
  * This is the canonical interface for script hooks.
  */
 export interface ScriptContext extends SyncWorldOps {
+	applySpriteEffect(
+		entityId: string,
+		effect: string,
+		params?: Record<string, unknown>,
+	): string;
+	updateSpriteEffectParam(
+		entityId: string,
+		effectId: string,
+		paramName: string,
+		value: unknown,
+	): void;
+	clearSpriteEffect(entityId: string, effectId?: string): void;
+
 	// ═══════════════════════════════════════════════════════════════
 	// ASYNC WORLD OPS — animate + wait only
 	// ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,61 @@
+# Task 6: Legacy Path Removal and Migration Evidence
+
+## Summary
+Removed legacy `entityEffects` application path from GameLoader and migrated game content.
+
+## Changes Made
+
+### 1. GameLoader.ts (app/lib/game-engine/GameLoader.ts)
+Removed the legacy `entityEffects` handling block (lines 274-286):
+```typescript
+// REMOVED:
+if (definition.effects.entityEffects) {
+    console.log("[GameLoader] Applying entityEffects: count=" + definition.effects.entityEffects.length);
+    for (const effect of definition.effects.entityEffects) {
+        this.bridge.applySpriteEffect(effect.entityId, effect.glsl, effect.params ?? {});
+    }
+}
+```
+
+### 2. Game Effects Files Migrated
+
+#### r2/games/shaderMulti/effects.json
+- Removed `entityEffects` array (6 entries: orb1, orb2, block1, block2, tri1, tri2)
+- Retained `shaders` object (pulse_glow, dissolve, holographic)
+
+#### r2/games/shaderRainbow/effects.json
+- Removed `entityEffects` array (5 entries: cube1, cube2, circle1, circle2, circle3)
+- Retained `shaders` object (rainbow_wave)
+
+#### r2/games/shaderCRT/effects.json
+- Removed `entityEffects` array (1 entry: ball)
+- Retained `graph` object (crt-effect screen post-process)
+
+## Verification
+
+### Grep Search for entityEffects
+```
+$ grep -r "entityEffects" .
+No matches found
+```
+
+### TypeScript Compilation
+```
+$ pnpm tsc --noEmit
+(exit code 0, no errors)
+```
+
+## Notes
+
+The legacy `entityEffects` path applied raw GLSL shaders directly to entities via `bridge.applySpriteEffect()`. This approach:
+1. Bypassed the canonical sprite effect dispatcher
+2. Had no state management or lifecycle tracking
+3. Used custom GLSL instead of predefined effect types
+
+The canonical path uses:
+- `EntityPrefab.effects` and `GameEntity.effects` for declarative effects
+- `EffectStateGroup` for conditional effects
+- Predefined `SpriteEffectType` vocabulary (glow, outline, tint, etc.)
+- Proper lifecycle management via EntityFactory and GameBridgeEffects
+
+The migrated games retain their `shaders` (hot-swappable shader library) and `graph` (post-process effects) which are separate systems from per-entity sprite effects.

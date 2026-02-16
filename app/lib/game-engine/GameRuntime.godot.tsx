@@ -78,6 +78,7 @@ import {
 	NetworkRuntimeSystem,
 	PropertySyncRuntimeSystem,
 	ScriptSandboxRuntimeSystem,
+	SpriteEffectsRuntimeSystem,
 	TargetPositionRuntimeSystem,
 	TweenRuntimeSystem,
 	ViewportRuntimeSystem,
@@ -867,6 +868,12 @@ export function GameRuntimeGodot({
 				);
 
 				runner.register(new EntityManagerRuntimeSystem());
+
+				runner.register(
+					new SpriteEffectsRuntimeSystem({
+						getVariables: () => game.gameState.vars,
+					}),
+				);
 
 				runner.register(
 					new ComputedValuesRuntimeSystem({

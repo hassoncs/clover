@@ -351,18 +351,6 @@ export function extractShaderSources(game: GameDefinition): Array<{
 		}
 	}
 
-	if (game.effects?.entityEffects) {
-		for (const effect of game.effects.entityEffects) {
-			if (effect.glsl) {
-				shaders.push({
-					id: effect.entityId,
-					source: effect.glsl,
-					path: `effects.entityEffects.${effect.entityId}.glsl`,
-				});
-			}
-		}
-	}
-
 	return shaders;
 }
 

@@ -1,4 +1,5 @@
 import type { Vec2, Vec3 } from "./common";
+import type { SpriteEffectParams, SpriteEffectType } from "./effects";
 import type { HapticStyle, NotificationStyle } from "./haptics";
 import type { VoiceHandleId, VoicePrepareOptions } from "./voice-handle";
 import type {
@@ -181,6 +182,18 @@ export interface SyncWorldOps {
 	// ═══════════════════════════════════════════════════════════════
 	cameraShake(intensity: number, duration: number): void;
 	cameraZoom(scale: number, duration?: number): void;
+	applySpriteEffect(
+		entityId: string,
+		effect: SpriteEffectType,
+		params?: SpriteEffectParams,
+	): string;
+	updateSpriteEffectParam(
+		entityId: string,
+		effectId: string,
+		paramName: string,
+		value: unknown,
+	): void;
+	clearSpriteEffect(entityId: string, effectId?: string): void;
 
 	// ═══════════════════════════════════════════════════════════════
 	// Time
