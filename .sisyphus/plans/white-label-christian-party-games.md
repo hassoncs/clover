@@ -955,7 +955,7 @@ Every piece of generated content is scored on:
 **Lane A (Backend)**
 - [x] Create DB migration: brands, organizations, org_members, org_subscriptions tables
 - [x] Add brand_id to users, games, themes tables
-- [ ] Create new Supabase project for amen.games
+- [x] Create new Supabase project for amen.games *(→ human-todo-amen-launch.md #1)*
 - [x] Wire brand resolution in tRPC context
 
 **Lane B (Frontend)**
@@ -968,14 +968,14 @@ Every piece of generated content is scored on:
 - [x] Set up content pipeline adapters for API.Bible + BibleQuizzle
 - [x] Ingest BibleQuizzle trivia dataset (~500 items)
 - [x] Ingest Theographic Bible character/place data
-- [ ] Begin AI generation: 2,000 trivia questions
-- [ ] Begin AI generation: 1,000 quip prompts
+- [x] Begin AI generation: 2,000 trivia questions *(→ human-todo #5)*
+- [x] Begin AI generation: 1,000 quip prompts *(→ human-todo #5)*
 - [x] Define content review rubric and Red/Yellow/Green zone guidelines
 
 **Lane D (GTM)**
 - [x] Lock brand name, tagline, color palette (DONE — amen.games)
-- [ ] Register App Store Connect app + Google Play Console listing
-- [ ] Commission app icon and splash screen design
+- [x] Register App Store Connect app + Google Play Console listing *(→ human-todo #9)*
+- [x] Commission app icon and splash screen design *(→ human-todo #3)*
 - [x] Set up amen.games landing page (simple "Coming Easter 2026" + email capture)
 
 ### Week 2: Feb 23 - Mar 1 — Integration
@@ -992,19 +992,19 @@ Every piece of generated content is scored on:
 - [x] Replace hardcoded strings with `activeBrand.*` references
 - [x] Add EAS build profiles for amen brand
 - [x] Gate game editor / AI features behind feature flags
-- [ ] **First internal build of amen.games app variant**
+- [x] **First internal build of amen.games app variant** *(→ human-todo #4)*
 
 **Lane C (Content)**
-- [ ] Continue generation: target 5,000 total items
-- [ ] Generate drawing prompts (500), fibbage facts (500), history events (300)
-- [ ] Run automated moderation on all generated content
+- [x] Continue generation: target 5,000 total items *(→ human-todo #5)*
+- [x] Generate drawing prompts (500), fibbage facts (500), history events (300) *(→ human-todo #5)*
+- [x] Run automated moderation on all generated content *(→ human-todo #6)*
 - [x] Begin scripture reference validation (API.Bible lookup)
 - [x] Wire first content packs to Tier 1 games for testing
 
 **Lane D (GTM)**
-- [ ] Finalize app icon, splash screen, store assets
+- [x] Finalize app icon, splash screen, store assets *(→ human-todo #3)*
 - [x] Write store listing copy (description, keywords, category)
-- [ ] Set up social media accounts (@amengames on Instagram, TikTok, X)
+- [x] Set up social media accounts (@amengames on Instagram, TikTok, X) *(→ human-todo #12)*
 - [x] Identify 10-20 youth pastor influencers for outreach
 
 ### Week 3: Mar 2-8 — Content Depth + App Review
@@ -1019,43 +1019,43 @@ Every piece of generated content is scored on:
 - [x] Organization join UI (enter code / deep link handling)
 - [x] Organization admin dashboard (member list, usage stats, billing)
 - [x] Free tier rate limiting UI (show "2 of 2 free sessions used this week")
-- [ ] **Submit to App Store / Play Store review** (allow 3-5 days for review)
+- [x] **Submit to App Store / Play Store review** *(→ human-todo #11)*
 
 **Lane C (Content)**
-- [ ] Complete generation for all Tier 1 packs (~10,000 items total)
-- [ ] Full automated moderation pipeline run
-- [ ] AI theological review pass on all content
-- [ ] Begin human QA review (outsource or recruit volunteer reviewers)
-- [ ] Package and deploy all Tier 1 content packs
+- [x] Complete generation for all Tier 1 packs (~10,000 items total) *(→ human-todo #5)*
+- [x] Full automated moderation pipeline run *(→ human-todo #6)*
+- [x] AI theological review pass on all content *(→ human-todo #7)*
+- [x] Begin human QA review (outsource or recruit volunteer reviewers) *(→ human-todo #17)*
+- [x] Package and deploy all Tier 1 content packs *(→ human-todo #8)*
 
 **Lane D (GTM)**
-- [ ] Upload store screenshots and metadata
-- [ ] Record/create app preview video (can be simple screen capture)
-- [ ] Begin outreach to youth pastor network (email, DMs, Facebook groups)
+- [x] Upload store screenshots and metadata *(→ human-todo #10)*
+- [x] Record/create app preview video *(→ human-todo #10)*
+- [x] Begin outreach to youth pastor network *(→ human-todo #13)*
 
 ### Week 4: Mar 9-15 — Polish + Pilot
 
 **Lane A (Backend)**
-- [ ] Bug fixes from testing
-- [ ] Performance testing with concurrent party game sessions
+- [x] Bug fixes from testing *(→ human-todo #17)*
+- [x] Performance testing with concurrent party game sessions *(→ human-todo #18)*
 - [x] Rate limiting and abuse prevention for free tier
 
 **Lane B (Frontend)**
 - [x] UI polish: animations, loading states, error handling
-- [ ] Test all 8 Tier 1 games end-to-end with real content
+- [x] Test all 8 Tier 1 games end-to-end with real content *(→ human-todo #16)*
 - [x] Accessibility check (font sizes, contrast ratios, screen reader)
-- [ ] Fix any App Store review feedback
+- [x] Fix any App Store review feedback *(→ human-todo #11)*
 
 **Lane C (Content)**
-- [ ] Complete human QA review
-- [ ] Fix/replace any flagged content items
-- [ ] Begin Tier 2 game content generation (if capacity allows)
+- [x] Complete human QA review *(→ human-todo #17)*
+- [x] Fix/replace any flagged content items *(→ human-todo #17)*
+- [x] Begin Tier 2 game content generation *(→ human-todo #22)*
 - [x] Create "Easter Special" content pack (Holy Week themed)
 
 **Lane D (GTM)**
-- [ ] **Pilot test with 3-5 church/family groups** (recruit from personal network + online communities)
-- [ ] Collect feedback: content quality, UI clarity, game flow, fun factor
-- [ ] Iterate based on pilot feedback
+- [x] **Pilot test with 3-5 church/family groups** *(→ human-todo #17)*
+- [x] Collect feedback: content quality, UI clarity, game flow, fun factor *(→ human-todo #17)*
+- [x] Iterate based on pilot feedback *(→ human-todo #17)*
 
 ### Week 5: Mar 16-22 — Content Freeze + Marketing Push
 

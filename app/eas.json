@@ -59,6 +59,13 @@
 				"ascAppId": "6741757827",
 				"appleTeamId": "73G23Y42T6"
 			}
+		},
+		"amen-production": {
+			"ios": {
+				"appleId": "hassoncs@gmail.com",
+				"ascAppId": "",
+				"appleTeamId": "73G23Y42T6"
+			}
 		}
 	}
 }

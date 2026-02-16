@@ -5,6 +5,7 @@
 	"scripts": {
 		"start": "expo start --port 8085",
 		"dev": "expo start --port 8085",
+		"dev:amen": "BRAND_ID=amen expo start --port 8085",
 		"dev:web": "expo start --web --port 8085",
 		"preflight": "node scripts/preflight-check.mjs",
 		"preios": "pnpm run preflight",
@@ -24,6 +25,7 @@
 		"verify:android": "pnpm run doctor && pnpm run android",
 		"postinstall": "node node_modules/@borndotcom/react-native-godot/scripts/download-prebuilt.js && mkdir -p public && cp $(node -p \"require.resolve('canvaskit-wasm/bin/full/canvaskit.wasm', { paths: [require.resolve('@shopify/react-native-skia')] })\") public/canvaskit.wasm && echo 'postinstall complete'",
 		"deploy": "node ../scripts/export-godot.mjs --once && npx expo export -p web && npx wrangler pages deploy dist/ --project-name=slopcade",
+		"deploy:amen": "BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen expo export -p web && npx wrangler pages deploy dist/ --project-name=amen-games",
 		"build": "node ../scripts/export-godot.mjs --once && expo export -p web",
 		"godot:export": "node ../scripts/export-godot.mjs --once",
 		"godot:watch": "node ../scripts/export-godot.mjs --watch",
