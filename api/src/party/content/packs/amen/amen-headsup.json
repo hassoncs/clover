@@ -1,0 +1,232 @@
+[
+	{
+		"id": "amen-hu-001",
+		"name": "Old Testament Prophets",
+		"words": [
+			"Isaiah",
+			"Jeremiah",
+			"Ezekiel",
+			"Daniel",
+			"Jonah",
+			"Elijah",
+			"Elisha",
+			"Moses",
+			"Samuel",
+			"Nathan"
+		]
+	},
+	{
+		"id": "amen-hu-002",
+		"name": "Disciples of Jesus",
+		"words": [
+			"Peter",
+			"John",
+			"James",
+			"Andrew",
+			"Matthew",
+			"Thomas",
+			"Judas Iscariot",
+			"Philip",
+			"Bartholomew",
+			"Simon the Zealot"
+		]
+	},
+	{
+		"id": "amen-hu-003",
+		"name": "Women of the Bible",
+		"words": [
+			"Eve",
+			"Sarah",
+			"Rebekah",
+			"Rachel",
+			"Leah",
+			"Ruth",
+			"Esther",
+			"Mary (Mother of Jesus)",
+			"Mary Magdalene",
+			"Martha"
+		]
+	},
+	{
+		"id": "amen-hu-004",
+		"name": "Kings of Israel & Judah",
+		"words": [
+			"Saul",
+			"David",
+			"Solomon",
+			"Rehoboam",
+			"Hezekiah",
+			"Josiah",
+			"Ahab",
+			"Manasseh",
+			"Jehu",
+			"Jeroboam"
+		]
+	},
+	{
+		"id": "amen-hu-005",
+		"name": "Enemies of Israel",
+		"words": [
+			"Pharaoh",
+			"Goliath",
+			"Nebuchadnezzar",
+			"Sennacherib",
+			"Haman",
+			"Jezebel",
+			"Herod",
+			"Pontius Pilate",
+			"Philistines",
+			"Babylonians"
+		]
+	},
+	{
+		"id": "amen-hu-006",
+		"name": "Animals in the Bible",
+		"words": [
+			"Lion",
+			"Lamb",
+			"Donkey",
+			"Camel",
+			"Dove",
+			"Raven",
+			"Serpent",
+			"Fish",
+			"Locust",
+			"Bear"
+		]
+	},
+	{
+		"id": "amen-hu-007",
+		"name": "Books of the Law (Pentateuch)",
+		"words": ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy"]
+	},
+	{
+		"id": "amen-hu-008",
+		"name": "Fruits of the Spirit",
+		"words": [
+			"Love",
+			"Joy",
+			"Peace",
+			"Patience",
+			"Kindness",
+			"Goodness",
+			"Faithfulness",
+			"Gentleness",
+			"Self-control"
+		]
+	},
+	{
+		"id": "amen-hu-009",
+		"name": "Plagues of Egypt",
+		"words": [
+			"Blood",
+			"Frogs",
+			"Gnats",
+			"Flies",
+			"Livestock",
+			"Boils",
+			"Hail",
+			"Locusts",
+			"Darkness",
+			"Firstborn"
+		]
+	},
+	{
+		"id": "amen-hu-010",
+		"name": "Parables of Jesus",
+		"words": [
+			"Good Samaritan",
+			"Prodigal Son",
+			"Sower",
+			"Mustard Seed",
+			"Lost Sheep",
+			"Lost Coin",
+			"Talents",
+			"Ten Virgins",
+			"Rich Fool",
+			"Pearl of Great Price"
+		]
+	},
+	{
+		"id": "amen-hu-011",
+		"name": "Miracles of Jesus",
+		"words": [
+			"Water to Wine",
+			"Feeding 5000",
+			"Walking on Water",
+			"Calming the Storm",
+			"Raising Lazarus",
+			"Healing the Blind",
+			"Healing the Leper",
+			"Withered Fig Tree",
+			"Coin in Fish's Mouth",
+			"Resurrection"
+		]
+	},
+	{
+		"id": "amen-hu-012",
+		"name": "Places in the Bible",
+		"words": [
+			"Jerusalem",
+			"Bethlehem",
+			"Nazareth",
+			"Galilee",
+			"Jordan River",
+			"Egypt",
+			"Babylon",
+			"Eden",
+			"Sinai",
+			"Jericho"
+		]
+	},
+	{
+		"id": "amen-hu-013",
+		"name": "Armor of God",
+		"words": [
+			"Belt of Truth",
+			"Breastplate of Righteousness",
+			"Shoes of Peace",
+			"Shield of Faith",
+			"Helmet of Salvation",
+			"Sword of the Spirit"
+		]
+	},
+	{
+		"id": "amen-hu-014",
+		"name": "Sons of Jacob (Tribes)",
+		"words": [
+			"Reuben",
+			"Simeon",
+			"Levi",
+			"Judah",
+			"Dan",
+			"Naphtali",
+			"Gad",
+			"Asher",
+			"Issachar",
+			"Zebulun",
+			"Joseph",
+			"Benjamin"
+		]
+	},
+	{
+		"id": "amen-hu-015",
+		"name": "Judges of Israel",
+		"words": [
+			"Othniel",
+			"Ehud",
+			"Shamgar",
+			"Deborah",
+			"Gideon",
+			"Tola",
+			"Jair",
+			"Jephthah",
+			"Ibzan",
+			"Elon",
+			"Abdon",
+			"Samson",
+			"Eli",
+			"Samuel"
+		]
+	}
+]

@@ -1,0 +1,62 @@
+[
+	{
+		"id": "amen-dil-001",
+		"optionA": "Have the wisdom of Solomon",
+		"optionB": "Have the strength of Samson",
+		"category": "Biblical Gifts"
+	},
+	{
+		"id": "amen-dil-002",
+		"optionA": "Be swallowed by a whale for 3 days",
+		"optionB": "Be thrown into a den of lions for 1 night",
+		"category": "Biblical Perils"
+	},
+	{
+		"id": "amen-dil-003",
+		"optionA": "Walk on water with Jesus",
+		"optionB": "See the parting of the Red Sea",
+		"category": "Miracles"
+	},
+	{
+		"id": "amen-dil-004",
+		"optionA": "Live in the Garden of Eden (before the fall)",
+		"optionB": "Live in the New Jerusalem (after the return)",
+		"category": "Biblical Places"
+	},
+	{
+		"id": "amen-dil-005",
+		"optionA": "Be a disciple of Jesus",
+		"optionB": "Be a prophet in the Old Testament",
+		"category": "Biblical Roles"
+	},
+	{
+		"id": "amen-dil-006",
+		"optionA": "Have to build the Ark like Noah",
+		"optionB": "Have to lead the Israelites in the desert for 40 years like Moses",
+		"category": "Biblical Tasks"
+	},
+	{
+		"id": "amen-dil-007",
+		"optionA": "Eat only manna for 40 years",
+		"optionB": "Eat only locusts and wild honey for 1 year",
+		"category": "Biblical Diet"
+	},
+	{
+		"id": "amen-dil-008",
+		"optionA": "Face Goliath with a sling",
+		"optionB": "Face the fiery furnace with faith",
+		"category": "Biblical Courage"
+	},
+	{
+		"id": "amen-dil-009",
+		"optionA": "Be able to interpret dreams like Joseph",
+		"optionB": "Be able to heal the sick like the apostles",
+		"category": "Spiritual Gifts"
+	},
+	{
+		"id": "amen-dil-010",
+		"optionA": "Witness the creation of the world",
+		"optionB": "Witness the resurrection of Jesus",
+		"category": "Biblical Events"
+	}
+]

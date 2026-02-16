@@ -21,6 +21,14 @@ import type {
 	WouldYouRather,
 } from "@slopcade/content-pipeline";
 import fakeWordsData from "./fake-words.json";
+import amenDilemmaData from "./packs/amen/amen-dilemma.json";
+import amenDrawingData from "./packs/amen/amen-drawing.json";
+import amenFibbageData from "./packs/amen/amen-fibbage.json";
+import amenHeadsUpData from "./packs/amen/amen-headsup.json";
+import amenHistoryData from "./packs/amen/amen-history.json";
+import amenQuipData from "./packs/amen/amen-quip.json";
+import amenRankingData from "./packs/amen/amen-ranking.json";
+import amenTriviaData from "./packs/amen/amen-trivia.json";
 import quiplashPromptsData from "./quiplash-prompts.json";
 import triviaPromptsData from "./trivia-prompts.json";
 
@@ -41,12 +49,26 @@ export type ContentType =
 	| "fibbage"
 	| "caption"
 	| "wordgame"
-	| "FakeWord";
+	| "FakeWord"
+	| "ranking"
+	| "headsup";
 
 export interface FakeWord {
 	id: string;
 	word: string;
 	phonetic: string;
+}
+
+export interface RankingPrompt {
+	id: string;
+	topic: string;
+	items: string[];
+}
+
+export interface HeadsUpDeck {
+	id: string;
+	name: string;
+	words: string[];
 }
 
 /**
@@ -63,6 +85,8 @@ export interface ContentTypeMap {
 	caption: CaptionPrompt;
 	wordgame: WordGamePrompt;
 	FakeWord: FakeWord;
+	ranking: RankingPrompt;
+	headsup: HeadsUpDeck;
 }
 
 /**
@@ -100,11 +124,16 @@ const contentPacks: Record<
 		// wyr: wyrData as WouldYouRather[],
 		// estimation: estimationData as EstimationQuestion[],
 	},
-	// Brand-specific packs will be added as JSON files are generated:
-	// amen: {
-	//   trivia: amenTriviaData as TriviaQuestion[],
-	//   quip: amenQuipData as QuipPrompt[],
-	// },
+	amen: {
+		trivia: amenTriviaData as TriviaQuestion[],
+		quip: amenQuipData as QuipPrompt[],
+		fibbage: amenFibbageData as FibbageQuestion[],
+		estimation: amenHistoryData as EstimationQuestion[],
+		drawing: amenDrawingData as DrawingPrompt[],
+		ranking: amenRankingData as RankingPrompt[],
+		wyr: amenDilemmaData as WouldYouRather[],
+		headsup: amenHeadsUpData as HeadsUpDeck[],
+	},
 };
 
 // ============================================================================

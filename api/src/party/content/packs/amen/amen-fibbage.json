@@ -1,0 +1,107 @@
+[
+	{
+		"id": "amen-fib-001",
+		"question": "The number of books in the Protestant Bible is _____. (2 Timothy 3:16)",
+		"answer": "66",
+		"category": "Bible Facts",
+		"alternateSpellings": ["sixty-six", "sixty six"]
+	},
+	{
+		"id": "amen-fib-002",
+		"question": "The oldest man in the Bible, Methuselah, lived to be _____ years old. (Genesis 5:27)",
+		"answer": "969",
+		"category": "Bible Facts",
+		"alternateSpellings": ["nine hundred sixty nine", "969 years"]
+	},
+	{
+		"id": "amen-fib-003",
+		"question": "Jesus fed the 5,000 with five loaves and _____ fish. (Matthew 14:17)",
+		"answer": "2",
+		"category": "Miracles",
+		"alternateSpellings": ["two"]
+	},
+	{
+		"id": "amen-fib-004",
+		"question": "The number of plagues God sent on Egypt was _____. (Exodus 7-12)",
+		"answer": "10",
+		"category": "Old Testament",
+		"alternateSpellings": ["ten"]
+	},
+	{
+		"id": "amen-fib-005",
+		"question": "The shortest verse in the Bible consists of only _____ words in English. (John 11:35)",
+		"answer": "2",
+		"category": "Bible Facts",
+		"alternateSpellings": ["two"]
+	},
+	{
+		"id": "amen-fib-006",
+		"question": "The number of days Jonah spent in the belly of the fish was _____. (Jonah 1:17)",
+		"answer": "3",
+		"category": "Old Testament",
+		"alternateSpellings": ["three"]
+	},
+	{
+		"id": "amen-fib-007",
+		"question": "The number of disciples Jesus chose was _____. (Matthew 10:1)",
+		"answer": "12",
+		"category": "New Testament",
+		"alternateSpellings": ["twelve"]
+	},
+	{
+		"id": "amen-fib-008",
+		"question": "The Israelites wandered in the wilderness for _____ years. (Numbers 14:33)",
+		"answer": "40",
+		"category": "Old Testament",
+		"alternateSpellings": ["forty"]
+	},
+	{
+		"id": "amen-fib-009",
+		"question": "The number of times Peter denied Jesus before the rooster crowed was _____. (Matthew 26:34)",
+		"answer": "3",
+		"category": "New Testament",
+		"alternateSpellings": ["three"]
+	},
+	{
+		"id": "amen-fib-010",
+		"question": "The number of commandments God gave to Moses on Mount Sinai was _____. (Exodus 20)",
+		"answer": "10",
+		"category": "Old Testament",
+		"alternateSpellings": ["ten"]
+	},
+	{
+		"id": "amen-fib-011",
+		"question": "The number of people on Noah's Ark was _____. (1 Peter 3:20)",
+		"answer": "8",
+		"category": "Old Testament",
+		"alternateSpellings": ["eight"]
+	},
+	{
+		"id": "amen-fib-012",
+		"question": "The number of baskets of leftovers after feeding the 5,000 was _____. (Matthew 14:20)",
+		"answer": "12",
+		"category": "Miracles",
+		"alternateSpellings": ["twelve"]
+	},
+	{
+		"id": "amen-fib-013",
+		"question": "The number of stones David picked up to fight Goliath was _____. (1 Samuel 17:40)",
+		"answer": "5",
+		"category": "Old Testament",
+		"alternateSpellings": ["five"]
+	},
+	{
+		"id": "amen-fib-014",
+		"question": "The number of lepers Jesus healed, where only one returned to say thanks, was _____. (Luke 17:17)",
+		"answer": "10",
+		"category": "Miracles",
+		"alternateSpellings": ["ten"]
+	},
+	{
+		"id": "amen-fib-015",
+		"question": "The number of days Lazarus was in the tomb before Jesus raised him was _____. (John 11:39)",
+		"answer": "4",
+		"category": "Miracles",
+		"alternateSpellings": ["four"]
+	}
+]

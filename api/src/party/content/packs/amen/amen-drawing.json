@@ -1,0 +1,92 @@
+[
+	{
+		"id": "amen-draw-001",
+		"prompt": "Noah's Ark",
+		"category": "Old Testament",
+		"difficulty": "easy"
+	},
+	{
+		"id": "amen-draw-002",
+		"prompt": "The Burning Bush",
+		"category": "Old Testament",
+		"difficulty": "easy"
+	},
+	{
+		"id": "amen-draw-003",
+		"prompt": "Jonah and the Whale",
+		"category": "Old Testament",
+		"difficulty": "easy"
+	},
+	{
+		"id": "amen-draw-004",
+		"prompt": "David and Goliath",
+		"category": "Old Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-005",
+		"prompt": "The Parting of the Red Sea",
+		"category": "Old Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-006",
+		"prompt": "Daniel in the Lions' Den",
+		"category": "Old Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-007",
+		"prompt": "The Tower of Babel",
+		"category": "Old Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-008",
+		"prompt": "The Garden of Eden",
+		"category": "Old Testament",
+		"difficulty": "easy"
+	},
+	{
+		"id": "amen-draw-009",
+		"prompt": "The Nativity Scene",
+		"category": "New Testament",
+		"difficulty": "easy"
+	},
+	{
+		"id": "amen-draw-010",
+		"prompt": "Jesus Walking on Water",
+		"category": "New Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-011",
+		"prompt": "The Last Supper",
+		"category": "New Testament",
+		"difficulty": "hard"
+	},
+	{
+		"id": "amen-draw-012",
+		"prompt": "Samson pushing the pillars",
+		"category": "Old Testament",
+		"difficulty": "hard"
+	},
+	{
+		"id": "amen-draw-013",
+		"prompt": "Jacob's Ladder",
+		"category": "Old Testament",
+		"difficulty": "hard"
+	},
+	{
+		"id": "amen-draw-014",
+		"prompt": "The Walls of Jericho Falling",
+		"category": "Old Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-015",
+		"prompt": "The Sermon on the Mount",
+		"category": "New Testament",
+		"difficulty": "hard"
+	}
+]

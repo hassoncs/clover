@@ -1,0 +1,52 @@
+[
+	{
+		"id": "amen-rank-001",
+		"topic": "Rank these disciples by how many times they are mentioned in the Gospels (Most to Least)",
+		"items": ["Peter", "John", "James", "Andrew"]
+	},
+	{
+		"id": "amen-rank-002",
+		"topic": "Rank these books of the Bible by number of chapters (Most to Least)",
+		"items": ["Psalms", "Isaiah", "Jeremiah", "Genesis"]
+	},
+	{
+		"id": "amen-rank-003",
+		"topic": "Rank these plagues of Egypt in the order they occurred (First to Last)",
+		"items": ["Water to Blood", "Frogs", "Locusts", "Death of Firstborn"]
+	},
+	{
+		"id": "amen-rank-004",
+		"topic": "Rank these people by age at death (Oldest to Youngest)",
+		"items": ["Methuselah", "Noah", "Adam", "Moses"]
+	},
+	{
+		"id": "amen-rank-005",
+		"topic": "Rank these events in chronological order (Earliest to Latest)",
+		"items": ["Creation", "The Flood", "Tower of Babel", "Call of Abraham"]
+	},
+	{
+		"id": "amen-rank-006",
+		"topic": "Rank these kings of Israel/Judah by length of reign (Longest to Shortest)",
+		"items": ["Manasseh", "Uzziah", "David", "Saul"]
+	},
+	{
+		"id": "amen-rank-007",
+		"topic": "Rank these New Testament books by word count (Longest to Shortest)",
+		"items": ["Luke", "Acts", "Matthew", "Romans"]
+	},
+	{
+		"id": "amen-rank-008",
+		"topic": "Rank these days of creation (First to Last)",
+		"items": ["Light", "Sky/Atmosphere", "Land & Plants", "Sun, Moon & Stars"]
+	},
+	{
+		"id": "amen-rank-009",
+		"topic": "Rank these cities by distance from Jerusalem (Closest to Farthest)",
+		"items": ["Bethlehem", "Jericho", "Nazareth", "Rome"]
+	},
+	{
+		"id": "amen-rank-010",
+		"topic": "Rank these weights/measures by volume (Largest to Smallest)",
+		"items": ["Homer", "Bath", "Hin", "Log"]
+	}
+]

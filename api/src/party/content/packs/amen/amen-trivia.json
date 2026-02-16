@@ -1,0 +1,146 @@
+[
+	{
+		"id": "amen-triv-001",
+		"question": "What was the name of the garden where Adam and Eve lived? (Genesis 2:8)",
+		"correctAnswer": "Garden of Eden",
+		"incorrectAnswers": [
+			"Garden of Gethsemane",
+			"Garden of Babylon",
+			"Garden of Peace"
+		],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-002",
+		"question": "Who built the ark to survive the great flood? (Genesis 6:14)",
+		"correctAnswer": "Noah",
+		"incorrectAnswers": ["Moses", "Abraham", "David"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-003",
+		"question": "Which sea did Moses part to escape the Egyptians? (Exodus 14:21)",
+		"correctAnswer": "Red Sea",
+		"incorrectAnswers": ["Dead Sea", "Mediterranean Sea", "Sea of Galilee"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-004",
+		"question": "Who was swallowed by a great fish? (Jonah 1:17)",
+		"correctAnswer": "Jonah",
+		"incorrectAnswers": ["Job", "Jeremiah", "Joel"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-005",
+		"question": "What is the first book of the New Testament? (Matthew 1:1)",
+		"correctAnswer": "Matthew",
+		"incorrectAnswers": ["Mark", "Luke", "John"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-006",
+		"question": "Where was Jesus born? (Luke 2:4)",
+		"correctAnswer": "Bethlehem",
+		"incorrectAnswers": ["Nazareth", "Jerusalem", "Capernaum"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-007",
+		"question": "Who betrayed Jesus for 30 pieces of silver? (Matthew 26:15)",
+		"correctAnswer": "Judas Iscariot",
+		"incorrectAnswers": ["Peter", "Thomas", "Pontius Pilate"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-008",
+		"question": "Which young boy defeated the giant Goliath? (1 Samuel 17:50)",
+		"correctAnswer": "David",
+		"incorrectAnswers": ["Saul", "Jonathan", "Solomon"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-009",
+		"question": "What is the shortest verse in the Bible? (John 11:35)",
+		"correctAnswer": "Jesus wept.",
+		"incorrectAnswers": ["God is love.", "Pray always.", "Rejoice evermore."],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-010",
+		"question": "Who was known for his great strength and long hair? (Judges 16:17)",
+		"correctAnswer": "Samson",
+		"incorrectAnswers": ["Gideon", "Samuel", "Elijah"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-011",
+		"question": "Which disciple walked on water with Jesus? (Matthew 14:29)",
+		"correctAnswer": "Peter",
+		"incorrectAnswers": ["James", "John", "Andrew"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-012",
+		"question": "What city's walls fell down after the Israelites marched around them? (Joshua 6:20)",
+		"correctAnswer": "Jericho",
+		"incorrectAnswers": ["Ai", "Hebron", "Bethel"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-013",
+		"question": "Who was thrown into a den of lions? (Daniel 6:16)",
+		"correctAnswer": "Daniel",
+		"incorrectAnswers": ["Shadrach", "Meshach", "Abednego"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-014",
+		"question": "What gift did the wise men NOT bring to Jesus? (Matthew 2:11)",
+		"correctAnswer": "Silver",
+		"incorrectAnswers": ["Gold", "Frankincense", "Myrrh"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-015",
+		"question": "Who wrote most of the Psalms? (2 Samuel 23:1)",
+		"correctAnswer": "David",
+		"incorrectAnswers": ["Solomon", "Moses", "Asaph"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-016",
+		"question": "Which apostle was a tax collector before following Jesus? (Matthew 9:9)",
+		"correctAnswer": "Matthew",
+		"incorrectAnswers": ["Luke", "Mark", "Simon"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-017",
+		"question": "Who was the first king of Israel? (1 Samuel 10:1)",
+		"correctAnswer": "Saul",
+		"incorrectAnswers": ["David", "Solomon", "Samuel"],
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-triv-018",
+		"question": "What type of insect did John the Baptist eat? (Matthew 3:4)",
+		"correctAnswer": "Locusts",
+		"incorrectAnswers": ["Beetles", "Ants", "Crickets"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-019",
+		"question": "Who climbed a sycamore tree to see Jesus? (Luke 19:4)",
+		"correctAnswer": "Zacchaeus",
+		"incorrectAnswers": ["Bartimaeus", "Nicodemus", "Lazarus"],
+		"category": "New Testament"
+	},
+	{
+		"id": "amen-triv-020",
+		"question": "How many days and nights did it rain during the flood? (Genesis 7:12)",
+		"correctAnswer": "40",
+		"incorrectAnswers": ["7", "12", "100"],
+		"category": "Old Testament"
+	}
+]

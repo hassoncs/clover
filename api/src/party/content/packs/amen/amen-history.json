@@ -1,0 +1,122 @@
+[
+	{
+		"id": "amen-hist-001",
+		"question": "In what year did the Exodus from Egypt likely occur? (Early Date)",
+		"answer": -1446,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -1500, "max": -1200 }
+	},
+	{
+		"id": "amen-hist-002",
+		"question": "In what year did King David begin his reign over Judah?",
+		"answer": -1010,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -1050, "max": -970 }
+	},
+	{
+		"id": "amen-hist-003",
+		"question": "In what year was the First Temple (Solomon's Temple) completed?",
+		"answer": -957,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -970, "max": -930 }
+	},
+	{
+		"id": "amen-hist-004",
+		"question": "In what year did the Northern Kingdom of Israel fall to Assyria?",
+		"answer": -722,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -740, "max": -700 }
+	},
+	{
+		"id": "amen-hist-005",
+		"question": "In what year was Jerusalem destroyed by the Babylonians?",
+		"answer": -586,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -600, "max": -560 }
+	},
+	{
+		"id": "amen-hist-006",
+		"question": "In what year was the Second Temple completed?",
+		"answer": -516,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -530, "max": -500 }
+	},
+	{
+		"id": "amen-hist-007",
+		"question": "In what year was Jesus likely born? (Scholarly consensus)",
+		"answer": -4,
+		"unit": "Year",
+		"category": "New Testament",
+		"acceptableRange": { "min": -7, "max": -1 }
+	},
+	{
+		"id": "amen-hist-008",
+		"question": "In what year did Jesus begin his public ministry? (Approximate)",
+		"answer": 27,
+		"unit": "Year",
+		"category": "New Testament",
+		"acceptableRange": { "min": 26, "max": 30 }
+	},
+	{
+		"id": "amen-hist-009",
+		"question": "In what year was Jesus crucified? (Most likely date)",
+		"answer": 30,
+		"unit": "Year",
+		"category": "New Testament",
+		"acceptableRange": { "min": 29, "max": 33 }
+	},
+	{
+		"id": "amen-hist-010",
+		"question": "In what year did the Apostle Paul convert on the road to Damascus?",
+		"answer": 34,
+		"unit": "Year",
+		"category": "New Testament",
+		"acceptableRange": { "min": 31, "max": 37 }
+	},
+	{
+		"id": "amen-hist-011",
+		"question": "In what year was the Second Temple destroyed by the Romans?",
+		"answer": 70,
+		"unit": "Year",
+		"category": "New Testament Era",
+		"acceptableRange": { "min": 68, "max": 72 }
+	},
+	{
+		"id": "amen-hist-012",
+		"question": "In what year did Abraham likely enter Canaan? (Early Date)",
+		"answer": -2091,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -2200, "max": -1800 }
+	},
+	{
+		"id": "amen-hist-013",
+		"question": "In what year did the Israelites enter the Promised Land under Joshua?",
+		"answer": -1406,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -1450, "max": -1200 }
+	},
+	{
+		"id": "amen-hist-014",
+		"question": "In what year did King Solomon die and the kingdom divide?",
+		"answer": -931,
+		"unit": "Year",
+		"category": "Old Testament",
+		"acceptableRange": { "min": -940, "max": -920 }
+	},
+	{
+		"id": "amen-hist-015",
+		"question": "In what year was the Book of Revelation likely written? (Late Date)",
+		"answer": 95,
+		"unit": "Year",
+		"category": "New Testament",
+		"acceptableRange": { "min": 90, "max": 100 }
+	}
+]
