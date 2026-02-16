@@ -1,18 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Redirect } from "expo-router";
 import { useState } from "react";
 import {
-	View,
-	Text,
-	TextInput,
-	Pressable,
-	ScrollView,
-	Platform,
 	Image,
 	Linking,
+	Platform,
+	Pressable,
+	ScrollView,
+	Text,
+	TextInput,
+	View,
 } from "react-native";
-import { Redirect } from "expo-router";
-import { trpcReact } from "@/lib/trpc/react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { trpcReact } from "@/lib/trpc/react";
 
 export default function LandingPage() {
 	const [email, setEmail] = useState("");
