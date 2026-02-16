@@ -16,6 +16,11 @@ export interface Env {
 	SUPABASE_SERVICE_ROLE_KEY: string;
 	SUPABASE_ANON_KEY: string;
 
+	// Brand: amen.games Supabase credentials
+	AMEN_SUPABASE_URL?: string;
+	AMEN_SUPABASE_SERVICE_ROLE_KEY?: string;
+	AMEN_SUPABASE_ANON_KEY?: string;
+
 	APP_URL: string;
 
 	AI_PROVIDER?: string;
@@ -73,6 +78,7 @@ export interface User {
 export interface Context {
 	env: Env;
 	authToken: string | null;
+	brandId: string;
 	[key: string]: unknown;
 }
 
@@ -90,8 +96,11 @@ export async function createContext(
 		? authHeader.slice(7)
 		: null;
 
+	const brandId = honoContext.req.header("x-brand-id") || "slopcade";
+
 	return {
 		env: honoContext.env,
 		authToken,
+		brandId,
 	};
 }

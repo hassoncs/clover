@@ -779,3 +779,105 @@ VALUES ('00000000-0000-0000-0000-000000000001', 'system@slopcade.dev', 'Slop', 1
 
 INSERT OR REPLACE INTO user_wallets (user_id, balance_micros, lifetime_earned_micros, lifetime_spent_micros, created_at, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000001', 999999999, 999999999, 0, 1700000000000, 1700000000000);
+
+-- =============================================================================
+-- MULTI-BRAND & ORGANIZATION SYSTEM (added for amen.games white-label)
+-- =============================================================================
+
+-- Brands - White-label tenants (slopcade, amen, etc.)
+CREATE TABLE IF NOT EXISTS brands (
+  id TEXT PRIMARY KEY,                          -- 'slopcade', 'amen'
+  slug TEXT NOT NULL UNIQUE,                    -- URL-safe identifier
+  display_name TEXT NOT NULL,                   -- "Amen"
+  domain TEXT,                                  -- "amen.games"
+  config_json TEXT NOT NULL DEFAULT '{}',       -- Serialized BrandManifest overrides
+  status TEXT NOT NULL DEFAULT 'active'
+    CHECK (status IN ('active', 'suspended', 'archived')),
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- Seed brands
+INSERT OR IGNORE INTO brands (id, slug, display_name, domain, status, created_at, updated_at) VALUES
+  ('slopcade', 'slopcade', 'Slopcade', 'slopcade.com', 'active', unixepoch()*1000, unixepoch()*1000),
+  ('amen', 'amen', 'Amen', 'amen.games', 'active', unixepoch()*1000, unixepoch()*1000);
+
+-- =============================================================================
+-- BRAND SCOPING ON EXISTING TABLES
+-- =============================================================================
+
+-- Games: brand-scoped
+ALTER TABLE games ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id);
+CREATE INDEX IF NOT EXISTS idx_games_brand ON games(brand_id, is_public, created_at DESC);
+
+-- Users: brand-scoped (users belong to ONE brand, never shared)
+ALTER TABLE users ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id);
+CREATE INDEX IF NOT EXISTS idx_users_brand ON users(brand_id);
+
+-- Themes: brand-scoped
+ALTER TABLE themes ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id);
+
+-- =============================================================================
+-- ORGANIZATION SYSTEM (Church Subscriptions)
+-- =============================================================================
+
+-- Organizations - Churches, groups, etc. that can have multiple members
+CREATE TABLE IF NOT EXISTS organizations (
+  id TEXT PRIMARY KEY,
+  brand_id TEXT NOT NULL REFERENCES brands(id),
+  name TEXT NOT NULL,                           -- "Grace Community Church"
+  slug TEXT NOT NULL,                           -- "grace-community" (for join links)
+  admin_user_id TEXT NOT NULL REFERENCES users(id),
+  size_tier TEXT NOT NULL DEFAULT 'small'
+    CHECK (size_tier IN ('small', 'medium', 'large', 'mega')),
+  reported_attendance INTEGER,
+  join_code TEXT UNIQUE,                        -- 6-char alphanumeric: "GRACE7"
+  join_link_enabled INTEGER NOT NULL DEFAULT 1,
+  denomination TEXT,
+  city TEXT,
+  state TEXT,
+  status TEXT NOT NULL DEFAULT 'active'
+    CHECK (status IN ('active', 'trial', 'suspended', 'cancelled')),
+  trial_ends_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(brand_id, slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_orgs_brand ON organizations(brand_id, status);
+CREATE INDEX IF NOT EXISTS idx_orgs_join_code ON organizations(join_code);
+CREATE INDEX IF NOT EXISTS idx_orgs_admin ON organizations(admin_user_id);
+
+-- Organization Members - Users belonging to organizations
+CREATE TABLE IF NOT EXISTS organization_members (
+  org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  role TEXT NOT NULL DEFAULT 'member'
+    CHECK (role IN ('admin', 'leader', 'member')),
+  joined_at INTEGER NOT NULL,
+  invited_by TEXT REFERENCES users(id),
+  PRIMARY KEY (org_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_org_members_user ON organization_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_org_members_org ON organization_members(org_id, role);
+
+-- Organization Subscriptions - Stripe billing for organizations
+CREATE TABLE IF NOT EXISTS org_subscriptions (
+  id TEXT PRIMARY KEY,
+  org_id TEXT NOT NULL REFERENCES organizations(id),
+  stripe_subscription_id TEXT UNIQUE,
+  stripe_customer_id TEXT,
+  plan_id TEXT NOT NULL,                        -- 'amen_church_small', etc.
+  status TEXT NOT NULL DEFAULT 'active'
+    CHECK (status IN ('active', 'past_due', 'cancelled', 'trialing')),
+  current_period_start INTEGER NOT NULL,
+  current_period_end INTEGER NOT NULL,
+  cancel_at_period_end INTEGER NOT NULL DEFAULT 0,
+  max_members INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_org_subs_org ON org_subscriptions(org_id);
+CREATE INDEX IF NOT EXISTS idx_org_subs_stripe ON org_subscriptions(stripe_subscription_id);

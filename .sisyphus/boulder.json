@@ -1,7 +1,9 @@
 {
-	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/games-buildout-infra-readiness-plan.md",
-	"started_at": "2026-02-15T23:17:00.000Z",
-	"session_ids": ["ses_39c76c1eeffeSkCV7l1mtlZH50"],
-	"plan_name": "games-buildout-infra-readiness-plan",
-	"agent": "atlas"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/white-label-christian-party-games.md",
+  "started_at": "2026-02-16T20:09:15.229Z",
+  "session_ids": [
+    "ses_398154a92ffeJU7Ya3QdX2TDo8"
+  ],
+  "plan_name": "white-label-christian-party-games",
+  "agent": "atlas"
 }

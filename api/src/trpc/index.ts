@@ -1,13 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { AuthenticatedContext, Context, User } from "./context";
+import type { AuthenticatedContext, Context, Env, User } from "./context";
 
 const t = initTRPC.context<Context>().create();
 
 export const router = t.router;
 export const mergeRouters = t.mergeRouters;
 
-// Public procedures - no auth required (for browsing/playing public games)
 export const publicProcedure = t.procedure;
 
 const DEV_USER: User = {
@@ -16,7 +15,23 @@ const DEV_USER: User = {
 	displayName: "Dev",
 };
 
-// Helper to validate and extract user from auth token
+function getSupabaseCredentials(
+	env: Env,
+	brandId: string,
+): { url: string; serviceRoleKey: string } {
+	if (brandId === "amen") {
+		return {
+			url: env.AMEN_SUPABASE_URL || env.SUPABASE_URL,
+			serviceRoleKey:
+				env.AMEN_SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_ROLE_KEY,
+		};
+	}
+	return {
+		url: env.SUPABASE_URL,
+		serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
+	};
+}
+
 async function validateAuthToken(ctx: Context): Promise<User> {
 	if (__DEV__ && ctx.authToken === "dev-token") {
 		return DEV_USER;
@@ -29,17 +44,16 @@ async function validateAuthToken(ctx: Context): Promise<User> {
 		});
 	}
 
-	if (!ctx.env.SUPABASE_URL || !ctx.env.SUPABASE_SERVICE_ROLE_KEY) {
+	const { url, serviceRoleKey } = getSupabaseCredentials(ctx.env, ctx.brandId);
+
+	if (!url || !serviceRoleKey) {
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
 			message: "Supabase client not initialized - check credentials",
 		});
 	}
 
-	const supabase = createClient(
-		ctx.env.SUPABASE_URL,
-		ctx.env.SUPABASE_SERVICE_ROLE_KEY,
-	);
+	const supabase = createClient(url, serviceRoleKey);
 
 	const {
 		data: { user: supabaseUser },

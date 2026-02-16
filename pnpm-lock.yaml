@@ -264,6 +264,9 @@ importers:
       '@slopcade/api':
         specifier: workspace:*
         version: link:../api
+      '@slopcade/brands':
+        specifier: workspace:*
+        version: link:../packages/brands
       '@slopcade/codemirror-lang-glsl':
         specifier: workspace:^
         version: link:../packages/codemirror-lang-glsl
@@ -647,6 +650,12 @@ importers:
     devDependencies:
       typescript:
         specifier: ^5.0.0
+        version: 5.9.3
+
+  packages/brands:
+    devDependencies:
+      typescript:
+        specifier: ^5.4.5
         version: 5.9.3
 
   packages/codemirror-lang-glsl:
