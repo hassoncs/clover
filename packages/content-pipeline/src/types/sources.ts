@@ -7,6 +7,7 @@ export const SPDX_LICENSE = {
 	CC0_1_0: "CC0-1.0",
 	CC_BY_4_0: "CC-BY-4.0",
 	CC_BY_SA_4_0: "CC-BY-SA-4.0",
+	MIT: "MIT",
 	PUBLIC_DOMAIN: "Public Domain",
 	PROPRIETARY_AI: "Proprietary-AI",
 } as const;

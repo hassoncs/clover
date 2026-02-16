@@ -10,6 +10,15 @@ export const APPROVED_SOURCES: Record<string, Source> = {
 		attributionTemplate:
 			"Questions from Open Trivia Database (https://opentdb.com) licensed under CC BY-SA 4.0",
 	},
+	biblequizzle: {
+		id: "biblequizzle",
+		name: "BibleQuizzle",
+		url: "https://github.com/BibleQuizzle/BibleQuizzle",
+		license: SPDX_LICENSE.MIT,
+		description: "Bible trivia dataset used for Christian party games",
+		attributionTemplate:
+			"Questions from BibleQuizzle (https://github.com/BibleQuizzle/BibleQuizzle) licensed under MIT",
+	},
 	wikidata: {
 		id: "wikidata",
 		name: "Wikidata",

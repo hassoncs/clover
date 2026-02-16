@@ -32,6 +32,12 @@ describe("license-validator", () => {
 			expect(result.license).toBe(SPDX_LICENSE.PUBLIC_DOMAIN);
 		});
 
+		it("accepts MIT", () => {
+			const result = validateLicense(SPDX_LICENSE.MIT);
+			expect(result.valid).toBe(true);
+			expect(result.license).toBe(SPDX_LICENSE.MIT);
+		});
+
 		it("accepts Proprietary-AI", () => {
 			const result = validateLicense(SPDX_LICENSE.PROPRIETARY_AI);
 			expect(result.valid).toBe(true);
@@ -57,7 +63,7 @@ describe("license-validator", () => {
 		});
 
 		it("rejects unknown license", () => {
-			const result = validateLicense("MIT");
+			const result = validateLicense("BSD-3-Clause");
 			expect(result.valid).toBe(false);
 			expect(result.reason).toContain("not in approved list");
 		});
@@ -74,6 +80,7 @@ describe("license-validator", () => {
 			expect(isLicenseApproved(SPDX_LICENSE.CC0_1_0)).toBe(true);
 			expect(isLicenseApproved(SPDX_LICENSE.CC_BY_4_0)).toBe(true);
 			expect(isLicenseApproved(SPDX_LICENSE.CC_BY_SA_4_0)).toBe(true);
+			expect(isLicenseApproved(SPDX_LICENSE.MIT)).toBe(true);
 			expect(isLicenseApproved(SPDX_LICENSE.PUBLIC_DOMAIN)).toBe(true);
 			expect(isLicenseApproved(SPDX_LICENSE.PROPRIETARY_AI)).toBe(true);
 		});
@@ -84,7 +91,7 @@ describe("license-validator", () => {
 		});
 
 		it("returns false for unknown licenses", () => {
-			expect(isLicenseApproved("MIT")).toBe(false);
+			expect(isLicenseApproved("BSD-3-Clause")).toBe(false);
 			expect(isLicenseApproved("GPL-3.0")).toBe(false);
 		});
 	});
@@ -95,9 +102,10 @@ describe("license-validator", () => {
 			expect(licenses).toContain(SPDX_LICENSE.CC0_1_0);
 			expect(licenses).toContain(SPDX_LICENSE.CC_BY_4_0);
 			expect(licenses).toContain(SPDX_LICENSE.CC_BY_SA_4_0);
+			expect(licenses).toContain(SPDX_LICENSE.MIT);
 			expect(licenses).toContain(SPDX_LICENSE.PUBLIC_DOMAIN);
 			expect(licenses).toContain(SPDX_LICENSE.PROPRIETARY_AI);
-			expect(licenses).toHaveLength(5);
+			expect(licenses).toHaveLength(6);
 		});
 	});
 });

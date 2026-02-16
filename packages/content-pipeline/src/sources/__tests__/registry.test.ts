@@ -11,6 +11,13 @@ describe("registry", () => {
 			expect(source.url).toBe("https://opentdb.com");
 		});
 
+		it("includes BibleQuizzle with MIT license", () => {
+			const source = APPROVED_SOURCES.biblequizzle;
+			expect(source.name).toBe("BibleQuizzle");
+			expect(source.license).toBe(SPDX_LICENSE.MIT);
+			expect(source.url).toBe("https://github.com/BibleQuizzle/BibleQuizzle");
+		});
+
 		it("includes Wikidata with CC0-1.0", () => {
 			const source = APPROVED_SOURCES.wikidata;
 			expect(source.name).toBe("Wikidata");
@@ -81,8 +88,9 @@ describe("registry", () => {
 	describe("listSources", () => {
 		it("returns all sources", () => {
 			const sources = listSources();
-			expect(sources.length).toBe(8);
+			expect(sources.length).toBe(9);
 			expect(sources.map((s) => s.id)).toContain("opentdb");
+			expect(sources.map((s) => s.id)).toContain("biblequizzle");
 			expect(sources.map((s) => s.id)).toContain("wikidata");
 			expect(sources.map((s) => s.id)).toContain("ai_generated");
 		});
