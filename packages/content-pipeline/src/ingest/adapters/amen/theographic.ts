@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import type { ContentItem } from "../../types/index.js";
+import type { ContentItem } from "../../../types/index.js";
 
 interface TheographicPerson {
 	name: string;

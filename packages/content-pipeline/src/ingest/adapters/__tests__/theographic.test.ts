@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { fetchTheographic } from "../theographic.js";
+import { fetchTheographic } from "../amen/theographic.js";
 
 describe("theographic adapter", () => {
 	it("loads local JSON and transforms people, places, and events", async () => {

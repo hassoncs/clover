@@ -6,9 +6,9 @@ import { computeContentHash } from "../dedup/hash.js";
 import {
 	DEFAULT_BIBLEQUIZZLE_DATA_PATH,
 	fetchBibleQuizzle,
-} from "../ingest/adapters/biblequizzle.js";
+	fetchTheographic,
+} from "../ingest/adapters/amen/index.js";
 import { fetchOpenTDB } from "../ingest/adapters/opentdb.js";
-import { fetchTheographic } from "../ingest/adapters/theographic.js";
 import type { ContentItem } from "../types/index.js";
 
 export interface IngestOptions {

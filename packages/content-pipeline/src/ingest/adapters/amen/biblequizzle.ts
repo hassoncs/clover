@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { BibleTriviaQuestionSchema } from "../../types/bible-trivia.js";
-import type { ContentItem } from "../../types/index.js";
+import { BibleTriviaQuestionSchema } from "../../../types/amen/bible-trivia.js";
+import type { ContentItem } from "../../../types/index.js";
 import { isValidScriptureRef } from "./scripture-validator.js";
 
 export const DEFAULT_BIBLEQUIZZLE_DATA_PATH =

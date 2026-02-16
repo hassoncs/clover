@@ -10,7 +10,7 @@ import {
 	WordGamePromptSchema,
 	WouldYouRatherSchema,
 } from "../types/index.js";
-import { AMEN_GAME_TYPE_CONFIGS } from "./amen-prompts.js";
+import { AMEN_GAME_TYPE_CONFIGS } from "./amen/index.js";
 
 export interface GameTypeConfig {
 	schema: z.ZodType<{ items: unknown[] }>;

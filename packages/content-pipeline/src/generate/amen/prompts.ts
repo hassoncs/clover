@@ -3,8 +3,8 @@ import {
 	BibleFibbageQuestionSchema,
 	BibleQuipPromptSchema,
 	BibleTriviaQuestionSchema,
-} from "../types/index.js";
-import type { GameTypeConfig } from "./prompts.js";
+} from "../../types/index.js";
+import type { GameTypeConfig } from "../prompts.js";
 
 const AmenTriviaItemSchema = BibleTriviaQuestionSchema.omit({
 	id: true,

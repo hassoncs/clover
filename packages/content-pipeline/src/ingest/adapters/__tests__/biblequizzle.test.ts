@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { fetchBibleQuizzle } from "../biblequizzle.js";
+import { fetchBibleQuizzle } from "../amen/biblequizzle.js";
 
 describe("biblequizzle adapter", () => {
 	it("loads local JSON and transforms to content items", async () => {

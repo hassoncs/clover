@@ -3,7 +3,7 @@ import {
 	BIBLE_BOOKS,
 	isValidScriptureRef,
 	parseScriptureRef,
-} from "../scripture-validator.js";
+} from "../amen/scripture-validator.js";
 
 describe("scripture-validator", () => {
 	it("exports 66 canonical Bible books", () => {
