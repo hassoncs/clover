@@ -85,12 +85,12 @@ Provide a layout-first structural mode inside the editor so users and AI can ite
   - code-driven screen runtime mapping
 
 ### Definition of Done
-- [ ] Structural mode can be toggled from panel
-- [ ] Sidebar remains visible while stepping screens/phases
-- [ ] Viewer shows portrait phone ratio for MVP
-- [ ] UI/phase edits affect canonical editor data (no sidecar schema)
-- [ ] World/entity structural layer renders read-only in structural mode
-- [ ] Tests and agent QA scenarios pass
+- [x] Structural mode can be toggled from panel
+- [x] Sidebar remains visible while stepping screens/phases
+- [x] Viewer shows portrait phone ratio for MVP
+- [x] UI/phase edits affect canonical editor data (no sidecar schema)
+- [x] World/entity structural layer renders read-only in structural mode
+- [x] Tests and agent QA scenarios pass
 
 ### Must Have
 - Single source of truth: canonical schema only
@@ -243,7 +243,7 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 5
   - Blocks: 3
   - Blocked By: None
 
-- [ ] 3. Implement structural renderer and web viewer shell
+- [x] 3. Implement structural renderer and web viewer shell
 
   **What to do**:
   - Render canonical UI/game structures in low-fidelity style
@@ -258,7 +258,7 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 5
   - Blocks: 4,5
   - Blocked By: 1,2
 
-- [ ] 4. Implement flow navigation (screens/phases) + controls
+- [x] 4. Implement flow navigation (screens/phases) + controls
 
   **What to do**:
   - Horizontal stepping, arrows, keyboard shortcuts, counter/dots
@@ -273,7 +273,7 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 5
   - Blocks: 5
   - Blocked By: 3
 
-- [ ] 5. Add native fallback + tests + QA verification
+- [x] 5. Add native fallback + tests + QA verification
 
   **What to do**:
   - Implement minimal native-safe viewer behavior
@@ -289,7 +289,7 @@ Critical Path: Task 1 -> Task 3 -> Task 6 -> Task 5
   - Blocks: None
   - Blocked By: 3,4
 
-- [ ] 6. Add canonical layout adapter for code-driven screens
+- [x] 6. Add canonical layout adapter for code-driven screens
 
   **What to do**:
   - Define minimal adapter contract for positional/zone-based layout resolution
@@ -320,8 +320,8 @@ pnpm typecheck
 ```
 
 ### Final Checklist
-- [ ] Canonical schema remained single source of truth
-- [ ] Structural mode usable for UI + party phase flow in MVP
-- [ ] World/entity view is structural and read-only
-- [ ] Sidebar + viewer workflow works without losing menu context
-- [ ] Evidence captured for all QA scenarios
+- [x] Canonical schema remained single source of truth
+- [x] Structural mode usable for UI + party phase flow in MVP
+- [x] World/entity view is structural and read-only
+- [x] Sidebar + viewer workflow works without losing menu context
+- [x] Evidence captured for all QA scenarios
