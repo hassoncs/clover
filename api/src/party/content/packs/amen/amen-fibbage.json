@@ -1,107 +1,117 @@
 [
 	{
 		"id": "amen-fib-001",
-		"question": "The number of books in the Protestant Bible is _____. (2 Timothy 3:16)",
-		"answer": "66",
-		"category": "Bible Facts",
-		"alternateSpellings": ["sixty-six", "sixty six"]
+		"question": "The name of Moses' wife was _____. (Exodus 2:21)",
+		"answer": "Zipporah",
+		"category": "Old Testament"
 	},
 	{
 		"id": "amen-fib-002",
-		"question": "The oldest man in the Bible, Methuselah, lived to be _____ years old. (Genesis 5:27)",
-		"answer": "969",
-		"category": "Bible Facts",
-		"alternateSpellings": ["nine hundred sixty nine", "969 years"]
+		"question": "Paul's job before becoming a missionary was _____. (Acts 18:3)",
+		"answer": "tentmaker",
+		"category": "Acts & Epistles",
+		"alternateSpellings": ["tent maker"]
 	},
 	{
 		"id": "amen-fib-003",
-		"question": "Jesus fed the 5,000 with five loaves and _____ fish. (Matthew 14:17)",
-		"answer": "2",
-		"category": "Miracles",
-		"alternateSpellings": ["two"]
+		"question": "The animal that spoke to Balaam was a _____. (Numbers 22:28)",
+		"answer": "donkey",
+		"category": "Old Testament",
+		"alternateSpellings": ["donkey colt", "ass"]
 	},
 	{
 		"id": "amen-fib-004",
-		"question": "The number of plagues God sent on Egypt was _____. (Exodus 7-12)",
-		"answer": "10",
-		"category": "Old Testament",
-		"alternateSpellings": ["ten"]
+		"question": "King Nebuchadnezzar spent years living like a _____ in the wilderness. (Daniel 4:33)",
+		"answer": "wild animal",
+		"category": "Old Testament"
 	},
 	{
 		"id": "amen-fib-005",
-		"question": "The shortest verse in the Bible consists of only _____ words in English. (John 11:35)",
-		"answer": "2",
-		"category": "Bible Facts",
-		"alternateSpellings": ["two"]
+		"question": "The first high priest of Israel was _____. (Exodus 28:1)",
+		"answer": "Aaron",
+		"category": "Biblical Figures"
 	},
 	{
 		"id": "amen-fib-006",
-		"question": "The number of days Jonah spent in the belly of the fish was _____. (Jonah 1:17)",
-		"answer": "3",
-		"category": "Old Testament",
-		"alternateSpellings": ["three"]
+		"question": "The woman who hid the Israelite spies in Jericho was _____. (Joshua 2:1-4)",
+		"answer": "Rahab",
+		"category": "Old Testament"
 	},
 	{
 		"id": "amen-fib-007",
-		"question": "The number of disciples Jesus chose was _____. (Matthew 10:1)",
-		"answer": "12",
-		"category": "New Testament",
-		"alternateSpellings": ["twelve"]
+		"question": "The disciple who replaced Judas was _____. (Acts 1:26)",
+		"answer": "Matthias",
+		"category": "Acts & Epistles"
 	},
 	{
 		"id": "amen-fib-008",
-		"question": "The Israelites wandered in the wilderness for _____ years. (Numbers 14:33)",
-		"answer": "40",
-		"category": "Old Testament",
-		"alternateSpellings": ["forty"]
+		"question": "The river where Jesus was baptized is called the _____. (Matthew 3:13)",
+		"answer": "Jordan",
+		"category": "Biblical Geography",
+		"alternateSpellings": ["Jordan River"]
 	},
 	{
 		"id": "amen-fib-009",
-		"question": "The number of times Peter denied Jesus before the rooster crowed was _____. (Matthew 26:34)",
-		"answer": "3",
-		"category": "New Testament",
-		"alternateSpellings": ["three"]
+		"question": "Jesus was born in the city of _____. (Luke 2:4)",
+		"answer": "Bethlehem",
+		"category": "Biblical Geography"
 	},
 	{
 		"id": "amen-fib-010",
-		"question": "The number of commandments God gave to Moses on Mount Sinai was _____. (Exodus 20)",
-		"answer": "10",
-		"category": "Old Testament",
-		"alternateSpellings": ["ten"]
+		"question": "The event where God confused human language is called the _____. (Genesis 11:9)",
+		"answer": "Tower of Babel",
+		"category": "Old Testament"
 	},
 	{
 		"id": "amen-fib-011",
-		"question": "The number of people on Noah's Ark was _____. (1 Peter 3:20)",
-		"answer": "8",
-		"category": "Old Testament",
-		"alternateSpellings": ["eight"]
+		"question": "The Roman governor who sentenced Jesus to crucifixion was _____. (Matthew 27:24-26)",
+		"answer": "Pontius Pilate",
+		"category": "Gospels",
+		"alternateSpellings": ["Pilate"]
 	},
 	{
 		"id": "amen-fib-012",
-		"question": "The number of baskets of leftovers after feeding the 5,000 was _____. (Matthew 14:20)",
-		"answer": "12",
-		"category": "Miracles",
-		"alternateSpellings": ["twelve"]
+		"question": "The tax collector who climbed a sycamore tree to see Jesus was _____. (Luke 19:4)",
+		"answer": "Zacchaeus",
+		"category": "Gospels"
 	},
 	{
 		"id": "amen-fib-013",
-		"question": "The number of stones David picked up to fight Goliath was _____. (1 Samuel 17:40)",
-		"answer": "5",
-		"category": "Old Testament",
-		"alternateSpellings": ["five"]
+		"question": "The island where Paul was shipwrecked was _____. (Acts 28:1)",
+		"answer": "Malta",
+		"category": "Acts & Epistles"
 	},
 	{
 		"id": "amen-fib-014",
-		"question": "The number of lepers Jesus healed, where only one returned to say thanks, was _____. (Luke 17:17)",
-		"answer": "10",
-		"category": "Miracles",
-		"alternateSpellings": ["ten"]
+		"question": "The disciple known for saying 'I am not worthy' to untie Jesus' sandals was _____. (John 1:27)",
+		"answer": "John the Baptist",
+		"category": "Gospels",
+		"alternateSpellings": ["John Baptist"]
 	},
 	{
 		"id": "amen-fib-015",
-		"question": "The number of days Lazarus was in the tomb before Jesus raised him was _____. (John 11:39)",
-		"answer": "4",
+		"question": "The queen who visited Solomon with hard questions was _____. (1 Kings 10:1)",
+		"answer": "Queen of Sheba",
+		"category": "Old Testament",
+		"alternateSpellings": ["Sheba"]
+	},
+	{
+		"id": "amen-fib-016",
+		"question": "The man lowered through a roof to reach Jesus was healed of _____ first. (Mark 2:5)",
+		"answer": "sin",
 		"category": "Miracles",
-		"alternateSpellings": ["four"]
+		"alternateSpellings": ["his sins", "sins"]
+	},
+	{
+		"id": "amen-fib-017",
+		"question": "The woman who became Esther's guardian and adoptive father was _____. (Esther 2:7)",
+		"answer": "Mordecai",
+		"category": "Old Testament"
+	},
+	{
+		"id": "amen-fib-018",
+		"question": "The city where believers were first called Christians was _____. (Acts 11:26)",
+		"answer": "Antioch",
+		"category": "Acts & Epistles"
 	}
 ]

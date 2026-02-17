@@ -1,0 +1,3502 @@
+[
+	{
+		"id": "21186a14-46c5-4ea9-a94a-386502bd6884",
+		"question": "How many verses are in the book of Psalms?",
+		"answer": 2461,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8067de4a-8d12-4e6c-920d-4cef0cdfcbe4",
+		"question": "How many verses are in the book of Genesis?",
+		"answer": 1533,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "5c102141-8a2d-41e2-aa8f-b2212302d28e",
+		"question": "How many verses are in the book of Jeremiah?",
+		"answer": 1364,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "9b530bae-8bac-413d-8a92-37ca0ad306ad",
+		"question": "How many verses are in the book of Isaiah?",
+		"answer": 1292,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "84844b4f-8c81-46ef-9dc5-93e3785789dd",
+		"question": "How many verses are in the book of Numbers?",
+		"answer": 1288,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "61ad57c2-3e43-4f61-a42c-d9055b52b5da",
+		"question": "How many verses are in the book of Ezekiel?",
+		"answer": 1273,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "f49bcb8a-e6e9-4dd0-b383-6eb335c95076",
+		"question": "How many verses are in the book of Exodus?",
+		"answer": 1213,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "9d3cbcde-94f9-4332-a4ae-c36327c86b4c",
+		"question": "How many verses are in the book of Luke?",
+		"answer": 1151,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e50ca361-caeb-4c10-a56d-40378c750e0b",
+		"question": "How many people are mentioned in Genesis?",
+		"answer": 1082,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "69768c75-0448-44ba-8198-15a290fd14de",
+		"question": "How many verses are in the book of Matthew?",
+		"answer": 1071,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "fb4aa3ee-c715-405c-ac96-a9a146d3e610",
+		"question": "How many verses are in the book of Job?",
+		"answer": 1070,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "b6e84fe1-f3cf-40d1-8689-91d966480317",
+		"question": "How many people are mentioned in Psalms?",
+		"answer": 1026,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "26ccfa8b-12c9-461d-9166-1c4aae5078a5",
+		"question": "How many verses are in the book of Acts?",
+		"answer": 1007,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "2b50e632-f240-4d28-bf82-2f5983a334df",
+		"question": "How many verses are in the book of Deuteronomy?",
+		"answer": 959,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8b3d464f-61f6-492a-b6b1-6544d3e19009",
+		"question": "How many verses are in the book of 1 Chronicles?",
+		"answer": 942,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8f623181-83f2-42b4-8ffa-a210e4de10b5",
+		"question": "How many verses are in the book of Proverbs?",
+		"answer": 915,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "7da5a901-760f-4f99-9988-d8dff7d5d0bc",
+		"question": "How many verses are in the book of John?",
+		"answer": 879,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "c521a258-1c21-48f9-8122-0943b24fc9d2",
+		"question": "How many verses are in the book of Leviticus?",
+		"answer": 859,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "810a8ccf-078b-431f-b67e-a71236087078",
+		"question": "How many people are mentioned in Jeremiah?",
+		"answer": 840,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "df98dc80-0c5c-4729-9d0a-9c9cca28653d",
+		"question": "How many people are mentioned in 1 Chronicles?",
+		"answer": 836,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "ec9226f9-370e-40c2-8a87-c0bd546aa937",
+		"question": "How many people are mentioned in Numbers?",
+		"answer": 832,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "8649d36a-9213-45a8-bd4b-52b652c28292",
+		"question": "How many verses are in the book of 2 Chronicles?",
+		"answer": 822,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "fb9f3574-51f6-4cb7-89c1-4029c82af81b",
+		"question": "How many verses are in the book of 1 Kings?",
+		"answer": 816,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e2fdc4e1-ce58-4874-9d78-5c68be59568f",
+		"question": "How many verses are in the book of 1 Samuel?",
+		"answer": 810,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "bcb957be-9f5f-47b1-93f1-4411564ceb77",
+		"question": "How many verses are in the book of 2 Kings?",
+		"answer": 719,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "a78b9f09-7dd4-4fcb-96aa-4bb2f09ac924",
+		"question": "How many verses are in the book of 2 Samuel?",
+		"answer": 695,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "7b383e94-d140-430f-af60-bc06fec64d1e",
+		"question": "How many verses are in the book of Mark?",
+		"answer": 678,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "4511d5ce-ae41-46e2-8266-ce4e541ebb2f",
+		"question": "How many people are mentioned in 1 Samuel?",
+		"answer": 662,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "08a8c74e-af15-4190-a65d-52ad66834424",
+		"question": "How many verses are in the book of Joshua?",
+		"answer": 658,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "cd36329a-9b29-4775-a946-3852d3aba1cf",
+		"question": "How many people are mentioned in Exodus?",
+		"answer": 619,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "576fae58-e66a-43ca-aef6-7c48b959d2b0",
+		"question": "How many verses are in the book of Judges?",
+		"answer": 618,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "cf1a226f-4b0b-4265-afbc-7ab2e14d7fde",
+		"question": "How many people are mentioned in 2 Chronicles?",
+		"answer": 611,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "faa5bdb8-00de-4c21-80f1-77f9755a8668",
+		"question": "How many people are mentioned in Acts?",
+		"answer": 592,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "277b30b7-a178-493d-a9f0-82a1cff748bc",
+		"question": "How many people are mentioned in 1 Kings?",
+		"answer": 586,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "b2149fc0-f80f-4033-8f97-2dc342db0027",
+		"question": "How many people are mentioned in 2 Samuel?",
+		"answer": 556,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "7c432178-add8-4571-b562-aae456696fb2",
+		"question": "How many people are mentioned in Isaiah?",
+		"answer": 556,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9618d6fa-03e9-4b47-bbce-ce07c3053e2a",
+		"question": "How many people are mentioned in 2 Kings?",
+		"answer": 554,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "b1cddcd2-34fd-4f86-93a0-06ef5018b1c6",
+		"question": "How many people are mentioned in Deuteronomy?",
+		"answer": 528,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "668101cf-f39f-4986-89d5-61fe17fece97",
+		"question": "How many people are mentioned in John?",
+		"answer": 514,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "d8e31dcf-22d8-4578-bb0d-4ee13e806d6d",
+		"question": "How many people are mentioned in Ezekiel?",
+		"answer": 482,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "c06e52f0-3723-45d5-a41d-3c9fd44fdf24",
+		"question": "How many people are mentioned in Luke?",
+		"answer": 461,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "d5b99db8-2c69-4978-9789-59c9b6dd6298",
+		"question": "How many people are mentioned in Judges?",
+		"answer": 454,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "722db11b-cc3b-40ad-9acd-f4e411e127d7",
+		"question": "How many places are mentioned in Jeremiah?",
+		"answer": 443,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "809a5962-cd56-4bd3-95e9-01786fa02d09",
+		"question": "How many verses are in the book of 1 Corinthians?",
+		"answer": 437,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "06594970-174d-4ff0-b464-00ab523fd36a",
+		"question": "How many verses are in the book of Romans?",
+		"answer": 433,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "de50b5db-a17f-4c52-9a20-d65c1c285924",
+		"question": "How many people are mentioned in Matthew?",
+		"answer": 431,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "4d37be59-63d6-4890-af1a-59cc22330bae",
+		"question": "How many people are mentioned in Joshua?",
+		"answer": 413,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "0c20c2c1-705d-4e61-965d-03955c367048",
+		"question": "How many verses are in the book of Nehemiah?",
+		"answer": 406,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "96be1f51-cbd5-4c93-b950-ca3a564ee88a",
+		"question": "How many verses are in the book of Revelation?",
+		"answer": 404,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "2e172f5d-d73b-432e-8b53-aeeb658a734d",
+		"question": "How many places are mentioned in Joshua?",
+		"answer": 370,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "65ad484a-be11-4ce3-94df-7813b2bbfff5",
+		"question": "How many people are mentioned in Leviticus?",
+		"answer": 366,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "12ecc72b-ee4e-4e95-9ea5-0d3480453ea0",
+		"question": "How many verses are in the book of Daniel?",
+		"answer": 357,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "12ec8931-b8ce-4da5-b091-e3c746e32cd7",
+		"question": "How many verses are in the book of Hebrews?",
+		"answer": 303,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e48d97cc-b554-4b50-8ce5-2438ad78ad30",
+		"question": "How many verses are in the book of Ezra?",
+		"answer": 280,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "b273d0d5-eeb4-4edd-945f-59d67a5a497d",
+		"question": "How many places are mentioned in Genesis?",
+		"answer": 266,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "09fcffc7-da6e-4a4a-9ec8-bb996d90961e",
+		"question": "How many places are mentioned in 2 Kings?",
+		"answer": 265,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "96078c41-125f-482e-bc8c-073d7a085687",
+		"question": "How many people are mentioned in Nehemiah?",
+		"answer": 259,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "e0939ec2-f5f0-498d-b5d2-f500c2cc4950",
+		"question": "How many verses are in the book of 2 Corinthians?",
+		"answer": 257,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "11a99039-7c1d-4e7b-8738-aadcc02178d0",
+		"question": "How many places are mentioned in Isaiah?",
+		"answer": 248,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "f87fe0c8-d83b-43b1-a6ac-c385afd14250",
+		"question": "How many people are mentioned in Mark?",
+		"answer": 245,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "b9a9ac1a-267d-4429-b258-218b9fb803c3",
+		"question": "How many places are mentioned in Judges?",
+		"answer": 244,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9e31750d-b6bf-4bea-8bfa-888c39593f23",
+		"question": "How many places are mentioned in Acts?",
+		"answer": 244,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "6edbb597-6a08-400c-9b66-023a9e47bb5b",
+		"question": "How many people are mentioned in Romans?",
+		"answer": 238,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "7fe3a14f-a4e6-4d80-91fc-68e2840bf147",
+		"question": "How many places are mentioned in 2 Chronicles?",
+		"answer": 236,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "df297fe3-7d20-4754-910e-be7bb9f0fc42",
+		"question": "How many verses are in the book of Ecclesiastes?",
+		"answer": 222,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "c8fdd463-40c6-4dd1-bc4d-3d485602fd77",
+		"question": "How many verses are in the book of Zechariah?",
+		"answer": 211,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "53bc32f3-e30b-4ccd-8753-6429a52960c7",
+		"question": "How many people are mentioned in Ezra?",
+		"answer": 209,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "002a2af2-f81a-410e-b1b7-3b5d0b858e52",
+		"question": "How many places are mentioned in Numbers?",
+		"answer": 207,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "78d99fa9-4eea-44a6-8285-f3a319e88d4e",
+		"question": "How many verses are in the book of Hosea?",
+		"answer": 197,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "23799d62-924e-4368-9342-ff746f92c0f3",
+		"question": "How many places are mentioned in Ezekiel?",
+		"answer": 195,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "29bd426c-8f1a-44aa-899f-3d9b91b9f3b6",
+		"question": "How many places are mentioned in 1 Samuel?",
+		"answer": 193,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "c33eaf34-5ba1-43c8-8e66-abf94e1a1409",
+		"question": "How many places are mentioned in 1 Kings?",
+		"answer": 192,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "5bc3c91d-939a-43b2-80ae-dffa0bb6d0de",
+		"question": "How many people are mentioned in 1 Corinthians?",
+		"answer": 192,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "869c7fee-384a-4f99-b5cf-7325a37adde1",
+		"question": "How many people are mentioned in Job?",
+		"answer": 190,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "3f09e6aa-1521-4949-9340-904f3397d5a3",
+		"question": "How many places are mentioned in Exodus?",
+		"answer": 179,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "93d1d0cc-b8ed-4055-a77d-472a006daa71",
+		"question": "How many verses are in the book of Esther?",
+		"answer": 167,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "05f16558-96e0-4b77-8d23-0c489c6bcc09",
+		"question": "How many places are mentioned in 2 Samuel?",
+		"answer": 166,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "13b97813-7a0e-4603-bbf1-5df0a148b5bc",
+		"question": "How many places are mentioned in 1 Chronicles?",
+		"answer": 161,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "11671a03-b30f-46cd-8150-814081005606",
+		"question": "How many people are mentioned in Daniel?",
+		"answer": 158,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "63b3e0a4-9e2d-4d70-8a4b-9e37e4f7250d",
+		"question": "How many people are mentioned in Revelation?",
+		"answer": 156,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "48ece631-6fe4-4e02-8c5d-167802fb9ec2",
+		"question": "How many verses are in the book of Ephesians?",
+		"answer": 155,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "a3311f0e-3c38-4667-954c-50d88fa71638",
+		"question": "How many verses are in the book of Lamentations?",
+		"answer": 154,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "1e55bb46-c00c-46cd-849a-38e6ca6155f3",
+		"question": "How many chapters are in Psalms?",
+		"answer": 150,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "58e4feba-41ea-43de-82f5-cce22d298ef5",
+		"question": "How many verses are in the book of Galatians?",
+		"answer": 149,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "973312a7-a6b5-4f41-96ed-272331a317f0",
+		"question": "How many places are mentioned in Deuteronomy?",
+		"answer": 146,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "d67aa734-7ca4-4ebc-b8ee-c74386dc6845",
+		"question": "How many verses are in the book of Amos?",
+		"answer": 146,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "71b7ee1b-c6f3-474f-99f0-45769c31bed2",
+		"question": "How many people are mentioned in Hebrews?",
+		"answer": 139,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "d1cb5d28-fda4-4b02-8c80-97744b0ad478",
+		"question": "How many people are mentioned in 2 Corinthians?",
+		"answer": 122,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "27117eaa-f3a1-4fae-9c6c-d7091c52b926",
+		"question": "How many people are mentioned in Zechariah?",
+		"answer": 120,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9fc6d10f-1b2b-4880-b073-8c19ae883478",
+		"question": "How many people are mentioned in Esther?",
+		"answer": 119,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "4b40503d-23ed-49ec-86b3-46b7d7c09ee2",
+		"question": "How many places are mentioned in Psalms?",
+		"answer": 118,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "f6a11559-d000-4c3e-836a-4970b1aa4228",
+		"question": "How many verses are in the book of Song of Solomon?",
+		"answer": 117,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e84a57f6-04c5-4e25-90d0-149768c2232f",
+		"question": "How many verses are in the book of 1 Timothy?",
+		"answer": 113,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "96c234b5-5052-43f1-9103-a3a768191f47",
+		"question": "How many verses are in the book of James?",
+		"answer": 108,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "c71e9e06-82c2-40b8-9c89-7e4dd11ede33",
+		"question": "How many verses are in the book of Micah?",
+		"answer": 105,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "4b9260c7-44f8-4917-afc7-602574829428",
+		"question": "How many verses are in the book of 1 Peter?",
+		"answer": 105,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "76e76b6a-bcbc-4359-96c2-f9e6bbb2c2e2",
+		"question": "How many verses are in the book of 1 John?",
+		"answer": 105,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "3442674e-109d-4367-bd9b-5c7a73547302",
+		"question": "How many verses are in the book of Philippians?",
+		"answer": 104,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "cbf9fe53-8618-4bc7-a015-6a66bf0e9e6f",
+		"question": "How many people are mentioned in Proverbs?",
+		"answer": 100,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "4d814f48-de00-493e-87cf-7888ef9e2100",
+		"question": "How many places are mentioned in Nehemiah?",
+		"answer": 99,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9e25a69f-f4f8-4f9d-bec8-8151738e9804",
+		"question": "How many people are mentioned in Hosea?",
+		"answer": 95,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "504bddb8-6c6b-4fec-a48c-fc208fe0c7b0",
+		"question": "How many verses are in the book of Colossians?",
+		"answer": 95,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "962a3d92-a41c-44f2-bc48-03fe39cfc81e",
+		"question": "How many places are mentioned in Ezra?",
+		"answer": 89,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "07c20f88-de3b-4120-b1d8-771d26aa8035",
+		"question": "How many people are mentioned in Amos?",
+		"answer": 89,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "1b25f53a-c7cc-46e0-aeb5-c57196908251",
+		"question": "How many verses are in the book of 1 Thessalonians?",
+		"answer": 89,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "86613788-a10e-4f94-9689-f876f9a2e055",
+		"question": "How many people are mentioned in Ephesians?",
+		"answer": 88,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "41604363-b20b-4dce-9406-49f7b0390153",
+		"question": "How many people are mentioned in Galatians?",
+		"answer": 87,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "e415d4e4-2347-4387-92f9-712e8c56f97b",
+		"question": "How many verses are in the book of Ruth?",
+		"answer": 85,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "c0b0d083-9ac4-44ef-8e12-bda4a2257e99",
+		"question": "How many verses are in the book of 2 Timothy?",
+		"answer": 83,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "adef81a4-b031-416d-9d70-04ae013c8a86",
+		"question": "How many places are mentioned in Luke?",
+		"answer": 76,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "52b26966-bf1d-4552-a07e-d15713dc35dd",
+		"question": "How many verses are in the book of Joel?",
+		"answer": 73,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "68ee3de6-91f6-4b8c-960b-7b491ff8301c",
+		"question": "How many places are mentioned in Matthew?",
+		"answer": 69,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "64b788c2-d583-48f9-bac9-bb72bbc5b800",
+		"question": "How many chapters are in Isaiah?",
+		"answer": 66,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "0f0443bc-92b6-4f34-a06e-becd092fa022",
+		"question": "How many people are mentioned in Philippians?",
+		"answer": 63,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "5a545019-fbda-4a17-a484-02fd5187b7a3",
+		"question": "How many places are mentioned in John?",
+		"answer": 62,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "ffd40d66-ea73-49d0-8d52-d6880510027c",
+		"question": "How many verses are in the book of 2 Peter?",
+		"answer": 61,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "b5173159-63dc-41a9-83e6-312611eaf17e",
+		"question": "How many people are mentioned in 1 John?",
+		"answer": 61,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "a49615da-c161-48ac-9886-0ae7e591f792",
+		"question": "How many places are mentioned in Zechariah?",
+		"answer": 58,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "18439e9a-2a80-4f37-b48c-a2573c15e9bc",
+		"question": "How many people are mentioned in Ruth?",
+		"answer": 57,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "ef1ba1f9-f587-4933-bd5e-dd886d572957",
+		"question": "How many verses are in the book of Habakkuk?",
+		"answer": 56,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "6e9478bd-6286-4134-8db1-0fa33114ba03",
+		"question": "How many people are mentioned in 1 Peter?",
+		"answer": 56,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "452f2d87-44c8-4d68-a170-cf6d96997541",
+		"question": "How many verses are in the book of Malachi?",
+		"answer": 55,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "817e2a9d-8db0-4eb4-b0a2-fc1d8e563d4f",
+		"question": "How many verses are in the book of Zephaniah?",
+		"answer": 53,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "483be064-9b67-497f-a254-c7926f110b0f",
+		"question": "How many chapters are in Jeremiah?",
+		"answer": 52,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "527074c4-646f-4a6e-9f4f-758bd8e69d85",
+		"question": "How many people are mentioned in Colossians?",
+		"answer": 51,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "d7a682e8-7717-494c-bbaf-767bc3b34e2e",
+		"question": "How many chapters are in Genesis?",
+		"answer": 50,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "186edf7b-d95b-4cbc-b750-cb629c78bc6f",
+		"question": "How many people are mentioned in Micah?",
+		"answer": 49,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9a25c3a7-6899-4eea-92b5-dd62589fec78",
+		"question": "How many people are mentioned in 1 Thessalonians?",
+		"answer": 49,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "51a71dbb-c98a-47c1-9fc3-b6bd24978137",
+		"question": "How many chapters are in Ezekiel?",
+		"answer": 48,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8878d663-47c8-4270-b003-0b02e934c895",
+		"question": "How many verses are in the book of Jonah?",
+		"answer": 48,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "66c98d11-ac83-4216-8a1f-2c3734bdfbc4",
+		"question": "How many people are mentioned in Lamentations?",
+		"answer": 47,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "98e62d3a-8615-4451-a17e-74fa668a5e49",
+		"question": "How many verses are in the book of Nahum?",
+		"answer": 47,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "12675a22-2375-47f5-a844-af5ff0687e1f",
+		"question": "How many people are mentioned in Malachi?",
+		"answer": 47,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "c47f7052-582e-427f-8233-3a9bdc962c21",
+		"question": "How many verses are in the book of 2 Thessalonians?",
+		"answer": 47,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "db90ba6e-dba3-4cb1-bec8-307c859e4067",
+		"question": "How many people are mentioned in 2 Timothy?",
+		"answer": 47,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "be28cd36-b0e5-4ecf-b8ed-5477f366ca46",
+		"question": "How many places are mentioned in Mark?",
+		"answer": 46,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "f6ed8f5a-d7b4-4664-912c-e90edbab3058",
+		"question": "How many verses are in the book of Titus?",
+		"answer": 46,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "3ae43d15-0263-4a98-a087-1e82db91b1a6",
+		"question": "How many places are mentioned in Hosea?",
+		"answer": 44,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "3ffa72f6-a6a0-4bc7-bc2b-389a47af2df1",
+		"question": "How many chapters are in Job?",
+		"answer": 42,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8091ca5d-db61-4299-9fcc-176d5b65b92a",
+		"question": "How many chapters are in Exodus?",
+		"answer": 40,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "23cec7c3-1ac0-4af3-8b82-9ad4deb16ad0",
+		"question": "How many places are mentioned in Daniel?",
+		"answer": 40,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "cb92a1ce-8b6d-4f14-aa6f-80243c0a8098",
+		"question": "How many places are mentioned in Amos?",
+		"answer": 39,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "cdc5161d-c7fb-4174-9ebf-0cbd111418c1",
+		"question": "How many verses are in the book of Haggai?",
+		"answer": 38,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e072595a-2a55-41f0-9aa2-771d3717551c",
+		"question": "How many people are mentioned in 1 Timothy?",
+		"answer": 38,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "4940ea0a-c280-4b43-90de-b913f439b6c4",
+		"question": "How many people are mentioned in Ecclesiastes?",
+		"answer": 37,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "4a30c6ae-6044-4222-a9af-1855c7129d0e",
+		"question": "How many chapters are in Numbers?",
+		"answer": 36,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "25e6d6f2-1dc5-402f-9dd6-52ac3ff6b78d",
+		"question": "How many chapters are in 2 Chronicles?",
+		"answer": 36,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "bd137b5a-06f0-4a72-bce1-d817a61abb80",
+		"question": "How many people are mentioned in Jonah?",
+		"answer": 35,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "1d746329-8fcb-4175-8f6b-163dd3ce9d54",
+		"question": "How many chapters are in Deuteronomy?",
+		"answer": 34,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "a9a48c30-58fe-487b-b690-a100510f9a54",
+		"question": "How many chapters are in 1 Samuel?",
+		"answer": 31,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "5e51f5c3-e69a-45c4-bd54-b6bd686d8e79",
+		"question": "How many chapters are in Proverbs?",
+		"answer": 31,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "bc7a7b9d-39be-47a9-ae75-c5febf4dd45c",
+		"question": "How many people are mentioned in Joel?",
+		"answer": 31,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "a7252818-bd94-4eb1-9b69-a62f4cd836fd",
+		"question": "How many chapters are in 1 Chronicles?",
+		"answer": 29,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "422b0d97-bd23-468a-8c66-bf151cf02c95",
+		"question": "How many people are mentioned in Zephaniah?",
+		"answer": 29,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "b76cf20c-6c54-472d-a8b7-f1d110f6af23",
+		"question": "How many people are mentioned in 2 Thessalonians?",
+		"answer": 29,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "175f97c1-b8fe-4516-94d5-6dfe0564801d",
+		"question": "How many people are mentioned in James?",
+		"answer": 29,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "6d1fe989-edfb-402b-8222-7586c48f3cc7",
+		"question": "How many places are mentioned in Leviticus?",
+		"answer": 28,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "8e0c3a84-04e6-4ad6-81c6-7a7477643f33",
+		"question": "How many people are mentioned in Haggai?",
+		"answer": 28,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "fabde0d7-52b2-43e2-acea-be7e6971d20c",
+		"question": "How many chapters are in Matthew?",
+		"answer": 28,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8151f825-ed13-4a3f-a2c6-6c66317809dd",
+		"question": "How many chapters are in Acts?",
+		"answer": 28,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "000c5ee6-bf44-48c0-bdca-06aeecabdbdd",
+		"question": "How many chapters are in Leviticus?",
+		"answer": 27,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e1751464-934f-4e93-ba87-de56a03579b4",
+		"question": "How many places are mentioned in Revelation?",
+		"answer": 27,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "3df0aabc-0995-49ba-89c0-01d4089fd783",
+		"question": "How many chapters are in 2 Kings?",
+		"answer": 25,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "d6aec540-d243-4a65-912a-d3facfe7bf62",
+		"question": "How many places are mentioned in Micah?",
+		"answer": 25,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "3ff7a99c-86e6-475c-a18d-4eda517f7f5b",
+		"question": "How many verses are in the book of Philemon?",
+		"answer": 25,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "7537ca89-b304-4b7f-ba27-9718063e52ee",
+		"question": "How many verses are in the book of Jude?",
+		"answer": 25,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "3d8cf3e1-ce8c-494b-b258-d244d8794c55",
+		"question": "How many chapters are in Joshua?",
+		"answer": 24,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "ff04df1e-faa8-4b89-8f8b-d3fda574460e",
+		"question": "How many chapters are in 2 Samuel?",
+		"answer": 24,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "4ddcbc70-7808-4e3f-b4cb-e92f90c8cee1",
+		"question": "How many places are mentioned in Esther?",
+		"answer": 24,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "835f1d8a-8866-4bb8-8d4e-0e5a819da364",
+		"question": "How many chapters are in Luke?",
+		"answer": 24,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "d1068f25-f9ee-495f-8d35-db270638809f",
+		"question": "How many people are mentioned in 2 Peter?",
+		"answer": 24,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "2999bbc9-77f3-49a6-89c2-36604e5dfab9",
+		"question": "How many chapters are in 1 Kings?",
+		"answer": 22,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "f9f89310-7962-4f1c-b172-2a02f3eda2f8",
+		"question": "How many places are mentioned in Lamentations?",
+		"answer": 22,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "487eeae4-ffa1-4c6b-8695-c7ddb9855c63",
+		"question": "How many chapters are in Revelation?",
+		"answer": 22,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e8ddcd21-a8d4-46f2-9ebf-cd972eb33404",
+		"question": "How many chapters are in Judges?",
+		"answer": 21,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "a5fe54a7-2f95-44c0-b9bd-7704615e835b",
+		"question": "How many places are mentioned in Song of Solomon?",
+		"answer": 21,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "61b48b60-23f3-4959-8bf8-780579a7f247",
+		"question": "How many verses are in the book of Obadiah?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "385c238c-249e-4fdd-b1be-e76a0e24aeb6",
+		"question": "How many chapters are in John?",
+		"answer": 21,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "f91ef99d-c7c2-41d8-9152-17a089c9d667",
+		"question": "How many places are mentioned in Joel?",
+		"answer": 16,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "356e434a-efe8-40ad-a668-f493e155ec29",
+		"question": "How many chapters are in Mark?",
+		"answer": 16,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "c580090a-16b3-4121-8020-810e076d729b",
+		"question": "How many chapters are in Romans?",
+		"answer": 16,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "c4f79c69-c862-4b6e-a640-b7aa393deeba",
+		"question": "How many chapters are in 1 Corinthians?",
+		"answer": 16,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e68c5da4-d4d4-44e6-9039-731c9c080794",
+		"question": "How many people are mentioned in Titus?",
+		"answer": 16,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "a43c0e83-195d-492c-9fb1-519e88cba9b5",
+		"question": "How many people are mentioned in Habakkuk?",
+		"answer": 15,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "059c4742-5ab3-41b9-a372-8fe25dbd75d4",
+		"question": "How many people are mentioned in Philemon?",
+		"answer": 15,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "f6326d3a-a445-42d7-a4f7-f7c32df71fd5",
+		"question": "How many chapters are in Hosea?",
+		"answer": 14,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "6d5b8595-b8c5-40c6-80e7-6484b6a22569",
+		"question": "How many chapters are in Zechariah?",
+		"answer": 14,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "6b033164-d292-44c7-96cd-6fb382642cb7",
+		"question": "How many verses are in the book of 3 John?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "45562a40-126a-4df5-83a2-b9e332d5d6ac",
+		"question": "How many chapters are in Nehemiah?",
+		"answer": 13,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "2642cac2-85fb-42ae-baac-082569826db0",
+		"question": "How many places are mentioned in Zephaniah?",
+		"answer": 13,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "01b5d688-dc7f-482a-b8b4-2abd28e31819",
+		"question": "How many places are mentioned in Romans?",
+		"answer": 13,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "2f21f955-508d-4d5a-9953-a920f3fea219",
+		"question": "How many chapters are in 2 Corinthians?",
+		"answer": 13,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "6acb33c6-e3a6-4b67-a689-60aa3b3f13ea",
+		"question": "How many chapters are in Hebrews?",
+		"answer": 13,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "eaf2bf71-8963-4187-b205-f893d9bfb7e4",
+		"question": "How many verses are in the book of 2 John?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "a074ba31-f9e7-458f-bfa4-2e7865127ead",
+		"question": "How many chapters are in Ecclesiastes?",
+		"answer": 12,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "166efff0-1252-40a9-8ad8-63b86c93ec82",
+		"question": "How many chapters are in Daniel?",
+		"answer": 12,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "f2735311-6ae0-4a7f-9654-f56cf235516c",
+		"question": "How many people are mentioned in Obadiah?",
+		"answer": 12,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "7a50ff6e-919c-4978-a869-c7cb8adb7f76",
+		"question": "How many places are mentioned in 2 Corinthians?",
+		"answer": 12,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "0c1cf466-ebd6-4b34-8f1d-4a4420e1969a",
+		"question": "How many people are mentioned in Nahum?",
+		"answer": 11,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "84cf45ca-b938-42c0-916a-600e03a73835",
+		"question": "How many places are mentioned in Hebrews?",
+		"answer": 11,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9f9af1b2-601e-406b-b327-71d1763c4a79",
+		"question": "How many people are mentioned in Jude?",
+		"answer": 11,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "8beac26f-4dd7-48b9-bb23-32f1fc438912",
+		"question": "How many chapters are in Ezra?",
+		"answer": 10,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "71c0e337-4971-43b3-a911-118379fd8d95",
+		"question": "How many chapters are in Esther?",
+		"answer": 10,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "0bf02fa3-9b4d-4a3d-90d8-d5386a0c3f6a",
+		"question": "How many places are mentioned in Jonah?",
+		"answer": 10,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "352c6001-4874-4e59-b856-3c2721f5893f",
+		"question": "How many places are mentioned in Galatians?",
+		"answer": 10,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "10d00da3-b2db-420f-b24a-8648a943c14c",
+		"question": "How many places are mentioned in Ruth?",
+		"answer": 9,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "bc09eaba-176c-40e0-a9f9-a840c6a73891",
+		"question": "How many people are mentioned in Song of Solomon?",
+		"answer": 9,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "b5efaf88-7244-4db9-8cba-d90d1bc6464e",
+		"question": "How many chapters are in Amos?",
+		"answer": 9,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "6d689305-d6ab-486a-85f0-7d824b15aaae",
+		"question": "How many places are mentioned in Obadiah?",
+		"answer": 9,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "4d255c86-0009-41e5-a6ae-1d18b95cd709",
+		"question": "How many chapters are in Song of Solomon?",
+		"answer": 8,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "435ca048-51d1-4a81-849d-ad546dc520b3",
+		"question": "How many places are mentioned in 1 Corinthians?",
+		"answer": 8,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "d2768488-a89a-4392-b68b-73944014a6c6",
+		"question": "How many places are mentioned in 2 Timothy?",
+		"answer": 8,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "57c6afea-7fe2-4325-937b-c641644d165a",
+		"question": "How many chapters are in Micah?",
+		"answer": 7,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "1076af81-93a1-47b9-93e3-a1a861b0e302",
+		"question": "How many places are mentioned in Nahum?",
+		"answer": 7,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "cd5c4e98-c67e-433e-9c56-04eed4dcd234",
+		"question": "How many places are mentioned in Job?",
+		"answer": 6,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "27b95ccf-baec-46e6-b2a2-249787ac9ff4",
+		"question": "How many chapters are in Galatians?",
+		"answer": 6,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "32b8feec-63a1-4b58-a5f8-09bcb858b7d6",
+		"question": "How many chapters are in Ephesians?",
+		"answer": 6,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "5ab860e9-6553-4fe6-946e-6432c89d26d6",
+		"question": "How many places are mentioned in 1 Thessalonians?",
+		"answer": 6,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "11bb14d1-8353-4a7e-8b34-e39665301a00",
+		"question": "How many chapters are in 1 Timothy?",
+		"answer": 6,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "5bcb1844-9bda-4879-b14d-e4ee79e843aa",
+		"question": "How many people are mentioned in 2 John?",
+		"answer": 6,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "62d70962-507f-4798-beef-1c1ef707fd6c",
+		"question": "How many places are mentioned in Ecclesiastes?",
+		"answer": 5,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "05b3e531-1a18-4ad3-a199-2b92389b141b",
+		"question": "How many chapters are in Lamentations?",
+		"answer": 5,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "224a69a8-f2e2-4cf7-944f-60a04f74e0dc",
+		"question": "How many places are mentioned in Colossians?",
+		"answer": 5,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "973436a6-00ee-4008-9a71-13a4a48d9b4d",
+		"question": "How many chapters are in 1 Thessalonians?",
+		"answer": 5,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "233609f1-05d0-4818-8341-1cff967a3157",
+		"question": "How many chapters are in James?",
+		"answer": 5,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "0bfde628-7320-47f2-b376-f450b55ae272",
+		"question": "How many chapters are in 1 Peter?",
+		"answer": 5,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "b28d834e-fad1-4138-a2bf-d8c4c3dd9121",
+		"question": "How many chapters are in 1 John?",
+		"answer": 5,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "d496d269-0b71-4603-a8b6-1d8b48f5f15e",
+		"question": "How many chapters are in Ruth?",
+		"answer": 4,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "f742544a-0821-4115-9306-a8a465b1d30d",
+		"question": "How many chapters are in Jonah?",
+		"answer": 4,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "9deaa0a6-f312-43b1-9f44-39659fb809ff",
+		"question": "How many chapters are in Malachi?",
+		"answer": 4,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "ce0496b6-7c99-499c-a00e-535e59e47ba2",
+		"question": "How many places are mentioned in Malachi?",
+		"answer": 4,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "26cc03d8-bf46-43c1-b401-a9f6a3321f9f",
+		"question": "How many chapters are in Philippians?",
+		"answer": 4,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "a279d781-0ec3-4de7-b169-0fd2ee06fbe4",
+		"question": "How many chapters are in Colossians?",
+		"answer": 4,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "68985703-58b1-473e-98fe-cda8391380c0",
+		"question": "How many chapters are in 2 Timothy?",
+		"answer": 4,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8866165c-a437-4726-bb02-5f32c4dec952",
+		"question": "How many people are mentioned in 3 John?",
+		"answer": 4,
+		"unit": "people",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9376f27f-3c26-4053-9c2e-15c0ab016f27",
+		"question": "How many chapters are in Joel?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "9b2f287a-03be-4dd1-9b44-047cf50a3cdb",
+		"question": "How many chapters are in Nahum?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "81bededc-7207-4027-a781-20b07a0c33e4",
+		"question": "How many chapters are in Habakkuk?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "17b279e9-3f5e-4f63-acfc-b090fe3183e7",
+		"question": "How many places are mentioned in Habakkuk?",
+		"answer": 3,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9511850d-a29c-4dfa-b9af-f1fb159d3b96",
+		"question": "How many chapters are in Zephaniah?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "70e5547c-87a9-4462-a90f-5aef71702d3c",
+		"question": "How many places are mentioned in Philippians?",
+		"answer": 3,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "9d3306b0-d20c-4e8d-b03e-d08de8ba4888",
+		"question": "How many chapters are in 2 Thessalonians?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "8bf1ce8d-0fd0-45af-a325-21c8c9611136",
+		"question": "How many chapters are in Titus?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "b667bf49-8419-4d80-973d-c609cea00821",
+		"question": "How many places are mentioned in 1 Peter?",
+		"answer": 3,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "ae6f5709-39df-481c-ba88-562b76f49e87",
+		"question": "How many chapters are in 2 Peter?",
+		"answer": 3,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "cbe48220-35c3-443f-ba34-9f77a56d7acf",
+		"question": "How many chapters are in Haggai?",
+		"answer": 2,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "e86ecf80-0200-4626-be25-367fa836e1c2",
+		"question": "How many places are mentioned in Titus?",
+		"answer": 2,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "a673be7a-93c4-4d36-8388-fc450a9b38ef",
+		"question": "How many places are mentioned in Jude?",
+		"answer": 2,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "7540d020-8f20-489b-8470-47e837529f37",
+		"question": "How many chapters are in Obadiah?",
+		"answer": 1,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "47433265-65a6-4426-97e5-362bbd4dc605",
+		"question": "How many places are mentioned in Haggai?",
+		"answer": 1,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "071b99e9-b959-469b-ab43-01601f569cda",
+		"question": "How many places are mentioned in Ephesians?",
+		"answer": 1,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "bc5a447f-7dc6-4985-8b30-a274179afb92",
+		"question": "How many places are mentioned in 1 Timothy?",
+		"answer": 1,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "e9cde3a6-f34e-4f56-b6fe-ea43499835ce",
+		"question": "How many chapters are in Philemon?",
+		"answer": 1,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "32d05f6b-37af-4c7d-9685-02a4f913a5ac",
+		"question": "How many places are mentioned in 2 Peter?",
+		"answer": 1,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "cf3d3a1e-c717-49cc-8f58-5f820ed3fef9",
+		"question": "How many chapters are in 2 John?",
+		"answer": 1,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "fcfc16a2-e5bf-448d-a506-309d3f6d64c4",
+		"question": "How many chapters are in 3 John?",
+		"answer": 1,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "10c919f6-66c0-4895-9d04-23e052caa969",
+		"question": "How many chapters are in Jude?",
+		"answer": 1,
+		"unit": "chapters",
+		"category": "Books of the Bible"
+	},
+	{
+		"id": "3b41db0f-fcea-4f15-866f-733d40af6219",
+		"question": "How many places are mentioned in Proverbs?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "7ffa48f3-f5cf-43e2-9beb-f80cdf173b0d",
+		"question": "How many places are mentioned in 2 Thessalonians?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "e813c59c-4f00-42fd-a1a4-9202450d3eb6",
+		"question": "How many places are mentioned in Philemon?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "2cdf24f4-f25a-430e-a653-42ec05c4d692",
+		"question": "How many places are mentioned in James?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "e29cfb7c-4188-4b27-8037-cb05201b18ed",
+		"question": "How many places are mentioned in 1 John?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "02fdc9b4-4b75-42a1-8158-72eaa08fd934",
+		"question": "How many places are mentioned in 2 John?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "1d75cb3e-992d-490a-ad74-d5f81dc7c6af",
+		"question": "How many places are mentioned in 3 John?",
+		"answer": 0,
+		"unit": "places",
+		"category": "Bible Numbers"
+	},
+	{
+		"id": "c22198cf-8c75-434d-af3a-cf86ca4a6669",
+		"question": "How many verses mention God?",
+		"answer": 8587,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "4a37a72b-592c-403d-a7b2-f4e7b790d8f2",
+		"question": "In approximately what year was God born?",
+		"answer": -4004,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "4631858b-ce4c-4b74-80a9-7dbedcc44418",
+		"question": "In approximately what year was Holy Spirit born?",
+		"answer": -4004,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "006290fd-23e7-4aff-b710-b3e6eacf2d12",
+		"question": "In approximately what year was Abraham born?",
+		"answer": -2056,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "474160d7-e356-4f37-92b8-ecc206a258f7",
+		"question": "In approximately what year was Isaac born?",
+		"answer": -1897,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "fddea7af-9198-407f-977c-de8c744f16bf",
+		"question": "In approximately what year was Israel born?",
+		"answer": -1853,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "cfdc6e85-1439-4d18-b669-bd7b35f4b7a8",
+		"question": "How many verses mention Jesus?",
+		"answer": 1831,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "36fd63e2-34d5-4c01-a511-b9e3d4bcdec0",
+		"question": "In approximately what year was Benjamin born?",
+		"answer": -1752,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "005367a4-49b6-4358-8c07-66c8112940f4",
+		"question": "In approximately what year was David born?",
+		"answer": -1752,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "8be19b1e-654b-4b9d-8073-c34e7137b17b",
+		"question": "In approximately what year was Jesse born?",
+		"answer": -1752,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "ca07b26e-2425-442e-aac1-a29293c86d15",
+		"question": "In approximately what year was Joseph born?",
+		"answer": -1752,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "fc9a508f-8c09-4646-abbc-dfa61af87e38",
+		"question": "In approximately what year was Pharaoh born?",
+		"answer": -1728,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "d19d0a7c-4867-4c77-8622-445ed5d93654",
+		"question": "In approximately what year was Aaron born?",
+		"answer": -1700,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "59f4221d-6d7f-4326-a3cb-68cd6068490c",
+		"question": "In approximately what year was Moses born?",
+		"answer": -1700,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "fee65eed-5e38-476c-b6d2-d0c18f5a5acf",
+		"question": "In approximately what year was Jesus born?",
+		"answer": -1689,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "ed79cd06-7bea-4038-b6c9-96bcac7c2489",
+		"question": "In approximately what year was Satan born?",
+		"answer": -1520,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "3164d727-6661-4b7e-84f0-e731fe1d8efa",
+		"question": "In approximately what year was Joshua born?",
+		"answer": -1491,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "421418ca-e7d9-433d-a5d5-728f83a01620",
+		"question": "In approximately what year was Samuel born?",
+		"answer": -1165,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "b320d957-cf46-418a-9172-38029b8f68ad",
+		"question": "In approximately what year was Solomon born?",
+		"answer": -1053,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "2f78017b-6d61-4627-bfa5-a8d58f27283e",
+		"question": "How many verses mention Israel?",
+		"answer": 1009,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "7fd9eef1-2647-4f84-a65a-65f1a7f9c2e7",
+		"question": "How many verses mention David?",
+		"answer": 896,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bed70c82-be48-47c8-98a5-79ca9db73d83",
+		"question": "How many verses mention Moses?",
+		"answer": 774,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c4affeaa-7c8a-443a-88ff-271d86c55796",
+		"question": "In approximately what year was Isaiah born?",
+		"answer": -765,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "682bce8e-af84-4418-aa7f-e2931a586391",
+		"question": "How many verses mention Aaron?",
+		"answer": 331,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "7c3f8424-da81-4c6d-8c84-d1172debdffc",
+		"question": "How many verses mention Abraham?",
+		"answer": 277,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c398af47-cb51-4889-92f1-67fb3efc7dc7",
+		"question": "How many verses mention Solomon?",
+		"answer": 273,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "07684f1c-a6fd-4f94-ab0e-01e3580740f7",
+		"question": "How many verses mention Saul?",
+		"answer": 265,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "aac03a11-6e89-4e61-bdf9-d1e4df6a40b0",
+		"question": "How many verses mention Holy Spirit?",
+		"answer": 246,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0303557d-4c1c-4c8d-93a5-7adbd3abd6b9",
+		"question": "How many verses mention Judah?",
+		"answer": 245,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "82b9c076-97ef-4462-9bd5-5a73511664d4",
+		"question": "How many verses mention Joseph?",
+		"answer": 199,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "86dfc297-7a52-44b1-aafc-27560358109a",
+		"question": "How many verses mention Paul?",
+		"answer": 179,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "8974c00e-5772-4f38-b5d2-4c4f0520e2cc",
+		"question": "How many verses mention Simon?",
+		"answer": 175,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "40b069d9-243f-4f04-8dc2-f9fac1fbdca6",
+		"question": "How many verses mention Ephraim?",
+		"answer": 160,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "1bff291c-ab95-4f65-b8c7-0ac9a568a452",
+		"question": "How many verses mention Benjamin?",
+		"answer": 157,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "98efca42-a305-483b-b452-cd5f87ad5779",
+		"question": "How many verses mention Esau?",
+		"answer": 151,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f1f6e379-9c04-4fae-8ebd-df5914297eac",
+		"question": "How many verses mention Moab?",
+		"answer": 149,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "eaf9ecbe-a365-4b0c-ab7c-4d91e560a836",
+		"question": "How many verses mention Jeremiah?",
+		"answer": 124,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "485f909f-ae41-487a-a54b-dd74d01e0497",
+		"question": "How many verses mention Isaac?",
+		"answer": 123,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "4661bcec-99a4-4464-9472-71ae8a15be4d",
+		"question": "How many verses mention Samuel?",
+		"answer": 122,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "38bf6f37-e922-4df2-9a40-5ce45cc0d5db",
+		"question": "How many verses mention Joab?",
+		"answer": 119,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "d89649d8-1975-4e7b-8a91-85ef563ef86d",
+		"question": "How many verses mention Hezekiah?",
+		"answer": 116,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "932752fb-79ff-4530-9b4a-d600f66ffe51",
+		"question": "How many verses mention Manasseh?",
+		"answer": 109,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "91435bcd-9348-477f-9fcd-a6970ca05eb7",
+		"question": "How many verses mention Elijah?",
+		"answer": 92,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "a312dc82-8eab-4b3d-aba8-3ce9bbec67d7",
+		"question": "How many verses mention Absalom?",
+		"answer": 91,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "3c0048e5-07fa-4db0-86ea-623a3bbfc8a7",
+		"question": "How many verses mention John?",
+		"answer": 89,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "eb06ee98-b752-44bf-a1d0-9b47990f5f3b",
+		"question": "How many verses mention Nebuchadnezzar?",
+		"answer": 88,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "860a184b-5cfc-42a1-b419-448c7e937398",
+		"question": "How many verses mention Canaan?",
+		"answer": 84,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c0cf5735-6107-4d97-accf-8fec3b62c247",
+		"question": "How many verses mention Jonathan?",
+		"answer": 83,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b24337da-76b3-41ec-b74d-c09a927035f1",
+		"question": "How many verses mention Jeroboam?",
+		"answer": 81,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "968b2987-fad4-4664-b220-2a0d9c538591",
+		"question": "How many verses mention Ahab?",
+		"answer": 80,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "749293e9-bfd5-434d-8d35-dde2728e31df",
+		"question": "How many verses mention Daniel?",
+		"answer": 72,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "43eb9606-ee4f-4c98-8bf8-2c3f3ad57a84",
+		"question": "How many verses mention Reuben?",
+		"answer": 70,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "241122bc-ddce-4123-bd62-e504f696da81",
+		"question": "How many verses mention Jehoshaphat?",
+		"answer": 69,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "311a1c1c-14cf-45eb-aa34-aab922eb3d5c",
+		"question": "How many verses mention Levi?",
+		"answer": 64,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2f714870-d586-4d13-89e0-a760399f8772",
+		"question": "How many verses mention Dan?",
+		"answer": 63,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "5a66c354-012e-4086-9852-cad2f010a20c",
+		"question": "How many verses mention Pharaoh?",
+		"answer": 63,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "3c2a5d3d-f187-4927-8773-3537cdde34b0",
+		"question": "How many verses mention Eleazar?",
+		"answer": 61,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "9e686409-27ab-4eb3-9be9-1831451420de",
+		"question": "How many verses mention Balaam?",
+		"answer": 59,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "5e93cfe9-ee85-4c6f-b8a7-ec68dfd38087",
+		"question": "How many verses mention Gad?",
+		"answer": 55,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "feaf86fb-8ee4-4139-9aff-4d1d07e327e2",
+		"question": "How many verses mention Satan?",
+		"answer": 55,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "18a7e250-4a1b-4b92-830b-d710e2e8bd31",
+		"question": "How many verses mention Pontius?",
+		"answer": 54,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "3217b29b-cc62-461e-b569-d38bf3e7bc25",
+		"question": "How many verses mention Abner?",
+		"answer": 53,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "55cb68bd-0b76-461f-965b-c9cfc6e2cb9a",
+		"question": "How many verses mention Asa?",
+		"answer": 53,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "72a1ca8d-2097-4e8b-a66c-270ce81b8d1b",
+		"question": "How many verses mention Elisha?",
+		"answer": 53,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f77e65ee-ce76-413a-905c-d0f82cf57aba",
+		"question": "How many verses mention Isaiah?",
+		"answer": 53,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f358289f-c718-41be-8e4c-233c19154c6b",
+		"question": "How many verses mention Job?",
+		"answer": 53,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c7dafe0c-4a28-4368-93af-faae422ad54a",
+		"question": "In approximately what year was Timotheus born?",
+		"answer": 53,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "d4142b1d-53e1-4a30-9c2e-b486e11e4bc9",
+		"question": "How many verses mention Baal?",
+		"answer": 52,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "d76742ea-d2ea-4994-a958-395ce4d86df0",
+		"question": "How many verses mention Zedekiah?",
+		"answer": 52,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ffe57c18-b397-473e-a9ea-ceb25a69505f",
+		"question": "How many verses mention Mordecai?",
+		"answer": 50,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "51070a46-f96b-40cb-a9c8-77848dded68f",
+		"question": "How many verses mention Gideon?",
+		"answer": 49,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b3375ba5-ba87-4882-8f3e-541cfaf10023",
+		"question": "How many verses mention Josiah?",
+		"answer": 49,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "fb921cae-6c6f-4f11-81a5-62265188a156",
+		"question": "How many verses mention Naphtali?",
+		"answer": 49,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "a70724c6-7702-432a-abcf-390a292b06af",
+		"question": "How many verses mention Sarah?",
+		"answer": 48,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e3316fba-c82c-4a32-8f3a-9796415ce898",
+		"question": "How many verses mention Jehu?",
+		"answer": 47,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "962aca54-caff-46ba-a0d5-ac48615477f1",
+		"question": "How many verses mention Noah?",
+		"answer": 47,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "cd4a3b03-ac0b-4d37-9c70-f0c8af9ac8da",
+		"question": "How many verses mention Esther?",
+		"answer": 46,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e96ab88d-db43-4bf2-b356-2ae063e98994",
+		"question": "How many verses mention Laban?",
+		"answer": 46,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2b08527b-ea4e-4fba-879b-92c5b511fc2e",
+		"question": "How many verses mention Zebulun?",
+		"answer": 46,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "1ff103d4-1e03-47aa-90c1-d65d4aacb584",
+		"question": "How many verses mention Haman?",
+		"answer": 45,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "074d3ac7-7f62-4b3b-8017-8f0a6aa097b2",
+		"question": "How many verses mention Rachel?",
+		"answer": 45,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0cebd603-3fc2-406b-b965-abc63c85b514",
+		"question": "How many verses mention Jesse?",
+		"answer": 44,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "3c383a50-f8e1-4691-aee7-066b32f9a148",
+		"question": "How many verses mention Asher?",
+		"answer": 43,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e606352d-a86e-4521-8770-da05600a5222",
+		"question": "How many verses mention Rehoboam?",
+		"answer": 42,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "6503735a-0c61-4f8f-98b9-3c71df26d7d2",
+		"question": "How many verses mention Balak?",
+		"answer": 41,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e5e3bebe-7f26-4b48-af62-69fba8bd372f",
+		"question": "How many verses mention Simeon?",
+		"answer": 40,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "954e1c01-3edf-46cf-8f5a-0dc9db3db4cf",
+		"question": "How many verses mention Zadok?",
+		"answer": 40,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b2c3c793-36ec-49e0-8fea-8ef8335f13a2",
+		"question": "How many verses mention Issachar?",
+		"answer": 38,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bf76f4d4-01f3-41e4-9af7-3e779da7bed8",
+		"question": "How many verses mention Merari?",
+		"answer": 38,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "7c264969-025a-41ef-9901-85a3a722890e",
+		"question": "How many verses mention Midian?",
+		"answer": 38,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f877cea9-78c4-4007-9fab-621ea4a787b4",
+		"question": "How many verses mention Samson?",
+		"answer": 38,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "307c2bc9-1133-4790-b7be-9166eb972231",
+		"question": "How many verses mention Ahaz?",
+		"answer": 37,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f4fa1a86-6856-46f1-97aa-7d174bbcab37",
+		"question": "How many verses mention Jehoiakim?",
+		"answer": 37,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2af303ba-9898-48d8-8bbb-144c212f8e30",
+		"question": "How many verses mention Amaziah?",
+		"answer": 34,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f02ae595-8319-4972-8e9b-8fffd365fa04",
+		"question": "How many verses mention Lot?",
+		"answer": 34,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b83a88bc-98eb-45fa-9790-d6ac02cc42d7",
+		"question": "How many verses mention Sihon?",
+		"answer": 34,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b4f2ea11-031d-4ede-81ae-1923387582b2",
+		"question": "In approximately what year was Barnabas born?",
+		"answer": 33,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "c4a04b76-3628-4997-b38d-a529daa9a2af",
+		"question": "In approximately what year was Paul born?",
+		"answer": 33,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "df0817cf-7b1d-4d9c-862e-965ebf3ef782",
+		"question": "How many verses mention Uzziah?",
+		"answer": 33,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "efd76ecf-683e-4291-9259-8a1f274c93eb",
+		"question": "How many verses mention Asaph?",
+		"answer": 32,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "8376da69-6d18-4334-97fc-32135691741f",
+		"question": "How many verses mention Leah?",
+		"answer": 32,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2dbfdcc1-3287-4cb0-9d60-6dd443410e3f",
+		"question": "In approximately what year was Judas born?",
+		"answer": 31,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "d9549400-691d-4959-bd3b-25e8819c0b68",
+		"question": "How many verses mention Caleb?",
+		"answer": 30,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0f898a16-4e2a-4ac3-829f-a4ffe8a0a57f",
+		"question": "How many verses mention Eli?",
+		"answer": 30,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "75514341-1eaa-403a-ba59-dac0da5fa478",
+		"question": "How many verses mention Nun?",
+		"answer": 30,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "cb0e33f6-d04d-4783-bfbc-1bcef515e8f8",
+		"question": "How many verses mention Abiathar?",
+		"answer": 29,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "de03e595-5c61-4757-9307-7669c094861c",
+		"question": "How many verses mention Ahasuerus?",
+		"answer": 29,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "541971ed-7012-419a-b237-94b7736697df",
+		"question": "How many verses mention Barnabas?",
+		"answer": 29,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bfec5b78-822f-4e6e-adfa-65b0100af9e1",
+		"question": "How many verses mention Kohath?",
+		"answer": 29,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bf65118c-0703-4afc-9749-30cfd5bb0f56",
+		"question": "How many verses mention Nathan?",
+		"answer": 29,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "cdbf004e-a7af-47dd-909f-186c6828a7f3",
+		"question": "How many verses mention Rebekah?",
+		"answer": 29,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2048411f-32a5-4634-8adf-12100491cabe",
+		"question": "How many verses mention Zerubbabel?",
+		"answer": 27,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "99aaef04-fbe8-44f0-b3ae-7ccc2b895a95",
+		"question": "How many verses mention Adam?",
+		"answer": 26,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "9e3b0c5d-1a4a-4ac7-af06-33c0af08a88c",
+		"question": "How many verses mention Ahaziah?",
+		"answer": 26,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c4494cc9-6c3d-4c33-be70-afa00f31ed87",
+		"question": "How many verses mention Baasha?",
+		"answer": 26,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "13386178-0856-443a-a20b-51d8818aaf17",
+		"question": "How many verses mention Gedaliah?",
+		"answer": 26,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "75b65ff4-d22b-4ca4-b8c3-fd90f10d4fa5",
+		"question": "In approximately what year was Herod Antipas born?",
+		"answer": 26,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "82387b17-4c87-4113-98a5-b3703f8f7784",
+		"question": "How many verses mention Jephthah?",
+		"answer": 26,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ba47a86f-78cd-4683-801e-f707dd1cb2ec",
+		"question": "How many verses mention Korah?",
+		"answer": 26,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "97247b8c-fd7e-4173-8123-834fb60e3b48",
+		"question": "In approximately what year was Pontius born?",
+		"answer": 26,
+		"unit": "year",
+		"category": "Biblical Ages"
+	},
+	{
+		"id": "92043770-57b8-4dfa-b62a-2e994cde89ff",
+		"question": "How many verses mention Gershon?",
+		"answer": 25,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "9e35effe-a936-4f0c-afa7-5288ed4df41e",
+		"question": "How many verses mention Nebat?",
+		"answer": 25,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f57eb0ba-2448-4f01-b91f-4c507378f4ca",
+		"question": "How many verses mention Zeruiah?",
+		"answer": 25,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "1d40cb6f-8ef2-4c72-9fb6-467c6d6f1438",
+		"question": "How many verses mention Abishai?",
+		"answer": 24,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "6b1a40fc-7e53-406a-8ef2-fe4103ee466c",
+		"question": "How many verses mention Adonijah?",
+		"answer": 24,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "90038b1e-339d-4061-ac9a-beac30a24c2f",
+		"question": "How many verses mention Boaz?",
+		"answer": 24,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0b359516-5672-411c-a168-c9e41fd60494",
+		"question": "How many verses mention Jonah?",
+		"answer": 24,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ac4e19e5-ee06-44f7-b153-a7747d106974",
+		"question": "How many verses mention Timotheus?",
+		"answer": 24,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f155c7c3-fa10-4162-92ac-7e0a81948995",
+		"question": "How many verses mention Abimelech?",
+		"answer": 23,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "9f52a0db-53a1-418c-ae3c-5edece3aeec7",
+		"question": "How many verses mention Benaiah?",
+		"answer": 23,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "7fd5a839-623e-4426-a142-6d026ddff9ed",
+		"question": "How many verses mention Herod Antipas?",
+		"answer": 23,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "d40bf8c9-489b-48ce-9b32-4c4691d1cb0e",
+		"question": "How many verses mention Hiram?",
+		"answer": 23,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "24ef47b6-2087-4d7b-918c-b860d6f3eac1",
+		"question": "How many verses mention Judas?",
+		"answer": 23,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "12475c80-6eb6-4b5a-837e-8907c32610f1",
+		"question": "How many verses mention Shaphan?",
+		"answer": 23,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b44bd2ab-1b00-471a-9d65-fac53ac5b532",
+		"question": "How many verses mention Amalek?",
+		"answer": 22,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c2016bda-70ef-4766-8a87-d997675e9a20",
+		"question": "How many verses mention Ezra?",
+		"answer": 22,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "3ef975d3-46bf-4c5b-b2dd-4d181d4b48c6",
+		"question": "How many verses mention Og?",
+		"answer": 22,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "32e25827-5d65-431c-afac-8fbe319e9a7d",
+		"question": "How many verses mention Uriah?",
+		"answer": 22,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ce8d039e-cfd8-4c09-85ab-1e95e7a95cc7",
+		"question": "How many verses mention Amnon?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "5dff4404-0770-4d31-b507-e9678f928691",
+		"question": "How many verses mention Baruch?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "801f9f53-aab7-40ee-a4fc-f34cb71c2156",
+		"question": "How many verses mention Hazael?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bd52cdb9-3c07-44bf-baee-ab961b51b66a",
+		"question": "How many verses mention Jehoiachin?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2789a5b5-3dbd-4395-804f-db5bfdc4b0d5",
+		"question": "How many verses mention Jehoiada?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ae1957f5-d190-4be5-9d09-ed361b2627a3",
+		"question": "How many verses mention Joshua?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "73fe4837-bd0e-4b6a-b5a9-1087867c09cb",
+		"question": "How many verses mention Mary?",
+		"answer": 21,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "13e81560-4b17-415c-9cc9-719ba70ef6af",
+		"question": "How many verses mention Abijah?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "a644ac87-f190-4ad0-afa0-9f14f2f7f835",
+		"question": "How many verses mention Achish?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "590db0d0-6e9c-4a2c-905e-845f63e61501",
+		"question": "How many verses mention Ahikam?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bdd1e946-c190-4681-8fe9-02fdbe2af5eb",
+		"question": "How many verses mention Hilkiah?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b1743aa6-d1aa-4a8f-ae41-ebda7ebabf73",
+		"question": "How many verses mention Ithamar?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "a8e4fb44-0fbc-4dfd-98f9-6cbf2351795c",
+		"question": "How many verses mention Jezebel?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "4dc22a55-85dc-4623-8142-0e5634fef684",
+		"question": "How many verses mention Jotham?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ab46d997-02b5-4bdf-9f3c-eada6ece585a",
+		"question": "How many verses mention Naomi?",
+		"answer": 20,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c92f130d-256a-4209-94ad-cdb32e7e1d9e",
+		"question": "How many verses mention Cyrus?",
+		"answer": 19,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "4c72856c-c12b-4e8e-951b-6f0d8b4c09db",
+		"question": "How many verses mention Joash?",
+		"answer": 19,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "3fef39e0-01d2-4e2d-9c14-9559679f1d3a",
+		"question": "How many verses mention Joram?",
+		"answer": 19,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "4cc06024-6086-40d2-b0e6-15399f2ab495",
+		"question": "How many verses mention Ben-hadad?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b7956809-c679-4138-a0fe-e4b3c0e03c37",
+		"question": "How many verses mention Hadarezer?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ca70abe5-0501-4b3d-87f2-6ffd81285a83",
+		"question": "How many verses mention Ishmael?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "778e67cb-8185-46ac-a40e-823138abe5ad",
+		"question": "How many verses mention James?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "9803944a-961b-497d-88c3-1f9ac2879dfd",
+		"question": "How many verses mention Meshach?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b93395e5-60af-4312-8791-c6f126dcfa04",
+		"question": "How many verses mention Micaiah?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "31932b17-91eb-4256-ab42-644ef96f5175",
+		"question": "How many verses mention Nabal?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e04590cb-3fef-4639-8d6f-ae188b81510c",
+		"question": "How many verses mention Naboth?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "7ba318eb-f159-42ce-a46a-df6bb6723bcb",
+		"question": "How many verses mention Shadrach?",
+		"answer": 18,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "97ab174a-24bc-475f-800d-0a25a59dfdf4",
+		"question": "How many verses mention Ahithophel?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "de4d9624-2bd4-4771-9a3b-404172a48413",
+		"question": "How many verses mention Machir?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "fcfcbd8c-b8b3-4b2b-a8c3-8249f377e37f",
+		"question": "How many verses mention Micah?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "88ea259f-754c-4565-81a3-9f9db4b14aca",
+		"question": "How many verses mention Ornan?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c725e1a7-cec8-41d2-9942-7d39973fadc8",
+		"question": "How many verses mention Shem?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0860ec59-dc8c-45f4-a041-9abb283377de",
+		"question": "How many verses mention Silas?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "666e3aa8-a2fe-4fe2-bd6f-b5daf7cf9a8d",
+		"question": "How many verses mention Sisera?",
+		"answer": 17,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f938bb35-2088-4f09-8715-9c0a9ecb58c9",
+		"question": "How many verses mention Cain?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "4a3f0794-f966-4f87-87d5-0fa4346d948e",
+		"question": "How many verses mention Darius?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "64bf83e5-70c7-4bb7-8800-ce64fa84ebb3",
+		"question": "How many verses mention Jehoram?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "821c9c98-cc79-487c-870f-6fed8a003114",
+		"question": "How many verses mention Jethro?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "6b54819b-9582-41dd-87f7-1fd2e5af01a8",
+		"question": "How many verses mention Michal?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b537ee41-687e-46f7-be3e-bb746283c832",
+		"question": "How many verses mention Nethaniah?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "5ed2c087-e732-46c8-9b05-64d5ae0f0273",
+		"question": "How many verses mention Phinehas?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "04c502e5-19de-46f7-9a17-3f0524142fa9",
+		"question": "How many verses mention Rabshakeh?",
+		"answer": 16,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "5791eac0-29b8-4a71-980c-de4fe11be4a0",
+		"question": "How many verses mention Amon?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "83968f0e-8263-42f7-afbd-198c2324ec71",
+		"question": "How many verses mention Athaliah?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "8deb670c-fe81-4ec3-96dc-7491e505793a",
+		"question": "How many verses mention Jephunneh?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e05aa78b-c6ee-482c-9a58-dbb02f3dbea1",
+		"question": "How many verses mention Johanan?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c0cbcf48-027d-4dea-8dd1-38b7db41d3e8",
+		"question": "How many verses mention Nebuzar-adan?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "cf60ee21-7994-499a-b11c-f51449d73187",
+		"question": "How many verses mention Pharez?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "ff894155-370c-4837-9e8f-adf75040d60e",
+		"question": "How many verses mention Philip?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "db50fa46-cdfb-4339-9635-78bd744c1294",
+		"question": "How many verses mention Shechem?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "281ef3ea-e2da-44e8-b35e-ba9f59707a48",
+		"question": "How many verses mention Shimei?",
+		"answer": 15,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c3c98228-e330-4505-86a2-d4b74398ba0f",
+		"question": "How many verses mention Abigail?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f750b040-fe95-40af-a417-69f06250c3e7",
+		"question": "How many verses mention Asahel?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "cf530662-3168-4611-a968-d09ad3a2348e",
+		"question": "How many verses mention Ham?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "efa64915-565c-4306-b98b-fb8fef97ecdb",
+		"question": "How many verses mention Jehoahaz?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "96a0276b-e526-4711-ba46-48a82978e5e2",
+		"question": "How many verses mention Kareah?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2104d569-5663-4508-a83d-a8f893d3bd74",
+		"question": "How many verses mention Manoah?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "fc9b805c-4db0-490c-9351-c986c3ea690b",
+		"question": "How many verses mention Mephibosheth?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "fe75bb8c-161a-4fca-99dc-2f18d86530a0",
+		"question": "How many verses mention Ner?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b7e9f6c9-41a1-4b33-8876-48f752944800",
+		"question": "How many verses mention Sennacherib?",
+		"answer": 14,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "620b2346-2d13-4158-9e80-82d322f11116",
+		"question": "How many verses mention Ahimaaz?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "c0d2d1b8-e66a-4a68-9d68-dfa7e9f1315e",
+		"question": "How many verses mention Amoz?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2e6bcfa3-4eab-472c-88f7-8f6499a5432b",
+		"question": "How many verses mention Barak?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "73370d8d-b311-4ff6-b1b0-30450a60761b",
+		"question": "How many verses mention Hamor?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "22e06899-7b2b-4855-a0bd-0e0e35255d69",
+		"question": "How many verses mention Hezron?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bc9c512b-b576-4623-a365-1d03af858650",
+		"question": "How many verses mention Hushai?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e6877998-a412-4c99-be30-f9a7004e276d",
+		"question": "How many verses mention Jeduthun?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0c7a0a83-6b57-44b4-a04b-17c4849a9248",
+		"question": "How many verses mention Kish?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "bd38ea88-0694-4cd1-a331-f21a0d29361a",
+		"question": "How many verses mention Omri?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "d749ef8e-af7a-47b1-afc4-4f30984b9b5e",
+		"question": "How many verses mention Remaliah?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b9406981-75b5-457f-be56-1eb1bc6001d8",
+		"question": "How many verses mention Ruth?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "8604fb19-91cb-4f8d-aec8-a8dca7648c9b",
+		"question": "How many verses mention Tamar?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0e828e3b-9822-4a1e-9066-b4c48c659b84",
+		"question": "How many verses mention Ziba?",
+		"answer": 13,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b3fb68ee-4cec-42c1-abf3-d94ff4183e6f",
+		"question": "How many verses mention Abihu?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "20b5b59c-0687-4246-86dd-816778b03df9",
+		"question": "How many verses mention Agrippa?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "64486619-4fb2-4328-9053-68af542a162f",
+		"question": "How many verses mention Andrew?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "1c064b8c-6489-4af9-9415-bed9f5dcae20",
+		"question": "How many verses mention Eber?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2ee2fbd1-1d7f-4872-a1e6-80554d18d4d8",
+		"question": "How many verses mention Gehazi?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "0eebc2c3-4902-45be-8730-057916652141",
+		"question": "How many verses mention Hagar?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "1fff674f-e266-4fbb-989b-b557510f5cd6",
+		"question": "How many verses mention Heman?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "89fe7659-10dc-42aa-8021-0a510572e5b1",
+		"question": "How many verses mention Heth?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "286c1d24-b1e5-45c1-abf0-d12805c432c3",
+		"question": "How many verses mention Hur?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "9449deba-d48b-4577-a580-390580c0f6eb",
+		"question": "How many verses mention Josedech?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "92288119-880f-4f81-807c-93dc434159b2",
+		"question": "How many verses mention Martha?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "8b8bbe3d-d527-4d1f-aec5-83f6947d9a93",
+		"question": "How many verses mention Miriam?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "2f772763-057b-40e0-b99a-8bfe16eb25c9",
+		"question": "How many verses mention Nadab?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e064f5ab-228e-44ef-a2e3-0e58a4b7c011",
+		"question": "How many verses mention Portius?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e8c6f389-13cf-47c0-b064-e99ae71397d1",
+		"question": "How many verses mention Thomas?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "55500501-2ff9-44aa-aaac-85bd07295a95",
+		"question": "How many verses mention Titus?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e72d046c-4d13-46a5-8817-d8abfe958782",
+		"question": "How many verses mention Tobiah?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "d07bb02d-7e40-40df-8af4-5666bffd22b6",
+		"question": "How many verses mention Zerah?",
+		"answer": 12,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "cac5dab9-1afa-4019-a1ec-77740d9c44c1",
+		"question": "How many verses mention Ahijah?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "5927d1d8-39eb-431f-8494-3becf4e10134",
+		"question": "How many verses mention Ahimelech?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "b7f14e36-bb1f-45c7-99d7-dd4db510651c",
+		"question": "How many verses mention Amasa?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "e6de7e5d-df44-43f2-805f-e8aec382634f",
+		"question": "How many verses mention Amminadab?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "fc8dd5fe-67c0-4b06-83d6-6d392bd0fba8",
+		"question": "How many verses mention Amram?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "f1581658-de98-494a-b8b8-2041c7b87769",
+		"question": "How many verses mention Bathsheba?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	},
+	{
+		"id": "11155225-ed1c-4f0e-a765-5710f031e4a3",
+		"question": "How many verses mention Gilead?",
+		"answer": 11,
+		"unit": "verses",
+		"category": "Biblical Figures"
+	}
+]

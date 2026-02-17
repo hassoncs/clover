@@ -1,91 +1,109 @@
 [
 	{
 		"id": "amen-draw-001",
-		"prompt": "Noah's Ark",
+		"prompt": "Noah waving animals up the ark ramp in the rain",
 		"category": "Old Testament",
 		"difficulty": "easy"
 	},
 	{
 		"id": "amen-draw-002",
-		"prompt": "The Burning Bush",
+		"prompt": "Moses taking off his sandals in front of the burning bush",
 		"category": "Old Testament",
 		"difficulty": "easy"
 	},
 	{
 		"id": "amen-draw-003",
-		"prompt": "Jonah and the Whale",
+		"prompt": "Jonah being launched out of the great fish onto shore",
 		"category": "Old Testament",
 		"difficulty": "easy"
 	},
 	{
 		"id": "amen-draw-004",
-		"prompt": "David and Goliath",
+		"prompt": "David spinning his sling right before the stone flies",
 		"category": "Old Testament",
 		"difficulty": "medium"
 	},
 	{
 		"id": "amen-draw-005",
-		"prompt": "The Parting of the Red Sea",
+		"prompt": "Moses raising his staff as the Red Sea parts into two walls",
 		"category": "Old Testament",
 		"difficulty": "medium"
 	},
 	{
 		"id": "amen-draw-006",
-		"prompt": "Daniel in the Lions' Den",
+		"prompt": "Daniel kneeling calmly while lions circle around him",
 		"category": "Old Testament",
 		"difficulty": "medium"
 	},
 	{
 		"id": "amen-draw-007",
-		"prompt": "The Tower of Babel",
+		"prompt": "Builders arguing in confusion as the Tower of Babel stalls out",
 		"category": "Old Testament",
 		"difficulty": "medium"
 	},
 	{
 		"id": "amen-draw-008",
-		"prompt": "The Garden of Eden",
+		"prompt": "Adam and Eve hiding behind leaves after hearing God in the garden",
 		"category": "Old Testament",
 		"difficulty": "easy"
 	},
 	{
 		"id": "amen-draw-009",
-		"prompt": "The Nativity Scene",
+		"prompt": "Shepherds rushing into the stable after the angels' announcement",
 		"category": "New Testament",
 		"difficulty": "easy"
 	},
 	{
 		"id": "amen-draw-010",
-		"prompt": "Jesus Walking on Water",
+		"prompt": "Peter stepping onto the water and immediately starting to sink",
 		"category": "New Testament",
 		"difficulty": "medium"
 	},
 	{
 		"id": "amen-draw-011",
-		"prompt": "The Last Supper",
+		"prompt": "Jesus breaking bread at the Last Supper while disciples react",
 		"category": "New Testament",
 		"difficulty": "hard"
 	},
 	{
 		"id": "amen-draw-012",
-		"prompt": "Samson pushing the pillars",
+		"prompt": "Samson pushing apart the temple pillars with all his strength",
 		"category": "Old Testament",
 		"difficulty": "hard"
 	},
 	{
 		"id": "amen-draw-013",
-		"prompt": "Jacob's Ladder",
+		"prompt": "Jacob sleeping on a stone while angels travel up and down the ladder",
 		"category": "Old Testament",
 		"difficulty": "hard"
 	},
 	{
 		"id": "amen-draw-014",
-		"prompt": "The Walls of Jericho Falling",
+		"prompt": "Israelites blowing trumpets as the walls of Jericho collapse",
 		"category": "Old Testament",
 		"difficulty": "medium"
 	},
 	{
 		"id": "amen-draw-015",
-		"prompt": "The Sermon on the Mount",
+		"prompt": "Zacchaeus peeking down from a sycamore tree while Jesus points up",
+		"category": "New Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-016",
+		"prompt": "Elijah calling down fire on Mount Carmel while water pours over the altar",
+		"category": "Old Testament",
+		"difficulty": "hard"
+	},
+	{
+		"id": "amen-draw-017",
+		"prompt": "Balaam arguing with his donkey in the middle of the road",
+		"category": "Old Testament",
+		"difficulty": "medium"
+	},
+	{
+		"id": "amen-draw-018",
+		"prompt": "Mary and Martha reacting differently as Jesus teaches in their home",
 		"category": "New Testament",
 		"difficulty": "hard"
 	}

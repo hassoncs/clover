@@ -1,0 +1,1118 @@
+[
+	{
+		"id": "fe7e1d21-ba43-41c6-96e5-7cc851de59f1",
+		"prompt": "Noah hurriedly shooing a goat into the ark as the rain begins",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "da15e430-73ff-4b73-bd29-a3bf9b02998a",
+		"prompt": "David slipping on a grapevine while chasing a runaway lamb",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "66c279be-952c-440c-93b0-c9930d405aa8",
+		"prompt": "Mary handing baby Jesus a tiny spoon of porridge",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "28f8f8d9-53a7-4a05-af5c-1efa12af983a",
+		"prompt": "Elijah snapping his cloak over a frightened raven perched nearby",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "d7a6f2d7-368a-4a27-90ef-4e0a45b39f7e",
+		"prompt": "Abraham juggling three bundles of firewood while waiting for a visitor",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "9e307750-47d8-4298-85cb-ea3be9d800f9",
+		"prompt": "Samson trying to lift a massive stone and accidentally dropping his sling",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "07edb642-0a9e-421a-a706-952cd19e0583",
+		"prompt": "Moses waving his staff as a flock of pigeons flies over the Red Sea",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "d46acb12-485f-409f-ac28-5637c246f74f",
+		"prompt": "Ruth racing to catch a falling barley stalk in the fields",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "743c16b3-29db-4093-a84d-23543ce547f6",
+		"prompt": "Isaac laughing while a mischievous goat nibbles his beard",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "7213a406-75b9-45f7-b4c8-cedab744d8fa",
+		"prompt": "Deborah balancing a scroll on her head while directing a battle plan",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "a7c8c3f4-73ba-49bd-8e51-312a6b3f9809",
+		"prompt": "Peter dropping the keys to the front door of the Upper Room",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "72002fea-5908-4459-bf94-be66b3594bc0",
+		"prompt": "Paul stumbling over a stack of parchment while preaching",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "88deaa44-4096-4d5d-9cf8-74922e005a1d",
+		"prompt": "Jeremiah spilling his ink pot while writing a lament",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4ec0ddb7-76f4-4059-8c83-ce50c60e6a80",
+		"prompt": "Esther whispering into a servant’s ear while hiding a crucial scroll",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "c2b3afac-8a4e-41fa-b477-c148b53ae8a5",
+		"prompt": "Jacob wrestling a ram in a meadow as a sunrise lights the scene",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "cc4d78d9-f19e-4e67-af4b-cdf6d395c876",
+		"prompt": "Miriam clapping rhythmically while leading a campfire song",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "a3755dc0-c2d1-46ee-b1bc-bfc3af78e278",
+		"prompt": "John the Baptist tossing a wildflower into the Jordan River",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "dafdd6e6-7b7b-42f9-be1f-8db5394adeac",
+		"prompt": "Barnabas juggling two loaves of bread while greeting newcomers",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "85b81fd2-3b40-4d84-bb95-be218a360666",
+		"prompt": "Jesus calmly shooing a curious goat away from the table during the Last Supper",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "48e00672-69d8-48fb-9dba-8453ff45e346",
+		"prompt": "Lazarus stretching his arms wide as he steps out of the tomb",
+		"category": "Bible",
+		"difficulty": "easy"
+	},
+	{
+		"id": "c06a0ffa-2f61-4dfc-9164-2f5c7546567b",
+		"prompt": "Moses dropping the tablets when he sees the golden calf",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "f01f7487-e7b2-4692-818e-77eff90fdda4",
+		"prompt": "Jonah being yeeted out of the whale",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "f5c2f27e-d450-4030-bfd5-4d4791bc0f78",
+		"prompt": "Peter trying to walk on water and sinking",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "50e9d98f-b00a-4ab4-bac2-725f80c8e8d5",
+		"prompt": "Samson pulling down the temple pillars while shouting a prayer",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "dcd7056d-3477-48e3-ba90-51639c855194",
+		"prompt": "David slipping on a stone while brandishing a slingshot at Goliath",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "8b536f47-e5d9-48cf-b867-4291057f9748",
+		"prompt": "Elijah catching fire on his chariot wheels and laughing",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "305ebba3-88c3-4d5b-bb52-d27a325238f9",
+		"prompt": "Abraham wrestling with an angel in a pitch‑black desert night",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "2d56f479-85a3-48a4-801c-4edba080ed5d",
+		"prompt": "Jacob wrestling the angel at the riverbank, his shoe flying off",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "97851b7f-d4e6-4707-9db7-fe001cd93013",
+		"prompt": "Esther reaching for a hidden crown while a guard peeks in",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "2e57420c-c3e9-496f-88ed-6172a3878f82",
+		"prompt": "Paul slipping on a marble floor while delivering a sermon",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "d9092aa6-b55f-445c-b0a7-9c6163847a58",
+		"prompt": "Jesus calming a storm while a seagull lands on his shoulder",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "c6d25264-1e6e-42d7-b816-2971001aa76e",
+		"prompt": "Miriam dancing in front of the Red Sea while holding a tambourine",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "ecc76778-6aca-4556-a57d-c53278a6919d",
+		"prompt": "Philip handing a scroll to a curious eunuch at the road",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "db18cbe8-3753-490e-8173-4af8d7d04a18",
+		"prompt": "Joshua blowing a shofar while the walls of Jericho tremble",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "98c22152-1bd5-4e25-afd6-79a2136f2c68",
+		"prompt": "Deborah juggling a spear while counseling a troop of warriors",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "55edb743-af78-44f7-9a6f-491f080b90c3",
+		"prompt": "Jonah emerging from the whale, seaweed tangled in his hair",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "b0aa8ddd-13bb-4285-bcc6-a9db16f4fd03",
+		"prompt": "Gideon peeking out of a secret cave while holding a fleece‑covered staff",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "7cee57d9-9a11-4cb0-a7c5-8913f24ce558",
+		"prompt": "Nehemiah measuring wall stones with a ruler made of palm fronds",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "5e30b845-565f-4b53-8ece-6013c470d197",
+		"prompt": "A youth leader chasing a runaway inflatable cross during a summer camp fire",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "c8d591f8-3856-4c31-a99e-4a6cba9f504d",
+		"prompt": "A pastor slipping on spilled coffee while greeting the congregation",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "0cbfcbbe-f590-478d-a96c-e86d76eb2a30",
+		"prompt": "A choir director waving a baton while a cat walks across the music stand",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "b1acebb5-337f-4200-a18f-a571114c208d",
+		"prompt": "An usher balancing three bulletin copies while hurrying to the front door",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "21cd3f97-5f5d-4150-b010-7446d3ac7667",
+		"prompt": "A volunteer stacking canned goods, one can teetering dangerously",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "dd70d28e-eadf-4e25-8dda-b417ec348d0a",
+		"prompt": "A kid dropping a communion cup in the baptismal pool",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4c1daba6-2b8f-4425-853c-fd3e9fa2a330",
+		"prompt": "A teen texting the hymn numbers to a confused grandma",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "831f3aef-afa3-44f4-b864-e3f7dddd3cdf",
+		"prompt": "A worship band guitarist frantically retuning his amp mid‑song",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "d582f0bc-f0b7-4b4b-93ab-0ca331c0f3a6",
+		"prompt": "A secretary stamping 'CONFIDENTIAL' on a marriage license",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "1ebc45f4-8c09-4e81-9b53-9e6a1be9ec80",
+		"prompt": "A greeter handing out flyers while a pigeon lands on the sign",
+		"category": "Church Life",
+		"difficulty": "easy"
+	},
+	{
+		"id": "2b1dcc0e-7c09-49da-be7d-2f17ed66eac9",
+		"prompt": "The kids’ ministry leader juggling three popcorn buckets while performing a magic trick",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "f87e4643-abd9-401e-893d-81eea3195b5f",
+		"prompt": "The pastor trying to adjust the projector screen while the choir sings 'Hallelujah!'",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "5881cf2e-e766-4763-a070-ea782dfe058d",
+		"prompt": "A deacon carrying a massive casserole to the potluck, barely keeping it upright",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "ba47f608-8f70-4bd9-ba35-06ac41686e4d",
+		"prompt": "The youth group voting on a snack, a bag of chips flies into the air",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "10a2e420-0aed-47da-94b5-c7fdd8f9d72b",
+		"prompt": "A prayer chain member dropping a phone with a notification 'Sermon starts in 5 min'",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "cf6a838e-da35-4295-a37e-f3c97d8062d9",
+		"prompt": "An old organist pulling out a sticky key during a hymn",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "d0dfbcc7-b432-4f70-960f-55085c0a6e12",
+		"prompt": "A Sunday school teacher chasing a runaway crayon across the aisle",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "96a2e1ce-2f41-41d7-acd0-bcbad4351f76",
+		"prompt": "A baptismal assistant trying to keep a floaty from floating away",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "8cf5e572-b8bf-4e47-a1d0-cf597dc53078",
+		"prompt": "A church secretary stamping 'APPROVED' while a hamster runs across the desk",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "93d3398d-5220-4fea-932c-6a1d513869be",
+		"prompt": "A volunteer slipping on a spilled jug of lemonade during the fundraiser",
+		"category": "Church Life",
+		"difficulty": "medium"
+	},
+	{
+		"id": "0a262a29-6ae6-4f75-a40a-5f7f8b84f83f",
+		"prompt": "A missionary packing a suitcase, accidentally stuffing a rubber chicken among the Bibles",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "21507114-bad3-4823-b0da-a9f5d5fc1428",
+		"prompt": "Martin Luther nailing his theses while a curious cat paws at the hammer",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "7f8e2cc1-3ae5-4e48-964b-0743b5e4faf6",
+		"prompt": "John Wesley writing a hymn, his quill slipping into a cup of tea",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "8fe07e35-0ebd-4648-ae42-b10e0cc4499e",
+		"prompt": "Huldah the prophetess sorting scrolls, a scroll unrolls across the floor",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ba987aa9-3135-471d-8d9a-5a0abe96a3ce",
+		"prompt": "St. Patrick chasing a leprechaun with a tiny Bible",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "c9a22f72-7a88-4dc0-8a75-397a2d3a9ddb",
+		"prompt": "Catherine of Siena kneeling, her candle flickering wildly",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ff71bee8-ad80-4515-9c58-db3f3bd45ec6",
+		"prompt": "William Wilberforce writing a letter, his ink bottle spills on a petition",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "edb56233-a902-4e78-b699-0e2db7fc8340",
+		"prompt": "A monk copying a manuscript, his candle extinguished by a sneeze",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "d1af53cc-c822-4a76-aaca-9f0fae90a131",
+		"prompt": "A pilgrim raising a flag on the Camino, a goat bumps into the pole",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "43dbfbc8-4251-4f08-8e69-563e375f6418",
+		"prompt": "A gospel singer in the 1920s dropping a record onto a church step",
+		"category": "Christian History",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4936bc43-1693-4efc-a920-424247fcb22f",
+		"prompt": "George Whitefield delivering an outdoor sermon while a wind blows his hat away",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "df3e432a-cd4a-41cb-88aa-f2a57b3c23c1",
+		"prompt": "A 19th‑century revivalist shaking hands with a crowd, one hand slipping on a puddle",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "920d0fb5-28fb-4a49-9b4a-2cbaaf5b12e6",
+		"prompt": "A medieval monk trying to light a lantern, accidentally setting a nearby sack of grain alight",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "5e1035f0-b0e8-40e2-943e-082fcfd1c1a2",
+		"prompt": "A missionary stepping off a boat onto a beach, tripping over a coconut",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "4cf2e47a-c62e-46fa-8986-4656b607f41b",
+		"prompt": "John Calvin drafting a treatise while a stray sheep bumps his desk",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "9e5f5663-d43d-4f95-8ee7-f0270563dbc4",
+		"prompt": "A Puritan woman fastening a bonnet, a sparrow lands on the ribbon",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "d9def29f-4e87-4a67-a463-8494576ef971",
+		"prompt": "A 1960s worship leader setting up a Moog synthesizer, cables tangled like vines",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "4860f440-6f6b-4d8d-b649-88fc15ee251f",
+		"prompt": "A Crusader pausing to pray, his sword slipping from his grasp",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "7afa654b-ddbb-40de-890d-3a6b02ee611e",
+		"prompt": "A Renaissance painter adding a halo, his brush drips onto a canvas of a cat",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "d4de658e-7936-40ca-a430-1f2825ec572c",
+		"prompt": "A 1800s Sunday school class reciting verses; a mischievous raccoon scurries through the room",
+		"category": "Christian History",
+		"difficulty": "medium"
+	},
+	{
+		"id": "22b3db34-a6cc-438c-a233-f32fd87d0650",
+		"prompt": "A worship band drummer accidentally hitting a cymbal that flies into the choir",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "bc476512-2d12-4d6d-b31f-7a4a0a1da4ee",
+		"prompt": "A pianist playing a hymn while a cat walks across the keys",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "915d8528-37ce-4991-b550-7c30befb47e0",
+		"prompt": "A guitarist strumming a gospel song, his strap tangling with a microphone stand",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ba4b500c-a394-477a-84c8-89e4225d9f9c",
+		"prompt": "A trumpet player blowing a solo, his music sheet blowing away in the wind",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "93a25ffa-bcd0-4d5c-a531-778014236ae5",
+		"prompt": "A hand‑clap choir leader cueing a high‑five, missing the beat",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "da32b7fb-3f21-47d7-8b67-1584151cc880",
+		"prompt": "A vocal soloist grabbing the mic while a spotlight swivels dramatically",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "89f80cba-3b33-4cce-8262-355684dc235a",
+		"prompt": "A tambourine shaker forgetting the rhythm and spinning onto the stage",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "99c309cd-a3f6-4b2d-afee-1e62403c7fe6",
+		"prompt": "A saxophonist improvising while a dove lands on his reed",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4ca4963e-3aa5-40ed-94cb-aa7bb5e7d6f0",
+		"prompt": "A choir member hitting the wrong note, a bubble appears over his head",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "1d686cc6-1156-4629-98ab-8285419872ed",
+		"prompt": "A beat‑boxer adding a holy 'Amen' sound effect",
+		"category": "Music",
+		"difficulty": "easy"
+	},
+	{
+		"id": "a4637b7b-e064-47cc-a8fc-269f5a201072",
+		"prompt": "A worship leader trying to sync a loop pedal while the projector displays a blinking cursor",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "dff05a0d-1439-4f27-9b63-1257eb59a9dd",
+		"prompt": "A guitarist switching from acoustic to electric mid‑song, tripping over a cable",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "f31f5dea-f3ca-416e-85c3-8943412520bf",
+		"prompt": "A drummer's stick breaking just as the solo reaches its peak",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "644cad3e-a229-48dd-94b7-ce0a6baf8bd7",
+		"prompt": "A choir director flipping through hymn books, one page flies out into the choir loft",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "72e9602c-7a1f-4ffd-8f28-e8f82d58be1a",
+		"prompt": "A pianist’s bench collapsing while performing a grand finale",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "e667f698-72f1-4e0f-8f52-c9ec8cf012bf",
+		"prompt": "A vocalist hitting a high note, causing a glass of water onstage to splash",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "046678cc-3321-473d-88f5-36f34ae93a4c",
+		"prompt": "A saxophonist's reed snapping, sending a puff of air toward the front row",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "787f25a7-5250-4998-8013-0a414ed9d7cd",
+		"prompt": "A trumpet player catching a falling music stand mid‑note",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "44f3466b-717b-4027-a6de-cda2602035e3",
+		"prompt": "A percussionist accidentally rolling a tambourine into the audience",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "dc3f9236-a728-4acb-8943-5add323bbbb5",
+		"prompt": "A vocalist forgetting the lyric and improvising with a funny rhyme",
+		"category": "Music",
+		"difficulty": "medium"
+	},
+	{
+		"id": "79b27db0-670b-419e-8483-240137ec8b05",
+		"prompt": "A chef at the church potluck trying to flip a pancake, it lands on the ceiling",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4eaaf6d1-5e3b-41fa-ab74-f9fc03c97eaf",
+		"prompt": "A baker pulling a fresh loaf from the oven, a tiny dove perched on the crust",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "af004d9c-be1e-4045-9c75-84856bb4e53e",
+		"prompt": "A teen scooping ice cream, a sprig of mint flying onto a hymn book",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "87493ce6-94d2-4950-9682-406ceb04c240",
+		"prompt": "A volunteer arranging a fruit platter, a grape rolling off the edge",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "e2ebc058-e087-4e02-bd91-a88fff19e17b",
+		"prompt": "A kid spilling a jar of honey during the offering",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "aa8c7ecc-4297-4ab6-a89d-f9c708e44412",
+		"prompt": "A Sunday school teacher handing out cookies shaped like fish",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ca810b01-5870-4033-aabb-b3850cb3a4c5",
+		"prompt": "A soup kitchen volunteer ladling soup, a spoon slipping into a bowl of noodles",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "da39c62d-0b93-4341-b2da-2fe631cc5cba",
+		"prompt": "A youth group leader flipping a pancake while chanting a verse",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "80b0b2e9-c84e-4890-831c-29f4fc6fe505",
+		"prompt": "A church fundraiser barista frothing milk, a latte art angel droops",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ee3f318b-4ba5-4a17-97ff-b2257b36fe94",
+		"prompt": "A bake‑sale volunteer juggling three pies at once",
+		"category": "Food",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4e0c02e0-b0fc-4530-87f7-a73555e68e21",
+		"prompt": "A teen trying to flip a giant burrito during a fellowship dinner, it lands on a bishop’s hat",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "98792b8f-fb60-4f51-9e99-f4cf31413c02",
+		"prompt": "A potluck host opening a mystery casserole, steam forming a halo shape",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "0682269b-b329-4b23-abdb-444f79008858",
+		"prompt": "A kitchen volunteer trying to fit a massive turkey into a mini oven",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "5c0cb0dd-8f74-4709-887c-08e9b429278b",
+		"prompt": "A coffee server spilling beans onto a Bible, making a speckled margin",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "890a5006-7b0c-4030-8e2e-c49452e84b9e",
+		"prompt": "A chef flambéing a dessert, the flames briefly spelling out 'Amen'",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "6ae38d97-3dcd-4c43-be2c-c1bf390db555",
+		"prompt": "A sous‑chef accidentally sprinkling holy water on the salad bowl",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "8bc4012f-1b95-4dd3-84c8-a8ed113d4eb1",
+		"prompt": "A student dropping a tray of cupcakes during a youth choir rehearsal",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "e96e3143-9a96-445d-be6c-e73079f4634e",
+		"prompt": "A volunteer attempting to serve a 10‑foot cake, the knife slipping off the edge",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "aaf27d15-edaa-41d1-b3f5-4544517a842b",
+		"prompt": "A caterer rushing to plate communion wafers, one wafer slipping onto a napkin",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "88a91350-6e98-429a-b6db-1b15603c7e5d",
+		"prompt": "A dessert maker trying to pipe frosting into the shape of a dove, the tip jams",
+		"category": "Food",
+		"difficulty": "medium"
+	},
+	{
+		"id": "4f12bb1e-f625-46e9-89b6-9839d68f4a4c",
+		"prompt": "A teenager racing to post a sermon clip on TikTok before the service ends",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "e1deccf6-62f9-4c84-9e74-c36f9a1568a5",
+		"prompt": "A kid livestreaming a prayer circle while a dog barks in the background",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "4053cff1-7c54-4359-b652-9c57418307f5",
+		"prompt": "A youth group member scrolling through memes during a Bible study break",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "1b336119-c869-4f7b-8184-8d26275f88a9",
+		"prompt": "A pastor taking a selfie with a choir, the flash blinds a nearby grandma",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "7bc087b0-90a4-42bd-97b7-abdd96e60506",
+		"prompt": "A worship leader dropping a Spotify playlist onto the altar screen",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "a976875a-4af4-40fe-a1d4-3eb703f336b5",
+		"prompt": "A teen trying to caption a sermon with a GIF, the projector freezes",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "02dfd0bf-c887-4b83-b5b8-287acbcf03b2",
+		"prompt": "A volunteer filming a baptism, the camera slips into the baptismal pool",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ab25b8f6-2839-4131-8efc-fb9c6694561c",
+		"prompt": "A Sunday school teacher showing a cartoon parable, the cartoon character winks at the kids",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "f72bd7d2-6e01-4aec-8023-f14b3a3f3dcc",
+		"prompt": "A church techie testing a Zoom call, accidentally turning on a virtual background of a beach",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "c985ff94-7f16-4ae0-bb5c-99b80eb81bd6",
+		"prompt": "A youth leader trying to hashtag a prayer, the board displays a typo",
+		"category": "Pop Culture",
+		"difficulty": "easy"
+	},
+	{
+		"id": "af2ac4ea-0fe2-4d47-a351-f07656f1354e",
+		"prompt": "A teen attempting a TikTok dance in the sanctuary while the organist plays 'Amazing Grace'",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "b14c2bef-9d25-4a46-8ae5-afa828ab6a78",
+		"prompt": "A pastor accidentally sharing his screen with a funny cat video during a webinar",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "39e9fe38-a450-41ce-8797-aa40194cb620",
+		"prompt": "A worship team livestream glitch shows a background of outer space during 'Stars Above'",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "ca1efc28-5cbe-4759-befe-1588169166db",
+		"prompt": "A youth group voting on a Spotify worship playlist, the speaker erupts with static",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "b95287d6-c07c-44af-b37c-6c5567aa2364",
+		"prompt": "A church volunteer trying to caption a sermon with a meme, the meme shows a confused dog",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "a882c3f1-aea8-4c0b-9e87-b3d3000c4f4d",
+		"prompt": "A teen sending a group text about a potluck, the group chat auto‑translates to Latin",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "d80dd4bd-3479-4ee8-9d4d-6485505ca1c4",
+		"prompt": "A worship leader accidentally playing a game show buzzer sound after a prayer",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "675d52f9-c3c8-45a0-bbe2-e7227974314f",
+		"prompt": "A congregation member raising a hand to ask a question, but their phone's voice assistant answers",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "5cf9b3f0-fa20-42a0-b338-6347b3aa15d4",
+		"prompt": "A church tech crew trying to sync a light show, the lights flash a Morse code 'SOS'",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "3d57804e-aa19-4733-8bdf-43e26c05ac9f",
+		"prompt": "A pastor using a VR headset to illustrate a parable, stumbles into a real chair",
+		"category": "Pop Culture",
+		"difficulty": "medium"
+	},
+	{
+		"id": "d7913767-051c-4adf-8457-15c84113ef9f",
+		"prompt": "A volunteer setting up a giant inflatable Bible for a youth event, the rope snaps",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "ba73595c-0753-4945-a833-74901d722af9",
+		"prompt": "A member arranging chairs for a Bible study, a stack topples like dominoes",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "33c90263-85fb-4181-9f00-33919effce73",
+		"prompt": "A teen sweeping the aisles while a gust of wind blows the bulletin pages away",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "75570235-89f4-4872-9e3c-dd7231a4e089",
+		"prompt": "A usher handing out welcome cards, one gets stuck to a worshipper's shoe",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "387a485b-746b-4a68-a907-03584bd384a7",
+		"prompt": "A cleanup crew dragging a mop across the sanctuary, accidentally swiping a prayer flag",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "a4f661e1-6df8-479d-bdb8-a83030e27ece",
+		"prompt": "A Sunday school helper balancing a box of crayons while reading a story",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "9873e5a1-e4e5-41b2-9b36-915e44933038",
+		"prompt": "A donation desk volunteer counting change, a coin rolls under the table",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "b271ea77-4fbc-46ff-9919-2faa4c1412bb",
+		"prompt": "A parking lot greeter waving a flashlight, a car’s alarm blares",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "c8bf94d3-265d-44ae-9a29-35a26325bc86",
+		"prompt": "A tech volunteer plugging in a microphone, the cord tangles around his foot",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "a96c5378-f364-4eec-a2f0-c48b19c5c894",
+		"prompt": "A youth camp counselor handing out water bottles, one bursts open",
+		"category": "Volunteer",
+		"difficulty": "easy"
+	},
+	{
+		"id": "34816b8f-4cb6-468b-bac1-7affa068ee45",
+		"prompt": "A volunteer juggling three donation boxes while a child tugs at his sleeve",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "9693b1c8-a586-4cad-a897-c1c64b2a75d6",
+		"prompt": "A usher trying to open a locked door for latecomers, the key snaps",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "f9a6cfeb-ecd8-4c84-af8e-c31cf6502bba",
+		"prompt": "A tech crew member adjusting a spotlight, the beam sweeps across the pastor’s face mid‑sermon",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "9d211778-7486-46c7-b559-9875b2c1e0eb",
+		"prompt": "A volunteer stacking hymn books, one slides off and lands on a speaker",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "8876908d-c487-4129-ae24-5e8a84fe083c",
+		"prompt": "A cleanup team dragging a huge trash bag, it tears and releases a cascade of flyers",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "de9d3616-bb5a-4f63-aa8a-ac17330b066e",
+		"prompt": "A greeter handing out a welcome basket, a baby inside giggles and knocks it over",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "b8b8ef0a-fe82-4d9e-b5b4-824cfe39f08f",
+		"prompt": "A youth leader setting up a photo booth, the backdrop rolls onto the stage",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "09315a20-4757-42f9-b19c-fe6fa67ff21e",
+		"prompt": "A church secretary stamping a form, the stamp sticks to his thumb",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "ab4cc4ad-2f6f-49db-b878-435613c7f685",
+		"prompt": "A volunteer trying to untangle a mass of Christmas lights, a bulb sparks",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "292a8e9d-ca10-4945-82e5-24c828181d5e",
+		"prompt": "A parking lot volunteer directing cars, a scooter zooms past his sign",
+		"category": "Volunteer",
+		"difficulty": "medium"
+	},
+	{
+		"id": "b49d5fc4-0cb4-4fd4-b747-46530232f2aa",
+		"prompt": "A pastor slipping on a banana peel left by a mischievous kid during the opening hymn",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "7f7abd13-bc92-4555-9fbe-686ee25b6c76",
+		"prompt": "A choir member tripping over a loose microphone cable while hitting a high note that shatters a stained‑glass pane",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "f71d8dee-6748-483a-a563-c6ea8125151d",
+		"prompt": "A worship band’s guitarist losing a string mid‑solo, the broken string snapping like a whip across the altar",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "5742076f-0904-4511-be66-5dc6e25732aa",
+		"prompt": "A baptismal assistant accidentally plunging the baby into the full‑size pool, creating a massive splash that drenches the front row",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "0609de64-c48e-4571-b449-ac6c222ce236",
+		"prompt": "A senior deacon trying to lift a massive donation box, the box topples and rolls down the aisle",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "f5a60681-2b76-44f6-a29d-ebab8835891d",
+		"prompt": "A youth leader attempting a daring backflip onto the stage while a banner falls in slow motion behind him",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "170a4375-5b18-49a3-a93a-7daa95231f11",
+		"prompt": "A choir director conducting with a baton that cracks in half, the two pieces flying into the audience",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "2e068a0b-2baf-4b86-b433-da9506c6b12d",
+		"prompt": "A potluck chef attempting to flambé a dessert, the flame leaps onto a nearby hymn book",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "6cb4d918-d9f3-416f-aacc-136d9284b305",
+		"prompt": "A tech team member trying to sync three projectors, the screens flicker and display a rapid montage of animal videos",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "2d361358-1912-4f08-ac36-e1aed2d08b8f",
+		"prompt": "A missionary in a remote village attempting to translate a hymn into the local dialect, the translator’s goat interrupts by bleating the chorus",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "219cd139-cd7d-41fa-9017-8f476d593419",
+		"prompt": "A pastor trying to open a stuck sacramental wine bottle, the cork pops out and hits a chandelier",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "1cb6ff4a-a00a-479f-adc0-c3397f84d2e4",
+		"prompt": "A church bus driver pulling up to the entrance, the door opens too fast and a flock of doves flies out",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "284a47d8-bfb2-4480-9f72-aef66b3eb366",
+		"prompt": "A youth group leader setting up a massive inflatable cross, a gust of wind inflates it so fast it lifts him off his feet",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "7daaa053-0c80-45af-86a0-9fdb57ec3387",
+		"prompt": "A worship singer hitting an extreme high note that shatters a glass ornament hanging above the stage",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "ca1ebba8-1270-4c9c-87a2-94c3c4a2248f",
+		"prompt": "A volunteer stacking a towering cake for a fundraiser, the topmost candle ignites and sparks a brief fire alarm",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "10cddd9b-de64-43d0-9a65-abb96db3c857",
+		"prompt": "A choir member accidentally pulling the fire alarm while reaching for a hymn book, sprinklers burst and soak the front rows",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "4c9c8274-5db3-45e2-87a1-e9894db38a52",
+		"prompt": "A pastor trying to demonstrate a miracle story with a hidden prop, the prop malfunctions and releases a cascade of confetti",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "c54b926a-8c5c-4499-a40e-d11af94f0b8a",
+		"prompt": "A youth group trying to recreate the parting of the Red Sea using a blue tarp, the tarp snaps and splashes water everywhere",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "f964a95f-7963-46e0-ae29-96085b106355",
+		"prompt": "A tech crew attempting a synchronized light show, the lights sync to the beat of a ringtone that keeps going off",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "f8d43091-7ac0-4b98-8229-063264b3fdc4",
+		"prompt": "A missionary trying to set up a portable altar in the desert, a sudden sandstorm buries the altar half‑way",
+		"category": "Hard",
+		"difficulty": "hard"
+	},
+	{
+		"id": "661f3502-3636-4b4f-845c-c4258ef88e39",
+		"prompt": "A child trying to hand the pastor a freshly baked cookie, the cookie crumbles into the Bible",
+		"category": "Bible",
+		"difficulty": "hard"
+	},
+	{
+		"id": "6158c2cf-a948-4df1-9caf-294c304b1f2d",
+		"prompt": "A pastor attempting to reenact Noah's Ark with a toy boat, the boat capsizes in the baptismal font",
+		"category": "Bible",
+		"difficulty": "hard"
+	},
+	{
+		"id": "e3b7df74-d581-40fb-ad62-ed2524b0e5eb",
+		"prompt": "A Sunday school class acting out the Tower of Babel, the cardboard tower collapses and rolls into the hallway",
+		"category": "Bible",
+		"difficulty": "hard"
+	},
+	{
+		"id": "f9c56011-7620-4c7f-a280-4aad7557e3c0",
+		"prompt": "A youth group performing a modern rap about the Prodigal Son, the beatboxer accidentally drops a beat that sounds like a sheep bleat",
+		"category": "Bible",
+		"difficulty": "hard"
+	},
+	{
+		"id": "d5336b6f-fe16-4606-8d27-25053c3b8625",
+		"prompt": "A choir singing 'The Beatitudes' while a wind gust blows the scroll of blessings off the pulpit",
+		"category": "Bible",
+		"difficulty": "hard"
+	},
+	{
+		"id": "7eb39e24-c9a8-4a83-b156-c12b2adc4d05",
+		"prompt": "David slinging a stone at Goliath, then tripping over his own sandal",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "c25633af-469e-40f5-b5d9-b519360626bd",
+		"prompt": "Abraham wrestling with an angel on a desert night, his tent pole falls over",
+		"category": "Bible",
+		"difficulty": "medium"
+	},
+	{
+		"id": "32270c6a-1f50-4c86-97bb-9d01ee7946d1",
+		"prompt": "Deborah juggling a spear while counseling warriors",
+		"category": "Bible",
+		"difficulty": "medium"
+	}
+]

@@ -1,12 +1,19 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { ArgumentsCamelCase, Argv } from "yargs";
 import { PipelineDB } from "../db/index.js";
 import { checkDuplicate } from "../dedup/check.js";
 import { computeContentHash } from "../dedup/hash.js";
 import {
 	DEFAULT_BIBLEQUIZZLE_DATA_PATH,
+	fetchAlpacaTrivia,
 	fetchBibleQuizzle,
+	fetchOpenTriviaQA,
 	fetchTheographic,
+	fetchTheographicFibbage,
+	fetchTheographicHeadsUp,
+	fetchTheographicHistory,
+	fetchTheographicWager,
 } from "../ingest/adapters/amen/index.js";
 import { fetchOpenTDB } from "../ingest/adapters/opentdb.js";
 import type { ContentItem } from "../types/index.js";
@@ -19,6 +26,27 @@ export interface IngestOptions {
 	dryRun?: boolean;
 }
 
+function resolveDatasetPath(filePath: string): string {
+	if (existsSync(filePath)) {
+		return filePath;
+	}
+
+	const repoRelative = resolve(process.cwd(), "..", "..", filePath);
+	if (existsSync(repoRelative)) {
+		return repoRelative;
+	}
+
+	return filePath;
+}
+
+function resolveOptionalDatasetPath(filePath?: string): string | undefined {
+	if (!filePath) {
+		return undefined;
+	}
+
+	return resolveDatasetPath(filePath);
+}
+
 export function builder(yargs: Argv): Argv {
 	return yargs
 		.option("source", {
@@ -26,7 +54,7 @@ export function builder(yargs: Argv): Argv {
 			type: "string",
 			demandOption: true,
 			description:
-				"Source id ('opentdb', 'biblequizzle', 'theographic') or file path (JSON)",
+				"Source id ('opentdb', 'biblequizzle', 'alpaca-trivia', 'opentriviaqa', 'theographic', 'theographic-fibbage', 'theographic-headsup', 'theographic-history', 'theographic-wager') or file path (JSON)",
 		})
 		.option("game-type", {
 			alias: "t",
@@ -62,7 +90,7 @@ export async function handler(
 	} else if (args.source === "biblequizzle") {
 		items = await fetchBibleQuizzle({
 			count: args.count || 10,
-			filePath: args.file,
+			filePath: resolveOptionalDatasetPath(args.file),
 			dataPath:
 				process.env.BIBLEQUIZZLE_DATA_PATH ?? DEFAULT_BIBLEQUIZZLE_DATA_PATH,
 			gameType: args.gameType,
@@ -70,8 +98,81 @@ export async function handler(
 	} else if (args.source === "theographic") {
 		items = await fetchTheographic({
 			count: args.count || 10,
-			filePath: args.file,
+			filePath: resolveOptionalDatasetPath(args.file),
 			gameType: args.gameType,
+		});
+	} else if (args.source === "alpaca-trivia") {
+		items = await fetchAlpacaTrivia({
+			count: args.count || 10,
+			filePath: resolveDatasetPath(
+				args.file ??
+					"data/external/bible-trivia-alpaca/bible_trivia_alpaca.jsonl",
+			),
+			gameType: args.gameType,
+		});
+	} else if (args.source === "opentriviaqa") {
+		items = await fetchOpenTriviaQA({
+			count: args.count || 10,
+			filePath: resolveDatasetPath(
+				args.file ?? "data/external/OpenTriviaQA/categories/religion-faith",
+			),
+			gameType: args.gameType,
+		});
+	} else if (args.source === "theographic-fibbage") {
+		items = await fetchTheographicFibbage({
+			count: args.count || 10,
+			gameType: args.gameType,
+			peopleFilePath: resolveDatasetPath(
+				args.file ??
+					"data/external/theographic-bible-metadata/json/people.json",
+			),
+			placesFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/places.json",
+			),
+			eventsFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/events.json",
+			),
+		});
+	} else if (args.source === "theographic-headsup") {
+		items = await fetchTheographicHeadsUp({
+			count: args.count || 10,
+			gameType: args.gameType,
+			peopleFilePath: resolveDatasetPath(
+				args.file ??
+					"data/external/theographic-bible-metadata/json/people.json",
+			),
+		});
+	} else if (args.source === "theographic-history") {
+		items = await fetchTheographicHistory({
+			count: args.count || 10,
+			gameType: args.gameType,
+			eventsFilePath: resolveDatasetPath(
+				args.file ??
+					"data/external/theographic-bible-metadata/json/events.json",
+			),
+			peopleFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/people.json",
+			),
+			placesFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/places.json",
+			),
+		});
+	} else if (args.source === "theographic-wager") {
+		items = await fetchTheographicWager({
+			count: args.count || 10,
+			gameType: args.gameType,
+			booksFilePath: resolveDatasetPath(
+				args.file ?? "data/external/theographic-bible-metadata/json/books.json",
+			),
+			peopleFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/people.json",
+			),
+			eventsFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/events.json",
+			),
+			placesFilePath: resolveDatasetPath(
+				"data/external/theographic-bible-metadata/json/places.json",
+			),
 		});
 	} else {
 		const data = JSON.parse(readFileSync(args.source, "utf-8"));

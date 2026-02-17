@@ -1,62 +1,110 @@
 [
 	{
 		"id": "amen-dil-001",
-		"optionA": "Have the wisdom of Solomon",
-		"optionB": "Have the strength of Samson",
-		"category": "Biblical Gifts"
+		"optionA": "Have Moses' staff for one day",
+		"optionB": "Have David's sling with perfect aim for one day",
+		"category": "Biblical Superpowers"
 	},
 	{
 		"id": "amen-dil-002",
-		"optionA": "Be swallowed by a whale for 3 days",
-		"optionB": "Be thrown into a den of lions for 1 night",
-		"category": "Biblical Perils"
+		"optionA": "Spend a night in Daniel's lion den",
+		"optionB": "Spend a night in Jonah's whale belly",
+		"category": "Biblical Situations"
 	},
 	{
 		"id": "amen-dil-003",
-		"optionA": "Walk on water with Jesus",
-		"optionB": "See the parting of the Red Sea",
-		"category": "Miracles"
+		"optionA": "Lead worship with a terrible singing voice",
+		"optionB": "Give the sermon with zero preparation",
+		"category": "Church Volunteer Chaos"
 	},
 	{
 		"id": "amen-dil-004",
-		"optionA": "Live in the Garden of Eden (before the fall)",
-		"optionB": "Live in the New Jerusalem (after the return)",
-		"category": "Biblical Places"
+		"optionA": "Only speak in King James English",
+		"optionB": "Only speak in parables",
+		"category": "Modern Faith-Life"
 	},
 	{
 		"id": "amen-dil-005",
-		"optionA": "Be a disciple of Jesus",
-		"optionB": "Be a prophet in the Old Testament",
-		"category": "Biblical Roles"
+		"optionA": "Organize VBS for two hundred kids",
+		"optionB": "Chaperone the youth group ski trip",
+		"category": "Church Volunteer Chaos"
 	},
 	{
 		"id": "amen-dil-006",
-		"optionA": "Have to build the Ark like Noah",
-		"optionB": "Have to lead the Israelites in the desert for 40 years like Moses",
-		"category": "Biblical Tasks"
+		"optionA": "Rebuild Noah's ark with volunteer sign-ups",
+		"optionB": "Coordinate manna distribution in the wilderness",
+		"category": "Biblical Situations"
 	},
 	{
 		"id": "amen-dil-007",
-		"optionA": "Eat only manna for 40 years",
-		"optionB": "Eat only locusts and wild honey for 1 year",
-		"category": "Biblical Diet"
+		"optionA": "Be church greeter every single Sunday",
+		"optionB": "Run the church group chat for every ministry",
+		"category": "Church Volunteer Chaos"
 	},
 	{
 		"id": "amen-dil-008",
-		"optionA": "Face Goliath with a sling",
-		"optionB": "Face the fiery furnace with faith",
-		"category": "Biblical Courage"
+		"optionA": "Face Goliath with only a sling",
+		"optionB": "Walk into the fiery furnace with Shadrach, Meshach, and Abednego",
+		"category": "Biblical Situations"
 	},
 	{
 		"id": "amen-dil-009",
-		"optionA": "Be able to interpret dreams like Joseph",
-		"optionB": "Be able to heal the sick like the apostles",
-		"category": "Spiritual Gifts"
+		"optionA": "Have Solomon-level wisdom in every life decision",
+		"optionB": "Have Samson-level strength during every church move day",
+		"category": "Biblical Superpowers"
 	},
 	{
 		"id": "amen-dil-010",
-		"optionA": "Witness the creation of the world",
-		"optionB": "Witness the resurrection of Jesus",
-		"category": "Biblical Events"
+		"optionA": "Miss the sermon intro every week",
+		"optionB": "Miss the sermon application every week",
+		"category": "Modern Faith-Life"
+	},
+	{
+		"id": "amen-dil-011",
+		"optionA": "Carry one basket of leftovers after feeding the crowd",
+		"optionB": "Help clean up after the wedding at Cana",
+		"category": "Biblical Situations"
+	},
+	{
+		"id": "amen-dil-012",
+		"optionA": "Be Jonah delivering hard truth to Nineveh",
+		"optionB": "Be Esther making one high-stakes request",
+		"category": "Bible Character Trade-Offs"
+	},
+	{
+		"id": "amen-dil-013",
+		"optionA": "Teach Sunday school with no whiteboard markers",
+		"optionB": "Lead small group with only one discussion question",
+		"category": "Church Volunteer Chaos"
+	},
+	{
+		"id": "amen-dil-014",
+		"optionA": "Have Elijah's dramatic prayer timing",
+		"optionB": "Have Nehemiah's project management stamina",
+		"category": "Biblical Superpowers"
+	},
+	{
+		"id": "amen-dil-015",
+		"optionA": "Only listen to worship songs with tambourine solos",
+		"optionB": "Only listen to sermon podcasts recorded on old church mics",
+		"category": "Modern Faith-Life"
+	},
+	{
+		"id": "amen-dil-016",
+		"optionA": "Be in charge of church parking on Easter Sunday",
+		"optionB": "Be in charge of coffee station during VBS check-in",
+		"category": "Church Volunteer Chaos"
+	},
+	{
+		"id": "amen-dil-017",
+		"optionA": "Spend one day with Peter's confidence",
+		"optionB": "Spend one day with Thomas's skepticism",
+		"category": "Bible Character Trade-Offs"
+	},
+	{
+		"id": "amen-dil-018",
+		"optionA": "Carry Ezekiel-style symbolic props all day",
+		"optionB": "Act out Hosea-level object lessons all day",
+		"category": "Biblical Situations"
 	}
 ]

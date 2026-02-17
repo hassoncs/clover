@@ -1,25 +1,18 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { BibleTriviaQuestionSchema } from "../../../types/amen/bible-trivia.js";
 import type { ContentItem } from "../../../types/index.js";
 import { isValidScriptureRef } from "./scripture-validator.js";
 
 export const DEFAULT_BIBLEQUIZZLE_DATA_PATH =
 	"https://raw.githubusercontent.com/BibleQuizzle/BibleQuizzle/main/data/questions.json";
 
-interface BibleQuizzleQuestion {
-	question: string;
-	correct_answer: string;
-	incorrect_answers: string[];
-	category?: string;
-	difficulty?: string;
-	reference?: string;
-	explanation?: string;
-}
+const PLACEHOLDER_WRONG_ANSWER = "[GENERATE_WRONG_ANSWER]";
 
-interface BibleQuizzlePayload {
-	questions?: BibleQuizzleQuestion[];
-	items?: BibleQuizzleQuestion[];
+interface BibleQuizzleRawQuestion {
+	question: string;
+	answer: string | number;
+	categories?: string[];
+	reference?: string;
 }
 
 export interface FetchBibleQuizzleOptions {
@@ -29,75 +22,64 @@ export interface FetchBibleQuizzleOptions {
 	gameType?: string;
 }
 
-function mapCategory(input?: string): string {
-	const category = input?.toLowerCase().trim() ?? "";
-
-	if (category.includes("old testament") || category === "ot") {
-		return "Old Testament";
+function mapCategory(categories?: string[]): string {
+	if (!categories || categories.length === 0) {
+		return "Biblical Figures";
 	}
 
-	if (category.includes("new testament") || category === "nt") {
-		return "New Testament";
-	}
+	const joined = categories.join(" ").toLowerCase();
 
-	if (category.includes("gospel")) {
+	if (joined.includes("gospel")) {
 		return "Gospels";
 	}
-
-	if (category.includes("epistle") || category.includes("acts")) {
-		return "Acts & Epistles";
-	}
-
-	if (category.includes("geography") || category.includes("location")) {
-		return "Biblical Geography";
-	}
-
-	if (category.includes("psalm") || category.includes("proverb")) {
-		return "Psalms & Proverbs";
-	}
-
-	if (category.includes("parable")) {
-		return "Parables";
-	}
-
-	if (category.includes("miracle")) {
+	if (joined.includes("miracle")) {
 		return "Miracles";
 	}
-
-	if (category.includes("commandment")) {
+	if (joined.includes("parable")) {
+		return "Parables";
+	}
+	if (joined.includes("psalm") || joined.includes("proverb")) {
+		return "Psalms & Proverbs";
+	}
+	if (
+		joined.includes("epistle") ||
+		(joined.includes("acts") && !joined.includes("characters"))
+	) {
+		return "Acts & Epistles";
+	}
+	if (joined.includes("geography") || joined.includes("location")) {
+		return "Biblical Geography";
+	}
+	if (joined.includes("commandment")) {
 		return "Ten Commandments";
+	}
+	if (joined.includes("new_testament") || joined.includes("new testament")) {
+		return "New Testament";
+	}
+	if (joined.includes("old_testament") || joined.includes("old testament")) {
+		return "Old Testament";
+	}
+	if (joined.includes("kings") || joined.includes("judges")) {
+		return "Old Testament";
 	}
 
 	return "Biblical Figures";
 }
 
-function mapDifficulty(input?: string): "easy" | "medium" | "hard" {
-	const difficulty = input?.toLowerCase().trim();
-	if (
-		difficulty === "easy" ||
-		difficulty === "medium" ||
-		difficulty === "hard"
-	) {
-		return difficulty;
-	}
-	return "medium";
-}
-
-function parseDataset(data: string): BibleQuizzleQuestion[] {
-	const parsed = JSON.parse(data) as
-		| BibleQuizzlePayload
-		| BibleQuizzleQuestion[];
+function parseDataset(data: string): BibleQuizzleRawQuestion[] {
+	const parsed = JSON.parse(data) as unknown;
 
 	if (Array.isArray(parsed)) {
-		return parsed;
+		return parsed as BibleQuizzleRawQuestion[];
 	}
 
-	if (Array.isArray(parsed.questions)) {
-		return parsed.questions;
-	}
-
-	if (Array.isArray(parsed.items)) {
-		return parsed.items;
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"questions" in parsed &&
+		Array.isArray((parsed as { questions: unknown }).questions)
+	) {
+		return (parsed as { questions: BibleQuizzleRawQuestion[] }).questions;
 	}
 
 	return [];
@@ -105,7 +87,7 @@ function parseDataset(data: string): BibleQuizzleQuestion[] {
 
 async function loadBibleQuizzleQuestions(
 	options: FetchBibleQuizzleOptions,
-): Promise<BibleQuizzleQuestion[]> {
+): Promise<BibleQuizzleRawQuestion[]> {
 	if (options.filePath) {
 		const raw = await readFile(options.filePath, "utf-8");
 		return parseDataset(raw);
@@ -142,39 +124,33 @@ export async function fetchBibleQuizzle(
 	const selected = dataset.slice(0, options.count);
 
 	return selected.map((question) => {
+		const correctAnswer = String(question.answer).trim();
+		const category = mapCategory(question.categories);
+
 		const scriptureRef =
 			typeof question.reference === "string" &&
 			isValidScriptureRef(question.reference)
 				? question.reference
 				: "";
 
-		const bibleTrivia = BibleTriviaQuestionSchema.parse({
-			id: randomUUID(),
-			question: question.question,
-			correctAnswer: question.correct_answer,
-			incorrectAnswers: question.incorrect_answers,
-			category: mapCategory(question.category),
-			difficulty: mapDifficulty(question.difficulty),
-			scriptureRef,
-			explanation:
-				typeof question.explanation === "string" && question.explanation.trim()
-					? question.explanation
-					: "Imported from BibleQuizzle dataset.",
-		});
-
 		return {
 			id: randomUUID(),
 			gameType: options.gameType ?? "amen-trivia",
-			text: bibleTrivia.question,
-			category: bibleTrivia.category,
+			text: question.question,
+			category,
 			provenance: {
 				source: "biblequizzle" as const,
 				metadata: {
-					correctAnswer: bibleTrivia.correctAnswer,
-					incorrectAnswers: bibleTrivia.incorrectAnswers,
-					difficulty: bibleTrivia.difficulty,
-					scriptureRef: bibleTrivia.scriptureRef,
-					explanation: bibleTrivia.explanation,
+					correctAnswer,
+					incorrectAnswers: [
+						PLACEHOLDER_WRONG_ANSWER,
+						PLACEHOLDER_WRONG_ANSWER,
+						PLACEHOLDER_WRONG_ANSWER,
+					],
+					difficulty: "medium" as const,
+					scriptureRef,
+					explanation: "Imported from BibleQuizzle dataset.",
+					needsWrongAnswers: true,
 				},
 			},
 			moderationStatus: "pending" as const,

@@ -1,52 +1,150 @@
 [
 	{
 		"id": "amen-rank-001",
-		"topic": "Rank these disciples by how many times they are mentioned in the Gospels (Most to Least)",
-		"items": ["Peter", "John", "James", "Andrew"]
+		"topic": "Rank these Bible characters by who you'd most want on your road trip",
+		"items": ["Paul", "David", "Esther", "Peter"],
+		"category": "Bible Characters"
 	},
 	{
 		"id": "amen-rank-002",
-		"topic": "Rank these books of the Bible by number of chapters (Most to Least)",
-		"items": ["Psalms", "Isaiah", "Jeremiah", "Genesis"]
+		"topic": "Rank these church potluck dishes from best to worst",
+		"items": [
+			"Baked mac and cheese",
+			"Funeral potatoes",
+			"Mystery casserole",
+			"Jello salad"
+		],
+		"category": "Church Life"
 	},
 	{
 		"id": "amen-rank-003",
-		"topic": "Rank these plagues of Egypt in the order they occurred (First to Last)",
-		"items": ["Water to Blood", "Frogs", "Locusts", "Death of Firstborn"]
+		"topic": "Rank these miracles by how useful they'd be in modern life",
+		"items": [
+			"Multiplying food",
+			"Calming storms",
+			"Healing blindness",
+			"Turning water into wine"
+		],
+		"category": "Biblical What-Ifs"
 	},
 	{
 		"id": "amen-rank-004",
-		"topic": "Rank these people by age at death (Oldest to Youngest)",
-		"items": ["Methuselah", "Noah", "Adam", "Moses"]
+		"topic": "Rank these biblical jobs from easiest to hardest",
+		"items": ["Shepherd", "Tentmaker", "Tax collector", "Prophet"],
+		"category": "Modern Faith"
 	},
 	{
 		"id": "amen-rank-005",
-		"topic": "Rank these events in chronological order (Earliest to Latest)",
-		"items": ["Creation", "The Flood", "Tower of Babel", "Call of Abraham"]
+		"topic": "Rank these Bible characters as wedding DJs",
+		"items": ["David", "Miriam", "Solomon", "John the Baptist"],
+		"category": "Bible Characters"
 	},
 	{
 		"id": "amen-rank-006",
-		"topic": "Rank these kings of Israel/Judah by length of reign (Longest to Shortest)",
-		"items": ["Manasseh", "Uzziah", "David", "Saul"]
+		"topic": "Rank these Bible-era travel methods by how pleasant they'd be today",
+		"items": ["Walking", "Donkey", "Chariot", "Boat across the Sea of Galilee"],
+		"category": "Biblical What-Ifs"
 	},
 	{
 		"id": "amen-rank-007",
-		"topic": "Rank these New Testament books by word count (Longest to Shortest)",
-		"items": ["Luke", "Acts", "Matthew", "Romans"]
+		"topic": "Rank these Sunday morning excuses for being late to church",
+		"items": [
+			"Couldn't find matching shoes",
+			"Kids hid my keys",
+			"Coffee catastrophe",
+			"Thought service started an hour later"
+		],
+		"category": "Church Life"
 	},
 	{
 		"id": "amen-rank-008",
-		"topic": "Rank these days of creation (First to Last)",
-		"items": ["Light", "Sky/Atmosphere", "Land & Plants", "Sun, Moon & Stars"]
+		"topic": "Rank these Bible characters by who would make the best group chat admin",
+		"items": ["Nehemiah", "Deborah", "Moses", "Luke"],
+		"category": "Bible Characters"
 	},
 	{
 		"id": "amen-rank-009",
-		"topic": "Rank these cities by distance from Jerusalem (Closest to Farthest)",
-		"items": ["Bethlehem", "Jericho", "Nazareth", "Rome"]
+		"topic": "Rank these parables by how hard they would be to explain to a middle-schooler",
+		"items": [
+			"The Sower",
+			"The Lost Coin",
+			"The Ten Virgins",
+			"The Unjust Steward"
+		],
+		"category": "Modern Faith"
 	},
 	{
 		"id": "amen-rank-010",
-		"topic": "Rank these weights/measures by volume (Largest to Smallest)",
-		"items": ["Homer", "Bath", "Hin", "Log"]
+		"topic": "Rank these church volunteer roles by pure chaos level",
+		"items": [
+			"Toddler room check-in",
+			"Parking team in heavy rain",
+			"Slides operator",
+			"Youth lock-in snack duty"
+		],
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-rank-011",
+		"topic": "Rank these Bible miracles by how likely they are to break the internet",
+		"items": [
+			"Walking on water",
+			"Raising Lazarus",
+			"Parting the Red Sea",
+			"Feeding the five thousand"
+		],
+		"category": "Biblical What-Ifs"
+	},
+	{
+		"id": "amen-rank-012",
+		"topic": "Rank these Bible characters by who would be best at hosting a podcast",
+		"items": ["Luke", "Paul", "Solomon", "John"],
+		"category": "Bible Characters"
+	},
+	{
+		"id": "amen-rank-013",
+		"topic": "Rank these worship set moments by emotional intensity",
+		"items": [
+			"First chorus drop",
+			"Spontaneous key change",
+			"Quiet bridge",
+			"Everyone singing a cappella"
+		],
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-rank-014",
+		"topic": "Rank these biblical locations by where you'd most want to visit",
+		"items": ["Sea of Galilee", "Jerusalem", "Bethlehem", "Mount Carmel"],
+		"category": "Modern Faith"
+	},
+	{
+		"id": "amen-rank-015",
+		"topic": "Rank these Bible characters by who would survive longest in a group project",
+		"items": ["Joseph", "Ruth", "Peter", "Jonah"],
+		"category": "Bible Characters"
+	},
+	{
+		"id": "amen-rank-016",
+		"topic": "Rank these biblical foods by what you'd actually order at a cafe",
+		"items": ["Fresh bread", "Roasted fish", "Honey", "Locusts"],
+		"category": "Biblical What-Ifs"
+	},
+	{
+		"id": "amen-rank-017",
+		"topic": "Rank these church parking lot conversations by likelihood of becoming a thirty-minute chat",
+		"items": [
+			"Quick prayer request",
+			"How your week went",
+			"One tiny theology question",
+			"Updates about the youth fundraiser"
+		],
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-rank-018",
+		"topic": "Rank these prophets by who would be most intense as your accountability partner",
+		"items": ["Nathan", "Elijah", "Jeremiah", "Amos"],
+		"category": "Modern Faith"
 	}
 ]

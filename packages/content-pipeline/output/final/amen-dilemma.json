@@ -1,0 +1,890 @@
+[
+	{
+		"id": "c5e1c011-adfe-4214-a8f5-bf9bcfe82c72",
+		"optionA": "Wield Moses' staff to part any crowd of people",
+		"optionB": "Wield David's sling to hit any target from across the room",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "52f7408e-6968-4f12-b79f-3298c0fddcd8",
+		"optionA": "Turn water into soda for a potluck",
+		"optionB": "Turn loaves into pizza for a fellowship dinner",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "e0f1cb01-9163-4560-888a-edaf7b0e5fbf",
+		"optionA": "Speak every language like the Tower of Babel miracle",
+		"optionB": "Understand every heart like a modern-day prophet",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "6303bd87-382b-41c7-b65f-49060f8f1411",
+		"optionA": "Have Samson's strength but only while cleaning the sanctuary",
+		"optionB": "Have Elijah's fire‑whip but only for lighting the worship stage",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "fea2372c-08dc-4541-a5f4-c323e849d40a",
+		"optionA": "Carry the Ark of the Covenant on your back for a week",
+		"optionB": "Carry the Ten Commandments written on a smartphone for a week",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "fdbc6cd4-5426-42f6-a833-0cd052d52ac4",
+		"optionA": "Spend a night in Jonah’s whale belly",
+		"optionB": "Spend a night in Daniel’s lion’s den",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "d40c916f-13b3-4529-b4d1-e7c338ca1698",
+		"optionA": "Survive a 40‑day rainstorm on the Ark without Wi‑Fi",
+		"optionB": "Survive a 40‑day fast in the desert without coffee",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "c82abd5a-f32e-45f3-b299-d8bf3d70c189",
+		"optionA": "Escape a tower of fire like the three youths in the furnace",
+		"optionB": "Escape a sudden flood like Noah’s animals on the ark",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "0d3476f3-4bdb-4592-9f8f-dbdfe42f99f1",
+		"optionA": "Outrun a chariot of fire like Elijah’s ascent",
+		"optionB": "Outswim a sea like Moses parting the Red Sea",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "a062de2a-b3cd-4ba5-aa92-c6686ae7f6b4",
+		"optionA": "Sit in the same spot as Jesus in the Garden of Gethsemane during a power outage",
+		"optionB": "Stand at the empty tomb while the church’s sound system glitches",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "503f3013-01b0-4025-a2ba-8e216d489ee4",
+		"optionA": "Be the head of the cleaning crew for the sanctuary after a kids’ birthday party",
+		"optionB": "Be the head of the kitchen crew for the church potluck",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "c15872ec-18fc-4cea-b4a4-aad780cacecd",
+		"optionA": "Organize the annual church garage sale and price everything in “spiritual credits”",
+		"optionB": "Organize the Sunday school supply drive and label everything in “biblical emojis”",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "71043798-a0fd-4e8d-ae9b-1cb3520ea2b7",
+		"optionA": "Lead the worship team while wearing a giant inflatable inflatable “Jesus fish” costume",
+		"optionB": "Lead the sermon while wearing a “Noah’s Ark” raincoat",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "000221e1-4ef9-4b6f-9ff4-a9817c2f6ca2",
+		"optionA": "Serve as the coffee‑tea barista during a 9 a.m service and only have decaf",
+		"optionB": "Serve as the snack‑distribution volunteer at a youth game night and only have gluten‑free cookies",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "1b01169b-c458-4815-a712-3cdb9c0bb70d",
+		"optionA": "Be the person who greets every newcomer with a personalized Bible verse",
+		"optionB": "Be the person who hands out the “welcome” stickers that say “Blessed!”",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "843bc75d-9571-4e00-a6dd-9eb47ed35d64",
+		"optionA": "Give up your favorite streaming service for a month to read the whole Bible",
+		"optionB": "Give up coffee for a month to pray three extra times a day",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "2f82bca2-1681-412d-9520-f6ab7fa3a784",
+		"optionA": "Only be able to attend worship on Saturdays",
+		"optionB": "Only be able to attend worship on Sundays but have to sing every hymn in a different accent",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "f3a35414-491c-4329-a547-7c1b99ace888",
+		"optionA": "Never use emojis in any church text messages again",
+		"optionB": "Never use exclamation points in any church bulletin again",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "f88de2b4-fe43-42b9-ba78-d63baedeb81e",
+		"optionA": "Donate a big‑ticket item for missions but have to drive three hours to deliver it",
+		"optionB": "Donate a small‑ticket item for the food pantry but have to wash 100 dishes after service",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "268434d4-7788-4da7-bb54-123c1bad2669",
+		"optionA": "Have a personal “miracle playlist” that plays every time you pray",
+		"optionB": "Have a personal “comfort blanket” that appears whenever you feel anxious in church",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "296cb890-d7af-4922-9289-9b46e93c0c06",
+		"optionA": "If Peter were a modern day social media influencer, would he post daily vlog updates from the boat",
+		"optionB": "If Peter were a modern day influencer, would he host weekly Q&A livestreams about faith",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "5c06c3c9-d856-441e-9a76-5adb8509a348",
+		"optionA": "If Moses had a smartphone, would he use a GPS to find the Promised Land",
+		"optionB": "If Moses had a smartphone, would he use a voice‑to‑text app to write the Ten Commandments",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "ec11c98d-c5d6-48f9-bfe0-76dabe754787",
+		"optionA": "If Esther had to give a TED Talk, would she speak about courage or diplomacy",
+		"optionB": "If Esther had to give a TED Talk, would she demonstrate how to write a royal decree on a whiteboard",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "95ad6b7c-84e3-4180-8895-a616575f2809",
+		"optionA": "If Paul were a commuter, would he travel by bike to spread the gospel",
+		"optionB": "If Paul were a commuter, would he ride the subway and hand out tracts at each stop",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "6e5fbb71-f375-4520-910a-d4c84f618fcd",
+		"optionA": "If Mary Magdalene ran a coffee shop, would she serve “Resurrection Roast”",
+		"optionB": "If Mary Magdalene ran a coffee shop, would she serve “Garden of Gethsemane Espresso”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "ae55c8d3-5562-422b-8b82-e43116003e8a",
+		"optionA": "Lead worship with a terrible singing voice",
+		"optionB": "Give the sermon with no preparation",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "504893ca-af80-4241-b376-d73cfba3cea2",
+		"optionA": "Only speak in King James English forever",
+		"optionB": "Only speak in parables forever",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "25ee4f9e-e22e-4d80-a758-dbed8ac024b2",
+		"optionA": "Organize VBS for 200 kids",
+		"optionB": "Chaperone the youth group ski trip",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "acabfd77-592c-4209-a20e-ee4266811a43",
+		"optionA": "Spend a night in a church basement after a midnight prayer service (no lights)",
+		"optionB": "Spend a night in the parking lot after a Sunday service (rainy)",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "e83188ad-f5a1-440c-a2a3-32c60b8938b0",
+		"optionA": "Have the power to make any hymn sound like a rock anthem",
+		"optionB": "Have the power to make any prayer sound like a rap verse",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "3d034928-9a21-4d3d-8ead-0944a273aadc",
+		"optionA": "Be stuck in a never‑ending potluck line",
+		"optionB": "Be stuck in a never‑ending Sunday school registration line",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "44d0bca5-70cb-41f9-ad13-99ce423c672f",
+		"optionA": "Turn all the church’s Wi‑Fi passwords into Bible verses",
+		"optionB": "Turn all the church’s bulletin notices into haiku",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "2c031d20-4215-45b0-9fe1-b4609ec265e3",
+		"optionA": "If John the Baptist were a reality‑TV host, would he host “The Biggest Revelation”",
+		"optionB": "If John the Baptist were a reality‑TV host, would he host “Dunk the Doubters”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "9956091c-bb4a-43f8-8122-02534ea0779b",
+		"optionA": "If the prodigal son had a credit‑card, would he max it out on a fancy dinner",
+		"optionB": "If the prodigal son had a credit‑card, would he use it to pay off church debts",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "7e7c459e-86e0-45c7-a530-bf817a3cd598",
+		"optionA": "Be the person who always finds the perfect parking spot right before service starts",
+		"optionB": "Be the person who always finds the perfect seat for the choir",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "f076bbea-2934-4313-b723-0f0b783a5598",
+		"optionA": "Have the power to stop the church projector from freezing mid‑slide",
+		"optionB": "Have the power to fix the sound system with a single prayer",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "335a41cd-d770-42de-b9ff-e7e65e13a21c",
+		"optionA": "Live a day as the church’s greeter who always forgets their name tag",
+		"optionB": "Live a day as the church’s custodian who always gets the mop mixed up with a yoga mat",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "20bae72c-55e1-4686-8bf3-bda61aa48119",
+		"optionA": "Walk through a wall of people as if you were a “parting‑the‑crowd” miracle",
+		"optionB": "Slip through a line of volunteers as if you were a “slingshot” to the front",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "52581628-298f-4f6d-8a77-f383cead2752",
+		"optionA": "Spend a Sunday trying to untangle the tangled cords behind the podium",
+		"optionB": "Spend a Sunday trying to untangle the tangled holiday lights on the sanctuary roof",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "2df726fd-99fd-4990-a69e-babb48596649",
+		"optionA": "If Abraham had a LinkedIn profile, would his headline read “Faith‑Driven Pioneer”",
+		"optionB": "If Abraham had a LinkedIn profile, would his headline read “Star‑Gazer & Traveler”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "0331f65f-9fa1-4946-b136-ceedfbb51278",
+		"optionA": "If Ruth were a barista, would she serve “Moab Mocha”",
+		"optionB": "If Ruth were a barista, would she serve “Bethlehem Brew”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "6afdb2d3-e5a0-45d8-825f-383473112362",
+		"optionA": "Only be able to sing all hymns in the key of C",
+		"optionB": "Only be able to speak all prayers in iambic pentameter",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "ace1bf9f-cbff-41f3-a21b-f149b3f21428",
+		"optionA": "Be forced to use a megaphone for every announcement",
+		"optionB": "Be forced to use a kazoo for every song",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "21a1abbd-5712-4134-96e4-047014434656",
+		"optionA": "Have the ability to instantly refill any communion cup",
+		"optionB": "Have the ability to instantly change any hymn lyric to match the season",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "5c5ae1e0-a1b1-42e3-a046-5b518780a762",
+		"optionA": "If Joseph had a job interview today, would he brag about interpreting dreams",
+		"optionB": "If Joseph had a job interview today, would he brag about managing a coat‑of‑many‑colors fashion line",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "2f5e015c-c234-49cf-8b6e-dab5d61bafac",
+		"optionA": "Spend a week as the church’s “tech‑support” during a live‑stream marathon",
+		"optionB": "Spend a week as the church’s “child‑ministry” leader during a summer camp",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "03211f53-fe14-4277-98d5-95ee81a6467f",
+		"optionA": "Turn any sermon into a slam‑poetry performance",
+		"optionB": "Turn any worship set into a silent‑meditation session",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "67593c65-12f6-490c-8383-cc3943d503bb",
+		"optionA": "Only eat food that’s been blessed by the pastor",
+		"optionB": "Only drink water that’s been blessed by the youth leader",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "fbd81b5d-bbc8-4857-875a-06db53bcb534",
+		"optionA": "If Daniel were a modern corporate boss, would his performance reviews include “faithfulness scores”",
+		"optionB": "If Daniel were a modern corporate boss, would his performance reviews include “lion‑taming metrics”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "bee9b82a-3a3f-40db-a22e-0e0e25491d96",
+		"optionA": "Carry a portable “ark” backpack for every church outing",
+		"optionB": "Carry a portable “staff” umbrella for every outdoor service",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "d3285def-127e-45d5-aa0b-92983cd65470",
+		"optionA": "Organize a “potluck of the saints” where every dish must be named after a biblical figure",
+		"optionB": "Organize a “karaoke night” where every song must be a Psalm set to pop",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "83d00ed5-86ab-437b-abc8-6694b3a02575",
+		"optionA": "Spend a night in the confessional booth hearing only silent prayers",
+		"optionB": "Spend a night in the nursery hearing only lullabies",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "b4f3a2ef-f4f7-4f76-93e2-06f21ba6a77a",
+		"optionA": "If Mary had a social‑media account, would her status updates be “Here I am, sitting at the foot of the cross”",
+		"optionB": "If Mary had a social‑media account, would her story be “Walking to the market, found a miracle”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "80f0dd00-e5ee-4e76-a9fe-e6e496129ed8",
+		"optionA": "Only be able to use biblical metaphors when describing traffic jams",
+		"optionB": "Only be able to use biblical metaphors when describing grocery lists",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "18c52edc-ecb4-40eb-b43a-b3dd056e66b9",
+		"optionA": "Be the person who always forgets to turn off the church’s Christmas lights at 6 p.m. on December 26th",
+		"optionB": "Be the person who always forgets to put the new hymn books back on the shelf",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "359d21a5-b213-454d-b7b1-62e1b732e5ce",
+		"optionA": "If Noah were a modern day event planner, would he charge for “two‑by‑two” transportation",
+		"optionB": "If Noah were a modern day event planner, would he sell “rain‑proof” tickets",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "8834517e-ef50-47c8-841e-df41902fd77f",
+		"optionA": "Have the power to make any hymn’s bridge sound like a drum solo",
+		"optionB": "Have the power to make any prayer’s closing line sound like a catchy jingle",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "eceaa128-1cda-4888-a08f-1ebeebc1526e",
+		"optionA": "Spend a week as the “welcome desk” receptionist, answering every question with a scripture reference",
+		"optionB": "Spend a week as the “food‑service” volunteer, answering every request with a prayer",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "f374e6bd-c802-4b94-9c8c-4679dc08a06c",
+		"optionA": "If Solomon had to file a tax return, would he list “wisdom” as a deduction",
+		"optionB": "If Solomon had to file a tax return, would he list “golden crowns” as a charitable donation",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "95b503b6-fecf-4eee-b559-3f2375224c45",
+		"optionA": "Only be allowed to use the phrase “God bless you” after every sneeze",
+		"optionB": "Only be allowed to use the phrase “Praise the LORD” after every joke",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "de796197-4745-4d4a-9d45-68cc1a5534db",
+		"optionA": "Turn every church bulletin into a comic strip",
+		"optionB": "Turn every church email into a haiku",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "2cdd05ad-a045-4f94-866e-97254b7598af",
+		"optionA": "If the Apostle John were a photographer, would his favorite filter be “light‑of‑Christ”",
+		"optionB": "If the Apostle John were a photographer, would his favorite filter be “sea‑of‑galilee”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "437d6f8b-d36a-458b-a921-c68e0c31b658",
+		"optionA": "Live a day as the church’s “parking‑lot attendant” who has to direct 10‑car caravans",
+		"optionB": "Live a day as the church’s “bell‑ringer” who has to manually ring the bells for every service",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "64f3dab3-16f2-48d1-ad0d-eda9567d780d",
+		"optionA": "Have the power to make any church coffee taste like a miracle",
+		"optionB": "Have the power to make any church water taste like a baptism",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "55e7c8f6-a82c-4d75-8049-e5dcca89da49",
+		"optionA": "Only be able to pray in the Psalms for every need",
+		"optionB": "Only be able to sing a hymn for every need",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "f4dd75f8-9ff5-489b-9304-5fe030e4bc0e",
+		"optionA": "If the Good Samaritan had a rideshare app, would his profile read “5‑Star Driver, Free Worship”",
+		"optionB": "If the Good Samaritan had a rideshare app, would his profile read “Compassionate Companion”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "8443c5a2-da3f-457e-ba0d-899aa69f4e0f",
+		"optionA": "Spend a night in the sanctuary during a thunderstorm with only a candle and a psalm",
+		"optionB": "Spend a night in the kitchen during a bake‑sale rush with only a recipe and a hymn",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "4407267a-a5e5-492d-a6e1-aca5ebcd992a",
+		"optionA": "Have the ability to instantly translate any hymn into a modern pop arrangement",
+		"optionB": "Have the ability to instantly translate any prayer into a spoken‑word piece",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "47ebb0f5-1c85-480b-8ece-2057752996e1",
+		"optionA": "Only be able to use “Amen” as a response in every conversation",
+		"optionB": "Only be able to use “Hallelujah” as a response in every conversation",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "9c43f238-5d84-4ff9-8c11-9cfa85799e58",
+		"optionA": "If the prodigal son opened a coffee shop, would he name it “Second Chances Café”",
+		"optionB": "If the prodigal son opened a coffee shop, would he name it “Homeward Brew”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "a0c8a9c0-6619-4eaa-a46a-4784d48d3ff2",
+		"optionA": "Lead a prayer circle while juggling oranges",
+		"optionB": "Lead a worship set while balancing a stack of hymn books on your head",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "51f85874-54ce-46a2-8e3a-2726628f7a9a",
+		"optionA": "Have the power to make any church calendar event feel like a holiday",
+		"optionB": "Have the power to make any church email feel like a personal letter",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "64e42715-8b07-4ae8-b69a-3f3ac105f97f",
+		"optionA": "Only be able to quote the Book of Proverbs when giving advice",
+		"optionB": "Only be able to quote the Beatitudes when giving advice",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "e5e6487d-c136-4dbf-ab8d-3559e2f8e11f",
+		"optionA": "If Elijah were a DJ, would his playlist be called “Fire‑From‑Heaven Beats”",
+		"optionB": "If Elijah were a DJ, would his playlist be called “Mount‑Carmel Mix”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "ae67ba1e-f6cf-45f1-b6f4-bd11c3a004d6",
+		"optionA": "Spend a Sunday as the usher who must remember every family’s favorite hymn",
+		"optionB": "Spend a Sunday as the greeter who must remember every family’s favorite coffee order",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "c0b02b50-989f-42e4-ba21-d92966f0f9c5",
+		"optionA": "Turn the church’s fire alarm into a call to worship",
+		"optionB": "Turn the church’s doorbell into a call to prayer",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "76891783-40ee-48fc-a5ec-8e7dc02e013f",
+		"optionA": "Only be able to write thank‑you notes in biblical verse",
+		"optionB": "Only be able to write thank‑you notes in modern emojis",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "379c3336-2bcf-4e57-8025-4065319400ca",
+		"optionA": "If Gideon had a startup, would it be “Small‑Army Solutions”",
+		"optionB": "If Gideon had a startup, would it be “Victory‑by‑Faith Apps”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "fe7ac53d-0c15-41c5-adbb-5c4066d978c2",
+		"optionA": "Live a day as the person who distributes the communion wafers",
+		"optionB": "Live a day as the person who refills the coffee urn",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "a11d13ee-46ac-4699-a538-a03bc49f2b2d",
+		"optionA": "Have the power to instantly clean any spill in the sanctuary",
+		"optionB": "Have the power to instantly silence any squeaky chair in the pews",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "238f29dc-3d69-4de5-be10-733206196bd4",
+		"optionA": "Only be able to start every meeting with “Grace” followed by a joke",
+		"optionB": "Only be able to start every meeting with “Amen” followed by a quick prayer",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "9ac97b11-d2fe-416c-a9bd-428284822a88",
+		"optionA": "If King Solomon had a dating profile, would his tagline be “Wise, Wealthy, Looking for a Queen”",
+		"optionB": "If King Solomon had a dating profile, would his tagline be “Builder of Temples, Lover of Proverbs”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "3f370c7f-0e97-4ead-a26f-5060b3beed3d",
+		"optionA": "Spend a night in the church’s attic trying to find the lost hymn book",
+		"optionB": "Spend a night in the church’s basement trying to find the lost baptismal font",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "44dac46d-c350-41f4-984f-5b5d29531e51",
+		"optionA": "Have the ability to make any potluck dish taste like a “blessing”",
+		"optionB": "Have the ability to make any sermon feel like a “miracle”",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "6264cb2f-028a-435b-a645-56bae0771b0a",
+		"optionA": "Only be allowed to use “Praise the Lord!” after any good news",
+		"optionB": "Only be allowed to use “Peace be with you!” after any sad news",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "d3181f2c-2003-4ccf-9784-8b4692b88a2e",
+		"optionA": "If the Israelites were a sports team, would they be called the “Red Sea Swimmers”",
+		"optionB": "If the Israelites were a sports team, would they be called the “Desert Dashers”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "3e4ab209-ab3e-4f59-a41a-ca07982c0556",
+		"optionA": "Lead a prayer circle while wearing a superhero cape",
+		"optionB": "Lead a worship set while wearing a giant inflatable fish",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "46880ddc-f09e-4f64-8df7-1a80db3b1890",
+		"optionA": "Turn the church’s coffee pot into a “miracle dispenser” that never runs out",
+		"optionB": "Turn the church’s hymn stand into a “song‑generator” that writes new verses on the fly",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "9580eeef-05e1-4a69-9b98-497a1911d12b",
+		"optionA": "Only be able to answer emails with a verse reference",
+		"optionB": "Only be able to answer texts with a short prayer",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "37927ef7-edac-433d-a9e5-23cd8755b032",
+		"optionA": "If Job had a reality‑TV makeover, would he get “Patience & Perseverance” episodes",
+		"optionB": "If Job had a reality‑TV makeover, would he get “Faith & Fortune” episodes",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "c928b934-8f57-4e5a-a3da-cdadec040e82",
+		"optionA": "Spend a Sunday as the person who sets up the children's story corner and ends up reading the same story ten times",
+		"optionB": "Spend a Sunday as the person who sets up the adult fellowship table and ends up serving the same snack twice",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "feaae41c-4ab8-4875-bc1c-c87596cd7bd6",
+		"optionA": "Have the power to make every “Amen” echo like a choir",
+		"optionB": "Have the power to make every “Hallelujah” sparkle like fireworks",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "44ff38d9-0064-4520-b200-98864f23eaf5",
+		"optionA": "Only be allowed to speak in Proverbs when giving instructions",
+		"optionB": "Only be allowed to speak in Psalms when giving encouragement",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "2fb82fd8-b950-4eea-b51c-d971527c24c0",
+		"optionA": "If the apostle Thomas were a YouTuber, would his channel be “Doubting? Let’s Talk!”",
+		"optionB": "If the apostle Thomas were a YouTuber, would his channel be “Faith‑Boosters for Skeptics”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "b5f9a311-3373-4e47-9ed1-3fc6d44fa069",
+		"optionA": "Live a day as the person who hands out the “welcome” flyers at the front door",
+		"optionB": "Live a day as the person who hands out the “goodbye” hymn sheets at the back door",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "af19a940-db88-45d6-8ac4-40ea0086f452",
+		"optionA": "Turn every church announcement into a dramatic “movie trailer” voiceover",
+		"optionB": "Turn every church announcement into a witty meme",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "cce18efb-3775-4aac-94b8-577948941e13",
+		"optionA": "Only be able to use “Grace” when starting a meeting and “Peace” when ending it",
+		"optionB": "Only be able to use “Joy” when starting a meeting and “Hope” when ending it",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "2f2d888b-6d77-4195-91f8-07c60a9f7d68",
+		"optionA": "If Moses had a modern career, would he be a traffic controller at the airport",
+		"optionB": "If Moses had a modern career, would he be a wilderness guide for adventure tours",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "dbd9775f-5765-4aac-be53-365b72e50f1a",
+		"optionA": "Spend a night in the church kitchen during a bake‑sale with only a whisk and a hymn",
+		"optionB": "Spend a night in the church fellowship hall during a potluck with only a napkin and a prayer",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "d0bfedf1-ddad-41eb-bc59-73f288bfa5e3",
+		"optionA": "Have the ability to instantly change any outdated hymn to a modern worship song",
+		"optionB": "Have the ability to instantly change any outdated bulletin layout to a sleek digital version",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "59620b6d-e8f9-4614-bd8c-7a342cf627f1",
+		"optionA": "Only be able to answer “Yes, Lord!” when asked any question",
+		"optionB": "Only be able to answer “Certainly!” when asked any question",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "98c30f22-1a5a-4045-9a49-c2387934c52c",
+		"optionA": "If the Good Samaritan opened a car‑repair shop, would it be called “Compassion Motors”",
+		"optionB": "If the Good Samaritan opened a car‑repair shop, would it be called “Neighborly Auto”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "38318ee0-895a-48fc-8ce8-4b98a5c48ee6",
+		"optionA": "Lead the congregation in a “silent prayer” while wearing giant headphones",
+		"optionB": "Lead the congregation in a “loud hymn” while holding a megaphone",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "e69f25ce-303b-4a46-a9e4-ffca9b68f5fc",
+		"optionA": "Turn the church’s parking lot signs into witty, scripture‑based jokes",
+		"optionB": "Turn the church’s restroom signs into uplifting, verse‑filled messages",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "2d363c2c-5b1c-4ef6-a940-08031d730b8a",
+		"optionA": "Only be allowed to greet people with a scripture reference",
+		"optionB": "Only be allowed to greet people with a short prayer",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "72f9a455-09fc-4a91-87ed-5eb87e61636b",
+		"optionA": "If Jonah were a motivational speaker, would his tagline be “From Whale to Wow!”",
+		"optionB": "If Jonah were a motivational speaker, would his tagline be “Inside Out Inspiration”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "2ded4875-4f6e-4ad0-96dd-dc26f63fe551",
+		"optionA": "Spend a Sunday as the person who sets up the projector and ends up projecting the wrong movie",
+		"optionB": "Spend a Sunday as the person who sets up the microphone and ends up amplifying the wrong person",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "9e959cbe-dffe-4316-bcc8-8cac933660b4",
+		"optionA": "Have the power to make any hymn chorus sound like a choir of angels",
+		"optionB": "Have the power to make any prayer feel like a personal conversation with God",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "398a1717-850c-481d-9973-f2fe97243fd3",
+		"optionA": "Only be able to use the word “Grace” as a filler in conversation",
+		"optionB": "Only be able to use the word “Blessing” as a filler in conversation",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "e8bb96de-9df8-495f-8252-8bc4e1eda7bd",
+		"optionA": "If the disciples were a band, would they be called “The Fishermen”",
+		"optionB": "If the disciples were a band, would they be called “The Great Commissioners”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "fdcaff20-f902-4ba2-b890-b4f364f88622",
+		"optionA": "Live a day as the person who hands out the “sacramental bread” and accidentally drops one on the floor",
+		"optionB": "Live a day as the person who hands out the “offering plates” and accidentally trips over the podium",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "514834f5-aaf6-4378-a4e7-517d15ff8d51",
+		"optionA": "Turn every “Amen” into a short, echoing chant",
+		"optionB": "Turn every “Hallelujah” into a brief, joyful clap",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "0edaa6ff-eb87-4fda-8287-558894c9e1a2",
+		"optionA": "Only be allowed to write the church’s seasonal greeting on a scroll",
+		"optionB": "Only be allowed to write the church’s seasonal greeting on a digital screen",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "af2a399d-392e-464b-8afa-351150abd772",
+		"optionA": "If Martha were a modern‑day event planner, would she schedule “hospitality brunches”",
+		"optionB": "If Martha were a modern‑day event planner, would she schedule “clean‑up crews”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "c3a8c6b4-223b-4fea-81d4-37340cc566f7",
+		"optionA": "Spend a night in the church’s storage closet searching for a missing candle",
+		"optionB": "Spend a night in the church’s attic searching for a missing hymn book",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "f71a4c87-3e62-4b84-894d-cd18c56df034",
+		"optionA": "Have the ability to make any church photo booth instantly produce “blessing‑filtered” pictures",
+		"optionB": "Have the ability to make any church playlist instantly include a “worship‑boost” track",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "18fae07d-726c-411a-bd52-9d954e61d7cd",
+		"optionA": "Only be able to start a meeting with “Grace and peace”",
+		"optionB": "Only be able to start a meeting with “Blessed and grateful”",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "dbf46584-344f-4d9d-ba60-5e3abb4d04c6",
+		"optionA": "If the early church held a bake‑sale, would the cookies be called “Acts of Kindness Crunch”",
+		"optionB": "If the early church held a bake‑sale, would the cupcakes be called “Epistle Delights”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "3a7bf7ae-32c3-434f-824a-db13a327fe20",
+		"optionA": "Lead the choir while wearing oversized glasses that make you look like an ancient scribe",
+		"optionB": "Lead the worship band while wearing a robe that says “Blessed” in every language",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "e3cca81f-b079-4b62-bcec-9e169a156493",
+		"optionA": "Turn the church’s cleaning schedule into a rhythmic clapping chant",
+		"optionB": "Turn the church’s volunteer sign‑up sheet into a lyrical rap verse",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "0f85e9e3-cb2b-42f3-9f6a-f608bb4e839d",
+		"optionA": "Only be allowed to reply to anyone’s story with a Psalm verse",
+		"optionB": "Only be allowed to reply to anyone’s story with a short prayer",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "a0d6d1de-0ed4-4d84-80c1-8c637159044a",
+		"optionA": "If the Beatitudes were a menu, would “Blessed are the Peacemakers Pizza” be the bestseller",
+		"optionB": "If the Beatitudes were a menu, would “Blessed are the Meek Muffins” be the bestseller",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "9feb5847-b39b-4b1a-9cd4-764899d44949",
+		"optionA": "Spend a Sunday as the person who has to hand out the “welcome” balloons and keep them from popping",
+		"optionB": "Spend a Sunday as the person who has to hand out the “thank‑you” cards and keep the ink from smudging",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "a019ae13-767a-4780-90cc-d5c686e96602",
+		"optionA": "Have the power to make any church kettle whistle a hymn melody",
+		"optionB": "Have the power to make any church door chime a prayer phrase",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "5547683c-e7e0-40e3-85ae-dd542e6b0bd1",
+		"optionA": "Only be able to close every email with “In Christ’s love”",
+		"optionB": "Only be able to close every email with “Gracefully yours”",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "7ad8ca41-7cdb-4d16-85ad-da3b1aa2d1dd",
+		"optionA": "If the apostle Paul were a motivational speaker, would his tagline be “Mission Possible”",
+		"optionB": "If the apostle Paul were a motivational speaker, would his tagline be “Road to Redemption”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "e3ee29b1-21c5-41f6-a4ea-5e265ee39279",
+		"optionA": "Live a day as the person who has to rearrange the church pews for a special event",
+		"optionB": "Live a day as the person who has to set up the outdoor baptism pool",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "eee86d8d-807e-4dbd-85f3-1162c59da85b",
+		"optionA": "Turn every “Amen” into a brief, synchronized snap",
+		"optionB": "Turn every “Hallelujah” into a quick, joyful stomp",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "895e4438-ca65-45c3-a905-481a3f9cae92",
+		"optionA": "Only be allowed to give directions using Biblical landmarks (“Turn left at the mountain of Moriah”) ",
+		"optionB": "Only be allowed to give directions using modern landmarks but ending each with a prayer (“Turn left at the grocery, then pray”) ",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "1263f249-758b-4721-91d8-9987240e68bb",
+		"optionA": "If the Israelites had a modern GPS voice, would it say “Recalculating… find the promised land”",
+		"optionB": "If the Israelites had a modern GPS voice, would it say “You have arrived at the desert, enjoy the scenery”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "e841633f-f3a4-4b1d-acf2-e49280d7ae35",
+		"optionA": "Spend a night in the church’s garden trying to water the “living water” fountain",
+		"optionB": "Spend a night in the church’s foyer trying to reorganize the “prayer wall” pins",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "5d8a7cac-6cd6-4bf5-a619-0bb02353b47b",
+		"optionA": "Have the ability to make any coffee mug emit a tiny halo when filled",
+		"optionB": "Have the ability to make any hymn book glow softly when opened",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "64b3ea75-431b-420a-ab42-74c6c4c6eefc",
+		"optionA": "Only be able to answer “Yes, Lord!” when asked to volunteer",
+		"optionB": "Only be able to answer “Absolutely!” when asked to volunteer",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "a867caf7-ba62-4808-96ac-960289096307",
+		"optionA": "If the apostle Peter were a social‑media influencer, would his tagline be “Rock‑Solid Faith”",
+		"optionB": "If the apostle Peter were a social‑media influencer, would his tagline be “Walking on Water Adventures”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "74463197-18f6-432a-97c3-980520db6754",
+		"optionA": "Lead a prayer while wearing a superhero cape that says “Faith‑Force”",
+		"optionB": "Lead a worship song while wearing giant sunglasses that say “Blessed Vision”",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "43cce095-a9c5-40d8-9a55-d88cd4144ae5",
+		"optionA": "Turn every church announcement into a short, dramatic monologue",
+		"optionB": "Turn every church announcement into a set of witty emojis",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "d1bafab3-e02c-4197-bedf-76361885a8ad",
+		"optionA": "Only be allowed to end any meeting with the phrase “Go in peace”",
+		"optionB": "Only be allowed to end any meeting with the phrase “Walk in joy”",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "8528fcc7-79f8-424f-9039-5be78c058d26",
+		"optionA": "If the early church had a loyalty program, would the points be called “faith points”",
+		"optionB": "If the early church had a loyalty program, would the points be called “grace credits”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "dc23d05b-8129-496c-b585-586176722312",
+		"optionA": "Spend a Sunday as the person who has to turn off the lights for the evening service and accidentally dim the whole building",
+		"optionB": "Spend a Sunday as the person who has to start the coffee machine and accidentally brew tea",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "f2a39760-af92-48c9-9424-9ad6475f6189",
+		"optionA": "Only be able to sign your name with a small cross symbol",
+		"optionB": "Only be able to sign your name with a tiny dove sketch",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "447cf366-1506-41f5-bbf0-067a04ad9bee",
+		"optionA": "If the apostle John wrote a modern blog, would it be called “The Word Whisperer”",
+		"optionB": "If the apostle John wrote a modern blog, would it be called “Revelations & Reviews”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "ccc5a6e1-e1eb-4bdf-a4a6-f3e09bef37b5",
+		"optionA": "Live a day as the person who has to set up the outdoor movie night and ends up tangled in the projector cords",
+		"optionB": "Live a day as the person who has to set up the indoor karaoke night and ends up with a busted microphone",
+		"category": "Church Volunteer Role Comedy"
+	},
+	{
+		"id": "bb70a474-3434-47aa-88fd-af361dd0462e",
+		"optionA": "Turn every “Amen” into a short drum roll",
+		"optionB": "Turn every “Hallelujah” into a brief trumpet fanfare",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "f8a581b9-bce5-4047-aa8b-014f2dd6a3e3",
+		"optionA": "Only be allowed to greet newcomers with a biblical proverb",
+		"optionB": "Only be allowed to greet newcomers with a short prayer",
+		"category": "Modern Faith‑Life Trade‑offs"
+	},
+	{
+		"id": "47b9b32e-9820-4c82-8806-3e09ffece0f3",
+		"optionA": "If the prodigal son opened a travel agency, would it be called “Second‑Chance Getaways”",
+		"optionB": "If the prodigal son opened a travel agency, would it be called “Homeward Bound Tours”",
+		"category": "Bible‑Character Problems Translated into Modern Life"
+	},
+	{
+		"id": "1a407545-6054-4ff9-98e5-9c9bd1aaed7e",
+		"optionA": "Spend a night in the church’s attic trying to rescue a lost hymn book from a spider web",
+		"optionB": "Spend a night in the church’s basement trying to rescue a lost communion cup from the mop bucket",
+		"category": "Biblical Situations to Survive"
+	},
+	{
+		"id": "0e825776-8619-4091-8be6-18f57a40a75e",
+		"optionA": "Have the ability to make any coffee brew taste like a “miracle morning”",
+		"optionB": "Have the ability to make any prayer feel like a “sweet retreat”",
+		"category": "Biblical Superpowers/Artifacts"
+	},
+	{
+		"id": "85475c1f-64e2-4011-9ef4-82a0e6ca236b",
+		"optionA": "Only be able to answer the phone with “Grace and peace, this is …”",
+		"optionB": "Only be able to answer the phone with “Blessings, you’ve reached …”",
+		"category": "Modern Faith‑Life Trade‑offs"
+	}
+]

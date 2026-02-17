@@ -1,0 +1,211 @@
+[
+	{
+		"id": "amen-wager-001",
+		"question": "How many chapters are in the book of Psalms?",
+		"answer": 150,
+		"unit": "chapters",
+		"category": "Books of the Bible",
+		"scriptureRef": "Psalms 1:1",
+		"funFact": "Psalms is both the longest book in the Bible and the one with the most chapters."
+	},
+	{
+		"id": "amen-wager-002",
+		"question": "How old was Methuselah when he died?",
+		"answer": 969,
+		"unit": "years",
+		"category": "Biblical Ages",
+		"scriptureRef": "Genesis 5:27",
+		"funFact": "Methuselah is the oldest person recorded in the Bible."
+	},
+	{
+		"id": "amen-wager-003",
+		"question": "How many verses mention Aaron?",
+		"answer": 331,
+		"unit": "verses",
+		"category": "Biblical Figures",
+		"funFact": "Aaron appears all across Exodus, Leviticus, and Numbers as Israel's first high priest."
+	},
+	{
+		"id": "amen-wager-004",
+		"question": "How many plagues did God send on Egypt?",
+		"answer": 10,
+		"unit": "plagues",
+		"category": "Bible Numbers",
+		"scriptureRef": "Exodus 7-12",
+		"funFact": "The final plague, the death of the firstborn, led directly to the Exodus."
+	},
+	{
+		"id": "amen-wager-005",
+		"question": "How many days did it rain during Noah's flood?",
+		"answer": 40,
+		"unit": "days",
+		"category": "Bible Numbers",
+		"scriptureRef": "Genesis 7:12",
+		"funFact": "Rain lasted 40 days, but the floodwaters remained on the earth much longer."
+	},
+	{
+		"id": "amen-wager-006",
+		"question": "How many brothers did Joseph have?",
+		"answer": 11,
+		"unit": "brothers",
+		"category": "Biblical Figures",
+		"scriptureRef": "Genesis 35:23-26",
+		"funFact": "Joseph was one of Jacob's 12 sons, the ancestors of the tribes of Israel."
+	},
+	{
+		"id": "amen-wager-007",
+		"question": "How many books are traditionally attributed to Paul?",
+		"answer": 13,
+		"unit": "books",
+		"category": "New Testament",
+		"funFact": "Paul's letters make up a major portion of the New Testament."
+	},
+	{
+		"id": "amen-wager-008",
+		"question": "How many people did Jesus feed with five loaves and two fish?",
+		"answer": 5000,
+		"unit": "people",
+		"category": "Miracles",
+		"scriptureRef": "Matthew 14:21",
+		"funFact": "The count of 5,000 only included men, so the full crowd was even larger."
+	},
+	{
+		"id": "amen-wager-009",
+		"question": "How many years did the Israelites spend in Egypt?",
+		"answer": 430,
+		"unit": "years",
+		"category": "Bible History",
+		"scriptureRef": "Exodus 12:40",
+		"funFact": "That long stay set the stage for Moses and the Exodus story."
+	},
+	{
+		"id": "amen-wager-010",
+		"question": "How many chapters are in the Gospel of Matthew?",
+		"answer": 28,
+		"unit": "chapters",
+		"category": "Gospels",
+		"funFact": "Matthew is the longest Gospel by chapter count."
+	},
+	{
+		"id": "amen-wager-011",
+		"question": "How many silver coins was Jesus betrayed for?",
+		"answer": 30,
+		"unit": "coins",
+		"category": "New Testament",
+		"scriptureRef": "Matthew 26:15",
+		"funFact": "The phrase \"30 pieces of silver\" became shorthand for betrayal."
+	},
+	{
+		"id": "amen-wager-012",
+		"question": "How many days had Lazarus been dead before Jesus raised him?",
+		"answer": 4,
+		"unit": "days",
+		"category": "Miracles",
+		"scriptureRef": "John 11:39",
+		"funFact": "Jesus waited intentionally, making the miracle undeniable to the crowd."
+	},
+	{
+		"id": "amen-wager-013",
+		"question": "How many stones did David pick up before fighting Goliath?",
+		"answer": 5,
+		"unit": "stones",
+		"category": "Old Testament",
+		"scriptureRef": "1 Samuel 17:40",
+		"funFact": "David only needed one stone, but he came prepared with five."
+	},
+	{
+		"id": "amen-wager-014",
+		"question": "How many psalms are traditionally attributed to David?",
+		"answer": 73,
+		"unit": "psalms",
+		"category": "Psalms & Proverbs",
+		"funFact": "David is the most frequently named psalm author in the superscriptions."
+	},
+	{
+		"id": "amen-wager-015",
+		"question": "How many times did Peter deny Jesus before the rooster crowed?",
+		"answer": 3,
+		"unit": "times",
+		"category": "Gospels",
+		"scriptureRef": "Luke 22:61",
+		"funFact": "Peter's three denials became one of the most memorable moments of Holy Week."
+	},
+	{
+		"id": "amen-wager-016",
+		"question": "How many sons did Jacob have?",
+		"answer": 12,
+		"unit": "sons",
+		"category": "Biblical Figures",
+		"scriptureRef": "Genesis 35:22-26",
+		"funFact": "Those 12 sons became the namesake ancestors of Israel's tribes."
+	},
+	{
+		"id": "amen-wager-017",
+		"question": "How many books are in the Old Testament?",
+		"answer": 39,
+		"unit": "books",
+		"category": "Books of the Bible",
+		"funFact": "The Old Testament spans law, history, poetry, and prophecy across centuries."
+	},
+	{
+		"id": "amen-wager-018",
+		"question": "How many stone jars of water did Jesus turn into wine at Cana?",
+		"answer": 6,
+		"unit": "jars",
+		"category": "Miracles",
+		"scriptureRef": "John 2:6",
+		"funFact": "Each jar held around 20-30 gallons, making it an astonishing amount of wine."
+	},
+	{
+		"id": "amen-wager-019",
+		"question": "How many lepers did Jesus heal at once in Luke 17?",
+		"answer": 10,
+		"unit": "lepers",
+		"category": "Miracles",
+		"scriptureRef": "Luke 17:12-14",
+		"funFact": "Only one of the ten returned to thank Jesus."
+	},
+	{
+		"id": "amen-wager-020",
+		"question": "How many chapters are in the book of Isaiah?",
+		"answer": 66,
+		"unit": "chapters",
+		"category": "Books of the Bible",
+		"funFact": "Isaiah has the same chapter count as the Bible has books in many Protestant traditions."
+	},
+	{
+		"id": "amen-wager-021",
+		"question": "How many years did Solomon reign as king over Israel?",
+		"answer": 40,
+		"unit": "years",
+		"category": "Bible History",
+		"scriptureRef": "1 Kings 11:42",
+		"funFact": "Saul, David, and Solomon are each described as reigning 40 years."
+	},
+	{
+		"id": "amen-wager-022",
+		"question": "How many books are in the New Testament?",
+		"answer": 27,
+		"unit": "books",
+		"category": "Books of the Bible",
+		"funFact": "The New Testament includes 4 Gospels, 1 Acts, 21 letters, and Revelation."
+	},
+	{
+		"id": "amen-wager-023",
+		"question": "How many days did Jonah spend inside the great fish?",
+		"answer": 3,
+		"unit": "days",
+		"category": "Old Testament",
+		"scriptureRef": "Jonah 1:17",
+		"funFact": "Jesus later used Jonah's three days as a sign pointing to His resurrection."
+	},
+	{
+		"id": "amen-wager-024",
+		"question": "How many days did Jesus fast in the wilderness?",
+		"answer": 40,
+		"unit": "days",
+		"category": "Gospels",
+		"scriptureRef": "Matthew 4:2",
+		"funFact": "The 40-day pattern echoes key testing seasons throughout Scripture."
+	}
+]
