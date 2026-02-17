@@ -6,6 +6,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+	define: {
+		__DEV__: true,
+	},
 	plugins: [react(), tsconfigPaths(), glsl()],
 	resolve: {
 		extensions: [".web.tsx", ".web.ts", ".tsx", ".ts", ".jsx", ".js", ".json"],
@@ -22,6 +25,7 @@ export default defineConfig({
 		include: [
 			"lib/**/*.test.ts",
 			"lib/**/*.test.tsx",
+			"components/**/*.test.ts",
 			"components/**/*.test.tsx",
 		],
 		globals: true,
