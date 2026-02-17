@@ -1,10 +1,21 @@
 import React from "react";
 import {
 	type DimensionValue,
+	type LayoutChangeEvent,
 	type StyleProp,
+	StyleSheet,
 	View,
 	type ViewStyle,
 } from "react-native";
+import Animated, {
+	cancelAnimation,
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withSequence,
+	withTiming,
+} from "react-native-reanimated";
 
 interface ShimmerSurfaceProps {
 	width?: DimensionValue;
@@ -29,49 +40,86 @@ export const ShimmerSurface: React.FC<ShimmerSurfaceProps> = ({
 	style,
 	children,
 }) => {
-	const id = React.useId().replace(/:/g, "");
-	const animationName = `shimmer-${id}`;
+	const shimmerX = useSharedValue(0);
+	const [surfaceWidth, setSurfaceWidth] = React.useState(
+		typeof width === "number" ? width : 0,
+	);
+	const shimmerWidth = surfaceWidth > 0 ? Math.max(40, surfaceWidth * 0.3) : 80;
 
-	const cssStyles = `
-    @keyframes ${animationName} {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-  `;
+	React.useEffect(() => {
+		if (!enabled || surfaceWidth <= 0) {
+			cancelAnimation(shimmerX);
+			shimmerX.value = 0;
+			return;
+		}
+
+		const startX = -shimmerWidth;
+		const endX = surfaceWidth + shimmerWidth;
+		shimmerX.value = startX;
+		shimmerX.value = withRepeat(
+			withSequence(
+				withTiming(endX, {
+					duration: Math.max(300, speed),
+					easing: Easing.linear,
+				}),
+				withTiming(startX, { duration: 0 }),
+			),
+			-1,
+			false,
+		);
+
+		return () => {
+			cancelAnimation(shimmerX);
+		};
+	}, [enabled, shimmerWidth, shimmerX, speed, surfaceWidth]);
+
+	const shimmerStyle = useAnimatedStyle(() => ({
+		transform: [{ translateX: shimmerX.value }],
+	}));
+
+	const handleLayout = (event: LayoutChangeEvent) => {
+		const nextWidth = event.nativeEvent.layout.width;
+		if (nextWidth > 0 && nextWidth !== surfaceWidth) {
+			setSurfaceWidth(nextWidth);
+		}
+	};
 
 	return (
 		<View
+			onLayout={handleLayout}
 			style={[
-				{
-					width,
-					height,
-					borderRadius,
-					backgroundColor: baseColor,
-					overflow: "hidden",
-					position: "relative",
-				},
+				styles.container,
+				{ width, height, borderRadius, backgroundColor: baseColor },
 				style,
 			]}
 		>
 			{enabled && (
-				<>
-					<style>{cssStyles}</style>
-					<div
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							width: "100%",
-							height: "100%",
-							background: `linear-gradient(90deg, transparent 0%, ${shimmerColor} 50%, transparent 100%)`,
-							backgroundSize: "200% 100%",
-							animation: `${animationName} ${speed}ms linear infinite`,
-							pointerEvents: "none",
-						}}
-					/>
-				</>
+				<Animated.View
+					pointerEvents="none"
+					style={[
+						styles.shimmer,
+						{
+							width: shimmerWidth,
+							backgroundColor: shimmerColor,
+						},
+						shimmerStyle,
+					]}
+				/>
 			)}
 			{children}
 		</View>
 	);
 };
+
+const styles = StyleSheet.create({
+	container: {
+		overflow: "hidden",
+		position: "relative",
+	},
+	shimmer: {
+		position: "absolute",
+		top: 0,
+		bottom: 0,
+		opacity: 0.7,
+	},
+});

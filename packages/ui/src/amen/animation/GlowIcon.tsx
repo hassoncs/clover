@@ -1,5 +1,13 @@
-import React, { type ReactNode } from "react";
+import React, { type ReactNode, useEffect } from "react";
 import { type StyleProp, StyleSheet, View, type ViewStyle } from "react-native";
+import Animated, {
+	cancelAnimation,
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withTiming,
+} from "react-native-reanimated";
 
 interface GlowIconProps {
 	children: ReactNode;
@@ -18,52 +26,64 @@ export function GlowIcon({
 	enabled = true,
 	style,
 }: GlowIconProps) {
-	const animationName = `amen-glow-breathe-${speed}-${intensity}-${color.replace(
-		"#",
-		"",
-	)}`;
+	const glowOpacity = useSharedValue(enabled ? 1 : 0.4 * intensity);
 
-	const animationStyle = enabled
-		? {
-				animation: `${animationName} ${speed}ms ease-in-out infinite`,
-			}
-		: {};
+	useEffect(() => {
+		if (!enabled) {
+			cancelAnimation(glowOpacity);
+			glowOpacity.value = withTiming(1, { duration: 180 });
+			return;
+		}
+
+		const minOpacity = Math.max(0.1, Math.min(0.9, 0.4 * intensity));
+		glowOpacity.value = minOpacity;
+		glowOpacity.value = withRepeat(
+			withTiming(1, {
+				duration: Math.max(300, speed / 2),
+				easing: Easing.inOut(Easing.ease),
+			}),
+			-1,
+			true,
+		);
+
+		return () => {
+			cancelAnimation(glowOpacity);
+		};
+	}, [enabled, glowOpacity, intensity, speed]);
+
+	const animatedGlowStyle = useAnimatedStyle(() => ({
+		opacity: glowOpacity.value,
+	}));
+
+	const shadowStrength = Math.max(0.1, intensity);
 
 	return (
 		<View style={[styles.container, style]}>
-			<View
+			<Animated.View
 				style={[
+					styles.glow,
 					{
-						filter: `drop-shadow(0 0 ${8 * intensity}px ${color})`,
-					} as any,
-					animationStyle as any,
+						shadowColor: color,
+						shadowOffset: { width: 0, height: 0 },
+						shadowOpacity: Math.min(1, 0.5 * shadowStrength),
+						shadowRadius: 8 * shadowStrength,
+						elevation: 3 + shadowStrength * 4,
+					},
+					animatedGlowStyle,
 				]}
 			>
 				{children}
-			</View>
-			{enabled && (
-				<style
-					// eslint-disable-next-line react/no-danger
-					dangerouslySetInnerHTML={{
-						__html: `
-            @keyframes ${animationName} {
-              0%, 100% { opacity: ${
-								0.4 * intensity
-							}; filter: drop-shadow(0 0 ${4 * intensity}px ${color}); }
-              50% { opacity: 1; filter: drop-shadow(0 0 ${
-								12 * intensity
-							}px ${color}); }
-            }
-          `,
-					}}
-				/>
-			)}
+			</Animated.View>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	glow: {
 		alignItems: "center",
 		justifyContent: "center",
 	},

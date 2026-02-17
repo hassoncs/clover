@@ -269,6 +269,27 @@ src/
 
 **Usage**: Import from `index.ts` - the platform-appropriate file loads automatically via Metro bundler resolution.
 
+### Animations — Cross-Platform Only (No CSS)
+All animations **must** use `react-native-reanimated` — never CSS `@keyframes`, `<style>` tags, `dangerouslySetInnerHTML`, or the CSS `animation` property. Reanimated works on both web and native Metro, so there's no reason to use web-only CSS animations.
+
+**Standard pattern:**
+```tsx
+import Animated, {
+  useAnimatedStyle, useSharedValue,
+  withRepeat, withTiming, Easing, cancelAnimation,
+} from "react-native-reanimated";
+
+const value = useSharedValue(0);
+useEffect(() => {
+  value.value = withRepeat(withTiming(1, { duration, easing: Easing.inOut(Easing.ease) }), -1, true);
+  return () => cancelAnimation(value);
+}, []);
+const style = useAnimatedStyle(() => ({ opacity: value.value }));
+return <Animated.View style={style}>{children}</Animated.View>;
+```
+
+**For components that require SVG** (e.g., feTurbulence, stroke-dashoffset animation): use the `.web.tsx` / `.native.tsx` platform split. The web version can use raw `<svg>` elements; the native version uses `react-native-reanimated` with simplified rendering. Do NOT create a bare `.tsx` shim that re-exports from `.web` — that breaks Metro's platform resolution.
+
 ### Game Source Files (r2/games/)
 Games are authored as directories of source files (`manifest.json`, `scripts/`, `prefabs/`, `entities/`). `definition.json` and `metadata.json` are auto-generated build outputs (gitignored) — never edit them directly. The `games-watcher` devmux service recompiles on source file change via `api/scripts/sync-r2.ts`.
 
