@@ -110,7 +110,7 @@ export const PANEL_REGISTRY: PanelDefinition[] = [
 		id: "wireframe",
 		title: "Wireframe",
 		component: WireframePanel,
-		defaultPlacement: "left",
+		defaultPlacement: "right",
 	},
 ];
 

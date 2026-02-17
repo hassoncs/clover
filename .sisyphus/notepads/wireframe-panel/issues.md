@@ -1,0 +1,2 @@
+- **Test Location**: The default Vitest config in `app/` only includes `lib/` and `components/`. Tests placed in `app/tests/` will not be found unless the config is updated or the tests are moved.
+- **Turbo Task Arguments**: `turbo run test -- <path>` is the correct way to pass arguments to the underlying test script if using turbo, but running `vitest` directly via `pnpm test` is often simpler for single files.

@@ -15,14 +15,14 @@ export interface LayoutConfig {
 
 export const DEFAULT_LAYOUT: LayoutConfig = {
 	left: {
-		panels: ["explorer", "hierarchy", "properties", "debug", "wireframe"],
+		panels: ["explorer", "hierarchy", "properties", "debug"],
 		width: 320,
 	},
 	center: {
 		panels: ["stage"],
 	},
 	right: {
-		panels: ["chat"],
+		panels: ["wireframe", "chat"],
 		width: 400,
 	},
 };

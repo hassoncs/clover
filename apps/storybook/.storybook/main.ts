@@ -17,6 +17,13 @@ const config: StorybookConfig = {
 
 	addons: ["@storybook/addon-essentials", "@storybook/addon-interactions"],
 
+	staticDirs: [
+		{
+			from: "../../../node_modules/.pnpm/canvaskit-wasm@0.40.0/node_modules/canvaskit-wasm/bin",
+			to: "/",
+		},
+	],
+
 	framework: {
 		name: "@storybook/react-webpack5",
 		options: {},

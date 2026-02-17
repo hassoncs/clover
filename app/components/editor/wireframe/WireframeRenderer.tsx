@@ -1,17 +1,31 @@
 import type { GameDefinition } from "@slopcade/shared";
 import * as React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { createEntityLayoutAdapter, type LayoutAdapter } from "./LayoutAdapter";
 
 interface WireframeRendererProps {
 	document: GameDefinition;
 	mode: "structural" | "production";
+	layoutAdapter?: LayoutAdapter;
 }
 
-export function WireframeRenderer({ document, mode }: WireframeRendererProps) {
-	const worldWidth = document.world.bounds?.width ?? 20;
-	const worldHeight = document.world.bounds?.height ?? 12;
+export function WireframeRenderer({
+	document,
+	mode,
+	layoutAdapter,
+}: WireframeRendererProps) {
+	const adapter = React.useMemo(
+		() => layoutAdapter || createEntityLayoutAdapter(),
+		[layoutAdapter],
+	);
 
-	// Coordinate conversion: World (Center 0,0, Y up) -> Screen % (Top-Left 0,0, Y down)
+	const layout = adapter.getLayout({ document, mode });
+
+	const worldWidth =
+		layout?.worldBounds?.width ?? document.world.bounds?.width ?? 20;
+	const worldHeight =
+		layout?.worldBounds?.height ?? document.world.bounds?.height ?? 12;
+
 	const toScreenX = (worldX: number) =>
 		((worldX + worldWidth / 2) / worldWidth) * 100;
 	const toScreenY = (worldY: number) =>
@@ -33,52 +47,18 @@ export function WireframeRenderer({ document, mode }: WireframeRendererProps) {
 		<View style={styles.container}>
 			<View style={styles.worldBounds} />
 
-			{document.entities.map((entity) => {
-				const prefab = entity.prefab ? document.prefabs[entity.prefab] : null;
+			{layout?.zones.map((zone) => {
+				const { width, height, x, y } = zone.bounds;
+				const angle = zone.rotation ?? 0;
 
-				let width = 1;
-				let height = 1;
-				let shape = "box";
-
-				const collider = entity.collider || prefab?.collider;
-				const visual = entity.visual || prefab?.visual;
-
-				if (collider) {
-					if (collider.shape === "box") {
-						width = collider.width ?? 1;
-						height = collider.height ?? 1;
-					} else if (collider.shape === "circle") {
-						width = (collider.radius ?? 0.5) * 2;
-						height = (collider.radius ?? 0.5) * 2;
-						shape = "circle";
-					}
-				} else if (visual) {
-					if (visual.type === "rect") {
-						width = visual.width ?? 1;
-						height = visual.height ?? 1;
-					} else if (visual.type === "circle") {
-						width = (visual.radius ?? 0.5) * 2;
-						height = (visual.radius ?? 0.5) * 2;
-						shape = "circle";
-					}
-				}
-
-				width *= entity.transform.scaleX ?? 1;
-				height *= entity.transform.scaleY ?? 1;
-
-				const angle =
-					"angle" in entity.transform
-						? entity.transform.angle
-						: (entity.transform as any).rotationZ || 0;
-
-				const left = toScreenX(entity.transform.x - width / 2);
-				const top = toScreenY(entity.transform.y + height / 2);
+				const left = toScreenX(x - width / 2);
+				const top = toScreenY(y + height / 2);
 				const widthPct = toScreenSize(width, "width");
 				const heightPct = toScreenSize(height, "height");
 
 				return (
 					<View
-						key={entity.id}
+						key={zone.id}
 						style={[
 							styles.entityBox,
 							{
@@ -86,17 +66,17 @@ export function WireframeRenderer({ document, mode }: WireframeRendererProps) {
 								top: `${top}%`,
 								width: `${widthPct}%`,
 								height: `${heightPct}%`,
-								borderRadius: shape === "circle" ? 999 : 0,
+								borderRadius: zone.shape === "circle" ? 999 : 0,
 								transform: [{ rotate: `${angle}rad` }],
 							},
 						]}
 					>
 						<Text style={styles.entityLabel} numberOfLines={1}>
-							{entity.name || entity.id}
+							{zone.label}
 						</Text>
-						{entity.prefab && (
+						{zone.subLabel && (
 							<Text style={styles.prefabLabel} numberOfLines={1}>
-								({entity.prefab})
+								{zone.subLabel}
 							</Text>
 						)}
 					</View>

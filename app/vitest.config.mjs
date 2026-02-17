@@ -5,11 +5,10 @@ import glsl from "vite-plugin-glsl";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 export default defineConfig({
 	plugins: [react(), tsconfigPaths(), glsl()],
 	resolve: {
+		extensions: [".web.tsx", ".web.ts", ".tsx", ".ts", ".jsx", ".js", ".json"],
 		alias: {
 			"react-native": "react-native-web",
 		},
