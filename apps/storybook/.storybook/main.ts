@@ -127,6 +127,11 @@ const config: StorybookConfig = {
 				"../../../packages/physics/src",
 			),
 			"@slopcade/shared": path.resolve(__dirname, "../../../shared/src"),
+			"expo-haptics": path.resolve(__dirname, "../stubs/expo-haptics.js"),
+			"expo-modules-core": path.resolve(
+				__dirname,
+				"../stubs/expo-modules-core.js",
+			),
 		};
 
 		config.plugins = config.plugins || [];
