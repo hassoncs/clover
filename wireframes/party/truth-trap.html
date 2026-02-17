@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truth Trap - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Lobby</div>
+  <div class="phase-tab">2. Writing Lies</div>
+  <div class="phase-tab">3. Voting</div>
+  <div class="phase-tab">4. Reveal</div>
+  <div class="phase-tab">5. Scores</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Lobby</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Scrolls of Truth</div>
+        <div class="header__subtitle">Truth Trap</div>
+      </div>
+      <div class="header__badge">4/8</div>
+    </div>
+    
+    <div class="main">
+      <div class="text-center mb-16">
+        <div class="lobby__code">DEF456</div>
+        <div class="text-muted">Share this code with friends</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Players</div>
+        <div class="players">
+          <div class="player player--ready"><div class="player__avatar">M</div><div class="player__name">Morgan</div></div>
+          <div class="player player--ready"><div class="player__avatar">K</div><div class="player__name">Kyle</div></div>
+          <div class="player player--ready"><div class="player__avatar">R</div><div class="player__name">Riley</div></div>
+          <div class="player player--ready"><div class="player__avatar">P</div><div class="player__name">Pat</div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Start Game</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Writing Lies</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Scrolls of Truth</div>
+        <div class="header__subtitle">Round 1 of 3</div>
+      </div>
+      <div class="timer">0:30</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">THE REAL FACT:</div>
+        <div class="prompt__text">
+          King Solomon had <span class="prompt__blank">______</span> wives.
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Write a Believable Lie</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">Make others think this is the real answer!</div>
+        <input class="input" type="text" placeholder="Enter a convincing number...">
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Lie</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Voting</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Scrolls of Truth</div>
+        <div class="header__subtitle">Which is the truth?</div>
+      </div>
+      <div class="timer">0:15</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt" style="font-size: 16px;">
+        King Solomon had ______ wives.
+      </div>
+      
+      <div class="choices">
+        <div class="choice">
+          <div class="choice__text">300</div>
+        </div>
+        <div class="choice choice--selected">
+          <div class="choice__text">700</div>
+        </div>
+        <div class="choice">
+          <div class="choice__text">1,000</div>
+        </div>
+        <div class="choice">
+          <div class="choice__text">500</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">This is the Truth!</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Reveal</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Scrolls of Truth</div>
+        <div class="header__subtitle">The truth revealed...</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="border-color: var(--color-success); background: rgba(76, 175, 80, 0.1);">
+        <div style="font-size: 12px; color: var(--color-success); margin-bottom: 4px;">✓ REAL ANSWER</div>
+        <div style="font-size: 24px; font-weight: 700;">700</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">1 Kings 11:3</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Who Fooled Who</div>
+        <div style="margin-bottom: 12px;">
+          <span style="font-weight: 600;">Morgan</span> wrote <span style="color: var(--color-accent);">300</span>
+          <br><span style="font-size: 12px; color: var(--color-text-muted);">Fooled: Kyle, Riley</span>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <span style="font-weight: 600;">Pat</span> wrote <span style="color: var(--color-accent);">500</span>
+          <br><span style="font-size: 12px; color: var(--color-text-muted);">Fooled: Morgan</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Round</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 5: Scores</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Scrolls of Truth</div>
+        <div class="header__subtitle">Final Scores</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="scoreboard">
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">1</div>
+          <div class="scoreboard__name">Kyle</div>
+          <div class="scoreboard__score">450</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">2</div>
+          <div class="scoreboard__name">Morgan</div>
+          <div class="scoreboard__score">380</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">3</div>
+          <div class="scoreboard__name">Riley</div>
+          <div class="scoreboard__score">320</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">4</div>
+          <div class="scoreboard__name">Pat</div>
+          <div class="scoreboard__score">290</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Home</button>
+        <button class="btn btn--accent flex-1">Play Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

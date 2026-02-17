@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rival Roster - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Champion Draw</div>
+  <div class="phase-tab">2. Challenger Draw</div>
+  <div class="phase-tab">3. Battle Reveal</div>
+  <div class="phase-tab">4. Voting</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Champion Phase</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Saints & Scribes</div>
+        <div class="header__subtitle">Rival Roster • Round 1</div>
+      </div>
+      <div class="timer">1:00</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">DRAW A CHAMPION FOR:</div>
+        <div class="prompt__text">The Bravest Prophet</div>
+      </div>
+      
+      <div class="canvas">
+        <div>[Drawing Canvas]</div>
+        <div style="font-size: 12px; margin-top: 8px;">You won't see the title during battle!</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Done Drawing</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Challenger Phase</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Saints & Scribes</div>
+        <div class="header__subtitle">You're the Challenger!</div>
+      </div>
+      <div class="timer">1:00</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center;">
+        <div style="font-size: 12px; color: var(--color-text-muted);">Jordan's Champion enters the arena...</div>
+        <div style="font-size: 48px; margin: 16px 0;">🎨</div>
+        <div style="font-size: 14px; color: var(--color-text-muted);">What is this champion?</div>
+      </div>
+      
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">DRAW YOUR CHALLENGER!</div>
+        <div class="prompt__text">Try to defeat the mystery champion</div>
+      </div>
+      
+      <div class="canvas">
+        <div>[Drawing Canvas]</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Enter the Arena!</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Battle Reveal</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Saints & Scribes</div>
+        <div class="header__subtitle">⚔️ BATTLE! ⚔️</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+        <div class="card" style="flex: 1; text-align: center;">
+          <div style="font-size: 12px; color: var(--color-primary);">Jordan's Champion</div>
+          <div style="font-size: 48px; margin: 12px 0;">🎨</div>
+          <div style="font-size: 14px; font-weight: 600;">"The Bravest Prophet"</div>
+          <div style="font-size: 12px; color: var(--color-text-muted);">Elijah</div>
+        </div>
+        <div style="display: flex; align-items: center; font-size: 24px;">⚔️</div>
+        <div class="card" style="flex: 1; text-align: center;">
+          <div style="font-size: 12px; color: var(--color-accent);">Your Challenger</div>
+          <div style="font-size: 48px; margin: 12px 0;">🎨</div>
+          <div style="font-size: 14px; font-weight: 600;">"Fire from Heaven"</div>
+        </div>
+      </div>
+      
+      <div class="prompt" style="font-size: 14px;">
+        Who wins this battle?
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Vote Now</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Voting</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Saints & Scribes</div>
+        <div class="header__subtitle">Vote for the winner!</div>
+      </div>
+      <div class="timer">0:15</div>
+    </div>
+    
+    <div class="main">
+      <div style="display: flex; gap: 16px;">
+        <div class="card choice choice--selected" style="flex: 1; text-align: center;">
+          <div style="font-size: 48px; margin: 12px 0;">🎨</div>
+          <div style="font-size: 14px; font-weight: 600;">Elijah</div>
+          <div style="font-size: 12px; color: var(--color-text-muted);">Jordan</div>
+        </div>
+        <div class="card choice" style="flex: 1; text-align: center;">
+          <div style="font-size: 48px; margin: 12px 0;">🎨</div>
+          <div style="font-size: 14px; font-weight: 600;">Fire Prophet</div>
+          <div style="font-size: 12px; color: var(--color-text-muted);">You</div>
+        </div>
+      </div>
+      
+      <div class="scoreboard mt-16">
+        <div class="scoreboard__item">
+          <div class="scoreboard__name">Jordan</div>
+          <div class="scoreboard__score">120</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__name">You</div>
+          <div class="scoreboard__score">80</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Battle</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

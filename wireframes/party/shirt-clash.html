@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shirt Clash - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Create</div>
+  <div class="phase-tab">2. Assembly</div>
+  <div class="phase-tab">3. Tournament</div>
+  <div class="phase-tab">4. Winner</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Create Icon</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Design Thy Merch</div>
+        <div class="header__subtitle">Shirt Clash</div>
+      </div>
+      <div class="timer">1:00</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">DRAW AN ICON:</div>
+        <div class="prompt__text">Something for a t-shirt design</div>
+      </div>
+      
+      <div class="canvas">
+        <div>[Drawing Canvas]</div>
+        <div style="font-size: 12px; margin-top: 8px;">Keep it simple!</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Slogan (coming next)</div>
+        <div style="font-size: 12px; color: var(--color-text-muted);">
+          After icons, you'll write slogans
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Done Drawing</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 1b: Write Slogan</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Design Thy Merch</div>
+        <div class="header__subtitle">Write a Slogan</div>
+      </div>
+      <div class="timer">0:30</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">WRITE A SLOGAN:</div>
+        <div class="prompt__text">Something catchy for a t-shirt</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Your Slogan</div>
+        <input class="input" type="text" placeholder="Write a catchy phrase...">
+      </div>
+      
+      <div class="text-center text-muted" style="font-size: 12px;">
+        Icons and slogans will be randomly paired!
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Slogan</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Assembly</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Design Thy Merch</div>
+        <div class="header__subtitle">The Algorithm Speaks!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">
+        🎲 The Algorithm has paired your designs...
+      </div>
+      
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <div class="card" style="flex: 1; min-width: 140px; text-align: center;">
+          <div style="font-size: 36px; margin-bottom: 8px;">🎨</div>
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px;">[Icon: Cross]</div>
+          <div style="font-size: 14px; background: var(--color-accent); padding: 4px 8px; border-radius: 4px;">
+            "Faith > Fear"
+          </div>
+          <div style="font-size: 10px; color: var(--color-text-muted); margin-top: 8px;">
+            Jordan's icon + Your slogan
+          </div>
+        </div>
+        
+        <div class="card" style="flex: 1; min-width: 140px; text-align: center;">
+          <div style="font-size: 36px; margin-bottom: 8px;">🎨</div>
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px;">[Icon: Dove]</div>
+          <div style="font-size: 14px; background: var(--color-primary); padding: 4px 8px; border-radius: 4px;">
+            "Let it fly"
+          </div>
+          <div style="font-size: 10px; color: var(--color-text-muted); margin-top: 8px;">
+            Your icon + Sam's slogan
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Start Tournament!</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Tournament Voting</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Design Thy Merch</div>
+        <div class="header__subtitle">Matchup 1 of 4</div>
+      </div>
+      <div class="timer">0:15</div>
+    </div>
+    
+    <div class="main">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div class="card choice choice--selected" style="flex: 1; text-align: center;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🎨</div>
+          <div style="font-size: 11px; font-weight: 600;">[Cross]</div>
+          <div style="font-size: 13px; background: var(--color-accent); padding: 4px 8px; border-radius: 4px; margin-top: 8px;">
+            "Faith > Fear"
+          </div>
+        </div>
+        
+        <div style="font-size: 20px;">VS</div>
+        
+        <div class="card choice" style="flex: 1; text-align: center;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🎨</div>
+          <div style="font-size: 11px; font-weight: 600;">[Fish]</div>
+          <div style="font-size: 13px; background: var(--color-primary); padding: 4px 8px; border-radius: 4px; margin-top: 8px;">
+            "Hooked on Grace"
+          </div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; font-size: 12px; color: var(--color-text-muted);">
+        Which shirt would you actually wear?
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Vote</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Winner</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="font-size: 48px; margin-bottom: 16px;">👕</div>
+      <div style="font-size: 24px; font-weight: 700;">Best T-Shirt!</div>
+      
+      <div class="card" style="margin-top: 16px; border-color: #f1c40f;">
+        <div style="font-size: 48px; margin-bottom: 8px;">🎨</div>
+        <div style="font-size: 11px; font-weight: 600;">[Cross Icon]</div>
+        <div style="font-size: 16px; background: var(--color-accent); padding: 8px 16px; border-radius: 8px; margin-top: 12px;">
+          "Faith > Fear"
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 12px;">
+          Created by Jordan's icon + Your slogan!
+        </div>
+      </div>
+      
+      <div class="scoreboard mt-16">
+        <div class="card__title">Contributors</div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__name">Jordan (icon)</div>
+          <div class="scoreboard__score">+300</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__name">You (slogan)</div>
+          <div class="scoreboard__score">+300</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Home</button>
+        <button class="btn btn--accent flex-1">Play Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

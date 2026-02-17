@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shader CRT - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.crt-screen { background: #000; border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.crt-content { width: 80%; height: 80%; background: #1a1a2e; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+.scanlines { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px); pointer-events: none; }
+.crt-glow { position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-shadow: inset 0 0 60px rgba(0, 255, 100, 0.1); pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. CRT Effect</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">CRT Shader Demo</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Shader CRT</div><div class="header__subtitle">Retro CRT Effect</div></div></div>
+    <div class="main">
+      <div class="crt-screen">
+        <div class="crt-content">🎮</div>
+        <div class="scanlines"></div>
+        <div class="crt-glow"></div>
+      </div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">Watch the CRT scanline effect. Tap to bounce the ball!</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

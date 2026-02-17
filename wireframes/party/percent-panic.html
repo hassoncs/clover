@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Percent Panic - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .percentage-slider {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+    .slider-track {
+      height: 8px;
+      background: var(--color-border);
+      border-radius: 4px;
+      margin: 16px 0;
+      position: relative;
+    }
+    .slider-thumb {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .bet-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    .bet-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      border: 2px solid var(--color-border);
+      background: var(--color-card);
+      cursor: pointer;
+    }
+    .bet-btn--higher {
+      border-color: var(--color-success);
+      background: rgba(76, 175, 80, 0.2);
+    }
+    .bet-btn--lower {
+      border-color: var(--color-accent);
+      background: rgba(233, 69, 96, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Agent Guess</div>
+  <div class="phase-tab">2. Group Bet</div>
+  <div class="phase-tab">3. Reveal</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Agent Guess</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">By the Numbers</div>
+        <div class="header__subtitle">Percent Panic • Round 1</div>
+      </div>
+      <div class="header__badge">Agent: Taylor</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">GUESS THE PERCENTAGE:</div>
+        <div class="prompt__text">What % of Americans say they pray daily?</div>
+      </div>
+      
+      <div class="percentage-slider">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted);">
+          <span>0%</span>
+          <span style="font-size: 24px; font-weight: 700; color: var(--color-text);">55%</span>
+          <span>100%</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-thumb"></div>
+        </div>
+        <div style="text-align: center; color: var(--color-text-muted); font-size: 12px;">
+          Drag to adjust your guess
+        </div>
+      </div>
+      
+      <div class="text-center text-muted" style="font-size: 12px;">
+        Others will bet if the real answer is HIGHER or LOWER
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Lock In Guess</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Group Bet</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">By the Numbers</div>
+        <div class="header__subtitle">Place Your Bets!</div>
+      </div>
+      <div class="timer">0:15</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">
+        What % of Americans say they pray daily?
+      </div>
+      
+      <div class="card" style="text-align: center;">
+        <div style="font-size: 12px; color: var(--color-text-muted);">Taylor guessed:</div>
+        <div style="font-size: 36px; font-weight: 700; color: var(--color-primary);">55%</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Is the real answer...</div>
+        <div class="bet-buttons">
+          <div class="bet-btn bet-btn--higher">
+            <div style="font-size: 24px;">↑</div>
+            <div>HIGHER</div>
+          </div>
+          <div class="bet-btn bet-btn--lower">
+            <div style="font-size: 24px;">↓</div>
+            <div>LOWER</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="players">
+        <div class="player"><div class="player__avatar" style="background: var(--color-success);">K</div><div class="player__name">Kyle: Higher</div></div>
+        <div class="player"><div class="player__avatar" style="background: var(--color-accent);">R</div><div class="player__name">Riley: Lower</div></div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Lock In Bet</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Reveal</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">By the Numbers</div>
+        <div class="header__subtitle">The Truth!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center; border-color: var(--color-success);">
+        <div style="font-size: 12px; color: var(--color-text-muted);">The real answer:</div>
+        <div style="font-size: 48px; font-weight: 700; color: var(--color-success);">58%</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Pew Research 2020</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Results</div>
+        <div style="margin-bottom: 12px;">
+          <span style="font-weight: 600;">Taylor</span> guessed 55%
+          <span style="color: var(--color-success);"> → +300 (close!)</span>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <span style="font-weight: 600;">Kyle</span> bet HIGHER
+          <span style="color: var(--color-success);"> → +200 ✓</span>
+        </div>
+        <div>
+          <span style="font-weight: 600;">Riley</span> bet LOWER
+          <span style="color: var(--color-accent);"> → +0 ✗</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Round</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

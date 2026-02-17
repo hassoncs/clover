@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gem Crush - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .gem-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+      background: #111;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .gem {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .gem--red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .gem--blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .gem--green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .gem--yellow { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+    .gem--purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .gem--selected {
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Gameplay</div>
+  <div class="phase-tab">2. Match Animation</div>
+  <div class="phase-tab">3. Level Complete</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Gameplay</div>
+  <div class="wireframe" style="background: linear-gradient(180deg, #1a0a2e 0%, #0a0a1a 100%);">
+    <div class="arcade-hud">
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">SCORE</div>
+        <div style="font-size: 20px; color: #f1c40f;">12,450</div>
+      </div>
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">MOVES</div>
+        <div style="font-size: 16px;">18</div>
+      </div>
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">TARGET</div>
+        <div style="font-size: 16px;">5000</div>
+      </div>
+    </div>
+    
+    <div class="main" style="padding-top: 60px;">
+      <div class="gem-grid">
+        <div class="gem gem--red"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--green gem--selected"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--blue"></div>
+        
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--green gem--selected"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--purple"></div>
+        
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--red"></div>
+        
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--yellow"></div>
+        
+        <div class="gem gem--green"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--purple"></div>
+        
+        <div class="gem gem--red"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--green"></div>
+        
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--blue"></div>
+        
+        <div class="gem gem--purple"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--red"></div>
+        <div class="gem gem--blue"></div>
+        <div class="gem gem--yellow"></div>
+        <div class="gem gem--green"></div>
+        <div class="gem gem--purple"></div>
+      </div>
+    </div>
+    
+    <div class="input-area" style="background: transparent; text-align: center;">
+      <div style="color: rgba(255,255,255,0.3); font-size: 12px;">Tap two adjacent gems to swap</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Match Animation</div>
+  <div class="wireframe" style="background: linear-gradient(180deg, #1a0a2e 0%, #0a0a1a 100%);">
+    <div class="arcade-hud">
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">SCORE</div>
+        <div style="font-size: 20px; color: #f1c40f;">12,850</div>
+      </div>
+    </div>
+    
+    <div class="main" style="padding-top: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="font-size: 48px; margin-bottom: 16px;">💎</div>
+      <div style="font-size: 32px; font-weight: 700; color: #2ecc71;">+400!</div>
+      <div style="font-size: 14px; color: var(--color-text-muted);">4 gems matched!</div>
+      
+      <div class="progress" style="width: 200px; margin-top: 24px;">
+        <div class="progress__bar" style="width: 75%;"></div>
+      </div>
+      <div style="font-size: 12px; color: var(--color-text-muted);">Target: 5000</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 3: Level Complete</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+      <div style="font-size: 24px; font-weight: 700;">Level Complete!</div>
+      
+      <div class="card" style="width: 220px; margin-top: 16px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Score</div>
+          <div style="font-weight: 700;">12,850</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Matches</div>
+          <div style="font-weight: 700;">42</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div style="color: var(--color-text-muted);">Stars</div>
+          <div style="color: #f1c40f;">⭐⭐⭐</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Level →</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruin and Redeem - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Ruining</div>
+  <div class="phase-tab">2. Redeeming</div>
+  <div class="phase-tab">3. Voting</div>
+  <div class="phase-tab">4. Reveal</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Ruining</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Grace & Mischief</div>
+        <div class="header__subtitle">Ruin and Redeem • Round 1</div>
+      </div>
+      <div class="header__badge">😈 Imp Mode</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center; background: rgba(76, 175, 80, 0.1); border-color: var(--color-success);">
+        <div style="font-size: 12px; color: var(--color-success);">THE BLESSING:</div>
+        <div style="font-size: 18px; font-weight: 600;">Finding a $100 bill on the ground</div>
+      </div>
+      
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-accent); margin-bottom: 8px;">😈 RUIN IT!</div>
+        <div class="prompt__text">Write a hilarious way this blessing goes wrong</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Your Ruin</div>
+        <textarea class="input" rows="3" placeholder="How does this go terribly wrong?"></textarea>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--accent btn--full">😈 Ruin It!</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Redeeming</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Grace & Mischief</div>
+        <div class="header__subtitle">Time to Redeem!</div>
+      </div>
+      <div class="header__badge" style="background: var(--color-success);">😇 Angel Mode</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="background: rgba(233, 69, 96, 0.1); border-color: var(--color-accent);">
+        <div style="font-size: 12px; color: var(--color-accent);">THE RUINED SITUATION:</div>
+        <div style="font-size: 14px; margin-top: 8px;"><strong>Original:</strong> Finding a $100 bill on the ground</div>
+        <div style="font-size: 14px; margin-top: 8px;"><strong>Ruined by Sam:</strong> "It's a counterfeit bill and now the FBI is knocking on your door"</div>
+      </div>
+      
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-success); margin-bottom: 8px;">😇 REDEEM IT!</div>
+        <div class="prompt__text">Write a way to turn this disaster into a blessing</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Your Redemption</div>
+        <textarea class="input" rows="3" placeholder="How do you save this situation?"></textarea>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--success btn--full">😇 Redeem It!</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Voting</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Grace & Mischief</div>
+        <div class="header__subtitle">Vote for the best redemption!</div>
+      </div>
+      <div class="timer">0:20</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="background: rgba(233, 69, 96, 0.1);">
+        <div style="font-size: 12px; color: var(--color-text-muted);">Situation:</div>
+        <div style="font-size: 14px;">Counterfeit $100 → FBI investigation</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Which redemption is best?</div>
+        <div class="choices">
+          <div class="choice">
+            <div class="choice__text">"Your testimony helps catch a major counterfeiter — you're a hero!"</div>
+            <div class="choice__author">— Taylor</div>
+          </div>
+          <div class="choice choice--selected">
+            <div class="choice__text">"The FBI agent is so impressed by your honesty, they hire you as a consultant!"</div>
+            <div class="choice__author">— You</div>
+          </div>
+          <div class="choice">
+            <div class="choice__text">"Turns out it's actually real money from a time traveler!"</div>
+            <div class="choice__author">— Jordan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Vote</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Reveal</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Grace & Mischief</div>
+        <div class="header__subtitle">Results!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="border-color: var(--color-success); background: rgba(76, 175, 80, 0.1);">
+        <div style="font-size: 12px; color: var(--color-success);">🏆 WINNER:</div>
+        <div style="font-size: 16px; font-weight: 600; margin-top: 8px;">"The FBI agent is so impressed..."</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">— You • +300 points</div>
+      </div>
+      
+      <div class="scoreboard mt-16">
+        <div class="card__title">Round Scores</div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">1</div>
+          <div class="scoreboard__name">You</div>
+          <div class="scoreboard__score">300</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">2</div>
+          <div class="scoreboard__name">Taylor</div>
+          <div class="scoreboard__score">200</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">3</div>
+          <div class="scoreboard__name">Jordan</div>
+          <div class="scoreboard__score">100</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Round</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

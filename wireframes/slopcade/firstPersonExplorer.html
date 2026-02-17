@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>First Person Explorer - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.fps-view { background: linear-gradient(180deg, #4a90d9 0%, #87CEEB 30%, #228B22 60%, #1a4a1a 100%); border-radius: 8px; aspect-ratio: 3/4; display: flex; align-items: flex-end; justify-content: center; position: relative; }
+.fps-crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; }
+.fps-crosshair::before, .fps-crosshair::after { content: ''; position: absolute; background: rgba(255,255,255,0.8); }
+.fps-crosshair::before { width: 2px; height: 20px; left: 9px; }
+.fps-crosshair::after { width: 20px; height: 2px; top: 9px; }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Explore</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">First Person View</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">First Person Explorer</div><div class="header__subtitle">3D Movement Test</div></div></div>
+    <div class="main">
+      <div class="fps-view"><div class="fps-crosshair"></div></div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">WASD to move • Mouse/Touch to look</div>
+    </div>
+    <div class="input-area" style="display: flex; gap: 8px;">
+      <div style="flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+        <div></div><div style="background: var(--color-card); padding: 12px; text-align: center; border-radius: 4px;">↑</div><div></div>
+        <div style="background: var(--color-card); padding: 12px; text-align: center; border-radius: 4px;">←</div><div style="background: var(--color-card); padding: 12px; text-align: center; border-radius: 4px;">↓</div><div style="background: var(--color-card); padding: 12px; text-align: center; border-radius: 4px;">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

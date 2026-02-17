@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slopeggle - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .peg-board {
+      position: relative;
+      aspect-ratio: 3/4;
+      background: linear-gradient(180deg, #1a1a4a 0%, #2a2a6a 100%);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .peg {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+    .peg--blue {
+      background: radial-gradient(circle at 30% 30%, #6cf, #36f);
+    }
+    .peg--orange {
+      background: radial-gradient(circle at 30% 30%, #f96, #f60);
+      box-shadow: 0 0 12px #f60;
+    }
+    .cannon {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 20px;
+      background: #555;
+      border-radius: 4px;
+    }
+    .aim-line {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      width: 2px;
+      height: 60px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.8), transparent);
+      transform-origin: top center;
+      transform: translateX(-50%) rotate(-15deg);
+    }
+    .bucket {
+      position: absolute;
+      bottom: 0;
+      width: 50px;
+      height: 20px;
+      background: #333;
+      border-radius: 0 0 8px 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Aim</div>
+  <div class="phase-tab">2. In Play</div>
+  <div class="phase-tab">3. Results</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Aim Mode</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Slopeggle</div>
+        <div class="header__subtitle">Level 5</div>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="color: var(--color-text-muted); font-size: 12px;">Balls: <span style="color: #f60; font-weight: 700;">10</span></div>
+        <div style="color: var(--color-text-muted); font-size: 12px;">Orange: <span style="color: #f60; font-weight: 700;">10/10</span></div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="peg-board">
+        <div class="cannon"></div>
+        <div class="aim-line"></div>
+        
+        <div class="peg peg--orange" style="top: 80px; left: 30px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 80px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 130px;"></div>
+        <div class="peg peg--orange" style="top: 80px; left: 180px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 230px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 280px;"></div>
+        
+        <div class="peg peg--blue" style="top: 120px; left: 50px;"></div>
+        <div class="peg peg--orange" style="top: 120px; left: 100px;"></div>
+        <div class="peg peg--blue" style="top: 120px; left: 150px;"></div>
+        <div class="peg peg--blue" style="top: 120px; left: 200px;"></div>
+        <div class="peg peg--orange" style="top: 120px; left: 260px;"></div>
+        
+        <div class="peg peg--blue" style="top: 160px; left: 70px;"></div>
+        <div class="peg peg--blue" style="top: 160px; left: 120px;"></div>
+        <div class="peg peg--orange" style="top: 160px; left: 170px;"></div>
+        <div class="peg peg--blue" style="top: 160px; left: 220px;"></div>
+        <div class="peg peg--blue" style="top: 160px; left: 270px;"></div>
+        
+        <div class="bucket" style="left: 50px;"></div>
+        <div class="bucket" style="left: 150px;"></div>
+        <div class="bucket" style="left: 250px;"></div>
+      </div>
+      
+      <div style="text-align: center; font-size: 12px; color: var(--color-text-muted);">
+        Touch and hold to aim, release to fire!
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Ball In Play</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Slopeggle</div>
+        <div class="header__subtitle">Level 5</div>
+      </div>
+      <div style="color: var(--color-text-muted); font-size: 12px;">Balls: <span style="color: #f60; font-weight: 700;">9</span></div>
+    </div>
+    
+    <div class="main">
+      <div class="peg-board">
+        <div class="cannon"></div>
+        
+        <div class="peg peg--orange" style="top: 80px; left: 30px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 80px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 130px;"></div>
+        <div class="peg peg--orange" style="top: 80px; left: 180px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 230px;"></div>
+        <div class="peg peg--blue" style="top: 80px; left: 280px;"></div>
+        
+        <div class="peg peg--blue" style="top: 120px; left: 50px;"></div>
+        <div class="peg peg--orange" style="top: 120px; left: 100px; box-shadow: 0 0 20px #f60, 0 0 40px #f60;"></div>
+        <div class="peg peg--blue" style="top: 120px; left: 150px;"></div>
+        <div class="peg peg--blue" style="top: 120px; left: 200px;"></div>
+        <div class="peg peg--orange" style="top: 120px; left: 260px;"></div>
+        
+        <div style="position: absolute; top: 140px; left: 105px; width: 12px; height: 12px; background: radial-gradient(circle at 30% 30%, #fff, #ccc); border-radius: 50%;"></div>
+        
+        <div class="bucket" style="left: 50px;"></div>
+        <div class="bucket" style="left: 150px;"></div>
+        <div class="bucket" style="left: 250px;"></div>
+      </div>
+      
+      <div style="text-align: center;">
+        <div style="font-size: 24px; font-weight: 700; color: #f60;">+100!</div>
+        <div style="font-size: 12px; color: var(--color-text-muted);">9 orange pegs remaining</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 3: Level Complete</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+      <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Level Complete!</div>
+      
+      <div class="card" style="width: 220px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Score</div>
+          <div style="font-weight: 700;">8,450</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Orange Pegs</div>
+          <div style="font-weight: 700; color: #f60;">10/10</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Balls Left</div>
+          <div style="font-weight: 700;">+500 bonus</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div style="color: var(--color-text-muted);">Balls Used</div>
+          <div style="font-weight: 700;">5</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Level 6 →</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -2,8 +2,12 @@ import type { StorybookConfig } from "@storybook/react-webpack5";
 import autoprefixer from "autoprefixer";
 import path from "path";
 import tailwindcss from "tailwindcss";
+import { fileURLToPath } from "url";
 import type { Configuration, RuleSetRule } from "webpack";
 import webpack from "webpack";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const packagesPath = path.resolve(__dirname, "../../../packages");
 const sharedPath = path.resolve(__dirname, "../../../shared");

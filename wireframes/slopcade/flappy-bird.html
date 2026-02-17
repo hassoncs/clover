@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .game-pipe {
+      position: absolute;
+      width: 60px;
+      background: linear-gradient(90deg, #2d5016, #4a7c23);
+      border-radius: 4px;
+    }
+    .game-bird {
+      position: absolute;
+      width: 34px;
+      height: 24px;
+      background: #f4d03f;
+      border-radius: 50%;
+      left: 80px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .game-ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, #5d4037, #3e2723);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Title</div>
+  <div class="phase-tab">2. Gameplay</div>
+  <div class="phase-tab">3. Game Over</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Title</div>
+  <div class="wireframe" style="background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);">
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 8px;">🐦</div>
+        <div style="font-size: 32px; font-weight: 700; color: #333; text-shadow: 2px 2px 0 #fff;">Flappy Bird</div>
+        <div style="font-size: 14px; color: #555; margin-top: 8px;">Tap to fly through the pipes!</div>
+      </div>
+      
+      <div class="card mt-16" style="width: 100%; max-width: 200px;">
+        <div class="card__title">High Score</div>
+        <div style="font-size: 24px; font-weight: 700; text-align: center; color: var(--color-accent);">42</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--accent btn--full">Tap to Play</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Gameplay</div>
+  <div class="wireframe" style="position: relative; background: linear-gradient(180deg, #87CEEB 0%, #98FB98 80%);">
+    <div class="arcade-hud">
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">SCORE</div>
+        <div style="font-size: 24px;">3</div>
+      </div>
+      <div class="arcade-hud__item">
+        <button class="btn btn--outline" style="padding: 4px 8px; font-size: 12px;">⏸</button>
+      </div>
+    </div>
+    
+    <div class="game-bird" style="top: 40%;"></div>
+    
+    <div class="game-pipe" style="height: 120px; left: 200px; top: 0;"></div>
+    <div class="game-pipe" style="height: 200px; left: 200px; bottom: 60px;"></div>
+    
+    <div class="game-pipe" style="height: 150px; left: 300px; top: 0;"></div>
+    <div class="game-pipe" style="height: 170px; left: 300px; bottom: 60px;"></div>
+    
+    <div class="game-ground"></div>
+    
+    <div class="touch-zone" style="position: absolute; bottom: 80px; left: 16px; right: 16px; background: transparent; border: none; color: rgba(255,255,255,0.5);">
+      TAP ANYWHERE TO FLAP
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 3: Game Over</div>
+  <div class="wireframe" style="background: linear-gradient(180deg, #87CEEB 0%, #98FB98 80%);">
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: #c0392b; margin-bottom: 16px;">Game Over!</div>
+        
+        <div class="card" style="width: 220px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div style="color: var(--color-text-muted);">Score</div>
+            <div style="font-weight: 700;">3</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div style="color: var(--color-text-muted);">Best</div>
+            <div style="font-weight: 700; color: var(--color-success);">42</div>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="color: var(--color-text-muted);">Total Pipes</div>
+            <div style="font-weight: 700;">156</div>
+          </div>
+        </div>
+        
+        <div class="card" style="width: 220px; background: rgba(76, 175, 80, 0.2); border-color: var(--color-success);">
+          <div style="font-size: 14px; color: var(--color-success);">🎉 New High Score!</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Menu</button>
+        <button class="btn btn--accent flex-1">Retry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

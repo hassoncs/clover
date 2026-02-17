@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chain Reaction - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Reaction</div>
+  <div class="phase-tab">2. Challenge</div>
+  <div class="phase-tab">3. Voting</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Word Reaction</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Word Chain</div>
+        <div class="header__subtitle">Chain Reaction • Round 1</div>
+      </div>
+      <div class="timer">0:10</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center;">
+        <div style="font-size: 12px; color: var(--color-text-muted);">Current word:</div>
+        <div style="font-size: 36px; font-weight: 700;">BREAD</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Your Related Word</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">
+          Type a word that connects to "BREAD"
+        </div>
+        <input class="input" type="text" placeholder="Your word...">
+      </div>
+      
+      <div class="players">
+        <div class="player"><div class="player__avatar">J</div><div class="player__name">Jordan</div></div>
+        <div class="player"><div class="player__avatar">S</div><div class="player__name">Sam</div></div>
+        <div class="player"><div class="player__avatar">A</div><div class="player__name">Alex</div></div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Word</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Challenge</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Word Chain</div>
+        <div class="header__subtitle">Challenge Time!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center; margin-bottom: 16px;">
+        <div style="font-size: 12px; color: var(--color-text-muted);">BREAD →</div>
+        <div style="font-size: 24px; font-weight: 700;">TOASTER</div>
+        <div style="font-size: 12px; color: var(--color-text-muted);">— Sam</div>
+      </div>
+      
+      <div class="prompt" style="font-size: 16px;">
+        Is "TOASTER" a valid connection to "BREAD"?
+      </div>
+      
+      <div class="choices">
+        <div class="choice">
+          <div class="choice__text">✓ Valid Connection</div>
+          <div class="choice__author">Accept the chain</div>
+        </div>
+        <div class="choice choice--selected">
+          <div class="choice__text">✗ Challenge!</div>
+          <div class="choice__author">Call for a vote</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Accept</button>
+        <button class="btn btn--accent flex-1">Challenge!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Justification Vote</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Word Chain</div>
+        <div class="header__subtitle">Vote on the challenge!</div>
+      </div>
+      <div class="timer">0:15</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center; margin-bottom: 16px;">
+        <div style="font-size: 12px; color: var(--color-text-muted);">Sam's justification:</div>
+        <div style="font-size: 16px; font-style: italic;">"You put bread IN a toaster to make toast!"</div>
+      </div>
+      
+      <div class="prompt" style="font-size: 14px;">
+        Is this a valid connection?
+      </div>
+      
+      <div class="choices">
+        <div class="choice">
+          <div class="choice__text">✓ Valid</div>
+          <div class="choice__author">Keep the chain going</div>
+        </div>
+        <div class="choice choice--selected">
+          <div class="choice__text">✗ Invalid</div>
+          <div class="choice__author">Break the chain!</div>
+        </div>
+      </div>
+      
+      <div class="progress">
+        <div class="progress__bar" style="width: 66%"></div>
+      </div>
+      <div class="text-muted text-center" style="font-size: 12px;">2 of 3 voted</div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Vote</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

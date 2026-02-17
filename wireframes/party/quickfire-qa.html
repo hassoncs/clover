@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quickfire Q&A - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .trivia-option { transition: all 0.2s; }
+    .trivia-option--correct { background: rgba(76, 175, 80, 0.3); border-color: var(--color-success); }
+    .trivia-option--wrong { background: rgba(233, 69, 96, 0.3); border-color: var(--color-accent); }
+  </style>
+</head>
+<body>
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Question</div>
+  <div class="phase-tab">2. Answering</div>
+  <div class="phase-tab">3. Reveal</div>
+</div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Screen 1: Question</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Great Hall of Wisdom</div>
+        <div class="header__subtitle">Quickfire Q&A • Q1/10</div>
+      </div>
+      <div class="timer timer--danger">0:08</div>
+    </div>
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">CATEGORY: Old Testament</div>
+        <div class="prompt__text" style="font-size: 18px;">How many books are in the Old Testament?</div>
+      </div>
+      <div class="choices">
+        <div class="choice trivia-option"><div class="choice__text">27</div></div>
+        <div class="choice trivia-option trivia-option--correct choice--selected"><div class="choice__text">39</div></div>
+        <div class="choice trivia-option"><div class="choice__text">46</div></div>
+        <div class="choice trivia-option"><div class="choice__text">66</div></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+        <div style="color: var(--color-success);">+500 points if correct!</div>
+        <div style="color: var(--color-text-muted);">Speed bonus: 2x</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Screen 2: Multiplayer Racing</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Great Hall of Wisdom</div>
+        <div class="header__subtitle">Who answered first?</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="prompt" style="font-size: 16px;">
+        How many books are in the Old Testament?
+      </div>
+      <div class="card">
+        <div class="card__title">Answer Order</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(241, 196, 15, 0.2); border-radius: 4px;">
+            <span>🥇 You</span>
+            <span>39 • 1.2s</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(192, 192, 192, 0.2); border-radius: 4px;">
+            <span>🥈 Taylor</span>
+            <span>39 • 3.5s</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(205, 127, 50, 0.2); border-radius: 4px;">
+            <span>🥉 Jordan</span>
+            <span>46 • 5.8s ✗</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Question</button>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Screen 3: Scores</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Great Hall of Wisdom</div>
+        <div class="header__subtitle">Final Scores</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="scoreboard">
+        <div class="scoreboard__item"><div class="scoreboard__rank">1</div><div class="scoreboard__name">You</div><div class="scoreboard__score">4,850</div></div>
+        <div class="scoreboard__item"><div class="scoreboard__rank">2</div><div class="scoreboard__name">Taylor</div><div class="scoreboard__score">3,200</div></div>
+        <div class="scoreboard__item"><div class="scoreboard__rank">3</div><div class="scoreboard__name">Jordan</div><div class="scoreboard__score">2,100</div></div>
+      </div>
+      <div class="card mt-16" style="text-align: center;">
+        <div style="font-size: 12px; color: var(--color-text-muted);">You got 8/10 correct!</div>
+        <div style="font-size: 14px; color: var(--color-success); margin-top: 8px;">Speed bonus: +500</div>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Home</button>
+        <button class="btn btn--accent flex-1">Play Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

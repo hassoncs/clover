@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minefield - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .mine-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      background: #1a1a2e;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .mine-cell {
+      aspect-ratio: 1;
+      background: #2d3a5a;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .mine-cell--revealed {
+      background: #16213e;
+    }
+    .mine-cell--flagged {
+      background: #2d3a5a;
+      color: #e74c3c;
+    }
+    .mine-cell--mine {
+      background: #c0392b;
+    }
+    .mine-cell--num1 { color: #3498db; }
+    .mine-cell--num2 { color: #2ecc71; }
+    .mine-cell--num3 { color: #e74c3c; }
+  </style>
+</head>
+<body>
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Gameplay</div>
+  <div class="phase-tab">2. Win</div>
+  <div class="phase-tab">3. Lose</div>
+</div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Screen 1: Gameplay</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Minefield</div>
+        <div class="header__subtitle">Minesweeper</div>
+      </div>
+      <div style="display: flex; gap: 16px;">
+        <div style="color: var(--color-accent);">💣 10</div>
+        <div style="color: var(--color-success);">🚩 3</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="mine-grid">
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell mine-cell--revealed"></div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell mine-cell--flagged">🚩</div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num2">2</div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num2">2</div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num2">2</div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell mine-cell--revealed"></div>
+        <div class="mine-cell mine-cell--revealed"></div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell mine-cell--revealed"></div>
+        <div class="mine-cell mine-cell--revealed"></div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell mine-cell--revealed mine-cell--num1">1</div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell mine-cell--revealed"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+        <div class="mine-cell"></div>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 16px; margin-top: 12px;">
+        <button class="btn btn--outline" style="font-size: 12px;">Tap: Reveal</button>
+        <button class="btn btn--outline" style="font-size: 12px;">Hold: Flag</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Screen 2: Win!</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+      <div style="font-size: 24px; font-weight: 700;">Cleared!</div>
+      <div class="card" style="margin-top: 16px; width: 200px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Time</div>
+          <div style="font-weight: 700;">2:34</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Best</div>
+          <div style="font-weight: 700; color: var(--color-success);">1:52</div>
+        </div>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Menu</button>
+        <button class="btn btn--primary flex-1">Next Level</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Screen 3: Boom!</div>
+  <div class="wireframe">
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 16px;">💥</div>
+        <div style="font-size: 24px; font-weight: 700; color: var(--color-accent);">BOOM!</div>
+        <div style="font-size: 14px; color: var(--color-text-muted); margin-top: 8px;">You hit a mine!</div>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Menu</button>
+        <button class="btn btn--accent flex-1">Retry</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

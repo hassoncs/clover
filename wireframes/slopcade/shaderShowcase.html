@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shader Showcases - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.shader-preview { background: #000; border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.shader-rainbow { background: linear-gradient(45deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0080ff, #8000ff); background-size: 400% 400%; animation: rainbow 3s ease infinite; }
+@keyframes rainbow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.shader-crt { background: #111; }
+.scanlines { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 1px, transparent 1px, transparent 2px); }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Shader Preview</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Shader Demo</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Shader Showcase</div><div class="header__subtitle">Visual Effects Demo</div></div></div>
+    <div class="main">
+      <div class="shader-preview shader-rainbow"><div style="font-size: 14px; color: white; text-shadow: 0 0 10px rgba(0,0,0,0.5);">Rainbow Swirl</div></div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">Tap to cycle through shader effects</div>
+      <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+        <div style="padding: 8px 16px; background: var(--color-card); border-radius: 16px; font-size: 12px;">Rainbow</div>
+        <div style="padding: 8px 16px; background: var(--color-primary); border-radius: 16px; font-size: 12px;">CRT</div>
+        <div style="padding: 8px 16px; background: var(--color-card); border-radius: 16px; font-size: 12px;">Distort</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

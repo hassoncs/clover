@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .snake-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2px;
+      background: #111;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .snake-cell {
+      aspect-ratio: 1;
+      background: #1a1a2e;
+      border-radius: 2px;
+    }
+    .snake-cell--snake {
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+    .snake-cell--head {
+      background: linear-gradient(135deg, #27ae60, #1e8449);
+      border-radius: 4px;
+    }
+    .snake-cell--food {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Gameplay</div>
+  <div class="phase-tab">2. Game Over</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Gameplay</div>
+  <div class="wireframe" style="background: #111;">
+    <div class="arcade-hud">
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">SCORE</div>
+        <div style="font-size: 24px;">42</div>
+      </div>
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">HIGH</div>
+        <div style="font-size: 18px;">128</div>
+      </div>
+    </div>
+    
+    <div class="main" style="padding: 60px 16px 16px;">
+      <div class="snake-grid">
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell snake-cell--food"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell snake-cell--snake"></div>
+        <div class="snake-cell snake-cell--snake"></div>
+        <div class="snake-cell snake-cell--snake"></div>
+        <div class="snake-cell snake-cell--head"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+        <div class="snake-cell"></div>
+      </div>
+    </div>
+    
+    <div class="input-area" style="background: #111; text-align: center; padding: 24px;">
+      <div style="color: var(--color-text-muted); font-size: 12px;">Swipe ↑ ↓ ← → to control</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Game Over</div>
+  <div class="wireframe">
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 16px;">💀</div>
+        <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Game Over!</div>
+        
+        <div class="card" style="width: 200px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div style="color: var(--color-text-muted);">Score</div>
+            <div style="font-weight: 700;">42</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div style="color: var(--color-text-muted);">Length</div>
+            <div style="font-weight: 700;">42 segments</div>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="color: var(--color-text-muted);">Best</div>
+            <div style="font-weight: 700; color: var(--color-success);">128</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Menu</button>
+        <button class="btn btn--accent flex-1">Retry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

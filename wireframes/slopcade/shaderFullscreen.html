@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Fullscreen Shader - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.fullscreen-shader { background: conic-gradient(from 0deg at 50% 50%, #ff0080, #ff8c00, #ffff00, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080); border-radius: 8px; aspect-ratio: 1; animation: swirl 3s linear infinite; }
+@keyframes swirl { from { transform: rotate(0deg) scale(1); } to { transform: rotate(360deg) scale(1.1); } }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Fullscreen</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Fullscreen Shader MVP</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Fullscreen Shader</div><div class="header__subtitle">Pure Shader Demo</div></div></div>
+    <div class="main">
+      <div class="fullscreen-shader"></div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">A full-screen rainbow swirl shader with no entities or physics — pure shader MVP</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

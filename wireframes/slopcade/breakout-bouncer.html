@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breakout Bouncer - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .brick-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      padding: 8px;
+    }
+    .brick {
+      height: 16px;
+      border-radius: 2px;
+    }
+    .brick--red { background: linear-gradient(180deg, #e74c3c, #c0392b); }
+    .brick--orange { background: linear-gradient(180deg, #e67e22, #d35400); }
+    .brick--yellow { background: linear-gradient(180deg, #f1c40f, #f39c12); }
+    .brick--green { background: linear-gradient(180deg, #2ecc71, #27ae60); }
+    .brick--blue { background: linear-gradient(180deg, #3498db, #2980b9); }
+    .brick--purple { background: linear-gradient(180deg, #9b59b6, #8e44ad); }
+    .paddle {
+      position: absolute;
+      width: 80px;
+      height: 12px;
+      background: linear-gradient(180deg, #fff, #ccc);
+      border-radius: 6px;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .ball {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: radial-gradient(circle at 30% 30%, #fff, #ccc);
+      border-radius: 50%;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Gameplay</div>
+  <div class="phase-tab">2. Level Complete</div>
+  <div class="phase-tab">3. Game Over</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Gameplay</div>
+  <div class="wireframe" style="background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 100%);">
+    <div class="arcade-hud">
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">SCORE</div>
+        <div style="font-size: 20px; color: #0ff;">12,450</div>
+      </div>
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">LIVES</div>
+        <div style="font-size: 16px;">❤️❤️❤️</div>
+      </div>
+      <div class="arcade-hud__item">
+        <div style="font-size: 12px; color: #ccc;">LEVEL</div>
+        <div style="font-size: 16px;">3</div>
+      </div>
+    </div>
+    
+    <div class="main" style="padding-top: 60px; position: relative;">
+      <div class="brick-grid">
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--purple"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--blue"></div>
+        <div class="brick brick--green"></div>
+        <div class="brick brick--green"></div>
+        <div class="brick brick--green"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick brick--green"></div>
+        <div class="brick brick--green"></div>
+        <div class="brick brick--green"></div>
+        <div class="brick brick--yellow"></div>
+        <div class="brick brick--yellow"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick brick--yellow"></div>
+        <div class="brick brick--yellow"></div>
+        <div class="brick brick--orange"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick brick--orange"></div>
+        <div class="brick brick--red"></div>
+        <div class="brick brick--red"></div>
+        <div class="brick brick--red"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick brick--red"></div>
+        <div class="brick brick--red"></div>
+        <div class="brick brick--red"></div>
+      </div>
+      
+      <div class="ball"></div>
+      <div class="paddle"></div>
+    </div>
+    
+    <div class="input-area" style="background: transparent; text-align: center;">
+      <div style="color: rgba(255,255,255,0.3); font-size: 12px;">← Drag paddle →</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Level Complete</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="font-size: 48px; margin-bottom: 16px;">🎊</div>
+      <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Level 3 Complete!</div>
+      
+      <div class="card" style="width: 220px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Score</div>
+          <div style="font-weight: 700;">12,450</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Bricks</div>
+          <div style="font-weight: 700;">48/48</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div style="color: var(--color-text-muted);">Time</div>
+          <div style="font-weight: 700;">1:23</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Level 4 →</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 3: Game Over</div>
+  <div class="wireframe">
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 16px;">💔</div>
+        <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Game Over</div>
+        
+        <div class="card" style="width: 200px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div style="color: var(--color-text-muted);">Final Score</div>
+            <div style="font-weight: 700;">12,450</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div style="color: var(--color-text-muted);">Level Reached</div>
+            <div style="font-weight: 700;">3</div>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="color: var(--color-text-muted);">High Score</div>
+            <div style="font-weight: 700; color: var(--color-success);">28,900</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Menu</button>
+        <button class="btn btn--accent flex-1">Retry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

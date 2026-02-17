@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role Replay - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Secret Trait</div>
+  <div class="phase-tab">2. Confessional</div>
+  <div class="phase-tab">3. Guessing</div>
+  <div class="phase-tab">4. Reveal</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Secret Trait Assignment</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Fruits of the Spirit</div>
+        <div class="header__subtitle">Role Replay • Round 1</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">🤫 YOUR SECRET TRAIT:</div>
+        <div class="prompt__text" style="font-size: 28px;">You are PATIENT</div>
+      </div>
+      
+      <div class="card" style="background: rgba(67, 97, 238, 0.2);">
+        <div class="card__title">Your Mission</div>
+        <p style="margin-bottom: 12px;">Answer the confessional prompt while subtly showing your trait.</p>
+        <p style="margin-bottom: 12px;">Don't reveal it directly — make others guess!</p>
+        <p style="color: var(--color-text-muted); font-size: 12px;">Stay in character throughout the round.</p>
+      </div>
+      
+      <div class="text-center text-muted" style="font-size: 12px;">
+        Others will try to guess your trait at the end
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">I'm Ready!</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Confessional</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Fruits of the Spirit</div>
+        <div class="header__subtitle">Confessional Time!</div>
+      </div>
+      <div class="timer">0:45</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">ANSWER IN CHARACTER:</div>
+        <div class="prompt__text">"Describe a time you had to wait for something important"</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Your Response</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">Stay in character! Show your trait through your answer.</div>
+        <textarea class="input" rows="4" placeholder="Type your response..."></textarea>
+      </div>
+      
+      <div style="background: rgba(67, 97, 238, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--color-primary);">
+        <div style="font-size: 12px; color: var(--color-primary);">Remember: You are PATIENT</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Confession</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Guessing</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Fruits of the Spirit</div>
+        <div class="header__subtitle">Guess Their Trait!</div>
+      </div>
+      <div class="timer">0:30</div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="margin-bottom: 16px;">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">Taylor said:</div>
+        <div style="font-style: italic;">"I once waited three years for the right moment to share my faith with a friend. Every day I prayed, and when it finally happened..."</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">What trait is Taylor showing?</div>
+        <div class="choices">
+          <div class="choice">
+            <div class="choice__text">Kind</div>
+          </div>
+          <div class="choice choice--selected">
+            <div class="choice__text">Patient</div>
+          </div>
+          <div class="choice">
+            <div class="choice__text">Faithful</div>
+          </div>
+          <div class="choice">
+            <div class="choice__text">Peaceful</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Guess</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Reveal</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Fruits of the Spirit</div>
+        <div class="header__subtitle">The Truth Revealed!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="text-align: center; border-color: var(--color-success);">
+        <div style="font-size: 12px; color: var(--color-text-muted);">Taylor's trait was:</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--color-success);">PATIENT</div>
+      </div>
+      
+      <div class="scoreboard mt-16">
+        <div class="card__title">Who Guessed Correctly?</div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">✓</div>
+          <div class="scoreboard__name">You</div>
+          <div class="scoreboard__score">+200</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">✓</div>
+          <div class="scoreboard__name">Sam</div>
+          <div class="scoreboard__score">+200</div>
+        </div>
+        <div class="scoreboard__item" style="opacity: 0.5;">
+          <div class="scoreboard__rank">✗</div>
+          <div class="scoreboard__name">Jordan</div>
+          <div class="scoreboard__score">+0</div>
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 16px; background: rgba(76, 175, 80, 0.1);">
+        <div style="font-size: 12px; color: var(--color-success);">Taylor earned +100 for staying in character!</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Round</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

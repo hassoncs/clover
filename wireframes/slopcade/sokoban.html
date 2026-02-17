@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sokoban - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .soko-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      background: #111;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .soko-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .soko-floor { background: #1a1a2e; }
+    .soko-wall { background: #333; border-radius: 2px; }
+    .soko-target { background: #1a4a1a; border: 2px dashed #2ecc71; }
+    .soko-box { background: #c0392b; border-radius: 4px; }
+    .soko-box-done { background: #27ae60; border-radius: 4px; }
+    .soko-player { background: #3498db; border-radius: 50%; }
+  </style>
+</head>
+<body>
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Gameplay</div>
+  <div class="phase-tab">2. Level Complete</div>
+</div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Screen 1: Gameplay</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Sokoban</div>
+        <div class="header__subtitle">Level 5</div>
+      </div>
+      <div style="display: flex; gap: 16px;">
+        <div style="color: var(--color-success);">📦 2/3</div>
+        <div style="color: var(--color-text-muted);">Moves: 42</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="soko-grid">
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-target">📦</div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-player">😊</div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-box">📦</div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-target">📦</div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-floor"></div>
+        <div class="soko-cell soko-wall"></div>
+      </div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 12px;">
+        Swipe ↑↓←→ to move • Push boxes onto green targets!
+      </div>
+    </div>
+    <div class="input-area">
+      <button class="btn btn--outline btn--full">Reset Level</button>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Screen 2: Level Complete</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+      <div style="font-size: 24px; font-weight: 700;">Level Complete!</div>
+      <div class="card" style="margin-top: 16px; width: 200px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Moves</div>
+          <div style="font-weight: 700;">42</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div style="color: var(--color-text-muted);">Best</div>
+          <div style="font-weight: 700; color: var(--color-success);">38</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div style="color: var(--color-text-muted);">Stars</div>
+          <div style="color: #f1c40f;">⭐⭐⭐</div>
+        </div>
+      </div>
+    </div>
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Level →</button>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

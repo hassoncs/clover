@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Open Mic Frenzy - Wireframe</title><link rel="stylesheet" href="../shared.css"></head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Punchline</div><div class="phase-tab">2. Voting</div><div class="phase-tab">3. Scores</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Phase 1: Write Punchline</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Praise & Punchlines</div><div class="header__subtitle">Open Mic Frenzy</div></div><div class="timer">0:45</div></div>
+    <div class="main">
+      <div class="prompt"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">🎤 THE SETUP:</div><div class="prompt__text">"The church potluck took a turn when someone brought..."</div></div>
+      <div class="card"><div class="card__title">Your Punchline</div><input class="input" type="text" placeholder="Write something hilarious..."></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Take the Mic!</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 2: Vote</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Praise & Punchlines</div><div class="header__subtitle">Who brought the joy?</div></div><div class="timer">0:20</div></div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">"...someone brought"</div>
+      <div class="choices">
+        <div class="choice"><div class="choice__text">"a dish so spicy it cast out three demons"</div><div class="choice__author">— Taylor</div></div>
+        <div class="choice choice--selected"><div class="choice__text">"a salad made entirely of communion wafers"</div><div class="choice__author">— You</div></div>
+        <div class="choice"><div class="choice__text">"a casserole from the 90s still in its original Tupperware"</div><div class="choice__author">— Jordan</div></div>
+      </div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Vote</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 3: Scores</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Praise & Punchlines</div><div class="header__subtitle">Round Results!</div></div></div>
+    <div class="main">
+      <div class="card" style="border-color: #f1c40f; background: rgba(241, 196, 15, 0.1);"><div style="font-size: 12px; color: #f1c40f;">🏆 FUNNIEST:</div><div style="font-size: 16px; margin-top: 8px;">"a salad made entirely of communion wafers"</div><div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">— You • +400</div></div>
+      <div class="scoreboard mt-16"><div class="scoreboard__item"><div class="scoreboard__rank">1</div><div class="scoreboard__name">You</div><div class="scoreboard__score">800</div></div><div class="scoreboard__item"><div class="scoreboard__rank">2</div><div class="scoreboard__name">Taylor</div><div class="scoreboard__score">500</div></div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Next Round</button></div>
+  </div>
+</div>
+</div>
+</body>
+</html>

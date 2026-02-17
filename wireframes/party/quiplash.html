@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiplash - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .screens { padding: 16px; }
+    .screen-label { 
+      background: var(--color-accent); 
+      color: white; 
+      padding: 8px 16px; 
+      font-size: 12px; 
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Lobby</div>
+  <div class="phase-tab">2. Answering</div>
+  <div class="phase-tab">3. Voting</div>
+  <div class="phase-tab">4. Reveal</div>
+  <div class="phase-tab">5. Scores</div>
+  <div class="phase-tab">6. Winner</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Lobby</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Fellowship Table</div>
+        <div class="header__subtitle">Quiplash</div>
+      </div>
+      <div class="header__badge">3/8</div>
+    </div>
+    
+    <div class="main">
+      <div class="text-center mb-16">
+        <div class="lobby__code">ABC123</div>
+        <div class="text-muted">Share this code with friends</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Players</div>
+        <div class="players">
+          <div class="player player--ready">
+            <div class="player__avatar">J</div>
+            <div>
+              <div class="player__name">Jordan</div>
+              <div class="player__score">Host</div>
+            </div>
+          </div>
+          <div class="player player--ready">
+            <div class="player__avatar">S</div>
+            <div>
+              <div class="player__name">Sam</div>
+              <div class="player__score">Ready</div>
+            </div>
+          </div>
+          <div class="player">
+            <div class="player__avatar">A</div>
+            <div>
+              <div class="player__name">Alex</div>
+              <div class="player__score">Joining...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="phases">
+        <span style="font-size: 12px; color: var(--color-text-muted);">3 rounds • Text input • Voting</span>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Start Game</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Answering</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Fellowship Table</div>
+        <div class="header__subtitle">Round 1 of 3</div>
+      </div>
+      <div class="timer">0:45</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div class="prompt__text">
+          The best thing about church potlucks is <span class="prompt__blank">______</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Your Answer</div>
+        <input class="input" type="text" placeholder="Type your funniest answer...">
+      </div>
+      
+      <div class="progress">
+        <div class="progress__bar" style="width: 60%"></div>
+      </div>
+      <div class="text-muted text-center" style="font-size: 12px;">2 of 3 players answered</div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Answer</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Voting (Matchup)</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Fellowship Table</div>
+        <div class="header__subtitle">Matchup 1 of 3</div>
+      </div>
+      <div class="timer">0:20</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt" style="font-size: 16px;">
+        The best thing about church potlucks is ______
+      </div>
+      
+      <div class="choices">
+        <div class="choice">
+          <div class="choice__text">the mystery casserole that nobody claims</div>
+          <div class="choice__author">— Jordan</div>
+        </div>
+        <div class="choice choice--selected">
+          <div class="choice__text">watching elders fight over the last brownie</div>
+          <div class="choice__author">— Sam</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Vote for This</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Reveal</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Fellowship Table</div>
+        <div class="header__subtitle">Results</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">
+        The best thing about church potlucks is ______
+      </div>
+      
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 16px;">watching elders fight over the last brownie</div>
+            <div class="text-muted" style="font-size: 12px; margin-top: 4px;">Sam</div>
+          </div>
+          <div style="font-size: 24px; font-weight: 700; color: var(--color-success);">+3</div>
+        </div>
+        <div style="display: flex; gap: 4px;">
+          <div class="player__avatar" style="width: 24px; height: 24px; font-size: 10px; background: var(--color-primary);">J</div>
+          <div class="player__avatar" style="width: 24px; height: 24px; font-size: 10px; background: var(--color-primary);">A</div>
+          <div class="player__avatar" style="width: 24px; height: 24px; font-size: 10px; background: var(--color-primary);">L</div>
+        </div>
+      </div>
+      
+      <div class="card" style="opacity: 0.6;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 16px;">the mystery casserole that nobody claims</div>
+            <div class="text-muted" style="font-size: 12px; margin-top: 4px;">Jordan</div>
+          </div>
+          <div style="font-size: 24px; font-weight: 700;">+0</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Matchup</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 5: Scores</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">The Fellowship Table</div>
+        <div class="header__subtitle">Round 1 Complete</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="scoreboard">
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">1</div>
+          <div class="scoreboard__name">Sam</div>
+          <div class="scoreboard__score">300</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">2</div>
+          <div class="scoreboard__name">Jordan</div>
+          <div class="scoreboard__score">200</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">3</div>
+          <div class="scoreboard__name">Alex</div>
+          <div class="scoreboard__score">100</div>
+        </div>
+      </div>
+      
+      <div class="phases">
+        <div class="phase-dot phase-dot--complete"></div>
+        <div class="phase-dot phase-dot--active"></div>
+        <div class="phase-dot"></div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Round 2</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 6: Winner</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div class="winner__crown">👑</div>
+      <div class="winner__name">Sam</div>
+      <div class="winner__score">850 points</div>
+      
+      <div class="scoreboard mt-16">
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">2</div>
+          <div class="scoreboard__name">Jordan</div>
+          <div class="scoreboard__score">620</div>
+        </div>
+        <div class="scoreboard__item">
+          <div class="scoreboard__rank">3</div>
+          <div class="scoreboard__name">Alex</div>
+          <div class="scoreboard__score">480</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Home</button>
+        <button class="btn btn--accent flex-1">Play Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mr Potato Head - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.potato-canvas { background: #2a1a0a; border-radius: 16px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; position: relative; }
+.potato-body { width: 120px; height: 150px; background: #8B4513; border-radius: 50% 50% 45% 45%; position: relative; }
+.drawer { background: var(--color-card); border-radius: 8px; padding: 8px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.drawer-item { width: 40px; height: 40px; background: var(--color-surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: grab; }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Build</div><div class="phase-tab">2. Done</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Screen 1: Building</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Mr. Potato Head</div><div class="header__subtitle">Drag pieces onto the potato!</div></div></div>
+    <div class="main">
+      <div class="potato-canvas">
+        <div class="potato-body">
+          <div style="position: absolute; top: 30px; left: 20px; font-size: 24px;">👁️</div>
+          <div style="position: absolute; top: 30px; right: 20px; font-size: 24px;">👁️</div>
+          <div style="position: absolute; top: 60px; left: 50%; transform: translateX(-50%); font-size: 20px;">👃</div>
+          <div style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 28px;">👄</div>
+          <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 32px;">🎩</div>
+        </div>
+      </div>
+      <div class="drawer">
+        <div class="drawer-item">👓</div>
+        <div class="drawer-item">👂</div>
+        <div class="drawer-item">🥸</div>
+        <div class="drawer-item">🧣</div>
+        <div class="drawer-item">👟</div>
+        <div class="drawer-item">🧢</div>
+        <div class="drawer-item">💎</div>
+        <div class="drawer-item">🎀</div>
+      </div>
+    </div>
+    <div class="input-area"><div class="btn-group"><button class="btn btn--outline flex-1">Reset</button><button class="btn btn--primary flex-1">Done!</button></div></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Screen 2: Complete</div>
+  <div class="wireframe">
+    <div class="main winner">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🥔✨</div>
+        <div style="font-size: 24px; font-weight: 700;">Your Potato!</div>
+      </div>
+      <div class="card" style="margin-top: 16px; text-align: center;">
+        <div style="font-size: 14px; color: var(--color-text-muted);">Looking good!</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">Drag pieces to rearrange, or reset to start over</div>
+      </div>
+    </div>
+    <div class="input-area"><div class="btn-group"><button class="btn btn--outline flex-1">Reset</button><button class="btn btn--primary flex-1">Save Photo</button></div></div>
+  </div>
+</div>
+</div>
+</body>
+</html>

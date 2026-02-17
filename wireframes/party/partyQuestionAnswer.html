@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Party Question Answer - Wireframe</title><link rel="stylesheet" href="../shared.css"></head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Question</div><div class="phase-tab">2. Answer</div><div class="phase-tab">3. Reveal</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Phase 1: Host Question</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Circle of Trust</div><div class="header__subtitle">Party Q&A</div></div></div>
+    <div class="main">
+      <div class="prompt"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">TODAY'S QUESTION:</div><div class="prompt__text">What's one thing you're grateful for this week?</div></div>
+      <div class="card"><div class="card__title">Players answering</div><div class="players"><div class="player"><div class="player__avatar">T</div><div class="player__name">Taylor</div></div><div class="player"><div class="player__avatar">J</div><div class="player__name">Jordan</div></div><div class="player"><div class="player__avatar">S</div><div class="player__name">Sam</div></div></div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Start Timer</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 2: Type Answer</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Circle of Trust</div><div class="header__subtitle">Your turn!</div></div><div class="timer">0:30</div></div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">What's one thing you're grateful for this week?</div>
+      <div class="card"><div class="card__title">Your Answer</div><textarea class="input" rows="3" placeholder="Type your answer..."></textarea></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Submit</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 3: Everyone's Answers</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Circle of Trust</div><div class="header__subtitle">What everyone said</div></div></div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">"What's one thing you're grateful for this week?"</div>
+      <div class="card"><div style="padding: 12px 0; border-bottom: 1px solid var(--color-border);"><strong style="color: var(--color-primary);">Taylor:</strong> My family's health - we've had a rough month but everyone's recovering now.</div><div style="padding: 12px 0; border-bottom: 1px solid var(--color-border);"><strong style="color: var(--color-accent);">Jordan:</strong> Found a new church community that feels like home.</div><div style="padding: 12px 0;"><strong style="color: var(--color-success);">Sam:</strong> The sunny weather this weekend!</div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Next Question</button></div>
+  </div>
+</div>
+</div>
+</body>
+</html>

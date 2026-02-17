@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ball Sort - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .tube {
+      width: 48px;
+      height: 140px;
+      background: rgba(255,255,255,0.1);
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 0 0 24px 24px;
+      display: flex;
+      flex-direction: column-reverse;
+      padding: 4px;
+      gap: 4px;
+    }
+    .ball {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ball--red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .ball--blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .ball--green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .ball--yellow { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+    .ball--purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .ball--orange { background: linear-gradient(135deg, #e67e22, #d35400); }
+    .tube--selected {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 16px rgba(67, 97, 238, 0.5);
+    }
+    .tube--highlight {
+      border-color: var(--color-success);
+      box-shadow: 0 0 12px rgba(76, 175, 80, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Gameplay</div>
+  <div class="phase-tab">2. Level Complete</div>
+  <div class="phase-tab">3. Level Select</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Gameplay</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Ball Sort</div>
+        <div class="header__subtitle">Level 12</div>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <div class="arcade-hud__item">MOVES: 8</div>
+      </div>
+    </div>
+    
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;">
+      <div style="font-size: 14px; color: var(--color-text-muted);">Tap a tube to pick up, tap another to drop</div>
+      
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+        <div class="tube tube--selected">
+          <div class="ball ball--red"></div>
+          <div class="ball ball--red"></div>
+          <div class="ball ball--blue"></div>
+        </div>
+        <div class="tube">
+          <div class="ball ball--blue"></div>
+          <div class="ball ball--blue"></div>
+          <div class="ball ball--blue"></div>
+        </div>
+        <div class="tube tube--highlight">
+          <div class="ball ball--red"></div>
+          <div class="ball ball--red"></div>
+        </div>
+        <div class="tube">
+        </div>
+        <div class="tube">
+          <div class="ball ball--green"></div>
+          <div class="ball ball--green"></div>
+          <div class="ball ball--green"></div>
+          <div class="ball ball--green"></div>
+        </div>
+        <div class="tube">
+          <div class="ball ball--yellow"></div>
+          <div class="ball ball--yellow"></div>
+          <div class="ball ball--yellow"></div>
+          <div class="ball ball--yellow"></div>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn--outline" style="font-size: 14px;">Undo</button>
+        <button class="btn btn--outline" style="font-size: 14px;">Restart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Level Complete</div>
+  <div class="wireframe">
+    <div class="main" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+        <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Level Complete!</div>
+        
+        <div class="card" style="width: 200px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div style="color: var(--color-text-muted);">Moves</div>
+            <div style="font-weight: 700;">8</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div style="color: var(--color-text-muted);">Best</div>
+            <div style="font-weight: 700; color: var(--color-success);">6</div>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="color: var(--color-text-muted);">Stars</div>
+            <div style="color: #f1c40f;">⭐⭐⭐</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Replay</button>
+        <button class="btn btn--primary flex-1">Next Level</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 3: Level Select</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Ball Sort</div>
+        <div class="header__subtitle">Select Level</div>
+      </div>
+      <button class="btn btn--outline" style="padding: 8px 12px;">Back</button>
+    </div>
+    
+    <div class="main">
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+        <div class="card" style="padding: 12px; text-align: center; border-color: var(--color-success);">
+          <div style="font-weight: 700;">1</div>
+          <div style="font-size: 10px;">⭐⭐⭐</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; border-color: var(--color-success);">
+          <div style="font-weight: 700;">2</div>
+          <div style="font-size: 10px;">⭐⭐</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; border-color: var(--color-success);">
+          <div style="font-weight: 700;">3</div>
+          <div style="font-size: 10px;">⭐⭐⭐</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; border-color: var(--color-success);">
+          <div style="font-weight: 700;">4</div>
+          <div style="font-size: 10px;">⭐</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; border-color: var(--color-success);">
+          <div style="font-weight: 700;">5</div>
+          <div style="font-size: 10px;">⭐⭐</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; border-color: var(--color-primary);">
+          <div style="font-weight: 700;">6</div>
+          <div style="font-size: 10px; color: var(--color-text-muted);">Current</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; opacity: 0.5;">
+          <div style="font-weight: 700;">7</div>
+          <div style="font-size: 10px;">🔒</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; opacity: 0.5;">
+          <div style="font-weight: 700;">8</div>
+          <div style="font-size: 10px;">🔒</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; opacity: 0.5;">
+          <div style="font-weight: 700;">9</div>
+          <div style="font-size: 10px;">🔒</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; opacity: 0.5;">
+          <div style="font-weight: 700;">10</div>
+          <div style="font-size: 10px;">🔒</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

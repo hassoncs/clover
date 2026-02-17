@@ -1,0 +1,236 @@
+`<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Wireframes Index</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      body {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        color: var(--color-text-muted);
+        margin-bottom: 32px;
+      }
+      section {
+        margin-bottom: 48px;
+      }
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--color-border);
+      }
+      .count {
+        background: var(--color-card);
+        padding: 4px 12px;
+        border-radius: var(--radius-lg);
+        font-size: 14px;
+        color: var(--color-text-muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .game-card {
+        background: var(--color-card);
+        border-radius: var(--radius-lg);
+        padding: 16px;
+        border: 1px solid var(--color-border);
+        text-decoration: none;
+        color: var(--color-text);
+        transition: transform 0.2s, border-color 0.2s;
+      }
+      .game-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--color-primary);
+      }
+      .game-card__title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .game-card__amen {
+        font-size: 12px;
+        color: var(--color-accent);
+        margin-bottom: 8px;
+      }
+      .game-card__desc {
+        font-size: 13px;
+        color: var(--color-text-muted);
+        line-height: 1.4;
+      }
+      .game-card__meta {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .tag {
+        background: var(--color-surface);
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 11px;
+        color: var(--color-text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Game UI Wireframes</h1>
+    <p class="subtitle">
+      Flexbox-based HTML wireframes for visual flow review before asset
+      production.
+    </p>
+
+    <section>
+      <h2>Party Games <span class="count">27</span></h2>
+      <div class="grid">
+        <a class="game-card" href="party/quiplash.html">
+          <div class="game-card__title">Quiplash</div>
+          <div class="game-card__amen">The Fellowship Table</div>
+          <div class="game-card__desc">
+            Fill-in-the-blank comedy game. Players submit funny answers, then
+            vote head-to-head!
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">text</span>
+            <span class="tag">choice</span>
+            <span class="tag">3-8 players</span>
+          </div>
+        </a>
+        <a class="game-card" href="party/truth-trap.html">
+          <div class="game-card__title">Truth Trap</div>
+          <div class="game-card__amen">Scrolls of Truth</div>
+          <div class="game-card__desc">
+            Write lies so plausible that your friends fall into your 'Truth
+            Trap'.
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">text</span>
+            <span class="tag">choice</span>
+            <span class="tag">3 rounds</span>
+          </div>
+        </a>
+        <a class="game-card" href="party/drawful-animate.html">
+          <div class="game-card__title">Flicker Frames</div>
+          <div class="game-card__amen">Illustrated Scripture</div>
+          <div class="game-card__desc">
+            Create two-frame animations that loop forever!
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">drawing</span>
+            <span class="tag">text</span>
+            <span class="tag">2 rounds</span>
+          </div>
+        </a>
+        <a class="game-card" href="party/sketch-bluff.html">
+          <div class="game-card__title">Sketch Bluff</div>
+          <div class="game-card__amen">Draw & Discern</div>
+          <div class="game-card__desc">
+            Draw bizarre prompts, others write fake titles, find the real one!
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">drawing</span>
+            <span class="tag">text</span>
+            <span class="tag">2 rounds</span>
+          </div>
+        </a>
+        <a class="game-card" href="party/percent-panic.html">
+          <div class="game-card__title">Percent Panic</div>
+          <div class="game-card__amen">By the Numbers</div>
+          <div class="game-card__desc">
+            Guess percentages and bet on the truth.
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">choice</span>
+            <span class="tag">3 rounds</span>
+          </div>
+        </a>
+        <a class="game-card" href="party/chain-reaction.html">
+          <div class="game-card__title">Chain Reaction</div>
+          <div class="game-card__amen">The Word Chain</div>
+          <div class="game-card__desc">
+            Keep the word reaction going. Challenge weak associations!
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">text</span>
+            <span class="tag">buzzer</span>
+            <span class="tag">3 rounds</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Arcade Games <span class="count">23</span></h2>
+      <div class="grid">
+        <a class="game-card" href="slopcade/flappy-bird.html">
+          <div class="game-card__title">Flappy Bird</div>
+          <div class="game-card__desc">
+            Tap to fly through the pipes without hitting them.
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">tap</span>
+            <span class="tag">high score</span>
+          </div>
+        </a>
+        <a class="game-card" href="slopcade/ball-sort.html">
+          <div class="game-card__title">Ball Sort</div>
+          <div class="game-card__desc">
+            Sort colored balls into tubes - each tube one color.
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">tap</span>
+            <span class="tag">levels</span>
+          </div>
+        </a>
+        <a class="game-card" href="slopcade/snake.html">
+          <div class="game-card__title">Snake</div>
+          <div class="game-card__desc">
+            Eat food, grow longer, don't hit the walls!
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">swipe</span>
+            <span class="tag">high score</span>
+          </div>
+        </a>
+        <a class="game-card" href="slopcade/breakout-bouncer.html">
+          <div class="game-card__title">Breakout Bouncer</div>
+          <div class="game-card__desc">
+            Classic brick-breaker with sci-fi neon assets.
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">drag</span>
+            <span class="tag">levels</span>
+          </div>
+        </a>
+        <a class="game-card" href="slopcade/slopeggle.html">
+          <div class="game-card__title">Slopeggle</div>
+          <div class="game-card__desc">
+            Clear all orange pegs by bouncing a ball through the board.
+          </div>
+          <div class="game-card__meta">
+            <span class="tag">touch+release</span>
+            <span class="tag">levels</span>
+          </div>
+        </a>
+        <a class="game-card" href="slopcade/gem-crush.html">
+          <div class="game-card__title">Gem Crush</div>
+          <div class="game-card__desc">Match 3 or more gems to clear them!</div>
+          <div class="game-card__meta">
+            <span class="tag">tap</span>
+            <span class="tag">match-3</span>
+          </div>
+        </a>
+      </div>
+    </section>
+  </body>
+</html>

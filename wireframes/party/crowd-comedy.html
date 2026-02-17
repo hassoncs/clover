@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crowd Comedy - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Answering</div>
+  <div class="phase-tab">2. Voting</div>
+  <div class="phase-tab">3. Round Results</div>
+</div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Phase 1: Write Punchline</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Joyful Noise</div>
+        <div class="header__subtitle">Crowd Comedy • Round 1/5</div>
+      </div>
+      <div class="timer">0:45</div>
+    </div>
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">COMPLETE THE JOKE:</div>
+        <div class="prompt__text">The pastor's sermon was so long that ______</div>
+      </div>
+      <div class="card">
+        <div class="card__title">Your Punchline</div>
+        <input class="input" type="text" placeholder="Write something funny...">
+      </div>
+    </div>
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Answer</button>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 2: Vote for Funniest</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Joyful Noise</div>
+        <div class="header__subtitle">Vote for the funniest!</div>
+      </div>
+      <div class="timer">0:20</div>
+    </div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">
+        "The pastor's sermon was so long that..."
+      </div>
+      <div class="choices">
+        <div class="choice"><div class="choice__text">...Moses came down from the mountain twice</div><div class="choice__author">— Taylor</div></div>
+        <div class="choice choice--selected"><div class="choice__text">...the congregation started growing beards</div><div class="choice__author">— You</div></div>
+        <div class="choice"><div class="choice__text">...someone's phone died, was recharged, and died again</div><div class="choice__author">— Sam</div></div>
+        <div class="choice"><div class="choice__text">...we missed the Second Coming</div><div class="choice__author">— Jordan</div></div>
+      </div>
+    </div>
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Vote</button>
+    </div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 3: Round Results</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Joyful Noise</div>
+        <div class="header__subtitle">Round 1 Results</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="card" style="border-color: #f1c40f; background: rgba(241, 196, 15, 0.1);">
+        <div style="font-size: 12px; color: #f1c40f;">🏆 FUNNIEST:</div>
+        <div style="font-size: 16px; margin-top: 8px;">"...the congregation started growing beards"</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">— You • 4 votes</div>
+      </div>
+      <div class="scoreboard mt-16">
+        <div class="scoreboard__item"><div class="scoreboard__rank">1</div><div class="scoreboard__name">You</div><div class="scoreboard__score">400</div></div>
+        <div class="scoreboard__item"><div class="scoreboard__rank">2</div><div class="scoreboard__name">Jordan</div><div class="scoreboard__score">300</div></div>
+        <div class="scoreboard__item"><div class="scoreboard__rank">3</div><div class="scoreboard__name">Taylor</div><div class="scoreboard__score">200</div></div>
+      </div>
+    </div>
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Round 2 →</button>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

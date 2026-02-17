@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kishimisu Swirl - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.fractal-bg { background: #000; border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.fractal-spiral { width: 200px; height: 200px; background: conic-gradient(from 0deg, #ff0080, #ff8c00, #ffff00, #00ff00, #00ffff, #0080ff, #8000ff, #ff0080); border-radius: 50%; animation: spin 4s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Fractal View</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Fractal Shader Demo</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Kishimisu Swirl</div><div class="header__subtitle">GLSL Tutorial Example</div></div></div>
+    <div class="main">
+      <div class="fractal-bg"><div class="fractal-spiral"></div></div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">A mesmerizing fractal swirl shader by Kishimisu</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

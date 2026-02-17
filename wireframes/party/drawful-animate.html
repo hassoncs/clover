@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flicker Frames - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .animation-frame {
+      background: var(--color-bg);
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-md);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .flicker-preview {
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: flicker 0.5s infinite;
+    }
+    @keyframes flicker {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Drawing Frame 1</div>
+  <div class="phase-tab">2. Drawing Frame 2</div>
+  <div class="phase-tab">3. Bluffing</div>
+  <div class="phase-tab">4. Voting</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Phase 1: Draw Frame 1</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Illustrated Scripture</div>
+        <div class="header__subtitle">Flicker Frames • Round 1</div>
+      </div>
+      <div class="timer">1:00</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt">
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">DRAW THIS ACTION:</div>
+        <div class="prompt__text">David slinging the stone</div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Frame 1 - Starting Position</div>
+        <div class="animation-frame">
+          <div style="font-size: 48px;">🎨</div>
+          <div style="color: var(--color-text-muted);">[Draw frame 1 here]</div>
+        </div>
+      </div>
+      
+      <div class="progress">
+        <div class="progress__bar" style="width: 50%"></div>
+      </div>
+      <div class="text-muted text-center" style="font-size: 12px;">Frame 1 of 2</div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Next Frame →</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 2: Draw Frame 2</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Illustrated Scripture</div>
+        <div class="header__subtitle">Flicker Frames • Round 1</div>
+      </div>
+      <div class="timer">1:00</div>
+    </div>
+    
+    <div class="main">
+      <div class="prompt" style="font-size: 16px;">
+        David slinging the stone
+      </div>
+      
+      <div style="display: flex; gap: 12px;">
+        <div class="card" style="flex: 1;">
+          <div class="card__title">Frame 1 ✓</div>
+          <div style="background: #2a2a4a; border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;">
+            <div style="font-size: 24px;">✓</div>
+          </div>
+        </div>
+        <div class="card" style="flex: 1; border-color: var(--color-primary);">
+          <div class="card__title">Frame 2 - Action</div>
+          <div class="animation-frame">
+            <div style="font-size: 48px;">🎨</div>
+            <div style="color: var(--color-text-muted);">[Draw frame 2]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Done Drawing</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 3: Bluffing</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Illustrated Scripture</div>
+        <div class="header__subtitle">What's happening?</div>
+      </div>
+      <div class="timer">0:20</div>
+    </div>
+    
+    <div class="main">
+      <div class="card">
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="font-size: 12px; color: var(--color-text-muted);">Casey's Animation</div>
+        </div>
+        <div class="flicker-preview">
+          <div style="font-size: 36px;">🎬</div>
+        </div>
+        <div style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--color-text-muted);">
+          Two frames flickering...
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Write a Fake Title</div>
+        <input class="input" type="text" placeholder="What do you think this is?">
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Submit Title</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Phase 4: Voting</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Illustrated Scripture</div>
+        <div class="header__subtitle">Guess the real title!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="flicker-preview">
+          <div style="font-size: 36px;">🎬</div>
+        </div>
+      </div>
+      
+      <div class="choices">
+        <div class="choice">
+          <div class="choice__text">Moses parting the sea</div>
+          <div class="choice__author">— Taylor</div>
+        </div>
+        <div class="choice choice--selected">
+          <div class="choice__text">David slinging the stone</div>
+          <div class="choice__author">— Real Title</div>
+        </div>
+        <div class="choice">
+          <div class="choice__text">Joshua at Jericho</div>
+          <div class="choice__author">— Dana</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Vote</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

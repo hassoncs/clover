@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cube World 3D - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.cube-scene { background: linear-gradient(180deg, #1a1a3a, #0a0a2a); border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; perspective: 500px; }
+.cube { width: 80px; height: 80px; transform-style: preserve-3d; transform: rotateX(-20deg) rotateY(45deg); }
+.cube-face { position: absolute; width: 80px; height: 80px; border: 2px solid rgba(255,255,255,0.3); }
+.cube-front { background: rgba(52, 152, 219, 0.5); transform: translateZ(40px); }
+.cube-back { background: rgba(155, 89, 182, 0.5); transform: translateZ(-40px); }
+.cube-left { background: rgba(46, 204, 113, 0.5); transform: rotateY(-90deg) translateZ(40px); }
+.cube-right { background: rgba(241, 196, 15, 0.5); transform: rotateY(90deg) translateZ(40px); }
+.cube-top { background: rgba(231, 76, 60, 0.5); transform: rotateX(90deg) translateZ(40px); }
+.cube-bottom { background: rgba(230, 126, 34, 0.5); transform: rotateX(-90deg) translateZ(40px); }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Demo</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">3D Cube Demo</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Cube World 3D</div><div class="header__subtitle">3D Smoke Test</div></div></div>
+    <div class="main">
+      <div class="cube-scene">
+        <div class="cube">
+          <div class="cube-face cube-front"></div>
+          <div class="cube-face cube-back"></div>
+          <div class="cube-face cube-left"></div>
+          <div class="cube-face cube-right"></div>
+          <div class="cube-face cube-top"></div>
+          <div class="cube-face cube-bottom"></div>
+        </div>
+      </div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px;">Watch cubes fall onto the floor in a 3D environment.</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

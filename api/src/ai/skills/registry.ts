@@ -58,15 +58,57 @@ When choosing a visual style, maintain consistency across all game assets. Pick 
 			"collision handler",
 		],
 		priority: 0,
-		content: `You are an expert in the Slopcade scripting system. Scripts run in a QuickJS sandbox and use the ScriptContext API. The key lifecycle hooks are: onStart (initialization), onUpdate (per-frame logic), onInput (user interaction), and onCollision (physics events).
+		content: `You are an expert in the Slopcade scripting system. Scripts run in a QuickJS sandbox with CommonJS exports. The lifecycle hooks are:
+- exports.onStart = function(ctx) {} — called once at game start
+- exports.onUpdate = function(ctx, dt) {} — called every physics frame
+- exports.onInput = function(ctx, event) {} — called on input events
+- exports.onCollision = function(ctx, collision) {} — called on physics collisions
 
-All game logic MUST be implemented via scripts. Prefabs and entities use the 'scriptRef' property to point to a script module.
+Key script patterns:
 
-When writing scripts, remember that the sandbox has no access to browser APIs, network, or filesystem. Use ctx.getVariable/ctx.setVariable for state, ctx.queryEntities for finding entities by tag, ctx.getEntityPosition/ctx.setEntityPosition for movement, and ctx.spawnEntity/ctx.destroyEntity for entity lifecycle.
+TIMER SPAWNING (accumulator pattern):
+var spawnTimer = 0;
+exports.onUpdate = function(ctx, dt) {
+  spawnTimer += dt;
+  if (spawnTimer >= 2.0) {
+    spawnTimer -= 2.0;
+    ctx.spawnEntity("obstacle", { x: ctx.random() * 10 - 5, y: 8 });
+  }
+};
 
-For collision handling, use the onCollision hook which receives collision objects with entityA, entityB, and contact info. Always check tags with ctx.hasTag() before acting on collisions — don't assume which entity is which. A common pattern is: check if one entity has tag "bullet" and the other has tag "enemy", then destroy both and increment score.
+COLLISION HANDLING (always check both orderings):
+exports.onCollision = function(ctx, collision) {
+  var tagsA = ctx.getEntityTags(collision.entityA);
+  var tagsB = ctx.getEntityTags(collision.entityB);
+  var ballId = null, hitTarget = false;
+  if (tagsA.indexOf("ball") !== -1 && tagsB.indexOf("target") !== -1) {
+    ballId = collision.entityA; hitTarget = true;
+  } else if (tagsB.indexOf("ball") !== -1 && tagsA.indexOf("target") !== -1) {
+    ballId = collision.entityB; hitTarget = true;
+  }
+  if (hitTarget) {
+    ctx.destroyEntity(ballId);
+    ctx.setVariable("score", (ctx.getVariable("score") || 0) + 10);
+    ctx.cameraShake(0.15, 0.1);
+    ctx.haptic("Light");
+  }
+};
 
-Structure your script with clear state variables initialized in onStart, updated in onUpdate, and responsive to input in onInput. Keep frame-based logic lightweight — avoid heavy computation in onUpdate since it runs every frame at 60fps.`,
+INPUT HANDLING:
+exports.onInput = function(ctx, event) {
+  if (event.type === "tap" && event.position) {
+    var players = ctx.queryEntities({ tag: "player" });
+    if (players.length > 0) {
+      ctx.setEntityVelocity(players[0], { x: 0, y: 7 });
+    }
+  }
+};
+
+Input event types: "tap", "dragStart", "dragMove", "dragEnd", "gameStarted", "gameRestarted"
+Input event shape: { type, position?: {x,y}, entityId?: string|null, timestamp }
+Collision event shape: { entityA, entityB, normal: {x,y}, impulse, contactPoint: {x,y}, timestamp }
+
+Sandbox constraints: no DOM, no network, no filesystem, no import/require. Use ctx.random() (seeded) not Math.random(). Top-level var/let state persists across frames. Budget: 2ms/frame, 100K instructions, 1MB memory.`,
 	},
 ];
 

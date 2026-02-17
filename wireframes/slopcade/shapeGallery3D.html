@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shape Gallery 3D - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.shape-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.shape-item { background: linear-gradient(135deg, #1a1a3a, #2a2a4a); border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.shape-sphere { width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #5cf, #36f); border-radius: 50%; }
+.shape-cube { width: 40px; height: 40px; background: linear-gradient(135deg, #f66, #c33); }
+.shape-cylinder { width: 30px; height: 50px; background: linear-gradient(90deg, #5f5, #3a3); border-radius: 15px; }
+.shape-cone { width: 0; height: 0; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid #f80; }
+.shape-torus { width: 50px; height: 50px; border: 12px solid #f0f; border-radius: 50%; }
+.shape-capsule { width: 25px; height: 50px; background: #ff0; border-radius: 12px; }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Gallery</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">3D Primitives Gallery</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Shape Gallery 3D</div><div class="header__subtitle">All 3D Primitives</div></div></div>
+    <div class="main">
+      <div class="shape-grid">
+        <div class="shape-item"><div class="shape-sphere"></div></div>
+        <div class="shape-item"><div class="shape-cube"></div></div>
+        <div class="shape-item"><div class="shape-cylinder"></div></div>
+        <div class="shape-item"><div class="shape-cone"></div></div>
+        <div class="shape-item"><div class="shape-torus"></div></div>
+        <div class="shape-item"><div class="shape-capsule"></div></div>
+      </div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 16px;">All 3D primitives with metallic/roughness materials</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

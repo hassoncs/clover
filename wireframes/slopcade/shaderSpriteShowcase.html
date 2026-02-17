@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shader Sprite Showcase - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.sprite-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.sprite-item { background: #1a1a2e; border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.sprite-icon { width: 40px; height: 40px; border-radius: 8px; }
+.sprite-icon:nth-child(1) { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); }
+</style>
+</head>
+<body>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Sprite Shader Effects</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Shader Sprite Showcase</div><div class="header__subtitle">Sprite-Level Effects</div></div></div>
+    <div class="main">
+      <div class="sprite-grid">
+        <div class="sprite-item"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 8px;"></div></div>
+        <div class="sprite-item"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #4ecdc4, #45b7aa); border-radius: 50%;"></div></div>
+        <div class="sprite-item"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #ffe66d, #ffd93d); border-radius: 4px;"></div></div>
+        <div class="sprite-item"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #a8e6cf, #88d8b0); border-radius: 50%; box-shadow: 0 0 12px #a8e6cf;"></div></div>
+        <div class="sprite-item"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #dda0dd, #da70d6); border-radius: 8px; border: 2px solid #fff;"></div></div>
+        <div class="sprite-item"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, #87ceeb, #6bb3d9); border-radius: 50%; opacity: 0.8;"></div></div>
+      </div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">Showcase of sprite-level shader effects</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

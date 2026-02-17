@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shader Multi - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.multi-preview { background: #0a0a2a; border-radius: 8px; aspect-ratio: 1; display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; }
+.multi-entity { flex: 1; min-width: 80px; aspect-ratio: 1; border-radius: 8px; }
+.multi-entity:nth-child(1) { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.multi-entity:nth-child(2) { background: linear-gradient(135deg, #3498db, #2980b9); }
+.multi-entity:nth-child(3) { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.multi-entity:nth-child(4) { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+</style>
+</head>
+<body>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Multiple Shaders</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Shader Multi</div><div class="header__subtitle">Multiple Simultaneous Effects</div></div></div>
+    <div class="main">
+      <div class="multi-preview">
+        <div class="multi-entity"></div>
+        <div class="multi-entity"></div>
+        <div class="multi-entity"></div>
+        <div class="multi-entity"></div>
+      </div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">Different shader effects on each entity simultaneously. Tap to add more!</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

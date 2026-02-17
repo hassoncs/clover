@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Spectrum Guess - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.spectrum-bar { height: 40px; display: flex; border-radius: 8px; overflow: hidden; }
+.spectrum-end { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Spectrum</div><div class="phase-tab">2. Place Answer</div><div class="phase-tab">3. Reveal</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Phase 1: See Spectrum</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Crossroads</div><div class="header__subtitle">Spectrum Guess</div></div><div class="timer">0:30</div></div>
+    <div class="main">
+      <div class="prompt"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">WHERE DO YOU STAND?</div><div class="prompt__text">On the Sabbath, I prefer to...</div></div>
+      <div class="card"><div class="spectrum-bar">
+        <div class="spectrum-end" style="background: linear-gradient(135deg, #3498db, #2980b9);">REST</div>
+        <div style="flex: 2; background: linear-gradient(90deg, #2980b9, #e74c3c);"></div>
+        <div class="spectrum-end" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">SERVE</div>
+      </div></div>
+      <div class="card"><div class="card__title">Tap on the spectrum where you belong!</div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Submit Position</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 2: See Others</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Crossroads</div><div class="header__subtitle">Where is everyone?</div></div></div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">"On the Sabbath, I prefer to..."</div>
+      <div class="card"><div class="spectrum-bar" style="position: relative;">
+        <div class="spectrum-end" style="background: #3498db;">REST</div>
+        <div style="flex: 2; background: linear-gradient(90deg, #3498db, #e74c3c); position: relative;">
+          <div style="position: absolute; top: 50%; left: 20%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">T</div>
+          <div style="position: absolute; top: 50%; left: 60%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">Y</div>
+          <div style="position: absolute; top: 50%; left: 80%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: var(--color-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">J</div>
+        </div>
+        <div class="spectrum-end" style="background: #e74c3c;">SERVE</div>
+      </div></div>
+      <div class="text-center text-muted" style="font-size: 12px;">Taylor near REST, You in the middle, Jordan near SERVE</div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Next Question</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 3: Points</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Crossroads</div><div class="header__subtitle">Agreement bonus!</div></div></div>
+    <div class="main">
+      <div class="card" style="text-align: center;"><div style="font-size: 12px; color: var(--color-text-muted);">You and Jordan were close!</div><div style="font-size: 24px; font-weight: 700; color: var(--color-success);">+200 Agreement Bonus!</div></div>
+      <div class="scoreboard mt-16"><div class="scoreboard__item"><div class="scoreboard__rank">1</div><div class="scoreboard__name">Jordan</div><div class="scoreboard__score">450</div></div><div class="scoreboard__item"><div class="scoreboard__rank">2</div><div class="scoreboard__name">You</div><div class="scoreboard__score">380</div></div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Next Round</button></div>
+  </div>
+</div>
+</div>
+</body>
+</html>

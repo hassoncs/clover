@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shader Post Showcase - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.post-preview { background: linear-gradient(180deg, #1a1a3a, #2a2a4a); border-radius: 8px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+.post-content { width: 60%; height: 60%; background: #333; border-radius: 8px; }
+.post-effect { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%); border-radius: 8px; }
+</style>
+</head>
+<body>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Post-Processing Effects</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Shader Post Showcase</div><div class="header__subtitle">Post-Processing Demo</div></div></div>
+    <div class="main">
+      <div class="post-preview"><div class="post-content"></div><div class="post-effect"></div></div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">12 post-processing shader effects demo</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

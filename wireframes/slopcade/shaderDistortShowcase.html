@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shader Distort Showcase - Wireframe</title><link rel="stylesheet" href="../shared.css">
+<style>
+.distort-preview { background: linear-gradient(45deg, #c0392b, #8e44ad, #2980b9, #27ae60, #f1c40f); border-radius: 8px; aspect-ratio: 1; filter: url(#distort); }
+</style>
+</head>
+<body>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Distortion Effects</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Distortion Showcase</div><div class="header__subtitle">Various Distort Effects</div></div></div>
+    <div class="main">
+      <div class="distort-preview"></div>
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-top: 8px;">Distortion shaders: barrel, kaleidoscope, displace, ripple, mirror, transform</div>
+      <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap;">
+        <div style="padding: 6px 12px; background: var(--color-primary); border-radius: 12px; font-size: 11px;">Barrel</div>
+        <div style="padding: 6px 12px; background: var(--color-card); border-radius: 12px; font-size: 11px;">Kaleidoscope</div>
+        <div style="padding: 6px 12px; background: var(--color-card); border-radius: 12px; font-size: 11px;">Ripple</div>
+        <div style="padding: 6px 12px; background: var(--color-card); border-radius: 12px; font-size: 11px;">Mirror</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

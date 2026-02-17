@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heads Up - Wireframe</title>
+  <link rel="stylesheet" href="../shared.css">
+  <style>
+    .phone-on-forehead {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .forehead-word {
+      font-size: 32px;
+      font-weight: 700;
+      transform: rotate(180deg);
+      background: linear-gradient(135deg, #f1c40f, #f39c12);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phase-tabs">
+  <div class="phase-tab phase-tab--active">1. Your Word</div>
+  <div class="phase-tab">2. Guessing</div>
+  <div class="phase-tab">3. Pass/Skip</div>
+  <div class="phase-tab">4. Round End</div>
+</div>
+
+<div class="screens">
+
+<div class="screen">
+  <div class="screen-label">Screen 1: Word on Forehead</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Who Am I?</div>
+        <div class="header__subtitle">Heads Up</div>
+      </div>
+      <div class="timer">1:00</div>
+    </div>
+    
+    <div class="main">
+      <div style="text-align: center; color: var(--color-text-muted); font-size: 12px; margin-bottom: 16px;">
+        Hold phone to your forehead — others can see the word!
+      </div>
+      
+      <div class="phone-on-forehead">
+        <div style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 16px;">You are...</div>
+        <div class="forehead-word">MOSES</div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 24px;">
+          ↑ This is upside down for you ↑
+        </div>
+        <div style="font-size: 12px; color: var(--color-success); margin-top: 8px;">
+          Others see: MOSES (right-side up)
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card__title">Category</div>
+        <div style="text-align: center; font-size: 18px;">Biblical Figures</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Skip</button>
+        <button class="btn btn--success flex-1">Got It!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 2: Active Guessing</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Who Am I?</div>
+        <div class="header__subtitle">Score: 3</div>
+      </div>
+      <div class="timer timer--danger">0:12</div>
+    </div>
+    
+    <div class="main">
+      <div class="phone-on-forehead">
+        <div style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 16px;">You are...</div>
+        <div class="forehead-word">DAVID</div>
+      </div>
+      
+      <div class="card" style="background: rgba(76, 175, 80, 0.1); border-color: var(--color-success);">
+        <div style="font-size: 12px; color: var(--color-success); text-align: center;">
+          ✓ Previous: MOSES — Correct!
+        </div>
+      </div>
+      
+      <div class="text-center text-muted" style="font-size: 12px;">
+        Ask yes/no questions!
+        <br><strong>"Was I a king?"</strong>
+        <br><strong>"Did I write Psalms?"</strong>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">⏸ Pause</button>
+        <button class="btn btn--success flex-1">✓ Got It!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 3: Skip/Pass</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Who Am I?</div>
+        <div class="header__subtitle">Pass?</div>
+      </div>
+      <div class="timer">0:45</div>
+    </div>
+    
+    <div class="main">
+      <div class="phone-on-forehead" style="opacity: 0.5;">
+        <div style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 16px;">Skipping...</div>
+        <div class="forehead-word" style="font-size: 24px;">??? → New Word</div>
+      </div>
+      
+      <div class="card">
+        <div style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 12px;">⏭️</div>
+          <div style="font-size: 16px;">Passing to next word...</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">
+            No penalty for passing!
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <button class="btn btn--primary btn--full">Continue</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen">
+  <div class="screen-label">Screen 4: Round End</div>
+  <div class="wireframe">
+    <div class="header">
+      <div>
+        <div class="header__title">Who Am I?</div>
+        <div class="header__subtitle">Time's Up!</div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="winner">
+        <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+        <div style="font-size: 24px; font-weight: 700;">Round Complete!</div>
+        
+        <div class="card" style="margin-top: 16px;">
+          <div class="card__title">Words Guessed</div>
+          <div style="text-align: left;">
+            <div style="padding: 8px 0; border-bottom: 1px solid var(--color-border);">
+              ✓ Moses
+            </div>
+            <div style="padding: 8px 0; border-bottom: 1px solid var(--color-border);">
+              ✓ David
+            </div>
+            <div style="padding: 8px 0; border-bottom: 1px solid var(--color-border);">
+              ✓ Esther
+            </div>
+            <div style="padding: 8px 0;">
+              ✗ Ruth (skipped)
+            </div>
+          </div>
+        </div>
+        
+        <div style="font-size: 48px; font-weight: 700; color: var(--color-success); margin-top: 16px;">
+          3
+        </div>
+        <div style="font-size: 14px; color: var(--color-text-muted);">words correct</div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <div class="btn-group">
+        <button class="btn btn--outline flex-1">Main Menu</button>
+        <button class="btn btn--accent flex-1">Next Player</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

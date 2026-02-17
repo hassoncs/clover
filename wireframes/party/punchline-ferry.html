@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Punchline Ferry - Wireframe</title><link rel="stylesheet" href="../shared.css"></head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Word Bank</div><div class="phase-tab">2. Setup</div><div class="phase-tab">3. Forced Word</div><div class="phase-tab">4: Punchline</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Phase 1: Submit Words</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Ark of Laughs</div><div class="header__subtitle">Guffaw Galleon</div></div><div class="timer">0:30</div></div>
+    <div class="main">
+      <div class="prompt"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">SUBMIT FUNNY WORDS:</div><div class="prompt__text">Add to the Token Bank!</div></div>
+      <div class="card"><div class="card__title">Your Words (3)</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+          <div style="padding: 8px 16px; background: var(--color-accent); border-radius: 16px;">blessing</div>
+          <div style="padding: 8px 16px; background: var(--color-primary); border-radius: 16px;">miracle</div>
+        </div>
+        <input class="input" type="text" placeholder="Add another funny word...">
+      </div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Submit Words</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 2: Write Setup</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Ark of Laughs</div><div class="header__subtitle">Write a joke setup!</div></div><div class="timer">0:45</div></div>
+    <div class="main">
+      <div class="prompt"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">WRITE A JOKE SETUP:</div><div class="prompt__text">Someone else will finish it!</div></div>
+      <div class="card"><div class="card__title">Your Setup</div><input class="input" type="text" placeholder="Start a joke..."></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Submit Setup</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 3: Forced Word</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Ark of Laughs</div><div class="header__subtitle">Finish the joke!</div></div><div class="timer">0:30</div></div>
+    <div class="main">
+      <div class="card" style="text-align: center;"><div style="font-size: 14px;">Taylor's Setup:</div><div style="font-size: 18px; margin-top: 8px;">"Why did the pastor bring a ladder to church?"</div></div>
+      <div class="card" style="background: rgba(241, 196, 15, 0.2); border-color: #f1c40f; text-align: center;"><div style="font-size: 12px; color: #f1c40f;">YOU MUST USE THIS WORD:</div><div style="font-size: 28px; font-weight: 700; margin-top: 8px;">Blessing</div></div>
+      <div class="card"><div class="card__title">Your Punchline</div><input class="input" type="text" placeholder="Finish the joke with 'blessing'..."></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Submit Punchline</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 4: The Show</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">The Ark of Laughs</div><div class="header__subtitle">🎭 The Show! 🎭</div></div></div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">"Why did the pastor bring a ladder to church?"</div>
+      <div class="card" style="text-align: center; border-color: var(--color-success);"><div style="font-size: 12px; color: var(--color-text-muted);">Best Punchline:</div><div style="font-size: 18px; margin-top: 8px;">"Because he heard the <strong style="color: #f1c40f;">blessing</strong> was on a higher level!"</div><div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">— You • +500</div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Next Round</button></div>
+  </div>
+</div>
+</div>
+</body>
+</html>

@@ -39,9 +39,9 @@ export class WorkspaceScaffoldService {
 			filename: "world.json",
 			content: () =>
 				stringifyJson({
-					gravity: { x: 0, y: 10 },
+					gravity: { x: 0, y: -10 },
 					pixelsPerMeter: 50,
-					bounds: { width: 20, height: 12 },
+					bounds: { width: 12, height: 16 },
 					background: { type: "static", color: "#0f172a" },
 				}),
 		},

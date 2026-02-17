@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Punchline Duel - Wireframe</title><link rel="stylesheet" href="../shared.css"></head>
+<body>
+<div class="phase-tabs"><div class="phase-tab phase-tab--active">1. Answer</div><div class="phase-tab">2. Duel</div><div class="phase-tab">3. Vote</div></div>
+<div class="screens">
+<div class="screen">
+  <div class="screen-label">Phase 1: Write Punchlines</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Wit & Wisdom</div><div class="header__subtitle">Punchline Duel</div></div><div class="timer">0:45</div></div>
+    <div class="main">
+      <div class="prompt"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">PROMPT 1:</div><div class="prompt__text">The youth pastor's text messages are always...</div></div>
+      <div class="card"><div class="card__title">Your Punchline</div><input class="input" type="text" placeholder="Write something clever..."></div>
+      <div class="prompt mt-16"><div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">PROMPT 2:</div><div class="prompt__text">The worship band's practice session sounded like...</div></div>
+      <div class="card"><div class="card__title">Your Punchline</div><input class="input" type="text" placeholder="Write something clever..."></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Submit Punchlines</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 2: Head-to-Head Duel</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Wit & Wisdom</div><div class="header__subtitle">⚔️ DUEL! ⚔️</div></div></div>
+    <div class="main">
+      <div class="prompt" style="font-size: 14px;">"The youth pastor's text messages are always..."</div>
+      <div style="display: flex; gap: 12px; align-items: stretch;">
+        <div class="card choice" style="flex: 1; text-align: center;"><div style="font-size: 12px; color: var(--color-primary);">Taylor</div><div style="font-size: 16px; margin-top: 8px;">"signed with a Bible verse"</div></div>
+        <div style="display: flex; align-items: center; font-weight: 700;">VS</div>
+        <div class="card choice choice--selected" style="flex: 1; text-align: center;"><div style="font-size: 12px; color: var(--color-accent);">You</div><div style="font-size: 16px; margin-top: 8px;">"accidentally sent to the whole congregation"</div></div>
+      </div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Vote for Winner</button></div>
+  </div>
+</div>
+<div class="screen">
+  <div class="screen-label">Phase 3: Winner</div>
+  <div class="wireframe">
+    <div class="header"><div><div class="header__title">Wit & Wisdom</div><div class="header__subtitle">This duel's winner!</div></div></div>
+    <div class="main winner">
+      <div class="card" style="border-color: #f1c40f; text-align: center;"><div style="font-size: 12px; color: #f1c40f;">🏆 WINNER:</div><div style="font-size: 18px; font-weight: 600; margin-top: 8px;">"accidentally sent to the whole congregation"</div><div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">— You • 4 votes to 2</div></div>
+      <div class="scoreboard mt-16"><div class="card__title">Scores</div><div class="scoreboard__item"><div class="scoreboard__rank">1</div><div class="scoreboard__name">You</div><div class="scoreboard__score">400</div></div><div class="scoreboard__item"><div class="scoreboard__rank">2</div><div class="scoreboard__name">Taylor</div><div class="scoreboard__score">200</div></div></div>
+    </div>
+    <div class="input-area"><button class="btn btn--primary btn--full">Next Duel</button></div>
+  </div>
+</div>
+</div>
+</body>
+</html>
