@@ -1,12 +1,53 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/lib/theme";
-import { useWireframeMode, WireframeModeProvider } from "../wireframe";
+import {
+	useWireframeMode,
+	WireframeModeProvider,
+	WireframeViewer,
+} from "../wireframe";
 
 function WireframePanelContent() {
 	const { editorColors: c } = useTheme();
-	const { mode, toggleMode } = useWireframeMode();
+	const {
+		mode,
+		toggleMode,
+		selectedScreenIndex,
+		setSelectedScreenIndex,
+		totalScreens,
+	} = useWireframeMode();
 	const isProductionMode = mode === "production";
+
+	useEffect(() => {
+		if (Platform.OS !== "web") return;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (
+				document.activeElement?.tagName === "INPUT" ||
+				document.activeElement?.tagName === "TEXTAREA"
+			) {
+				return;
+			}
+
+			if (e.key === "ArrowLeft") {
+				setSelectedScreenIndex(Math.max(0, selectedScreenIndex - 1));
+			}
+			if (e.key === "ArrowRight") {
+				setSelectedScreenIndex(
+					Math.min(totalScreens - 1, selectedScreenIndex + 1),
+				);
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [selectedScreenIndex, totalScreens, setSelectedScreenIndex]);
+
+	const goPrev = () =>
+		setSelectedScreenIndex(Math.max(0, selectedScreenIndex - 1));
+	const goNext = () =>
+		setSelectedScreenIndex(Math.min(totalScreens - 1, selectedScreenIndex + 1));
 
 	return (
 		<View
@@ -16,64 +57,75 @@ function WireframePanelContent() {
 		>
 			<View style={[styles.header, { borderBottomColor: c.border }]}>
 				<Text style={[styles.title, { color: c.text }]}>WIREFRAME</Text>
-				<Pressable
-					onPress={toggleMode}
-					style={({ pressed }) => [
-						styles.modeToggle,
-						{
-							backgroundColor: isProductionMode ? c.accent : c.surfaceHover,
-							opacity: pressed ? 0.8 : 1,
-						},
-					]}
-					accessibilityRole="button"
-					accessibilityLabel={
-						isProductionMode
-							? "Switch to Structural Mode"
-							: "Switch to Production Mode"
-					}
-				>
-					<Ionicons
-						name={isProductionMode ? "eye" : "construct-outline"}
-						size={14}
-						color={isProductionMode ? "#fff" : c.text}
-						style={{ marginRight: 4 }}
-					/>
-					<Text
-						style={[
-							styles.modeText,
-							{ color: isProductionMode ? "#fff" : c.text },
+				<View style={styles.headerRight}>
+					{totalScreens > 1 && (
+						<View style={[styles.navControls, { backgroundColor: c.surface }]}>
+							<Pressable
+								onPress={goPrev}
+								disabled={selectedScreenIndex === 0}
+								style={({ pressed }) => [
+									styles.navButton,
+									{ opacity: pressed || selectedScreenIndex === 0 ? 0.3 : 1 },
+								]}
+							>
+								<Ionicons name="chevron-back" size={14} color={c.text} />
+							</Pressable>
+							<Text style={[styles.counterText, { color: c.textSecondary }]}>
+								{selectedScreenIndex + 1} / {totalScreens}
+							</Text>
+							<Pressable
+								onPress={goNext}
+								disabled={selectedScreenIndex === totalScreens - 1}
+								style={({ pressed }) => [
+									styles.navButton,
+									{
+										opacity:
+											pressed || selectedScreenIndex === totalScreens - 1
+												? 0.3
+												: 1,
+									},
+								]}
+							>
+								<Ionicons name="chevron-forward" size={14} color={c.text} />
+							</Pressable>
+						</View>
+					)}
+					<Pressable
+						onPress={toggleMode}
+						style={({ pressed }) => [
+							styles.modeToggle,
+							{
+								backgroundColor: isProductionMode ? c.accent : c.surfaceHover,
+								opacity: pressed ? 0.8 : 1,
+							},
 						]}
+						accessibilityRole="button"
+						accessibilityLabel={
+							isProductionMode
+								? "Switch to Structural Mode"
+								: "Switch to Production Mode"
+						}
 					>
-						{isProductionMode ? "Production" : "Structural"}
-					</Text>
-				</Pressable>
+						<Ionicons
+							name={isProductionMode ? "eye" : "construct-outline"}
+							size={14}
+							color={isProductionMode ? "#fff" : c.text}
+							style={{ marginRight: 4 }}
+						/>
+						<Text
+							style={[
+								styles.modeText,
+								{ color: isProductionMode ? "#fff" : c.text },
+							]}
+						>
+							{isProductionMode ? "Production" : "Structural"}
+						</Text>
+					</Pressable>
+				</View>
 			</View>
 
 			<View style={styles.content}>
-				<View
-					style={[
-						styles.placeholder,
-						{
-							borderColor: c.border,
-							backgroundColor: c.surface,
-						},
-					]}
-				>
-					<Ionicons
-						name="phone-portrait-outline"
-						size={48}
-						color={c.textSecondary}
-						style={{ marginBottom: 16 }}
-					/>
-					<Text style={[styles.placeholderText, { color: c.textSecondary }]}>
-						Wireframe Viewer
-					</Text>
-					<Text style={[styles.subText, { color: c.textSecondary }]}>
-						{isProductionMode
-							? "Production preview mode active"
-							: "Structural wireframe mode active"}
-					</Text>
-				</View>
+				<WireframeViewer />
 			</View>
 		</View>
 	);
@@ -121,21 +173,29 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	placeholder: {
-		width: "100%",
-		height: "100%",
-		borderWidth: 1,
-		borderStyle: "dashed",
-		borderRadius: 8,
-		justifyContent: "center",
+	headerRight: {
+		flexDirection: "row",
 		alignItems: "center",
+		gap: 12,
 	},
-	placeholderText: {
-		fontSize: 16,
-		fontWeight: "600",
-		marginBottom: 8,
+	navControls: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+		borderRadius: 6,
+		padding: 2,
+		borderWidth: 1,
+		borderColor: "rgba(0,0,0,0.05)",
 	},
-	subText: {
-		fontSize: 12,
+	navButton: {
+		padding: 4,
+		borderRadius: 4,
+	},
+	counterText: {
+		fontSize: 11,
+		fontVariant: ["tabular-nums"],
+		minWidth: 32,
+		textAlign: "center",
+		fontWeight: "500",
 	},
 });
