@@ -84,9 +84,11 @@ const config: StorybookConfig = {
 		});
 
 		config.module.rules.push({
-			test: /\.(js|jsx)$/,
+			test: /\.(js|jsx|ts|tsx)$/,
 			include: [
 				/node_modules\/@expo\/vector-icons/,
+				/node_modules\/expo-haptics/,
+				/node_modules\/expo-modules-core/,
 				/node_modules\/react-native-vector-icons/,
 				/node_modules\/react-native-css-interop/,
 			],
@@ -100,7 +102,9 @@ const config: StorybookConfig = {
 							{ targets: { browsers: ["last 2 versions"] } },
 						],
 						["@babel/preset-react", { runtime: "automatic" }],
+						"@babel/preset-typescript",
 					],
+					plugins: [["@babel/plugin-transform-runtime", { regenerator: true }]],
 				},
 			},
 		});
