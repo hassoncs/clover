@@ -20,6 +20,7 @@ const ACTIVITY_ITEMS: ActivityBarItem[] = [
 
 const BOTTOM_ITEMS: ActivityBarItem[] = [
 	{ id: "chat", icon: "chatbubble-ellipses-outline", label: "Chat" },
+	{ id: "wireframe", icon: "phone-portrait-outline", label: "Wireframe" },
 	{ id: "diagnostics", icon: "warning-outline", label: "Diagnostics" },
 ];
 

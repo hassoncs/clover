@@ -41,6 +41,9 @@ const AssetGalleryPanel = React.lazy(() =>
 const ChatSidebar = React.lazy(() =>
 	import("../ChatSidebar").then((m) => ({ default: m.ChatSidebar })),
 );
+const WireframePanel = React.lazy(() =>
+	import("./WireframePanel").then((m) => ({ default: m.WireframePanel })),
+);
 
 export const PANEL_REGISTRY: PanelDefinition[] = [
 	{
@@ -102,6 +105,12 @@ export const PANEL_REGISTRY: PanelDefinition[] = [
 		title: "Chat",
 		component: ChatSidebar,
 		defaultPlacement: "right",
+	},
+	{
+		id: "wireframe",
+		title: "Wireframe",
+		component: WireframePanel,
+		defaultPlacement: "left",
 	},
 ];
 
