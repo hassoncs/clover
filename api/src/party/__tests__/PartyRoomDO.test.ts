@@ -1117,4 +1117,829 @@ describe("PartyRoomDO", () => {
 			expect(mockState.state.storage.deleteAll).toHaveBeenCalled();
 		});
 	});
+
+	describe("Audience role", () => {
+		it("Audience can connect and receives state_update", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((hostRes as any).webSocket);
+
+			const audienceRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=audience&name=Viewer", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			expect(audienceRes.status).toBe(101);
+			const audienceWs = trackWebSocket((audienceRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			const stateMsg = audienceWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "state_update");
+			expect(stateMsg).toBeDefined();
+		});
+
+		it("Audience is excluded from getPlayers() / connected player count", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((hostRes as any).webSocket);
+
+			const p1Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p1Res as any).webSocket);
+
+			const p2Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Bob", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p2Res as any).webSocket);
+
+			const audienceRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=audience&name=Viewer", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const audienceWs = trackWebSocket((audienceRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			const audienceTokenMsg = audienceWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_token");
+			expect(audienceTokenMsg).toBeDefined();
+
+			const connectedPlayers = dobj.getPlayers();
+			expect(connectedPlayers).toHaveLength(2);
+			expect(connectedPlayers).not.toContain(audienceTokenMsg.playerId);
+		});
+
+		it("Audience does not receive input_request broadcasts", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			const audienceRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=audience&name=Viewer", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const audienceWs = trackWebSocket((audienceRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			playerWs.sent.length = 0;
+			audienceWs.sent.length = 0;
+
+			hostWs.send(
+				JSON.stringify({
+					type: "input_request",
+					requestId: "aud-req-1",
+					request: {
+						prompt: "Answer",
+						inputType: "text",
+						timeLimit: 30,
+					},
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const playerInputRequest = playerWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_request");
+			expect(playerInputRequest).toBeDefined();
+
+			const audienceInputRequest = audienceWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_request");
+			expect(audienceInputRequest).toBeUndefined();
+		});
+
+		it("Audience cannot submit input_response (silently dropped)", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((playerRes as any).webSocket);
+
+			const audienceRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=audience&name=Viewer", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const audienceWs = trackWebSocket((audienceRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			hostWs.send(
+				JSON.stringify({
+					type: "input_request",
+					requestId: "aud-req-2",
+					request: {
+						prompt: "Answer",
+						inputType: "text",
+						timeLimit: 30,
+					},
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+
+			audienceWs.send(
+				JSON.stringify({
+					type: "input_response",
+					requestId: "aud-req-2",
+					response: { value: "audience answer", timestamp: Date.now() },
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const forwardedToHost = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_response");
+			expect(forwardedToHost).toBeUndefined();
+		});
+	});
+
+	describe("Host message handling", () => {
+		it("Host state_update message updates sharedData and broadcasts new state", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			playerWs.sent.length = 0;
+
+			hostWs.send(
+				JSON.stringify({
+					type: "state_update",
+					state: { sharedData: { foo: "bar" } },
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const stateMsg = playerWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "state_update")
+				.slice(-1)[0];
+			expect(stateMsg).toBeDefined();
+			expect(stateMsg.state.sharedData.foo).toBe("bar");
+		});
+
+		it("Host phase_change message broadcasts phase change", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			playerWs.sent.length = 0;
+
+			hostWs.send(
+				JSON.stringify({
+					type: "phase_change",
+					phase: "playing",
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const phaseMsg = playerWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "phase_change");
+			expect(phaseMsg).toBeDefined();
+			expect(phaseMsg.phase).toBe("playing");
+		});
+
+		it("Non-host player's phase_change message is ignored", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+			playerWs.sent.length = 0;
+
+			playerWs.send(
+				JSON.stringify({
+					type: "phase_change",
+					phase: "playing",
+				}),
+			);
+
+			await vi.runAllTimersAsync();
+
+			const hostPhaseMsg = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "phase_change");
+			expect(hostPhaseMsg).toBeUndefined();
+
+			const playerPhaseMsg = playerWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "phase_change");
+			expect(playerPhaseMsg).toBeUndefined();
+		});
+	});
+
+	describe("Start game", () => {
+		it("start_game rejects with MIN_PLAYERS when too few players", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+
+			await vi.runAllTimersAsync();
+
+			const errorMsg = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; code?: string }) =>
+						m.type === "error" && m.code === "MIN_PLAYERS",
+				);
+			expect(errorMsg).toBeDefined();
+		});
+
+		it("start_game moves phase to playing when minPlayers met", async () => {
+			const initRes = await dobj.fetch(
+				makeRequest("POST", "/init", {
+					hostId: "host-1",
+					hostToken: "token-abc",
+					minPlayers: 2,
+				}),
+			);
+			expect(initRes.status).toBe(200);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const p1Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p1Res as any).webSocket);
+
+			const p2Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Bob", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p2Res as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+			await vi.runAllTimersAsync();
+
+			const phaseMsg = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; phase?: string }) =>
+						m.type === "phase_change" && m.phase === "playing",
+				);
+			expect(phaseMsg).toBeDefined();
+		});
+
+		it("start_game rejects with ALREADY_STARTED when phase != lobby", async () => {
+			const initRes = await dobj.fetch(
+				makeRequest("POST", "/init", {
+					hostId: "host-1",
+					hostToken: "token-abc",
+					minPlayers: 1,
+				}),
+			);
+			expect(initRes.status).toBe(200);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+			await vi.runAllTimersAsync();
+
+			hostWs.sent.length = 0;
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+			await vi.runAllTimersAsync();
+
+			const errorMsg = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; code?: string }) =>
+						m.type === "error" && m.code === "ALREADY_STARTED",
+				);
+			expect(errorMsg).toBeDefined();
+		});
+
+		it("start_game counts only connected, non-host, non-audience players", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const p1Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P1", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p1Res as any).webSocket);
+
+			const p2Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P2", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p2Res as any).webSocket);
+
+			const audienceRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=audience&name=Viewer", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((audienceRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			hostWs.sent.length = 0;
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+			await vi.runAllTimersAsync();
+
+			const minPlayersError = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; code?: string }) =>
+						m.type === "error" && m.code === "MIN_PLAYERS",
+				);
+			expect(minPlayersError).toBeDefined();
+
+			const p3Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P3", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((p3Res as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+			await vi.runAllTimersAsync();
+
+			const phaseMsg = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; phase?: string }) =>
+						m.type === "phase_change" && m.phase === "playing",
+				);
+			expect(phaseMsg).toBeDefined();
+		});
+	});
+
+	describe("Auth edge cases", () => {
+		it("Host connect with wrong token closes socket", async () => {
+			await initRoom(dobj);
+
+			const res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=wrong-token", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			expect(res.status).toBe(101);
+
+			const ws = trackWebSocket((res as any).webSocket);
+			await vi.runAllTimersAsync();
+
+			const authError = ws.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; code?: string }) =>
+						m.type === "error" && m.code === "AUTH_FAILED",
+				);
+			expect(authError).toBeDefined();
+			expect(ws.readyState).not.toBe(WebSocket.OPEN);
+		});
+
+		it("WebSocket connect without role returns 400", async () => {
+			await initRoom(dobj);
+
+			const res = await dobj.fetch(
+				makeRequest("GET", "/ws", undefined, { Upgrade: "websocket" }),
+			);
+
+			expect(res.status).toBe(400);
+		});
+
+		it("Player connect without name or token returns 400", async () => {
+			await initRoom(dobj);
+
+			const res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+
+			expect(res.status).toBe(400);
+		});
+	});
+
+	describe("Input response edge cases", () => {
+		it("input_response with wrong requestId is silently ignored", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			hostWs.send(
+				JSON.stringify({
+					type: "input_request",
+					requestId: "req-1",
+					request: {
+						prompt: "What?",
+						inputType: "text",
+						timeLimit: 30,
+					},
+				}),
+			);
+			await vi.advanceTimersByTimeAsync(100);
+
+			hostWs.sent.length = 0;
+			playerWs.send(
+				JSON.stringify({
+					type: "input_response",
+					requestId: "req-999",
+					response: { value: "wrong", timestamp: Date.now() },
+				}),
+			);
+			await vi.advanceTimersByTimeAsync(100);
+
+			const wrongIdForwarded = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_response");
+			expect(wrongIdForwarded).toBeUndefined();
+
+			playerWs.send(
+				JSON.stringify({
+					type: "input_response",
+					requestId: "req-1",
+					response: { value: "right", timestamp: Date.now() },
+				}),
+			);
+			await vi.advanceTimersByTimeAsync(100);
+
+			const correctIdForwarded = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; requestId?: string }) =>
+						m.type === "input_response" && m.requestId === "req-1",
+				);
+			expect(correctIdForwarded).toBeDefined();
+		});
+
+		it("input_response from player not in expected subset is ignored", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const p1Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P1", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p1Ws = trackWebSocket((p1Res as any).webSocket);
+
+			const p2Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P2", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p2Ws = trackWebSocket((p2Res as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			const p1TokenMsg = p1Ws.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_token");
+			expect(p1TokenMsg).toBeDefined();
+
+			void dobj.requestInputFromSubset(
+				"subset-1",
+				{
+					prompt: "subset",
+					type: "text",
+					timeLimit: 30,
+				},
+				[p1TokenMsg.playerId],
+			);
+			await vi.runAllTimersAsync();
+
+			hostWs.sent.length = 0;
+			p2Ws.send(
+				JSON.stringify({
+					type: "input_response",
+					requestId: "subset-1",
+					response: { value: "not allowed", timestamp: Date.now() },
+				}),
+			);
+			await vi.runAllTimersAsync();
+
+			const subsetViolationForwarded = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "input_response");
+			expect(subsetViolationForwarded).toBeUndefined();
+		});
+	});
+
+	describe("Score and shared data", () => {
+		it("updatePlayerScore applies delta and broadcasts updated state", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			const tokenMsg = playerWs.sent
+				.map((s) => JSON.parse(s))
+				.find((m: { type: string }) => m.type === "player_token");
+			expect(tokenMsg).toBeDefined();
+
+			playerWs.sent.length = 0;
+			await dobj.updatePlayerScore(tokenMsg.playerId, 50);
+			await dobj.updatePlayerScore(tokenMsg.playerId, 25);
+			await vi.runAllTimersAsync();
+
+			const lastState = playerWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "state_update")
+				.slice(-1)[0];
+			expect(lastState).toBeDefined();
+
+			const player = lastState.state.players.find(
+				(p: { id: string }) => p.id === tokenMsg.playerId,
+			);
+			expect(player.score).toBe(75);
+		});
+
+		it("updateSharedData merges new data and broadcasts", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+
+			await dobj.updateSharedData({ round: 1 });
+			await dobj.updateSharedData({ question: "hello" });
+			await vi.runAllTimersAsync();
+
+			const stateMsg = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.filter((m: { type: string }) => m.type === "state_update")
+				.slice(-1)[0];
+			expect(stateMsg).toBeDefined();
+			expect(stateMsg.state.sharedData.round).toBe(1);
+			expect(stateMsg.state.sharedData.question).toBe("hello");
+		});
+	});
+
+	describe("Full lifecycle integration", () => {
+		it("Full lifecycle: init -> host connect -> 3 players join -> start -> end", async () => {
+			const initRes = await dobj.fetch(
+				makeRequest("POST", "/init", {
+					hostId: "host-1",
+					hostToken: "token-abc",
+					minPlayers: 2,
+				}),
+			);
+			expect(initRes.status).toBe(200);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const p1Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P1", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p1Ws = trackWebSocket((p1Res as any).webSocket);
+
+			const p2Res = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=P2", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const p2Ws = trackWebSocket((p2Res as any).webSocket);
+
+			await vi.runAllTimersAsync();
+			hostWs.sent.length = 0;
+			p1Ws.sent.length = 0;
+			p2Ws.sent.length = 0;
+
+			hostWs.send(JSON.stringify({ type: "start_game" }));
+			await vi.runAllTimersAsync();
+
+			const hostPlaying = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; phase?: string }) =>
+						m.type === "phase_change" && m.phase === "playing",
+				);
+			expect(hostPlaying).toBeDefined();
+
+			const p1Playing = p1Ws.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; phase?: string }) =>
+						m.type === "phase_change" && m.phase === "playing",
+				);
+			expect(p1Playing).toBeDefined();
+
+			await dobj.setPhase("ended");
+			await vi.runAllTimersAsync();
+
+			const hostEnded = hostWs.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; phase?: string }) =>
+						m.type === "phase_change" && m.phase === "ended",
+				);
+			expect(hostEnded).toBeDefined();
+
+			const p2Ended = p2Ws.sent
+				.map((s) => JSON.parse(s))
+				.find(
+					(m: { type: string; phase?: string }) =>
+						m.type === "phase_change" && m.phase === "ended",
+				);
+			expect(p2Ended).toBeDefined();
+		});
+
+		it("All players disconnect -> empty room triggers cleanup alarm", async () => {
+			await initRoom(dobj);
+
+			const hostRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=host&token=token-abc", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const hostWs = trackWebSocket((hostRes as any).webSocket);
+
+			const playerRes = await dobj.fetch(
+				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
+					Upgrade: "websocket",
+				}),
+			);
+			const playerWs = trackWebSocket((playerRes as any).webSocket);
+
+			await vi.runAllTimersAsync();
+
+			hostWs.close(1000, "bye");
+			playerWs.close(1000, "bye");
+
+			await vi.advanceTimersByTimeAsync(60_000);
+			await vi.runAllTimersAsync();
+
+			expect(mockState.state.storage.deleteAll).toHaveBeenCalled();
+		});
+	});
 });

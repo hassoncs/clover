@@ -1,3 +1,4 @@
+import { Canvas, Circle, Rect, vec } from "@shopify/react-native-skia";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { View } from "react-native";
@@ -31,6 +32,15 @@ const meta: Meta<typeof SplashPreview> = {
 export default meta;
 
 type Story = StoryObj<typeof SplashPreview>;
+
+export const MinimalTest: Story = {
+	render: () => (
+		<Canvas style={{ width: 400, height: 300 }}>
+			<Rect x={0} y={0} width={400} height={300} color="#1a1a2e" />
+			<Circle cx={200} cy={150} r={80} color="#ff0080" />
+		</Canvas>
+	),
+};
 
 export const Holographic: Story = {
 	args: {
