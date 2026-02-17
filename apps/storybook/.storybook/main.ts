@@ -19,7 +19,7 @@ const config: StorybookConfig = {
 
 	staticDirs: [
 		{
-			from: "../../../node_modules/.pnpm/canvaskit-wasm@0.40.0/node_modules/canvaskit-wasm/bin",
+			from: "../../../node_modules/.pnpm/canvaskit-wasm@0.40.0/node_modules/canvaskit-wasm/bin/full",
 			to: "/",
 		},
 	],
