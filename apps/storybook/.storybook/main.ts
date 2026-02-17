@@ -1,13 +1,10 @@
 import type { StorybookConfig } from "@storybook/react-webpack5";
 import autoprefixer from "autoprefixer";
-import path, { dirname } from "path";
+import path from "path";
 import tailwindcss from "tailwindcss";
-import { fileURLToPath } from "url";
 import type { Configuration, RuleSetRule } from "webpack";
 import webpack from "webpack";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const packagesPath = path.resolve(__dirname, "../../../packages");
 const sharedPath = path.resolve(__dirname, "../../../shared");
 
@@ -70,7 +67,10 @@ const config: StorybookConfig = {
 					presets: [
 						[
 							"@babel/preset-env",
-							{ targets: { browsers: ["last 2 versions"] } },
+							{
+								targets: { esmodules: true },
+								bugfixes: true,
+							},
 						],
 						[
 							"@babel/preset-react",
@@ -97,7 +97,10 @@ const config: StorybookConfig = {
 					presets: [
 						[
 							"@babel/preset-env",
-							{ targets: { browsers: ["last 2 versions"] } },
+							{
+								targets: { esmodules: true },
+								bugfixes: true,
+							},
 						],
 						["@babel/preset-react", { runtime: "automatic" }],
 					],
@@ -132,6 +135,7 @@ const config: StorybookConfig = {
 				__dirname,
 				"../stubs/expo-modules-core.js",
 			),
+			"expo-font": path.resolve(__dirname, "../stubs/expo-font.js"),
 		};
 
 		config.plugins = config.plugins || [];
