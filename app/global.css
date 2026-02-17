@@ -132,53 +132,59 @@
 /* Amen Brand Theme (Light) - Warm Cream, Navy, Gold */
 .brand-amen {
 	/* Semantic colors */
-	--color-theme-background: 253 248 240; /* #FDF8F0 */
+	--color-theme-background: 255 253 247; /* #FFFDF7 */
 	--color-theme-surface: 255 255 255; /* #FFFFFF */
-	--color-theme-surface-elevated: 245 239 230; /* #F5EFE6 */
-	--color-theme-border: 230 220 200; /* #E6DCC8 */
-	--color-theme-text: 45 45 45; /* #2D2D2D */
-	--color-theme-text-secondary: 107 114 128; /* #6B7280 */
+	--color-theme-surface-elevated: 253 248 235; /* #FDF8EB */
+	--color-theme-border: 240 230 205; /* #F0E6CD */
+	--color-theme-text: 55 48 40; /* #373028 */
+	--color-theme-text-secondary: 140 128 105; /* #8C8069 */
 	--color-theme-text-tertiary: 156 163 175; /* #9CA3AF */
 	--color-theme-text-inverse: 255 255 255; /* #FFFFFF */
-	--color-theme-primary: 27 58 107; /* #1B3A6B (Navy) */
-	--color-theme-secondary: 201 168 76; /* #C9A84C (Gold) */
+	--color-theme-primary: 201 168 76; /* #C9A84C (Gold) */
+	--color-theme-secondary: 27 58 107; /* #1B3A6B (Navy) */
 	--color-theme-success: 91 127 59; /* #5B7F3B */
 	--color-theme-warning: 217 119 6; /* #D97706 */
 	--color-theme-error: 184 66 51; /* #B84233 */
 
+	/* Amen-specific glow/accent vars */
+	--amen-glow-gold: 255 215 0; /* #FFD700 */
+	--amen-warm-white: 255 250 235; /* #FFFAEB */
+	--amen-soft-yellow: 255 241 186; /* #FFF1BA */
+	--amen-golden-accent: 218 165 32; /* #DAA520 — goldenrod */
+
 	/* Editor overrides (Light) */
-	--ed-bg: #fdf8f0;
-	--ed-surface: #f5efe6;
-	--ed-surface-hover: #e6dcc8;
-	--ed-surface-active: #d1c4a8;
-	--ed-border: #e6dcc8;
-	--ed-border-strong: #d1c4a8;
-	--ed-text: #2d2d2d;
-	--ed-text-secondary: #6b7280;
+	--ed-bg: #fffdf7;
+	--ed-surface: #fdf8eb;
+	--ed-surface-hover: #f0e6cd;
+	--ed-surface-active: #e6dcc8;
+	--ed-border: #f0e6cd;
+	--ed-border-strong: #e6dcc8;
+	--ed-text: #373028;
+	--ed-text-secondary: #8c8069;
 	--ed-text-muted: #9ca3af;
-	--ed-accent: #1b3a6b;
-	--ed-accent-hover: #2a4a80;
-	--ed-accent-muted: rgba(27, 58, 107, 0.1);
+	--ed-accent: #c9a84c;
+	--ed-accent-hover: #daa520;
+	--ed-accent-muted: rgba(201, 168, 76, 0.1);
 	--ed-success: #5b7f3b;
 	--ed-warning: #d97706;
 	--ed-error: #b84233;
-	--ed-activity-bar-bg: #fdf8f0;
-	--ed-activity-bar-icon: #6b7280;
-	--ed-activity-bar-icon-active: #2d2d2d;
-	--ed-activity-bar-indicator: #1b3a6b;
-	--ed-titlebar-bg: #fdf8f0;
+	--ed-activity-bar-bg: #fffdf7;
+	--ed-activity-bar-icon: #8c8069;
+	--ed-activity-bar-icon-active: #373028;
+	--ed-activity-bar-indicator: #c9a84c;
+	--ed-titlebar-bg: #fffdf7;
 	--ed-tab-bg: transparent;
 	--ed-tab-active-bg: #ffffff;
-	--ed-tab-border: #e6dcc8;
-	--ed-tab-text: #6b7280;
-	--ed-tab-active-text: #2d2d2d;
-	--ed-panel-bg: #f5efe6;
-	--ed-panel-header-bg: #fdf8f0;
+	--ed-tab-border: #f0e6cd;
+	--ed-tab-text: #8c8069;
+	--ed-tab-active-text: #373028;
+	--ed-panel-bg: #fdf8eb;
+	--ed-panel-header-bg: #fffdf7;
 	--ed-input-bg: #ffffff;
-	--ed-input-border: #e6dcc8;
-	--ed-input-text: #2d2d2d;
+	--ed-input-border: #f0e6cd;
+	--ed-input-text: #373028;
 	--ed-input-placeholder: #9ca3af;
-	--ed-scrollbar-thumb: #d1c4a8;
+	--ed-scrollbar-thumb: #e6dcc8;
 	--ed-scrollbar-track: transparent;
 }
 
@@ -198,6 +204,12 @@
 	--color-theme-success: 91 127 59; /* #5B7F3B */
 	--color-theme-warning: 245 158 11; /* #F59E0B */
 	--color-theme-error: 239 68 68; /* #EF4444 */
+
+	/* Amen-specific glow/accent vars */
+	--amen-glow-gold: 255 215 0;
+	--amen-warm-white: 40 35 25; /* dark warm surface */
+	--amen-soft-yellow: 60 50 20; /* dark muted yellow */
+	--amen-golden-accent: 218 165 32;
 
 	/* Editor overrides (Dark) */
 	--ed-bg: #0d1c33;
