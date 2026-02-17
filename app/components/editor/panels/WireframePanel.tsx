@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/lib/theme";
+import { useWireframeMode, WireframeModeProvider } from "../wireframe";
 
-export function WireframePanel() {
+function WireframePanelContent() {
 	const { editorColors: c } = useTheme();
-	const [isProductionMode, setIsProductionMode] = useState(false);
+	const { mode, toggleMode } = useWireframeMode();
+	const isProductionMode = mode === "production";
 
 	return (
 		<View
@@ -16,7 +17,7 @@ export function WireframePanel() {
 			<View style={[styles.header, { borderBottomColor: c.border }]}>
 				<Text style={[styles.title, { color: c.text }]}>WIREFRAME</Text>
 				<Pressable
-					onPress={() => setIsProductionMode(!isProductionMode)}
+					onPress={toggleMode}
 					style={({ pressed }) => [
 						styles.modeToggle,
 						{
@@ -75,6 +76,14 @@ export function WireframePanel() {
 				</View>
 			</View>
 		</View>
+	);
+}
+
+export function WireframePanel() {
+	return (
+		<WireframeModeProvider>
+			<WireframePanelContent />
+		</WireframeModeProvider>
 	);
 }
 
