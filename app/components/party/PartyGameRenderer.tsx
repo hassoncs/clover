@@ -1,4 +1,5 @@
 import { ActivityIndicator, Text, View } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { BuzzerInput } from "@/components/party/BuzzerInput";
 import { InvestmentInput } from "@/components/party/InvestmentInput";
 import { MatchingInput } from "@/components/party/MatchingInput";
@@ -23,21 +24,25 @@ export function PartyGameRenderer() {
 
 	if (activeInputRequest?.request.type === "buzzer") {
 		return (
-			<BuzzerInput
-				onPress={() => sendInput(true)}
-				disabled={!activeInputRequest}
-				prompt={activeInputRequest.request.prompt}
-			/>
+			<Animated.View key="buzzer" entering={FadeIn} className="flex-1 w-full">
+				<BuzzerInput
+					onPress={() => sendInput(true)}
+					disabled={!activeInputRequest}
+					prompt={activeInputRequest.request.prompt}
+				/>
+			</Animated.View>
 		);
 	}
 
 	if (activeInputRequest?.request.type === "mic") {
 		return (
-			<MicInput
-				onSubmit={(data) => sendInput(data)}
-				timeLimit={activeInputRequest.request.timeLimit}
-				prompt={activeInputRequest.request.prompt}
-			/>
+			<Animated.View key="mic" entering={FadeIn} className="flex-1 w-full">
+				<MicInput
+					onSubmit={(data) => sendInput(data)}
+					timeLimit={activeInputRequest.request.timeLimit}
+					prompt={activeInputRequest.request.prompt}
+				/>
+			</Animated.View>
 		);
 	}
 
@@ -50,12 +55,18 @@ export function PartyGameRenderer() {
 		const totalBudget =
 			(activeInputRequest.request.metadata?.totalBudget as number) || 10000;
 		return (
-			<InvestmentInput
-				options={options}
-				totalBudget={totalBudget}
-				onSubmit={(allocations) => sendInput(allocations)}
-				timeLimit={activeInputRequest.request.timeLimit}
-			/>
+			<Animated.View
+				key="investment"
+				entering={FadeIn}
+				className="flex-1 w-full"
+			>
+				<InvestmentInput
+					options={options}
+					totalBudget={totalBudget}
+					onSubmit={(allocations) => sendInput(allocations)}
+					timeLimit={activeInputRequest.request.timeLimit}
+				/>
+			</Animated.View>
 		);
 	}
 
@@ -67,12 +78,14 @@ export function PartyGameRenderer() {
 			label: string;
 		}>;
 		return (
-			<MatchingInput
-				players={players}
-				roles={roles}
-				onSubmit={(assignments) => sendInput(assignments)}
-				timeLimit={activeInputRequest.request.timeLimit}
-			/>
+			<Animated.View key="matching" entering={FadeIn} className="flex-1 w-full">
+				<MatchingInput
+					players={players}
+					roles={roles}
+					onSubmit={(assignments) => sendInput(assignments)}
+					timeLimit={activeInputRequest.request.timeLimit}
+				/>
+			</Animated.View>
 		);
 	}
 
@@ -90,12 +103,14 @@ export function PartyGameRenderer() {
 			| boolean
 			| undefined;
 		return (
-			<WheelInput
-				slices={slices}
-				seed={seed}
-				autoSpin={autoSpin}
-				onSpinComplete={(result) => sendInput(result)}
-			/>
+			<Animated.View key="wheel" entering={FadeIn} className="flex-1 w-full">
+				<WheelInput
+					slices={slices}
+					seed={seed}
+					autoSpin={autoSpin}
+					onSpinComplete={(result) => sendInput(result)}
+				/>
+			</Animated.View>
 		);
 	}
 
@@ -104,13 +119,19 @@ export function PartyGameRenderer() {
 
 	if (PhaseComponent) {
 		return (
-			<PhaseComponent
-				roomState={roomState}
-				sharedData={sharedData}
-				activeInputRequest={activeInputRequest}
-				sendInput={sendInput}
-				role={role}
-			/>
+			<Animated.View
+				key={gamePhase}
+				entering={FadeIn.duration(500)}
+				className="flex-1 w-full"
+			>
+				<PhaseComponent
+					roomState={roomState}
+					sharedData={sharedData}
+					activeInputRequest={activeInputRequest}
+					sendInput={sendInput}
+					role={role}
+				/>
+			</Animated.View>
 		);
 	}
 

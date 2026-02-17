@@ -4,11 +4,19 @@ import { ScrollView, Text, View } from "react-native";
 export function Scoreboard({
 	data,
 	highlightWinner,
+	size = "normal",
 }: {
 	data: Array<{ playerName: string; score: number }>;
 	highlightWinner?: boolean;
+	size?: "normal" | "large";
 }) {
 	const sortedData = [...data].sort((a, b) => b.score - a.score);
+
+	const textSize = size === "large" ? "text-3xl" : "text-lg";
+	const scoreSize = size === "large" ? "text-4xl" : "text-xl";
+	const padding = size === "large" ? "p-6 mb-4" : "p-4 mb-3";
+	const iconSize = size === "large" ? 48 : 24;
+	const rankSize = size === "large" ? "w-12 h-12" : "w-8 h-8";
 
 	return (
 		<ScrollView
@@ -34,23 +42,23 @@ export function Scoreboard({
 				return (
 					<View
 						key={player.playerName}
-						className={`flex-row items-center p-4 mb-3 rounded-xl border border-theme-border ${rank === 1 && highlightWinner ? "bg-yellow-500/20 border-yellow-500" : "bg-theme-surface"}`}
+						className={`flex-row items-center ${padding} rounded-xl border border-theme-border ${rank === 1 && highlightWinner ? "bg-yellow-500/20 border-yellow-500" : "bg-theme-surface"}`}
 					>
 						<View
-							className={`w-8 h-8 rounded-full items-center justify-center mr-4 ${rankColor}`}
+							className={`${rankSize} rounded-full items-center justify-center mr-4 ${rankColor}`}
 						>
 							<Text className={`font-bold ${textColor}`}>{rank}</Text>
 						</View>
-						<Text className="flex-1 text-lg font-medium text-theme-text">
+						<Text className={`flex-1 font-medium text-theme-text ${textSize}`}>
 							{player.playerName}
 						</Text>
-						<Text className="text-xl font-bold text-theme-primary">
+						<Text className={`font-bold text-theme-primary ${scoreSize}`}>
 							{player.score}
 						</Text>
 						{rank === 1 && highlightWinner && (
 							<Ionicons
 								name="trophy"
-								size={24}
+								size={iconSize}
 								color="#EAB308"
 								className="ml-2"
 							/>

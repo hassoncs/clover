@@ -13,18 +13,23 @@ export function AnsweringPhase({
 	sendInput,
 	role,
 }: PhaseRendererProps) {
+	const isHost = role === "host";
 	return (
-		<View className="w-full flex-1 items-center">
-			<Timer seconds={(sharedData.timerRemaining as number) || 0} />
+		<View className="w-full flex-1 items-center justify-center p-4">
+			<Timer
+				seconds={(sharedData.timerRemaining as number) || 0}
+				size={isHost ? "large" : "normal"}
+			/>
 			<PromptCard
 				text={(sharedData.promptText as string) || "Waiting for prompt..."}
+				size={isHost ? "large" : "normal"}
 			/>
 			{role === "player" ? (
 				<AnswerInput onSubmit={sendInput} disabled={!activeInputRequest} />
 			) : (
-				<View className="mt-8 p-6 bg-theme-surface rounded-xl border border-theme-border">
-					<Text className="text-theme-text text-xl text-center">
-						Players are writing their answers...
+				<View className="mt-12 p-8 bg-theme-surface rounded-2xl border-2 border-theme-border w-full max-w-2xl items-center">
+					<Text className="text-theme-text text-4xl font-bold text-center">
+						Players are writing...
 					</Text>
 				</View>
 			)}
@@ -32,19 +37,27 @@ export function AnsweringPhase({
 	);
 }
 
-export function RevealPhase({ sharedData }: PhaseRendererProps) {
+export function RevealPhase({ sharedData, role }: PhaseRendererProps) {
+	const isHost = role === "host";
 	const revealAnswers: Array<{ id: string; text: string }> =
 		sharedData.answersJson ? JSON.parse(sharedData.answersJson as string) : [];
 	return (
-		<View className="w-full flex-1 items-center">
-			<PromptCard text={(sharedData.promptText as string) || ""} />
-			<View className="w-full mt-4 gap-2">
+		<View className="w-full flex-1 items-center p-4">
+			<PromptCard
+				text={(sharedData.promptText as string) || ""}
+				size={isHost ? "large" : "normal"}
+			/>
+			<View className="w-full mt-4 gap-4 items-center">
 				{revealAnswers.map((a: { id: string; text: string }) => (
 					<View
 						key={a.id}
-						className="bg-theme-surface p-4 rounded-xl border border-theme-border"
+						className={`bg-theme-surface rounded-xl border border-theme-border ${isHost ? "p-8 w-full max-w-3xl" : "p-4 w-full"}`}
 					>
-						<Text className="text-theme-text text-base">{a.text}</Text>
+						<Text
+							className={`text-theme-text ${isHost ? "text-3xl text-center" : "text-base"}`}
+						>
+							{a.text}
+						</Text>
 					</View>
 				))}
 			</View>
@@ -58,10 +71,17 @@ export function VotingPhase({
 	sendInput,
 	role,
 }: PhaseRendererProps) {
+	const isHost = role === "host";
 	return (
-		<View className="w-full flex-1 items-center">
-			<Timer seconds={(sharedData.timerRemaining as number) || 0} />
-			<PromptCard text={(sharedData.promptText as string) || ""} />
+		<View className="w-full flex-1 items-center justify-center p-4">
+			<Timer
+				seconds={(sharedData.timerRemaining as number) || 0}
+				size={isHost ? "large" : "normal"}
+			/>
+			<PromptCard
+				text={(sharedData.promptText as string) || ""}
+				size={isHost ? "large" : "normal"}
+			/>
 			{role === "player" ? (
 				<VoteList
 					options={
@@ -73,8 +93,8 @@ export function VotingPhase({
 					disabled={!activeInputRequest}
 				/>
 			) : (
-				<View className="mt-8 p-6 bg-theme-surface rounded-xl border border-theme-border">
-					<Text className="text-theme-text text-xl text-center">
+				<View className="mt-12 p-8 bg-theme-surface rounded-2xl border-2 border-theme-border w-full max-w-2xl items-center">
+					<Text className="text-theme-text text-4xl font-bold text-center">
 						Players are voting...
 					</Text>
 				</View>
@@ -83,7 +103,8 @@ export function VotingPhase({
 	);
 }
 
-export function RoundResultsPhase({ sharedData }: PhaseRendererProps) {
+export function RoundResultsPhase({ sharedData, role }: PhaseRendererProps) {
+	const isHost = role === "host";
 	const results: Array<{
 		text: string;
 		authorName: string;
@@ -93,22 +114,31 @@ export function RoundResultsPhase({ sharedData }: PhaseRendererProps) {
 		? JSON.parse(sharedData.resultsJson as string)
 		: [];
 	return (
-		<View className="w-full flex-1">
-			<PromptCard text={(sharedData.promptText as string) || ""} />
-			<View className="w-full mt-4 gap-2">
+		<View className="w-full flex-1 items-center p-4">
+			<PromptCard
+				text={(sharedData.promptText as string) || ""}
+				size={isHost ? "large" : "normal"}
+			/>
+			<View className="w-full mt-4 gap-4 items-center">
 				{results.map((r) => (
 					<View
 						key={`${r.authorName}-${r.text}`}
-						className="bg-theme-surface p-4 rounded-xl border border-theme-border"
+						className={`bg-theme-surface rounded-xl border border-theme-border ${isHost ? "p-8 w-full max-w-3xl" : "p-4 w-full"}`}
 					>
-						<Text className="text-theme-text text-base font-bold">
+						<Text
+							className={`text-theme-text font-bold ${isHost ? "text-3xl text-center" : "text-base"}`}
+						>
 							"{r.text}"
 						</Text>
-						<View className="flex-row justify-between mt-2">
-							<Text className="text-theme-text-secondary text-sm">
+						<View className="flex-row justify-between mt-4 items-center">
+							<Text
+								className={`text-theme-text-secondary ${isHost ? "text-xl" : "text-sm"}`}
+							>
 								— {r.authorName}
 							</Text>
-							<Text className="text-purple-400 text-sm font-bold">
+							<Text
+								className={`text-purple-400 font-bold ${isHost ? "text-2xl" : "text-sm"}`}
+							>
 								{r.voteCount} vote
 								{r.voteCount !== 1 ? "s" : ""} (+{r.points})
 							</Text>
@@ -120,10 +150,13 @@ export function RoundResultsPhase({ sharedData }: PhaseRendererProps) {
 	);
 }
 
-export function ScoresPhase({ sharedData }: PhaseRendererProps) {
+export function ScoresPhase({ sharedData, role }: PhaseRendererProps) {
+	const isHost = role === "host";
 	return (
-		<View className="w-full flex-1">
-			<Text className="text-2xl font-bold text-theme-text text-center mb-6">
+		<View className="w-full flex-1 p-4">
+			<Text
+				className={`font-bold text-theme-text text-center mb-6 ${isHost ? "text-5xl" : "text-2xl"}`}
+			>
 				Leaderboard
 			</Text>
 			<Scoreboard
@@ -132,19 +165,25 @@ export function ScoresPhase({ sharedData }: PhaseRendererProps) {
 						? JSON.parse(sharedData.scoreboardJson as string)
 						: []
 				}
+				size={isHost ? "large" : "normal"}
 			/>
 		</View>
 	);
 }
 
-export function WinnerPhase({ sharedData }: PhaseRendererProps) {
+export function WinnerPhase({ sharedData, role }: PhaseRendererProps) {
 	const router = useRouter();
+	const isHost = role === "host";
 	return (
-		<View className="w-full flex-1 items-center">
-			<Text className="text-4xl font-bold text-theme-primary text-center mb-2">
+		<View className="w-full flex-1 items-center p-4">
+			<Text
+				className={`font-bold text-theme-primary text-center mb-4 ${isHost ? "text-6xl" : "text-4xl"}`}
+			>
 				Game Over!
 			</Text>
-			<Text className="text-xl text-theme-text text-center mb-8">
+			<Text
+				className={`text-theme-text text-center mb-8 ${isHost ? "text-3xl" : "text-xl"}`}
+			>
 				Final Scores
 			</Text>
 			<Scoreboard
@@ -154,8 +193,9 @@ export function WinnerPhase({ sharedData }: PhaseRendererProps) {
 						: []
 				}
 				highlightWinner
+				size={isHost ? "large" : "normal"}
 			/>
-			<View className="w-full gap-3 mt-6">
+			<View className="w-full gap-3 mt-6 max-w-md">
 				<Pressable
 					onPress={() => router.replace("/party")}
 					className="w-full bg-theme-surface p-4 rounded-xl items-center border border-theme-border active:opacity-90"
