@@ -15,6 +15,7 @@ import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { TRPCProvider } from "@/lib/trpc/react";
 import "../global.css";
+import { useFonts } from "expo-font";
 import { useColorScheme } from "nativewind";
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -114,6 +115,14 @@ function RootLayoutContent() {
 }
 
 function RootLayout() {
+	const [fontsLoaded] = useFonts({
+		"Lora-Regular": require("../assets/fonts/Lora-Regular.ttf"),
+		"Lora-Medium": require("../assets/fonts/Lora-Medium.ttf"),
+		"Lora-SemiBold": require("../assets/fonts/Lora-SemiBold.ttf"),
+		"Lora-Bold": require("../assets/fonts/Lora-Bold.ttf"),
+		"Lora-Italic": require("../assets/fonts/Lora-Italic.ttf"),
+	});
+
 	const { setColorScheme } = useColorScheme();
 	useEffect(() => {
 		setColorScheme("dark");
@@ -124,6 +133,10 @@ function RootLayout() {
 			console.warn("[EditorPreloader] Failed to preload:", err);
 		});
 	};
+
+	if (!fontsLoaded) {
+		return null;
+	}
 
 	return (
 		<GestureHandlerRootView
