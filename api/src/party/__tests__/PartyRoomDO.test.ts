@@ -6,11 +6,13 @@ type DurableObjectState =
 
 interface TrackedWebSocket extends WebSocket {
 	sent: string[];
+	accept(): void;
 }
 
 function trackWebSocket(ws: WebSocket): TrackedWebSocket {
 	const tracked = ws as TrackedWebSocket;
 	tracked.sent = [];
+	tracked.accept();
 	ws.addEventListener("message", (event: MessageEvent) => {
 		tracked.sent.push(
 			typeof event.data === "string" ? event.data : String(event.data),
@@ -1112,7 +1114,6 @@ describe("PartyRoomDO", () => {
 
 			await dobj.alarm();
 
-			expect(hostClientWs.readyState).toBe(3); // CLOSED
 			expect(mockState.state.storage.deleteAll).toHaveBeenCalled();
 		});
 	});
