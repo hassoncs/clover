@@ -1,11 +1,22 @@
-import React, { type ReactNode } from "react";
+import React, { type ReactNode, useEffect, useMemo, useState } from "react";
 import {
+	type LayoutChangeEvent,
 	type StyleProp,
 	StyleSheet,
 	Text,
 	View,
 	type ViewStyle,
 } from "react-native";
+import Animated, {
+	cancelAnimation,
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withDelay,
+	withRepeat,
+	withSequence,
+	withTiming,
+} from "react-native-reanimated";
 
 interface SparkleWrapperProps {
 	children: ReactNode;
@@ -15,6 +26,87 @@ interface SparkleWrapperProps {
 	style?: StyleProp<ViewStyle>;
 }
 
+interface SparklePoint {
+	id: number;
+	x: number;
+	y: number;
+	size: number;
+	delay: number;
+}
+
+interface SparkleProps {
+	x: number;
+	y: number;
+	size: number;
+	color: string;
+	delay: number;
+	enabled: boolean;
+}
+
+function Sparkle({ x, y, size, color, delay, enabled }: SparkleProps) {
+	const pulse = useSharedValue(enabled ? 0 : 0);
+
+	useEffect(() => {
+		if (!enabled) {
+			cancelAnimation(pulse);
+			pulse.value = withTiming(0, { duration: 120 });
+			return;
+		}
+
+		pulse.value = 0;
+		pulse.value = withDelay(
+			delay,
+			withRepeat(
+				withSequence(
+					withTiming(1, {
+						duration: 550,
+						easing: Easing.out(Easing.quad),
+					}),
+					withTiming(0, {
+						duration: 1450,
+						easing: Easing.in(Easing.quad),
+					}),
+				),
+				-1,
+				false,
+			),
+		);
+
+		return () => {
+			cancelAnimation(pulse);
+		};
+	}, [delay, enabled, pulse]);
+
+	const animatedStyle = useAnimatedStyle(() => ({
+		opacity: pulse.value,
+		transform: [{ scale: 0.5 + pulse.value * 0.5 }],
+	}));
+
+	return (
+		<Animated.View
+			style={[
+				styles.sparkle,
+				{
+					left: x - size / 2,
+					top: y - size / 2,
+					width: size,
+					height: size,
+				},
+				animatedStyle,
+			]}
+		>
+			<Text
+				style={[
+					styles.sparkleGlyph,
+					{ fontSize: size, lineHeight: size, color },
+				]}
+			>
+				✦
+			</Text>
+		</Animated.View>
+	);
+}
+
 export function SparkleWrapper({
 	children,
 	count = 6,
@@ -22,53 +114,58 @@ export function SparkleWrapper({
 	enabled = true,
 	style,
 }: SparkleWrapperProps) {
-	const sparkles = Array.from({ length: Math.min(count, 12) }, (_, i) => i);
-	const animationName = "amen-sparkle";
+	const [layout, setLayout] = useState({ width: 0, height: 0 });
+	const sparkleCount = Math.min(count, 12);
+
+	const sparklePoints = useMemo<SparklePoint[]>(() => {
+		if (sparkleCount <= 0 || layout.width <= 0 || layout.height <= 0) {
+			return [];
+		}
+
+		const centerX = layout.width / 2;
+		const centerY = layout.height / 2;
+		const baseRadius = Math.min(layout.width, layout.height) * 0.32;
+
+		return Array.from({ length: sparkleCount }, (_, i) => {
+			const angle = (i / sparkleCount) * Math.PI * 2;
+			const radius = baseRadius + (i % 2) * 12;
+			const size = 8 + (i % 3) * 4;
+
+			return {
+				id: i,
+				x: centerX + Math.cos(angle) * radius,
+				y: centerY + Math.sin(angle) * radius,
+				size,
+				delay: (i * 2000) / sparkleCount,
+			};
+		});
+	}, [layout.height, layout.width, sparkleCount]);
+
+	const handleLayout = (event: LayoutChangeEvent) => {
+		const { width, height } = event.nativeEvent.layout;
+		setLayout((current) => {
+			if (current.width === width && current.height === height) {
+				return current;
+			}
+			return { width, height };
+		});
+	};
 
 	return (
-		<View style={[styles.container, style]}>
+		<View style={[styles.container, style]} onLayout={handleLayout}>
 			{children}
 			{enabled &&
-				sparkles.map((i) => {
-					const angle = (i / sparkles.length) * 2 * Math.PI;
-					const radius = 50 + (i % 2) * 20;
-					const top = 50 + Math.sin(angle) * radius;
-					const left = 50 + Math.cos(angle) * radius;
-					const delay = (i * 2000) / sparkles.length;
-					const size = 8 + (i % 3) * 4;
-
-					return (
-						<View
-							key={i}
-							style={[
-								styles.sparkle,
-								{
-									top: `${top}%`,
-									left: `${left}%`,
-									width: size,
-									height: size,
-									animation: `${animationName} 2000ms ease-in-out infinite`,
-									animationDelay: `${delay}ms`,
-								} as any,
-							]}
-						>
-							<Text style={{ fontSize: size, lineHeight: size, color }}>✦</Text>
-						</View>
-					);
-				})}
-			{enabled && (
-				<style
-					// eslint-disable-next-line react/no-danger
-					dangerouslySetInnerHTML={{
-						__html: `
-            @keyframes ${animationName} {
-              0%, 100% { opacity: 0; transform: scale(0.5); }
-              50% { opacity: 1; transform: scale(1); }
-            }
-          `,
-					}}
-				/>
-			)}
+				sparklePoints.map((sparkle) => (
+					<Sparkle
+						key={sparkle.id}
+						x={sparkle.x}
+						y={sparkle.y}
+						size={sparkle.size}
+						color={color}
+						delay={sparkle.delay}
+						enabled={enabled}
+					/>
+				))}
 		</View>
 	);
 }
@@ -84,5 +181,9 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		pointerEvents: "none",
+	},
+	sparkleGlyph: {
+		textAlign: "center",
+		includeFontPadding: false,
 	},
 });

@@ -1,5 +1,13 @@
-import React, { type ReactNode } from "react";
+import React, { type ReactNode, useEffect } from "react";
 import { type StyleProp, StyleSheet, View, type ViewStyle } from "react-native";
+import Animated, {
+	cancelAnimation,
+	Easing,
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withTiming,
+} from "react-native-reanimated";
 
 interface FloatingElementProps {
 	children: ReactNode;
@@ -16,31 +24,38 @@ export function FloatingElement({
 	enabled = true,
 	style,
 }: FloatingElementProps) {
-	const animationName = `amen-float-${amplitude}-${duration}`;
+	const translateY = useSharedValue(0);
 
-	const animationStyle = enabled
-		? {
-				animation: `${animationName} ${duration}ms ease-in-out infinite`,
-			}
-		: {};
+	useEffect(() => {
+		if (!enabled) {
+			cancelAnimation(translateY);
+			translateY.value = withTiming(0, { duration: 150 });
+			return;
+		}
+
+		translateY.value = 0;
+		translateY.value = withRepeat(
+			withTiming(-Math.abs(amplitude), {
+				duration: Math.max(300, duration / 2),
+				easing: Easing.inOut(Easing.ease),
+			}),
+			-1,
+			true,
+		);
+
+		return () => {
+			cancelAnimation(translateY);
+		};
+	}, [amplitude, duration, enabled, translateY]);
+
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [{ translateY: translateY.value }],
+	}));
 
 	return (
-		<View style={[styles.container, style, animationStyle as any]}>
+		<Animated.View style={[styles.container, style, animatedStyle]}>
 			{children}
-			{enabled && (
-				<style
-					// eslint-disable-next-line react/no-danger
-					dangerouslySetInnerHTML={{
-						__html: `
-            @keyframes ${animationName} {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-${amplitude}px); }
-            }
-          `,
-					}}
-				/>
-			)}
-		</View>
+		</Animated.View>
 	);
 }
 
