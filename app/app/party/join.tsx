@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -13,17 +13,38 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PartyJoinScreen() {
 	const router = useRouter();
+	const params = useLocalSearchParams<{ error?: string }>();
 	const insets = useSafeAreaInsets();
 	const [code, setCode] = useState("");
 	const [name, setName] = useState("");
+	const [error, setError] = useState<string | null>(params.error ?? null);
 
-	const handleJoin = () => {
+	const nameInputRef = useRef<TextInput>(null);
+
+	useEffect(() => {
+		if (params.error) {
+			setError(params.error);
+		}
+	}, [params.error]);
+
+	const handleJoin = useCallback(() => {
 		if (!code || !name) return;
+		setError(null);
 		router.push({
 			pathname: "/party/play",
 			params: { code: code.toUpperCase(), name, role: "player" },
 		});
-	};
+	}, [code, name, router]);
+
+	useEffect(() => {
+		if (code.length === 4) {
+			if (name.length >= 2) {
+				handleJoin();
+			} else {
+				nameInputRef.current?.focus();
+			}
+		}
+	}, [code, name.length, handleJoin]);
 
 	return (
 		<KeyboardAvoidingView
@@ -53,6 +74,14 @@ export default function PartyJoinScreen() {
 						</Text>
 					</View>
 
+					{error && (
+						<View className="bg-red-500/10 border border-red-500/50 p-3 rounded-xl mb-2">
+							<Text className="text-red-500 text-center font-medium">
+								{error}
+							</Text>
+						</View>
+					)}
+
 					<View className="gap-2">
 						<Text className="text-theme-text-secondary font-medium ml-1">
 							Room Code
@@ -63,9 +92,12 @@ export default function PartyJoinScreen() {
 							placeholder="ABCD"
 							placeholderTextColor="#666"
 							maxLength={4}
+							autoFocus={true}
+							inputMode="numeric"
+							keyboardType="number-pad"
 							autoCapitalize="characters"
 							autoCorrect={false}
-							className="bg-theme-surface text-theme-text p-4 rounded-xl text-2xl font-bold text-center tracking-widest border border-theme-border"
+							className="bg-theme-surface text-theme-text p-4 rounded-xl text-4xl font-bold text-center tracking-[12px] border border-theme-border"
 						/>
 					</View>
 
@@ -74,12 +106,15 @@ export default function PartyJoinScreen() {
 							Your Name
 						</Text>
 						<TextInput
+							ref={nameInputRef}
 							value={name}
 							onChangeText={setName}
 							placeholder="Enter your name"
 							placeholderTextColor="#666"
 							maxLength={12}
+							autoCorrect={false}
 							className="bg-theme-surface text-theme-text p-4 rounded-xl text-lg border border-theme-border"
+							onSubmitEditing={handleJoin}
 						/>
 					</View>
 

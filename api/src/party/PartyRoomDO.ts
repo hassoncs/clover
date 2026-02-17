@@ -49,6 +49,12 @@ interface InputCollector {
 	resolve: ((responses: Map<string, PartyInputResponse>) => void) | null;
 }
 
+interface SocketAttachment {
+	role: string;
+	playerId?: string;
+	name?: string;
+}
+
 export class PartyRoomDO {
 	private phase: PartyRoomPhase = "lobby";
 	private players: Map<string, PartyPlayer> = new Map();
@@ -65,13 +71,20 @@ export class PartyRoomDO {
 	private activeInputCollectors: Map<string, InputCollector> = new Map();
 	private stateVersion = 0;
 	private initialized = false;
-	private sockets: Set<WebSocket> = new Set();
-	private socketMetadata: WeakMap<
-		WebSocket,
-		{ role: string; playerId?: string; name?: string }
-	> = new WeakMap();
 
 	constructor(private state: DurableObjectState) {}
+
+	private getSocketMeta(ws: WebSocket): SocketAttachment | null {
+		try {
+			return (ws as any).deserializeAttachment() as SocketAttachment | null;
+		} catch {
+			return null;
+		}
+	}
+
+	private setSocketMeta(ws: WebSocket, data: SocketAttachment): void {
+		(ws as any).serializeAttachment(data);
+	}
 
 	async fetch(request: Request): Promise<Response> {
 		if (!this.initialized) {
@@ -85,11 +98,52 @@ export class PartyRoomDO {
 			return this.handleWebSocketUpgrade(url);
 		}
 
+		if (request.method === "GET" && url.pathname === "/status") {
+			return jsonResponse({
+				active: this.hostId !== null && this.phase !== "ended",
+				phase: this.phase,
+			});
+		}
+
 		if (request.method === "POST" && url.pathname === "/init") {
 			return this.handleInit(request);
 		}
 
 		return new Response("Not found", { status: 404 });
+	}
+
+	async webSocketMessage(
+		ws: WebSocket,
+		message: string | ArrayBuffer,
+	): Promise<void> {
+		if (!this.initialized) {
+			await this.loadState();
+			this.initialized = true;
+		}
+		try {
+			await this.handleMessage(ws, message);
+		} catch {}
+	}
+
+	async webSocketClose(
+		ws: WebSocket,
+		code: number,
+		reason: string,
+		wasClean: boolean,
+	): Promise<void> {
+		if (!this.initialized) {
+			await this.loadState();
+			this.initialized = true;
+		}
+		await this.handleClose(ws, code, reason, wasClean);
+	}
+
+	async webSocketError(ws: WebSocket, _error: unknown): Promise<void> {
+		if (!this.initialized) {
+			await this.loadState();
+			this.initialized = true;
+		}
+		await this.handleClose(ws, 1006, "error", false);
 	}
 
 	setMinPlayers(min: number): void {
@@ -194,15 +248,14 @@ export class PartyRoomDO {
 		const client = pair[0];
 		const server = pair[1];
 
-		server.accept();
-		this.sockets.add(server);
+		this.state.acceptWebSocket(server);
 
-		const meta = {
+		const attachment = {
 			role,
 			playerId: undefined as string | undefined,
 			name: name ?? undefined,
 		};
-		this.socketMetadata.set(server, meta);
+		this.setSocketMeta(server, attachment);
 
 		(async () => {
 			try {
@@ -220,22 +273,6 @@ export class PartyRoomDO {
 				server.close(1011, "Internal Error");
 			}
 		})();
-
-		server.addEventListener("message", async (event) => {
-			try {
-				await this.handleMessage(server, event.data);
-			} catch {}
-		});
-
-		server.addEventListener("close", async (event) => {
-			this.sockets.delete(server);
-			await this.handleClose(server, event.code, event.reason, event.wasClean);
-		});
-
-		server.addEventListener("error", async () => {
-			this.sockets.delete(server);
-			await this.handleClose(server, 1006, "error", false);
-		});
 
 		return new Response(null, { status: 101, webSocket: client });
 	}
@@ -289,9 +326,10 @@ export class PartyRoomDO {
 			playerId = crypto.randomUUID();
 		}
 
-		const meta = this.socketMetadata.get(ws);
+		const meta = this.getSocketMeta(ws);
 		if (meta) {
 			meta.playerId = playerId;
+			this.setSocketMeta(ws, meta);
 		}
 
 		await this.handlePlayerConnect(ws, playerId, name, role);
@@ -375,7 +413,7 @@ export class PartyRoomDO {
 			return;
 		}
 
-		const meta = this.socketMetadata.get(ws);
+		const meta = this.getSocketMeta(ws);
 		if (!meta) return;
 
 		const senderId = meta.role === "host" ? this.hostId : meta.playerId;
@@ -443,7 +481,7 @@ export class PartyRoomDO {
 		_reason: string,
 		_wasClean: boolean,
 	): Promise<void> {
-		const meta = this.socketMetadata.get(ws);
+		const meta = this.getSocketMeta(ws);
 		if (!meta) return;
 
 		if (meta.role === "host" && this.hostId) {
@@ -488,12 +526,11 @@ export class PartyRoomDO {
 	private async cleanup(): Promise<void> {
 		this.phase = "ended";
 
-		for (const ws of this.sockets) {
+		for (const ws of this.state.getWebSockets()) {
 			try {
 				ws.close(1000, "Room expired");
 			} catch {}
 		}
-		this.sockets.clear();
 
 		for (const timer of this.disconnectTimers.values()) {
 			clearTimeout(timer);
@@ -591,8 +628,8 @@ export class PartyRoomDO {
 		this.activeInputCollectors.set(requestId, collector);
 
 		const message = encodeMessage(inputRequestMessage(requestId, request));
-		for (const ws of this.sockets) {
-			const meta = this.socketMetadata.get(ws);
+		for (const ws of this.state.getWebSockets()) {
+			const meta = this.getSocketMeta(ws);
 			if (
 				meta?.role === "player" &&
 				meta.playerId &&
@@ -662,8 +699,8 @@ export class PartyRoomDO {
 	}
 
 	broadcastToTeam(team: string, message: string): void {
-		for (const ws of this.sockets) {
-			const meta = this.socketMetadata.get(ws);
+		for (const ws of this.state.getWebSockets()) {
+			const meta = this.getSocketMeta(ws);
 			if (
 				meta?.role === "player" &&
 				meta.playerId &&
@@ -685,8 +722,8 @@ export class PartyRoomDO {
 	): Promise<void> {
 		const message = encodeMessage(privateStateMessage(data));
 
-		for (const ws of this.sockets) {
-			const meta = this.socketMetadata.get(ws);
+		for (const ws of this.state.getWebSockets()) {
+			const meta = this.getSocketMeta(ws);
 			if (
 				meta?.role === "player" &&
 				meta.playerId === playerId &&
@@ -837,7 +874,7 @@ export class PartyRoomDO {
 	}
 
 	private broadcastToAll(message: string): void {
-		for (const ws of this.sockets) {
+		for (const ws of this.state.getWebSockets()) {
 			if (ws.readyState === WebSocket.OPEN) {
 				try {
 					ws.send(message);
@@ -847,8 +884,8 @@ export class PartyRoomDO {
 	}
 
 	private broadcastToPlayers(message: string): void {
-		for (const ws of this.sockets) {
-			const meta = this.socketMetadata.get(ws);
+		for (const ws of this.state.getWebSockets()) {
+			const meta = this.getSocketMeta(ws);
 			if (meta?.role === "player" && ws.readyState === WebSocket.OPEN) {
 				try {
 					ws.send(message);
@@ -858,8 +895,8 @@ export class PartyRoomDO {
 	}
 
 	private broadcastToHost(message: string): void {
-		for (const ws of this.sockets) {
-			const meta = this.socketMetadata.get(ws);
+		for (const ws of this.state.getWebSockets()) {
+			const meta = this.getSocketMeta(ws);
 			if (meta?.role === "host" && ws.readyState === WebSocket.OPEN) {
 				try {
 					ws.send(message);

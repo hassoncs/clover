@@ -26,6 +26,27 @@ const AVAILABLE_GAMES = [
 		icon: "color-palette" as const,
 		color: "#EC4899",
 	},
+	{
+		id: "punchline-duel",
+		name: "Punchline Duel",
+		description: "Head-to-head comedy battles. Two answers enter, one wins!",
+		icon: "flash" as const,
+		color: "#F59E0B",
+	},
+	{
+		id: "quiplash",
+		name: "Quiplash",
+		description: "Fill-in-the-blank comedy. Submit answers, vote head-to-head!",
+		icon: "chatbubbles" as const,
+		color: "#10B981",
+	},
+	{
+		id: "heads-up",
+		name: "Heads Up",
+		description: "Guess the word on the TV while your friends give clues!",
+		icon: "person" as const,
+		color: "#EF4444",
+	},
 ];
 
 export default function PartyIndexScreen() {

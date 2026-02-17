@@ -23,6 +23,7 @@ describe("PartyRoomDO state persistence", () => {
 		vi.useFakeTimers();
 		mockState = createMockState();
 		dobj = new PartyRoomDO(mockState.state);
+		(mockState.state as any).__partyRoom = dobj;
 	});
 
 	afterEach(() => {

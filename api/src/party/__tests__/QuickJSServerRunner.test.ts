@@ -159,6 +159,23 @@ describe("QuickJSServerRunner", () => {
 		expect(room.updateSharedData).toHaveBeenCalledWith({ clue: "sunset" });
 	});
 
+	it("interrupts runaway synchronous loops and ends the room", async () => {
+		const room = createMockRoom();
+		const runner = new QuickJSServerRunner(room);
+		const start = Date.now();
+
+		await expect(
+			runner.execute(`
+          exports.run = function() {
+            while (true) {}
+          };
+        `),
+		).rejects.toThrow("Synchronous script execution timeout");
+
+		expect(Date.now() - start).toBeLessThan(15_000);
+		expect(room.setPhase).toHaveBeenCalledWith("ended");
+	}, 15_000);
+
 	describe("timeout", () => {
 		beforeEach(() => {
 			vi.useFakeTimers();

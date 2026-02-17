@@ -1,24 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PartyRoomDO } from "../PartyRoomDO";
-
-type DurableObjectState =
-	import("@cloudflare/workers-types").DurableObjectState;
-
-function createMockState(): DurableObjectState {
-	return {
-		storage: {
-			get: vi.fn(async () => undefined),
-			put: vi.fn(async () => undefined),
-			delete: vi.fn(async () => undefined),
-			deleteAll: vi.fn(async () => undefined),
-			setAlarm: vi.fn(async () => undefined),
-		} as unknown as DurableObjectState["storage"],
-	} as DurableObjectState;
-}
+import { createMockState } from "./test-helpers";
 
 function createSocket() {
 	return {
 		readyState: WebSocket.OPEN,
+		accept: vi.fn<() => void>(),
 		send: vi.fn<(message: string) => void>(),
 	} as unknown as WebSocket;
 }
@@ -33,30 +20,31 @@ describe("PartyRoomDO.requestInputFromSubset", () => {
 	});
 
 	it("sends input_request only to targeted players and resolves when all targeted responses arrive", async () => {
-		const room = new PartyRoomDO(createMockState());
+		const mockState = createMockState();
+		const room = new PartyRoomDO(mockState.state);
 		const p1Socket = createSocket();
 		const p2Socket = createSocket();
 		const p3Socket = createSocket();
 		const hostSocket = createSocket();
 
-		(room as any).sockets.add(p1Socket);
-		(room as any).sockets.add(p2Socket);
-		(room as any).sockets.add(p3Socket);
-		(room as any).sockets.add(hostSocket);
+		(mockState.state as any).acceptWebSocket(p1Socket);
+		(mockState.state as any).acceptWebSocket(p2Socket);
+		(mockState.state as any).acceptWebSocket(p3Socket);
+		(mockState.state as any).acceptWebSocket(hostSocket);
 
-		(room as any).socketMetadata.set(p1Socket, {
+		(p1Socket as any).serializeAttachment({
 			role: "player",
 			playerId: "p1",
 		});
-		(room as any).socketMetadata.set(p2Socket, {
+		(p2Socket as any).serializeAttachment({
 			role: "player",
 			playerId: "p2",
 		});
-		(room as any).socketMetadata.set(p3Socket, {
+		(p3Socket as any).serializeAttachment({
 			role: "player",
 			playerId: "p3",
 		});
-		(room as any).socketMetadata.set(hostSocket, { role: "host" });
+		(hostSocket as any).serializeAttachment({ role: "host" });
 
 		(room as any).players.set("p1", { id: "p1", name: "P1", connected: true });
 		(room as any).players.set("p2", { id: "p2", name: "P2", connected: true });
@@ -109,18 +97,19 @@ describe("PartyRoomDO.requestInputFromSubset", () => {
 	});
 
 	it("returns partial responses on timeout and ignores non-targeted player responses", async () => {
-		const room = new PartyRoomDO(createMockState());
+		const mockState = createMockState();
+		const room = new PartyRoomDO(mockState.state);
 		const p1Socket = createSocket();
 		const p2Socket = createSocket();
 
-		(room as any).sockets.add(p1Socket);
-		(room as any).sockets.add(p2Socket);
+		(mockState.state as any).acceptWebSocket(p1Socket);
+		(mockState.state as any).acceptWebSocket(p2Socket);
 
-		(room as any).socketMetadata.set(p1Socket, {
+		(p1Socket as any).serializeAttachment({
 			role: "player",
 			playerId: "p1",
 		});
-		(room as any).socketMetadata.set(p2Socket, {
+		(p2Socket as any).serializeAttachment({
 			role: "player",
 			playerId: "p2",
 		});
@@ -167,11 +156,12 @@ describe("PartyRoomDO.requestInputFromSubset", () => {
 	});
 
 	it("resolves immediately with empty map when subset is empty", async () => {
-		const room = new PartyRoomDO(createMockState());
+		const mockState = createMockState();
+		const room = new PartyRoomDO(mockState.state);
 		const p1Socket = createSocket();
 
-		(room as any).sockets.add(p1Socket);
-		(room as any).socketMetadata.set(p1Socket, {
+		(mockState.state as any).acceptWebSocket(p1Socket);
+		(p1Socket as any).serializeAttachment({
 			role: "player",
 			playerId: "p1",
 		});

@@ -23,6 +23,7 @@ describe("PartyRoomDO start game with scripts", () => {
 		vi.useFakeTimers();
 		const { state } = createMockState();
 		dobj = new PartyRoomDO(state);
+		(state as any).__partyRoom = dobj;
 	});
 
 	afterEach(() => {

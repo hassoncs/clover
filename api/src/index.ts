@@ -95,6 +95,13 @@ app.get("/ws/speech-to-text", async (c) => {
 	return stub.fetch(c.req.raw);
 });
 
+const createRateLimits = new Map<
+	string,
+	{ count: number; windowStart: number }
+>();
+const CREATE_RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const CREATE_RATE_LIMIT_MAX = 5; // 5 rooms per minute per IP
+
 function generateRoomCode(): string {
 	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 	let code = "";
@@ -105,7 +112,50 @@ function generateRoomCode(): string {
 }
 
 app.post("/api/party/create", async (c) => {
-	const code = generateRoomCode();
+	const ip =
+		c.req.header("cf-connecting-ip") ??
+		c.req.header("x-forwarded-for") ??
+		"unknown";
+	const now = Date.now();
+	const entry = createRateLimits.get(ip);
+	if (entry && now - entry.windowStart < CREATE_RATE_LIMIT_WINDOW_MS) {
+		entry.count++;
+		if (entry.count > CREATE_RATE_LIMIT_MAX) {
+			return c.json({ error: "Too many rooms created. Try again later." }, 429);
+		}
+	} else {
+		createRateLimits.set(ip, { count: 1, windowStart: now });
+	}
+
+	const MAX_CODE_RETRIES = 5;
+	let code: string | null = null;
+
+	for (let i = 0; i < MAX_CODE_RETRIES; i++) {
+		const candidate = generateRoomCode();
+		const doId = c.env.PARTY_ROOM.idFromName(candidate);
+		const stub = c.env.PARTY_ROOM.get(doId);
+
+		try {
+			const statusRes = await stub.fetch(new Request("https://party/status"));
+			const status = (await statusRes.json()) as { active: boolean };
+
+			if (!status.active) {
+				code = candidate;
+				break;
+			}
+		} catch (e) {
+			code = candidate;
+			break;
+		}
+	}
+
+	if (!code) {
+		return c.json(
+			{ error: "Could not generate unique room code. Try again." },
+			503,
+		);
+	}
+
 	const hostId = crypto.randomUUID();
 	const hostToken = crypto.randomUUID();
 

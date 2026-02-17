@@ -11,7 +11,9 @@ import type {
 } from "./types";
 
 const INITIAL_RECONNECT_DELAY = 1000;
-const MAX_RECONNECT_DELAY = 30000;
+const MAX_RECONNECT_DELAY = 15000;
+const MAX_RECONNECT_ATTEMPTS = 10;
+const CLEAN_CLOSE_CODE = 1000;
 
 function getPlayerTokenKey(roomCode: string): string {
 	return `party_player_token:${roomCode}`;
@@ -21,7 +23,8 @@ export type ConnectionStatus =
 	| "connecting"
 	| "connected"
 	| "disconnected"
-	| "reconnecting";
+	| "reconnecting"
+	| "error";
 
 export interface UsePartyConnectionParams {
 	code: string;
@@ -64,12 +67,48 @@ export function usePartyConnection({
 	const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
 		null,
 	);
-	const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY);
+	const reconnectAttemptsRef = useRef(0);
 	const isConnectingRef = useRef(false);
+	const shouldReconnectRef = useRef(true);
 	const inputQueueRef = useRef<unknown[]>([]);
 	const playerTokenRef = useRef<string | null>(null);
+	const connectRef = useRef<(() => Promise<void>) | null>(null);
+
+	const clearReconnectTimer = useCallback(() => {
+		if (reconnectTimeoutRef.current) {
+			clearTimeout(reconnectTimeoutRef.current);
+			reconnectTimeoutRef.current = null;
+		}
+	}, []);
+
+	const scheduleReconnect = useCallback(() => {
+		if (!shouldReconnectRef.current) {
+			return;
+		}
+
+		if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+			setConnectionStatus("error");
+			return;
+		}
+
+		reconnectAttemptsRef.current += 1;
+		const delay = Math.min(
+			INITIAL_RECONNECT_DELAY * 2 ** (reconnectAttemptsRef.current - 1),
+			MAX_RECONNECT_DELAY,
+		);
+
+		setConnectionStatus("reconnecting");
+		clearReconnectTimer();
+		reconnectTimeoutRef.current = setTimeout(() => {
+			void connectRef.current?.();
+		}, delay);
+	}, [clearReconnectTimer]);
 
 	const connect = useCallback(async () => {
+		if (!shouldReconnectRef.current) {
+			return;
+		}
+
 		if (
 			isConnectingRef.current ||
 			wsRef.current?.readyState === WebSocket.OPEN
@@ -78,14 +117,18 @@ export function usePartyConnection({
 		}
 
 		isConnectingRef.current = true;
-		setConnectionStatus(wsRef.current ? "reconnecting" : "connecting");
+		if (reconnectAttemptsRef.current === 0) {
+			setConnectionStatus("connecting");
+		} else {
+			setConnectionStatus("reconnecting");
+		}
 
 		try {
 			const token = await getAuthToken();
 			if (!token && role === "host" && !hostToken) {
 				console.warn("[usePartyConnection] No auth token available for host");
 				isConnectingRef.current = false;
-				setConnectionStatus("disconnected");
+				setConnectionStatus("error");
 				return;
 			}
 
@@ -97,13 +140,12 @@ export function usePartyConnection({
 				if (name) {
 					params.set("name", name);
 				}
-				const storedToken = await getStorageItem<string | null>(
-					getPlayerTokenKey(code),
-					null,
-				);
-				if (storedToken) {
-					playerTokenRef.current = storedToken;
-					params.set("token", storedToken);
+				const reconnectToken =
+					playerTokenRef.current ??
+					(await getStorageItem<string | null>(getPlayerTokenKey(code), null));
+				if (reconnectToken) {
+					playerTokenRef.current = reconnectToken;
+					params.set("token", reconnectToken);
 				}
 			}
 			if (token) {
@@ -118,8 +160,9 @@ export function usePartyConnection({
 			ws.onopen = () => {
 				console.log("[usePartyConnection] Connected");
 				setConnectionStatus("connected");
-				reconnectDelayRef.current = INITIAL_RECONNECT_DELAY;
+				reconnectAttemptsRef.current = 0;
 				isConnectingRef.current = false;
+				clearReconnectTimer();
 
 				while (inputQueueRef.current.length > 0) {
 					const input = inputQueueRef.current.shift();
@@ -198,41 +241,43 @@ export function usePartyConnection({
 				console.error("[usePartyConnection] WebSocket error:", error);
 			};
 
-			ws.onclose = () => {
+			ws.onclose = (event) => {
 				console.log("[usePartyConnection] Disconnected");
 				wsRef.current = null;
 				isConnectingRef.current = false;
-				setConnectionStatus("disconnected");
 
-				if (reconnectTimeoutRef.current) {
-					clearTimeout(reconnectTimeoutRef.current);
+				if (!shouldReconnectRef.current) {
+					setConnectionStatus("disconnected");
+					clearReconnectTimer();
+					return;
 				}
-				reconnectTimeoutRef.current = setTimeout(() => {
-					reconnectDelayRef.current = Math.min(
-						reconnectDelayRef.current * 2,
-						MAX_RECONNECT_DELAY,
-					);
-					connect();
-				}, reconnectDelayRef.current);
+
+				if (event.code === CLEAN_CLOSE_CODE || event.wasClean) {
+					setConnectionStatus("disconnected");
+					clearReconnectTimer();
+					return;
+				}
+
+				scheduleReconnect();
 			};
 		} catch (err) {
 			console.error("[usePartyConnection] Connection error:", err);
 			isConnectingRef.current = false;
-			setConnectionStatus("disconnected");
+			scheduleReconnect();
 		}
-	}, [code, role, name, hostToken]);
+	}, [clearReconnectTimer, code, hostToken, name, role, scheduleReconnect]);
 
 	const disconnect = useCallback(() => {
-		if (reconnectTimeoutRef.current) {
-			clearTimeout(reconnectTimeoutRef.current);
-			reconnectTimeoutRef.current = null;
-		}
+		shouldReconnectRef.current = false;
+		clearReconnectTimer();
 		if (wsRef.current) {
-			wsRef.current.close();
+			wsRef.current.close(CLEAN_CLOSE_CODE, "party_connection_closed");
 			wsRef.current = null;
 		}
+		reconnectAttemptsRef.current = 0;
+		isConnectingRef.current = false;
 		setConnectionStatus("disconnected");
-	}, []);
+	}, [clearReconnectTimer]);
 
 	const sendInput = useCallback(
 		(value: unknown) => {
@@ -273,6 +318,12 @@ export function usePartyConnection({
 	}, []);
 
 	useEffect(() => {
+		connectRef.current = connect;
+	}, [connect]);
+
+	useEffect(() => {
+		shouldReconnectRef.current = true;
+		reconnectAttemptsRef.current = 0;
 		connect();
 		return () => {
 			disconnect();

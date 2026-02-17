@@ -10,6 +10,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import { ToastHost } from "@/components/toast/ToastHost";
 import { AuthProvider } from "@/hooks/useAuth";
+import { brandCssClass } from "@/lib/brand";
 import { preloadEditorModules } from "@/lib/editor/hooks/useEditorPreloader";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
@@ -141,7 +142,9 @@ function RootLayout() {
 	return (
 		<GestureHandlerRootView
 			style={{ flex: 1 }}
-			className={Platform.OS === "web" ? "no-select" : ""}
+			className={[Platform.OS === "web" ? "no-select" : "", brandCssClass]
+				.filter(Boolean)
+				.join(" ")}
 		>
 			<TRPCProvider>
 				<AuthProvider>

@@ -55,6 +55,8 @@ Updated: 2026-02-12 (post-audit)
 
 ### Economy & IAP
 - [economy-iap](economy-iap.md) - Sparks/Gems currency, wallet transactions, RevenueCat IAP
+- stripe-cli (global skill — `~/.claude/skills/stripe-cli.md`) - Stripe CLI for products, prices, customers, subscriptions, webhooks
+- supabase-cli (global skill — `~/.claude/skills/supabase-cli.md`) - Supabase CLI for projects, databases, migrations, edge functions, storage, auth, config
 
 ### Assets & Audio
 - [asset-pack-generation](asset-pack-generation.md) - Scenario.com image pipeline, silhouette-to-sprite, BlobStore
@@ -68,7 +70,7 @@ Updated: 2026-02-12 (post-audit)
 
 ## Totals
 
-- **25 skill files** (21 top-level + 4 game-authoring sub-skills)
+- **26 skill files** (22 top-level + 4 game-authoring sub-skills)
 - All file paths verified via glob
 - All type signatures verified via grep/read of actual source
 - Dead cross-links fixed (coordinate-systems.md, shaders.md, rules-system.md removed)

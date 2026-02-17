@@ -10,6 +10,8 @@ export interface ScheduledPack {
 
 const HOLY_WEEK_2026_START = new Date("2026-03-30T00:00:00.000Z");
 const HOLY_WEEK_2026_END = new Date("2026-04-06T23:59:59.999Z");
+const GOOD_FRIDAY_2026_START = new Date("2026-04-03T00:00:00.000Z");
+const GOOD_FRIDAY_2026_END = new Date("2026-04-04T23:59:59.999Z");
 
 export const SCHEDULED_PACKS: ScheduledPack[] = [
 	{
@@ -67,6 +69,27 @@ export const SCHEDULED_PACKS: ScheduledPack[] = [
 		activateDate: HOLY_WEEK_2026_START,
 		deactivateDate: HOLY_WEEK_2026_END,
 		contentType: "headsup",
+	},
+	{
+		packId: "amen-good-friday",
+		brandId: "amen",
+		activateDate: GOOD_FRIDAY_2026_START,
+		deactivateDate: GOOD_FRIDAY_2026_END,
+		contentType: "trivia",
+	},
+	{
+		packId: "amen-good-friday",
+		brandId: "amen",
+		activateDate: GOOD_FRIDAY_2026_START,
+		deactivateDate: GOOD_FRIDAY_2026_END,
+		contentType: "quip",
+	},
+	{
+		packId: "amen-good-friday",
+		brandId: "amen",
+		activateDate: GOOD_FRIDAY_2026_START,
+		deactivateDate: GOOD_FRIDAY_2026_END,
+		contentType: "wyr",
 	},
 ];
 

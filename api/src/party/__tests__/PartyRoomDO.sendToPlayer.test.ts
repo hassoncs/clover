@@ -1,48 +1,36 @@
 import { describe, expect, it, vi } from "vitest";
 import { PartyRoomDO } from "../PartyRoomDO";
-
-type DurableObjectState =
-	import("@cloudflare/workers-types").DurableObjectState;
-
-function createMockState(): DurableObjectState {
-	return {
-		storage: {
-			get: vi.fn(async () => undefined),
-			put: vi.fn(async () => undefined),
-			delete: vi.fn(async () => undefined),
-			deleteAll: vi.fn(async () => undefined),
-			setAlarm: vi.fn(async () => undefined),
-		} as unknown as DurableObjectState["storage"],
-	} as DurableObjectState;
-}
+import { createMockState } from "./test-helpers";
 
 function createSocket() {
 	return {
 		readyState: WebSocket.OPEN,
+		accept: vi.fn<() => void>(),
 		send: vi.fn<(message: string) => void>(),
 	} as unknown as WebSocket;
 }
 
 describe("PartyRoomDO.sendToPlayer", () => {
 	it("sends private_state only to targeted player", async () => {
-		const room = new PartyRoomDO(createMockState());
+		const mockState = createMockState();
+		const room = new PartyRoomDO(mockState.state);
 		const targetSocket = createSocket();
 		const otherPlayerSocket = createSocket();
 		const hostSocket = createSocket();
 
-		(room as any).sockets.add(targetSocket);
-		(room as any).sockets.add(otherPlayerSocket);
-		(room as any).sockets.add(hostSocket);
+		(mockState.state as any).acceptWebSocket(targetSocket);
+		(mockState.state as any).acceptWebSocket(otherPlayerSocket);
+		(mockState.state as any).acceptWebSocket(hostSocket);
 
-		(room as any).socketMetadata.set(targetSocket, {
+		(targetSocket as any).serializeAttachment({
 			role: "player",
 			playerId: "p1",
 		});
-		(room as any).socketMetadata.set(otherPlayerSocket, {
+		(otherPlayerSocket as any).serializeAttachment({
 			role: "player",
 			playerId: "p2",
 		});
-		(room as any).socketMetadata.set(hostSocket, { role: "host" });
+		(hostSocket as any).serializeAttachment({ role: "host" });
 
 		await room.sendToPlayer("p1", { secret: "value", scoreDelta: 5 });
 
@@ -66,11 +54,12 @@ describe("PartyRoomDO.sendToPlayer", () => {
 	});
 
 	it("gracefully no-ops when player is not connected", async () => {
-		const room = new PartyRoomDO(createMockState());
+		const mockState = createMockState();
+		const room = new PartyRoomDO(mockState.state);
 		const connectedSocket = createSocket();
 
-		(room as any).sockets.add(connectedSocket);
-		(room as any).socketMetadata.set(connectedSocket, {
+		(mockState.state as any).acceptWebSocket(connectedSocket);
+		(connectedSocket as any).serializeAttachment({
 			role: "player",
 			playerId: "p1",
 		});

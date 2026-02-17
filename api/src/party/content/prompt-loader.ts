@@ -26,11 +26,13 @@ import amenDilemmaData from "./packs/amen/amen-dilemma.json";
 import amenDrawingData from "./packs/amen/amen-drawing.json";
 import amenEasterSpecialData from "./packs/amen/amen-easter-special.json";
 import amenFibbageData from "./packs/amen/amen-fibbage.json";
+import amenGoodFridayData from "./packs/amen/amen-good-friday.json";
 import amenHeadsUpData from "./packs/amen/amen-headsup.json";
 import amenHistoryData from "./packs/amen/amen-history.json";
 import amenQuipData from "./packs/amen/amen-quip.json";
 import amenRankingData from "./packs/amen/amen-ranking.json";
 import amenTriviaData from "./packs/amen/amen-trivia.json";
+import amenWagerData from "./packs/amen/amen-wager.json";
 import quiplashPromptsData from "./quiplash-prompts.json";
 import triviaPromptsData from "./trivia-prompts.json";
 
@@ -121,16 +123,43 @@ const contentPacks: Record<
 		quip: quiplashPromptsData as QuipPrompt[],
 		trivia: triviaPromptsData as TriviaQuestion[],
 		FakeWord: fakeWordsData as FakeWord[],
-		// Other content types will be added as JSON files are generated:
-		// drawing: drawingData as DrawingPrompt[],
-		// wyr: wyrData as WouldYouRather[],
-		// estimation: estimationData as EstimationQuestion[],
+		headsup: [
+			{
+				id: "default-deck",
+				name: "General Knowledge",
+				words: [
+					"Albert Einstein",
+					"The Eiffel Tower",
+					"Basketball",
+					"Pizza",
+					"Harry Potter",
+					"The Moon Landing",
+					"Dinosaurs",
+					"Shakespeare",
+					"The Mona Lisa",
+					"Chocolate",
+					"Mount Everest",
+					"Beethoven",
+					"The Great Wall of China",
+					"Soccer",
+					"Sushi",
+					"Cleopatra",
+					"The Olympics",
+					"Gravity",
+					"Penguins",
+					"The Internet",
+				],
+			},
+		] as HeadsUpDeck[],
 	},
 	amen: {
 		trivia: amenTriviaData as TriviaQuestion[],
 		quip: amenQuipData as QuipPrompt[],
 		fibbage: amenFibbageData as FibbageQuestion[],
-		estimation: amenHistoryData as EstimationQuestion[],
+		estimation: [
+			...(amenHistoryData as EstimationQuestion[]),
+			...(amenWagerData as EstimationQuestion[]),
+		],
 		drawing: amenDrawingData as DrawingPrompt[],
 		ranking: amenRankingData as RankingPrompt[],
 		wyr: amenDilemmaData as WouldYouRather[],
@@ -143,6 +172,9 @@ const scheduledContentPacks: Record<
 	Partial<{ [K in ContentType]: unknown[] }>
 > = {
 	"amen-easter-special": amenEasterSpecialData as Partial<{
+		[K in ContentType]: unknown[];
+	}>,
+	"amen-good-friday": amenGoodFridayData as Partial<{
 		[K in ContentType]: unknown[];
 	}>,
 };

@@ -5,6 +5,7 @@ import consensusMineDefinition from "../../../../r2/games/party/consensus-mine/d
 import crowdComedyDefinition from "../../../../r2/games/party/crowd-comedy/definition.json";
 import drawfulAnimateDefinition from "../../../../r2/games/party/drawful-animate/definition.json";
 import halfAndHalfDefinition from "../../../../r2/games/party/half-and-half/definition.json";
+import headsUpDefinition from "../../../../r2/games/party/headsUp/definition.json";
 import lexiconLadderDefinition from "../../../../r2/games/party/lexicon-ladder/definition.json";
 import openMicFrenzyDefinition from "../../../../r2/games/party/open-mic-frenzy/definition.json";
 import outOfContextDefinition from "../../../../r2/games/party/out-of-context/definition.json";
@@ -74,6 +75,7 @@ const r2SketchBluffDefinition = sketchBluffDefinition as PartyGameDefinition;
 const r2ChromaCluesDefinition = chromaCluesDefinition as PartyGameDefinition;
 const r2DrawfulAnimateDefinition =
 	drawfulAnimateDefinition as PartyGameDefinition;
+const r2HeadsUpDefinition = headsUpDefinition as PartyGameDefinition;
 
 const runFromDefinition =
 	(
@@ -194,6 +196,10 @@ const runDrawfulAnimateFromDefinition = runFromDefinition(
 	"Flicker Frames",
 	r2DrawfulAnimateDefinition,
 );
+const runHeadsUpFromDefinition = runFromDefinition(
+	"Heads Up",
+	r2HeadsUpDefinition,
+);
 const runPunchlineFerryFromDefinition = runFromDefinition(
 	"Guffaw Galleon",
 	r2PunchlineFerryDefinition,
@@ -207,6 +213,7 @@ export const TEMPLATE_REGISTRY: Record<string, PartyTemplateRunner> = {
 	"crowd-comedy": runCrowdComedyFromDefinition,
 	"drawful-animate": runDrawfulAnimateFromDefinition,
 	"half-and-half": runHalfAndHalfFromDefinition,
+	"heads-up": runHeadsUpFromDefinition,
 	"lexicon-ladder": runLexiconLadderFromDefinition,
 	quiplash: runQuiplashFromDefinition,
 	"question-answer": runQuestionAnswerFromDefinition,

@@ -1,29 +1,42 @@
 {
-	"id": "headsUp",
-	"title": "Heads Up",
+	"name": "heads-up",
 	"version": "1.0.0",
-	"description": "A classic party game where you guess the word on your forehead!",
-	"author": "Slopcade",
-	"license": "MIT",
+	"title": "Heads Up",
+	"description": "A host-screen guessing game where one player turns away while teammates give clues.",
+	"instructions": "One player guesses while facing away from the TV. Use Got it or Pass to race through words before time runs out.",
+	"slug": "headsUp",
 	"world": {
 		"gravity": {
 			"x": 0,
-			"y": 10
+			"y": 0
 		},
 		"pixelsPerMeter": 50,
 		"bounds": {
-			"width": 10,
-			"height": 10
+			"width": 12,
+			"height": 16
 		}
 	},
-	"brands": [
-		"amen",
-		"slopcade"
-	],
+	"party": {
+		"maxPlayers": 12,
+		"minPlayers": 2,
+		"serverScript": "server",
+		"contentPacks": ["headsup"],
+		"phases": [
+			"lobby",
+			"playing",
+			"guessing",
+			"round_results",
+			"scores",
+			"winner"
+		],
+		"inputTypes": ["buzzer", "choice"],
+		"roundCount": 12
+	},
+	"brands": ["amen", "slopcade"],
 	"brandTitles": {
 		"amen": {
 			"title": "Who Am I?",
-			"description": "A biblical figure is on your forehead \u2014 ask yes-or-no questions to guess who you are!"
+			"description": "One player faces away from the host screen while teammates give clues to Bible characters and topics."
 		}
 	}
 }

@@ -26,6 +26,8 @@ function createMockState(): {
 	storage: Map<string, unknown>;
 } {
 	const storage = new Map<string, unknown>();
+	const connectedSockets: WebSocket[] = [];
+	const attachments = new WeakMap<WebSocket, unknown>();
 
 	const state = {
 		storage: {
@@ -39,6 +41,40 @@ function createMockState(): {
 			setAlarm: vi.fn(),
 		},
 		id: { toString: () => "test-party-room-id" },
+		acceptWebSocket(ws: WebSocket) {
+			(ws as any).accept();
+			connectedSockets.push(ws);
+			(ws as any).serializeAttachment = (data: unknown) => {
+				attachments.set(ws, JSON.parse(JSON.stringify(data)));
+			};
+			(ws as any).deserializeAttachment = () => {
+				return attachments.get(ws) ?? null;
+			};
+
+			const room = (state as any).__partyRoom;
+			if (room) {
+				ws.addEventListener("message", (event: MessageEvent) => {
+					void room.webSocketMessage(ws, event.data);
+				});
+				ws.addEventListener("close", (event: CloseEvent) => {
+					void room.webSocketClose(
+						ws,
+						event.code,
+						event.reason,
+						event.wasClean,
+					);
+				});
+				ws.addEventListener("error", () => {
+					void room.webSocketError(ws, new Error("socket error"));
+				});
+			}
+		},
+		getWebSockets(): WebSocket[] {
+			return connectedSockets.filter((ws) => {
+				const openState = (WebSocket as any).READY_STATE_OPEN;
+				return ws.readyState === openState || ws.readyState === 1;
+			});
+		},
 	} as unknown as DurableObjectState;
 
 	return { state, storage };
@@ -83,6 +119,7 @@ describe("PartyRoomDO", () => {
 		vi.useFakeTimers();
 		mockState = createMockState();
 		dobj = new PartyRoomDO(mockState.state);
+		(mockState.state as any).__partyRoom = dobj;
 	});
 
 	afterEach(() => {

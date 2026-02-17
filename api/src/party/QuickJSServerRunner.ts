@@ -13,7 +13,10 @@ import type {
 } from "@slopcade/shared/types/party";
 
 const SCRIPT_EXECUTION_TIMEOUT_MS = 30 * 60 * 1000;
+const SYNCHRONOUS_EXECUTION_TIMEOUT_MS = 5 * 1000;
 const MEMORY_LIMIT_BYTES = 10 * 1024 * 1024;
+
+type ExecuteWithSyncBudget = <T>(fn: () => T) => T;
 
 export interface RoomAPI {
 	setPhase(phase: string): Promise<void>;
@@ -88,6 +91,19 @@ export class QuickJSServerRunner {
 		const runtime = module.newRuntime();
 		runtime.setMemoryLimit(MEMORY_LIMIT_BYTES);
 
+		let interruptDeadline = Number.POSITIVE_INFINITY;
+		runtime.setInterruptHandler(() => Date.now() >= interruptDeadline);
+		const executeWithSyncBudget: ExecuteWithSyncBudget = <T>(
+			fn: () => T,
+		): T => {
+			interruptDeadline = Date.now() + SYNCHRONOUS_EXECUTION_TIMEOUT_MS;
+			try {
+				return fn();
+			} finally {
+				interruptDeadline = Number.POSITIVE_INFINITY;
+			}
+		};
+
 		const context = runtime.newContext();
 		const retainedHandles: QuickJSHandle[] = [];
 		const pendingDeferreds: Set<QuickJSDeferredPromise> = new Set();
@@ -97,42 +113,65 @@ export class QuickJSServerRunner {
 
 		try {
 			this.setupConsole(context, retainedHandles);
-			this.setupRequire(context, retainedHandles);
-			this.setupRoomAPI(context, runtime, retainedHandles, pendingDeferreds);
+			this.setupRequire(context, retainedHandles, executeWithSyncBudget);
+			this.setupRoomAPI(
+				context,
+				runtime,
+				retainedHandles,
+				pendingDeferreds,
+				executeWithSyncBudget,
+			);
 
 			const configHandle = this.valueToHandle(context, config, retainedHandles);
 			context.setProp(context.global, "config", configHandle);
 
 			const wrappedCode = `"use strict";const module={exports:{}};const exports=module.exports;${scriptCode};module.exports;`;
-			const result = context.evalCode(wrappedCode, "server.js");
+			const result = executeWithSyncBudget(() =>
+				context.evalCode(wrappedCode, "server.js"),
+			);
 
 			if ("error" in result && result.error) {
 				const error = context.dump(result.error);
 				result.error.dispose();
+				if (this.isInterruptedError(error)) {
+					throw new Error(
+						`Synchronous script execution timeout (${SYNCHRONOUS_EXECUTION_TIMEOUT_MS}ms)`,
+					);
+				}
 				throw new Error(`Script error: ${JSON.stringify(error)}`);
 			}
 
 			const exportsHandle = result.value;
 			const runHandle = context.getProp(exportsHandle, "run");
-			const runType = context.typeof(runHandle);
+			try {
+				const runType = context.typeof(runHandle);
 
-			if (runType === "function") {
-				await this.invokeRunFunction(context, runtime, exportsHandle);
+				if (runType === "function") {
+					await this.invokeRunFunction(
+						context,
+						runtime,
+						exportsHandle,
+						executeWithSyncBudget,
+					);
+				}
+			} finally {
+				runHandle.dispose();
+				exportsHandle.dispose();
 			}
-
-			runHandle.dispose();
-			exportsHandle.dispose();
+		} catch (error) {
+			await this.transitionRoomToEndedState();
+			throw error;
 		} finally {
 			for (const deferred of pendingDeferreds) {
 				if (deferred.alive) {
 					deferred.resolve(context.undefined);
-					runtime.executePendingJobs();
+					executeWithSyncBudget(() => runtime.executePendingJobs());
 				}
 			}
 
 			for (let i = 0; i < 10; i++) {
 				while (runtime.hasPendingJob()) {
-					runtime.executePendingJobs();
+					executeWithSyncBudget(() => runtime.executePendingJobs());
 				}
 			}
 
@@ -173,20 +212,28 @@ export class QuickJSServerRunner {
 	private setupRequire(
 		context: QuickJSContext,
 		retainedHandles: QuickJSHandle[],
+		executeWithSyncBudget: ExecuteWithSyncBudget,
 	): void {
 		const requireFn = context.newFunction("require", (nameHandle) => {
 			const name = context.getString(nameHandle);
 			const source = SLOPCADE_MODULES[name];
 			if (!source) throw new Error(`Module not found: ${name}`);
 
-			const moduleResult = context.evalCode(
-				`(()=>{const module={exports:{}};const exports=module.exports;${source};return module.exports;})()`,
-				`module:${name}`,
+			const moduleResult = executeWithSyncBudget(() =>
+				context.evalCode(
+					`(()=>{const module={exports:{}};const exports=module.exports;${source};return module.exports;})()`,
+					`module:${name}`,
+				),
 			);
 
 			if ("error" in moduleResult && moduleResult.error) {
 				const err = context.dump(moduleResult.error);
 				moduleResult.error.dispose();
+				if (this.isInterruptedError(err)) {
+					throw new Error(
+						`Synchronous script execution timeout (${SYNCHRONOUS_EXECUTION_TIMEOUT_MS}ms)`,
+					);
+				}
 				throw new Error(`Module ${name} load error: ${JSON.stringify(err)}`);
 			}
 
@@ -202,12 +249,14 @@ export class QuickJSServerRunner {
 		runtime: QuickJSRuntime,
 		retainedHandles: QuickJSHandle[],
 		pendingDeferreds: Set<QuickJSDeferredPromise>,
+		executeWithSyncBudget: ExecuteWithSyncBudget,
 	): void {
 		const roomObj = context.newObject();
 
 		const setPhaseFn = this.createAsyncFunction(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (phaseHandle) => {
 				await this.roomAPI.setPhase(context.getString(phaseHandle));
 			},
@@ -219,6 +268,7 @@ export class QuickJSServerRunner {
 		const updateSharedDataFn = this.createAsyncFunction(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (dataHandle) => {
 				await this.roomAPI.updateSharedData(
 					context.dump(dataHandle) as Record<string, unknown>,
@@ -232,6 +282,7 @@ export class QuickJSServerRunner {
 		const requestInputFn = this.createAsyncFunctionWithResult(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (requestIdHandle, requestHandle) => {
 				const requestId = context.getString(requestIdHandle);
 				const request = context.dump(requestHandle) as PartyInputRequest;
@@ -253,6 +304,7 @@ export class QuickJSServerRunner {
 		const requestInputFromSubsetFn = this.createAsyncFunctionWithResult(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (requestIdHandle, requestHandle, playerIdsHandle) => {
 				const requestId = context.getString(requestIdHandle);
 				const request = context.dump(requestHandle) as PartyInputRequest;
@@ -283,6 +335,7 @@ export class QuickJSServerRunner {
 		const sendToPlayerFn = this.createAsyncFunction(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (playerIdHandle, dataHandle) => {
 				await this.roomAPI.sendToPlayer(
 					context.getString(playerIdHandle),
@@ -297,6 +350,7 @@ export class QuickJSServerRunner {
 		const updatePlayerScoreFn = this.createAsyncFunction(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (playerIdHandle, deltaHandle) => {
 				await this.roomAPI.updatePlayerScore(
 					context.getString(playerIdHandle),
@@ -311,6 +365,7 @@ export class QuickJSServerRunner {
 		const delayFn = this.createAsyncFunction(
 			context,
 			runtime,
+			executeWithSyncBudget,
 			async (msHandle) => {
 				await this.roomAPI.delay(context.getNumber(msHandle));
 			},
@@ -377,7 +432,9 @@ export class QuickJSServerRunner {
 				return mapLike;
 			}
 		`;
-		const wrapperResult = context.evalCode(wrapperCode, "wrappers.js");
+		const wrapperResult = executeWithSyncBudget(() =>
+			context.evalCode(wrapperCode, "wrappers.js"),
+		);
 		if ("value" in wrapperResult) {
 			wrapperResult.value.dispose();
 		}
@@ -386,6 +443,7 @@ export class QuickJSServerRunner {
 	private createAsyncFunction(
 		context: QuickJSContext,
 		runtime: QuickJSRuntime,
+		executeWithSyncBudget: ExecuteWithSyncBudget,
 		fn: (...args: QuickJSHandle[]) => Promise<void>,
 		pendingDeferreds: Set<QuickJSDeferredPromise>,
 	): QuickJSHandle {
@@ -397,14 +455,14 @@ export class QuickJSServerRunner {
 				.then(() => {
 					if (deferred.alive && runtime.alive) {
 						deferred.resolve(context.undefined);
-						runtime.executePendingJobs();
+						executeWithSyncBudget(() => runtime.executePendingJobs());
 					}
 				})
 				.catch((error) => {
 					if (deferred.alive && runtime.alive) {
 						console.error("[QuickJS] Async error:", error);
 						deferred.resolve(context.undefined);
-						runtime.executePendingJobs();
+						executeWithSyncBudget(() => runtime.executePendingJobs());
 					}
 				})
 				.finally(() => {
@@ -419,6 +477,7 @@ export class QuickJSServerRunner {
 	private createAsyncFunctionWithResult(
 		context: QuickJSContext,
 		runtime: QuickJSRuntime,
+		executeWithSyncBudget: ExecuteWithSyncBudget,
 		fn: (...args: QuickJSHandle[]) => Promise<unknown>,
 		pendingDeferreds: Set<QuickJSDeferredPromise>,
 	): QuickJSHandle {
@@ -434,14 +493,14 @@ export class QuickJSServerRunner {
 					if (deferred.alive && runtime.alive) {
 						this.pendingResults.set(resultId, result);
 						deferred.resolve(idHandle);
-						runtime.executePendingJobs();
+						executeWithSyncBudget(() => runtime.executePendingJobs());
 					}
 				})
 				.catch((error) => {
 					if (deferred.alive && runtime.alive) {
 						console.error("[QuickJS] Async error:", error);
 						deferred.resolve(context.undefined);
-						runtime.executePendingJobs();
+						executeWithSyncBudget(() => runtime.executePendingJobs());
 					}
 				})
 				.finally(() => {
@@ -501,6 +560,7 @@ export class QuickJSServerRunner {
 		context: QuickJSContext,
 		runtime: QuickJSRuntime,
 		exportsHandle: QuickJSHandle,
+		executeWithSyncBudget: ExecuteWithSyncBudget,
 	): Promise<void> {
 		const runHandle = context.getProp(exportsHandle, "run");
 		const roomHandle = context.getProp(context.global, "room");
@@ -511,23 +571,30 @@ export class QuickJSServerRunner {
 		let resultHandle: QuickJSHandle | null = null;
 
 		try {
-			const callResult = context.callFunction(
-				runHandle,
-				context.undefined,
-				roomHandle,
-				configHandle,
+			const callResult = executeWithSyncBudget(() =>
+				context.callFunction(
+					runHandle,
+					context.undefined,
+					roomHandle,
+					configHandle,
+				),
 			);
 
 			if ("error" in callResult && callResult.error) {
 				const error = context.dump(callResult.error);
 				callResult.error.dispose();
+				if (this.isInterruptedError(error)) {
+					throw new Error(
+						`Synchronous script execution timeout (${SYNCHRONOUS_EXECUTION_TIMEOUT_MS}ms)`,
+					);
+				}
 				throw new Error(`Runtime error: ${JSON.stringify(error)}`);
 			}
 
 			resultHandle = callResult.value;
 
 			while (Date.now() - startTime < timeoutMs) {
-				runtime.executePendingJobs();
+				executeWithSyncBudget(() => runtime.executePendingJobs());
 				const state = context.getPromiseState(resultHandle);
 
 				if (state.type === "fulfilled") {
@@ -537,6 +604,11 @@ export class QuickJSServerRunner {
 				if (state.type === "rejected") {
 					const error = context.dump(state.error);
 					state.error.dispose();
+					if (this.isInterruptedError(error)) {
+						throw new Error(
+							`Synchronous script execution timeout (${SYNCHRONOUS_EXECUTION_TIMEOUT_MS}ms)`,
+						);
+					}
 					throw new Error(`Script error: ${JSON.stringify(error)}`);
 				}
 
@@ -550,5 +622,27 @@ export class QuickJSServerRunner {
 			roomHandle.dispose();
 			configHandle.dispose();
 		}
+	}
+
+	private async transitionRoomToEndedState(): Promise<void> {
+		try {
+			await this.room.setPhase("ended");
+		} catch {}
+	}
+
+	private isInterruptedError(error: unknown): boolean {
+		if (typeof error === "string") {
+			return /interrupt/i.test(error);
+		}
+		if (!error || typeof error !== "object") {
+			return false;
+		}
+		if (
+			"message" in error &&
+			typeof (error as { message?: unknown }).message === "string"
+		) {
+			return /interrupt/i.test((error as { message: string }).message);
+		}
+		return /interrupt/i.test(JSON.stringify(error));
 	}
 }

@@ -6,6 +6,17 @@ Documentation Index
 
 
 
+ Product & Vision
+
+ Document Description
+
+ [Party System Vision](product/PARTY_SYSTEM_VISION.md) Rendering philosophy, architecture, MVP vs future
+ [Party 12-Week Roadmap](product/PARTY_ROADMAP_12_WEEKS.md) Week-by-week plan from MVP through Godot host + game builder
+ [Economic Vision](product/ECONOMIC_VISION.md) Virtual currency and monetization strategy
+ [Overall Vision](VISION.md) Remixable games, themes, asset packs, fork model
+
+
+
  Game Maker Engine
 
  Component Description Entry Point

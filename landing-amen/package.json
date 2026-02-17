@@ -1,0 +1,27 @@
+{
+	"name": "@slopcade/landing-amen",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"start": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro"
+	},
+	"dependencies": {
+		"@astrojs/react": "^3.0.0",
+		"@astrojs/tailwind": "^5.0.0",
+		"@slopcade/theme": "workspace:*",
+		"@slopcade/ui": "workspace:*",
+		"@types/react": "^18.0.0",
+		"@types/react-dom": "^18.0.0",
+		"astro": "^4.0.0",
+		"react": "^18.0.0",
+		"react-dom": "^18.0.0",
+		"tailwindcss": "^3.0.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.0.0"
+	}
+}

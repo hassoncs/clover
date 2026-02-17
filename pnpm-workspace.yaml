@@ -2,6 +2,7 @@ packages:
   - 'app'
   - 'api'
   - 'landing'
+  - 'landing-amen'
   - 'shared'
   - 'packages/*'
   - 'apps/storybook'
