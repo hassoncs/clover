@@ -183,6 +183,36 @@ export const grainient = {
 				light: "rgba(0, 119, 182, 0.2)",
 			},
 		},
+		amen: {
+			gradient: ["#FFD700", "#FFF1BA", "#C9A84C", "#FFFDF7"],
+			surface: {
+				dark: "rgba(201, 168, 76, 0.15)",
+				light: "rgba(255, 215, 0, 0.08)",
+			},
+			text: {
+				dark: "#FFD700",
+				light: "#C9A84C",
+			},
+			border: {
+				dark: "rgba(255, 215, 0, 0.3)",
+				light: "rgba(201, 168, 76, 0.2)",
+			},
+		},
+		amenWarm: {
+			gradient: ["#FFF8E1", "#FFE082", "#FFD54F", "#FFC107"],
+			surface: {
+				dark: "rgba(255, 224, 130, 0.12)",
+				light: "rgba(255, 193, 7, 0.06)",
+			},
+			text: {
+				dark: "#FFE082",
+				light: "#F57F17",
+			},
+			border: {
+				dark: "rgba(255, 224, 130, 0.25)",
+				light: "rgba(245, 127, 23, 0.15)",
+			},
+		},
 	},
 	grain: {
 		frequency: 0.65,

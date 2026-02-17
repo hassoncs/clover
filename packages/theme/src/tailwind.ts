@@ -75,6 +75,13 @@ export const tailwindPreset = {
 					danger: themeColor("error"),
 				},
 
+				amen: {
+					glow: `rgb(var(--amen-glow-gold) / <alpha-value>)`,
+					warmWhite: `rgb(var(--amen-warm-white) / <alpha-value>)`,
+					softYellow: `rgb(var(--amen-soft-yellow) / <alpha-value>)`,
+					golden: `rgb(var(--amen-golden-accent) / <alpha-value>)`,
+				},
+
 				// Editor IDE colors — backed by CSS custom properties for theme switching
 				ed: {
 					bg: cssVar("ed-bg"),
@@ -141,6 +148,16 @@ export const tailwindPreset = {
 						surface: `rgb(var(--grainient-abyss-surface) / <alpha-value>)`,
 						text: `rgb(var(--grainient-abyss-text) / <alpha-value>)`,
 						border: `rgb(var(--grainient-abyss-border) / <alpha-value>)`,
+					},
+					amen: {
+						surface: `rgb(var(--grainient-amen-surface) / <alpha-value>)`,
+						text: `rgb(var(--grainient-amen-text) / <alpha-value>)`,
+						border: `rgb(var(--grainient-amen-border) / <alpha-value>)`,
+					},
+					amenWarm: {
+						surface: `rgb(var(--grainient-amenWarm-surface) / <alpha-value>)`,
+						text: `rgb(var(--grainient-amenWarm-text) / <alpha-value>)`,
+						border: `rgb(var(--grainient-amenWarm-border) / <alpha-value>)`,
 					},
 					glass: {
 						DEFAULT: `rgb(var(--grainient-glass) / <alpha-value>)`,
