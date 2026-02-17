@@ -2,15 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { View } from "react-native";
 import {
-	AnimatedSplashCanvas,
-	SingleStyleCanvas,
+	SplashPreview,
 	type SplashStyleName,
 	STYLE_NAMES,
-} from "./SplashStyles";
+} from "./SplashPreview";
 
-const meta: Meta<typeof SingleStyleCanvas> = {
+const meta: Meta<typeof SplashPreview> = {
 	title: "SplashScreen/Styles",
-	component: SingleStyleCanvas,
+	component: SplashPreview,
 	argTypes: {
 		styleName: {
 			control: "select",
@@ -31,7 +30,7 @@ const meta: Meta<typeof SingleStyleCanvas> = {
 
 export default meta;
 
-type Story = StoryObj<typeof SingleStyleCanvas>;
+type Story = StoryObj<typeof SplashPreview>;
 
 export const Holographic: Story = {
 	args: {
@@ -88,7 +87,7 @@ export const AllStyles: Story = {
 		>
 			{STYLE_NAMES.map((styleName) => (
 				<View key={styleName} style={{ width: 280, height: 180 }}>
-					<SingleStyleCanvas
+					<SplashPreview
 						styleName={styleName}
 						time={2000}
 						width={280}
@@ -102,9 +101,8 @@ export const AllStyles: Story = {
 
 export const Animated: Story = {
 	render: () => {
-		const [currentStyle, setCurrentStyle] = useState<SplashStyleName>(
-			STYLE_NAMES[0],
-		);
+		const [currentIndex, setCurrentIndex] = useState(0);
+		const currentStyle = STYLE_NAMES[currentIndex];
 
 		return (
 			<View style={{ flex: 1, minHeight: 500 }}>
@@ -124,10 +122,25 @@ export const Animated: Story = {
 						{currentStyle}
 					</span>
 				</View>
-				<AnimatedSplashCanvas
-					styleInterval={500}
-					onStyleChange={setCurrentStyle}
-				/>
+				<SplashPreview styleName={currentStyle} />
+				<button
+					type="button"
+					onClick={() => setCurrentIndex((i) => (i + 1) % STYLE_NAMES.length)}
+					style={{
+						position: "absolute",
+						bottom: 16,
+						right: 16,
+						padding: "8px 16px",
+						backgroundColor: "#60a5fa",
+						color: "#fff",
+						border: "none",
+						borderRadius: 6,
+						cursor: "pointer",
+						zIndex: 10,
+					}}
+				>
+					Next Style
+				</button>
 			</View>
 		);
 	},
@@ -184,7 +197,7 @@ export const Interactive: Story = {
 					<span style={{ color: "#888", marginLeft: 8 }}>Time: {time}ms</span>
 				</View>
 				<View style={{ flex: 1 }}>
-					<SingleStyleCanvas styleName={styleName} time={time} />
+					<SplashPreview styleName={styleName} time={time} />
 				</View>
 			</View>
 		);

@@ -18,6 +18,7 @@ export interface PartyPlayer {
 	isHost?: boolean;
 }
 
+// Room lifecycle phase — NOT the game phase. Games use sharedData.phase for sub-phases (e.g. "voting", "reveal").
 export type PartyRoomPhase = "lobby" | "playing" | "ended";
 
 export interface PartyRoomState {

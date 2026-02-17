@@ -4,83 +4,20 @@ import { PartyRoomDO } from "../PartyRoomDO";
 type DurableObjectState =
 	import("@cloudflare/workers-types").DurableObjectState;
 
-class MockWebSocket {
-	static OPEN = 1;
-	static CLOSED = 3;
-	listeners: Record<string, any[]> = {};
-	sent: string[] = []; // Messages received by THIS socket
-	readyState = 1; // OPEN
-	other?: MockWebSocket;
+interface TrackedWebSocket extends WebSocket {
+	sent: string[];
+}
 
-	addEventListener(type: string, listener: any) {
-		this.listeners[type] = this.listeners[type] || [];
-		this.listeners[type].push(listener);
-	}
-
-	removeEventListener(type: string, listener: any) {
-		this.listeners[type] = (this.listeners[type] || []).filter(
-			(l) => l !== listener,
+function trackWebSocket(ws: WebSocket): TrackedWebSocket {
+	const tracked = ws as TrackedWebSocket;
+	tracked.sent = [];
+	ws.addEventListener("message", (event: MessageEvent) => {
+		tracked.sent.push(
+			typeof event.data === "string" ? event.data : String(event.data),
 		);
-	}
-
-	send(data: string) {
-		if (this.other) {
-			this.other.sent.push(data);
-			// Trigger message event on the other side
-			const event = { data };
-			for (const l of this.other.listeners["message"] || []) {
-				l(event);
-			}
-		}
-	}
-
-	close(code?: number, reason?: string) {
-		this.readyState = 3; // CLOSED
-		const event = { code, reason, wasClean: true };
-		for (const l of this.listeners["close"] || []) {
-			l(event);
-		}
-		if (this.other) {
-			this.other.readyState = 3;
-			for (const l of this.other.listeners["close"] || []) {
-				l(event);
-			}
-		}
-	}
-
-	accept() {}
+	});
+	return tracked;
 }
-
-class MockWebSocketPair {
-	0: MockWebSocket;
-	1: MockWebSocket;
-	constructor() {
-		this[0] = new MockWebSocket();
-		this[1] = new MockWebSocket();
-		this[0].other = this[1];
-		this[1].other = this[0];
-	}
-}
-
-// Mock Response to support webSocket property
-const OriginalResponse = global.Response;
-class MockResponse extends OriginalResponse {
-	webSocket: any;
-	constructor(body: any, init: any) {
-		if (init?.status === 101) {
-			super(body, { ...init, status: 200 });
-			Object.defineProperty(this, "status", { value: 101 });
-		} else {
-			super(body, init);
-		}
-		this.webSocket = init?.webSocket;
-	}
-}
-
-// Stub globals
-(global as any).WebSocketPair = MockWebSocketPair;
-(global as any).WebSocket = MockWebSocket;
-(global as any).Response = MockResponse;
 
 function createMockState(): {
 	state: DurableObjectState;
@@ -195,7 +132,7 @@ describe("PartyRoomDO", () => {
 				}),
 			);
 			expect(res.status).toBe(101);
-			const clientWs = (res as any).webSocket as MockWebSocket;
+			const clientWs = trackWebSocket((res as any).webSocket);
 
 			// Wait for async handleHostConnect
 			await vi.runAllTimersAsync();
@@ -215,14 +152,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -248,14 +185,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Bob", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 			hostClientWs.sent.length = 0;
@@ -280,14 +217,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Carol", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -309,7 +246,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -333,14 +270,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Dave", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -379,7 +316,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.advanceTimersByTimeAsync(100);
 
@@ -399,14 +336,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Eve", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -447,7 +384,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -465,14 +402,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Frank", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -491,7 +428,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnHostWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnHostWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -516,14 +453,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Player1", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -535,7 +472,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnHostWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnHostWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 			playerClientWs.sent.length = 0;
@@ -564,14 +501,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Alice", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -591,7 +528,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -619,14 +556,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Bob", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -648,7 +585,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -670,14 +607,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Charlie", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -708,7 +645,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.advanceTimersByTimeAsync(100);
 
@@ -747,7 +684,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 			hostClientWs.sent.length = 0;
@@ -762,7 +699,7 @@ describe("PartyRoomDO", () => {
 					},
 				),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -786,14 +723,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=David", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -821,7 +758,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -848,21 +785,21 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const p1Res = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Player1", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const p1Ws = (p1Res as any).webSocket as MockWebSocket;
+			const p1Ws = trackWebSocket((p1Res as any).webSocket);
 
 			const p2Res = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=Player2", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const p2Ws = (p2Res as any).webSocket as MockWebSocket;
+			const p2Ws = trackWebSocket((p2Res as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -884,14 +821,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const p1ReconnWs = (p1ReconnRes as any).webSocket as MockWebSocket;
+			const p1ReconnWs = trackWebSocket((p1ReconnRes as any).webSocket);
 
 			const p2ReconnRes = await dobj.fetch(
 				makeRequest("GET", `/ws?role=player&token=${p2Token}`, undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const p2ReconnWs = (p2ReconnRes as any).webSocket as MockWebSocket;
+			const p2ReconnWs = trackWebSocket((p2ReconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -914,14 +851,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=MultiReconnect", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -939,7 +876,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			let reconnWs = (reconnRes as any).webSocket as MockWebSocket;
+			let reconnWs = trackWebSocket((reconnRes as any).webSocket);
 			await vi.runAllTimersAsync();
 
 			reconnWs.close(1000, "bye");
@@ -950,7 +887,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			reconnWs = (reconnRes as any).webSocket as MockWebSocket;
+			reconnWs = trackWebSocket((reconnRes as any).webSocket);
 			await vi.runAllTimersAsync();
 
 			reconnWs.close(1000, "bye");
@@ -961,7 +898,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			reconnWs = (reconnRes as any).webSocket as MockWebSocket;
+			reconnWs = trackWebSocket((reconnRes as any).webSocket);
 			await vi.runAllTimersAsync();
 
 			const stateMsg = JSON.parse(
@@ -987,14 +924,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			let hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			let hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=BothDisconnect", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			let playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			let playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -1013,14 +950,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			hostClientWs = (hostReconnRes as any).webSocket as MockWebSocket;
+			hostClientWs = trackWebSocket((hostReconnRes as any).webSocket);
 
 			const playerReconnRes = await dobj.fetch(
 				makeRequest("GET", `/ws?role=player&token=${playerToken}`, undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			playerClientWs = (playerReconnRes as any).webSocket as MockWebSocket;
+			playerClientWs = trackWebSocket((playerReconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -1052,14 +989,14 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			const playerRes = await dobj.fetch(
 				makeRequest("GET", "/ws?role=player&name=NoDuplicate", undefined, {
 					Upgrade: "websocket",
 				}),
 			);
-			const playerClientWs = (playerRes as any).webSocket as MockWebSocket;
+			const playerClientWs = trackWebSocket((playerRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -1077,7 +1014,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const reconnClientWs = (reconnRes as any).webSocket as MockWebSocket;
+			const reconnClientWs = trackWebSocket((reconnRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -1105,7 +1042,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 
@@ -1134,7 +1071,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 			hostClientWs.sent.length = 0;
@@ -1169,7 +1106,7 @@ describe("PartyRoomDO", () => {
 					Upgrade: "websocket",
 				}),
 			);
-			const hostClientWs = (hostRes as any).webSocket as MockWebSocket;
+			const hostClientWs = trackWebSocket((hostRes as any).webSocket);
 
 			await vi.runAllTimersAsync();
 

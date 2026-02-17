@@ -58,6 +58,10 @@ describe("PartyRoomDO.requestInputFromSubset", () => {
 		});
 		(room as any).socketMetadata.set(hostSocket, { role: "host" });
 
+		(room as any).players.set("p1", { id: "p1", name: "P1", connected: true });
+		(room as any).players.set("p2", { id: "p2", name: "P2", connected: true });
+		(room as any).players.set("p3", { id: "p3", name: "P3", connected: true });
+
 		const responsesPromise = room.requestInputFromSubset(
 			"req-1",
 			{ type: "text", prompt: "Prompt", timeLimit: 5 },
@@ -121,6 +125,9 @@ describe("PartyRoomDO.requestInputFromSubset", () => {
 			playerId: "p2",
 		});
 
+		(room as any).players.set("p1", { id: "p1", name: "P1", connected: true });
+		(room as any).players.set("p2", { id: "p2", name: "P2", connected: true });
+
 		const responsesPromise = room.requestInputFromSubset(
 			"req-2",
 			{ type: "text", prompt: "Prompt", timeLimit: 1 },
@@ -168,6 +175,8 @@ describe("PartyRoomDO.requestInputFromSubset", () => {
 			role: "player",
 			playerId: "p1",
 		});
+
+		(room as any).players.set("p1", { id: "p1", name: "P1", connected: true });
 
 		const responses = await room.requestInputFromSubset(
 			"req-3",

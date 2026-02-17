@@ -26,6 +26,7 @@ const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000; // 4 hours - room lifetime
 const RECONNECT_WINDOW_MS = 60 * 1000; // 60 seconds - player reconnect window
 const RATE_LIMIT_WINDOW_MS = 1000; // 1 second - rate limit window
 const RATE_LIMIT_MAX_MESSAGES = 10; // Max messages per window
+const MAX_MESSAGE_SIZE = 16384; // 16KB max message size
 const DEFAULT_MIN_PLAYERS = 3;
 
 interface SessionRecord {
@@ -61,7 +62,7 @@ export class PartyRoomDO {
 	private rateLimits: Map<string, RateLimitEntry> = new Map();
 	private disconnectTimers: Map<string, ReturnType<typeof setTimeout>> =
 		new Map();
-	private activeInputCollector: InputCollector | null = null;
+	private activeInputCollectors: Map<string, InputCollector> = new Map();
 	private stateVersion = 0;
 	private initialized = false;
 	private sockets: Set<WebSocket> = new Set();
@@ -206,7 +207,7 @@ export class PartyRoomDO {
 		(async () => {
 			try {
 				if (role === "host") {
-					await this.handleHostConnect(server, token ?? undefined);
+					await this.handleHostConnect(server, token!);
 				} else {
 					await this.handlePlayerConnectWithToken(
 						server,
@@ -239,21 +240,14 @@ export class PartyRoomDO {
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
-	private async handleHostConnect(
-		ws: WebSocket,
-		token?: string,
-	): Promise<void> {
-		if (token) {
-			const session = await this.state.storage.get<SessionRecord>(
-				`session:${token}`,
-			);
-			if (!session || session.role !== "host") {
-				ws.send(
-					encodeMessage(errorMessage("AUTH_FAILED", "Invalid host token")),
-				);
-				ws.close(4001, "Invalid host token");
-				return;
-			}
+	private async handleHostConnect(ws: WebSocket, token: string): Promise<void> {
+		const session = await this.state.storage.get<SessionRecord>(
+			`session:${token}`,
+		);
+		if (!session || session.role !== "host") {
+			ws.send(encodeMessage(errorMessage("AUTH_FAILED", "Invalid host token")));
+			ws.close(4001, "Invalid host token");
+			return;
 		}
 
 		if (this.hostId) {
@@ -324,14 +318,19 @@ export class PartyRoomDO {
 			this.broadcastToAll(encodeMessage(playerReconnectMessage(playerId)));
 			ws.send(encodeMessage(stateUpdateMessage(this.buildRoomState())));
 
-			if (this.activeInputCollector && role === "player") {
-				const { requestId, request, expectedPlayerIds, responses } =
-					this.activeInputCollector;
-				const isExpected =
-					expectedPlayerIds === null || expectedPlayerIds.has(playerId);
-				const hasNotResponded = !responses.has(playerId);
-				if (isExpected && hasNotResponded) {
-					ws.send(encodeMessage(inputRequestMessage(requestId, request)));
+			if (role === "player") {
+				for (const collector of this.activeInputCollectors.values()) {
+					const isExpected =
+						collector.expectedPlayerIds === null ||
+						collector.expectedPlayerIds.has(playerId);
+					const hasNotResponded = !collector.responses.has(playerId);
+					if (isExpected && hasNotResponded) {
+						ws.send(
+							encodeMessage(
+								inputRequestMessage(collector.requestId, collector.request),
+							),
+						);
+					}
 				}
 			}
 		} else {
@@ -363,6 +362,19 @@ export class PartyRoomDO {
 		ws: WebSocket,
 		message: string | ArrayBuffer,
 	): Promise<void> {
+		const messageSize =
+			typeof message === "string"
+				? message.length
+				: (message as ArrayBuffer).byteLength;
+		if (messageSize > MAX_MESSAGE_SIZE) {
+			ws.send(
+				encodeMessage(
+					errorMessage("MESSAGE_TOO_LARGE", "Message exceeds size limit"),
+				),
+			);
+			return;
+		}
+
 		const meta = this.socketMetadata.get(ws);
 		if (!meta) return;
 
@@ -395,6 +407,14 @@ export class PartyRoomDO {
 				break;
 			case "state_update":
 				if (meta.role === "host") {
+					if (this.serverScriptCode || this.templateId) {
+						ws.send(
+							encodeMessage(
+								errorMessage("SCRIPT_ACTIVE", "Server script controls state"),
+							),
+						);
+						break;
+					}
 					this.sharedData = parsed.state.sharedData ?? {};
 					this.broadcastToAll(
 						encodeMessage(stateUpdateMessage(this.buildRoomState())),
@@ -480,10 +500,12 @@ export class PartyRoomDO {
 		}
 		this.disconnectTimers.clear();
 
-		if (this.activeInputCollector?.timeoutId) {
-			clearTimeout(this.activeInputCollector.timeoutId);
-			this.activeInputCollector = null;
+		for (const collector of this.activeInputCollectors.values()) {
+			if (collector.timeoutId) {
+				clearTimeout(collector.timeoutId);
+			}
 		}
+		this.activeInputCollectors.clear();
 
 		await this.state.storage.deleteAll();
 	}
@@ -521,7 +543,7 @@ export class PartyRoomDO {
 		requestId: string,
 		request: PartyInputRequest,
 	): Promise<Map<string, PartyInputResponse>> {
-		this.activeInputCollector = {
+		const collector: InputCollector = {
 			requestId,
 			request,
 			expectedPlayerIds: null,
@@ -529,6 +551,7 @@ export class PartyRoomDO {
 			timeoutId: null,
 			resolve: null,
 		};
+		this.activeInputCollectors.set(requestId, collector);
 
 		this.broadcastToPlayers(
 			encodeMessage(inputRequestMessage(requestId, request)),
@@ -536,17 +559,12 @@ export class PartyRoomDO {
 
 		return new Promise((resolve) => {
 			const timeLimit = request.timeLimit ?? 30;
-			const collector = this.activeInputCollector;
-			if (!collector) {
-				resolve(new Map());
-				return;
-			}
 
 			collector.resolve = resolve;
 
 			collector.timeoutId = setTimeout(() => {
 				const responses = collector.responses;
-				this.activeInputCollector = null;
+				this.activeInputCollectors.delete(requestId);
 				resolve(responses);
 			}, timeLimit * 1000);
 		});
@@ -562,7 +580,7 @@ export class PartyRoomDO {
 			return new Map();
 		}
 
-		this.activeInputCollector = {
+		const collector: InputCollector = {
 			requestId,
 			request,
 			expectedPlayerIds,
@@ -570,6 +588,7 @@ export class PartyRoomDO {
 			timeoutId: null,
 			resolve: null,
 		};
+		this.activeInputCollectors.set(requestId, collector);
 
 		const message = encodeMessage(inputRequestMessage(requestId, request));
 		for (const ws of this.sockets) {
@@ -588,17 +607,12 @@ export class PartyRoomDO {
 
 		return new Promise((resolve) => {
 			const timeLimit = request.timeLimit ?? 30;
-			const collector = this.activeInputCollector;
-			if (!collector) {
-				resolve(new Map());
-				return;
-			}
 
 			collector.resolve = resolve;
 
 			collector.timeoutId = setTimeout(() => {
 				const responses = collector.responses;
-				this.activeInputCollector = null;
+				this.activeInputCollectors.delete(requestId);
 				resolve(responses);
 			}, timeLimit * 1000);
 		});
@@ -746,26 +760,27 @@ export class PartyRoomDO {
 		requestId: string,
 		response: PartyInputResponse,
 	): Promise<void> {
-		if (
-			!this.activeInputCollector ||
-			this.activeInputCollector.requestId !== requestId
-		) {
-			return;
-		}
-
-		const expectedPlayerIds = this.activeInputCollector.expectedPlayerIds;
-		if (expectedPlayerIds && !expectedPlayerIds.has(playerId)) {
+		const collector = this.activeInputCollectors.get(requestId);
+		if (!collector) {
 			return;
 		}
 
 		const player = this.players.get(playerId);
+		if (!player || player.role === "audience") {
+			return;
+		}
+
+		const expectedPlayerIds = collector.expectedPlayerIds;
+		if (expectedPlayerIds && !expectedPlayerIds.has(playerId)) {
+			return;
+		}
 		const enrichedResponse = {
 			...response,
 			playerId,
 			playerName: player?.name ?? playerId.slice(0, 6),
 		};
 
-		this.activeInputCollector.responses.set(playerId, enrichedResponse);
+		collector.responses.set(playerId, enrichedResponse);
 
 		this.broadcastToHost(
 			encodeMessage({
@@ -781,13 +796,13 @@ export class PartyRoomDO {
 					(p) => p.connected && !p.isHost && p.role !== "audience",
 				).length;
 
-		if (this.activeInputCollector.responses.size >= playerCount) {
-			if (this.activeInputCollector.timeoutId) {
-				clearTimeout(this.activeInputCollector.timeoutId);
+		if (collector.responses.size >= playerCount) {
+			if (collector.timeoutId) {
+				clearTimeout(collector.timeoutId);
 			}
-			const resolveFn = this.activeInputCollector.resolve;
-			const responses = this.activeInputCollector.responses;
-			this.activeInputCollector = null;
+			const resolveFn = collector.resolve;
+			const responses = collector.responses;
+			this.activeInputCollectors.delete(requestId);
 			if (resolveFn) {
 				resolveFn(responses);
 			}
@@ -884,7 +899,6 @@ export class PartyRoomDO {
 		}>("room");
 
 		if (saved) {
-			this.phase = saved.phase;
 			this.hostId = saved.hostId;
 			this.roomCode = saved.roomCode ?? null;
 			this.players = new Map(saved.players);
@@ -901,6 +915,25 @@ export class PartyRoomDO {
 			}
 			if (saved.serverScriptConfig) {
 				this.serverScriptConfig = saved.serverScriptConfig;
+			}
+
+			if (
+				saved.phase === "playing" &&
+				(saved.serverScriptCode || saved.templateId)
+			) {
+				this.phase = "ended";
+				this.sharedData = {
+					...this.sharedData,
+					crashRecovery: true,
+					message: "Game interrupted, please start a new room",
+				};
+			} else {
+				this.phase = saved.phase;
+			}
+
+			for (const [id, player] of this.players) {
+				player.connected = false;
+				this.players.set(id, player);
 			}
 		}
 	}
