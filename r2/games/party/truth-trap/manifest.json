@@ -1,0 +1,50 @@
+{
+	"name": "truth-trap",
+	"version": "1.0.0",
+	"title": "Truth Trap",
+	"description": "A high-stakes game of historical revisionism. Write lies so plausible that your friends fall into your 'Truth Trap'.",
+	"instructions": "Write a believable lie for the blank. Vote on which one you believe is the real fact.",
+	"slug": "truth-trap",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [
+			"fibbage"
+		],
+		"phases": [
+			"lobby",
+			"writing_lies",
+			"voting",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"inputTypes": [
+			"text",
+			"choice"
+		],
+		"roundCount": 3
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Scrolls of Truth",
+			"description": "Write convincing fibs about Bible history. Can your friends spot the real scroll from the fakes?"
+		}
+	}
+}

@@ -41,6 +41,7 @@ export interface BrandFeatures {
 	aiGeneration: boolean;
 	organizations: boolean;
 	partyGamesOnly: boolean;
+	socialFeed: boolean;
 }
 
 export interface BrandMonetization {

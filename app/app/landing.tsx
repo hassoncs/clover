@@ -14,6 +14,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { activeBrand } from "@/lib/brand";
 import { trpcReact } from "@/lib/trpc/react";
 
 export default function LandingPage() {
@@ -34,7 +35,10 @@ export default function LandingPage() {
 	});
 
 	if (Platform.OS !== "web") {
-		return <Redirect href="/(tabs)/feed" />;
+		const nativeHome = activeBrand.features.socialFeed
+			? "/(tabs)/feed"
+			: "/(tabs)/browse";
+		return <Redirect href={nativeHome} />;
 	}
 
 	const handleSubmit = () => {

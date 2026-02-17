@@ -1,0 +1,51 @@
+{
+	"name": "ruin-and-redeem",
+	"version": "1.0.0",
+	"title": "Ruin and Redeem",
+	"description": "A divine court where players act as minor deities trying to 'fix' or 'ruin' mortal situations.",
+	"instructions": "Ruin a blessing, then redeem someone else's ruin. Vote on the best redemption!",
+	"slug": "ruin-and-redeem",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [
+			"quip"
+		],
+		"phases": [
+			"lobby",
+			"ruining",
+			"redeeming",
+			"voting",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"inputTypes": [
+			"text",
+			"choice"
+		],
+		"roundCount": 3
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Grace & Mischief",
+			"description": "Play as angels and imps \u2014 help or hinder mortals in funny scenarios. The congregation judges!"
+		}
+	}
+}

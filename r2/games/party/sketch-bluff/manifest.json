@@ -1,0 +1,50 @@
+{
+	"name": "sketch-bluff",
+	"version": "1.0.0",
+	"title": "Sketch Bluff",
+	"description": "A drawing and bluffing party game where players draw bizarre prompts, others write fake titles, and everyone tries to find the real one!",
+	"instructions": "Draw your weird prompt, then write fake titles for others' drawings. Vote for the real title to score points!",
+	"slug": "sketch-bluff",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [],
+		"phases": [
+			"lobby",
+			"drawing",
+			"bluffing",
+			"voting",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"inputTypes": [
+			"drawing",
+			"text",
+			"choice"
+		],
+		"roundCount": 2
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Draw & Discern",
+			"description": "Draw bizarre prompts, then bluff about what others drew. Can you tell the real artist from the faker?"
+		}
+	}
+}

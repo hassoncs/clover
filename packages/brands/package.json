@@ -2,12 +2,25 @@
 	"name": "@slopcade/brands",
 	"version": "1.0.0",
 	"private": true,
-	"main": "./src/index.ts",
-	"types": "./src/index.ts",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"exports": {
-		".": "./src/index.ts",
-		"./types": "./src/types.ts",
-		"./content-policy": "./src/content-policy.ts"
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts",
+			"default": "./dist/types.js"
+		},
+		"./content-policy": {
+			"types": "./dist/content-policy.d.ts",
+			"default": "./dist/content-policy.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"type-check": "tsc --noEmit"
 	},
 	"devDependencies": {
 		"typescript": "^5.4.5"

@@ -62,6 +62,7 @@ export const amenManifest: BrandManifest = {
 		aiGeneration: false,
 		organizations: true,
 		partyGamesOnly: true,
+		socialFeed: false,
 	},
 
 	termsUrl: "https://amen.games/terms",

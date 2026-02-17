@@ -1,0 +1,43 @@
+{
+	"name": "question-answer",
+	"version": "1.0.0",
+	"title": "Question Answer",
+	"description": "A simple prompt-and-reveal party game with open text answers.",
+	"instructions": "Answer each question before time runs out, then enjoy the reveal.",
+	"slug": "question-answer",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 1,
+		"serverScript": "server",
+		"phases": [
+			"lobby",
+			"question",
+			"reveal",
+			"done"
+		],
+		"inputTypes": [
+			"text"
+		]
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Ask & Reveal",
+			"description": "Simple, fun prompt-and-answer rounds. Write your answer, then see what everyone else said!"
+		}
+	}
+}

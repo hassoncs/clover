@@ -43,7 +43,7 @@
 		},
 		"metro:amen": {
 			"cwd": "app",
-			"command": "echo 'Starting Amen brand... (Note: Metro must be restarted to switch BRAND_ID)' && BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
+			"command": "echo 'Starting Amen brand... (Note: Metro must be restarted to switch BRAND_ID)' && BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085 --clear",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": false,
 			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
@@ -57,7 +57,7 @@
 		},
 		"web:amen": {
 			"cwd": "app",
-			"command": "echo 'Starting Amen brand (web)...' && BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
+			"command": "echo 'Starting Amen brand (web)...' && BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085 --clear",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": true,
 			"dependsOn": ["api", "godot", "registry", "bridge-watch"]

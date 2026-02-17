@@ -3,9 +3,12 @@
  * Build & Sync R2 Games
  *
  * This script does two things:
- *   1. BUILD: For each game in r2/games/ that has a manifest.json,
+ *   1. BUILD: For each game in r2/games/{brand}/{slug}/ that has a manifest.json,
  *      run compileBundle() to generate definition.json and metadata.json.
  *   2. SYNC: Copy all files from r2/ to the local Miniflare R2 bucket.
+ *
+ * Games are organized by brand: r2/games/slopcade/ and r2/games/amen/.
+ * The brandId is written into metadata.json so auto-seed can set brand_id in D1.
  *
  * In watch mode, it re-builds and re-syncs when source files change.
  * Changes to definition.json and metadata.json are ignored (they're build outputs).
@@ -15,6 +18,7 @@
  *   npx tsx scripts/sync-r2.ts --watch  # Watch mode
  */
 
+import { DEFAULT_BRAND_ID } from "@slopcade/brands";
 import { compileBundle } from "@slopcade/game-bundler";
 import { execSync } from "child_process";
 import { createHash } from "crypto";
@@ -36,68 +40,78 @@ const WRANGLER_BIN = join(API_ROOT, "node_modules", ".bin", "wrangler");
 const R2_BUCKET_NAME = "slopcade-assets-dev";
 const R2_SYNC_MANIFEST = join(API_ROOT, ".r2-sync-manifest.json");
 
-// Files that are build outputs — never treat as source
 const BUILD_OUTPUTS = new Set(["definition.json", "metadata.json"]);
-
-// ---------------------------------------------------------------------------
-// Step 1: Build games
-// ---------------------------------------------------------------------------
 
 function buildGames(): void {
 	if (!existsSync(GAMES_DIR)) return;
-
-	const dirs = readdirSync(GAMES_DIR, { withFileTypes: true }).filter((d) =>
-		d.isDirectory(),
-	);
 
 	let compiled = 0;
 	let skipped = 0;
 	let failed = 0;
 
-	for (const dir of dirs) {
-		const gamePath = join(GAMES_DIR, dir.name);
-		const manifestPath = join(gamePath, "manifest.json");
+	const categoryDirs = readdirSync(GAMES_DIR, { withFileTypes: true }).filter(
+		(d) => d.isDirectory(),
+	);
 
-		if (!existsSync(manifestPath)) {
-			// Legacy game (only definition.json, no source files) — skip compilation
-			skipped++;
-			continue;
-		}
-
-		const result = compileBundle(gamePath);
-
-		if (!result.success || !result.gameDefinition) {
-			console.error(`[build] FAILED: ${dir.name}`);
-			for (const err of result.errors) {
-				console.error(`  ${err.code}: ${err.message}`);
-			}
-			failed++;
-			continue;
-		}
-
-		for (const warn of result.warnings) {
-			console.warn(`[build] ${dir.name}: ${warn.code}: ${warn.message}`);
-		}
-
-		// Write definition.json
-		const definition = JSON.stringify(result.gameDefinition, null, "\t");
-		writeFileSync(join(gamePath, "definition.json"), definition + "\n");
-
-		// Write metadata.json (used by auto-seed to populate D1)
-		const meta = result.gameDefinition.metadata;
-		const metadata = {
-			id: meta.id,
-			slug: meta.slug ?? dir.name,
-			title: meta.title,
-			description: meta.description ?? "",
-			version: meta.version ?? "1.0.0",
-		};
-		writeFileSync(
-			join(gamePath, "metadata.json"),
-			JSON.stringify(metadata, null, "\t") + "\n",
+	for (const categoryDir of categoryDirs) {
+		const category = categoryDir.name;
+		const categoryPath = join(GAMES_DIR, category);
+		const gameDirs = readdirSync(categoryPath, { withFileTypes: true }).filter(
+			(d) => d.isDirectory(),
 		);
 
-		compiled++;
+		for (const dir of gameDirs) {
+			const gamePath = join(categoryPath, dir.name);
+			const manifestPath = join(gamePath, "manifest.json");
+
+			if (!existsSync(manifestPath)) {
+				skipped++;
+				continue;
+			}
+
+			const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+			const result = compileBundle(gamePath);
+
+			if (!result.success || !result.gameDefinition) {
+				console.error(`[build] FAILED: ${category}/${dir.name}`);
+				for (const err of result.errors) {
+					console.error(`  ${err.code}: ${err.message}`);
+				}
+				failed++;
+				continue;
+			}
+
+			for (const warn of result.warnings) {
+				console.warn(
+					`[build] ${category}/${dir.name}: ${warn.code}: ${warn.message}`,
+				);
+			}
+
+			const definition = JSON.stringify(result.gameDefinition, null, "\t");
+			writeFileSync(join(gamePath, "definition.json"), definition + "\n");
+
+			const meta = result.gameDefinition.metadata;
+			const brands: string[] = manifest.brands ?? [DEFAULT_BRAND_ID];
+			const brandTitles: Record<
+				string,
+				{ title: string; description?: string }
+			> = manifest.brandTitles ?? {};
+			const metadata = {
+				id: meta.id,
+				slug: meta.slug ?? dir.name,
+				title: meta.title,
+				description: meta.description ?? "",
+				version: meta.version ?? "1.0.0",
+				brands,
+				brandTitles,
+			};
+			writeFileSync(
+				join(gamePath, "metadata.json"),
+				JSON.stringify(metadata, null, "\t") + "\n",
+			);
+
+			compiled++;
+		}
 	}
 
 	const parts = [`${compiled} compiled`];

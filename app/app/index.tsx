@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 import { Platform } from "react-native";
 import { useAuth } from "@/hooks/useAuth";
-import { activeBrandId } from "@/lib/brand";
+import { activeBrand, activeBrandId } from "@/lib/brand";
 
 export default function Index() {
 	const { isAuthenticated, isLoading } = useAuth();
@@ -15,6 +15,8 @@ export default function Index() {
 		return <Redirect href="/landing" />;
 	}
 
-	const home = Platform.OS === "web" ? "/(tabs)/browse" : "/(tabs)/feed";
+	const defaultToFeed =
+		Platform.OS !== "web" && activeBrand.features.socialFeed;
+	const home = defaultToFeed ? "/(tabs)/feed" : "/(tabs)/browse";
 	return <Redirect href={home} />;
 }

@@ -1,0 +1,52 @@
+{
+	"name": "crowd-comedy",
+	"version": "1.0.0",
+	"title": "Crowd Comedy",
+	"description": "Players submit punchlines to a shared prompt, then vote on the funniest anonymous answer.",
+	"instructions": "Answer each prompt, vote for the funniest line, and rack up points across five rounds.",
+	"slug": "crowd-comedy",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [
+			"quip"
+		],
+		"phases": [
+			"lobby",
+			"answering",
+			"reveal",
+			"voting",
+			"round_results",
+			"scores",
+			"winner"
+		],
+		"inputTypes": [
+			"text",
+			"choice",
+			"buzzer"
+		],
+		"roundCount": 5
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Joyful Noise",
+			"description": "Write the funniest clean punchline to a shared prompt, then vote for the one that brings the most joy."
+		}
+	}
+}

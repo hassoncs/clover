@@ -1,0 +1,27 @@
+{
+	"metadata": {
+		"id": "704711E3-C468-4F6C-A7CA-1B6D0780C2FB",
+		"slug": "spectrum-guess",
+		"title": "The Calibration Lab",
+		"description": "Calibrate the Vibe-O-Meter by hitting target percentages on various scales.",
+		"instructions": "Create a response that hits the target percentage on the given scale. Others will try to guess your target!",
+		"version": "1.0.0"
+	},
+	"party": {
+		"serverScript": "server",
+		"contentPacks": [
+			"NonsensoryScale"
+		],
+		"roundCount": 3
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "The Crossroads",
+			"description": "Where do you stand on life's big questions? Place your answer on the spectrum and see who agrees."
+		}
+	}
+}

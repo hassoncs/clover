@@ -1,0 +1,52 @@
+{
+	"name": "chroma-clues",
+	"version": "1.0.0",
+	"title": "Chroma Clues",
+	"description": "A color-guessing party game. Give word clues to help players find the secret color!",
+	"instructions": "Give a one-word clue to help others guess the secret color on the spectrum.",
+	"slug": "chroma-clues",
+	"metadata": {
+		"id": "C3C1CFCA-3C03-440D-B56A-9AD707C17D00",
+		"slug": "chroma-clues",
+		"title": "Chroma Clues",
+		"description": "A color-guessing party game. Give word clues to help players find the secret color!",
+		"instructions": "Give a one-word clue to help others guess the secret color on the spectrum.",
+		"version": "1.0.0"
+	},
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 10,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"phases": [
+			"lobby",
+			"clue_giving",
+			"first_guess",
+			"second_guess",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"roundCount": 3
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Stained Glass Clues",
+			"description": "Give one-word clues to help your team find the secret color. Communication through constraint!"
+		}
+	}
+}

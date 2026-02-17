@@ -1,0 +1,51 @@
+{
+	"name": "open-mic-frenzy",
+	"version": "1.0.0",
+	"title": "Open Mic Frenzy",
+	"description": "A chaotic open mic night at a cosmic coffeehouse. Write punchlines to bizarre setups and vote for the funniest!",
+	"instructions": "Write a punchline for the cosmic setup, listen to the performances, and vote for your favorite.",
+	"slug": "open-mic-frenzy",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 3,
+		"serverScript": "server",
+		"contentPacks": [
+			"quip"
+		],
+		"phases": [
+			"lobby",
+			"answering",
+			"reveal",
+			"voting",
+			"round_results",
+			"scores",
+			"winner"
+		],
+		"inputTypes": [
+			"text",
+			"choice"
+		],
+		"roundCount": 3
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Praise & Punchlines",
+			"description": "Step up to the mic! Write your best clean jokes to wild prompts and let the congregation vote."
+		}
+	}
+}

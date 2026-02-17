@@ -1,0 +1,29 @@
+{
+	"id": "headsUp",
+	"title": "Heads Up",
+	"version": "1.0.0",
+	"description": "A classic party game where you guess the word on your forehead!",
+	"author": "Slopcade",
+	"license": "MIT",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 10
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 10,
+			"height": 10
+		}
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "Who Am I?",
+			"description": "A biblical figure is on your forehead \u2014 ask yes-or-no questions to guess who you are!"
+		}
+	}
+}

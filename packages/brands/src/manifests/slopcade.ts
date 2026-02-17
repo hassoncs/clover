@@ -61,6 +61,7 @@ export const slopcadeManifest: BrandManifest = {
 		aiGeneration: true,
 		organizations: false,
 		partyGamesOnly: false,
+		socialFeed: true,
 	},
 
 	termsUrl: "https://slopcade.com/terms",

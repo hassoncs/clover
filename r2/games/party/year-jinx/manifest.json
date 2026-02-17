@@ -1,0 +1,49 @@
+{
+	"name": "year-jinx",
+	"version": "1.0.0",
+	"title": "Year Jinx",
+	"description": "A historical guessing game where players must stabilize the timeline by identifying when key events occurred.",
+	"instructions": "Guess the exact year of the historical event. Closer guesses earn fewer points. A perfect match is a massive bonus!",
+	"slug": "year-jinx",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"party": {
+		"maxPlayers": 8,
+		"minPlayers": 1,
+		"serverScript": "server",
+		"contentPacks": [
+			"history"
+		],
+		"phases": [
+			"lobby",
+			"round_start",
+			"guessing",
+			"reveal",
+			"scores",
+			"winner"
+		],
+		"inputTypes": [
+			"text"
+		],
+		"roundCount": 3
+	},
+	"brands": [
+		"amen",
+		"slopcade"
+	],
+	"brandTitles": {
+		"amen": {
+			"title": "The Book of Ages",
+			"description": "Guess when biblical and historical events happened. How well do you know your timeline?"
+		}
+	}
+}

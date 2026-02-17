@@ -151,7 +151,13 @@ export default function TabLayout() {
 					tabBarShowLabel: false,
 				})}
 			>
-				<Tabs.Screen name="feed" options={{ title: "Feed" }} />
+				<Tabs.Screen
+					name="feed"
+					options={{
+						title: "Feed",
+						href: activeBrand.features.socialFeed ? undefined : null,
+					}}
+				/>
 				<Tabs.Screen name="browse" options={{ title: "Browse" }} />
 				<Tabs.Screen name="chat" options={{ title: "Chat", href: null }} />
 				<Tabs.Screen
