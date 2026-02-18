@@ -214,7 +214,7 @@ Tasks:
 
 Tasks:
 - [ ] Separate EAS project IDs per app
-- [ ] CI matrix: build both apps + run shared package tests
+- [x] CI matrix: build both apps + run shared package tests
 - [ ] Separate Cloudflare Pages deployments (already partially set up: `slopcade` and `amen-games`)
 - [ ] Separate App Store / Play Store listings
 - [ ] Separate signing credentials
