@@ -2,6 +2,17 @@ import "./global.css";
 import { tokens } from "@slopcade/theme/tokens";
 import type { Preview } from "@storybook/react";
 
+// Load icon fonts served via staticDirs /fonts
+const iconFonts = [
+	{ family: "material-community", file: "MaterialCommunityIcons.ttf" },
+];
+
+for (const { family, file } of iconFonts) {
+	const style = document.createElement("style");
+	style.textContent = `@font-face { font-family: "${family}"; src: url("/fonts/${file}") format("truetype"); }`;
+	document.head.appendChild(style);
+}
+
 const preview: Preview = {
 	loaders: [
 		async () => {

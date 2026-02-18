@@ -22,6 +22,10 @@ const config: StorybookConfig = {
 			from: "../../../node_modules/.pnpm/canvaskit-wasm@0.40.0/node_modules/canvaskit-wasm/bin/full",
 			to: "/",
 		},
+		{
+			from: "../../../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts",
+			to: "/fonts",
+		},
 	],
 
 	framework: {
