@@ -1,10 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
-import type { GameDefinition } from "@slopcade/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
-	Alert,
 	Image,
 	Pressable,
 	ScrollView,
@@ -13,11 +10,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DownloadForOfflineButton } from "@/components/DownloadForOfflineButton";
-import { GameComments } from "@/components/social/GameComments";
-import { LikeButton } from "@/components/social/LikeButton";
-import { ReportModal } from "@/components/social/ReportModal";
-import { StarRating } from "@/components/social/StarRating";
-import { useAuth } from "@/hooks/useAuth";
 import {
 	isGameDownloaded,
 	loadLocalGameDefinition,
@@ -36,14 +28,10 @@ interface GameInfo {
 export default function GameDetailScreen() {
 	const router = useRouter();
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const { user } = useAuth();
 
 	const [gameInfo, setGameInfo] = useState<GameInfo | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [isForking, setIsForking] = useState(false);
-	const [isEditing, setIsEditing] = useState(false);
-	const [showReport, setShowReport] = useState(false);
 	const [isOffline, setIsOffline] = useState(false);
 
 	useEffect(() => {
@@ -102,79 +90,6 @@ export default function GameDetailScreen() {
 		router.push({ pathname: "/play/[id]", params: { id: gameInfo.id } });
 	}, [gameInfo, router]);
 
-	const handleFork = useCallback(async () => {
-		if (!gameInfo) return;
-
-		setIsForking(true);
-		try {
-			let definition: GameDefinition;
-
-			if (isOffline) {
-				const localDef = await loadLocalGameDefinition(gameInfo.id);
-				if (!localDef) throw new Error("Game not found locally");
-				definition = localDef;
-				const result = await trpc.games.create.mutate({
-					title: definition.metadata.title,
-					description: definition.metadata.description,
-					definition: JSON.stringify(definition),
-					isPublic: false,
-				});
-				router.push(`/editor/${result.id}`);
-			} else {
-				const result = await trpc.games.fork.mutate({ id: gameInfo.id });
-				router.push(`/editor/${result.id}`);
-			}
-		} catch (err) {
-			console.error("Failed to fork game:", err);
-			Alert.alert(
-				"Fork Failed",
-				"Could not fork the game. \n\n" +
-					"If you are on a physical device, ensure you are on the same Wi-Fi as your computer.\n\n" +
-					"Error: " +
-					(err instanceof Error ? err.message : String(err)),
-			);
-			setIsForking(false);
-		}
-	}, [gameInfo, router, isOffline]);
-
-	const handleEdit = useCallback(async () => {
-		if (!gameInfo) return;
-
-		setIsEditing(true);
-		try {
-			let definition: GameDefinition;
-
-			if (isOffline) {
-				const localDef = await loadLocalGameDefinition(gameInfo.id);
-				if (!localDef) throw new Error("Game not found locally");
-				definition = localDef;
-			} else {
-				const game = await trpc.games.getPublic.query({ id: gameInfo.id });
-				definition = JSON.parse(game.definition) as GameDefinition;
-			}
-
-			router.push({
-				pathname: "/editor/[id]",
-				params: {
-					id: "ephemeral",
-					definition: JSON.stringify(definition),
-					sourceType: isOffline ? "offline" : "database",
-					sourceId: gameInfo.id,
-				},
-			});
-		} catch (err) {
-			console.error("Failed to load game for editing:", err);
-			Alert.alert(
-				"Edit Failed",
-				"Could not load the game for editing.\n\n" +
-					"Error: " +
-					(err instanceof Error ? err.message : String(err)),
-			);
-		} finally {
-			setIsEditing(false);
-		}
-	}, [gameInfo, router, isOffline]);
-
 	if (isLoading) {
 		return (
 			<SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
@@ -194,7 +109,7 @@ export default function GameDetailScreen() {
 					className="mt-6 py-3 px-6 bg-gray-700 rounded-lg"
 					onPress={handleBack}
 				>
-					<Text className="text-white font-semibold">← Go Back</Text>
+					<Text className="text-white font-semibold">Go Back</Text>
 				</Pressable>
 			</SafeAreaView>
 		);
@@ -204,14 +119,8 @@ export default function GameDetailScreen() {
 		<SafeAreaView className="flex-1 bg-gray-900">
 			<View className="px-4 py-3 flex-row items-center border-b border-gray-800">
 				<Pressable onPress={handleBack} className="mr-4">
-					<Text className="text-white text-lg">← Back</Text>
+					<Text className="text-white text-lg">Back</Text>
 				</Pressable>
-				<View className="flex-1" />
-				{user && (
-					<Pressable onPress={() => setShowReport(true)} className="p-2">
-						<Ionicons name="flag-outline" size={20} color="#9CA3AF" />
-					</Pressable>
-				)}
 			</View>
 
 			<ScrollView className="flex-1">
@@ -265,44 +174,6 @@ export default function GameDetailScreen() {
 					)}
 
 					<View className="flex-row gap-3 mb-8">
-						<Pressable
-							className={`flex-1 py-4 rounded-xl items-center justify-center ${
-								isForking ? "bg-gray-600" : "bg-green-600 active:bg-green-700"
-							}`}
-							onPress={handleFork}
-							disabled={isForking}
-						>
-							{isForking ? (
-								<View className="flex-row items-center">
-									<ActivityIndicator size="small" color="#FFFFFF" />
-									<Text className="text-white font-bold text-base ml-2">
-										Forking...
-									</Text>
-								</View>
-							) : (
-								<Text className="text-white font-bold text-base">Fork</Text>
-							)}
-						</Pressable>
-
-						<Pressable
-							className={`flex-1 py-4 rounded-xl items-center justify-center ${
-								isEditing ? "bg-gray-600" : "bg-purple-600 active:bg-purple-700"
-							}`}
-							onPress={handleEdit}
-							disabled={isEditing}
-						>
-							{isEditing ? (
-								<View className="flex-row items-center">
-									<ActivityIndicator size="small" color="#FFFFFF" />
-									<Text className="text-white font-bold text-base ml-2">
-										Loading...
-									</Text>
-								</View>
-							) : (
-								<Text className="text-white font-bold text-base">Edit</Text>
-							)}
-						</Pressable>
-
 						{gameInfo && (
 							<View className="flex-1 py-2">
 								<DownloadForOfflineButton gameId={gameInfo.id} size="md" />
@@ -316,31 +187,8 @@ export default function GameDetailScreen() {
 							<Text className="text-white font-bold text-lg">Play</Text>
 						</Pressable>
 					</View>
-
-					<View className="flex-row items-center gap-6 mb-6">
-						<LikeButton
-							gameId={gameInfo.id}
-							likeCount={0}
-							currentUserId={user?.id ?? null}
-						/>
-						<StarRating gameId={gameInfo.id} currentUserId={user?.id ?? null} />
-					</View>
-
-					<View className="mb-8 bg-gray-800/50 rounded-xl overflow-hidden">
-						<GameComments
-							gameId={gameInfo.id}
-							currentUserId={user?.id ?? null}
-						/>
-					</View>
 				</View>
 			</ScrollView>
-
-			<ReportModal
-				visible={showReport}
-				targetType="game"
-				targetId={gameInfo.id}
-				onClose={() => setShowReport(false)}
-			/>
 		</SafeAreaView>
 	);
 }

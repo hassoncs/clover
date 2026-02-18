@@ -5,7 +5,6 @@ import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
 import { useAuth } from "@/hooks/useAuth";
-import { trpc } from "@/lib/trpc/client";
 
 const TAB_HEADER_CONFIG: Record<
 	string,
@@ -16,15 +15,10 @@ const TAB_HEADER_CONFIG: Record<
 		rightIcons: ("notifications-outline" | "person-add-outline")[];
 	}
 > = {
-	feed: {
-		showHeader: false,
-		leftIcons: [],
-		rightIcons: [],
-	},
 	browse: {
 		title: "Amen",
 		showHeader: true,
-		leftIcons: ["menu", "search"],
+		leftIcons: ["menu"],
 		rightIcons: ["notifications-outline", "person-add-outline"],
 	},
 	profile: {
@@ -38,7 +32,6 @@ export default function TabLayout() {
 	const router = useRouter();
 	const { isAuthenticated } = useAuth();
 	const [sidebarVisible, setSidebarVisible] = useState(false);
-	const [isCreating, setIsCreating] = useState(false);
 
 	const openSidebar = useCallback(() => {
 		setSidebarVisible(true);
@@ -48,45 +41,8 @@ export default function TabLayout() {
 		setSidebarVisible(false);
 	}, []);
 
-	const goToCreateGame = useCallback(async () => {
-		if (!isAuthenticated) {
-			router.push("/(tabs)/profile");
-			return;
-		}
-		if (isCreating) return;
-		setIsCreating(true);
-		try {
-			const game = await trpc.games.create.mutate({
-				title: "New Game",
-				definition: JSON.stringify({
-					metadata: { title: "New Game", description: "Work in progress" },
-					world: {
-						gravity: { x: 0, y: 9.8 },
-						bounds: { width: 20, height: 12 },
-						pixelsPerMeter: 50,
-					},
-					entities: {},
-					templates: {},
-					scenes: { main: { entities: [] } },
-					globalVariables: {},
-					rules: [],
-				}),
-				isPublic: false,
-			});
-			router.push(`/editor/${game.id}`);
-		} catch (error) {
-			console.error("Failed to create game:", error);
-		} finally {
-			setIsCreating(false);
-		}
-	}, [router, isAuthenticated, isCreating]);
-
 	const goToDiscover = useCallback(() => {
 		router.push("/discover");
-	}, [router]);
-
-	const goToImageSearch = useCallback(() => {
-		router.push("/(dev)/image-search");
 	}, [router]);
 
 	const goToNotifications = useCallback(() => {
@@ -101,7 +57,7 @@ export default function TabLayout() {
 						{...props}
 						onPrimaryPress={undefined}
 						isAuthenticated={isAuthenticated}
-						isCreating={isCreating}
+						isCreating={false}
 					/>
 				)}
 				screenOptions={({ route }) => ({
@@ -114,12 +70,7 @@ export default function TabLayout() {
 								title={config.title}
 								leftActions={config.leftIcons.map((icon) => ({
 									icon,
-									onPress:
-										icon === "menu"
-											? openSidebar
-											: icon === "search"
-												? goToImageSearch
-												: () => {},
+									onPress: icon === "menu" ? openSidebar : () => {},
 								}))}
 								rightActions={config.rightIcons.map((icon) => ({
 									icon,
@@ -139,16 +90,8 @@ export default function TabLayout() {
 					tabBarShowLabel: false,
 				})}
 			>
-				<Tabs.Screen
-					name="feed"
-					options={{
-						title: "Feed",
-						href: null,
-					}}
-				/>
 				<Tabs.Screen name="browse" options={{ title: "Browse" }} />
 				<Tabs.Screen name="chat" options={{ title: "Chat", href: null }} />
-				<Tabs.Screen name="maker" options={{ title: "Maker", href: null }} />
 				<Tabs.Screen name="profile" options={{ title: "Profile" }} />
 			</Tabs>
 

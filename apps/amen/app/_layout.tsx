@@ -10,7 +10,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import { ToastHost } from "@/components/toast/ToastHost";
 import { AuthProvider } from "@/hooks/useAuth";
-import { preloadEditorModules } from "@/lib/editor/hooks/useEditorPreloader";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { TRPCProvider } from "@/lib/trpc/react";
@@ -84,7 +83,6 @@ function RootLayoutContent() {
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="index" />
 			<Stack.Screen name="(tabs)" />
-			<Stack.Screen name="discover" />
 			<Stack.Screen
 				name="play/[id]"
 				options={{
@@ -99,12 +97,6 @@ function RootLayoutContent() {
 			/>
 			<Stack.Screen
 				name="game/[id]"
-				options={{
-					presentation: "fullScreenModal",
-				}}
-			/>
-			<Stack.Screen
-				name="examples/[id]"
 				options={{
 					presentation: "fullScreenModal",
 				}}
@@ -128,12 +120,6 @@ function RootLayout() {
 		setColorScheme("dark");
 	}, [setColorScheme]);
 
-	const handleSplashComplete = () => {
-		preloadEditorModules().catch((err) => {
-			console.warn("[EditorPreloader] Failed to preload:", err);
-		});
-	};
-
 	if (!fontsLoaded) {
 		return null;
 	}
@@ -146,7 +132,7 @@ function RootLayout() {
 			<TRPCProvider>
 				<AuthProvider>
 					<SafeAreaProvider>
-						<AnimatedSplashScreen onAnimationComplete={handleSplashComplete}>
+						<AnimatedSplashScreen onAnimationComplete={() => {}}>
 							<RootLayoutContent />
 						</AnimatedSplashScreen>
 						<ToastHost />

@@ -150,22 +150,22 @@ Tasks:
 Now that both apps are complete forks, we remove what doesn't belong in each.
 
 #### From Slopcade, remove:
-- [ ] Organization/church management code (if any)
-- [ ] Amen-specific content packs
-- [ ] Any amen-specific assets
+- [x] Organization/church management code (if any)
+- [x] Amen-specific content packs
+- [x] Any amen-specific assets
 
 #### From Amen, remove:
-- [ ] Game editor (full creation environment) — amen is play-only
-- [ ] Social feed
-- [ ] AI Maker / Chat
-- [ ] Web admin dashboard
-- [ ] Dev tools / examples
-- [ ] UGC-related code
-- [ ] Slopcade-specific assets
+- [x] Game editor (full creation environment) — amen is play-only
+- [x] Social feed
+- [x] AI Maker / Chat
+- [x] Web admin dashboard
+- [x] Dev tools / examples
+- [x] UGC-related code
+- [x] Slopcade-specific assets
 
 #### In both apps:
-- [ ] Remove the `@chriscode/brands` dependency for feature-flag gating. Each app just IS its features — no need to check `activeBrand.features.gameEditor` when you either have the editor or you don't.
-- [ ] Simplify tab layout — each app defines its own tabs directly, no conditional showing/hiding
+- [x] Remove the `@chriscode/brands` dependency for feature-flag gating. Each app just IS its features — no need to check `activeBrand.features.gameEditor` when you either have the editor or you don't.
+- [x] Simplify tab layout — each app defines its own tabs directly, no conditional showing/hiding
 
 **Exit criteria:** Each app contains only its own code. No dead code from the other brand.
 
