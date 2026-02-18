@@ -1,12 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { tokens } from "@slopcade/theme";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
 	Image,
-	Linking,
 	Modal,
 	Pressable,
 	RefreshControl,
@@ -19,7 +18,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CreditBalance } from "@/components/economy/CreditBalance";
 import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import { useAuth } from "@/hooks/useAuth";
-import { trpc } from "@/lib/trpc/client";
 import { trpcReact } from "@/lib/trpc/react";
 
 const heroImage = require("@/assets/slopcade-title-hero.jpg");
@@ -100,7 +98,7 @@ function LoginScreen() {
 					resizeMode="contain"
 				/>
 				<Text className="text-theme-text-secondary text-center mb-8">
-					Sign in to save your favorites and follow creators
+					Sign in to save your favorites
 				</Text>
 
 				{magicLinkSent ? (
@@ -240,24 +238,12 @@ function LoginScreen() {
 				<View className="mt-8 p-4 bg-theme-surface-elevated/50 rounded-xl">
 					<Text className="text-theme-text-secondary text-center text-sm">
 						You can browse and play public games without signing in. Sign in to
-						save favorites and follow creators.
+						save favorites.
 					</Text>
 				</View>
 			</View>
 		</ScrollView>
 	);
-}
-
-interface MyGameItem {
-	id: string;
-	title: string;
-	description: string | null;
-	playCount: number;
-	isPublic: boolean;
-	createdAt: string;
-	updatedAt: string;
-	version: string;
-	buildNumber: number;
 }
 
 export default function ProfileScreen() {
@@ -275,132 +261,22 @@ export default function ProfileScreen() {
 	const [isInviting, setIsInviting] = useState(false);
 	const createInvite = trpcReact.invites.create.useMutation();
 
-	const { data: profileData } = trpcReact.social.getUserProfile.useQuery(
-		{ userId: user?.id ?? "" },
-		{ enabled: isAuthenticated && !!user?.id },
-	);
-
 	const utils = trpcReact.useUtils();
-	const [myGames, setMyGames] = useState<MyGameItem[]>([]);
-	const [isLoadingGames, setIsLoadingGames] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
-
-	const fetchMyGames = useCallback(async (showRefresh = false) => {
-		if (showRefresh) setIsRefreshing(true);
-		else setIsLoadingGames(true);
-		try {
-			const result = await trpc.games.list.query();
-			setMyGames(
-				result.map((g) => {
-					const raw = g as Record<string, unknown>;
-					return {
-						id: g.id,
-						title: g.title,
-						description: g.description,
-						playCount: g.playCount,
-						isPublic: g.isPublic,
-						createdAt: g.createdAt,
-						updatedAt: g.updatedAt,
-						version: (raw.version as string) ?? "1.0.0",
-						buildNumber: (raw.buildNumber as number) ?? 1,
-					};
-				}),
-			);
-		} catch {
-			setMyGames([]);
-		} finally {
-			setIsLoadingGames(false);
-			setIsRefreshing(false);
-		}
-	}, []);
 
 	const handleRefresh = useCallback(async () => {
 		setIsRefreshing(true);
-		await Promise.all([
-			fetchMyGames(true),
-			utils.economy.getBalance.invalidate(),
-			utils.social.getUserProfile.invalidate(),
-		]);
+		await utils.economy.getBalance.invalidate();
 		setIsRefreshing(false);
-	}, [fetchMyGames, utils]);
-
-	useEffect(() => {
-		if (isAuthenticated) {
-			fetchMyGames();
-		}
-	}, [isAuthenticated, fetchMyGames]);
-
-	const handleDeleteGame = useCallback((game: MyGameItem) => {
-		Alert.alert(
-			"Delete Game",
-			`Are you sure you want to delete "${game.title}"?`,
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Delete",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							await trpc.games.delete.mutate({ id: game.id });
-							setMyGames((prev) => prev.filter((g) => g.id !== game.id));
-						} catch (err) {
-							const message =
-								err instanceof Error ? err.message : "Failed to delete";
-							Alert.alert("Error", message);
-						}
-					},
-				},
-			],
-		);
-	}, []);
-
-	const handlePublishGame = useCallback((game: MyGameItem) => {
-		const nextBuild = game.buildNumber + 1;
-		const actionLabel = game.isPublic ? "Update" : "Publish";
-		Alert.alert(
-			`${actionLabel} "${game.title}"?`,
-			`This will make the game public and set it to v${game.version} (${nextBuild}).`,
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: actionLabel,
-					onPress: async () => {
-						try {
-							const result = await trpc.games.publish.mutate({ id: game.id });
-							setMyGames((prev) =>
-								prev.map((g) =>
-									g.id === game.id
-										? {
-												...g,
-												isPublic: true,
-												version: result.version,
-												buildNumber: result.buildNumber,
-											}
-										: g,
-								),
-							);
-							Alert.alert(
-								"Published!",
-								`${game.title} is now live (v${result.version} build ${result.buildNumber}).`,
-							);
-						} catch (err) {
-							const message =
-								err instanceof Error ? err.message : "Failed to publish";
-							Alert.alert("Error", message);
-						}
-					},
-				},
-			],
-		);
-	}, []);
+	}, [utils]);
 
 	const displayName = useMemo(() => {
-		const emailName = user?.email?.split("@")[0] ?? "Amen Creator";
+		const emailName = user?.email?.split("@")[0] ?? "Amen User";
 		return emailName;
 	}, [user?.email]);
 
 	const username = useMemo(() => {
-		const raw = user?.email?.split("@")[0] ?? "slopcade";
+		const raw = user?.email?.split("@")[0] ?? "amen";
 		return raw.toLowerCase();
 	}, [user?.email]);
 
@@ -441,29 +317,6 @@ export default function ProfileScreen() {
 				}
 			>
 				<View className="px-5 pt-5">
-					<View className="flex-row items-center justify-between">
-						<Pressable
-							className="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-elevated"
-							onPress={() => router.push("/notifications")}
-						>
-							<Ionicons
-								name="notifications-outline"
-								size={20}
-								color={tokens.semantic.colors.text.primary}
-							/>
-						</Pressable>
-						<Pressable
-							className="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-elevated"
-							onPress={() => router.push("/discover")}
-						>
-							<Ionicons
-								name="person-add-outline"
-								size={20}
-								color={tokens.semantic.colors.text.primary}
-							/>
-						</Pressable>
-					</View>
-
 					<View className="items-center mt-6">
 						<View className="h-44 w-44 rounded-full items-center justify-center bg-theme-surface-elevated border border-theme-border">
 							<Text className="text-theme-text text-6xl font-bold">
@@ -476,41 +329,6 @@ export default function ProfileScreen() {
 						<Text className="text-theme-text-secondary text-3xl mt-1">
 							{username}
 						</Text>
-					</View>
-
-					<View className="flex-row items-center justify-around mt-8">
-						<Pressable
-							className="items-center"
-							onPress={() =>
-								router.push({
-									pathname: "/user/followers",
-									params: { userId: user!.id, tab: "followers" },
-								})
-							}
-						>
-							<Text className="text-theme-text text-4xl font-semibold">
-								{profileData?.followerCount ?? 0}
-							</Text>
-							<Text className="text-theme-text-secondary text-2xl mt-1">
-								followers
-							</Text>
-						</Pressable>
-						<Pressable
-							className="items-center"
-							onPress={() =>
-								router.push({
-									pathname: "/user/followers",
-									params: { userId: user!.id, tab: "following" },
-								})
-							}
-						>
-							<Text className="text-theme-text text-4xl font-semibold">
-								{profileData?.followingCount ?? 0}
-							</Text>
-							<Text className="text-theme-text-secondary text-2xl mt-1">
-								following
-							</Text>
-						</Pressable>
 					</View>
 
 					<View className="flex-row mt-8 gap-3">
@@ -527,40 +345,9 @@ export default function ProfileScreen() {
 						</Pressable>
 					</View>
 
-					<View className="flex-row items-center justify-around mt-8 pb-4 border-b border-theme-border">
-						<Pressable className="items-center">
-							<Ionicons
-								name="grid"
-								size={24}
-								color={tokens.semantic.colors.text.primary}
-							/>
-						</Pressable>
-						<Pressable className="items-center">
-							<Ionicons
-								name="videocam"
-								size={24}
-								color={tokens.semantic.colors.text.secondary}
-							/>
-						</Pressable>
-						<Pressable className="items-center">
-							<Ionicons
-								name="heart-dislike-outline"
-								size={24}
-								color={tokens.semantic.colors.text.secondary}
-							/>
-						</Pressable>
-						<Pressable className="items-center">
-							<Ionicons
-								name="heart-dislike"
-								size={24}
-								color={tokens.semantic.colors.text.secondary}
-							/>
-						</Pressable>
-					</View>
-
 					<View className="mt-6 rounded-3xl bg-theme-surface p-4 border border-theme-border">
 						<Text className="text-theme-text text-2xl font-semibold mb-3">
-							Account Actions
+							Account
 						</Text>
 						<View className="flex-row items-center justify-between mb-3">
 							<Text className="text-theme-text-secondary text-base">
@@ -610,130 +397,6 @@ export default function ProfileScreen() {
 								</Text>
 							</Pressable>
 						</View>
-					</View>
-
-					<View className="mt-6">
-						<Text className="text-theme-text text-2xl font-semibold mb-4">
-							My Games
-						</Text>
-						{isLoadingGames ? (
-							<View className="items-center py-12">
-								<ActivityIndicator
-									size="large"
-									color={tokens.semantic.colors.primary}
-								/>
-								<Text className="text-theme-text-secondary mt-4">
-									Loading games...
-								</Text>
-							</View>
-						) : myGames.length === 0 ? (
-							<View className="rounded-3xl bg-theme-surface border border-theme-border p-6 min-h-[200px] items-center justify-center">
-								<Text className="text-5xl mb-4">🎮</Text>
-								<Text className="text-theme-text text-xl font-semibold">
-									No games yet
-								</Text>
-							</View>
-						) : (
-							<View>
-								<Text className="text-theme-text-secondary text-sm mb-3">
-									{myGames.length} game{myGames.length !== 1 ? "s" : ""} · Long
-									press to delete
-								</Text>
-								{myGames.map((game) => (
-									<Pressable
-										key={game.id}
-										className="bg-theme-surface p-4 rounded-2xl border border-theme-border mb-3 active:bg-theme-surface-elevated"
-										onPress={() => {
-											if (game.isPublic) {
-												router.push(`/game-detail/${game.id}`);
-											} else {
-												router.push(`/editor/${game.id}`);
-											}
-										}}
-										onLongPress={() => handleDeleteGame(game)}
-									>
-										<View className="flex-row items-center justify-between">
-											<View className="flex-1 mr-3">
-												<View className="flex-row items-center gap-2 mb-1">
-													<Text
-														className="text-lg font-semibold text-theme-text"
-														numberOfLines={1}
-													>
-														{game.title}
-													</Text>
-													<View
-														style={{
-															paddingHorizontal: 8,
-															paddingVertical: 2,
-															borderRadius: 4,
-															backgroundColor: game.isPublic
-																? "rgba(34,197,94,0.15)"
-																: "rgba(156,163,175,0.15)",
-														}}
-													>
-														<Text
-															style={{
-																fontSize: 11,
-																fontWeight: "600",
-																color: game.isPublic
-																	? tokens.semantic.colors.success
-																	: tokens.semantic.colors.text.tertiary,
-															}}
-														>
-															{game.isPublic ? "Published" : "Draft"}
-														</Text>
-													</View>
-												</View>
-												{game.description && (
-													<Text
-														className="text-theme-text-secondary mt-1"
-														numberOfLines={2}
-													>
-														{game.description}
-													</Text>
-												)}
-												<Text className="text-xs text-theme-text-tertiary mt-2">
-													v{game.version} ({game.buildNumber}) ·{" "}
-													{game.playCount} plays ·{" "}
-													{new Date(game.createdAt).toLocaleDateString()}
-												</Text>
-											</View>
-											<View className="items-end gap-2">
-												<Pressable
-													className="px-3 py-1.5 rounded-lg"
-													style={{
-														backgroundColor: game.isPublic
-															? "rgba(99,102,241,0.15)"
-															: "rgba(34,197,94,0.15)",
-													}}
-													onPress={(e) => {
-														e.stopPropagation();
-														handlePublishGame(game);
-													}}
-												>
-													<Text
-														style={{
-															fontSize: 12,
-															fontWeight: "600",
-															color: game.isPublic
-																? tokens.semantic.colors.primary
-																: tokens.semantic.colors.success,
-														}}
-													>
-														{game.isPublic ? "Update" : "Publish"}
-													</Text>
-												</Pressable>
-												<Ionicons
-													name="chevron-forward"
-													size={18}
-													color={tokens.semantic.colors.text.tertiary}
-												/>
-											</View>
-										</View>
-									</Pressable>
-								))}
-							</View>
-						)}
 					</View>
 				</View>
 			</ScrollView>

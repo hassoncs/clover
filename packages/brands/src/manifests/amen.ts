@@ -56,15 +56,6 @@ export const amenManifest: BrandManifest = {
 		defaultContentNamespace: "amen",
 	},
 
-	features: {
-		gameEditor: false,
-		userGeneratedContent: false,
-		aiGeneration: false,
-		organizations: true,
-		partyGamesOnly: true,
-		socialFeed: false,
-	},
-
 	termsUrl: "https://amen.games/terms",
 	privacyUrl: "https://amen.games/privacy",
 	supportEmail: "support@amen.games",

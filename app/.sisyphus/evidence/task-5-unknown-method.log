@@ -1,7 +1,0 @@
-=== Unknown Method Test Log ===
-
-[EXPECTED] nonExistentMethod - Unknown method: nonExistentMethod
-[EXPECTED] invalidQuery - Unknown method: invalidQuery
-[EXPECTED] missingHandler - Unknown method: missingHandler
-
-Total unknown methods tested: 3

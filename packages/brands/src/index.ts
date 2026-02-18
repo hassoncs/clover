@@ -19,7 +19,6 @@ export {
 // Re-export all types
 export type {
 	BrandContentPolicy,
-	BrandFeatures,
 	BrandId,
 	BrandManifest,
 	BrandMonetization,

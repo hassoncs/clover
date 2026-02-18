@@ -4,7 +4,6 @@ import { View } from "react-native";
 import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
-import { useAuth } from "@/hooks/useAuth";
 
 const TAB_HEADER_CONFIG: Record<
 	string,
@@ -19,7 +18,7 @@ const TAB_HEADER_CONFIG: Record<
 		title: "Amen",
 		showHeader: true,
 		leftIcons: ["menu"],
-		rightIcons: ["notifications-outline", "person-add-outline"],
+		rightIcons: [],
 	},
 	profile: {
 		showHeader: false,
@@ -30,7 +29,6 @@ const TAB_HEADER_CONFIG: Record<
 
 export default function TabLayout() {
 	const router = useRouter();
-	const { isAuthenticated } = useAuth();
 	const [sidebarVisible, setSidebarVisible] = useState(false);
 
 	const openSidebar = useCallback(() => {
@@ -41,25 +39,10 @@ export default function TabLayout() {
 		setSidebarVisible(false);
 	}, []);
 
-	const goToDiscover = useCallback(() => {
-		router.push("/discover");
-	}, [router]);
-
-	const goToNotifications = useCallback(() => {
-		router.push("/notifications");
-	}, [router]);
-
 	return (
 		<View style={{ flex: 1 }} className="bg-theme-background">
 			<Tabs
-				tabBar={(props) => (
-					<FloatingTabBar
-						{...props}
-						onPrimaryPress={undefined}
-						isAuthenticated={isAuthenticated}
-						isCreating={false}
-					/>
-				)}
+				tabBar={(props) => <FloatingTabBar {...props} />}
 				screenOptions={({ route }) => ({
 					headerShown: TAB_HEADER_CONFIG[route.name]?.showHeader ?? true,
 					header: () => {
@@ -74,12 +57,7 @@ export default function TabLayout() {
 								}))}
 								rightActions={config.rightIcons.map((icon) => ({
 									icon,
-									onPress:
-										icon === "notifications-outline"
-											? goToNotifications
-											: icon === "person-add-outline"
-												? goToDiscover
-												: () => {},
+									onPress: () => {},
 								}))}
 							/>
 						);

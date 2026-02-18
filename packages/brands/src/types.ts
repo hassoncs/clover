@@ -35,15 +35,6 @@ export interface BrandContentPolicy {
 	defaultContentNamespace: string;
 }
 
-export interface BrandFeatures {
-	gameEditor: boolean;
-	userGeneratedContent: boolean;
-	aiGeneration: boolean;
-	organizations: boolean;
-	partyGamesOnly: boolean;
-	socialFeed: boolean;
-}
-
 export interface BrandMonetization {
 	hasIndividualSub: boolean;
 	hasOrgSub: boolean;
@@ -79,9 +70,6 @@ export interface BrandManifest {
 
 	// Content Policy
 	content: BrandContentPolicy;
-
-	// Feature Flags
-	features: BrandFeatures;
 
 	// Legal
 	termsUrl: string;
