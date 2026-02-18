@@ -6,6 +6,7 @@ import { assetSystemRouter } from "./routes/asset-system";
 import { billingRouter } from "./routes/billing";
 import { blobAssetsRouter } from "./routes/blob-assets";
 import { chatThreadsRouter } from "./routes/chat-threads";
+import { contentDiagnosticsRouter } from "./routes/content-diagnostics";
 import { economyRouter } from "./routes/economy";
 import { economyGraphRouter } from "./routes/economy-graph";
 import { gamesRouter } from "./routes/games";
@@ -26,16 +27,15 @@ export const appRouter = router({
 	admin: adminRouter,
 	adminDashboard: adminDashboardRouter,
 	adminTools: adminToolsRouter,
-	billing: billingRouter,
-	games: gamesRouter,
-	users: usersRouter,
 	assetSystem: assetSystemRouter,
+	billing: billingRouter,
 	blobAssets: blobAssetsRouter,
-	uiComponents: uiComponentsRouter,
+	chatThreads: chatThreadsRouter,
+	contentDiagnostics: contentDiagnosticsRouter,
 	economy: economyRouter,
 	economyGraph: economyGraphRouter,
+	games: gamesRouter,
 	invites: invitesRouter,
-	chatThreads: chatThreadsRouter,
 	search: searchRouter,
 	social: socialRouter,
 	socialExtra: socialExtraRouter,
@@ -45,6 +45,8 @@ export const appRouter = router({
 	monitoring: monitoringRouter,
 	packageReadiness: packageReadinessRouter,
 	packageCompiler: packageCompilerRouter,
+	uiComponents: uiComponentsRouter,
+	users: usersRouter,
 
 	health: publicProcedure.query(() => ({
 		status: "ok",
