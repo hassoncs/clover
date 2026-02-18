@@ -20,7 +20,7 @@ export function PartyGameRenderer() {
 	}
 
 	const sharedData = (roomState.sharedData || {}) as any;
-	const gamePhase = sharedData.phase;
+	const gamePhase = sharedData.phase ?? sharedData.qaPhase;
 
 	if (activeInputRequest?.request.type === "buzzer") {
 		return (

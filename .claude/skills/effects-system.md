@@ -222,6 +222,32 @@ const plan: CompiledPlan = {
 - `bridge-development.md` — Effects use bridge dispatch
 - `game-authoring/bundling-and-shaders.md` — Writing custom shaders for effects
 
+## Consolidated from docs/ (2026-02-17)
+
+### UI Texture-Based System
+
+A hybrid approach for UI elements: tileable AI-generated textures + dynamic Godot shaders.
+
+#### Core Components
+- **`generate-ui-textures.ts`**: Script to generate seamless material textures (Arcade, Fantasy, Sci-fi, etc.).
+- **`styled_surface.gdshader`**: Configurable shader for rounded corners, shadows, borders, and bevels.
+- **`StyledButton`**: Godot component that applies the shader to a tileable texture.
+
+#### Shader Uniforms (`styled_surface.gdshader`)
+| Uniform | Description |
+|---------|-------------|
+| `u_tex` | Base tileable material texture |
+| `u_radius_px` | Corner radius in pixels |
+| `u_shadow_offset_px` | Drop shadow offset |
+| `u_border_px` | Border thickness |
+| `u_bevel_strength` | 3D bevel/emboss intensity |
+
+#### Advantages
+- **Perfect Geometry**: Shader guarantees consistent rounded rectangles and shadows.
+- **Dynamic Styling**: Change colors, radius, or bevels at runtime without regenerating assets.
+- **Scalable**: Textures tile automatically; works at any button size.
+- **Clean Text**: Text is rendered as a separate Godot Label node on top of the styled surface.
+
 ## Changelog
 
 - 2026-02-11: Created from EFFECTS_ARCHITECTURE.md

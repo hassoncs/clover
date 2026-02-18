@@ -101,3 +101,65 @@ hush run -- pnpm generate:assets \
   --style=cartoon \
   --debug
 ```
+
+## Consolidated from docs/ (2026-02-17)
+
+### Unified Image Generation Architecture
+
+The system supports both **Modal** (default) and **Scenario.com** providers through a single, consistent interface.
+
+#### Key Principle: Single Entry Point
+**All image generation goes through `AssetService`** (or pipeline adapters that wrap it). Never instantiate `ScenarioClient` or `ComfyUIClient` directly.
+
+| ✅ Correct Usage | ❌ Incorrect Usage |
+|------------------|--------------------|
+| `new AssetService(env).generateAsset(...)` | `new ScenarioClient(...)` |
+| `adapters.provider.txt2img(...)` | `new ComfyUIClient(...)` |
+
+#### Provider Configuration (Env Vars)
+| Variable | Required For | Description |
+|----------|--------------|-------------|
+| `IMAGE_GENERATION_PROVIDER` | Optional | `'scenario'` or `'modal'` (default) |
+| `SCENARIO_API_KEY` | Scenario | Scenario API key |
+| `SCENARIO_SECRET_API_KEY` | Scenario | Scenario API secret |
+| `MODAL_ENDPOINT` | Modal | Custom Modal endpoint URL |
+
+#### Provider Comparison
+| Metric | Modal (Default) | Scenario.com |
+|--------|-----------------|--------------|
+| **Tech** | ComfyUI + Flux.1-dev-fp8 | Proprietary API |
+| **Cold Start** | 2-3 min (first request) | None |
+| **Warm Gen** | ~35s (512x512) | ~2-5s |
+| **Cost** | Pay per GPU second | Credit-based ($45/mo min) |
+| **Best For** | Dev / Low Volume | Prod / High Volume |
+
+#### Recommended Image Sizes
+- **Entity Sprites**: 256x256 (small), 512x512 (standard), 1024x1024 (hero)
+- **Backgrounds**: 1024x512 (wide), 1024x1024 (square), 1024x1792 (tall)
+- **UI Elements**: 256x256 (large button), 256x64 (standard), 256x32 (small)
+
+### Content-Addressable Asset System
+
+Binary assets (images, sounds) are stored as immutable, content-addressed blobs in R2.
+
+#### Storage Flow (`BlobStore.put()`)
+1. Compute SHA-256 of bytes.
+2. Check D1 `assets` table for existing `content_hash` (deduplication).
+3. If new: Upload to R2 (`blobs/{hash[0:2]}/{hash}`), insert D1 row.
+4. Return `{ hash, assetId, isNew }`.
+
+#### Runtime Resolution Pipeline
+1. **Collect**: Walk `GameDefinition`, gather all `assetId` hashes.
+2. **Resolve**: Call `trpc.blobAssets.batchResolve({ hashes })` → returns `{ hash: url }` map.
+3. **Inject**: Set `visual.url`, `background.imageUrl`, `sound.url` on the definition.
+4. **Preload**: `AssetPreloader` downloads all images before game start.
+5. **Play**: Engine renders using injected URLs.
+
+#### Serving & Caching
+Blobs are served from `/assets/blobs/{hh}/{hash}` with:
+- `Cache-Control: public, max-age=31536000, immutable`
+- `Cross-Origin-Resource-Policy: cross-origin`
+
+#### Forking & Remixing
+- **Fork**: Git fork shares same `assetId` references (zero data duplication).
+- **Remix**: Regenerate images → new hashes → new `assetId` values in prefabs.

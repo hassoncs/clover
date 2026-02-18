@@ -76,3 +76,46 @@ User data synced to D1 `users` table on first interaction.
 
 - [agent-orchestration](agent-orchestration.md) — Uses D1 for threads/messages
 - [testing-patterns](testing-patterns.md) — D1/R2 mocking strategies
+
+## Consolidated from docs/ (2026-02-17)
+
+### Game Progress Persistence System
+
+A type-safe system for saving and loading game progress (high scores, level progression, unlockables) across sessions.
+
+#### Core Components
+- **`GameProgressManager`**: Core logic for load/save/validate/migrate.
+- **`useGameProgressFromDefinition`**: React hook for easy integration with `GameDefinition`.
+- **`BaseGameProgressSchema`**: Zod base schema for all game progress.
+
+#### Implementation Pattern
+
+1. **Define Schema**:
+```typescript
+export const MyGameProgressSchema = BaseGameProgressSchema.extend({
+  currentLevel: z.number().default(1),
+  highScore: z.number().default(0),
+});
+```
+
+2. **Configure Game**:
+```typescript
+persistence: {
+  storageKey: "my-game-progress",
+  schema: MyGameProgressSchema,
+  version: 1,
+  autoSave: { onGameWin: true, onBackground: true },
+}
+```
+
+3. **Use Hook**:
+```typescript
+const { progress, updateProgress, saveProgress } = useGameProgressFromDefinition<MyGameProgress>(game);
+```
+
+#### Key Features
+- **Type Safety**: Runtime validation via Zod catches corrupted data.
+- **Schema Migration**: Versioned schemas with `migrateSchema` support.
+- **Cross-Platform**: Works on web (localStorage) and native (AsyncStorage).
+- **Auto-Save**: Configurable triggers (win, lose, background, interval).
+- **Storage Format**: JSON namespaced as `game-progress-{gameId}`.

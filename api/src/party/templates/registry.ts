@@ -2,17 +2,13 @@ import aboutYouBluffDefinition from "../../../../r2/games/party/about-you-bluff/
 import chainReactionDefinition from "../../../../r2/games/party/chain-reaction/definition.json";
 import chromaCluesDefinition from "../../../../r2/games/party/chroma-clues/definition.json";
 import consensusMineDefinition from "../../../../r2/games/party/consensus-mine/definition.json";
-import crowdComedyDefinition from "../../../../r2/games/party/crowd-comedy/definition.json";
 import drawfulAnimateDefinition from "../../../../r2/games/party/drawful-animate/definition.json";
 import halfAndHalfDefinition from "../../../../r2/games/party/half-and-half/definition.json";
 import headsUpDefinition from "../../../../r2/games/party/headsUp/definition.json";
 import lexiconLadderDefinition from "../../../../r2/games/party/lexicon-ladder/definition.json";
-import openMicFrenzyDefinition from "../../../../r2/games/party/open-mic-frenzy/definition.json";
 import outOfContextDefinition from "../../../../r2/games/party/out-of-context/definition.json";
 import percentPanicDefinition from "../../../../r2/games/party/percent-panic/definition.json";
-import punchlineDuelDefinition from "../../../../r2/games/party/punchline-duel/definition.json";
 import punchlineFerryDefinition from "../../../../r2/games/party/punchline-ferry/definition.json";
-import questionAnswerDefinition from "../../../../r2/games/party/question-answer/definition.json";
 import quickfireQADefinition from "../../../../r2/games/party/quickfire-qa/definition.json";
 import quiplashDefinition from "../../../../r2/games/party/quiplash/definition.json";
 import rivalRosterDefinition from "../../../../r2/games/party/rival-roster/definition.json";
@@ -49,17 +45,10 @@ const r2ConsensusMineDefinition =
 const r2LexiconLadderDefinition =
 	lexiconLadderDefinition as PartyGameDefinition;
 const r2PartyGameDefinition = quiplashDefinition as PartyGameDefinition;
-const r2CrowdComedyDefinition = crowdComedyDefinition as PartyGameDefinition;
 const r2HalfAndHalfDefinition = halfAndHalfDefinition as PartyGameDefinition;
-const r2OpenMicFrenzyDefinition =
-	openMicFrenzyDefinition as PartyGameDefinition;
 const r2OutOfContextDefinition = outOfContextDefinition as PartyGameDefinition;
 const r2PercentPanicDefinition = percentPanicDefinition as PartyGameDefinition;
-const r2PunchlineDuelDefinition =
-	punchlineDuelDefinition as PartyGameDefinition;
 const r2QuickfireQADefinition = quickfireQADefinition as PartyGameDefinition;
-const r2QuestionAnswerDefinition =
-	questionAnswerDefinition as PartyGameDefinition;
 const r2RoleReplayDefinition = roleReplayDefinition as PartyGameDefinition;
 const r2RuinAndRedeemDefinition =
 	ruinAndRedeemDefinition as PartyGameDefinition;
@@ -124,21 +113,9 @@ const runQuiplashFromDefinition = runFromDefinition(
 	"Quiplash",
 	r2PartyGameDefinition,
 );
-const runCrowdComedyFromDefinition = runFromDefinition(
-	"Crowd Comedy",
-	r2CrowdComedyDefinition,
-);
 const runHalfAndHalfFromDefinition = runFromDefinition(
 	"Half and Half",
 	r2HalfAndHalfDefinition,
-);
-const runQuestionAnswerFromDefinition = runFromDefinition(
-	"Question Answer",
-	r2QuestionAnswerDefinition,
-);
-const runOpenMicFrenzyFromDefinition = runFromDefinition(
-	"Open Mic Frenzy",
-	r2OpenMicFrenzyDefinition,
 );
 const runOutOfContextFromDefinition = runFromDefinition(
 	"Out of Context",
@@ -147,10 +124,6 @@ const runOutOfContextFromDefinition = runFromDefinition(
 const runPercentPanicFromDefinition = runFromDefinition(
 	"Percent Panic",
 	r2PercentPanicDefinition,
-);
-const runPunchlineDuelFromDefinition = runFromDefinition(
-	"Punchline Duel",
-	r2PunchlineDuelDefinition,
 );
 const runQuickfireQAFromDefinition = runFromDefinition(
 	"Quickfire Q&A",
@@ -210,17 +183,13 @@ export const TEMPLATE_REGISTRY: Record<string, PartyTemplateRunner> = {
 	"chain-reaction": runChainReactionFromDefinition,
 	"chroma-clues": runChromaCluesFromDefinition,
 	"consensus-mine": runConsensusMineFromDefinition,
-	"crowd-comedy": runCrowdComedyFromDefinition,
 	"drawful-animate": runDrawfulAnimateFromDefinition,
 	"half-and-half": runHalfAndHalfFromDefinition,
 	"heads-up": runHeadsUpFromDefinition,
 	"lexicon-ladder": runLexiconLadderFromDefinition,
 	quiplash: runQuiplashFromDefinition,
-	"question-answer": runQuestionAnswerFromDefinition,
-	"open-mic-frenzy": runOpenMicFrenzyFromDefinition,
 	"out-of-context": runOutOfContextFromDefinition,
 	"percent-panic": runPercentPanicFromDefinition,
-	"punchline-duel": runPunchlineDuelFromDefinition,
 	"punchline-ferry": runPunchlineFerryFromDefinition,
 	"quickfire-qa": runQuickfireQAFromDefinition,
 	"rival-roster": runRivalRosterFromDefinition,

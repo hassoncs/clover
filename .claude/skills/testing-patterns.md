@@ -94,3 +94,28 @@ Managed by `simple-git-hooks` → `scripts/pre-commit.sh`:
 
 - [storage-ops](storage-ops.md) — D1/R2 patterns being tested
 - [bridge-development](bridge-development.md) — Bridge contracts verified by E2E
+
+## Consolidated from docs/ (2026-02-17)
+
+### Storybook + NativeWind Setup
+
+Configuration for web-based component previews with full NativeWind styling support in a monorepo.
+
+#### Two Storybook Modes
+| Mode | Description | NativeWind Support |
+|------|-------------|-------------------|
+| **Web** (`.storybook/`) | Runs in browser via Webpack | Requires PostCSS + Babel config |
+| **On-device** (`.ondevice/`) | Runs in Expo app via Metro | Works out of the box |
+
+#### Key Configuration Patterns
+- **Babel Preset**: `nativewind/babel` MUST be a preset, not a plugin.
+- **JSX Transform**: Set `importSource: 'nativewind'` in `@babel/preset-react`.
+- **Monorepo Transpilation**: Explicitly include package paths in `babel-loader` rules.
+- **Platform Aliasing**: Alias `react-native` to `react-native-web` in Webpack.
+- **CSS Pipeline**: Use `style-loader`, `css-loader`, and `postcss-loader` (with `tailwindcss` and `autoprefixer`).
+
+#### Troubleshooting Checklist
+- **Styles missing?** Ensure `global.css` (with `@tailwind` directives) is imported first in `preview.ts`.
+- **Unexpected token?** Check that monorepo packages are included in `babel-loader`'s `include` array.
+- **Babel errors?** Ensure `nativewind/babel` is in `presets`, not `plugins`.
+- **Content matching?** Be specific with `content` paths in `tailwind.config.js` to avoid `node_modules`.

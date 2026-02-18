@@ -763,6 +763,8 @@ export class PartyRoomDO {
 		}
 
 		if (this.templateId && TEMPLATE_REGISTRY[this.templateId]) {
+			// Inject gameTemplate so clients can look up the correct phase renderer
+			await this.updateSharedData({ gameTemplate: this.templateId });
 			const runner = TEMPLATE_REGISTRY[this.templateId];
 			runner(this).catch(async (error) => {
 				const message = error instanceof Error ? error.message : String(error);
@@ -775,6 +777,9 @@ export class PartyRoomDO {
 		}
 
 		if (this.serverScriptCode) {
+			if (this.templateId) {
+				await this.updateSharedData({ gameTemplate: this.templateId });
+			}
 			const runner = new QuickJSServerRunner(this);
 			runner
 				.execute(this.serverScriptCode, this.serverScriptConfig)
