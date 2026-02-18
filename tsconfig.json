@@ -1,7 +1,8 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./shared" },
-    { "path": "./api/tsconfig.build.json" }
-  ]
+	"files": [],
+	"references": [
+		{ "path": "./shared" },
+		{ "path": "./api/tsconfig.build.json" },
+		{ "path": "./packages/shared-ui" }
+	]
 }

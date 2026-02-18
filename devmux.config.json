@@ -33,54 +33,51 @@
 			"cwd": ".",
 			"command": "node scripts/export-godot.mjs --watch"
 		},
-		"registry": {
-			"cwd": "app",
-			"command": "npx reggie --watch"
-		},
+
 		"metro": {
-			"cwd": "app",
-			"comment": "Slopcade brand Metro (port 8085). Stop metro-amen first if running: devmux stop metro-amen.",
-			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
+			"cwd": "apps/slopcade",
+			"comment": "Slopcade Metro (port 8085). Can run simultaneously with metro-amen (port 8086).",
+			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": false,
-			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch"]
 		},
 		"metro-amen": {
-			"cwd": "app",
-			"comment": "Amen brand Metro (port 8085). Stop metro first if running: devmux stop metro. Always clears Metro cache (BRAND_ID is baked into the bundle).",
-			"command": "BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085 --clear",
-			"health": { "type": "port", "port": 8085 },
+			"cwd": "apps/amen",
+			"comment": "Amen Metro (port 8086). Can run simultaneously with metro (port 8085).",
+			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- npx expo start --dev-client --port 8086",
+			"health": { "type": "port", "port": 8086 },
 			"dashboard": false,
-			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch"]
 		},
 		"ios": {
-			"cwd": "app",
+			"cwd": "apps/slopcade",
 			"comment": "Build + install slopcade on iOS simulator. One-shot: exits when done. Starts metro if not running.",
 			"command": "RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8085 npx expo run:ios --no-bundler",
 			"dashboard": false,
 			"dependsOn": ["metro"]
 		},
 		"ios-amen": {
-			"cwd": "app",
-			"comment": "Build + install amen on iOS simulator. Prebuilds ios/ for amen (bundle: games.amen.app), then restores ios/ to slopcade config when done.",
-			"command": "BRAND_ID=amen npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen npx expo prebuild --no-install --platform ios && BRAND_ID=amen RCT_METRO_PORT=8085 npx expo run:ios --no-bundler; npx expo prebuild --no-install --platform ios",
+			"cwd": "apps/amen",
+			"comment": "Build + install amen on iOS simulator (bundle: games.amen.app).",
+			"command": "RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8086 npx expo run:ios --no-bundler",
 			"dashboard": false,
 			"dependsOn": ["metro-amen"]
 		},
 		"web": {
-			"cwd": "app",
-			"command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
+			"cwd": "apps/slopcade",
+			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": true,
-			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch"]
 		},
 		"web-amen": {
-			"cwd": "app",
-			"comment": "Amen brand web. Kills web if running first (same port 8085).",
-			"command": "BRAND_ID=amen node ../scripts/export-godot.mjs --once && BRAND_ID=amen WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && BRAND_ID=amen WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085 --clear",
-			"health": { "type": "port", "port": 8085 },
+			"cwd": "apps/amen",
+			"comment": "Amen web (port 8086). Can run simultaneously with web (port 8085).",
+			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8086",
+			"health": { "type": "port", "port": 8086 },
 			"dashboard": true,
-			"dependsOn": ["api", "godot", "registry", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch"]
 		},
 		"backlog": {
 			"cwd": ".",

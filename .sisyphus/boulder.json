@@ -1,9 +1,7 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/amen-party-content-cms-db-first.md",
-  "started_at": "2026-02-18T17:58:08.578Z",
-  "session_ids": [
-    "ses_38e28b103ffeI5Qx9U1loDCihd"
-  ],
-  "plan_name": "amen-party-content-cms-db-first",
-  "agent": "atlas"
+	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/amen-party-content-cms-db-first.md",
+	"started_at": "2026-02-18T17:58:08.578Z",
+	"session_ids": ["ses_38e28b103ffeI5Qx9U1loDCihd"],
+	"plan_name": "amen-party-content-cms-db-first",
+	"agent": "atlas"
 }

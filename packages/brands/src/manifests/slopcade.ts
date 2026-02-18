@@ -55,15 +55,6 @@ export const slopcadeManifest: BrandManifest = {
 		defaultContentNamespace: "slopcade",
 	},
 
-	features: {
-		gameEditor: true,
-		userGeneratedContent: true,
-		aiGeneration: true,
-		organizations: false,
-		partyGamesOnly: false,
-		socialFeed: true,
-	},
-
 	termsUrl: "https://slopcade.com/terms",
 	privacyUrl: "https://slopcade.com/privacy",
 	supportEmail: "support@slopcade.com",

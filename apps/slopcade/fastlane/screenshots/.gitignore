@@ -1,0 +1,8 @@
+# Ignore all screenshot files (can be large)
+*.png
+*.jpg
+*.jpeg
+
+# But keep directory structure
+!.gitignore
+!README.md

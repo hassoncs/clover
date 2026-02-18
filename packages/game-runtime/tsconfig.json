@@ -1,0 +1,37 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"declaration": true,
+		"declarationMap": true,
+		"outDir": "./dist",
+		"jsx": "react-jsx",
+		"baseUrl": ".",
+		"paths": {
+			"@/lib/scripting": ["../../apps/slopcade/lib/scripting/index.ts"],
+			"@/lib/scripting/*": ["../../apps/slopcade/lib/scripting/*"],
+			"@/lib/haptics": ["../../apps/slopcade/lib/haptics/index.ts"],
+			"@/lib/haptics/*": ["../../apps/slopcade/lib/haptics/*"],
+			"@/lib/assets": ["../../apps/slopcade/lib/assets/index.ts"],
+			"@/lib/assets/*": ["../../apps/slopcade/lib/assets/*"],
+			"@/lib/audio": ["../../apps/slopcade/lib/audio/index.ts"],
+			"@/lib/audio/*": ["../../apps/slopcade/lib/audio/*"],
+			"@/lib/auth/token": ["../../apps/slopcade/lib/auth/token.ts"],
+			"@/lib/config/env": ["../../apps/slopcade/lib/config/env.ts"],
+			"@/lib/utils/storage": ["../../apps/slopcade/lib/utils/storage.ts"],
+			"@/components/game": ["../../apps/slopcade/components/game/index.ts"],
+			"@/components/game/*": ["../../apps/slopcade/components/game/*"]
+		}
+	},
+	"include": [
+		"src/**/*",
+		"../../apps/slopcade/lib/scripting/**/*",
+		"../../apps/slopcade/lib/haptics/**/*"
+	],
+	"exclude": ["node_modules", "dist", "**/__tests__/**"]
+}
