@@ -807,15 +807,15 @@ INSERT OR IGNORE INTO brands (id, slug, display_name, domain, status, created_at
 -- =============================================================================
 
 -- Games: brand-scoped
-ALTER TABLE games ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id);
+ALTER TABLE games ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade';
 CREATE INDEX IF NOT EXISTS idx_games_brand ON games(brand_id, is_public, created_at DESC);
 
 -- Users: brand-scoped (users belong to ONE brand, never shared)
-ALTER TABLE users ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id);
+ALTER TABLE users ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade';
 CREATE INDEX IF NOT EXISTS idx_users_brand ON users(brand_id);
 
 -- Themes: brand-scoped
-ALTER TABLE themes ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade' REFERENCES brands(id);
+ALTER TABLE themes ADD COLUMN brand_id TEXT NOT NULL DEFAULT 'slopcade';
 
 -- =============================================================================
 -- ORGANIZATION SYSTEM (Church Subscriptions)

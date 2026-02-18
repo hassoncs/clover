@@ -23,14 +23,14 @@ function getApiUrl(): string {
 	}
 
 	// Production fallback for real device builds
-	return "https://slopcade-api.hassoncs.workers.dev";
+	return "https://api.slopcade.com";
 }
 
 export const env = {
 	supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
 	supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
 	apiUrl: getApiUrl(),
-	assetCdnUrl: "https://slopcade-api.hassoncs.workers.dev/assets",
+	assetCdnUrl: `${getApiUrl()}/assets`,
 	/** When true, bundled games are copied to offline storage on startup (native only) */
 	embedGames: process.env.EXPO_PUBLIC_EMBED_GAMES === "true",
 	stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,

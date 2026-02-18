@@ -31,6 +31,12 @@ const ALLOWED_ORIGINS = [
 	"http://localhost:19006",
 	"https://slopcade.app",
 	"https://www.slopcade.app",
+	"https://slopcade.com",
+	"https://www.slopcade.com",
+	"https://app.slopcade.com",
+	"https://amen.games",
+	"https://www.amen.games",
+	"https://app.amen.games",
 	"https://slopcade-api.hassoncs.workers.dev",
 ];
 
@@ -41,6 +47,8 @@ app.use(
 			if (!origin) return origin;
 			if (ALLOWED_ORIGINS.includes(origin)) return origin;
 			if (origin.endsWith(".slopcade.app")) return origin;
+			if (origin.endsWith(".slopcade.com")) return origin;
+			if (origin.endsWith(".amen.games")) return origin;
 			return undefined;
 		},
 		credentials: true,

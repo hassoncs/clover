@@ -1,0 +1,89 @@
+name: Deploy Web Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'packages/**'
+
+jobs:
+  deploy-slopcade:
+    name: Deploy Slopcade Web App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build web export
+        run: EXPO_PUBLIC_API_URL=https://api.slopcade.com npx expo export -p web
+        working-directory: app
+
+      - name: Remove oversized Godot files (served from R2)
+        run: rm -f dist/godot/index.pck dist/godot/index.side.wasm
+        working-directory: app
+
+      - name: Write _redirects for large Godot assets
+        working-directory: app
+        run: |
+          printf '/godot/index.pck https://api.slopcade.com/assets/web-assets/godot/index.pck 301\n/godot/index.side.wasm https://api.slopcade.com/assets/web-assets/godot/index.side.wasm 301\n' > dist/_redirects
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/ --project-name=slopcade --commit-dirty=true
+          workingDirectory: app
+
+  deploy-amen:
+    name: Deploy Amen Web App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build web export (Amen brand)
+        run: BRAND_ID=amen EXPO_PUBLIC_API_URL=https://api.amen.games npx expo export -p web
+        working-directory: app
+
+      - name: Remove oversized Godot files (served from R2)
+        run: rm -f dist/godot/index.pck dist/godot/index.side.wasm
+        working-directory: app
+
+      - name: Write _redirects for large Godot assets
+        working-directory: app
+        run: |
+          printf '/godot/index.pck https://api.amen.games/assets/web-assets/godot/index.pck 301\n/godot/index.side.wasm https://api.amen.games/assets/web-assets/godot/index.side.wasm 301\n' > dist/_redirects
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/ --project-name=amen-games --commit-dirty=true
+          workingDirectory: app

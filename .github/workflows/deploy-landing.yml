@@ -1,0 +1,69 @@
+name: Deploy Landing Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/landing-slopcade/**'
+      - 'apps/landing-amen/**'
+      - 'packages/theme/**'
+      - 'packages/ui/**'
+
+jobs:
+  deploy-slopcade-landing:
+    name: Deploy Slopcade Landing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+        working-directory: apps/landing-slopcade
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/ --project-name=slopcade-landing --commit-dirty=true
+          workingDirectory: apps/landing-slopcade
+
+  deploy-amen-landing:
+    name: Deploy Amen Landing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+        working-directory: apps/landing-amen
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/ --project-name=amen-landing --commit-dirty=true
+          workingDirectory: apps/landing-amen

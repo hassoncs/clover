@@ -55,11 +55,13 @@ new_classes = ["GameRepoDO"]
 tag = "v6"
 new_classes = ["PartyRoomDO"]
 
-# TODO: Configure custom domain
-# [[routes]]
-# pattern = "api.slopcade.app"
-# custom_domain = true
-# zone_name = "slopcade.app"
+[[routes]]
+pattern = "api.slopcade.com"
+custom_domain = true
+
+[[routes]]
+pattern = "api.amen.games"
+custom_domain = true
 
 [[rules]]
 type = "CompiledWasm"
