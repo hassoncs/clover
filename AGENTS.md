@@ -49,12 +49,18 @@ This project uses Metro port 8085 (not the default 8081). The port must be confi
 
 | Goal | Correct Command (from repo root) | NEVER Do This |
 |------|----------------------------------|---------------|
-| Start dev server | `pnpm dev` | `expo start`, `npx expo start` |
-| Run iOS | `pnpm ios` | `expo run:ios`, `npx expo run:ios` |
-| Run Android | `pnpm android` | `expo run:android`, `npx expo run:android` |
-| Run web | `pnpm web` | `expo start --web` |
-| Install pods | `cd app && pnpm pods` | `cd app/ios && pod install` |
-| Prebuild | `cd app && npx expo prebuild` | OK, but must be from `app/` dir |
+| Start dev server (slopcade) | `pnpm dev` | `expo start`, `npx expo start` |
+| Start dev server (amen) | `pnpm dev:amen` | `expo start`, `npx expo start` |
+| Run iOS (slopcade) | `pnpm ios` | `expo run:ios`, `npx expo run:ios` |
+| Run iOS (amen) | `pnpm ios:amen` | `expo run:ios`, `npx expo run:ios` |
+| Run Android (slopcade) | `pnpm android` | `expo run:android`, `npx expo run:android` |
+| Run Android (amen) | `pnpm android:amen` | `expo run:android`, `npx expo run:android` |
+| Run web (slopcade) | `pnpm web` | `expo start --web` |
+| Run web (amen) | `pnpm web:amen` | `expo start --web` |
+| Install pods (slopcade) | `cd apps/slopcade && pnpm pods` | `cd apps/slopcade/ios && pod install` |
+| Install pods (amen) | `cd apps/amen && pnpm pods` | `cd apps/amen/ios && pod install` |
+| Prebuild (slopcade) | `cd apps/slopcade && npx expo prebuild` | OK, but must be from `apps/slopcade/` dir |
+| Prebuild (amen) | `cd apps/amen && npx expo prebuild` | OK, but must be from `apps/amen/` dir |
 
 **Why this matters:**
 - The root scripts ensure Metro is running via devmux before building
