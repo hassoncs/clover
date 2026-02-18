@@ -3,12 +3,36 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PartyGameRenderer } from "@/components/party/PartyGameRenderer";
+import { registerAboutYouBluffPhases } from "@/lib/party/aboutYouBluffPhases";
+import { registerChainReactionPhases } from "@/lib/party/chainReactionPhases";
 import { registerChromaCluesPhases } from "@/lib/party/chromaCluesPhases";
+import { registerConsensusMinePhases } from "@/lib/party/consensusMinePhases";
 import { registerDefaultPhases } from "@/lib/party/defaultPhases";
+import { registerDrawfulAnimatePhases } from "@/lib/party/drawfulAnimatePhases";
+import { registerHeadsUpPhases } from "@/lib/party/headsUpPhases";
 import { PartyProvider, useParty } from "@/lib/party/PartyContext";
+import { registerPercentPanicPhases } from "@/lib/party/percentPanicPhases";
+import { registerPunchlineFerryPhases } from "@/lib/party/punchlineFerryPhases";
+import { registerQuickfireQaPhases } from "@/lib/party/quickfireQaPhases";
+import { registerRivalRosterPhases } from "@/lib/party/rivalRosterPhases";
+import { registerShirtClashPhases } from "@/lib/party/shirtClashPhases";
+import { registerSketchBluffPhases } from "@/lib/party/sketchBluffPhases";
+import { registerSpectrumGuessPhases } from "@/lib/party/spectrumGuessPhases";
 
 registerDefaultPhases();
 registerChromaCluesPhases();
+registerAboutYouBluffPhases();
+registerChainReactionPhases();
+registerConsensusMinePhases();
+registerDrawfulAnimatePhases();
+registerHeadsUpPhases();
+registerPercentPanicPhases();
+registerPunchlineFerryPhases();
+registerQuickfireQaPhases();
+registerRivalRosterPhases();
+registerShirtClashPhases();
+registerSketchBluffPhases();
+registerSpectrumGuessPhases();
 
 function GameContent() {
 	const router = useRouter();

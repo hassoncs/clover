@@ -421,10 +421,11 @@ export class QuickJSServerRunner {
 					mapLike[key] = obj[key];
 				});
 				mapLike.get = function(k) { return this[k]; };
+				mapLike.has = function(k) { return k in obj; };
 				mapLike.forEach = function(callback) {
 					var self = this;
 					Object.keys(obj).forEach(function(key) {
-						if (key !== 'get' && key !== 'forEach') {
+						if (key !== 'get' && key !== 'has' && key !== 'forEach') {
 							callback(self[key], key, self);
 						}
 					});
