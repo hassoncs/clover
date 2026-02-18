@@ -145,7 +145,6 @@ export interface WeldJointDef {
 	damping?: number;
 }
 
-// Re-export from godot-bridge package
 export type { RaycastHit } from "@slopcade/godot-bridge";
 
 export interface CollisionEvent {
