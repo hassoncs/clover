@@ -2,14 +2,7 @@ import type { GameDefinition } from "@slopcade/shared";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
-
-export const metadata: ExampleMeta = {
-	title: "Draggable Cubes",
-	description:
-		"Drag physics bodies with mouse/touch. Uses the draggable behavior system.",
-};
 
 const WORLD_BOUNDS = { width: 14, height: 18 };
 const PIXELS_PER_METER = 50;

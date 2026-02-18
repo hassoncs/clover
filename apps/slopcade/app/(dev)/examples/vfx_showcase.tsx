@@ -1,4 +1,5 @@
 import Slider from "@react-native-community/slider";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import type { GameDefinition } from "@slopcade/shared";
 import type {
 	CompiledPlan,
@@ -16,15 +17,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GodotBridge } from "@slopcade/godot-bridge/types";
-import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
-
-export const metadata: ExampleMeta = {
-	title: "VFX Showcase",
-	description:
-		"Visual effects demo: sprite shaders, post-processing, camera effects, and particles.",
-};
 
 const WORLD_BOUNDS = { width: 14, height: 18 };
 const PIXELS_PER_METER = 50;

@@ -1,3 +1,4 @@
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -10,8 +11,6 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GodotBridge } from "@slopcade/godot-bridge/types";
-import type { ExampleMeta } from "@/lib/registry/types";
 
 function TextureButton({
 	normalImage,
@@ -52,12 +51,6 @@ function TextureButton({
 }
 
 import { FullScreenHeader } from "@/components/FullScreenHeader";
-
-export const metadata: ExampleMeta = {
-	title: "Texture Button",
-	description:
-		"Demonstrates TextureButton with normal/pressed images on both React Native and Godot.",
-};
 
 const WORLD_BOUNDS = { width: 16, height: 8 };
 const PIXELS_PER_METER = 50;

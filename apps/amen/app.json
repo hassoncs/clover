@@ -1,11 +1,11 @@
 {
 	"expo": {
-		"scheme": "slopcade",
+		"scheme": "amen",
 		"icon": "./assets/icon.png",
 		"splash": {
 			"image": "./assets/splash.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#000000"
+			"backgroundColor": "#0D1C33"
 		},
 		"web": {
 			"output": "static",
@@ -19,39 +19,36 @@
 			[
 				"react-native-vision-camera",
 				{
-					"cameraPermissionText": "Slopcade uses your camera for game features"
+					"cameraPermissionText": "Amen uses your camera for game features"
 				}
 			],
 			[
 				"expo-notifications",
 				{
 					"icon": "./assets/icon.png",
-					"color": "#2563EB"
+					"color": "#C8A44E"
 				}
 			]
 		],
 		"userInterfaceStyle": "dark",
-		"name": "Slopcade",
-		"slug": "slopcade",
-		"description": "AI-powered 2D game maker for kids",
-		"updates": {
-			"url": "https://u.expo.dev/bqoepxmdaiggnwjjszsd"
-		},
+		"name": "Amen",
+		"slug": "amen",
+		"description": "Christian party games — Scripture. Fellowship. Fun.",
 		"runtimeVersion": "1.0.0",
 		"ios": {
-			"bundleIdentifier": "me.ch5.slopcade.app",
+			"bundleIdentifier": "games.amen.app",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false
 			}
 		},
 		"android": {
-			"package": "me.ch5.slopcade.app"
+			"package": "games.amen.app"
 		},
 		"assetBundlePatterns": ["**/*"],
 		"extra": {
 			"router": {},
 			"eas": {
-				"projectId": "f43f5d63-7c85-45df-ba8f-78b2a4d8f2aa"
+				"projectId": "TODO_AMEN_EAS_PROJECT_ID"
 			}
 		}
 	}

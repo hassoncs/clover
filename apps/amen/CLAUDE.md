@@ -126,7 +126,7 @@ lib/
 │   ├── GodotBridge.native.ts
 │   ├── GodotBridge.web.ts
 │   └── types.ts
-└── registry/            # Auto-discovered modules
+
 
 components/              # Reusable components
 
@@ -137,26 +137,6 @@ godot_project/           # Godot project files
 ```
 
 ## Common Patterns
-
-### Adding a new game example
-
-1. Create file in `app/(dev)/examples/my_example.tsx`
-2. Export metadata and default component:
-
-```typescript
-import type { ExampleMeta } from '@/lib/registry/types';
-
-export const metadata: ExampleMeta = {
-  title: 'My Example',
-  description: 'Description here',
-};
-
-export default function MyExample() {
-  // Use GodotView and bridge
-}
-```
-
-3. Run `pnpm generate:registry` to register it
 
 ### Working with dynamic images
 

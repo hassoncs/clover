@@ -1,3 +1,4 @@
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -8,13 +9,6 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import type { GodotBridge } from "@slopcade/godot-bridge/types";
-import type { ExampleMeta } from "@/lib/registry/types";
-
-export const metadata: ExampleMeta = {
-	title: "Shader Authoring",
-	description: "Write GLSL shaders with live compilation and error reporting",
-};
 
 const WORLD_BOUNDS = { width: 10, height: 10 };
 const PIXELS_PER_METER = 50;

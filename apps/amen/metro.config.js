@@ -4,7 +4,7 @@ const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 const { withRozenite } = require("@rozenite/metro");
 
-const METRO_PORT = 8085;
+const METRO_PORT = 8086;
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "../..");

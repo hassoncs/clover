@@ -1,16 +1,12 @@
+import type {
+	GodotBridge,
+	NormalizedDrawCommand,
+} from "@slopcade/godot-bridge/types";
 import type { GameDefinition } from "@slopcade/shared";
 import type { CompiledPlan, EffectGraphSpec } from "@slopcade/shared/effects";
 import { compileGraph } from "@slopcade/shared/effects";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import type { GodotBridge, NormalizedDrawCommand } from "@slopcade/godot-bridge/types";
-import type { ExampleMeta } from "@/lib/registry/types";
-
-export const metadata: ExampleMeta = {
-	title: "Finger Paint",
-	description:
-		"Draw on a pixel buffer canvas with color selection and fluid simulation",
-};
 
 const GAME_DEFINITION: GameDefinition = {
 	metadata: {

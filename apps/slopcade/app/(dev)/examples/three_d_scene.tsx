@@ -1,19 +1,13 @@
 import Slider from "@react-native-community/slider";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GodotBridge } from "@slopcade/godot-bridge/types";
-import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 
 const DUCK_GLB_URL =
 	"https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb";
-
-export const metadata: ExampleMeta = {
-	title: "3D Scene",
-	description: "Render a 3D GLB in Godot and rotate it (SubViewport overlay).",
-};
 
 type Status = "loading" | "ready" | "error";
 

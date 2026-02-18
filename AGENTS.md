@@ -45,7 +45,7 @@ The `interactive_bash` tool runs commands in a persistent tmux session, which pr
 
 **NEVER run raw `expo` commands directly.** Always use the project's `pnpm` scripts from the **repo root**.
 
-This project uses Metro port 8085 (not the default 8081). The port must be configured at multiple layers (Metro config, Podfile, native binary compilation). Raw expo commands bypass these safeguards and produce broken builds.
+This project uses custom Metro ports (not the default 8081): **Slopcade=8085, Amen=8086**. Both apps can run simultaneously. The port must be configured at multiple layers (Metro config, Podfile, native binary compilation). Raw expo commands bypass these safeguards and produce broken builds.
 
 | Goal | Correct Command (from repo root) | NEVER Do This |
 |------|----------------------------------|---------------|
@@ -65,13 +65,16 @@ This project uses Metro port 8085 (not the default 8081). The port must be confi
 **Why this matters:**
 - The root scripts ensure Metro is running via devmux before building
 - The app scripts include `--no-bundler` (prevents duplicate Metro instances)
-- The app scripts set `RCT_METRO_PORT=8085` env var and `--port 8085` flag
+- The app scripts set `RCT_METRO_PORT` env var (`8085` for slopcade, `8086` for amen) and matching `--port` flag
 - A preflight check validates port configuration before every native build
 - Running raw `expo run:ios` without these flags produces a binary that connects to port 8081
 
 **If you must run expo commands directly**, always include ALL of:
 ```bash
+# Slopcade
 RCT_METRO_PORT=8085 npx expo run:ios --no-bundler
+# Amen
+RCT_METRO_PORT=8086 npx expo run:ios --no-bundler
 ```
 Note: `--port` and `--no-bundler` are mutually exclusive. The port is communicated via `RCT_METRO_PORT` env var and baked into the binary at build time.
 

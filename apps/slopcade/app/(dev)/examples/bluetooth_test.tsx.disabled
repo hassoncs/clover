@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
@@ -21,11 +20,6 @@ import type {
   TransportEventHandlers,
 } from "@/lib/networking/types";
 import { ConnectionState, MessageType } from "@/lib/networking/types";
-
-export const metadata: ExampleMeta = {
-  title: "Bluetooth Sync",
-  description: "Two-player synced physics via BLE. Drag cubes together!",
-};
 
 type Mode = "menu" | "hosting" | "joining" | "connected";
 

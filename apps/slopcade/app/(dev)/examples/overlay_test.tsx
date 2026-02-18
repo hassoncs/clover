@@ -1,15 +1,8 @@
+import { GameRuntimeGodot } from "@slopcade/game-runtime/GameRuntime.godot";
 import type { GameDefinition } from "@slopcade/shared";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GameRuntimeGodot } from "@slopcade/game-runtime/GameRuntime.godot";
-import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
-
-export const metadata: ExampleMeta = {
-	title: "Overlay Test",
-	description:
-		"Test the declarative overlay HUD system with all element types.",
-};
 
 const GAME_DEFINITION: GameDefinition = {
 	metadata: {

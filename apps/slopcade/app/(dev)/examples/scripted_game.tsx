@@ -4,13 +4,6 @@ import { useCallback, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
-import type { ExampleMeta } from "@/lib/registry/types";
-
-export const metadata: ExampleMeta = {
-	title: "Scripted Game",
-	description:
-		"Test game with JavaScript scripting sandbox. Tap to spawn balls!",
-};
 
 const WORLD_BOUNDS = { width: 14, height: 18 };
 const PIXELS_PER_METER = 50;

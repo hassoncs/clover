@@ -6,13 +6,6 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { CameraCapture, useCameraTexture } from "@/lib/camera";
-import type { ExampleMeta } from "@/lib/registry/types";
-
-export const metadata: ExampleMeta = {
-	title: "Camera Feed",
-	description:
-		"Live camera feed on a Godot entity. Tests native camera integration.",
-};
 
 const WORLD_BOUNDS = { width: 14, height: 18 };
 const PIXELS_PER_METER = 50;

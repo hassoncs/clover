@@ -18,13 +18,6 @@ import {
 	View,
 } from "react-native";
 import { TextEffectEditor } from "@/components/effects/TextEffectEditor";
-import type { ExampleMeta } from "@/lib/registry/types";
-
-export const metadata: ExampleMeta = {
-	title: "Text & Fonts Lab",
-	description:
-		"Comprehensive font and text effects testing: Godot fonts, overlay fonts, and shader effects",
-};
 
 const BUBBLE_FONT =
 	"https://github.com/google/fonts/raw/main/ofl/modak/Modak-Regular.ttf";

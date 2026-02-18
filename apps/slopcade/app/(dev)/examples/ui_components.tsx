@@ -4,13 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
-import type { ExampleMeta } from "@/lib/registry/types";
-
-export const metadata: ExampleMeta = {
-	title: "Themed UI Components",
-	description:
-		"AI-generated themed buttons and checkboxes with nine-patch scaling and state management in Godot.",
-};
 
 export default function UIComponentsExample() {
 	const router = useRouter();

@@ -1,5 +1,4 @@
 packages:
-  - 'app'
   - 'api'
   - 'apps/slopcade'
   - 'apps/amen'
