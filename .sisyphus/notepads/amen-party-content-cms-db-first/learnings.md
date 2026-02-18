@@ -1,18 +1,12 @@
 
-## 2026-02-18: Web-Admin Content Review Page
+## 2026-02-18: Web-Admin Content Review Redesign
 
-### Page Structure
-- Created `app/app/(web-admin)/admin/content-review.tsx` for reviewing party content.
-- Used `trpcReact` for data fetching and mutations.
-- Implemented web-only features like `<select>` (wrapped in `WebSelect`) and `new Audio().play()`.
-- Used `StyleSheet.create` for styling to match existing admin dashboard patterns.
-- Handled pagination and filtering state with `useState`.
-- Parsed JSON body for preview.
-- Added star rating component for quality and humor scores.
+### Web-Only UI Patterns
+- **HTML Elements**: In `Platform.OS === 'web'` guarded files, standard HTML elements (`<table>`, `<select>`, `<input>`) provide better density and native behavior than React Native equivalents for admin interfaces.
+- **Styling**: While `StyleSheet.create` is good for layout, inline styles cast to `any` or `CSSProperties` are often necessary for web-specific attributes like `cursor: pointer`, `borderCollapse`, or `outline`.
+- **Dark Mode**: For admin tools, a hardcoded dark theme (Slate palette: `#0f172a` bg, `#1e293b` panels) works well and feels professional without needing a full app-wide theme system.
 
-### React Native Web Patterns
-- Use `Platform.OS === 'web'` guard for web-only components.
-- Use `createElement` or direct HTML elements (like `<select>`) in `.tsx` files for web-only features, but be careful with types.
-- Use `StyleSheet.create` for consistent styling across platforms (even if page is web-only).
-- Use `TouchableOpacity` for interactive elements.
-- Use `ScrollView` for scrollable content.
+### Data Fetching & State
+- **Filter Handling**: Passing `undefined` to tRPC queries correctly omits the parameter, which is perfect for "All" filter states.
+- **Error Loops**: Always set `{ retry: false }` on `useQuery` for admin pages to prevent infinite retry loops when a user gets a 403 Forbidden error.
+- **Layout**: A fixed sidebar + scrollable main content area (`flex: 1` on both container and content) is a robust pattern for data-heavy admin views.
