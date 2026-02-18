@@ -122,6 +122,10 @@ function RootLayout() {
 		"Lora-SemiBold": require("../assets/fonts/Lora-SemiBold.ttf"),
 		"Lora-Bold": require("../assets/fonts/Lora-Bold.ttf"),
 		"Lora-Italic": require("../assets/fonts/Lora-Italic.ttf"),
+		"Fredoka-Regular": require("../assets/fonts/Fredoka-Regular.ttf"),
+		"Fredoka-Bold": require("../assets/fonts/Fredoka-Bold.ttf"),
+		"Bangers-Regular": require("../assets/fonts/Bangers-Regular.ttf"),
+		"PressStart2P-Regular": require("../assets/fonts/PressStart2P-Regular.ttf"),
 	});
 
 	const { setColorScheme } = useColorScheme();
