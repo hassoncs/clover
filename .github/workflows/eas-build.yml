@@ -1,6 +1,7 @@
 name: EAS Build
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -31,6 +32,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: pnpm --filter './packages/*' run build
+
       - name: Build iOS (production)
         run: eas build --platform ios --profile production --non-interactive --no-wait
         working-directory: app
@@ -56,6 +60,9 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm --filter './packages/*' run build
 
       - name: Build iOS (Amen production)
         run: eas build --platform ios --profile amen-production --non-interactive --no-wait
