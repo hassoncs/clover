@@ -62,6 +62,7 @@ apps/landing-*/.dev.vars
 .seed-local.sql
 .seed-state.json
 .r2-sync-manifest.json
+.r2-sync-manifest-remote.json
 
 # typescript
 *.tsbuildinfo
