@@ -126,4 +126,5 @@ export const WordGamePromptSchema = z.object({
 export type WordGamePrompt = z.infer<typeof WordGamePromptSchema>;
 
 export * from "./amen/index.js";
+export * from "./brand-theme.js";
 export * from "./chroma-clues.js";

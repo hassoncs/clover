@@ -39,9 +39,9 @@ export const MODEL_PRESETS: Record<string, ModelPreset> = {
 		outputPricePer1M: 10.0,
 	},
 	quality: {
-		id: "anthropic/claude-sonnet-4",
+		id: "anthropic/claude-sonnet-4.6",
 		name: "Quality",
-		description: "Best creativity and nuance",
+		description: "Best writing, creativity, and biblical nuance",
 		providerFamily: "anthropic",
 		inputPricePer1M: 3.0,
 		outputPricePer1M: 15.0,

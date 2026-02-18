@@ -82,6 +82,7 @@ export async function generateItems<T>(options: {
 	system: string;
 	prompt: string;
 	model?: string;
+	temperature?: number;
 }): Promise<T> {
 	const { model, providerOptions, providerFamily } = createModelWithConfig(
 		options.model,
@@ -106,6 +107,7 @@ export async function generateItems<T>(options: {
 		system,
 		prompt: options.prompt,
 		providerOptions,
+		temperature: options.temperature ?? 1.0,
 	});
 	return result.object as T;
 }

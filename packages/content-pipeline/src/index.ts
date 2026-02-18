@@ -1,3 +1,4 @@
+export * from "./brands/index.js";
 export type {
 	ContentItemRow,
 	ContentPackRow,

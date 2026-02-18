@@ -1,17 +1,26 @@
 import { randomUUID } from "node:crypto";
 import type { ArgumentsCamelCase, Argv } from "yargs";
+import { listBrands } from "../brands/index.js";
 import { PipelineDB } from "../db/index.js";
 import { computeContentHash } from "../dedup/hash.js";
 import { generateItems } from "../generate/client.js";
 import { resolveModelId } from "../generate/models.js";
-import { GAME_TYPE_CONFIGS } from "../generate/prompts.js";
+import {
+	composeGameTypeConfig,
+	listGameTypes,
+	resolveBrandGameType,
+} from "../generate/prompts.js";
+
+const BATCH_SIZE = 100;
 
 export interface GenerateOptions {
 	gameType: string;
+	brand?: string;
 	count: number;
 	category?: string;
 	dryRun?: boolean;
 	model?: string;
+	temperature?: number;
 }
 
 export function builder(yargs: Argv): Argv {
@@ -28,6 +37,12 @@ export function builder(yargs: Argv): Argv {
 			default: 10,
 			description: "Number of items to generate",
 		})
+		.option("brand", {
+			alias: "b",
+			type: "string",
+			description: "Brand theme to use for generation",
+			choices: listBrands(),
+		})
 		.option("category", {
 			alias: "c",
 			type: "string",
@@ -43,20 +58,58 @@ export function builder(yargs: Argv): Argv {
 			type: "string",
 			description:
 				"Model preset or ID (presets: fast, balanced, quality, reasoning, opensource)",
+		})
+		.option("temperature", {
+			type: "number",
+			default: 1.2,
+			description:
+				"Temperature for generation (0.0-2.0, higher = more creative/diverse)",
 		});
 }
 
 function extractText(item: Record<string, unknown>, gameType: string): string {
 	switch (gameType) {
-		case "wyr":
+		case "amen-dilemma":
 			return `Would you rather: ${item.optionA} OR ${item.optionB}`;
-		case "estimation":
+		case "amen-history":
 			return String(item.question);
-		case "drawing":
+		case "amen-drawing":
 			return String(item.text || item.prompt);
 		default:
 			return String(item.text || item.question || "");
 	}
+}
+
+function summarizeForContext(
+	items: Array<Record<string, unknown>>,
+	gameType: string,
+): string {
+	return items
+		.map((item) => {
+			switch (gameType) {
+				case "amen-quip":
+					return `- "${item.text}"`;
+				case "amen-trivia":
+					return `- Q: "${item.question}" A: "${item.correctAnswer}"`;
+				case "amen-fibbage":
+					return `- "${item.question}" → ${item.answer}`;
+				case "amen-drawing":
+					return `- "${item.text || item.prompt}"`;
+				case "amen-ranking":
+					return `- "${item.topic}"`;
+				case "amen-dilemma":
+					return `- "${item.optionA}" vs "${item.optionB}"`;
+				case "amen-history":
+					return `- "${item.question}" → ${item.answer}`;
+				case "amen-wager":
+					return `- "${item.question}" → ${item.answer}`;
+				case "amen-headsup":
+					return `- Deck: "${item.name}"`;
+				default:
+					return `- ${JSON.stringify(item).substring(0, 100)}`;
+			}
+		})
+		.join("\n");
 }
 
 export async function handler(
@@ -64,85 +117,159 @@ export async function handler(
 ): Promise<void> {
 	const { gameType, count, category, dryRun } = args;
 
-	const config = GAME_TYPE_CONFIGS[gameType];
-	if (!config) {
-		console.error(`Unknown game type: ${gameType}`);
-		console.error(
-			`Available types: ${Object.keys(GAME_TYPE_CONFIGS).join(", ")}`,
-		);
-		process.exit(1);
-	}
+	const { resolvedBrandId, resolvedGameType, storageGameType, config } =
+		(() => {
+			try {
+				const resolved = resolveBrandGameType(gameType, args.brand);
+				return {
+					resolvedBrandId: resolved.brandId,
+					resolvedGameType: resolved.gameType,
+					storageGameType: resolved.storageGameType,
+					config: composeGameTypeConfig(resolved.brandId, resolved.gameType),
+				};
+			} catch (error) {
+				console.error(error instanceof Error ? error.message : String(error));
+				console.error(`Available game types: ${listGameTypes().join(", ")}`);
+				console.error(`Available brands: ${listBrands().join(", ")}`);
+				process.exit(1);
+			}
+		})();
 
 	const resolvedModel = resolveModelId(args.model as string | undefined);
+	const totalBatches = Math.ceil(count / BATCH_SIZE);
+
 	console.log(
-		`Generating ${count} items for ${gameType} using ${resolvedModel}...`,
+		`Generating ${count} items for ${resolvedGameType} [brand=${resolvedBrandId}] using ${resolvedModel} (temp=${args.temperature}, ${totalBatches} batch${totalBatches > 1 ? "es" : ""})...`,
 	);
 
-	try {
-		const prompt = config.promptTemplate(count);
-		const result = await generateItems({
-			schema: config.schema,
-			system: config.system,
-			prompt,
-			model: args.model,
-		});
+	const allItems: Array<Record<string, unknown>> = [];
+	let totalSaved = 0;
+	let totalDuplicates = 0;
 
-		const items = result.items as Array<Record<string, unknown>>;
-		const limitedItems = items.slice(0, count);
+	const db = dryRun ? null : new PipelineDB();
 
-		if (dryRun) {
-			console.log("\n=== DRY RUN MODE ===");
-			console.log(JSON.stringify(limitedItems, null, 2));
-			console.log(`\nGenerated ${limitedItems.length} items (not saved)`);
-			return;
+	for (let batch = 0; batch < totalBatches; batch++) {
+		const remaining = count - allItems.length;
+		const batchCount = Math.min(BATCH_SIZE, remaining);
+
+		if (batchCount <= 0) break;
+
+		console.log(
+			`\n--- Batch ${batch + 1}/${totalBatches} (requesting ${batchCount} items) ---`,
+		);
+
+		let prompt = config.promptTemplate(batchCount);
+
+		// For subsequent batches, inject previously generated items to avoid duplicates
+		if (allItems.length > 0) {
+			const existingSummary = summarizeForContext(allItems, storageGameType);
+			prompt += `\n\nCRITICAL: The following ${allItems.length} items have ALREADY been generated. You MUST NOT repeat or create items similar to any of these. Explore completely different topics, characters, scenarios, and angles:\n\n${existingSummary}\n\nGenerate ${batchCount} ENTIRELY NEW and UNIQUE items that cover different ground from everything above.`;
 		}
 
-		const db = new PipelineDB();
-		const now = new Date().toISOString();
-		let savedCount = 0;
-		let duplicateCount = 0;
-		const modelUsed = resolvedModel;
+		try {
+			const result = await generateItems({
+				schema: config.schema,
+				system: config.system,
+				prompt,
+				model: args.model,
+				temperature: args.temperature,
+			});
 
-		for (const item of limitedItems) {
-			const text = extractText(item, gameType);
-			const itemCategory = String(item.category || category || "");
-			const contentHash = computeContentHash(text);
+			const items = (result as { items: Array<Record<string, unknown>> }).items;
+			const limitedItems = items.slice(0, batchCount);
 
-			const existing = db.getContentItemByHash(contentHash);
-			if (existing) {
-				duplicateCount++;
+			console.log(`  Received ${limitedItems.length} items`);
+
+			if (dryRun) {
+				allItems.push(...limitedItems);
 				continue;
 			}
 
-			db.insertContentItem({
-				id: randomUUID(),
-				gameType,
-				text,
-				category: itemCategory || null,
-				contentHash,
-				provenanceSource: "ai-generated",
-				provenanceGeneratedAt: now,
-				provenanceGeneratedBy: modelUsed,
-				provenancePrompt: prompt,
-				provenanceMetadata: JSON.stringify({ originalItem: item }),
-				moderationStatus: "pending",
-				moderationNotes: null,
-				createdAt: now,
-				updatedAt: now,
-				metadata: JSON.stringify(item),
-			});
+			const now = new Date().toISOString();
+			let batchSaved = 0;
+			let batchDuplicates = 0;
 
-			savedCount++;
+			for (const item of limitedItems) {
+				const text = extractText(item, storageGameType);
+				const itemCategory = String(item.category || category || "");
+				const contentHash = computeContentHash(text);
+
+				const existing = db!.getContentItemByHash(contentHash);
+				if (existing) {
+					batchDuplicates++;
+					continue;
+				}
+
+				db!.insertContentItem({
+					id: randomUUID(),
+					gameType: storageGameType,
+					text,
+					category: itemCategory || null,
+					contentHash,
+					provenanceSource: "ai-generated",
+					provenanceGeneratedAt: now,
+					provenanceGeneratedBy: resolvedModel,
+					provenancePrompt: prompt.substring(0, 500),
+					provenanceMetadata: JSON.stringify({ originalItem: item }),
+					moderationStatus: "pending",
+					moderationNotes: null,
+					createdAt: now,
+					updatedAt: now,
+					metadata: JSON.stringify(item),
+				});
+
+				batchSaved++;
+				allItems.push(item);
+			}
+
+			totalSaved += batchSaved;
+			totalDuplicates += batchDuplicates;
+			console.log(
+				`  ✓ Saved ${batchSaved} new items${batchDuplicates > 0 ? ` (⊘ ${batchDuplicates} duplicates)` : ""}`,
+			);
+		} catch (error) {
+			console.error(
+				`  ✗ Batch ${batch + 1} failed:`,
+				error instanceof Error ? error.message : error,
+			);
+			console.error("  Retrying in 5 seconds...");
+			await new Promise((resolve) => setTimeout(resolve, 5000));
+
+			// Retry once
+			try {
+				const retryPrompt = config.promptTemplate(batchCount);
+				const result = await generateItems({
+					schema: config.schema,
+					system: config.system,
+					prompt: retryPrompt,
+					model: args.model,
+					temperature: args.temperature,
+				});
+				const items = (result as { items: Array<Record<string, unknown>> })
+					.items;
+				console.log(`  Retry received ${items.length} items`);
+				allItems.push(...items.slice(0, batchCount));
+			} catch (retryError) {
+				console.error(
+					`  ✗ Retry also failed, skipping batch:`,
+					retryError instanceof Error ? retryError.message : retryError,
+				);
+			}
 		}
+	}
 
-		db.close();
+	db?.close();
 
-		console.log(`\n✓ Saved ${savedCount} new items`);
-		if (duplicateCount > 0) {
-			console.log(`⊘ Skipped ${duplicateCount} duplicates`);
-		}
-	} catch (error) {
-		console.error("Generation failed:", error);
-		process.exit(1);
+	if (dryRun) {
+		console.log("\n=== DRY RUN MODE ===");
+		console.log(JSON.stringify(allItems, null, 2));
+		console.log(`\nGenerated ${allItems.length} items (not saved)`);
+		return;
+	}
+
+	console.log(`\n=== GENERATION COMPLETE ===`);
+	console.log(`✓ Total saved: ${totalSaved} new items`);
+	if (totalDuplicates > 0) {
+		console.log(`⊘ Total skipped: ${totalDuplicates} duplicates`);
 	}
 }

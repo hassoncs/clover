@@ -132,74 +132,17 @@ function extractScriptureRef(text: string): string {
 }
 
 function buildDistractors(
-	question: string,
-	correctAnswer: string,
-	answerPool: string[],
+	_question: string,
+	_correctAnswer: string,
+	_answerPool: string[],
 ): { incorrectAnswers: string[]; needsWrongAnswerGeneration: boolean } {
-	const incorrect: string[] = [];
-	const correctKey = normalizeKey(correctAnswer);
-
-	const pushIfUnique = (candidate: string): void => {
-		const cleaned = normalizeText(candidate);
-		if (!cleaned || normalizeKey(cleaned) === correctKey) {
-			return;
-		}
-		if (
-			!incorrect.some((item) => normalizeKey(item) === normalizeKey(cleaned))
-		) {
-			incorrect.push(cleaned);
-		}
-	};
-
-	if (correctKey === "true") {
-		pushIfUnique("False");
-		pushIfUnique("Not enough information");
-		pushIfUnique("Partly true");
-	}
-
-	if (correctKey === "false") {
-		pushIfUnique("True");
-		pushIfUnique("Not enough information");
-		pushIfUnique("Partly false");
-	}
-
-	if (/^\d+$/.test(correctKey)) {
-		const value = Number.parseInt(correctKey, 10);
-		if (Number.isFinite(value)) {
-			pushIfUnique(String(Math.max(1, value - 1)));
-			pushIfUnique(String(value + 1));
-			pushIfUnique(String(value + 2));
-		}
-	}
-
-	const q = normalizeKey(question);
-	if (
-		q.includes("first book in the bible") ||
-		q.includes("last book in the bible")
-	) {
-		pushIfUnique("Exodus");
-		pushIfUnique("Psalms");
-		pushIfUnique("Matthew");
-	}
-
-	for (const candidate of answerPool) {
-		if (incorrect.length >= 3) {
-			break;
-		}
-		pushIfUnique(candidate);
-	}
-
-	while (incorrect.length < 3) {
-		pushIfUnique(`${PLACEHOLDER_WRONG_ANSWER}_${incorrect.length + 1}`);
-	}
-
-	const needsWrongAnswerGeneration = incorrect.some((answer) =>
-		answer.startsWith(PLACEHOLDER_WRONG_ANSWER),
-	);
-
 	return {
-		incorrectAnswers: incorrect.slice(0, 3),
-		needsWrongAnswerGeneration,
+		incorrectAnswers: [
+			PLACEHOLDER_WRONG_ANSWER,
+			PLACEHOLDER_WRONG_ANSWER,
+			PLACEHOLDER_WRONG_ANSWER,
+		],
+		needsWrongAnswerGeneration: true,
 	};
 }
 
