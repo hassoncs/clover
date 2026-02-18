@@ -1,6 +1,8 @@
 packages:
   - 'app'
   - 'api'
+  - 'apps/slopcade'
+  - 'apps/amen'
   - 'apps/landing-slopcade'
   - 'apps/landing-amen'
   - 'shared'

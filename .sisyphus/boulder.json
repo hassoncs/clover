@@ -1,8 +1,9 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/shared-package-spike.md",
-  "started_at": "2026-02-18T17:09:10.074Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.worktrees/opencode-fleet-wrk_63f67162-shared-package-spike/.sisyphus/plans/two-expo-apps-shared-packages.md",
+  "started_at": "2026-02-18T17:41:55.885Z",
   "session_ids": [
-    "ses_38e45dcc8ffeikEU080PyAYIS0"
+    "ses_38e27dddaffemywcnprNFvrmGp"
   ],
-  "plan_name": "shared-package-spike"
+  "plan_name": "two-expo-apps-shared-packages",
+  "agent": "atlas"
 }
