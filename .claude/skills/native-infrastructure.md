@@ -59,13 +59,67 @@ The port is configured in ALL of these places — missing any one breaks native 
 2. `--no-bundler` flag prevents duplicate Metro instances
 3. `RCT_METRO_PORT=8085` is set in environment
 
+## Multi-Brand Builds (Slopcade + Amen)
+
+This project builds two apps from one codebase via `BRAND_ID` env var. `metro` and `metro-amen` are **mutually exclusive** on port 8085 — each kills the other on start.
+
+### Brand Workflow
+
+**Slopcade (default):**
+```bash
+devmux ensure metro          # Starts slopcade Metro (kills metro-amen if running)
+devmux ensure ios            # Builds + installs slopcade app (auto-starts metro)
+```
+
+**Amen:**
+```bash
+devmux ensure metro-amen     # Starts amen Metro, clears cache, kills metro first
+devmux ensure ios-amen       # Prebuilds ios/ for amen, builds + installs amen app
+# Note: ios/ is now in amen state. Restore with:
+cd app && pnpm prebuild      # Restores ios/ to slopcade config
+```
+
+**Switch back to Slopcade after Amen build:**
+```bash
+devmux ensure metro          # Kills metro-amen, starts metro
+cd app && pnpm prebuild      # Restores ios/ to slopcade bundle ID
+```
+
+### Why `ios/` needs prebuild to switch brands
+
+`app.config.ts` bakes `BRAND_ID` into the Xcode project at prebuild time:
+- Bundle identifier (`me.ch5.slopcade.app` vs `games.amen.app`)
+- Entitlements (associated domains)
+- App icon asset catalog
+
+Without prebuild, `expo run:ios` builds with whatever bundle ID is currently in `ios/`. The `ios-amen` devmux service runs `expo prebuild --no-install` automatically before building.
+
+### ccache Efficiency
+
+Both brands compile the same C++/Obj-C native modules. ccache hits on all shared code (~90% of compile time). Switching brands after first build of each:
+- Prebuild: ~5-10s
+- Incremental native build (xcode link only): ~1-2 min
+- JS bundle only change: ~15s
+
+### `app/package.json` Brand Scripts
+
+| Script | What it does |
+|--------|-------------|
+| `pnpm prebuild` | Regenerates `ios/` for slopcade brand |
+| `pnpm prebuild:amen` | Regenerates `ios/` for amen brand |
+| `pnpm ios:amen` | Prebuilds amen + builds iOS (use from `app/` dir) |
+
 ## Common Commands
 
 ```bash
 # CORRECT (from repo root):
-pnpm ios                    # Ensures Metro, runs iOS
+pnpm ios                    # Ensures Metro, runs slopcade iOS
 pnpm android                # Ensures Metro, runs Android
 cd app && pnpm pods         # Install CocoaPods
+
+# Brand-switching (devmux):
+devmux ensure metro-amen    # Switch Metro to amen brand
+devmux ensure ios-amen      # Build amen app on simulator
 
 # NEVER:
 expo run:ios                # Missing port config!
@@ -80,6 +134,10 @@ npx expo start              # Wrong port!
 - `ccache` is enabled in Podfile for faster rebuilds (disables `COMPILER_INDEX_STORE_ENABLE`)
 - Android namespace is `me.ch5.slopcade.app`
 - Godot native module is `@borndotcom/react-native-godot`
+- **metro vs metro-amen**: Both use port 8085, cannot run simultaneously. Each kills the other on start via `tmux kill-session`.
+- **ios/ state**: After `devmux ensure ios-amen`, `ios/` is configured for amen. Run `pnpm prebuild` in `app/` to restore slopcade config.
+- **Font assets**: Custom fonts must be valid TTF/OTF binaries — verify with `file path/to/font.ttf`. GitHub HTML pages disguised as `.ttf` cause `CTFontManagerError 104` and a black screen.
+- **metro-amen renamed**: Previously `metro:amen` — renamed to `metro-amen` because colons in tmux session names (`omo-slopcade-metro:amen`) cause the session to appear as "running outside tmux" in devmux status.
 
 ## File References
 
