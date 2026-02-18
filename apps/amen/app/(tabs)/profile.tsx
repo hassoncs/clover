@@ -20,13 +20,13 @@ import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import { useAuth } from "@/hooks/useAuth";
 import { trpcReact } from "@/lib/trpc/react";
 
-const heroImage = require("@/assets/slopcade-title-hero.jpg");
+const heroImage = require("@/assets/brands/amen/splash.png");
 
 function initialsFromEmail(email: string | undefined): string {
-	if (!email) return "SC";
+	if (!email) return "AG";
 	const base = email.split("@")[0] ?? "";
 	const parts = base.split(/[._-]/).filter(Boolean);
-	if (parts.length === 0) return base.slice(0, 2).toUpperCase() || "SC";
+	if (parts.length === 0) return base.slice(0, 2).toUpperCase() || "AG";
 	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
 	return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }

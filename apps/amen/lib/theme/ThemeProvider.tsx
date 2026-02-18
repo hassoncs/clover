@@ -11,7 +11,7 @@ import {
 import { Platform } from "react-native";
 import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 
-const THEME_STORAGE_KEY = "slopcade-color-scheme";
+const THEME_STORAGE_KEY = "amen-color-scheme";
 
 interface ThemeContextValue {
 	colorScheme: EditorThemeName;

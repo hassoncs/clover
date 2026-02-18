@@ -5,7 +5,7 @@
  * provides a file:// URL resolver for locally stored game assets.
  *
  * Storage structure:
- * {APP_DATA}/slopcade/games/{gameId}/{prefix}/{assetId}.png
+ * {APP_DATA}/amen/games/{gameId}/{prefix}/{assetId}.png
  *
  * R2 key format: {prefix}/{assetId}.png
  */
@@ -31,10 +31,10 @@ const state: ServerState = {
  */
 function getBaseDirectory(): string {
 	if (Platform.OS === "web") {
-		return "/slopcade/games/";
+		return "/amen/games/";
 	}
 	// On native, use the document directory for proper file:// URLs
-	return `${FileSystem.documentDirectory}slopcade/games/`;
+	return `${FileSystem.documentDirectory}amen/games/`;
 }
 
 /**

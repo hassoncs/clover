@@ -1,12 +1,11 @@
-import { WithCanvasKit } from "@slopcade/ui/Grainient";
+import { AmenSplashSequence } from "@slopcade/ui/amen";
 import * as SplashScreen from "expo-splash-screen";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
-	withDelay,
 	withTiming,
 } from "react-native-reanimated";
 
@@ -15,15 +14,6 @@ interface AnimatedSplashScreenProps {
 	children: React.ReactNode;
 }
 
-const NUM_STYLES = 6;
-const STYLE_SWITCH_INTERVAL = 200;
-const TOTAL_DURATION = NUM_STYLES * STYLE_SWITCH_INTERVAL;
-
-const globalSplashState = {
-	styleIndex: 0,
-	time: 0,
-};
-
 export function AnimatedSplashScreen({
 	onAnimationComplete,
 	children,
@@ -31,30 +21,18 @@ export function AnimatedSplashScreen({
 	const [isAppReady, setIsAppReady] = useState(false);
 	const [isSplashAnimationComplete, setIsSplashAnimationComplete] =
 		useState(false);
-	const [currentStyleIndex, setCurrentStyleIndex] = useState(0);
 	const [showSplash, setShowSplash] = useState(true);
+	const [sequenceFinished, setSequenceFinished] = useState(false);
 
-	const styleSequence = useMemo(() => {
-		const seq: number[] = [];
-		for (let i = 0; i < NUM_STYLES; i++) {
-			seq.push(i % 6);
-		}
-		return seq;
-	}, []);
-
-	const opacity = useSharedValue(1);
-	const scale = useSharedValue(1);
+	const splashOpacity = useSharedValue(1);
+	const splashScale = useSharedValue(1);
 	const contentOpacity = useSharedValue(0);
-
-	const handleAnimationComplete = useCallback(() => {
-		setIsSplashAnimationComplete(true);
-		onAnimationComplete?.();
-	}, [onAnimationComplete]);
 
 	useEffect(() => {
 		async function prepare() {
 			try {
 				await SplashScreen.preventAutoHideAsync();
+				// Small delay to ensure native splash is visible before we swap
 				await new Promise((resolve) => setTimeout(resolve, 200));
 				setIsAppReady(true);
 			} catch (error) {
@@ -66,56 +44,38 @@ export function AnimatedSplashScreen({
 	}, []);
 
 	useEffect(() => {
-		if (!isAppReady || isSplashAnimationComplete) return;
+		if (isAppReady && sequenceFinished && showSplash) {
+			// Trigger exit animation
+			splashOpacity.value = withTiming(0, { duration: 400 });
+			splashScale.value = withTiming(1.05, { duration: 400 });
+			contentOpacity.value = withTiming(1, { duration: 400 });
 
-		const startTime = Date.now();
-		let switchCount = 0;
-
-		const animationFrame = () => {
-			const elapsed = Date.now() - startTime;
-			globalSplashState.time = elapsed;
-
-			if (
-				elapsed >=
-				switchCount * STYLE_SWITCH_INTERVAL + STYLE_SWITCH_INTERVAL
-			) {
-				if (switchCount < NUM_STYLES - 1) {
-					const newStyleIndex = styleSequence[switchCount];
-					setCurrentStyleIndex(newStyleIndex);
-					globalSplashState.styleIndex = newStyleIndex;
-					switchCount++;
-				}
-			}
-
-			if (elapsed < TOTAL_DURATION) {
-				requestAnimationFrame(animationFrame);
-			}
-		};
-
-		globalSplashState.styleIndex = 0;
-		requestAnimationFrame(animationFrame);
-	}, [isAppReady, isSplashAnimationComplete, styleSequence]);
-
-	useEffect(() => {
-		if (!isAppReady) return;
-
-		const timeout = setTimeout(() => {
-			opacity.value = withTiming(0, { duration: 350 });
-			scale.value = withTiming(1.4, { duration: 350 });
-			contentOpacity.value = withDelay(150, withTiming(1, { duration: 200 }));
-
-			setTimeout(async () => {
+			const timer = setTimeout(async () => {
 				await SplashScreen.hideAsync();
 				setShowSplash(false);
-				handleAnimationComplete();
+				setIsSplashAnimationComplete(true);
+				onAnimationComplete?.();
 			}, 400);
-		}, TOTAL_DURATION - 100);
 
-		return () => clearTimeout(timeout);
-	}, [isAppReady, opacity, scale, contentOpacity, handleAnimationComplete]);
+			return () => clearTimeout(timer);
+		}
+	}, [
+		isAppReady,
+		sequenceFinished,
+		showSplash,
+		onAnimationComplete,
+		splashOpacity,
+		splashScale,
+		contentOpacity,
+	]);
 
 	const contentAnimatedStyle = useAnimatedStyle(() => ({
 		opacity: contentOpacity.value,
+	}));
+
+	const splashAnimatedStyle = useAnimatedStyle(() => ({
+		opacity: splashOpacity.value,
+		transform: [{ scale: splashScale.value }],
 	}));
 
 	if (isSplashAnimationComplete) {
@@ -129,30 +89,10 @@ export function AnimatedSplashScreen({
 			</Animated.View>
 
 			{showSplash && (
-				<Animated.View
-					style={[
-						styles.splashOverlay,
-						{
-							backgroundColor: "transparent",
-							opacity,
-							transform: [{ scale }],
-						},
-					]}
-				>
-					<WithCanvasKit
-						getComponent={async () => {
-							const mod = await import("./SplashSkiaCanvas");
-							return {
-								default: () => (
-									<mod.default
-										styleIndex={globalSplashState.styleIndex}
-										time={globalSplashState.time}
-									/>
-								),
-							};
-						}}
-						fallback={<FallbackText styleIndex={currentStyleIndex} />}
-						fadeInDuration={0}
+				<Animated.View style={[styles.splashOverlay, splashAnimatedStyle]}>
+					<AmenSplashSequence
+						duration={2000}
+						onComplete={() => setSequenceFinished(true)}
 					/>
 				</Animated.View>
 			)}
@@ -160,20 +100,10 @@ export function AnimatedSplashScreen({
 	);
 }
 
-function FallbackText({ styleIndex }: { styleIndex: number }) {
-	const colors = ["#FF00FF", "#00FF41", "#FF4500", "#39FF14", "#FFD700"];
-	const color = colors[styleIndex % colors.length];
-
-	return (
-		<View style={styles.fallbackContainer}>
-			<Text style={[styles.fallbackText, { color }]}>SLOPCADE</Text>
-		</View>
-	);
-}
-
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		backgroundColor: "#FFFDF7", // Warm cream background
 	},
 	content: {
 		flex: 1,
@@ -181,16 +111,8 @@ const styles = StyleSheet.create({
 	splashOverlay: {
 		...StyleSheet.absoluteFillObject,
 		zIndex: 999,
-	},
-	fallbackContainer: {
-		flex: 1,
-		justifyContent: "center",
+		backgroundColor: "#FFFDF7",
 		alignItems: "center",
-	},
-	fallbackText: {
-		fontSize: 48,
-		fontWeight: "900",
-		letterSpacing: 3,
-		textAlign: "center",
+		justifyContent: "center",
 	},
 });

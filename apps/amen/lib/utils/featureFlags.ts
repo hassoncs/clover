@@ -10,7 +10,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
 	experimentalAiFeatures: false,
 };
 
-const FEATURE_FLAGS_KEY = "slopcade_feature_flags";
+const FEATURE_FLAGS_KEY = "amen_feature_flags";
 
 export async function getFeatureFlags(): Promise<FeatureFlags> {
 	return await getStorageItem<FeatureFlags>(

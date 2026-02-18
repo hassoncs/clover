@@ -1,6 +1,6 @@
-# Slopcade App
+# Amen Games
 
-React Native game engine powered by Godot 4 for physics-based game rendering.
+Christian party games — Scripture. Fellowship. Fun. Powered by Godot 4 for physics-based game rendering.
 
 ## Features
 

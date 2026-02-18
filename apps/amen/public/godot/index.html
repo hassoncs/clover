@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>Slopcade</title>
+		<title>Amen Games</title>
 		<style>
 html, body, #canvas {
 	margin: 0;
@@ -92,7 +92,7 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-<script>(function(){const o=console.log,w=console.warn,p=/Running registrant __godot_rust_registrant__godot_rapier/;console.log=function(...a){p.test(a.join(' '))||o.apply(console,a)};console.warn=function(...a){p.test(a.join(' '))||w.apply(console,a)}})();</script>
+<script>(()=> {const o=console.log,w=console.warn,p=/Running registrant __godot_rust_registrant__godot_rapier/;console.log=(...a)=> {p.test(a.join(' '))||o.apply(console,a)};console.warn=(...a)=> {p.test(a.join(' '))||w.apply(console,a)}})();</script>
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -115,7 +115,7 @@ const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"e
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
-(function () {
+((() => {
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
 	const statusNotice = document.getElementById('status-notice');
@@ -200,7 +200,7 @@ const engine = new Engine(GODOT_CONFIG);
 	} else {
 		setStatusMode('progress');
 		engine.startGame({
-			'onProgress': function (current, total) {
+			'onProgress': (current, total) => {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
 					statusProgress.max = total;
@@ -213,7 +213,7 @@ const engine = new Engine(GODOT_CONFIG);
 			setStatusMode('hidden');
 		}, displayFailureNotice);
 	}
-}());
+})());
 		</script>
 	</body>
 </html>

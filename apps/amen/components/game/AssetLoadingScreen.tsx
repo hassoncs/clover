@@ -51,8 +51,8 @@ export function AssetLoadingScreen({
 		}).start();
 	}, [progress.percent, progressAnim]);
 
-	const backgroundColor = config?.backgroundColor ?? "#111827";
-	const progressBarColor = config?.progressBarColor ?? "#4F46E5";
+	const backgroundColor = config?.backgroundColor ?? "#0D1C33";
+	const progressBarColor = config?.progressBarColor ?? "#C9A84C";
 	const textColor = config?.textColor ?? "#FFFFFF";
 	const canSkip = onSkip && progress.percent >= allowSkipAfterPercent;
 
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
 	heroPlaceholder: {
 		width: 120,
 		height: 120,
-		backgroundColor: "rgba(79, 70, 229, 0.2)",
+		backgroundColor: "rgba(201, 168, 76, 0.2)",
 		borderRadius: 24,
 		justifyContent: "center",
 		alignItems: "center",
@@ -311,12 +311,12 @@ const styles = StyleSheet.create({
 		marginBottom: 24,
 		paddingVertical: 18,
 		paddingHorizontal: 56,
-		backgroundColor: "#4F46E5",
+		backgroundColor: "#C9A84C",
 		borderRadius: 14,
 		borderWidth: 0,
 	},
 	skipButtonText: {
-		color: "#FFFFFF",
+		color: "#1B3A6B",
 		fontSize: 18,
 		fontWeight: "600",
 	},

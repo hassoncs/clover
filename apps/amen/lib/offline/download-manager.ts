@@ -2,7 +2,7 @@
  * Download Manager for Offline Mode
  *
  * Downloads game definitions and asset blobs for offline play:
- * {documentDirectory}/slopcade/games/{gameId}/
+ * {documentDirectory}/amen/games/{gameId}/
  *   ├── definition.json
  *   └── blobs/{hash[0:2]}/{hash}
  */
@@ -12,7 +12,7 @@ import type { GameDefinition } from "@slopcade/shared";
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 
-const STORAGE_KEY = "slopcade:downloaded-games";
+const STORAGE_KEY = "amen:downloaded-games";
 const DOWNLOAD_CONCURRENCY = 4;
 
 export interface DownloadedGame {
@@ -26,7 +26,7 @@ function getBaseDirectory(): string {
 	if (Platform.OS === "web") {
 		throw new Error("Offline downloads not supported on web");
 	}
-	return `${FileSystem.documentDirectory}slopcade/games/`;
+	return `${FileSystem.documentDirectory}amen/games/`;
 }
 
 function getGameDirectory(gameId: string): string {
