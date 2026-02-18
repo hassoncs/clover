@@ -198,12 +198,12 @@ Tasks:
 **Goal:** Each app looks and feels intentionally different.
 
 Tasks:
-- [ ] Slopcade `global.css`: dark-first, neon/playful palette, chaotic energy
-- [ ] Amen `global.css`: warm cream/gold/navy palette, dignified, reverent feel
-- [ ] Audit shared packages (`@chriscode/ui`, `@chriscode/shared-ui`) to ensure they ONLY reference semantic tokens (`bg-theme-background`, `text-theme-primary`) — never hardcoded colors
-- [ ] Per-app fonts loaded in each app's `_layout.tsx`
+- [x] Slopcade `global.css`: dark-first, neon/playful palette, chaotic energy
+- [x] Amen `global.css`: warm cream/gold/navy palette, dignified, reverent feel
+- [x] Audit shared packages (`@chriscode/ui`, `@chriscode/shared-ui`) to ensure they ONLY reference semantic tokens (`bg-theme-background`, `text-theme-primary`) — never hardcoded colors
+- [x] Per-app fonts loaded in each app's `_layout.tsx`
 - [ ] Per-app splash screen and app icon assets
-- [ ] Each app can customize navigation structure independently (Slopcade: browse-first with creator tools, Amen: party-first with curated catalog)
+- [x] Each app can customize navigation structure independently (Slopcade: browse-first with creator tools, Amen: party-first with curated catalog)
 
 **Exit criteria:** Both apps are visually distinct. Shared components render correctly in both contexts.
 
@@ -229,12 +229,12 @@ Tasks:
 **Goal:** Remove the old `app/` monolith and all brand-switching plumbing.
 
 Tasks:
-- [ ] Delete `app/` directory
-- [ ] Simplify `@chriscode/brands` — keep only what's still useful (content policy for API, basic metadata). Remove feature flags (each app just IS its features now).
-- [ ] Remove old devmux services that referenced `app/`
-- [ ] Update all documentation (AGENTS.md, skills, README)
-- [ ] Final `tsc -b` + test pass across entire monorepo
-- [ ] Clean up any `@slopcade/` references that slipped through
+- [x] Delete `app/` directory
+- [x] Simplify `@chriscode/brands` — keep only what's still useful (content policy for API, basic metadata). Remove feature flags (each app just IS its features now).
+- [x] Remove old devmux services that referenced `app/`
+- [x] Update all documentation (AGENTS.md, skills, README)
+- [x] Final `tsc -b` + test pass across entire monorepo
+- [x] Clean up any `@slopcade/` references that slipped through
 
 **Exit criteria:** No references to old `app/` directory or `@slopcade/` namespace. Both apps pass full test suite.
 

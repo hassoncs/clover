@@ -70,6 +70,7 @@ export class PrefabInstantiator {
 			prefabId: definition.entityPrefab.id,
 			position,
 			entityId,
+			...(opts?.velocity ? { velocity: opts.velocity } : {}),
 		};
 
 		this.bridge.spawnEntity(request);
