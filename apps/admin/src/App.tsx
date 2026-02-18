@@ -5,12 +5,17 @@ import {
 	Route,
 	Routes,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from "./lib/auth";
-import { TRPCProvider } from "./lib/trpc";
+import {
+	AuthProvider,
+	isDevBypassActive,
+	setDevBypass,
+	useAuth,
+} from "./lib/auth";
 import { supabase } from "./lib/supabase";
-import { LoginPage } from "./pages/LoginPage";
-import { DashboardPage } from "./pages/DashboardPage";
+import { TRPCProvider } from "./lib/trpc";
 import { ContentReviewPage } from "./pages/ContentReviewPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { LoginPage } from "./pages/LoginPage";
 
 function NavBar() {
 	const { user } = useAuth();
@@ -61,7 +66,15 @@ function NavBar() {
 			>
 				<span style={{ color: "#475569", fontSize: 13 }}>{user?.email}</span>
 				<button
-					onClick={() => supabase.auth.signOut()}
+					type="button"
+					onClick={() => {
+						if (isDevBypassActive()) {
+							setDevBypass(false);
+							window.location.href = "/login";
+						} else {
+							supabase.auth.signOut();
+						}
+					}}
 					style={{
 						padding: "4px 12px",
 						background: "transparent",
@@ -105,9 +118,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 function AppLayout() {
 	return (
-		<div
-			style={{ display: "flex", flexDirection: "column", height: "100vh" }}
-		>
+		<div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
 			<NavBar />
 			<div style={{ flex: 1, overflow: "hidden" }}>
 				<Routes>

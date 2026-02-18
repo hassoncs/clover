@@ -9,41 +9,38 @@ export const adminDashboardRouter = router({
 
 		// 1. User Stats
 		const totalUsersResult = await ctx.env.DB.prepare(
-			"SELECT COUNT(*) as count FROM users WHERE brand_id = ?",
-		)
-			.bind(ctx.brandId)
-			.first<{ count: number }>();
+			"SELECT COUNT(*) as count FROM users",
+		).first<{ count: number }>();
 
 		const newUsersTodayResult = await ctx.env.DB.prepare(
-			"SELECT COUNT(*) as count FROM users WHERE created_at >= ? AND brand_id = ?",
+			"SELECT COUNT(*) as count FROM users WHERE created_at >= ?",
 		)
-			.bind(startOfDay, ctx.brandId)
+			.bind(startOfDay)
 			.first<{ count: number }>();
 
 		// 2. Spend Stats (Debit transactions are negative)
 		const spend24hResult = await ctx.env.DB.prepare(
-			"SELECT SUM(ct.amount_micros) as total FROM credit_transactions ct JOIN users u ON ct.user_id = u.id WHERE ct.amount_micros < 0 AND ct.created_at >= ? AND u.brand_id = ?",
+			"SELECT SUM(amount_micros) as total FROM credit_transactions WHERE amount_micros < 0 AND created_at >= ?",
 		)
-			.bind(oneDayAgo, ctx.brandId)
+			.bind(oneDayAgo)
 			.first<{ total: number }>();
 
 		const spend7dResult = await ctx.env.DB.prepare(
-			"SELECT SUM(ct.amount_micros) as total FROM credit_transactions ct JOIN users u ON ct.user_id = u.id WHERE ct.amount_micros < 0 AND ct.created_at >= ? AND u.brand_id = ?",
+			"SELECT SUM(amount_micros) as total FROM credit_transactions WHERE amount_micros < 0 AND created_at >= ?",
 		)
-			.bind(sevenDaysAgo, ctx.brandId)
+			.bind(sevenDaysAgo)
 			.first<{ total: number }>();
 
 		const dailySpendResult = await ctx.env.DB.prepare(
 			`SELECT 
-        strftime('%Y-%m-%d', datetime(ct.created_at / 1000, 'unixepoch')) as day, 
-        SUM(ct.amount_micros) as total 
-      FROM credit_transactions ct
-      JOIN users u ON ct.user_id = u.id
-      WHERE ct.amount_micros < 0 AND ct.created_at >= ? AND u.brand_id = ?
+        strftime('%Y-%m-%d', datetime(created_at / 1000, 'unixepoch')) as day, 
+        SUM(amount_micros) as total 
+      FROM credit_transactions
+      WHERE amount_micros < 0 AND created_at >= ?
       GROUP BY day 
       ORDER BY day ASC`,
 		)
-			.bind(sevenDaysAgo, ctx.brandId)
+			.bind(sevenDaysAgo)
 			.all<{ day: string; total: number }>();
 
 		const dailySpend = dailySpendResult.results.map((r) => ({
@@ -53,9 +50,9 @@ export const adminDashboardRouter = router({
 
 		// 3. Moderation Rejects
 		const moderationEvents = await ctx.env.DB.prepare(
-			"SELECT ae.metadata_json FROM audit_events ae JOIN users u ON ae.actor_id = u.id WHERE ae.action = 'moderation.reject' AND ae.created_at >= ? AND u.brand_id = ?",
+			"SELECT metadata_json FROM audit_events WHERE action = 'moderation.reject' AND created_at >= ?",
 		)
-			.bind(oneDayAgo, ctx.brandId)
+			.bind(oneDayAgo)
 			.all<{ metadata_json: string }>();
 
 		const moderationRejects: Record<string, number> = {};
@@ -71,16 +68,16 @@ export const adminDashboardRouter = router({
 
 		// 4. Generation Velocity (admin generation actions)
 		const adminGenerationCountResult = await ctx.env.DB.prepare(
-			"SELECT COUNT(*) as count FROM audit_events ae JOIN users u ON ae.actor_id = u.id WHERE ae.action LIKE 'admin.generate_%' AND ae.created_at >= ? AND u.brand_id = ?",
+			"SELECT COUNT(*) as count FROM audit_events WHERE action LIKE 'admin.generate_%' AND created_at >= ?",
 		)
-			.bind(oneDayAgo, ctx.brandId)
+			.bind(oneDayAgo)
 			.first<{ count: number }>();
 
 		// 5. User Generation Velocity (game generations)
 		const userGenerationCountResult = await ctx.env.DB.prepare(
-			"SELECT COUNT(*) as count FROM credit_transactions ct JOIN users u ON ct.user_id = u.id WHERE ct.type = 'generation_debit' AND ct.created_at >= ? AND u.brand_id = ?",
+			"SELECT COUNT(*) as count FROM credit_transactions WHERE type = 'generation_debit' AND created_at >= ?",
 		)
-			.bind(oneDayAgo, ctx.brandId)
+			.bind(oneDayAgo)
 			.first<{ count: number }>();
 
 		return {

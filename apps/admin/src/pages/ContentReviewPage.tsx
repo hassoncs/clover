@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { trpc } from "../lib/trpc";
+import { useCallback, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { env } from "../lib/env";
+import { trpc } from "../lib/trpc";
 
 const CONTENT_TYPES = [
 	{ label: "Quip", value: "quip" },
@@ -19,21 +20,206 @@ const CONTENT_TYPES = [
 	{ label: "HeadsUp", value: "headsup" },
 ];
 
-function getBodyPreview(body: string): string {
+const TYPE_ABBREVIATIONS: Record<string, string> = {
+	quip: "QIP",
+	trivia: "TRV",
+	drawing: "DRW",
+	dilemma: "DIL",
+	wyr: "WYR",
+	estimation: "EST",
+	fibbage: "FIB",
+	caption: "CAP",
+	wordgame: "WDG",
+	wordlist: "WDL",
+	personal: "PRS",
+	FakeWord: "FKW",
+	ranking: "RNK",
+	headsup: "HU",
+};
+
+const SKIP_VOICE_CONTENT_TYPES = new Set(["headsup", "wordlist", "FakeWord"]);
+
+function ContentBody({
+	body,
+	contentType,
+}: {
+	body: string;
+	contentType: string;
+}) {
+	let parsed: Record<string, unknown>;
 	try {
-		const parsed = JSON.parse(body);
-		const text =
-			parsed.text ??
-			parsed.question ??
-			parsed.prompt ??
-			parsed.topic ??
-			parsed.word ??
-			JSON.stringify(parsed);
-		const s = String(text);
-		return s.slice(0, 80) + (s.length > 80 ? "..." : "");
+		parsed = JSON.parse(body);
 	} catch {
-		return body.slice(0, 80) + (body.length > 80 ? "..." : "");
+		return <span className="text-slate-200">{body.slice(0, 120)}</span>;
 	}
+
+	switch (contentType) {
+		case "quip":
+		case "personal":
+			return (
+				<span className="text-slate-200">{String(parsed.text ?? "")}</span>
+			);
+
+		case "trivia":
+			return (
+				<div className="flex flex-col gap-1">
+					<span className="text-slate-200 font-medium">
+						{String(parsed.question ?? "")}
+					</span>
+					<span className="text-green-300 text-xs">
+						✓ {String(parsed.correctAnswer ?? "")}
+					</span>
+					{Array.isArray(parsed.incorrectAnswers) && (
+						<span className="text-slate-500 text-[11px]">
+							{(parsed.incorrectAnswers as string[]).join(" · ")}
+						</span>
+					)}
+				</div>
+			);
+
+		case "fibbage":
+			return (
+				<div className="flex flex-col gap-1">
+					<span className="text-slate-200 font-medium">
+						{String(parsed.question ?? "")}
+					</span>
+					<span className="text-amber-400 text-xs">
+						→ {String(parsed.answer ?? "")}
+					</span>
+				</div>
+			);
+
+		case "dilemma":
+		case "wyr":
+			return (
+				<div className="flex flex-col gap-1">
+					<span className="text-blue-300">
+						A: {String(parsed.optionA ?? "")}
+					</span>
+					<span className="text-rose-300">
+						B: {String(parsed.optionB ?? "")}
+					</span>
+				</div>
+			);
+
+		case "drawing":
+			return (
+				<span className="text-slate-200">🎨 {String(parsed.prompt ?? "")}</span>
+			);
+
+		case "ranking":
+			return (
+				<div className="flex flex-col gap-1">
+					<span className="text-slate-200 font-medium">
+						{String(parsed.topic ?? "")}
+					</span>
+					{Array.isArray(parsed.items) && (
+						<span className="text-slate-500 text-[11px]">
+							{(parsed.items as string[]).join(" → ")}
+						</span>
+					)}
+				</div>
+			);
+
+		case "headsup":
+			return (
+				<div className="flex flex-col gap-1">
+					<span className="text-slate-200 font-medium">
+						{String(parsed.name ?? "")}
+					</span>
+					{Array.isArray(parsed.words) && (
+						<span className="text-slate-500 text-[11px]">
+							{(parsed.words as string[]).slice(0, 6).join(", ")}
+							{(parsed.words as string[]).length > 6 ? " ..." : ""}
+						</span>
+					)}
+				</div>
+			);
+
+		case "wordlist":
+			return (
+				<span className="text-slate-200">{String(parsed.word ?? "")}</span>
+			);
+
+		case "estimation":
+			return (
+				<div className="flex flex-col gap-1">
+					<span className="text-slate-200 font-medium">
+						{String(parsed.question ?? "")}
+					</span>
+					{parsed.answer != null && (
+						<span className="text-amber-400 text-xs">
+							= {String(parsed.answer)}
+						</span>
+					)}
+				</div>
+			);
+
+		default: {
+			const text =
+				parsed.text ??
+				parsed.question ??
+				parsed.prompt ??
+				parsed.word ??
+				JSON.stringify(parsed);
+			const s = String(text);
+			return (
+				<span className="text-slate-200">
+					{s.slice(0, 120)}
+					{s.length > 120 ? "..." : ""}
+				</span>
+			);
+		}
+	}
+}
+
+function AudioButton({ r2Key }: { r2Key: string }) {
+	const [state, setState] = useState<"idle" | "playing" | "error">("idle");
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+
+	const toggle = useCallback(() => {
+		if (state === "playing" && audioRef.current) {
+			audioRef.current.pause();
+			audioRef.current = null;
+			setState("idle");
+			return;
+		}
+		const audio = new Audio(`${env.apiUrl}/assets/${r2Key}`);
+		audioRef.current = audio;
+		setState("playing");
+		audio.play().catch(() => setState("error"));
+		audio.addEventListener("ended", () => {
+			audioRef.current = null;
+			setState("idle");
+		});
+		audio.addEventListener("error", () => {
+			audioRef.current = null;
+			setState("error");
+		});
+	}, [state, r2Key]);
+
+	if (state === "error") {
+		return (
+			<span className="text-amber-500 text-sm" title="Audio file missing">
+				⚠
+			</span>
+		);
+	}
+
+	return (
+		<button
+			type="button"
+			onClick={toggle}
+			className={`cursor-pointer text-[15px] p-0 border-none bg-transparent ${
+				state === "playing"
+					? "text-amber-400"
+					: "text-slate-400 hover:text-slate-300"
+			}`}
+			title={state === "playing" ? "Pause" : "Play"}
+		>
+			{state === "playing" ? "⏸" : "▶"}
+		</button>
+	);
 }
 
 function StarRating({
@@ -44,19 +230,17 @@ function StarRating({
 	onRate: (score: number) => void;
 }) {
 	return (
-		<span>
+		<span className="flex">
 			{[1, 2, 3, 4, 5].map((star) => (
 				<button
+					type="button"
 					key={star}
 					onClick={() => onRate(star)}
-					style={{
-						background: "none",
-						border: "none",
-						cursor: "pointer",
-						fontSize: 15,
-						color: star <= (value ?? 0) ? "#fbbf24" : "#334155",
-						padding: "0 1px",
-					}}
+					className={`cursor-pointer text-[15px] px-[1px] border-none bg-transparent ${
+						star <= (value ?? 0)
+							? "text-amber-400"
+							: "text-slate-700 hover:text-slate-600"
+					}`}
 				>
 					★
 				</button>
@@ -65,114 +249,62 @@ function StarRating({
 	);
 }
 
-function Badge({
-	color,
-	text,
-	textColor = "#bfdbfe",
-}: {
-	color: string;
-	text: string;
-	textColor?: string;
-}) {
-	return (
-		<span
-			style={{
-				display: "inline-block",
-				padding: "2px 8px",
-				borderRadius: 4,
-				background: color,
-				color: textColor,
-				fontSize: 11,
-				fontWeight: 600,
-				whiteSpace: "nowrap",
-			}}
-		>
-			{text}
-		</span>
-	);
-}
-
-const selectStyle: React.CSSProperties = {
-	width: "100%",
-	padding: "8px 10px",
-	borderRadius: 6,
-	border: "1px solid #334155",
-	background: "#0f172a",
-	color: "#cbd5e1",
-	fontSize: 13,
-	outline: "none",
-};
-
-const labelStyle: React.CSSProperties = {
-	display: "block",
-	fontSize: 10,
-	fontWeight: 600,
-	color: "#64748b",
-	textTransform: "uppercase",
-	letterSpacing: 0.5,
-	marginBottom: 5,
-};
-
-function FilterSelect({
-	label,
-	value,
-	onChange,
-	options,
-}: {
-	label: string;
-	value: string;
-	onChange: (v: string) => void;
-	options: { label: string; value: string }[];
-}) {
-	return (
-		<div>
-			<label style={labelStyle}>{label}</label>
-			<select
-				value={value}
-				onChange={(e) => onChange(e.target.value)}
-				style={selectStyle}
-			>
-				<option value="">All</option>
-				{options.map((o) => (
-					<option key={o.value} value={o.value}>
-						{o.label}
-					</option>
-				))}
-			</select>
-		</div>
-	);
-}
-
-function paginationBtnStyle(disabled: boolean): React.CSSProperties {
-	return {
-		padding: "6px 16px",
-		background: disabled ? "transparent" : "#1e293b",
-		border: "1px solid #334155",
-		borderRadius: 6,
-		color: "#cbd5e1",
-		cursor: disabled ? "default" : "pointer",
-		opacity: disabled ? 0.4 : 1,
-		fontSize: 13,
-	};
-}
-
 export function ContentReviewPage() {
-	const [brand, setBrand] = useState<"amen" | "slopcade" | undefined>();
-	const [contentType, setContentType] = useState<string | undefined>();
-	const [status, setStatus] = useState<
-		"draft" | "active" | "retired" | undefined
-	>();
-	const [search, setSearch] = useState("");
-	const [includeDeleted, setIncludeDeleted] = useState(false);
-	const [hasReview, setHasReview] = useState<
-		"all" | "reviewed" | "unreviewed"
-	>("all");
-	const [sortBy, setSortBy] = useState<
-		"created_at" | "updated_at" | "quality_score" | "humor_score"
-	>("created_at");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-	const [page, setPage] = useState(1);
+	const [params, setParams] = useSearchParams();
+
+	const brand = (params.get("brand") as "amen" | "slopcade") || undefined;
+	const contentType = params.get("type") || undefined;
+	const status =
+		(params.get("status") as "draft" | "active" | "retired") || undefined;
+	const search = params.get("q") ?? "";
+	const includeDeleted = params.get("deleted") === "1";
+	const hasReview =
+		(params.get("review") as "all" | "reviewed" | "unreviewed") || "all";
+	const sortBy =
+		(params.get("sort") as
+			| "created_at"
+			| "updated_at"
+			| "quality_score"
+			| "humor_score") || "created_at";
+	const sortOrder = (params.get("order") as "asc" | "desc") || "desc";
+	const page = Number(params.get("page")) || 1;
 	const pageSize = 50;
+
+	const setFilter = useCallback(
+		(updates: Record<string, string | undefined>) => {
+			setParams(
+				(prev) => {
+					const next = new URLSearchParams(prev);
+					for (const [k, v] of Object.entries(updates)) {
+						if (v == null || v === "" || v === "all" || v === "0")
+							next.delete(k);
+						else next.set(k, v);
+					}
+					if (!("page" in updates)) next.delete("page");
+					return next;
+				},
+				{ replace: true },
+			);
+		},
+		[setParams],
+	);
+
+	const setPage = useCallback(
+		(p: number | ((prev: number) => number)) => {
+			setParams(
+				(prev) => {
+					const next = new URLSearchParams(prev);
+					const val =
+						typeof p === "function" ? p(Number(prev.get("page")) || 1) : p;
+					if (val <= 1) next.delete("page");
+					else next.set("page", String(val));
+					return next;
+				},
+				{ replace: true },
+			);
+		},
+		[setParams],
+	);
 
 	const utils = trpc.useUtils();
 
@@ -222,23 +354,10 @@ export function ContentReviewPage() {
 		if (confirm("Delete this content?")) softDelete.mutate({ id });
 	};
 
-	const playAudio = (r2Key: string) => {
-		new Audio(`${env.apiUrl}/assets/${r2Key}`)
-			.play()
-			.catch(console.error);
-	};
-
 	if (error) {
 		return (
-			<div
-				style={{
-					display: "flex",
-					height: "100%",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
-				<p style={{ color: "#ef4444" }}>
+			<div className="flex h-full items-center justify-center">
+				<p className="text-red-500">
 					{error.data?.code === "FORBIDDEN"
 						? "Access Denied: You are not an admin."
 						: error.data?.code === "UNAUTHORIZED"
@@ -252,120 +371,96 @@ export function ContentReviewPage() {
 	const totalPages = Math.ceil((data?.total ?? 0) / pageSize);
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				height: "100%",
-				overflow: "hidden",
-				background: "#0f172a",
-			}}
-		>
+		<div className="flex h-full overflow-hidden bg-slate-950">
 			{/* Sidebar */}
-			<div
-				style={{
-					width: 256,
-					flexShrink: 0,
-					background: "#1e293b",
-					borderRight: "1px solid #334155",
-					padding: 20,
-					overflowY: "auto",
-					display: "flex",
-					flexDirection: "column",
-					gap: 14,
-				}}
-			>
-				<h2
-					style={{
-						margin: 0,
-						fontSize: 15,
-						fontWeight: 700,
-						color: "#f8fafc",
-					}}
-				>
-					Filters
-				</h2>
+			<div className="w-64 shrink-0 bg-slate-800 border-r border-slate-700 p-5 overflow-y-auto flex flex-col gap-3.5">
+				<h2 className="m-0 text-[15px] font-bold text-slate-50">Filters</h2>
 
 				<div>
-					<label style={labelStyle}>Search</label>
+					<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+						Search
+					</div>
 					<input
 						value={search}
-						onChange={(e) => {
-							setSearch(e.target.value);
-							setPage(1);
-						}}
+						onChange={(e) => setFilter({ q: e.target.value })}
 						placeholder="Search content..."
-						style={{ ...selectStyle, color: "#f8fafc" }}
+						className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-50 text-sm outline-none focus:border-slate-500 placeholder:text-slate-600"
 					/>
 				</div>
 
-				<FilterSelect
-					label="Brand"
-					value={brand ?? ""}
-					onChange={(v) => {
-						setBrand((v as "amen" | "slopcade") || undefined);
-						setPage(1);
-					}}
-					options={[
-						{ label: "Amen", value: "amen" },
-						{ label: "Slopcade", value: "slopcade" },
-					]}
-				/>
+				<div>
+					<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+						Brand
+					</div>
+					<select
+						value={brand ?? ""}
+						onChange={(e) => setFilter({ brand: e.target.value })}
+						className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-300 text-sm outline-none focus:border-slate-500"
+					>
+						<option value="">All</option>
+						<option value="amen">Amen</option>
+						<option value="slopcade">Slopcade</option>
+					</select>
+				</div>
 
-				<FilterSelect
-					label="Type"
-					value={contentType ?? ""}
-					onChange={(v) => {
-						setContentType(v || undefined);
-						setPage(1);
-					}}
-					options={CONTENT_TYPES}
-				/>
+				<div>
+					<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+						Type
+					</div>
+					<select
+						value={contentType ?? ""}
+						onChange={(e) => setFilter({ type: e.target.value })}
+						className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-300 text-sm outline-none focus:border-slate-500"
+					>
+						<option value="">All</option>
+						{CONTENT_TYPES.map((o) => (
+							<option key={o.value} value={o.value}>
+								{o.label}
+							</option>
+						))}
+					</select>
+				</div>
 
-				<FilterSelect
-					label="Status"
-					value={status ?? ""}
-					onChange={(v) => {
-						setStatus((v as "draft" | "active" | "retired") || undefined);
-						setPage(1);
-					}}
-					options={[
-						{ label: "Draft", value: "draft" },
-						{ label: "Active", value: "active" },
-						{ label: "Retired", value: "retired" },
-					]}
-				/>
+				<div>
+					<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+						Status
+					</div>
+					<select
+						value={status ?? ""}
+						onChange={(e) => setFilter({ status: e.target.value })}
+						className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-300 text-sm outline-none focus:border-slate-500"
+					>
+						<option value="">All</option>
+						<option value="draft">Draft</option>
+						<option value="active">Active</option>
+						<option value="retired">Retired</option>
+					</select>
+				</div>
 
-				<FilterSelect
-					label="Review Status"
-					value={hasReview}
-					onChange={(v) => {
-						setHasReview(
-							(v as "all" | "reviewed" | "unreviewed") || "all",
-						);
-						setPage(1);
-					}}
-					options={[
-						{ label: "All", value: "all" },
-						{ label: "Reviewed", value: "reviewed" },
-						{ label: "Unreviewed", value: "unreviewed" },
-					]}
-				/>
+				<div>
+					<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+						Review Status
+					</div>
+					<select
+						value={hasReview}
+						onChange={(e) => setFilter({ review: e.target.value })}
+						className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-300 text-sm outline-none focus:border-slate-500"
+					>
+						<option value="all">All</option>
+						<option value="reviewed">Reviewed</option>
+						<option value="unreviewed">Unreviewed</option>
+					</select>
+				</div>
 
-				<div style={{ display: "flex", gap: 8 }}>
-					<div style={{ flex: 1 }}>
-						<label style={labelStyle}>Sort By</label>
+				<div className="flex gap-2">
+					<div className="flex-1">
+						<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+							Sort By
+						</div>
 						<select
 							value={sortBy}
-							onChange={(e) =>
-								setSortBy(
-									e.target.value as
-										| "created_at"
-										| "updated_at"
-										| "quality_score"
-										| "humor_score",
-								)
-							}
-							style={selectStyle}
+							onChange={(e) => setFilter({ sort: e.target.value })}
+							className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-300 text-sm outline-none focus:border-slate-500"
 						>
 							<option value="created_at">Created</option>
 							<option value="updated_at">Updated</option>
@@ -373,14 +468,14 @@ export function ContentReviewPage() {
 							<option value="humor_score">Humor</option>
 						</select>
 					</div>
-					<div style={{ flex: 1 }}>
-						<label style={labelStyle}>Order</label>
+					<div className="flex-1">
+						<div className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+							Order
+						</div>
 						<select
 							value={sortOrder}
-							onChange={(e) =>
-								setSortOrder(e.target.value as "asc" | "desc")
-							}
-							style={selectStyle}
+							onChange={(e) => setFilter({ order: e.target.value })}
+							className="w-full px-2.5 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-300 text-sm outline-none focus:border-slate-500"
 						>
 							<option value="desc">Desc</option>
 							<option value="asc">Asc</option>
@@ -388,105 +483,58 @@ export function ContentReviewPage() {
 					</div>
 				</div>
 
-				<label
-					style={{
-						display: "flex",
-						alignItems: "center",
-						gap: 8,
-						cursor: "pointer",
-						color: "#94a3b8",
-						fontSize: 13,
-					}}
-				>
+				<label className="flex items-center gap-2 cursor-pointer text-slate-400 text-[13px] hover:text-slate-300">
 					<input
 						type="checkbox"
 						checked={includeDeleted}
-						onChange={(e) => setIncludeDeleted(e.target.checked)}
+						onChange={(e) =>
+							setFilter({ deleted: e.target.checked ? "1" : undefined })
+						}
+						className="rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0 focus:ring-offset-0"
 					/>
 					Include Deleted
 				</label>
 			</div>
 
 			{/* Main */}
-			<div
-				style={{
-					flex: 1,
-					display: "flex",
-					flexDirection: "column",
-					overflow: "hidden",
-				}}
-			>
-				<div
-					style={{
-						padding: "14px 24px",
-						borderBottom: "1px solid #1e293b",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						flexShrink: 0,
-					}}
-				>
-					<h1
-						style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#f8fafc" }}
-					>
+			<div className="flex-1 flex flex-col overflow-hidden">
+				<div className="px-6 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0">
+					<h1 className="m-0 text-xl font-bold text-slate-50">
 						Content Review
 					</h1>
 					{data && (
-						<span style={{ color: "#64748b", fontSize: 13 }}>
+						<span className="text-slate-500 text-[13px]">
 							{data.total} items · page {page} of {totalPages || 1}
 						</span>
 					)}
 				</div>
 
-				<div style={{ flex: 1, overflowY: "auto", padding: "0 24px 24px" }}>
+				<div className="flex-1 overflow-y-auto px-6 pb-6">
 					{isLoading ? (
-						<p style={{ color: "#64748b", padding: "24px 0" }}>Loading...</p>
+						<p className="text-slate-500 py-6">Loading...</p>
 					) : !data?.items.length ? (
-						<p
-							style={{
-								color: "#64748b",
-								fontStyle: "italic",
-								padding: "24px 0",
-							}}
-						>
-							No content found.
-						</p>
+						<p className="text-slate-500 italic py-6">No content found.</p>
 					) : (
-						<table
-							style={{
-								width: "100%",
-								borderCollapse: "collapse",
-								color: "#cbd5e1",
-								fontSize: 13,
-							}}
-						>
+						<table className="w-full border-collapse text-slate-300 text-[13px]">
 							<thead>
-								<tr style={{ borderBottom: "1px solid #1e293b" }}>
+								<tr className="border-b border-slate-800">
 									{[
-										"ID",
-										"Brand",
-										"Type",
-										"Status",
-										"Content",
-										"Audio",
-										"Quality",
-										"Humor",
-										"Actions",
+										{ label: "ID", width: "w-[60px]" },
+										{ label: "B", width: "w-[28px]", title: "Brand" },
+										{ label: "Type", width: "w-[50px]" },
+										{ label: "", width: "w-[24px]", title: "Status" },
+										{ label: "Content", width: "" },
+										{ label: "♪", width: "w-[32px]", title: "Audio" },
+										{ label: "Qual", width: "w-[80px]", title: "Quality" },
+										{ label: "Fun", width: "w-[80px]", title: "Humor" },
+										{ label: "", width: "w-[50px]" },
 									].map((h) => (
 										<th
-											key={h}
-											style={{
-												padding: "12px 14px",
-												textAlign: "left",
-												fontSize: 10,
-												fontWeight: 600,
-												color: "#475569",
-												textTransform: "uppercase",
-												letterSpacing: 0.5,
-												whiteSpace: "nowrap",
-											}}
+											key={h.label + (h.title ?? "")}
+											title={h.title}
+											className={`px-1.5 py-2 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap ${h.width}`}
 										>
-											{h}
+											{h.label}
 										</th>
 									))}
 								</tr>
@@ -495,105 +543,74 @@ export function ContentReviewPage() {
 								{data.items.map((item) => (
 									<tr
 										key={item.id}
-										style={{
-											borderBottom: "1px solid #0f172a",
-											background: item.deletedAt
-												? "rgba(185,28,28,0.08)"
-												: "transparent",
-										}}
+										className={`border-b border-slate-900 hover:bg-slate-900/50 ${
+											item.deletedAt ? "bg-red-900/10" : ""
+										}`}
 									>
-										<td style={{ padding: "10px 14px" }}>
-											<code
-												style={{
-													fontFamily: "monospace",
-													color: "#475569",
-													fontSize: 11,
-												}}
-											>
+										<td className="p-3.5">
+											<code className="font-mono text-slate-500 text-[11px]">
 												{item.id.slice(0, 8)}
 											</code>
 										</td>
-										<td style={{ padding: "10px 14px" }}>
-											<Badge
-												color={
-													item.brandId === "amen" ? "#1e3a8a" : "#3730a3"
-												}
-												text={item.brandId}
-											/>
-										</td>
-										<td style={{ padding: "10px 14px" }}>
-											<Badge color="#1e293b" text={item.contentType} textColor="#94a3b8" />
-										</td>
-										<td style={{ padding: "10px 14px" }}>
-											<Badge
-												color={
-													item.status === "active"
-														? "#064e3b"
-														: item.status === "draft"
-															? "#78350f"
-															: "#3f3f46"
-												}
-												textColor={
-													item.status === "active"
-														? "#a7f3d0"
-														: item.status === "draft"
-															? "#fde68a"
-															: "#d4d4d8"
-												}
-												text={item.status}
-											/>
-										</td>
-										<td
-											style={{
-												padding: "10px 14px",
-												maxWidth: 280,
-											}}
-										>
-											<span
-												style={{
-													display: "-webkit-box",
-													WebkitLineClamp: 2,
-													WebkitBoxOrient: "vertical",
-													overflow: "hidden",
-													color: "#e2e8f0",
-												}}
+										<td className="p-3.5">
+											<div
+												className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+													item.brandId === "amen"
+														? "bg-blue-900 text-blue-200"
+														: "bg-violet-900 text-violet-200"
+												}`}
+												title={item.brandId}
 											>
-												{getBodyPreview(item.body)}
+												{item.brandId === "amen" ? "A" : "S"}
+											</div>
+										</td>
+										<td className="p-3.5">
+											<span className="text-[10px] font-mono text-slate-400 uppercase">
+												{TYPE_ABBREVIATIONS[item.contentType] ??
+													item.contentType.slice(0, 3)}
 											</span>
 										</td>
-										<td style={{ padding: "10px 14px" }}>
+										<td className="p-3.5">
+											<div
+												className={`w-2 h-2 rounded-full ${
+													item.status === "active"
+														? "bg-green-500"
+														: item.status === "draft"
+															? "bg-amber-500"
+															: "bg-zinc-600"
+												}`}
+												title={item.status}
+											/>
+										</td>
+										<td className="p-3.5 max-w-md break-words">
+											<ContentBody
+												body={item.body}
+												contentType={item.contentType}
+											/>
+										</td>
+										<td className="p-3.5 text-center">
 											{item.assets?.[0] ? (
-												<button
-													onClick={() => playAudio(item.assets[0].r2_key)}
-													style={{
-														background: "none",
-														border: "none",
-														cursor: "pointer",
-														fontSize: 15,
-														color: "#94a3b8",
-													}}
-													title="Play audio"
-												>
-													▶
-												</button>
+												<AudioButton r2Key={item.assets[0].r2_key} />
+											) : SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
+												<span className="text-slate-700">—</span>
 											) : (
-												<span style={{ color: "#334155" }}>—</span>
+												<span
+													title="Missing audio"
+													className="text-amber-500 text-sm"
+												>
+													⚠
+												</span>
 											)}
 										</td>
-										<td style={{ padding: "10px 14px" }}>
+										<td className="px-3.5 py-2.5">
 											<StarRating
 												value={item.latestReview?.qualityScore ?? null}
 												onRate={(s) =>
-													handleRate(
-														item.id,
-														"quality",
-														s,
-														item.latestReview,
-													)
+													handleRate(item.id, "quality", s, item.latestReview)
 												}
 											/>
 										</td>
-										<td style={{ padding: "10px 14px" }}>
+										<td className="px-3.5 py-2.5">
 											<StarRating
 												value={item.latestReview?.humorScore ?? null}
 												onRate={(s) =>
@@ -601,19 +618,14 @@ export function ContentReviewPage() {
 												}
 											/>
 										</td>
-										<td style={{ padding: "10px 14px" }}>
+										<td className="p-3.5">
 											<button
+												type="button"
 												onClick={() => handleDelete(item.id)}
 												disabled={!!item.deletedAt}
-												style={{
-													background: "none",
-													border: "none",
-													cursor: item.deletedAt ? "default" : "pointer",
-													color: "#f87171",
-													opacity: item.deletedAt ? 0.35 : 1,
-													fontSize: 13,
-													padding: 0,
-												}}
+												className={`bg-transparent border-none cursor-pointer text-red-400 text-[13px] p-0 hover:text-red-300 ${
+													item.deletedAt ? "opacity-35 cursor-default" : ""
+												}`}
 											>
 												{item.deletedAt ? "Deleted" : "Delete"}
 											</button>
@@ -626,27 +638,20 @@ export function ContentReviewPage() {
 				</div>
 
 				{data && (
-					<div
-						style={{
-							padding: "12px 24px",
-							borderTop: "1px solid #1e293b",
-							display: "flex",
-							justifyContent: "center",
-							gap: 12,
-							flexShrink: 0,
-						}}
-					>
+					<div className="px-6 py-3 border-t border-slate-800 flex justify-center gap-3 shrink-0">
 						<button
+							type="button"
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 							disabled={page === 1}
-							style={paginationBtnStyle(page === 1)}
+							className="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-md text-slate-300 text-sm disabled:opacity-40 disabled:cursor-default hover:not-disabled:bg-slate-700 cursor-pointer"
 						>
 							Previous
 						</button>
 						<button
+							type="button"
 							onClick={() => setPage((p) => p + 1)}
 							disabled={page >= totalPages}
-							style={paginationBtnStyle(page >= totalPages)}
+							className="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-md text-slate-300 text-sm disabled:opacity-40 disabled:cursor-default hover:not-disabled:bg-slate-700 cursor-pointer"
 						>
 							Next
 						</button>

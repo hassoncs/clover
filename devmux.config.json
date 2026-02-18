@@ -87,8 +87,8 @@
 		},
 		"admin": {
 			"cwd": "apps/admin",
-			"comment": "Admin web app (port 8787). Requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in apps/admin/.env.local",
-			"command": "pnpm dev",
+			"comment": "Admin web app (port 8787). Supabase creds injected via hush -t app.",
+			"command": "npx hush run -t app -- pnpm dev",
 			"health": { "type": "port", "port": 8787 },
 			"dashboard": true,
 			"dependsOn": ["api"]

@@ -1,13 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { z } from "zod";
 import { adminProcedure, router } from "@/trpc/index";
 
 function getContentPacksRoot(): string {
-	const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-	return path.resolve(scriptDir, "../../party/content/packs");
+	return path.resolve("src/party/content/packs");
 }
 
 type Brand = "amen" | "slopcade";

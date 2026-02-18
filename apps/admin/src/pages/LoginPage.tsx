@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { setDevBypass } from "../lib/auth";
 import { supabase } from "../lib/supabase";
 
 export function LoginPage() {
@@ -6,6 +7,11 @@ export function LoginPage() {
 	const [sent, setSent] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+
+	const handleDevLogin = () => {
+		setDevBypass(true);
+		window.location.href = "/";
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -104,6 +110,32 @@ export function LoginPage() {
 							{isLoading ? "Sending..." : "Send Magic Link"}
 						</button>
 					</form>
+				)}
+				{import.meta.env.DEV && (
+					<>
+						<div
+							style={{ borderTop: "1px solid #1e3a2f", margin: "24px 0 0" }}
+						/>
+						<button
+							type="button"
+							onClick={handleDevLogin}
+							style={{
+								marginTop: 16,
+								width: "100%",
+								padding: "10px 14px",
+								background: "#14532d",
+								border: "1px solid #166534",
+								borderRadius: 8,
+								color: "#86efac",
+								fontSize: 13,
+								fontWeight: 600,
+								cursor: "pointer",
+								letterSpacing: "0.02em",
+							}}
+						>
+							⚡ Dev Login (hassoncs@gmail.com)
+						</button>
+					</>
 				)}
 			</div>
 		</div>
