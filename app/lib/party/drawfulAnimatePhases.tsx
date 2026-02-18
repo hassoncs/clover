@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { Image, Text, View } from "react-native";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 import { AnswerInput } from "@/components/party/AnswerInput";
-import { DrawingInput } from "@/components/party/DrawingInput";
+
+const DrawingInput = lazy(() => import("@/components/party/DrawingInput"));
+
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
@@ -231,7 +233,9 @@ function DrawingPhase({
 							(frameNumber === 1 ? "Draw Frame 1" : "Draw Frame 2")
 						}
 					/>
-					<DrawingInput onSubmit={sendInput} />
+					<Suspense fallback={<ActivityIndicator />}>
+						<DrawingInput onSubmit={sendInput} />
+					</Suspense>
 				</View>
 			)}
 		</PhaseShell>

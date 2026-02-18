@@ -1,5 +1,8 @@
-import { Image, Text, View } from "react-native";
-import { DrawingInput } from "@/components/party/DrawingInput";
+import { lazy, Suspense } from "react";
+import { ActivityIndicator, Image, Text, View } from "react-native";
+
+const DrawingInput = lazy(() => import("@/components/party/DrawingInput"));
+
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
@@ -117,10 +120,12 @@ function ChampionPhase({
 				/>
 			) : hasDrawingRequest ? (
 				<View className="w-full flex-1">
-					<DrawingInput
-						onSubmit={(value) => sendInput(value)}
-						colors={["#0f172a", RIVAL_ACCENT, "#fb7185", "#fecdd3"]}
-					/>
+					<Suspense fallback={<ActivityIndicator />}>
+						<DrawingInput
+							onSubmit={(value) => sendInput(value)}
+							colors={["#0f172a", RIVAL_ACCENT, "#fb7185", "#fecdd3"]}
+						/>
+					</Suspense>
 				</View>
 			) : (
 				<HostWaitCard
@@ -164,10 +169,12 @@ function ChallengerPhase({
 				/>
 			) : hasDrawingRequest ? (
 				<View className="w-full flex-1">
-					<DrawingInput
-						onSubmit={(value) => sendInput(value)}
-						colors={["#0f172a", RIVAL_ACCENT, "#fb7185", "#fecdd3"]}
-					/>
+					<Suspense fallback={<ActivityIndicator />}>
+						<DrawingInput
+							onSubmit={(value) => sendInput(value)}
+							colors={["#0f172a", RIVAL_ACCENT, "#fb7185", "#fecdd3"]}
+						/>
+					</Suspense>
 				</View>
 			) : (
 				<HostWaitCard

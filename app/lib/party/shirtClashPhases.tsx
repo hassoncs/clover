@@ -1,7 +1,10 @@
-import { Image, Text, View } from "react-native";
+import { lazy, Suspense } from "react";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 import { AnswerInput } from "@/components/party/AnswerInput";
 import { ChoiceGrid } from "@/components/party/ChoiceGrid";
-import { DrawingInput } from "@/components/party/DrawingInput";
+
+const DrawingInput = lazy(() => import("@/components/party/DrawingInput"));
+
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
@@ -205,7 +208,9 @@ function CreationPhase({
 							"Draw an icon for your shirt brand"
 						}
 					/>
-					<DrawingInput onSubmit={sendInput} />
+					<Suspense fallback={<ActivityIndicator />}>
+						<DrawingInput onSubmit={sendInput} />
+					</Suspense>
 				</View>
 			) : requestType === "text" ? (
 				<View className="w-full flex-1">

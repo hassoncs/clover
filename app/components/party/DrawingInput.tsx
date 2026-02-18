@@ -40,7 +40,7 @@ function getPoint(e: GestureResponderEvent): Point {
 	return { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
 }
 
-export function DrawingInput({
+export default function DrawingInput({
 	onSubmit,
 	colors = DEFAULT_COLORS,
 	strokeWidth = 4,

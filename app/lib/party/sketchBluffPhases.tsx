@@ -1,6 +1,9 @@
-import { Image, Text, View } from "react-native";
+import { lazy, Suspense } from "react";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 import { AnswerInput } from "@/components/party/AnswerInput";
-import { DrawingInput } from "@/components/party/DrawingInput";
+
+const DrawingInput = lazy(() => import("@/components/party/DrawingInput"));
+
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
@@ -161,11 +164,13 @@ function DrawingPhase({
 			) : activeInputRequest?.request.type === "drawing" ? (
 				<View className="w-full flex-1 gap-4">
 					{assignedPrompt ? <PromptCard text={assignedPrompt} /> : null}
-					<DrawingInput
-						onSubmit={(value) => {
-							sendInput(value);
-						}}
-					/>
+					<Suspense fallback={<ActivityIndicator />}>
+						<DrawingInput
+							onSubmit={(value) => {
+								sendInput(value);
+							}}
+						/>
+					</Suspense>
 				</View>
 			) : (
 				<View className="w-full flex-1 items-center justify-center rounded-2xl border border-theme-border bg-theme-surface p-6">
