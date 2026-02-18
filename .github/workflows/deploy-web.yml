@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'app/**'
+      - 'apps/**'
       - 'packages/**'
 
 jobs:
@@ -33,14 +33,14 @@ jobs:
 
       - name: Build web export
         run: EXPO_PUBLIC_API_URL=https://api.slopcade.com npx expo export -p web
-        working-directory: app
+        working-directory: apps/slopcade
 
       - name: Remove oversized Godot files (served from R2)
         run: rm -f dist/godot/index.pck dist/godot/index.side.wasm
-        working-directory: app
+        working-directory: apps/slopcade
 
       - name: Write _redirects for large Godot assets
-        working-directory: app
+        working-directory: apps/slopcade
         run: |
           printf '/godot/index.pck https://api.slopcade.com/assets/web-assets/godot/index.pck 301\n/godot/index.side.wasm https://api.slopcade.com/assets/web-assets/godot/index.side.wasm 301\n' > dist/_redirects
 
@@ -50,7 +50,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/ --project-name=slopcade --commit-dirty=true
-          workingDirectory: app
+          workingDirectory: apps/slopcade
 
   deploy-amen:
     name: Deploy Amen Web App
@@ -74,16 +74,16 @@ jobs:
       - name: Build workspace packages
         run: pnpm --filter './packages/*' run build
 
-      - name: Build web export (Amen brand)
-        run: BRAND_ID=amen EXPO_PUBLIC_API_URL=https://api.amen.games npx expo export -p web
-        working-directory: app
+      - name: Build web export
+        run: EXPO_PUBLIC_API_URL=https://api.amen.games npx expo export -p web
+        working-directory: apps/amen
 
       - name: Remove oversized Godot files (served from R2)
         run: rm -f dist/godot/index.pck dist/godot/index.side.wasm
-        working-directory: app
+        working-directory: apps/amen
 
       - name: Write _redirects for large Godot assets
-        working-directory: app
+        working-directory: apps/amen
         run: |
           printf '/godot/index.pck https://api.amen.games/assets/web-assets/godot/index.pck 301\n/godot/index.side.wasm https://api.amen.games/assets/web-assets/godot/index.side.wasm 301\n' > dist/_redirects
 
@@ -93,4 +93,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/ --project-name=amen-games --commit-dirty=true
-          workingDirectory: app
+          workingDirectory: apps/amen
