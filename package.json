@@ -73,6 +73,7 @@
 		"glob": "^11.0.0",
 		"knip": "^5.83.0",
 		"mcp-remote": "^0.1.38",
+		"opentype.js": "^1.3.4",
 		"simple-git-hooks": "^2.11.1",
 		"ts-morph": "^27.0.2",
 		"tsx": "^4.21.0",

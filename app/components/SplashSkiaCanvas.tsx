@@ -6,12 +6,12 @@ import {
 	RadialGradient,
 	Rect,
 	Skia,
-	Text,
 	TwoPointConicalGradient,
-	useFont,
 	vec,
 } from "@shopify/react-native-skia";
+import { useMemo } from "react";
 import { Dimensions } from "react-native";
+import { SPLASH_PATHS } from "./splashPaths";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -19,46 +19,6 @@ interface SplashSkiaCanvasProps {
 	styleIndex: number;
 	time: number;
 }
-
-const TEXT = "SLOPCADE";
-
-const FONT_CONFIGS = [
-	{
-		family: "Bangers",
-		size: 80,
-		file: require("../assets/fonts/Bangers-Regular.ttf"),
-	},
-	{
-		family: "PressStart2P",
-		size: 32,
-		file: require("../assets/fonts/PressStart2P-Regular.ttf"),
-	},
-	{
-		family: "Fredoka",
-		size: 72,
-		file: require("../assets/fonts/Fredoka-Bold.ttf"),
-	},
-	{ family: "Lora", size: 68, file: require("../assets/fonts/Lora-Bold.ttf") },
-	{
-		family: "Bangers",
-		size: 85,
-		file: require("../assets/fonts/Bangers-Regular.ttf"),
-	},
-	{
-		family: "PressStart2P",
-		size: 30,
-		file: require("../assets/fonts/PressStart2P-Regular.ttf"),
-	},
-];
-
-const BG_COLORS = [
-	["#0a0015", "#150025", "#0a0015"],
-	["#000000", "#0a0a0a", "#000000"],
-	["#1a1a2e", "#16213e", "#1a1a2e"],
-	["#0d0d0d", "#1a0a1a", "#0d0d0d"],
-	["#1a0500", "#2d0a00", "#1a0500"],
-	["#000a0a", "#001a1a", "#000a0a"],
-];
 
 const SCANLINE_COUNT = 40;
 const GLITCH_BAR_POSITIONS = [0.3, 0.5, 0.7];
@@ -69,18 +29,36 @@ const GRID_V_COUNT = 15;
 const SPARK_POSITIONS = [0.2, 0.5, 0.8];
 
 function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
-	const idx = styleIndex % FONT_CONFIGS.length;
-	const fontConfig = FONT_CONFIGS[idx];
-	const bgColors = BG_COLORS[idx];
+	const paths = useMemo(() => {
+		return SPLASH_PATHS.map((sp) => {
+			const path = Skia.Path.MakeFromSVGString(sp.pathData);
+			return {
+				path,
+				width: sp.width,
+				height: sp.height,
+				offsetX: sp.offsetX,
+				offsetY: sp.offsetY,
+				size: sp.size,
+			};
+		});
+	}, []);
 
-	const font = useFont(fontConfig.file, fontConfig.size);
-	if (!font) return null;
+	const idx = styleIndex % paths.length;
+	const {
+		path: textPath,
+		width: textWidth,
+		height: textHeight,
+		offsetX,
+		offsetY,
+		size: fontSize,
+	} = paths[idx];
 
-	const textWidth = font.getTextWidth(TEXT);
+	if (!textPath) return null;
+
 	const centerX = SCREEN_WIDTH / 2;
 	const centerY = SCREEN_HEIGHT / 2;
-	const textX = centerX - textWidth / 2;
-	const textY = centerY;
+	const textX = centerX - textWidth / 2 - offsetX;
+	const textY = centerY - textHeight / 2 - offsetY;
 
 	const t = time * 0.001;
 	const pulse = Math.sin(t * 8) * 0.5 + 0.5;
@@ -88,97 +66,55 @@ function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
 
 	return (
 		<Canvas style={{ flex: 1 }}>
-			<Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-				<LinearGradient
-					start={vec(0, 0)}
-					end={vec(0, SCREEN_HEIGHT)}
-					colors={bgColors as string[]}
-				/>
-			</Rect>
-
 			{idx === 0 && (
 				<>
-					<Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-						<LinearGradient
-							start={vec(-200 + (t % 3) * (SCREEN_WIDTH + 400), 0)}
-							end={vec(
-								SCREEN_WIDTH + 200 - (t % 3) * (SCREEN_WIDTH + 400),
-								SCREEN_HEIGHT,
-							)}
-							colors={[
-								"#ff008020",
-								"#ff00ff20",
-								"#8000ff20",
-								"#0080ff20",
-								"#00ffff20",
-								"#00ff8020",
-								"#80ff0020",
-								"#ffff0020",
-								"#ff800020",
-								"#ff008020",
-							]}
-						/>
-					</Rect>
+					<Group transform={[{ translateX: textX + 6 }, { translateY: textY }]}>
+						<Path path={textPath} color="#ff0040" opacity={0.6} />
+					</Group>
+					<Group transform={[{ translateX: textX - 6 }, { translateY: textY }]}>
+						<Path path={textPath} color="#00ffff" opacity={0.6} />
+					</Group>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + 6}
-						y={textY}
-						color="#ff0040"
-						opacity={0.6}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX - 6}
-						y={textY}
-						color="#00ffff"
-						opacity={0.6}
-					/>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<LinearGradient
+								start={vec(offsetX + Math.sin(wave) * 50, offsetY - fontSize)}
+								end={vec(
+									offsetX + textWidth + Math.cos(wave) * 50,
+									offsetY + fontSize * 0.3,
+								)}
+								colors={[
+									"#ff00ff",
+									"#ff0080",
+									"#ff0040",
+									"#ff8000",
+									"#ffff00",
+									"#80ff00",
+									"#00ff80",
+									"#00ffff",
+									"#0080ff",
+									"#8000ff",
+									"#ff00ff",
+								]}
+							/>
+						</Path>
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<LinearGradient
-							start={vec(textX + Math.sin(wave) * 50, textY - fontConfig.size)}
-							end={vec(
-								textX + textWidth + Math.cos(wave) * 50,
-								textY + fontConfig.size * 0.3,
-							)}
-							colors={[
-								"#ff00ff",
-								"#ff0080",
-								"#ff0040",
-								"#ff8000",
-								"#ffff00",
-								"#80ff00",
-								"#00ff80",
-								"#00ffff",
-								"#0080ff",
-								"#8000ff",
-								"#ff00ff",
-							]}
-						/>
-					</Text>
-
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY}
-						opacity={0.3 + pulse * 0.2}
-					>
-						<LinearGradient
-							start={vec(textX, textY - fontConfig.size)}
-							end={vec(textX + textWidth, textY)}
-							colors={[
-								"#ffffff",
-								"#ffffff80",
-								"#ffffff",
-								"#ffffff80",
-								"#ffffff",
-							]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath} opacity={0.3 + pulse * 0.2}>
+							<LinearGradient
+								start={vec(offsetX, offsetY - fontSize)}
+								end={vec(offsetX + textWidth, offsetY)}
+								colors={[
+									"#ffffff",
+									"#ffffff80",
+									"#ffffff",
+									"#ffffff80",
+									"#ffffff",
+								]}
+							/>
+						</Path>
+					</Group>
 				</>
 			)}
 
@@ -200,37 +136,39 @@ function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
 						})}
 					</Group>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + Math.sin(t * 20) * 8}
-						y={textY}
-						color="#ff0000"
-						opacity={0.7}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + Math.cos(t * 15) * 8}
-						y={textY}
-						color="#00ff00"
-						opacity={0.7}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY + Math.sin(t * 25) * 3}
-						color="#0000ff"
-						opacity={0.7}
-					/>
-					<Text font={font} text={TEXT} x={textX} y={textY} color="#ffffff" />
+					<Group
+						transform={[
+							{ translateX: textX + Math.sin(t * 20) * 8 },
+							{ translateY: textY },
+						]}
+					>
+						<Path path={textPath} color="#ff0000" opacity={0.7} />
+					</Group>
+					<Group
+						transform={[
+							{ translateX: textX + Math.cos(t * 15) * 8 },
+							{ translateY: textY },
+						]}
+					>
+						<Path path={textPath} color="#00ff00" opacity={0.7} />
+					</Group>
+					<Group
+						transform={[
+							{ translateX: textX },
+							{ translateY: textY + Math.sin(t * 25) * 3 },
+						]}
+					>
+						<Path path={textPath} color="#0000ff" opacity={0.7} />
+					</Group>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath} color="#ffffff" />
+					</Group>
 
 					{GLITCH_BAR_POSITIONS.map((pos, i) => (
 						<Rect
 							key={`glitch-bar-${pos}`}
-							x={textX + Math.sin(t * 30 + i) * 100}
-							y={textY - fontConfig.size * 0.5 + pos * fontConfig.size}
+							x={textX + offsetX + Math.sin(t * 30 + i) * 100}
+							y={textY + offsetY - fontSize * 0.5 + pos * fontSize}
 							width={textWidth * (0.3 + Math.abs(Math.sin(t * 50 + i)) * 0.4)}
 							height={3 + Math.sin(t * 50) * 2}
 							color={GLITCH_BAR_COLORS[i]}
@@ -242,70 +180,61 @@ function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
 
 			{idx === 2 && (
 				<>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + 3}
-						y={textY + 3}
-						color="#000000"
-						opacity={0.4}
-					/>
+					<Group
+						transform={[{ translateX: textX + 3 }, { translateY: textY + 3 }]}
+					>
+						<Path path={textPath} color="#000000" opacity={0.4} />
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<LinearGradient
-							start={vec(textX, textY - fontConfig.size + Math.sin(wave) * 20)}
-							end={vec(textX + textWidth, textY + Math.cos(wave) * 20)}
-							colors={[
-								"#2a2a3a",
-								"#4a4a5a",
-								"#8a8a9a",
-								"#d0d0e0",
-								"#ffffff",
-								"#f0f0ff",
-								"#c0c0d0",
-								"#808090",
-								"#505060",
-								"#3a3a4a",
-								"#606070",
-								"#9090a0",
-								"#d0d0e0",
-								"#ffffff",
-								"#a0a0b0",
-								"#4a4a5a",
-							]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<LinearGradient
+								start={vec(offsetX, offsetY - fontSize + Math.sin(wave) * 20)}
+								end={vec(offsetX + textWidth, offsetY + Math.cos(wave) * 20)}
+								colors={[
+									"#2a2a3a",
+									"#4a4a5a",
+									"#8a8a9a",
+									"#d0d0e0",
+									"#ffffff",
+									"#f0f0ff",
+									"#c0c0d0",
+									"#808090",
+									"#505060",
+									"#3a3a4a",
+									"#606070",
+									"#9090a0",
+									"#d0d0e0",
+									"#ffffff",
+									"#a0a0b0",
+									"#4a4a5a",
+								]}
+							/>
+						</Path>
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<LinearGradient
-							start={vec(textX + textWidth * 0.3, textY - fontConfig.size)}
-							end={vec(textX + textWidth * 0.5, textY)}
-							colors={[
-								"#ffffff00",
-								"#ffffff80",
-								"#ffffff",
-								"#ffffff80",
-								"#ffffff00",
-							]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<LinearGradient
+								start={vec(offsetX + textWidth * 0.3, offsetY - fontSize)}
+								end={vec(offsetX + textWidth * 0.5, offsetY)}
+								colors={[
+									"#ffffff00",
+									"#ffffff80",
+									"#ffffff",
+									"#ffffff80",
+									"#ffffff00",
+								]}
+							/>
+						</Path>
+					</Group>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX - 1}
-						y={textY}
-						color="#6080ff"
-						opacity={0.3 + pulse * 0.2}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + 1}
-						y={textY}
-						color="#ff6080"
-						opacity={0.3 + pulse * 0.2}
-					/>
+					<Group transform={[{ translateX: textX - 1 }, { translateY: textY }]}>
+						<Path path={textPath} color="#6080ff" opacity={0.3 + pulse * 0.2} />
+					</Group>
+					<Group transform={[{ translateX: textX + 1 }, { translateY: textY }]}>
+						<Path path={textPath} color="#ff6080" opacity={0.3 + pulse * 0.2} />
+					</Group>
 				</>
 			)}
 
@@ -328,30 +257,22 @@ function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
 						})}
 					</Group>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX - 4}
-						y={textY}
-						color="#ff0000"
-						opacity={0.5}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + 4}
-						y={textY}
-						color="#0000ff"
-						opacity={0.5}
-					/>
+					<Group transform={[{ translateX: textX - 4 }, { translateY: textY }]}>
+						<Path path={textPath} color="#ff0000" opacity={0.5} />
+					</Group>
+					<Group transform={[{ translateX: textX + 4 }, { translateY: textY }]}>
+						<Path path={textPath} color="#0000ff" opacity={0.5} />
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<LinearGradient
-							start={vec(textX, textY - fontConfig.size)}
-							end={vec(textX, textY + fontConfig.size * 0.3)}
-							colors={["#ff80ff", "#ff60c0", "#ff40a0", "#ff2080", "#ff0060"]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<LinearGradient
+								start={vec(offsetX, offsetY - fontSize)}
+								end={vec(offsetX, offsetY + fontSize * 0.3)}
+								colors={["#ff80ff", "#ff60c0", "#ff40a0", "#ff2080", "#ff0060"]}
+							/>
+						</Path>
+					</Group>
 
 					<Rect
 						x={0}
@@ -362,81 +283,84 @@ function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
 						opacity={0.3}
 					/>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY}
-						color="#ff00ff"
-						opacity={0.2}
-						blendMode="screen"
-					/>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path
+							path={textPath}
+							color="#ff00ff"
+							opacity={0.2}
+							blendMode="screen"
+						/>
+					</Group>
 				</>
 			)}
 
 			{idx === 4 && (
 				<>
-					<Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-						<LinearGradient
-							start={vec(0, SCREEN_HEIGHT)}
-							end={vec(0, 0)}
-							colors={["#ff200080", "#ff400060", "#ff600040", "#ff800020"]}
-						/>
-					</Rect>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<RadialGradient
+								r={fontSize * 1.5}
+								c={vec(offsetX + textWidth / 2, offsetY + textHeight / 2)}
+								colors={["#ff800080", "#ff400040", "#ff000020", "#00000000"]}
+							/>
+						</Path>
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<RadialGradient
-							r={fontConfig.size * 1.5}
-							c={vec(centerX, centerY)}
-							colors={["#ff800080", "#ff400040", "#ff000020", "#00000000"]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<LinearGradient
+								start={vec(offsetX, offsetY + Math.sin(wave) * 10)}
+								end={vec(
+									offsetX + textWidth,
+									offsetY - fontSize + Math.cos(wave) * 10,
+								)}
+								colors={[
+									"#ff0000",
+									"#ff2000",
+									"#ff4000",
+									"#ff6000",
+									"#ff8000",
+									"#ffa000",
+									"#ffc000",
+									"#ffe000",
+									"#ffff80",
+									"#ffffff",
+									"#ffff80",
+									"#ffc000",
+									"#ff8000",
+									"#ff4000",
+									"#ff0000",
+								]}
+							/>
+						</Path>
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<LinearGradient
-							start={vec(textX, textY + Math.sin(wave) * 10)}
-							end={vec(
-								textX + textWidth,
-								textY - fontConfig.size + Math.cos(wave) * 10,
-							)}
-							colors={[
-								"#ff0000",
-								"#ff2000",
-								"#ff4000",
-								"#ff6000",
-								"#ff8000",
-								"#ffa000",
-								"#ffc000",
-								"#ffe000",
-								"#ffff80",
-								"#ffffff",
-								"#ffff80",
-								"#ffc000",
-								"#ff8000",
-								"#ff4000",
-								"#ff0000",
-							]}
+					<Group
+						transform={[
+							{ translateX: textX + Math.sin(t * 10) * 2 },
+							{ translateY: textY - Math.sin(t * 8) * 2 },
+						]}
+					>
+						<Path
+							path={textPath}
+							color="#ffff00"
+							opacity={0.3}
+							blendMode="screen"
 						/>
-					</Text>
-
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + Math.sin(t * 10) * 2}
-						y={textY - Math.sin(t * 8) * 2}
-						color="#ffff00"
-						opacity={0.3}
-						blendMode="screen"
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX + Math.cos(t * 12) * 2}
-						y={textY - Math.cos(t * 10) * 2}
-						color="#ff8000"
-						opacity={0.2}
-						blendMode="screen"
-					/>
+					</Group>
+					<Group
+						transform={[
+							{ translateX: textX + Math.cos(t * 12) * 2 },
+							{ translateY: textY - Math.cos(t * 10) * 2 },
+						]}
+					>
+						<Path
+							path={textPath}
+							color="#ff8000"
+							opacity={0.2}
+							blendMode="screen"
+						/>
+					</Group>
 				</>
 			)}
 
@@ -473,68 +397,55 @@ function SplashSkiaCanvas({ styleIndex, time }: SplashSkiaCanvasProps) {
 						})}
 					</Group>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY}
-						color="#00ffff"
-						opacity={0.1}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY}
-						color="#00ffff"
-						opacity={0.15}
-					/>
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY}
-						color="#00ffff"
-						opacity={0.2}
-					/>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath} color="#00ffff" opacity={0.1} />
+					</Group>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath} color="#00ffff" opacity={0.15} />
+					</Group>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath} color="#00ffff" opacity={0.2} />
+					</Group>
 
-					<Text font={font} text={TEXT} x={textX} y={textY}>
-						<TwoPointConicalGradient
-							start={vec(textX, textY - fontConfig.size)}
-							endR={textWidth}
-							end={vec(textX + textWidth, textY + fontConfig.size * 0.3)}
-							startR={0}
-							colors={[
-								"#00ffff",
-								"#00ff80",
-								"#80ff00",
-								"#ffff00",
-								"#ff8000",
-								"#ff0080",
-								"#00ffff",
-							]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath}>
+							<TwoPointConicalGradient
+								start={vec(offsetX, offsetY - fontSize)}
+								endR={textWidth}
+								end={vec(offsetX + textWidth, offsetY + fontSize * 0.3)}
+								startR={0}
+								colors={[
+									"#00ffff",
+									"#00ff80",
+									"#80ff00",
+									"#ffff00",
+									"#ff8000",
+									"#ff0080",
+									"#00ffff",
+								]}
+							/>
+						</Path>
+					</Group>
 
-					<Text
-						font={font}
-						text={TEXT}
-						x={textX}
-						y={textY}
-						opacity={0.4 + pulse * 0.4}
-					>
-						<RadialGradient
-							c={vec(centerX, centerY)}
-							r={fontConfig.size}
-							colors={["#ffffff", "#00ffff00"]}
-						/>
-					</Text>
+					<Group transform={[{ translateX: textX }, { translateY: textY }]}>
+						<Path path={textPath} opacity={0.4 + pulse * 0.4}>
+							<RadialGradient
+								c={vec(offsetX + textWidth / 2, offsetY + textHeight / 2)}
+								r={fontSize}
+								colors={["#ffffff", "#00ffff00"]}
+							/>
+						</Path>
+					</Group>
 
 					{SPARK_POSITIONS.map((pos, i) => (
 						<Rect
 							key={`spark-pos-${pos}`}
-							x={textX + textWidth * pos + Math.sin(t * 50 + i * 3) * 5}
-							y={textY - fontConfig.size * 0.3 + Math.cos(t * 40 + i * 2) * 8}
+							x={
+								textX + offsetX + textWidth * pos + Math.sin(t * 50 + i * 3) * 5
+							}
+							y={
+								textY + offsetY - fontSize * 0.3 + Math.cos(t * 40 + i * 2) * 8
+							}
 							width={2 + Math.sin(t * 60 + i) * 2}
 							height={8 + Math.sin(t * 70 + i) * 5}
 							color="#ffffff"
