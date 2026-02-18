@@ -4,7 +4,7 @@
 			"id": "amen-easter-triv-001",
 			"question": "What did the crowd spread on the road as Jesus entered Jerusalem on Palm Sunday? (John 12:13)",
 			"correctAnswer": "Palm branches",
-			"incorrectAnswers": ["Olive branches", "Flowers", "Cloaks and palms"],
+			"incorrectAnswers": ["Olive branches", "Flowers", "Fig branches"],
 			"category": "Holy Week"
 		},
 		{
@@ -16,29 +16,15 @@
 		},
 		{
 			"id": "amen-easter-triv-003",
-			"question": "Who was the Roman governor who sentenced Jesus to death? (Matthew 27:2)",
-			"correctAnswer": "Pontius Pilate",
-			"incorrectAnswers": ["Herod Antipas", "Caiaphas", "Augustus Caesar"],
-			"category": "Holy Week"
-		},
-		{
-			"id": "amen-easter-triv-004",
 			"question": "What was the name of the hill where Jesus was crucified? (John 19:17)",
 			"correctAnswer": "Golgotha",
 			"incorrectAnswers": ["Mount Sinai", "Mount Tabor", "Mount of Olives"],
 			"category": "Holy Week"
 		},
 		{
-			"id": "amen-easter-triv-005",
-			"question": "Who helped Jesus carry the cross? (Luke 23:26)",
-			"correctAnswer": "Simon of Cyrene",
-			"incorrectAnswers": ["Joseph of Arimathea", "Peter", "John the Apostle"],
-			"category": "Holy Week"
-		},
-		{
-			"id": "amen-easter-triv-006",
+			"id": "amen-easter-triv-004",
 			"question": "What did the sign above Jesus' head on the cross say? (Matthew 27:37)",
-			"correctAnswer": "This is Jesus, the King of the Jews",
+			"correctAnswer": "Jesus of Nazareth, the King of the Jews",
 			"incorrectAnswers": [
 				"The Son of God",
 				"The Prophet of Nazareth",
@@ -47,31 +33,17 @@
 			"category": "Holy Week"
 		},
 		{
-			"id": "amen-easter-triv-007",
+			"id": "amen-easter-triv-005",
 			"question": "Who was the first person to see the risen Jesus? (John 20:14-16)",
 			"correctAnswer": "Mary Magdalene",
 			"incorrectAnswers": ["Peter", "John", "Mary the mother of Jesus"],
 			"category": "Holy Week"
 		},
 		{
-			"id": "amen-easter-triv-008",
+			"id": "amen-easter-triv-006",
 			"question": "For how many pieces of silver did Judas betray Jesus? (Matthew 26:15)",
 			"correctAnswer": "30",
 			"incorrectAnswers": ["20", "50", "100"],
-			"category": "Holy Week"
-		},
-		{
-			"id": "amen-easter-triv-009",
-			"question": "Which disciple denied Jesus three times before the rooster crowed? (Matthew 26:75)",
-			"correctAnswer": "Peter",
-			"incorrectAnswers": ["Thomas", "Andrew", "James"],
-			"category": "Holy Week"
-		},
-		{
-			"id": "amen-easter-triv-010",
-			"question": "What happened to the curtain in the Temple when Jesus died? (Matthew 27:51)",
-			"correctAnswer": "It was torn in two",
-			"incorrectAnswers": ["It caught fire", "It turned black", "It fell down"],
 			"category": "Holy Week"
 		}
 	],
@@ -137,7 +109,7 @@
 		},
 		{
 			"id": "amen-easter-fib-002",
-			"question": "The word 'Easter' is thought to be derived from the name of an Anglo-Saxon goddess named _____. ",
+			"question": "The word 'Easter' is traditionally thought to be derived from the name of an Anglo-Saxon goddess named _____. ",
 			"answer": "Eostre",
 			"category": "Easter History",
 			"alternateSpellings": ["Ostara", "Eastre"]
@@ -192,7 +164,10 @@
 			"answer": 30,
 			"unit": "Year",
 			"category": "Holy Week",
-			"acceptableRange": { "min": 29, "max": 33 }
+			"acceptableRange": {
+				"min": 29,
+				"max": 33
+			}
 		},
 		{
 			"id": "amen-easter-hist-002",
@@ -200,7 +175,10 @@
 			"answer": 325,
 			"unit": "Year",
 			"category": "Church History",
-			"acceptableRange": { "min": 320, "max": 330 }
+			"acceptableRange": {
+				"min": 320,
+				"max": 330
+			}
 		},
 		{
 			"id": "amen-easter-hist-003",
@@ -208,7 +186,10 @@
 			"answer": 1354,
 			"unit": "Year",
 			"category": "Church History",
-			"acceptableRange": { "min": 1350, "max": 1360 }
+			"acceptableRange": {
+				"min": 1350,
+				"max": 1360
+			}
 		},
 		{
 			"id": "amen-easter-hist-004",
@@ -216,7 +197,10 @@
 			"answer": 1582,
 			"unit": "Year",
 			"category": "Church History",
-			"acceptableRange": { "min": 1580, "max": 1590 }
+			"acceptableRange": {
+				"min": 1580,
+				"max": 1590
+			}
 		},
 		{
 			"id": "amen-easter-hist-005",
@@ -224,7 +208,10 @@
 			"answer": 1878,
 			"unit": "Year",
 			"category": "Easter Traditions",
-			"acceptableRange": { "min": 1870, "max": 1880 }
+			"acceptableRange": {
+				"min": 1870,
+				"max": 1880
+			}
 		},
 		{
 			"id": "amen-easter-hist-006",
@@ -232,7 +219,10 @@
 			"answer": 1572,
 			"unit": "Year",
 			"category": "Easter Traditions",
-			"acceptableRange": { "min": 1500, "max": 1600 }
+			"acceptableRange": {
+				"min": 1500,
+				"max": 1600
+			}
 		},
 		{
 			"id": "amen-easter-hist-007",
@@ -240,7 +230,10 @@
 			"answer": 1873,
 			"unit": "Year",
 			"category": "Easter Traditions",
-			"acceptableRange": { "min": 1870, "max": 1880 }
+			"acceptableRange": {
+				"min": 1870,
+				"max": 1880
+			}
 		},
 		{
 			"id": "amen-easter-hist-008",
@@ -248,7 +241,10 @@
 			"answer": 1634,
 			"unit": "Year",
 			"category": "Easter Traditions",
-			"acceptableRange": { "min": 1630, "max": 1640 }
+			"acceptableRange": {
+				"min": 1630,
+				"max": 1640
+			}
 		}
 	],
 	"drawing": [
@@ -314,16 +310,6 @@
 		},
 		{
 			"id": "amen-easter-rank-002",
-			"topic": "Rank these people by their proximity to Jesus during the crucifixion (Closest to Farthest)",
-			"items": [
-				"Mary Mother of Jesus",
-				"John the Apostle",
-				"The Centurion",
-				"Peter"
-			]
-		},
-		{
-			"id": "amen-easter-rank-003",
 			"topic": "Rank these Easter traditions by historical age (Oldest to Newest)",
 			"items": [
 				"Decorating Eggs",
@@ -331,21 +317,6 @@
 				"Sunrise Services",
 				"Chocolate Eggs"
 			]
-		},
-		{
-			"id": "amen-easter-rank-004",
-			"topic": "Rank these items by their importance in the Passion narrative (Most to Least mentioned)",
-			"items": [
-				"The Cross",
-				"Crown of Thorns",
-				"30 Pieces of Silver",
-				"The Rooster"
-			]
-		},
-		{
-			"id": "amen-easter-rank-005",
-			"topic": "Rank these locations by their distance from the Temple in Jerusalem (Closest to Farthest)",
-			"items": ["Golgotha", "Gethsemane", "Bethany", "Bethlehem"]
 		}
 	],
 	"wyr": [
@@ -441,8 +412,7 @@
 				"Good Friday",
 				"Maundy Thursday",
 				"Holy Saturday",
-				"Easter Monday",
-				"Pentecost"
+				"Easter Monday"
 			]
 		},
 		{
@@ -453,7 +423,7 @@
 				"Empty Shroud",
 				"Angels Appearing",
 				"Jesus Appearing",
-				"Walking through Walls",
+				"Appeared in a locked room",
 				"Breakfast on the Beach",
 				"Ascension",
 				"Great Commission",

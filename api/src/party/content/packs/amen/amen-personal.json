@@ -1,0 +1,802 @@
+[
+	{
+		"id": "amen-pers-001",
+		"text": "I once fell asleep during ____ at church.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-002",
+		"text": "The first Bible verse I memorized was ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-003",
+		"text": "My favorite worship song is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-004",
+		"text": "I made my best church friend when ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-005",
+		"text": "As a child, I thought God looked like ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-006",
+		"text": "I secretly enjoy listening to ____ music during my quiet time.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-007",
+		"text": "I've been attending this church for ____ years.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-008",
+		"text": "I first felt close to God when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-009",
+		"text": "During worship, I usually stand in the ____ section.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-010",
+		"text": "The church potluck dish I always bring is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-011",
+		"text": "My childhood pastor's name was Pastor ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-012",
+		"text": "I sometimes skip ____ and watch online instead.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-013",
+		"text": "I volunteer with the ____ ministry at church.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-014",
+		"text": "The book that impacted my faith most was ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-015",
+		"text": "I prefer worship music that is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-016",
+		"text": "My favorite church event is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-017",
+		"text": "When I was young, I wanted to be a ____ when I grew up.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-018",
+		"text": "I have a weakness for ____ even though I probably shouldn't.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-019",
+		"text": "The most embarrassing thing that happened to me at church was ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-020",
+		"text": "I started questioning my faith during ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-021",
+		"text": "I raise my hands during worship when we sing ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-022",
+		"text": "I always sit with ____ during service.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-023",
+		"text": "My favorite Bible story as a kid was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-024",
+		"text": "I secretly judge people who ____.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-025",
+		"text": "I joined this church because of ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-026",
+		"text": "My biggest spiritual breakthrough happened when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-027",
+		"text": "The worship song that makes me emotional is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-028",
+		"text": "I met my spouse ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-029",
+		"text": "I got in trouble at Sunday school for ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-030",
+		"text": "I sometimes pretend to ____ during prayer time.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-031",
+		"text": "The longest sermon I've sat through lasted ____ hours.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-032",
+		"text": "I pray most often when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-033",
+		"text": "I prefer to worship with my eyes ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-034",
+		"text": "The church small group I'm in focuses on ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-035",
+		"text": "I was baptized when I was ____ years old.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-036",
+		"text": "I have a secret stash of ____ in my car.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-037",
+		"text": "I've been a member of ____ different churches.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-038",
+		"text": "The biggest challenge to my faith was ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-039",
+		"text": "I wish we sang more ____ songs at church.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-040",
+		"text": "My church nickname is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-041",
+		"text": "I used to think communion was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-042",
+		"text": "I sometimes use church time to ____.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-043",
+		"text": "The church committee I'm on is ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-044",
+		"text": "I feel closest to God when I'm ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-045",
+		"text": "During slow worship songs, I usually ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-046",
+		"text": "The person I always hug at church is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-047",
+		"text": "I thought tithing meant ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-048",
+		"text": "I've been known to ____ during the offering.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-049",
+		"text": "Our church building was built in ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-050",
+		"text": "I read my Bible most often in the ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-051",
+		"text": "The instrument I wish I could play in worship is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-052",
+		"text": "I always save a seat for ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-053",
+		"text": "My confirmation verse was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-054",
+		"text": "I sometimes shop online during ____.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-055",
+		"text": "The church tradition I love most is ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-056",
+		"text": "I started taking my faith seriously when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-057",
+		"text": "I sing loudest during ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-058",
+		"text": "The church person I call when I need help is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-059",
+		"text": "I thought the pastor lived ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-060",
+		"text": "I have a guilty pleasure of reading ____ books.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-061",
+		"text": "The youth pastor's name when I was growing up was ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-062",
+		"text": "My favorite way to pray is ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-063",
+		"text": "I prefer worship services that are ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-064",
+		"text": "The church friend I text most often is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-065",
+		"text": "I used to be afraid of ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-066",
+		"text": "I secretly enjoy ____ TV shows.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-067",
+		"text": "I've served on the church board for ____ years.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-068",
+		"text": "The person who influenced my faith most was ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-069",
+		"text": "I close my eyes during worship when we sing about ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-070",
+		"text": "My favorite fellowship meal is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-071",
+		"text": "I thought angels looked like ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-072",
+		"text": "I sometimes eat ____ for breakfast even though it's not healthy.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-073",
+		"text": "Our pastor has been here for ____ years.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-074",
+		"text": "I struggle most with believing ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-075",
+		"text": "The worship leader I connect with most is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-076",
+		"text": "I enjoy fellowship most when we're ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-077",
+		"text": "My first Bible had a ____ cover.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-078",
+		"text": "I have a weakness for ____ desserts.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-079",
+		"text": "The church program I'm most involved in is ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-080",
+		"text": "I find God's presence most in ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-081",
+		"text": "The church couple I admire most is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-082",
+		"text": "I memorized ____ Bible verses in Sunday school.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-083",
+		"text": "I sometimes ____ instead of paying attention during announcements.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-084",
+		"text": "The mission trip I went on was to ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-085",
+		"text": "My faith grew stronger after ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-086",
+		"text": "I wish our worship team would play ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-087",
+		"text": "The church tradition I help organize is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-088",
+		"text": "I thought heaven had ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-089",
+		"text": "I secretly love watching ____ movies.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-090",
+		"text": "I've taught Sunday school for ____ age group.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-091",
+		"text": "The spiritual discipline I practice most is ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-092",
+		"text": "My favorite part of the worship service is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-093",
+		"text": "I always sit in the ____ pew.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-094",
+		"text": "My favorite VBS theme was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-095",
+		"text": "I have a guilty pleasure of buying ____.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-096",
+		"text": "The church building project I helped with was ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-097",
+		"text": "I feel God speaking to me through ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-098",
+		"text": "I prefer worship songs in the key of ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-099",
+		"text": "The church friend I've known longest is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-100",
+		"text": "I used to think the offering was for ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-101",
+		"text": "I sometimes sneak ____ during long services.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-102",
+		"text": "I've been baptized ____ times.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-103",
+		"text": "The Bible translation I prefer is ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-104",
+		"text": "I get distracted during worship when ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-105",
+		"text": "My favorite church social event is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-106",
+		"text": "I thought Jesus had ____ hair.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-107",
+		"text": "I have a secret love for ____ music.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-108",
+		"text": "The church service I attend most is ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-109",
+		"text": "I question God most when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-110",
+		"text": "I prefer worship lighting that is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-111",
+		"text": "The person I always greet first at church is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-112",
+		"text": "My childhood church had ____ stained glass windows.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-113",
+		"text": "I sometimes ____ when I should be listening to the sermon.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-114",
+		"text": "I've helped plan ____ church events.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-115",
+		"text": "My prayer life improved when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-116",
+		"text": "The worship song that gets stuck in my head is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-117",
+		"text": "I enjoy church fellowship because ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-118",
+		"text": "I got my first Bible when I was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-119",
+		"text": "I have a guilty pleasure of eating ____.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-120",
+		"text": "The church camp I attended was called ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-121",
+		"text": "I connect with God best through ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-122",
+		"text": "During worship, I prefer to ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-123",
+		"text": "The church potluck I never miss is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-124",
+		"text": "I thought prayer meant ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-125",
+		"text": "I secretly enjoy ____ reality shows.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-126",
+		"text": "I've been in the church choir for ____ years.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-127",
+		"text": "The spiritual practice that challenges me most is ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-128",
+		"text": "I sing harmony during ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-129",
+		"text": "My church accountability partner is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-130",
+		"text": "My Sunday school teacher was named ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-131",
+		"text": "I sometimes use my phone to ____ during service.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-132",
+		"text": "The church retreat I attended was in ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-133",
+		"text": "I find spiritual renewal through ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-134",
+		"text": "The worship element I value most is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-135",
+		"text": "I connect best with church friends who ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-136",
+		"text": "I thought sin was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-137",
+		"text": "My guilty pleasure snack is ____.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-138",
+		"text": "I've served as a church ____ for several years.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-139",
+		"text": "The season that strengthens my faith most is ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-140",
+		"text": "I prefer worship that makes me feel ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-141",
+		"text": "The church friendship that means most to me is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-142",
+		"text": "I won a prize in Sunday school for ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-143",
+		"text": "I have a weakness for ____ even though I shouldn't.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-144",
+		"text": "The church anniversary I remember celebrating was the ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-145",
+		"text": "I sense God's guidance when ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-146",
+		"text": "The worship moment that moves me most is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-147",
+		"text": "I feel most welcomed at church when ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-148",
+		"text": "I used to think the Bible was written in ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-149",
+		"text": "I secretly love ____ even though it's embarrassing.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-150",
+		"text": "I've helped with VBS for ____ years.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-151",
+		"text": "The faith milestone that meant most to me was ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-152",
+		"text": "The church person I most admire is ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-153",
+		"text": "My first church dress was ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-154",
+		"text": "I sometimes daydream about ____ during prayers.",
+		"category": "Guilty Pleasures"
+	},
+	{
+		"id": "amen-pers-155",
+		"text": "The church tradition I help maintain is ____.",
+		"category": "Church Life"
+	},
+	{
+		"id": "amen-pers-156",
+		"text": "I experienced God's love through ____.",
+		"category": "Faith Journey"
+	},
+	{
+		"id": "amen-pers-157",
+		"text": "The worship song that always makes me cry is ____.",
+		"category": "Worship"
+	},
+	{
+		"id": "amen-pers-158",
+		"text": "I enjoy serving alongside ____.",
+		"category": "Fellowship"
+	},
+	{
+		"id": "amen-pers-159",
+		"text": "I thought the church was God's ____.",
+		"category": "Growing Up in Faith"
+	},
+	{
+		"id": "amen-pers-160",
+		"text": "I have a secret addiction to ____.",
+		"category": "Guilty Pleasures"
+	}
+]

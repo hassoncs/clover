@@ -1,37 +1,21 @@
 # Data Directory
 
-External data sources for content generation. These are cloned repos, not checked into git.
+External data sources used during content generation. All source data has been ingested into the amen content packs (`api/src/party/content/packs/amen/`) and the original cloned repos have been deleted.
 
-## Setup
+## Original Sources (Ingested & Deleted)
 
-```bash
-# Clone Theographic Bible Metadata (3,067 people, 1,274 places, 450 events, 66 books)
-git clone --depth 1 https://github.com/robertrouse/theographic-bible-metadata.git data/external/theographic-bible-metadata
+| Source | License | Items | Ingested Into |
+|--------|---------|-------|---------------|
+| [Theographic](https://github.com/robertrouse/theographic-bible-metadata) | CC BY-SA 4.0 | 3,067 people, 1,274 places, 450 events | amen-headsup, amen-fibbage, amen-history, amen-wager, amen-trivia |
+| [BibleQuizzle](https://github.com/Samleo8/BibleQuizzle) | MIT | 205 Q&A | amen-trivia |
+| [OpenTriviaQA](https://github.com/ga642381/OpenTriviaQA) | MIT | Religion/Faith subset | amen-trivia |
+| bible-trivia-alpaca | — | JSONL trivia | amen-trivia |
 
-# Clone BibleQuizzle (205 trivia questions with scripture references)
-git clone --depth 1 https://github.com/Samleo8/BibleQuizzle.git data/external/BibleQuizzle
-```
+## Adapters (Still Available)
 
-## Data Sources
-
-| Source | License | Items | Format | Used By |
-|--------|---------|-------|--------|---------|
-| [Theographic](https://github.com/robertrouse/theographic-bible-metadata) | CC BY-SA 4.0 | 3,067 people, 1,274 places, 450 events | JSON | Heads Up character decks, trivia generation, fibbage facts |
-| [BibleQuizzle](https://github.com/Samleo8/BibleQuizzle) | MIT | 205 Q&A | JSON | Seed trivia for Quickfire Q&A |
-
-## Adapters
-
-The content pipeline has ready-to-use adapters for ingesting this data:
+The content pipeline adapters can re-ingest from GitHub URLs if needed:
 
 - `packages/content-pipeline/src/ingest/adapters/amen/theographic.ts`
 - `packages/content-pipeline/src/ingest/adapters/amen/biblequizzle.ts`
-
-## Usage
-
-```bash
-# Ingest BibleQuizzle trivia
-pnpm content cli -- ingest --source=biblequizzle --game-type=amen-trivia --local-file=data/external/BibleQuizzle/questions.json
-
-# Ingest Theographic data
-pnpm content cli -- ingest --source=theographic --game-type=amen-trivia --local-file=data/external/theographic-bible-metadata/json/people.json
-```
+- `packages/content-pipeline/src/ingest/adapters/amen/opentriviaqa.ts`
+- `packages/content-pipeline/src/ingest/adapters/amen/alpaca-trivia.ts`

@@ -1,110 +1,662 @@
 [
-	{
-		"id": "amen-dil-001",
-		"optionA": "Have Moses' staff for one day",
-		"optionB": "Have David's sling with perfect aim for one day",
-		"category": "Biblical Superpowers"
-	},
-	{
-		"id": "amen-dil-002",
-		"optionA": "Spend a night in Daniel's lion den",
-		"optionB": "Spend a night in Jonah's whale belly",
-		"category": "Biblical Situations"
-	},
-	{
-		"id": "amen-dil-003",
-		"optionA": "Lead worship with a terrible singing voice",
-		"optionB": "Give the sermon with zero preparation",
-		"category": "Church Volunteer Chaos"
-	},
-	{
-		"id": "amen-dil-004",
-		"optionA": "Only speak in King James English",
-		"optionB": "Only speak in parables",
-		"category": "Modern Faith-Life"
-	},
-	{
-		"id": "amen-dil-005",
-		"optionA": "Organize VBS for two hundred kids",
-		"optionB": "Chaperone the youth group ski trip",
-		"category": "Church Volunteer Chaos"
-	},
-	{
-		"id": "amen-dil-006",
-		"optionA": "Rebuild Noah's ark with volunteer sign-ups",
-		"optionB": "Coordinate manna distribution in the wilderness",
-		"category": "Biblical Situations"
-	},
-	{
-		"id": "amen-dil-007",
-		"optionA": "Be church greeter every single Sunday",
-		"optionB": "Run the church group chat for every ministry",
-		"category": "Church Volunteer Chaos"
-	},
-	{
-		"id": "amen-dil-008",
-		"optionA": "Face Goliath with only a sling",
-		"optionB": "Walk into the fiery furnace with Shadrach, Meshach, and Abednego",
-		"category": "Biblical Situations"
-	},
-	{
-		"id": "amen-dil-009",
-		"optionA": "Have Solomon-level wisdom in every life decision",
-		"optionB": "Have Samson-level strength during every church move day",
-		"category": "Biblical Superpowers"
-	},
-	{
-		"id": "amen-dil-010",
-		"optionA": "Miss the sermon intro every week",
-		"optionB": "Miss the sermon application every week",
-		"category": "Modern Faith-Life"
-	},
-	{
-		"id": "amen-dil-011",
-		"optionA": "Carry one basket of leftovers after feeding the crowd",
-		"optionB": "Help clean up after the wedding at Cana",
-		"category": "Biblical Situations"
-	},
-	{
-		"id": "amen-dil-012",
-		"optionA": "Be Jonah delivering hard truth to Nineveh",
-		"optionB": "Be Esther making one high-stakes request",
-		"category": "Bible Character Trade-Offs"
-	},
-	{
-		"id": "amen-dil-013",
-		"optionA": "Teach Sunday school with no whiteboard markers",
-		"optionB": "Lead small group with only one discussion question",
-		"category": "Church Volunteer Chaos"
-	},
-	{
-		"id": "amen-dil-014",
-		"optionA": "Have Elijah's dramatic prayer timing",
-		"optionB": "Have Nehemiah's project management stamina",
-		"category": "Biblical Superpowers"
-	},
-	{
-		"id": "amen-dil-015",
-		"optionA": "Only listen to worship songs with tambourine solos",
-		"optionB": "Only listen to sermon podcasts recorded on old church mics",
-		"category": "Modern Faith-Life"
-	},
-	{
-		"id": "amen-dil-016",
-		"optionA": "Be in charge of church parking on Easter Sunday",
-		"optionB": "Be in charge of coffee station during VBS check-in",
-		"category": "Church Volunteer Chaos"
-	},
-	{
-		"id": "amen-dil-017",
-		"optionA": "Spend one day with Peter's confidence",
-		"optionB": "Spend one day with Thomas's skepticism",
-		"category": "Bible Character Trade-Offs"
-	},
-	{
-		"id": "amen-dil-018",
-		"optionA": "Carry Ezekiel-style symbolic props all day",
-		"optionB": "Act out Hosea-level object lessons all day",
-		"category": "Biblical Situations"
-	}
+  {
+    "id": "amen-dil-001",
+    "optionA": "Have Moses' staff for one day",
+    "optionB": "Have David's sling with perfect aim for one day",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-002",
+    "optionA": "Spend a night in Daniel's lion den",
+    "optionB": "Spend a night in Jonah's whale belly",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-003",
+    "optionA": "Lead worship with a terrible singing voice",
+    "optionB": "Give the sermon with zero preparation",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-004",
+    "optionA": "Only speak in King James English",
+    "optionB": "Only speak in parables",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-005",
+    "optionA": "Organize VBS for two hundred kids",
+    "optionB": "Chaperone the youth group ski trip",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-006",
+    "optionA": "Rebuild Noah's ark with volunteer sign-ups",
+    "optionB": "Coordinate manna distribution in the wilderness",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-007",
+    "optionA": "Be church greeter every single Sunday",
+    "optionB": "Run the church group chat for every ministry",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-008",
+    "optionA": "Face Goliath with only a sling",
+    "optionB": "Walk into the fiery furnace with three faithful friends",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-009",
+    "optionA": "Have Solomon-level wisdom in every life decision",
+    "optionB": "Have Samson-level strength during every church move day",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-010",
+    "optionA": "Miss the sermon intro every week",
+    "optionB": "Miss the sermon application every week",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-011",
+    "optionA": "Carry one basket of leftovers after feeding the crowd",
+    "optionB": "Help clean up after the wedding at Cana",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-012",
+    "optionA": "Be Jonah delivering hard truth to Nineveh",
+    "optionB": "Be Esther making one high-stakes request",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-013",
+    "optionA": "Teach Sunday school with no whiteboard markers",
+    "optionB": "Lead small group with only one discussion question",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-014",
+    "optionA": "Have Elijah's dramatic prayer timing",
+    "optionB": "Have Nehemiah's project management stamina",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-015",
+    "optionA": "Only listen to worship songs with tambourine solos",
+    "optionB": "Only listen to sermon podcasts recorded on old church mics",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-016",
+    "optionA": "Be in charge of church parking on Easter Sunday",
+    "optionB": "Be in charge of coffee station during VBS check-in",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-017",
+    "optionA": "Spend one day with Peter's confidence",
+    "optionB": "Spend one day with Thomas's skepticism",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-018",
+    "optionA": "Carry Ezekiel-style symbolic props all day",
+    "optionB": "Act out Hosea-level object lessons all day",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-019",
+    "optionA": "Wield Moses' staff to part any crowd of people",
+    "optionB": "Wield David's sling to hit any target from across the room",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-020",
+    "optionA": "Turn water into soda for a potluck",
+    "optionB": "Turn loaves into pizza for a fellowship dinner",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-021",
+    "optionA": "Speak every language like the Tower of Babel miracle",
+    "optionB": "Understand every heart like a modern-day prophet",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-022",
+    "optionA": "Have Samson's strength only while cleaning sanctuary",
+    "optionB": "Have Elijah's fire only to light the worship stage",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-023",
+    "optionA": "Survive a 40-day rainstorm on the Ark without Wi-Fi",
+    "optionB": "Survive a 40-day fast in the desert without coffee",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-024",
+    "optionA": "Escape a tower of fire like the three youths in the furnace",
+    "optionB": "Escape a sudden flood like Noah's animals on the ark",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-025",
+    "optionA": "Outrun a chariot of fire like Elijah's ascent",
+    "optionB": "Outswim a sea like Moses parting the Red Sea",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-026",
+    "optionA": "Call down manna for any group meal",
+    "optionB": "Multiply one lunch into dinner for twelve",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-027",
+    "optionA": "Borrow Samson strength for moving day",
+    "optionB": "Borrow Solomon wisdom for hard choices",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-028",
+    "optionA": "Part crowded hallways with Moses-level authority",
+    "optionB": "Calm stormy meetings with one prayer",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-029",
+    "optionA": "Translate any language during mission trips",
+    "optionB": "Discern any motive in tense conversations",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-030",
+    "optionA": "Light candles instantly with Elijah-style fire",
+    "optionB": "Find lost things quickly like a prophet",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-031",
+    "optionA": "Remember every verse you have ever read",
+    "optionB": "Recall every name after one handshake",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-032",
+    "optionA": "Heal sore feet after all-day volunteering",
+    "optionB": "Restore your energy after one short prayer",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-033",
+    "optionA": "Make decaf taste like perfect espresso",
+    "optionB": "Make lukewarm pizza taste oven-fresh",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-034",
+    "optionA": "Silence squeaky doors with one tap",
+    "optionB": "Tune any guitar in three seconds",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-035",
+    "optionA": "Project your voice without a microphone",
+    "optionB": "Sing harmony perfectly with any team",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-036",
+    "optionA": "Draft sermons at lightning speed",
+    "optionB": "Write prayers that fit any moment",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-037",
+    "optionA": "Refill communion trays by touching one plate",
+    "optionB": "Keep nursery kids calm with one smile",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-038",
+    "optionA": "Carry fifty chairs without breaking sweat",
+    "optionB": "Stack every table in one trip",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-039",
+    "optionA": "Predict rain before outdoor baptisms",
+    "optionB": "Clear clouds over church picnics",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-040",
+    "optionA": "Understand any Bible timeline instantly",
+    "optionB": "Explain hard doctrines in plain words",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-041",
+    "optionA": "Create perfect slides five minutes before service",
+    "optionB": "Fix dead batteries by praying once",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-042",
+    "optionA": "Make every alarm wake you on first buzz",
+    "optionB": "Never lose your keys again",
+    "category": "Biblical Superpowers"
+  },
+  {
+    "id": "amen-dil-043",
+    "optionA": "Camp forty nights with Israel in the desert",
+    "optionB": "Sail one stormy night with Paul",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-044",
+    "optionA": "Face Jericho walls before the trumpet blast",
+    "optionB": "Face Goliath before David steps out",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-045",
+    "optionA": "Hide prophets from Ahab for one month",
+    "optionB": "Hide spies in Jericho for one night",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-046",
+    "optionA": "Cross the Jordan at flood stage",
+    "optionB": "Cross the Sea of Galilee in a squall",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-047",
+    "optionA": "Share a cell with Paul and Silas",
+    "optionB": "Share exile with Daniel in Babylon",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-048",
+    "optionA": "Spend dawn at the empty tomb",
+    "optionB": "Spend dusk on the Mount of Olives",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-049",
+    "optionA": "Build ark ramps before the rain starts",
+    "optionB": "Build tabernacle curtains before sunset",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-050",
+    "optionA": "Stand trial before Pilate",
+    "optionB": "Stand before Pharaoh demanding freedom",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-051",
+    "optionA": "Walk around Jericho for all seven days",
+    "optionB": "Walk from Nazareth to Bethlehem on foot",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-052",
+    "optionA": "Sleep outdoors with Jacob at Bethel",
+    "optionB": "Sleep on a rooftop with Peter in Joppa",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-053",
+    "optionA": "Carry water jars at Cana",
+    "optionB": "Carry bread baskets after feeding five thousand",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-054",
+    "optionA": "Wait through Esther's three-day fast",
+    "optionB": "Wait through Jonah's reluctant sermon",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-055",
+    "optionA": "Watch Elijah challenge Baal at Carmel",
+    "optionB": "Watch Nehemiah rebuild a broken wall",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-056",
+    "optionA": "Serve one meal to angels like Abraham",
+    "optionB": "Serve one meal to crowds like the disciples",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-057",
+    "optionA": "Ride a donkey into Jerusalem",
+    "optionB": "Ride a chariot with Philip",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-058",
+    "optionA": "Flee Egypt by night with Joseph and Mary",
+    "optionB": "Flee Saul's army with young David",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-059",
+    "optionA": "Spend one week on Patmos with John",
+    "optionB": "Spend one week in Antioch with Paul",
+    "category": "Biblical Situations"
+  },
+  {
+    "id": "amen-dil-060",
+    "optionA": "Run check-in for VBS opening day",
+    "optionB": "Run parking for Easter sunrise service",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-061",
+    "optionA": "Lead youth games with zero supplies",
+    "optionB": "Lead preschool songs with no guitar",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-062",
+    "optionA": "Cover nursery for the entire retreat",
+    "optionB": "Cover sound booth for every session",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-063",
+    "optionA": "Organize potluck with only crockpots",
+    "optionB": "Organize retreat rooms with late arrivals",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-064",
+    "optionA": "Teach Sunday school after no sleep",
+    "optionB": "Teach newcomers class with no notes",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-065",
+    "optionA": "Greet everyone at both entrances",
+    "optionB": "Seat everyone during a packed service",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-066",
+    "optionA": "Count offering after each service",
+    "optionB": "Count attendance for every ministry",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-067",
+    "optionA": "Host church trivia for teenagers",
+    "optionB": "Host marriage panel for adults",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-068",
+    "optionA": "Decorate sanctuary for Christmas Eve",
+    "optionB": "Decorate fellowship hall for baptisms",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-069",
+    "optionA": "Refill coffee urns through both services",
+    "optionB": "Refill communion cups before each row",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-070",
+    "optionA": "Troubleshoot projector during worship",
+    "optionB": "Troubleshoot livestream during sermon",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-071",
+    "optionA": "Chaperone middle school campouts",
+    "optionB": "Chaperone high school ski trips",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-072",
+    "optionA": "Direct one-hundred kids to craft tables",
+    "optionB": "Direct one-hundred parents to pickup lanes",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-073",
+    "optionA": "Clean kitchen after chili cookoff",
+    "optionB": "Clean buses after youth retreat",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-074",
+    "optionA": "Pack welcome bags before service",
+    "optionB": "Pack food pantry boxes after service",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-075",
+    "optionA": "Read scripture with stage fright",
+    "optionB": "Pray on mic with shaky hands",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-076",
+    "optionA": "Set up two hundred chairs before dawn",
+    "optionB": "Tear down two hundred chairs after midnight",
+    "category": "Church Volunteer Chaos"
+  },
+  {
+    "id": "amen-dil-077",
+    "optionA": "Give up coffee for forty days",
+    "optionB": "Give up podcasts for forty days",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-078",
+    "optionA": "Use flip phone for all church chats",
+    "optionB": "Use handwritten notes for every prayer request",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-079",
+    "optionA": "Arrive thirty minutes early each Sunday",
+    "optionB": "Stay thirty minutes late each Sunday",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-080",
+    "optionA": "Read one Psalm before checking messages",
+    "optionB": "Read one Gospel chapter before breakfast",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-081",
+    "optionA": "Pray aloud before every meal in public",
+    "optionB": "Pray silently for everyone you pass",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-082",
+    "optionA": "Attend only sunrise services for a month",
+    "optionB": "Attend only evening services for a month",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-083",
+    "optionA": "Fast from streaming all weekend",
+    "optionB": "Fast from social media all weekend",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-084",
+    "optionA": "Reply to texts with one verse",
+    "optionB": "Reply to emails with one prayer",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-085",
+    "optionA": "Take sermon notes on paper only",
+    "optionB": "Memorize one key point each week",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-086",
+    "optionA": "Volunteer every Saturday morning",
+    "optionB": "Volunteer every Sunday evening",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-087",
+    "optionA": "Walk to church whenever weather allows",
+    "optionB": "Bike to church whenever weather allows",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-088",
+    "optionA": "Host weekly dinner for neighbors",
+    "optionB": "Host weekly Bible reading online",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-089",
+    "optionA": "Start each day with silence",
+    "optionB": "End each day with gratitude journal",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-090",
+    "optionA": "Keep phone off through the sermon",
+    "optionB": "Keep notifications off through the day",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-091",
+    "optionA": "Carry a paper Bible everywhere",
+    "optionB": "Carry a prayer list everywhere",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-092",
+    "optionA": "Join choir without prior training",
+    "optionB": "Join usher team without prior training",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-093",
+    "optionA": "Share one testimony this month",
+    "optionB": "Share one invitation this month",
+    "category": "Modern Faith-Life"
+  },
+  {
+    "id": "amen-dil-094",
+    "optionA": "If Peter were your coach, train at dawn",
+    "optionB": "If Paul were your coach, train on road trips",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-095",
+    "optionA": "If Esther were your advisor, plan quietly",
+    "optionB": "If Deborah were your advisor, decide boldly",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-096",
+    "optionA": "If David were your roommate, hear harp at midnight",
+    "optionB": "If Solomon were your roommate, hear proverbs at dawn",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-097",
+    "optionA": "If Noah were your project lead, overbuild everything",
+    "optionB": "If Nehemiah were your lead, finish walls in record time",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-098",
+    "optionA": "If Jonah were your partner, debate every assignment",
+    "optionB": "If Timothy were your partner, encourage every teammate",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-099",
+    "optionA": "If Martha ran your schedule, stay productive",
+    "optionB": "If Mary ran your schedule, stay reflective",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-100",
+    "optionA": "If Gideon led your squad, start small",
+    "optionB": "If Joshua led your squad, move fast",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-101",
+    "optionA": "If Barnabas mentored you, hear daily encouragement",
+    "optionB": "If James mentored you, hear daily challenges",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-102",
+    "optionA": "If Elijah taught prayer, expect bold moments",
+    "optionB": "If Hannah taught prayer, expect quiet persistence",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-103",
+    "optionA": "If Joseph handled your crisis, plan seven years ahead",
+    "optionB": "If Moses handled your crisis, confront power directly",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-104",
+    "optionA": "If Ruth shaped your choices, stay loyal",
+    "optionB": "If Rahab shaped your choices, take brave risks",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-105",
+    "optionA": "If Luke wrote your bio, include details",
+    "optionB": "If John wrote your bio, include big themes",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-106",
+    "optionA": "Follow Peter's bold-first instincts",
+    "optionB": "Follow Thomas's question-first instincts",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-107",
+    "optionA": "Choose Esther's strategic timing",
+    "optionB": "Choose Daniel's steady consistency",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-108",
+    "optionA": "Prefer Paul's direct feedback",
+    "optionB": "Prefer Barnabas's gentle feedback",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-109",
+    "optionA": "Take Nehemiah's rebuild mindset",
+    "optionB": "Take Jeremiah's weep-and-speak mindset",
+    "category": "Bible Character Trade-Offs"
+  },
+  {
+    "id": "amen-dil-110",
+    "optionA": "Live one week like Ruth",
+    "optionB": "Live one week like Jonah",
+    "category": "Bible Character Trade-Offs"
+  }
 ]

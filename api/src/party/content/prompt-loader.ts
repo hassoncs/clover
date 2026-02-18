@@ -28,11 +28,12 @@ import amenEasterSpecialData from "./packs/amen/amen-easter-special.json";
 import amenFibbageData from "./packs/amen/amen-fibbage.json";
 import amenGoodFridayData from "./packs/amen/amen-good-friday.json";
 import amenHeadsUpData from "./packs/amen/amen-headsup.json";
-import amenHistoryData from "./packs/amen/amen-history.json";
+import amenPersonalData from "./packs/amen/amen-personal.json";
 import amenQuipData from "./packs/amen/amen-quip.json";
 import amenRankingData from "./packs/amen/amen-ranking.json";
 import amenTriviaData from "./packs/amen/amen-trivia.json";
 import amenWagerData from "./packs/amen/amen-wager.json";
+import amenWordlistData from "./packs/amen/amen-wordlist.json";
 import quiplashPromptsData from "./quiplash-prompts.json";
 import triviaPromptsData from "./trivia-prompts.json";
 
@@ -48,11 +49,14 @@ export type ContentType =
 	| "quip"
 	| "trivia"
 	| "drawing"
+	| "dilemma"
 	| "wyr"
 	| "estimation"
 	| "fibbage"
 	| "caption"
 	| "wordgame"
+	| "wordlist"
+	| "personal"
 	| "FakeWord"
 	| "ranking"
 	| "headsup";
@@ -75,6 +79,18 @@ export interface HeadsUpDeck {
 	words: string[];
 }
 
+export interface WordlistItem {
+	id: string;
+	word: string;
+	category: string;
+}
+
+export interface PersonalPrompt {
+	id: string;
+	text: string;
+	category: string;
+}
+
 /**
  * Maps content types to their corresponding TypeScript types.
  * Used for type-safe content loading.
@@ -83,11 +99,14 @@ export interface ContentTypeMap {
 	quip: QuipPrompt;
 	trivia: TriviaQuestion;
 	drawing: DrawingPrompt;
+	dilemma: WouldYouRather;
 	wyr: WouldYouRather;
 	estimation: EstimationQuestion;
 	fibbage: FibbageQuestion;
 	caption: CaptionPrompt;
 	wordgame: WordGamePrompt;
+	wordlist: WordlistItem;
+	personal: PersonalPrompt;
 	FakeWord: FakeWord;
 	ranking: RankingPrompt;
 	headsup: HeadsUpDeck;
@@ -156,13 +175,13 @@ const contentPacks: Record<
 		trivia: amenTriviaData as TriviaQuestion[],
 		quip: amenQuipData as QuipPrompt[],
 		fibbage: amenFibbageData as FibbageQuestion[],
-		estimation: [
-			...(amenHistoryData as EstimationQuestion[]),
-			...(amenWagerData as EstimationQuestion[]),
-		],
+		estimation: amenWagerData as EstimationQuestion[],
 		drawing: amenDrawingData as DrawingPrompt[],
 		ranking: amenRankingData as RankingPrompt[],
+		dilemma: amenDilemmaData as WouldYouRather[],
 		wyr: amenDilemmaData as WouldYouRather[],
+		wordlist: amenWordlistData as WordlistItem[],
+		personal: amenPersonalData as PersonalPrompt[],
 		headsup: amenHeadsUpData as HeadsUpDeck[],
 	},
 };

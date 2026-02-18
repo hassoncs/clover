@@ -1,146 +1,5392 @@
 [
-	{
-		"id": "amen-triv-001",
-		"question": "What was the name of the garden where Adam and Eve lived? (Genesis 2:8)",
-		"correctAnswer": "Garden of Eden",
-		"incorrectAnswers": [
-			"Garden of Gethsemane",
-			"Garden of Babylon",
-			"Garden of Peace"
-		],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-002",
-		"question": "Who built the ark to survive the great flood? (Genesis 6:14)",
-		"correctAnswer": "Noah",
-		"incorrectAnswers": ["Moses", "Abraham", "David"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-003",
-		"question": "Which sea did Moses part to escape the Egyptians? (Exodus 14:21)",
-		"correctAnswer": "Red Sea",
-		"incorrectAnswers": ["Dead Sea", "Mediterranean Sea", "Sea of Galilee"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-004",
-		"question": "Who was swallowed by a great fish? (Jonah 1:17)",
-		"correctAnswer": "Jonah",
-		"incorrectAnswers": ["Job", "Jeremiah", "Joel"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-005",
-		"question": "What is the first book of the New Testament? (Matthew 1:1)",
-		"correctAnswer": "Matthew",
-		"incorrectAnswers": ["Mark", "Luke", "John"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-006",
-		"question": "Where was Jesus born? (Luke 2:4)",
-		"correctAnswer": "Bethlehem",
-		"incorrectAnswers": ["Nazareth", "Jerusalem", "Capernaum"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-007",
-		"question": "Who betrayed Jesus for 30 pieces of silver? (Matthew 26:15)",
-		"correctAnswer": "Judas Iscariot",
-		"incorrectAnswers": ["Peter", "Thomas", "Pontius Pilate"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-008",
-		"question": "Which young boy defeated the giant Goliath? (1 Samuel 17:50)",
-		"correctAnswer": "David",
-		"incorrectAnswers": ["Saul", "Jonathan", "Solomon"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-009",
-		"question": "What is the shortest verse in the Bible? (John 11:35)",
-		"correctAnswer": "Jesus wept.",
-		"incorrectAnswers": ["God is love.", "Pray always.", "Rejoice evermore."],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-010",
-		"question": "Who was known for his great strength and long hair? (Judges 16:17)",
-		"correctAnswer": "Samson",
-		"incorrectAnswers": ["Gideon", "Samuel", "Elijah"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-011",
-		"question": "Which disciple walked on water with Jesus? (Matthew 14:29)",
-		"correctAnswer": "Peter",
-		"incorrectAnswers": ["James", "John", "Andrew"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-012",
-		"question": "What city's walls fell down after the Israelites marched around them? (Joshua 6:20)",
-		"correctAnswer": "Jericho",
-		"incorrectAnswers": ["Ai", "Hebron", "Bethel"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-013",
-		"question": "Who was thrown into a den of lions? (Daniel 6:16)",
-		"correctAnswer": "Daniel",
-		"incorrectAnswers": ["Shadrach", "Meshach", "Abednego"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-014",
-		"question": "What gift did the wise men NOT bring to Jesus? (Matthew 2:11)",
-		"correctAnswer": "Silver",
-		"incorrectAnswers": ["Gold", "Frankincense", "Myrrh"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-015",
-		"question": "Who wrote most of the Psalms? (2 Samuel 23:1)",
-		"correctAnswer": "David",
-		"incorrectAnswers": ["Solomon", "Moses", "Asaph"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-016",
-		"question": "Which apostle was a tax collector before following Jesus? (Matthew 9:9)",
-		"correctAnswer": "Matthew",
-		"incorrectAnswers": ["Luke", "Mark", "Simon"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-017",
-		"question": "Who was the first king of Israel? (1 Samuel 10:1)",
-		"correctAnswer": "Saul",
-		"incorrectAnswers": ["David", "Solomon", "Samuel"],
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-triv-018",
-		"question": "What type of insect did John the Baptist eat? (Matthew 3:4)",
-		"correctAnswer": "Locusts",
-		"incorrectAnswers": ["Beetles", "Ants", "Crickets"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-019",
-		"question": "Who climbed a sycamore tree to see Jesus? (Luke 19:4)",
-		"correctAnswer": "Zacchaeus",
-		"incorrectAnswers": ["Bartimaeus", "Nicodemus", "Lazarus"],
-		"category": "New Testament"
-	},
-	{
-		"id": "amen-triv-020",
-		"question": "How many days and nights did it rain during the flood? (Genesis 7:12)",
-		"correctAnswer": "40",
-		"incorrectAnswers": ["7", "12", "100"],
-		"category": "Old Testament"
-	}
+  {
+    "id": "amen-triv-001",
+    "question": "What was the name of the garden where Adam and Eve lived?",
+    "correctAnswer": "Garden of Eden",
+    "incorrectAnswers": [
+      "Garden of Gethsemane",
+      "Garden of Babylon",
+      "Garden of Peace"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-002",
+    "question": "Who built the ark to survive the great flood?",
+    "correctAnswer": "Noah",
+    "incorrectAnswers": [
+      "Moses",
+      "Abraham",
+      "David"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-003",
+    "question": "Who was swallowed by a great fish?",
+    "correctAnswer": "Jonah",
+    "incorrectAnswers": [
+      "Job",
+      "Jeremiah",
+      "Joel"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-004",
+    "question": "What is the first book of the New Testament?",
+    "correctAnswer": "Matthew",
+    "incorrectAnswers": [
+      "Mark",
+      "Luke",
+      "John"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-005",
+    "question": "Who betrayed Jesus for 30 pieces of silver?",
+    "correctAnswer": "Judas Iscariot",
+    "incorrectAnswers": [
+      "Peter",
+      "Thomas",
+      "Pontius Pilate"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-006",
+    "question": "Which young boy defeated the giant Goliath?",
+    "correctAnswer": "David",
+    "incorrectAnswers": [
+      "Saul",
+      "Jonathan",
+      "Solomon"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-007",
+    "question": "What is the shortest verse in the Bible?",
+    "correctAnswer": "Jesus wept.",
+    "incorrectAnswers": [
+      "God is love.",
+      "Pray always.",
+      "Rejoice evermore."
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-008",
+    "question": "Who was known for his great strength and long hair?",
+    "correctAnswer": "Samson",
+    "incorrectAnswers": [
+      "Gideon",
+      "Samuel",
+      "Elijah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-009",
+    "question": "Which disciple walked on water with Jesus?",
+    "correctAnswer": "Peter",
+    "incorrectAnswers": [
+      "James",
+      "John",
+      "Andrew"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-010",
+    "question": "What city's walls fell down after the Israelites marched around them?",
+    "correctAnswer": "Jericho",
+    "incorrectAnswers": [
+      "Ai",
+      "Hebron",
+      "Bethel"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-011",
+    "question": "Who was thrown into a den of lions?",
+    "correctAnswer": "Daniel",
+    "incorrectAnswers": [
+      "Shadrach",
+      "Meshach",
+      "Abednego"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-012",
+    "question": "What gift did the wise men NOT bring to Jesus?",
+    "correctAnswer": "Silver",
+    "incorrectAnswers": [
+      "Gold",
+      "Frankincense",
+      "Myrrh"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-013",
+    "question": "Who is credited with writing the largest number of Psalms?",
+    "correctAnswer": "David",
+    "incorrectAnswers": [
+      "Solomon",
+      "Moses",
+      "Asaph"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-014",
+    "question": "Which apostle was a tax collector before following Jesus?",
+    "correctAnswer": "Matthew",
+    "incorrectAnswers": [
+      "Luke",
+      "Mark",
+      "Simon"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-015",
+    "question": "Who was the first king of Israel?",
+    "correctAnswer": "Saul",
+    "incorrectAnswers": [
+      "David",
+      "Solomon",
+      "Samuel"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-016",
+    "question": "What type of insect did John the Baptist eat?",
+    "correctAnswer": "Locusts",
+    "incorrectAnswers": [
+      "Beetles",
+      "Ants",
+      "Crickets"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-017",
+    "question": "Who climbed a sycamore tree to see Jesus?",
+    "correctAnswer": "Zacchaeus",
+    "incorrectAnswers": [
+      "Bartimaeus",
+      "Nicodemus",
+      "Lazarus"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-018",
+    "question": "How old was Noah when the floodwaters came?",
+    "correctAnswer": "600",
+    "incorrectAnswers": [
+      "400",
+      "120",
+      "950"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-019",
+    "question": "Which judge was left-handed and killed a fat king?",
+    "correctAnswer": "Ehud",
+    "incorrectAnswers": [
+      "Gideon",
+      "Samson",
+      "Jephthah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-020",
+    "question": "What was the name of the demon Jesus cast into the pigs?",
+    "correctAnswer": "Legion",
+    "incorrectAnswers": [
+      "Beelzebub",
+      "Mammon",
+      "Apollyon"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-021",
+    "question": "Which book comes immediately after the Gospels?",
+    "correctAnswer": "Acts",
+    "incorrectAnswers": [
+      "Romans",
+      "Revelation",
+      "Hebrews"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-022",
+    "question": "What did Esau sell his birthright for?",
+    "correctAnswer": "A bowl of stew",
+    "incorrectAnswers": [
+      "A bag of gold",
+      "A flock of sheep",
+      "A new tent"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-023",
+    "question": "Who was the only female judge mentioned in the Bible?",
+    "correctAnswer": "Deborah",
+    "incorrectAnswers": [
+      "Esther",
+      "Ruth",
+      "Naomi"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-024",
+    "question": "What instrument did David play to soothe King Saul?",
+    "correctAnswer": "Harp",
+    "incorrectAnswers": [
+      "Flute",
+      "Trumpet",
+      "Drum"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-025",
+    "question": "Which apostle was known as 'the doubter'?",
+    "correctAnswer": "Thomas",
+    "incorrectAnswers": [
+      "Philip",
+      "Bartholomew",
+      "Thaddeus"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-026",
+    "question": "How many days was Jesus in the tomb before resurrection?",
+    "correctAnswer": "3",
+    "incorrectAnswers": [
+      "2",
+      "7",
+      "40"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-027",
+    "question": "What was Paul's name before his conversion?",
+    "correctAnswer": "Saul",
+    "incorrectAnswers": [
+      "Simon",
+      "Stephen",
+      "Silas"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-028",
+    "question": "Who fell out of a window while Paul was preaching?",
+    "correctAnswer": "Eutychus",
+    "incorrectAnswers": [
+      "Timothy",
+      "Tychicus",
+      "Epaphroditus"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-029",
+    "question": "What was the name of the bronze snake Moses made?",
+    "correctAnswer": "Nehushtan",
+    "incorrectAnswers": [
+      "Leviathan",
+      "Behemoth",
+      "Azazel"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-030",
+    "question": "Who was the first martyr in the Bible?",
+    "correctAnswer": "Stephen",
+    "incorrectAnswers": [
+      "James",
+      "Peter",
+      "Paul"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-031",
+    "question": "Which king was temporarily driven insane and ate grass like an ox?",
+    "correctAnswer": "Nebuchadnezzar",
+    "incorrectAnswers": [
+      "Belshazzar",
+      "Darius",
+      "Cyrus"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-032",
+    "question": "Who received a coat of many colors from his father?",
+    "correctAnswer": "Joseph",
+    "incorrectAnswers": [
+      "Benjamin",
+      "Reuben",
+      "Judah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-033",
+    "question": "What was the name of Abraham's second wife?",
+    "correctAnswer": "Keturah",
+    "incorrectAnswers": [
+      "Hagar",
+      "Sarah",
+      "Rebekah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-034",
+    "question": "Which prophet was told to marry a prostitute named Gomer?",
+    "correctAnswer": "Hosea",
+    "incorrectAnswers": [
+      "Amos",
+      "Joel",
+      "Micah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-035",
+    "question": "Who was the mother of John the Baptist?",
+    "correctAnswer": "Elizabeth",
+    "incorrectAnswers": [
+      "Mary",
+      "Martha",
+      "Salome"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-036",
+    "question": "On which island was John exiled when he wrote Revelation?",
+    "correctAnswer": "Patmos",
+    "incorrectAnswers": [
+      "Cyprus",
+      "Crete",
+      "Malta"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-037",
+    "question": "Who was the father of Methuselah?",
+    "correctAnswer": "Enoch",
+    "incorrectAnswers": [
+      "Lamech",
+      "Jared",
+      "Mahalalel"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-038",
+    "question": "Which disciple was known as a Zealot?",
+    "correctAnswer": "Simon",
+    "incorrectAnswers": [
+      "Judas",
+      "James",
+      "Matthew"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-039",
+    "question": "Who cut off the ear of the high priest's servant?",
+    "correctAnswer": "Peter",
+    "incorrectAnswers": [
+      "John",
+      "James",
+      "Andrew"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-040",
+    "question": "What was the name of the servant whose ear was cut off?",
+    "correctAnswer": "Malchus",
+    "incorrectAnswers": [
+      "Caiaphas",
+      "Annas",
+      "Barabbas"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-041",
+    "question": "Who was the great-grandmother of King David?",
+    "correctAnswer": "Ruth",
+    "incorrectAnswers": [
+      "Rahab",
+      "Naomi",
+      "Orpah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-042",
+    "question": "Which tribe was the Apostle Paul from?",
+    "correctAnswer": "Benjamin",
+    "incorrectAnswers": [
+      "Judah",
+      "Levi",
+      "Ephraim"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-043",
+    "question": "Who was the first king of the Northern Kingdom of Israel?",
+    "correctAnswer": "Jeroboam",
+    "incorrectAnswers": [
+      "Rehoboam",
+      "Ahab",
+      "Jehu"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-044",
+    "question": "What was the name of the man who helped Jesus carry the cross?",
+    "correctAnswer": "Simon of Cyrene",
+    "incorrectAnswers": [
+      "Joseph of Arimathea",
+      "Nicodemus",
+      "Barnabas"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-045",
+    "question": "Who was the sister of Moses and Aaron?",
+    "correctAnswer": "Miriam",
+    "incorrectAnswers": [
+      "Zipporah",
+      "Jochebed",
+      "Dinah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-046",
+    "question": "Which prophet was known as 'The Weeping Prophet'?",
+    "correctAnswer": "Jeremiah",
+    "incorrectAnswers": [
+      "Isaiah",
+      "Ezekiel",
+      "Daniel"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-047",
+    "question": "Who was the only female Queen to reign over Judah?",
+    "correctAnswer": "Athaliah",
+    "incorrectAnswers": [
+      "Jezebel",
+      "Esther",
+      "Bathsheba"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-048",
+    "question": "What was the name of the place where Jacob wrestled with God?",
+    "correctAnswer": "Peniel",
+    "incorrectAnswers": [
+      "Bethel",
+      "Shechem",
+      "Hebron"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-049",
+    "question": "Most of the Old Testament was written in which ancient language?",
+    "correctAnswer": "Hebrew",
+    "incorrectAnswers": [
+      "Aramaic",
+      "Latin",
+      "Greek"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-050",
+    "question": "Most of the New Testament was written in which ancient language?",
+    "correctAnswer": "Greek",
+    "incorrectAnswers": [
+      "Latin",
+      "Aramaic",
+      "Hebrew"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-051",
+    "question": "Which human author contributed the most words to the Bible?",
+    "correctAnswer": "Moses",
+    "incorrectAnswers": [
+      "Paul",
+      "David",
+      "Isaiah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-052",
+    "question": "Scholars believe this was the very first letter Paul ever wrote — which epistle was it?",
+    "correctAnswer": "1 Thessalonians",
+    "incorrectAnswers": [
+      "Galatians",
+      "Romans",
+      "Philippians"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-053",
+    "question": "Which New Testament book is widely believed to have been written last?",
+    "correctAnswer": "Revelation",
+    "incorrectAnswers": [
+      "2 Timothy",
+      "2 Peter",
+      "3 John"
+    ],
+    "category": "New Testament"
+  },
+  {
+    "id": "amen-triv-054",
+    "question": "According to Genesis, how many days did God spend creating the world?",
+    "correctAnswer": "6",
+    "incorrectAnswers": [
+      "3",
+      "7",
+      "10"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-055",
+    "question": "In the beginning, where did Adam and Eve call home?",
+    "correctAnswer": "Garden of Eden",
+    "incorrectAnswers": [
+      "Mount Sinai",
+      "Land of Nod",
+      "Canaan"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-056",
+    "question": "How many days and nights did it rain while Noah and his family were on the ark?",
+    "correctAnswer": "40",
+    "incorrectAnswers": [
+      "7",
+      "20",
+      "100"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-057",
+    "question": "After the flood, what sign did God give Noah as a promise never to destroy the earth by water again?",
+    "correctAnswer": "A rainbow",
+    "incorrectAnswers": [
+      "A dove",
+      "An altar fire",
+      "A burning bush"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-058",
+    "question": "What were the people at the Tower of Babel trying to build their way up to?",
+    "correctAnswer": "Heaven",
+    "incorrectAnswers": [
+      "The stars",
+      "Mount Zion",
+      "God's throne"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-059",
+    "question": "How did God scatter the people who were building the Tower of Babel across the earth?",
+    "correctAnswer": "Confused their languages",
+    "incorrectAnswers": [
+      "Sent a great flood",
+      "Struck them with fire",
+      "Divided the land"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-060",
+    "question": "God called this man out of Ur and told him to journey to Canaan — who was he?",
+    "correctAnswer": "Abram",
+    "incorrectAnswers": [
+      "Lot",
+      "Nahor",
+      "Terah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-061",
+    "question": "Even though Abram and Sarah were well past childbearing age, what did God promise them?",
+    "correctAnswer": "A son",
+    "incorrectAnswers": [
+      "A kingdom",
+      "Long life",
+      "Great wealth"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-062",
+    "question": "When God showed Abram the night sky, what did He promise his descendants would be like?",
+    "correctAnswer": "Countless as the stars",
+    "incorrectAnswers": [
+      "Bright as the sun",
+      "Spread like the seas",
+      "Strong as mountains"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-063",
+    "question": "Since Sarah could not conceive, whose idea was it for Abram to have a child through Hagar?",
+    "correctAnswer": "Sarah",
+    "incorrectAnswers": [
+      "Abram",
+      "God",
+      "Lot"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-064",
+    "question": "When Isaac was old and blind, who came up with the plan for Jacob to steal Esau's blessing?",
+    "correctAnswer": "Rebekah",
+    "incorrectAnswers": [
+      "Rachel",
+      "Leah",
+      "Deborah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-065",
+    "question": "When Jacob arrived at Laban's house, which of Laban's daughters did he fall in love with?",
+    "correctAnswer": "Rachel",
+    "incorrectAnswers": [
+      "Leah",
+      "Dinah",
+      "Zilpah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-066",
+    "question": "After being tricked into marrying Leah, how much longer did Laban make Jacob work to marry Rachel?",
+    "correctAnswer": "Seven more years",
+    "incorrectAnswers": [
+      "Three more years",
+      "Ten more years",
+      "One more year"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-067",
+    "question": "Before Jacob reunited with his brother Esau, God gave him a brand new name — what was it?",
+    "correctAnswer": "Israel",
+    "incorrectAnswers": [
+      "Abraham",
+      "Judah",
+      "Levi"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-068",
+    "question": "What special gift did Jacob give Joseph that made his brothers burn with jealousy?",
+    "correctAnswer": "A coat of many colors",
+    "incorrectAnswers": [
+      "A gold ring",
+      "A silver cup",
+      "A fine sword"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-069",
+    "question": "What did Joseph's dreams reveal about his future that made his brothers furious?",
+    "correctAnswer": "He would rule over them",
+    "incorrectAnswers": [
+      "He would leave Canaan",
+      "He would outlive them",
+      "He would inherit their land"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-070",
+    "question": "After selling Joseph into slavery, what did his brothers tell their father had happened to him?",
+    "correctAnswer": "A wild animal killed him",
+    "incorrectAnswers": [
+      "He ran away to Egypt",
+      "He drowned in a river",
+      "He was taken by bandits"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-071",
+    "question": "Who falsely accused Joseph and had him thrown into prison?",
+    "correctAnswer": "Potiphar's wife",
+    "incorrectAnswers": [
+      "Pharaoh's cupbearer",
+      "Potiphar himself",
+      "Pharaoh's baker"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-072",
+    "question": "Why did Pharaoh suddenly summon Joseph out of prison?",
+    "correctAnswer": "To interpret his dream",
+    "incorrectAnswers": [
+      "To manage his household",
+      "To lead his army",
+      "To advise his council"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-073",
+    "question": "After Joseph interpreted Pharaoh's dream, what powerful role did Pharaoh give him?",
+    "correctAnswer": "Second in command of Egypt",
+    "incorrectAnswers": [
+      "Head of the royal guard",
+      "Chief palace treasurer",
+      "Governor of Goshen"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-074",
+    "question": "Joseph interpreted Pharaoh's dream and predicted a major disaster was coming. What was it?",
+    "correctAnswer": "Seven-year famine",
+    "incorrectAnswers": [
+      "Seven-year drought",
+      "Devastating plague",
+      "Massive flood"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-075",
+    "question": "When famine struck the land, who showed up in Egypt looking for food that Joseph immediately recognized?",
+    "correctAnswer": "His brothers",
+    "incorrectAnswers": [
+      "His father Jacob",
+      "His cousin's family",
+      "Potiphar's household"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-076",
+    "question": "Joseph sent his brothers home but gave them one condition for their return. What did he demand they bring next time?",
+    "correctAnswer": "Benjamin",
+    "incorrectAnswers": [
+      "Their father Jacob",
+      "A peace offering",
+      "Proof of their tribe"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-077",
+    "question": "When Joseph threatened to keep Benjamin in Egypt, which brother stepped up and offered to stay in his place?",
+    "correctAnswer": "Judah",
+    "incorrectAnswers": [
+      "Reuben",
+      "Simeon",
+      "Levi"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-078",
+    "question": "After revealing himself to his brothers, what did Joseph tell them to do when they returned to Canaan?",
+    "correctAnswer": "Bring family to Egypt",
+    "incorrectAnswers": [
+      "Return with gold and silver",
+      "Sell their land and livestock",
+      "Bring only the eldest sons"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-079",
+    "question": "To hide baby Moses from Pharaoh's soldiers, what clever plan did his mother use to save his life?",
+    "correctAnswer": "Basket in the river",
+    "incorrectAnswers": [
+      "Disguised him as an Egyptian baby",
+      "Sent him to live with relatives",
+      "Hid him in a cave in the hills"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-080",
+    "question": "Out in the desert, God got Moses' attention in a pretty spectacular way. What did God speak to him through?",
+    "correctAnswer": "A burning bush",
+    "incorrectAnswers": [
+      "A pillar of cloud",
+      "An angel with a sword",
+      "A thunderstorm"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-081",
+    "question": "When Moses threw his staff on the ground in front of Pharaoh, what did it transform into?",
+    "correctAnswer": "A snake",
+    "incorrectAnswers": [
+      "A river of blood",
+      "A tree branch",
+      "A rod of iron"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-082",
+    "question": "Moses stood before Pharaoh with a bold message from God. What did God command Pharaoh to do?",
+    "correctAnswer": "Free the Israelite slaves",
+    "incorrectAnswers": [
+      "Rebuild the temple",
+      "Stop idol worship",
+      "Share Egypt's grain"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-083",
+    "question": "After nine terrible plagues, one final disaster finally broke Pharaoh. What was the tenth and last plague?",
+    "correctAnswer": "Death of every firstborn son",
+    "incorrectAnswers": [
+      "Darkness covering the land",
+      "Swarms of locusts",
+      "Rivers turning to blood"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-084",
+    "question": "Pharaoh changed his mind and sent his army chasing after the freed Israelites. Where did the two sides meet?",
+    "correctAnswer": "The Red Sea",
+    "incorrectAnswers": [
+      "The Jordan River",
+      "The Nile Delta",
+      "The Dead Sea"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-085",
+    "question": "The Egyptian army charged into the parted Red Sea after the Israelites. What happened to them?",
+    "correctAnswer": "They drowned",
+    "incorrectAnswers": [
+      "They turned back in fear",
+      "They were struck by lightning",
+      "They sank into quicksand"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-086",
+    "question": "The Israelites were hungry in the desert, so God provided food for them. What did He send?",
+    "correctAnswer": "Quail and manna",
+    "incorrectAnswers": [
+      "Bread and fish",
+      "Figs and honey",
+      "Grain and water"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-087",
+    "question": "While Moses was up on Mt. Sinai, the Israelites got impatient and made an idol to worship. What was it?",
+    "correctAnswer": "A golden calf",
+    "incorrectAnswers": [
+      "A silver serpent",
+      "A bronze bull",
+      "A golden throne"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-088",
+    "question": "Moses sent spies into Canaan to scout the land, but most came back terrified. What scared them so much?",
+    "correctAnswer": "Giants in the land",
+    "incorrectAnswers": [
+      "Massive walled fortresses",
+      "Enormous armies with chariots",
+      "Fire-worshipping priests"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-089",
+    "question": "Because of Israel's lack of faith, only two men from that generation were allowed to enter the Promised Land. Who were they?",
+    "correctAnswer": "Joshua and Caleb",
+    "incorrectAnswers": [
+      "Moses and Aaron",
+      "Eleazar and Phinehas",
+      "Gad and Reuben"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-090",
+    "question": "Joshua led Israel against a famous fortified city, and God made its walls collapse. What city was it?",
+    "correctAnswer": "Jericho",
+    "incorrectAnswers": [
+      "Ai",
+      "Hebron",
+      "Jerusalem"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-091",
+    "question": "After Joshua died and Israel had settled the Promised Land, who stepped up to lead the nation?",
+    "correctAnswer": "Judges",
+    "incorrectAnswers": [
+      "Priests",
+      "Prophets",
+      "Elders"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-092",
+    "question": "Israel had some remarkable leaders called judges, including one powerful woman. Who was she?",
+    "correctAnswer": "Deborah",
+    "incorrectAnswers": [
+      "Miriam",
+      "Rahab",
+      "Abigail"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-093",
+    "question": "Which judge pulled off one of the Bible's most unlikely military victories, defeating the Midianites with just 300 men armed with torches and horns?",
+    "correctAnswer": "Gideon",
+    "incorrectAnswers": [
+      "Samson",
+      "Jephthah",
+      "Barak"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-094",
+    "question": "Which judge was set apart as a Nazirite from birth and became famous for battling the Philistines with superhuman strength?",
+    "correctAnswer": "Samson",
+    "incorrectAnswers": [
+      "Gideon",
+      "Jephthah",
+      "Othniel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-095",
+    "question": "Samson had a secret source of his incredible strength. Which Philistine woman kept pressing him to reveal it?",
+    "correctAnswer": "Delilah",
+    "incorrectAnswers": [
+      "Jezebel",
+      "Rahab",
+      "Bathsheba"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-096",
+    "question": "The sacred Ark of the Covenant was captured in battle and taken away. Who stole it?",
+    "correctAnswer": "The Philistines",
+    "incorrectAnswers": [
+      "The Midianites",
+      "The Amalekites",
+      "The Assyrians"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-097",
+    "question": "After the Philistines placed the Ark in their temple next to their idol, something embarrassing happened to the idol. What was it?",
+    "correctAnswer": "It fell and broke",
+    "incorrectAnswers": [
+      "It burst into flames",
+      "It sank into the ground",
+      "It was struck by lightning"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-098",
+    "question": "King Saul made a serious mistake by performing a sacred ritual only priests were allowed to do. What did he do?",
+    "correctAnswer": "Made the sacrifice himself",
+    "incorrectAnswers": [
+      "Entered the Holy of Holies",
+      "Blessed the army as a priest",
+      "Burned incense on the altar"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-099",
+    "question": "After Saul fell out of favor, which king of Israel did Samuel anoint next?",
+    "correctAnswer": "David",
+    "incorrectAnswers": [
+      "Solomon",
+      "Absalom",
+      "Jeroboam"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-100",
+    "question": "Which giant Philistine warrior mocked God and challenged the Israelite army to send someone to fight him?",
+    "correctAnswer": "Goliath",
+    "incorrectAnswers": [
+      "Samson",
+      "Og of Bashan",
+      "Nimrod"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-101",
+    "question": "Before David faced Goliath, what did King Saul try to give him to wear into battle?",
+    "correctAnswer": "His armor",
+    "incorrectAnswers": [
+      "His sword",
+      "His shield",
+      "His royal robe"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-102",
+    "question": "David grabbed a sling and headed to the brook before facing Goliath. How many stones did he pick up?",
+    "correctAnswer": "Five stones",
+    "incorrectAnswers": [
+      "Three stones",
+      "Seven stones",
+      "Ten stones"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-103",
+    "question": "How many sling throws did it take for David to bring down the mighty Goliath?",
+    "correctAnswer": "One",
+    "incorrectAnswers": [
+      "Three",
+      "Two",
+      "Four"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-104",
+    "question": "Jonathan was a true friend to David. What did he do to save David from King Saul?",
+    "correctAnswer": "Warned David",
+    "incorrectAnswers": [
+      "Hid him in the palace",
+      "Bribed Saul's soldiers",
+      "Helped him escape to Egypt"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-105",
+    "question": "When David fled into the wilderness, did Saul give up the chase?",
+    "correctAnswer": "No",
+    "incorrectAnswers": [
+      "Yes, after one month",
+      "Yes, immediately",
+      "Yes, after a year"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-106",
+    "question": "Which great judge of Israel died around the time Saul made a temporary peace with David?",
+    "correctAnswer": "Samuel",
+    "incorrectAnswers": [
+      "Gideon",
+      "Eli",
+      "Deborah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-107",
+    "question": "When Saul kept hunting him, where did David flee to seek refuge?",
+    "correctAnswer": "Philistia",
+    "incorrectAnswers": [
+      "Egypt",
+      "Moab",
+      "Edom"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-108",
+    "question": "When Saul could no longer sense God's guidance, who did he secretly consult for advice?",
+    "correctAnswer": "A witch",
+    "incorrectAnswers": [
+      "A Philistine priest",
+      "An Egyptian sorcerer",
+      "A Babylonian astrologer"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-109",
+    "question": "In the same battle where Saul fell, how many of his sons also died fighting?",
+    "correctAnswer": "Three",
+    "incorrectAnswers": [
+      "All of them",
+      "None of them",
+      "Two"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-110",
+    "question": "While his army was away at war, David spotted a woman from his rooftop and committed adultery with her. Who was she?",
+    "correctAnswer": "Bathsheba",
+    "incorrectAnswers": [
+      "Abigail",
+      "Michal",
+      "Tamar"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-111",
+    "question": "After Bathsheba became pregnant, what did David arrange to happen to her husband Uriah?",
+    "correctAnswer": "Killed in battle",
+    "incorrectAnswers": [
+      "Sent into exile",
+      "Thrown in prison",
+      "Stripped of rank"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-112",
+    "question": "After Bathsheba and David had another child together, what did they name him?",
+    "correctAnswer": "Solomon",
+    "incorrectAnswers": [
+      "Absalom",
+      "Adonijah",
+      "Nathan"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-113",
+    "question": "Which of David's own sons launched a rebellion to take the throne from him?",
+    "correctAnswer": "Absalom",
+    "incorrectAnswers": [
+      "Adonijah",
+      "Amnon",
+      "Solomon"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-114",
+    "question": "As Absalom marched on the capital with his rebel army, which city did David flee from?",
+    "correctAnswer": "Jerusalem",
+    "incorrectAnswers": [
+      "Hebron",
+      "Bethlehem",
+      "Jericho"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-115",
+    "question": "During the battle between David and Absalom's forces, what happened to Absalom's famous hair?",
+    "correctAnswer": "Caught in a tree",
+    "incorrectAnswers": [
+      "It was cut off by a soldier",
+      "It was set on fire",
+      "It was grabbed by Joab"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-116",
+    "question": "Throughout most of David's reign, which nation was his primary military enemy?",
+    "correctAnswer": "Philistines",
+    "incorrectAnswers": [
+      "Moabites",
+      "Ammonites",
+      "Edomites"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-117",
+    "question": "Which two books of the Bible cover David's reign as king of Israel?",
+    "correctAnswer": "1st and 2nd Samuel",
+    "incorrectAnswers": [
+      "1st and 2nd Kings",
+      "1st and 2nd Chronicles",
+      "Ezra and Nehemiah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-118",
+    "question": "Daniel served several powerful rulers. Under which king does the Bible last show him serving?",
+    "correctAnswer": "Cyrus",
+    "incorrectAnswers": [
+      "Nebuchadnezzar",
+      "Belshazzar",
+      "Darius"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-119",
+    "question": "When Daniel kept praying to God despite a royal ban, what terrifying place was he thrown into?",
+    "correctAnswer": "The lion's den",
+    "incorrectAnswers": [
+      "A fiery furnace",
+      "A dungeon",
+      "A pit in the desert"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-120",
+    "question": "When Shadrach, Meshach, and Abednego refused to bow to Nebuchadnezzar's golden idol, where were they thrown?",
+    "correctAnswer": "A fiery furnace",
+    "incorrectAnswers": [
+      "The lion's den",
+      "A dungeon",
+      "The Euphrates River"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-121",
+    "question": "Which faithful leader returned from exile to rebuild the broken walls of Jerusalem?",
+    "correctAnswer": "Nehemiah",
+    "incorrectAnswers": [
+      "Ezra",
+      "Zerubbabel",
+      "Joshua"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-122",
+    "question": "Esther took a huge risk to save her people. What bold move did she make to speak with the king?",
+    "correctAnswer": "Approached him without being summoned",
+    "incorrectAnswers": [
+      "Sent him a secret letter",
+      "Bribed his royal advisor",
+      "Disguised herself as a servant"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-123",
+    "question": "When King Herod threatened the baby Jesus, where did Mary and Joseph flee to keep him safe?",
+    "correctAnswer": "Egypt",
+    "incorrectAnswers": [
+      "Babylon",
+      "Syria",
+      "Persia"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-124",
+    "question": "The Bible actually names some of Jesus' brothers - how many brothers are mentioned by name?",
+    "correctAnswer": "Four",
+    "incorrectAnswers": [
+      "Two",
+      "Three",
+      "Five"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-125",
+    "question": "How many of Jesus' sisters are actually named in the Bible?",
+    "correctAnswer": "None",
+    "incorrectAnswers": [
+      "Two",
+      "Three",
+      "One"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-126",
+    "question": "Besides preaching, what else was Jesus known for doing as he traveled through Galilee?",
+    "correctAnswer": "Healing the sick",
+    "incorrectAnswers": [
+      "Collecting taxes",
+      "Teaching in the temple",
+      "Performing baptisms"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-127",
+    "question": "Which member of the Jewish ruling council snuck out at night to ask Jesus some big questions?",
+    "correctAnswer": "Nicodemus",
+    "incorrectAnswers": [
+      "Caiaphas",
+      "Joseph of Arimathea",
+      "Gamaliel"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-128",
+    "question": "By the time Jesus arrived to see Lazarus, how many days had Lazarus already been dead?",
+    "correctAnswer": "Four days",
+    "incorrectAnswers": [
+      "One day",
+      "Two days",
+      "Seven days"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-129",
+    "question": "What two things did Jesus do to bring Lazarus back from the dead?",
+    "correctAnswer": "Prayed, then called Lazarus out",
+    "incorrectAnswers": [
+      "Anointed him with oil, then touched him",
+      "Fasted, then spoke a blessing",
+      "Wept, then laid hands on the tomb"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-130",
+    "question": "Who helped financially support Jesus and his disciples during their ministry travels?",
+    "correctAnswer": "Women Jesus had healed",
+    "incorrectAnswers": [
+      "Roman sympathizers",
+      "The twelve disciples' families",
+      "Temple priests"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-131",
+    "question": "What was the name of the demon - or demons - that Jesus cast out of a man in the region of the Gerasenes?",
+    "correctAnswer": "Legion",
+    "incorrectAnswers": [
+      "Abaddon",
+      "Beelzebub",
+      "Apollyon"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-132",
+    "question": "How much food did Jesus start with before miraculously feeding over 5,000 people?",
+    "correctAnswer": "Five loaves and two fish",
+    "incorrectAnswers": [
+      "Seven loaves and three fish",
+      "Two loaves and five fish",
+      "Three loaves and one fish"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-133",
+    "question": "What were Peter and Andrew doing when Jesus called them to follow him?",
+    "correctAnswer": "Fishing",
+    "incorrectAnswers": [
+      "Collecting taxes",
+      "Praying at the temple",
+      "Mending tents"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-134",
+    "question": "When Jesus was transfigured on the mountain, which two Old Testament figures appeared alongside him?",
+    "correctAnswer": "Elijah and Moses",
+    "incorrectAnswers": [
+      "Abraham and Isaiah",
+      "Enoch and Elijah",
+      "David and Samuel"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-135",
+    "question": "Roughly how many people did Jesus feed with just a few loaves of bread and fish?",
+    "correctAnswer": "5,000",
+    "incorrectAnswers": [
+      "1,000",
+      "3,000",
+      "10,000"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-136",
+    "question": "Jesus healed ten lepers, but only one came back to say thank you - how many were healed in total?",
+    "correctAnswer": "10",
+    "incorrectAnswers": [
+      "9",
+      "11",
+      "12"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-137",
+    "question": "At the Last Supper, Jesus did something surprisingly humble for his disciples - what was it?",
+    "correctAnswer": "Washed their feet",
+    "incorrectAnswers": [
+      "Anointed their heads with oil",
+      "Broke bread and fed each one",
+      "Prayed over each disciple individually"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-138",
+    "question": "At the home of Simon the leper, what did a woman pour on Jesus' feet?",
+    "correctAnswer": "Expensive perfume",
+    "incorrectAnswers": [
+      "Olive oil",
+      "Wine",
+      "Water mixed with myrrh"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-139",
+    "question": "After the Last Supper, Jesus went to pray in a garden - which one?",
+    "correctAnswer": "Garden of Gethsemane",
+    "incorrectAnswers": [
+      "Garden of Eden",
+      "Garden of Olives",
+      "Garden of Joseph"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-140",
+    "question": "When Pilate wanted to distance himself from Jesus' crucifixion, what symbolic act did he perform?",
+    "correctAnswer": "Washed his hands",
+    "incorrectAnswers": [
+      "Tore his robe",
+      "Offered a sacrifice",
+      "Released a prisoner"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-141",
+    "question": "When soldiers came to arrest Jesus, which disciple pulled out a sword and cut off a soldier's ear?",
+    "correctAnswer": "Peter",
+    "incorrectAnswers": [
+      "James",
+      "Thomas",
+      "Judas"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-142",
+    "question": "When the women arrived at Jesus' tomb on Easter morning, what had been moved away from the entrance?",
+    "correctAnswer": "A large stone",
+    "incorrectAnswers": [
+      "A wooden door",
+      "A Roman seal",
+      "An iron gate"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-143",
+    "question": "On which day of the week did Jesus rise from the dead?",
+    "correctAnswer": "Sunday",
+    "incorrectAnswers": [
+      "Friday",
+      "Saturday",
+      "Monday"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-144",
+    "question": "After his resurrection, Jesus appeared to many people - roughly how many witnesses saw him alive?",
+    "correctAnswer": "More than 500",
+    "incorrectAnswers": [
+      "About 12",
+      "About 70",
+      "About 120"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-145",
+    "question": "Who holds the heartbreaking honor of being the first Christian martyr - killed for his faith?",
+    "correctAnswer": "Stephen",
+    "incorrectAnswers": [
+      "James",
+      "Philip",
+      "Barnabas"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-146",
+    "question": "Saul was on his way to Damascus to persecute Christians when something dramatic happened - what was it?",
+    "correctAnswer": "Saw Jesus in a vision",
+    "incorrectAnswers": [
+      "He was struck by lightning",
+      "He was arrested by Roman soldiers",
+      "He was ambushed by thieves"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-147",
+    "question": "How many deacons were chosen to help the apostles distribute food to widows in the early church?",
+    "correctAnswer": "Seven",
+    "incorrectAnswers": [
+      "Five",
+      "Ten",
+      "Twelve"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-148",
+    "question": "Which evangelist brought the Gospel to the city of Samaria?",
+    "correctAnswer": "Philip",
+    "incorrectAnswers": [
+      "Peter",
+      "Barnabas",
+      "Stephen"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-149",
+    "question": "Which apostle met an Ethiopian official on the road to Gaza and shared the Gospel with him?",
+    "correctAnswer": "Philip",
+    "incorrectAnswers": [
+      "Andrew",
+      "Barnabas",
+      "Stephen"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-150",
+    "question": "When Peter was ministering in Joppa, whose house was he staying at?",
+    "correctAnswer": "Simon the Tanner",
+    "incorrectAnswers": [
+      "Cornelius",
+      "Lydia",
+      "Ananias"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-151",
+    "question": "After hearing the Gospel from Paul in prison, what did the Philippian jailer urgently ask him?",
+    "correctAnswer": "How can I be saved?",
+    "incorrectAnswers": [
+      "Are you the Son of God?",
+      "Why have you come here?",
+      "Will you pray for my family?"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-152",
+    "question": "The 10 Commandments appear in two books of the Bible - Deuteronomy 5 is one, but which is the other?",
+    "correctAnswer": "Exodus 20",
+    "incorrectAnswers": [
+      "Leviticus 19",
+      "Numbers 15",
+      "Joshua 8"
+    ],
+    "category": "Ten Commandments"
+  },
+  {
+    "id": "amen-triv-153",
+    "question": "God handed down the 10 Commandments to which great leader of Israel?",
+    "correctAnswer": "Moses",
+    "incorrectAnswers": [
+      "Aaron",
+      "Joshua",
+      "Elijah"
+    ],
+    "category": "Ten Commandments"
+  },
+  {
+    "id": "amen-triv-154",
+    "question": "Jesus boiled down all the Old Testament laws into just how many commandments?",
+    "correctAnswer": "Two",
+    "incorrectAnswers": [
+      "Three",
+      "Seven",
+      "Ten"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-155",
+    "question": "According to Jesus, what is the first and greatest commandment of all?",
+    "correctAnswer": "Love God wholeheartedly",
+    "incorrectAnswers": [
+      "Do not murder",
+      "Honor your father and mother",
+      "Love your neighbor as yourself"
+    ],
+    "category": "Ten Commandments"
+  },
+  {
+    "id": "amen-triv-156",
+    "question": "Paul lists the Fruit of the Spirit in his letter to the Galatians - but which chapter?",
+    "correctAnswer": "Galatians 5",
+    "incorrectAnswers": [
+      "Galatians 2",
+      "Galatians 3",
+      "Galatians 6"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-157",
+    "question": "Jesus taught his disciples how to pray with what we call the Lord's Prayer - where in the Bible can you find it?",
+    "correctAnswer": "Matthew 6",
+    "incorrectAnswers": [
+      "Luke 11",
+      "John 17",
+      "Mark 9"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-158",
+    "question": "God created Eve from which part of Adam's body?",
+    "correctAnswer": "Rib",
+    "incorrectAnswers": [
+      "Heel",
+      "Shoulder blade",
+      "Hand"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-159",
+    "question": "Which disciple denied knowing Jesus three times after his arrest?",
+    "correctAnswer": "Peter",
+    "incorrectAnswers": [
+      "Thomas",
+      "Judas",
+      "James"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-160",
+    "question": "Which crafty creature tempted Eve into eating the forbidden fruit in the Garden of Eden?",
+    "correctAnswer": "Serpent",
+    "incorrectAnswers": [
+      "Raven",
+      "Fox",
+      "Dove"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-161",
+    "question": "When soldiers crucified Jesus, what did they mockingly place on his head?",
+    "correctAnswer": "Crown of Thorns",
+    "incorrectAnswers": [
+      "Golden wreath",
+      "Purple turban",
+      "Iron helmet"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-162",
+    "question": "When God asked Cain where his brother Abel was, what did Cain do?",
+    "correctAnswer": "Lied to God",
+    "incorrectAnswers": [
+      "Wept bitterly",
+      "Confessed immediately",
+      "Fled the city"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-163",
+    "question": "Which Old Testament patriarch proved his faith by being willing to sacrifice his own son on an altar?",
+    "correctAnswer": "Abraham",
+    "incorrectAnswers": [
+      "Isaac",
+      "Jacob",
+      "Noah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-164",
+    "question": "What world-changing event is described in the opening chapters of Genesis?",
+    "correctAnswer": "Creation",
+    "incorrectAnswers": [
+      "The Great Flood",
+      "The Tower of Babel",
+      "The Fall of Man"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-165",
+    "question": "In the story of Noah and the flood, how many days and nights did the rain fall?",
+    "correctAnswer": "Forty",
+    "incorrectAnswers": [
+      "Seven",
+      "Twenty",
+      "One hundred"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-166",
+    "question": "Who traveled from afar to bring gifts to the young child Jesus?",
+    "correctAnswer": "Wise Men",
+    "incorrectAnswers": [
+      "Shepherds",
+      "Priests",
+      "Angels"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-167",
+    "question": "Besides the wise men, who else came to visit the newborn Jesus?",
+    "correctAnswer": "Shepherds",
+    "incorrectAnswers": [
+      "Pharisees",
+      "Roman soldiers",
+      "Priests"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-168",
+    "question": "Which mighty judge of Israel lied about the secret source of his incredible strength?",
+    "correctAnswer": "Samson",
+    "incorrectAnswers": [
+      "Gideon",
+      "Saul",
+      "David"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-169",
+    "question": "What was the name of Mary's fiance when she miraculously became pregnant with Jesus?",
+    "correctAnswer": "Joseph",
+    "incorrectAnswers": [
+      "Zechariah",
+      "Simeon",
+      "Joachim"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-170",
+    "question": "Which book of the Bible contains the many hymns and songs written by King David?",
+    "correctAnswer": "Psalms",
+    "incorrectAnswers": [
+      "Proverbs",
+      "Song of Solomon",
+      "Lamentations"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-171",
+    "question": "After Jesus cast out demons from a man, the evil spirits entered a herd of what animals and drowned in the sea?",
+    "correctAnswer": "Pigs",
+    "incorrectAnswers": [
+      "Horses",
+      "Sheep",
+      "Goats"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-172",
+    "question": "God called the prophet Jonah to deliver a message to which great city?",
+    "correctAnswer": "Nineveh",
+    "incorrectAnswers": [
+      "Babylon",
+      "Tyre",
+      "Damascus"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-173",
+    "question": "Joseph's brothers wanted him gone for good. What did they do to get rid of him?",
+    "correctAnswer": "Sold him into slavery",
+    "incorrectAnswers": [
+      "Banished him to the desert",
+      "Handed him to Pharaoh's guards",
+      "Sent him to live with relatives"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-174",
+    "question": "The Lord is my Shepherd is one of the most beloved lines in the Bible. Which Psalm does it open?",
+    "correctAnswer": "Psalm 23",
+    "incorrectAnswers": [
+      "Psalm 91",
+      "Psalm 119",
+      "Psalm 46"
+    ],
+    "category": "Psalms & Proverbs"
+  },
+  {
+    "id": "amen-triv-175",
+    "question": "This brave woman hid two Israelite spies and lied to authorities about their whereabouts. Who was she?",
+    "correctAnswer": "Rahab",
+    "incorrectAnswers": [
+      "Deborah",
+      "Jael",
+      "Tamar"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-176",
+    "question": "Whose habit of praying three times a day got him thrown into a den of hungry lions?",
+    "correctAnswer": "Daniel",
+    "incorrectAnswers": [
+      "Shadrach",
+      "Ezekiel",
+      "Nehemiah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-177",
+    "question": "Moses led the Israelites out of slavery in which country?",
+    "correctAnswer": "Egypt",
+    "incorrectAnswers": [
+      "Babylon",
+      "Assyria",
+      "Canaan"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-178",
+    "question": "Three of Daniel's friends were thrown into a fiery furnace, but a mysterious fourth figure appeared with them. Who was it?",
+    "correctAnswer": "An angel",
+    "incorrectAnswers": [
+      "Daniel",
+      "Moses",
+      "The Holy Spirit"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-179",
+    "question": "To cover up selling Joseph into slavery, his brothers tricked their father Jacob with a gruesome piece of evidence. What was it?",
+    "correctAnswer": "Bloodied coat",
+    "incorrectAnswers": [
+      "A torn sandal left at a cliff",
+      "A forged letter of farewell",
+      "Joseph's staff broken in two"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-180",
+    "question": "After realizing they were naked, Adam and Eve quickly made themselves some clothes. What kind of leaves did they use?",
+    "correctAnswer": "Fig",
+    "incorrectAnswers": [
+      "Olive",
+      "Palm",
+      "Cedar"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-181",
+    "question": "The people tried to build a tower to reach the heavens, and God scrambled their language to stop them. What was this tower called?",
+    "correctAnswer": "Tower of Babel",
+    "incorrectAnswers": [
+      "Tower of Siloam",
+      "Tower of Penuel",
+      "Tower of Jezreel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-182",
+    "question": "Jesus taught his disciples a famous prayer that Christians still recite today. What is it commonly called?",
+    "correctAnswer": "The Lord's Prayer",
+    "incorrectAnswers": [
+      "The Beatitudes",
+      "The Shema",
+      "The Priestly Blessing"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-183",
+    "question": "Potiphar's wife falsely accused Joseph of a serious crime that landed him in prison. What did she claim he did?",
+    "correctAnswer": "Tried to seduce her",
+    "incorrectAnswers": [
+      "Theft",
+      "Assault",
+      "Blasphemy"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-184",
+    "question": "God parted the waters so the Israelites could escape Pharaoh's army. Which sea did they cross?",
+    "correctAnswer": "Red Sea",
+    "incorrectAnswers": [
+      "Dead Sea",
+      "Sea of Galilee",
+      "Mediterranean Sea"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-185",
+    "question": "Jesus said it is harder for a rich man to enter the Kingdom of God than for what to happen?",
+    "correctAnswer": "Camel through a needle",
+    "incorrectAnswers": [
+      "A stone to float on water",
+      "The sun to rise in the west",
+      "A blind man to read the Torah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-186",
+    "question": "After leaving Egypt, how many years did the Israelites wander in the wilderness before reaching the Promised Land?",
+    "correctAnswer": "Forty years",
+    "incorrectAnswers": [
+      "Twenty years",
+      "Seventy years",
+      "Ten years"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-187",
+    "question": "After six days of creating the heavens and the earth, what did God do on the seventh day?",
+    "correctAnswer": "Rested",
+    "incorrectAnswers": [
+      "Created the angels",
+      "Blessed the animals",
+      "Walked through the garden"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-188",
+    "question": "On which special day did the apostles receive the Holy Spirit, with tongues of fire appearing above their heads?",
+    "correctAnswer": "Day of Pentecost",
+    "incorrectAnswers": [
+      "Day of Atonement",
+      "Feast of Tabernacles",
+      "Passover"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-189",
+    "question": "At the Last Supper, Jesus gave thanks and shared two things with his disciples. What were they?",
+    "correctAnswer": "Bread and wine",
+    "incorrectAnswers": [
+      "Fish and bread",
+      "Lamb and unleavened bread",
+      "Figs and water"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-190",
+    "question": "During his 40 days in the wilderness, Satan tempted Jesus to turn what objects into loaves of bread?",
+    "correctAnswer": "Stones",
+    "incorrectAnswers": [
+      "Sand",
+      "Bones",
+      "Sticks"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-191",
+    "question": "These two religious groups constantly tried to trap Jesus with tricky questions. Who were they?",
+    "correctAnswer": "Pharisees and Sadducees",
+    "incorrectAnswers": [
+      "Scribes and Zealots",
+      "Levites and Essenes",
+      "Priests and Elders"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-192",
+    "question": "God handed down the Ten Commandments to Moses on which mountain?",
+    "correctAnswer": "Mount Sinai",
+    "incorrectAnswers": [
+      "Mount Carmel",
+      "Mount Zion",
+      "Mount Nebo"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-193",
+    "question": "King Solomon had a clever way of figuring out which woman was a baby's real mother. What did he threaten to do?",
+    "correctAnswer": "Split the baby in two",
+    "incorrectAnswers": [
+      "Sell the child to the highest bidder",
+      "Cast lots to decide the mother",
+      "Banish both women until one confessed"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-194",
+    "question": "Abraham built an altar and was prepared to sacrifice his own son on it. Which son was it?",
+    "correctAnswer": "Isaac",
+    "incorrectAnswers": [
+      "Ishmael",
+      "Jacob",
+      "Esau"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-195",
+    "question": "When Jesus was 12, his parents accidentally left him behind in Jerusalem. Where did they eventually find him?",
+    "correctAnswer": "In the temple",
+    "incorrectAnswers": [
+      "At a marketplace",
+      "At a relative's home",
+      "By the city gates"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-196",
+    "question": "When the disciples spotted Jesus walking toward them on the water, what did they think he was?",
+    "correctAnswer": "A ghost",
+    "incorrectAnswers": [
+      "An angel",
+      "A prophet",
+      "A fisherman"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-197",
+    "question": "After dancing for King Herod, Salome asked for a shocking gift. What did she request?",
+    "correctAnswer": "John the Baptist's head",
+    "incorrectAnswers": [
+      "Half of Herod's kingdom",
+      "The release of a prisoner",
+      "A chest of gold and jewels"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-198",
+    "question": "After crucifying Jesus, the soldiers gambled over one of his belongings. What was it?",
+    "correctAnswer": "His seamless coat",
+    "incorrectAnswers": [
+      "His sandals",
+      "His belt",
+      "His headpiece"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-199",
+    "question": "According to James, what should you do if you find yourself lacking wisdom?",
+    "correctAnswer": "Ask God in faith",
+    "incorrectAnswers": [
+      "Fast for seven days",
+      "Seek counsel of elders",
+      "Study the Law of Moses"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-200",
+    "question": "Why did Elimelech pack up his family and move to the land of Moab?",
+    "correctAnswer": "Famine in his hometown",
+    "incorrectAnswers": [
+      "Fleeing from enemies",
+      "A divine calling",
+      "Seeking better land"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-201",
+    "question": "Which couple lied about the price of land they sold and both dropped dead as a result?",
+    "correctAnswer": "Ananias and Sapphira",
+    "incorrectAnswers": [
+      "Aquila and Priscilla",
+      "Zacharias and Elisabeth",
+      "Simon and his wife"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-202",
+    "question": "When the Prodigal Son came home, his father gave him a robe, shoes, and one more special gift. What was it?",
+    "correctAnswer": "A ring",
+    "incorrectAnswers": [
+      "A crown",
+      "A staff",
+      "A necklace"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-203",
+    "question": "After Jonah washed ashore and got back on his feet, where did God send him next?",
+    "correctAnswer": "Nineveh",
+    "incorrectAnswers": [
+      "Babylon",
+      "Tarshish",
+      "Jerusalem"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-204",
+    "question": "Esau was so hungry he made a shocking trade with his brother Jacob. What did he swap his birthright for?",
+    "correctAnswer": "A meal",
+    "incorrectAnswers": [
+      "A flock of sheep",
+      "A coat of fine linen",
+      "A bag of silver"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-205",
+    "question": "In the parable of the lost sheep, what does the shepherd do the moment he realizes one sheep is missing?",
+    "correctAnswer": "Searches for it",
+    "incorrectAnswers": [
+      "Mourns and moves on",
+      "Sends a servant to find it",
+      "Waits at home for its return"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-206",
+    "question": "Which disciple is infamous for betraying Jesus?",
+    "correctAnswer": "Judas Iscariot",
+    "incorrectAnswers": [
+      "Bartholomew",
+      "Simon the Zealot",
+      "Thomas"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-207",
+    "question": "While Moses was up on the mountain, the Israelites melted their gold and shaped it into what idol?",
+    "correctAnswer": "A golden calf",
+    "incorrectAnswers": [
+      "A golden serpent",
+      "A golden lion",
+      "A golden eagle"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-208",
+    "question": "God called a prophet to go preach in Nineveh, but that prophet tried to run away instead. Who was it?",
+    "correctAnswer": "Jonah",
+    "incorrectAnswers": [
+      "Elijah",
+      "Amos",
+      "Nahum"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-209",
+    "question": "Jesus loved teaching in short, memorable stories. What is the collective name for these stories?",
+    "correctAnswer": "Parables",
+    "incorrectAnswers": [
+      "Proverbs",
+      "Epistles",
+      "Psalms"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-210",
+    "question": "Jacob had a twin brother named Esau. What made Esau stand out the moment he was born?",
+    "correctAnswer": "He was red and hairy",
+    "incorrectAnswers": [
+      "He was born first and silent",
+      "He had a birthmark on his hand",
+      "He was unusually large"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-211",
+    "question": "In the parable of the Prodigal Son, how did the father react the moment he spotted his son coming down the road?",
+    "correctAnswer": "Ran out and embraced him",
+    "incorrectAnswers": [
+      "Sent a servant to meet him",
+      "Waited at the door in silence",
+      "Called the neighbors first"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-212",
+    "question": "Abraham and Sarah had a son together in their old age. What did they name him?",
+    "correctAnswer": "Isaac",
+    "incorrectAnswers": [
+      "Ishmael",
+      "Jacob",
+      "Esau"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-213",
+    "question": "Jacob had many sons, but he had a clear favorite. Which son did he love the most?",
+    "correctAnswer": "Joseph",
+    "incorrectAnswers": [
+      "Benjamin",
+      "Reuben",
+      "Levi"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-214",
+    "question": "According to Zechariah, which city will all nations one day travel to in order to worship God?",
+    "correctAnswer": "Jerusalem",
+    "incorrectAnswers": [
+      "Babylon",
+      "Bethlehem",
+      "Samaria"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-215",
+    "question": "When the Israelites were dying of thirst in the wilderness, how did God tell Moses to bring forth water?",
+    "correctAnswer": "Strike a rock",
+    "incorrectAnswers": [
+      "Pray over a river",
+      "Dig into the ground",
+      "Pour out a jar of oil"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-216",
+    "question": "Hannah was deeply provoked by Peninnah because of a painful personal struggle. What was it?",
+    "correctAnswer": "She was barren",
+    "incorrectAnswers": [
+      "She had no dowry",
+      "She was an outsider",
+      "Her husband loved her less"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-217",
+    "question": "In Jesus's parable, what happened to the foolish man who built his house on sand?",
+    "correctAnswer": "His house collapsed",
+    "incorrectAnswers": [
+      "His house was flooded but stood",
+      "His house was swept out to sea",
+      "His house sank slowly into the ground"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-218",
+    "question": "What was the family relationship between Mary, the mother of Jesus, and Elisabeth?",
+    "correctAnswer": "Cousins",
+    "incorrectAnswers": [
+      "Sisters",
+      "Aunt and niece",
+      "Sisters-in-law"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-219",
+    "question": "Jesus had some surprising advice about how to treat your enemies. What did he say to do?",
+    "correctAnswer": "Love and bless them",
+    "incorrectAnswers": [
+      "Pray for their repentance only",
+      "Avoid them and keep peace",
+      "Forgive them but keep your distance"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-220",
+    "question": "At Jesus's baptism, a voice came from heaven and said he was well pleased. Whose voice was it?",
+    "correctAnswer": "God the Father",
+    "incorrectAnswers": [
+      "The Holy Spirit",
+      "The angel Gabriel",
+      "John the Baptist"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-221",
+    "question": "Jacob sent his sons to Egypt for grain during the famine, but which son did he keep home?",
+    "correctAnswer": "Benjamin",
+    "incorrectAnswers": [
+      "Reuben",
+      "Simeon",
+      "Judah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-222",
+    "question": "In a bold move at night, what did Ruth do to Boaz while he was sleeping on the threshing floor?",
+    "correctAnswer": "Uncovered his feet",
+    "incorrectAnswers": [
+      "Anointed his head with oil",
+      "Placed a ring on his finger",
+      "Covered him with her cloak"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-223",
+    "question": "When Jesus dined at Simon the Pharisee's house, what did a woman do to show her devotion to him?",
+    "correctAnswer": "Washed and anointed his feet",
+    "incorrectAnswers": [
+      "Prepared a meal for him",
+      "Poured perfume on his head",
+      "Washed and dried his hands"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-224",
+    "question": "When God gave the law to Israel, what did he strictly command them not to do?",
+    "correctAnswer": "Worship other gods",
+    "incorrectAnswers": [
+      "Eat unclean animals",
+      "Work on the Sabbath",
+      "Marry foreign women"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-225",
+    "question": "Who outran King Ahab's chariot all the way from Mount Carmel to Jezreel?",
+    "correctAnswer": "Elijah",
+    "incorrectAnswers": [
+      "Elisha",
+      "Jehu",
+      "Gehazi"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-226",
+    "question": "Which disciple famously refused to believe in the resurrection until he could touch Jesus's nail wounds himself?",
+    "correctAnswer": "Thomas",
+    "incorrectAnswers": [
+      "Philip",
+      "Bartholomew",
+      "Judas Iscariot"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-227",
+    "question": "Which king had a dream about a towering statue made of different metals that left him deeply troubled?",
+    "correctAnswer": "Nebuchadnezzar",
+    "incorrectAnswers": [
+      "Belshazzar",
+      "Darius",
+      "Pharaoh"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-228",
+    "question": "When Jesus was baptized, what form did the Holy Spirit take as it descended on him?",
+    "correctAnswer": "Dove",
+    "incorrectAnswers": [
+      "Flame of fire",
+      "Rushing wind",
+      "Bright cloud"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-229",
+    "question": "Jesus said you can tell a tree by its what? Complete the saying!",
+    "correctAnswer": "Fruit",
+    "incorrectAnswers": [
+      "Roots",
+      "Leaves",
+      "Branches"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-230",
+    "question": "What was the very first miracle Jesus performed, turning a party crisis into a celebration at a wedding in Cana?",
+    "correctAnswer": "Water into wine",
+    "incorrectAnswers": [
+      "Healing a blind man",
+      "Multiplying loaves and fish",
+      "Calming a storm"
+    ],
+    "category": "Miracles"
+  },
+  {
+    "id": "amen-triv-231",
+    "question": "After stepping off the ark, what was the very first thing Noah built?",
+    "correctAnswer": "Altar",
+    "incorrectAnswers": [
+      "House",
+      "Tower",
+      "Well"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-232",
+    "question": "When Moses came down from the mountain and confronted Aaron about the golden calf, what was Aaron's wild excuse?",
+    "correctAnswer": "It came out of fire",
+    "incorrectAnswers": [
+      "The people made him do it",
+      "He was testing the people",
+      "He thought Moses was dead"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-233",
+    "question": "Saul was on his way to which city when a blinding light from heaven stopped him in his tracks?",
+    "correctAnswer": "Damascus",
+    "incorrectAnswers": [
+      "Jerusalem",
+      "Antioch",
+      "Jericho"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-234",
+    "question": "As the storm raged around Jonah's ship, what did the desperate sailors do to try to save themselves?",
+    "correctAnswer": "Threw the cargo overboard",
+    "incorrectAnswers": [
+      "Prayed to their gods",
+      "Lowered the sails",
+      "Rowed toward shore"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-235",
+    "question": "God told which man to pack up and leave his home for a land he had never seen?",
+    "correctAnswer": "Abraham",
+    "incorrectAnswers": [
+      "Isaac",
+      "Jacob",
+      "Moses"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-236",
+    "question": "When Jesus said what God has joined together let no man separate, what topic was he teaching on?",
+    "correctAnswer": "Marriage",
+    "incorrectAnswers": [
+      "Forgiveness",
+      "The Sabbath",
+      "Prayer"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-237",
+    "question": "In the Lord's Prayer, what line comes right after hallowed be thy name?",
+    "correctAnswer": "Thy kingdom come",
+    "incorrectAnswers": [
+      "Give us this day our daily bread",
+      "Forgive us our trespasses",
+      "Thy will be done"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-238",
+    "question": "When the storm was raging and the sailors were panicking, what was Jonah doing below deck?",
+    "correctAnswer": "Sleeping",
+    "incorrectAnswers": [
+      "Praying",
+      "Weeping",
+      "Eating"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-239",
+    "question": "In the parable of the ten virgins, five of them ran out of what essential supply?",
+    "correctAnswer": "Oil",
+    "incorrectAnswers": [
+      "Wine",
+      "Water",
+      "Bread"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-240",
+    "question": "Aaron's rod turned into a serpent before Pharaoh, and the magicians copied the trick - but what happened next?",
+    "correctAnswer": "Aaron's rod swallowed theirs",
+    "incorrectAnswers": [
+      "Their serpents turned back to rods",
+      "Their serpents fled the room",
+      "Aaron's rod turned back first"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-241",
+    "question": "Which angel showed up to deliver the incredible news to Mary that she would bear the Son of God?",
+    "correctAnswer": "Gabriel",
+    "incorrectAnswers": [
+      "Michael",
+      "Raphael",
+      "Uriel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-242",
+    "question": "In the parable of the ten virgins, who were all those bridesmaids waiting for?",
+    "correctAnswer": "The bridegroom",
+    "incorrectAnswers": [
+      "The bride",
+      "The wedding feast host",
+      "The master of the house"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-243",
+    "question": "What dramatic event shook the prison and freed Paul and Silas from their chains?",
+    "correctAnswer": "Earthquake",
+    "incorrectAnswers": [
+      "Thunderstorm",
+      "Angel visitation",
+      "Fire"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-244",
+    "question": "When Pilate asked the crowd which prisoner to release, who did they shout for?",
+    "correctAnswer": "Barabbas",
+    "incorrectAnswers": [
+      "Silas",
+      "Barjesus",
+      "Dysmas"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-245",
+    "question": "According to James, how should believers treat the rich and the poor differently?",
+    "correctAnswer": "Impartially, without favoritism",
+    "incorrectAnswers": [
+      "Honor the rich above the poor",
+      "Give more to the poor",
+      "Seat the rich at the altar"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-246",
+    "question": "When Jesus asked his disciples who they thought he was, what was Peter's famous reply?",
+    "correctAnswer": "The Christ",
+    "incorrectAnswers": [
+      "A prophet like Moses",
+      "The Son of David, King of Israel",
+      "Elijah returned from heaven"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-247",
+    "question": "When God appeared to Solomon in a dream and offered him anything he wanted, what did Solomon ask for?",
+    "correctAnswer": "Wisdom",
+    "incorrectAnswers": [
+      "Wealth",
+      "Long life",
+      "Victory over enemies"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-248",
+    "question": "Who said that anyone who does not receive the Kingdom of God like a little child will never enter it?",
+    "correctAnswer": "Jesus",
+    "incorrectAnswers": [
+      "John the Baptist",
+      "Peter",
+      "Paul"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-249",
+    "question": "What was the name of the sacred chest where the commandments given to Moses were kept?",
+    "correctAnswer": "Ark of the Covenant",
+    "incorrectAnswers": [
+      "Tabernacle of Moses",
+      "Holy of Holies",
+      "Mercy Seat"
+    ],
+    "category": "Ten Commandments"
+  },
+  {
+    "id": "amen-triv-250",
+    "question": "When accusers brought an adulteress before Jesus, what did he say to them before they could stone her?",
+    "correctAnswer": "Let the sinless cast first",
+    "incorrectAnswers": [
+      "Judge not, lest ye be judged",
+      "Go and sin no more",
+      "Love your neighbor as yourself"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-251",
+    "question": "According to James, what happens when we draw near to God?",
+    "correctAnswer": "He draws near to us",
+    "incorrectAnswers": [
+      "He tests us with trials",
+      "He grants us wisdom",
+      "He sends his angels to guard us"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-252",
+    "question": "In Jesus's parable, which plant starts as the smallest of all seeds but grows into the greatest of herbs?",
+    "correctAnswer": "Mustard",
+    "incorrectAnswers": [
+      "Fig",
+      "Hyssop",
+      "Sycamore"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-253",
+    "question": "In John's vision, which holy city descended from heaven adorned like a bride?",
+    "correctAnswer": "New Jerusalem",
+    "incorrectAnswers": [
+      "Bethlehem",
+      "Zion",
+      "Babylon"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-254",
+    "question": "In Capernaum, how did friends get a paralyzed man to Jesus when the crowd was too thick to get through the door?",
+    "correctAnswer": "Through the roof",
+    "incorrectAnswers": [
+      "Through a back window",
+      "By parting the crowd",
+      "By waiting until nightfall"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-255",
+    "question": "In Pharaoh's dream, what did the seven good ears of wheat and seven bad ears of wheat represent?",
+    "correctAnswer": "Seven years plenty, seven famine",
+    "incorrectAnswers": [
+      "Seven tribes blessed, seven cursed",
+      "Seven kings rising and falling",
+      "Seven plagues upon Egypt"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-256",
+    "question": "How many days was Jonah trapped inside the great fish?",
+    "correctAnswer": "Three days",
+    "incorrectAnswers": [
+      "Seven days",
+      "One day",
+      "Forty days"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-257",
+    "question": "Who told Joseph in a dream that Mary's son would save his people from their sins?",
+    "correctAnswer": "Angel of the Lord",
+    "incorrectAnswers": [
+      "The prophet Isaiah",
+      "Elizabeth",
+      "The Holy Spirit in a vision"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-258",
+    "question": "In the parable of the talents, where did the servant who received only one talent hide it?",
+    "correctAnswer": "In the ground",
+    "incorrectAnswers": [
+      "Under his bed",
+      "In the temple treasury",
+      "In a clay jar"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-259",
+    "question": "During the storm at sea, Jesus calmed the waves and then asked his disciples a pointed question. Who was he talking to?",
+    "correctAnswer": "The disciples",
+    "incorrectAnswers": [
+      "The Pharisees",
+      "The crowd on shore",
+      "Peter alone"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-260",
+    "question": "While Moses was up on the mountain receiving the Ten Commandments, what were the Israelites doing back at camp?",
+    "correctAnswer": "Worshipping a golden calf",
+    "incorrectAnswers": [
+      "Fighting among themselves",
+      "Building an altar to God",
+      "Crossing the Jordan River"
+    ],
+    "category": "Ten Commandments"
+  },
+  {
+    "id": "amen-triv-261",
+    "question": "After Daniel was caught praying by his open window, what punishment did his enemies arrange for him?",
+    "correctAnswer": "Thrown into the lion's den",
+    "incorrectAnswers": [
+      "Cast into a fiery furnace",
+      "Imprisoned in the palace dungeon",
+      "Exiled from Babylon"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-262",
+    "question": "When the people of Nineveh repented after hearing Jonah's message, how did Jonah feel about it?",
+    "correctAnswer": "Angry",
+    "incorrectAnswers": [
+      "Overjoyed",
+      "Humbled",
+      "Afraid"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-263",
+    "question": "An angel told Zacharias and Elizabeth they would have a son. What name were they told to give him?",
+    "correctAnswer": "John",
+    "incorrectAnswers": [
+      "Zacharias Jr.",
+      "Elijah",
+      "Samuel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-264",
+    "question": "Jesus said we must receive the Kingdom of God in a specific way to enter it. How?",
+    "correctAnswer": "As a little child",
+    "incorrectAnswers": [
+      "With fasting and prayer",
+      "Through repentance and sacrifice",
+      "With a humble and contrite heart"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-265",
+    "question": "In Revelation, what happened to anyone whose name was not found written in the Book of Life?",
+    "correctAnswer": "Lake of fire",
+    "incorrectAnswers": [
+      "Banished to outer darkness",
+      "Thrown into the abyss",
+      "Separated from God forever"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-266",
+    "question": "In the Sermon on the Mount, what does Jesus say we should do about tomorrow?",
+    "correctAnswer": "Do not worry about it",
+    "incorrectAnswers": [
+      "Plan carefully for it",
+      "Pray about it each morning",
+      "Trust your leaders to provide"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-267",
+    "question": "When Joseph set up his brothers, what sneaky items did he have hidden in Benjamin's sack?",
+    "correctAnswer": "Silver cup and grain money",
+    "incorrectAnswers": [
+      "A golden ring",
+      "A written scroll",
+      "His coat of many colors"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-268",
+    "question": "What did Paul do to the fortune-telling slave girl that made her owners furious?",
+    "correctAnswer": "Cast out the spirit",
+    "incorrectAnswers": [
+      "Freed her from slavery",
+      "Reported her to the magistrates",
+      "Destroyed her earnings"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-269",
+    "question": "What was the name of the place where Jesus was crucified?",
+    "correctAnswer": "Golgotha",
+    "incorrectAnswers": [
+      "Gethsemane",
+      "Bethlehem",
+      "Mount Sinai"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-270",
+    "question": "Fill in the blank from this classic psalm of praise: 'O give thanks unto the Lord; for he is good: for his _____ endureth for ever.'",
+    "correctAnswer": "Mercy",
+    "incorrectAnswers": [
+      "Glory",
+      "Grace",
+      "Power"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-271",
+    "question": "After blowing through his inheritance, what humbling job did the Prodigal Son end up doing?",
+    "correctAnswer": "Feeding pigs",
+    "incorrectAnswers": [
+      "Harvesting grain",
+      "Tending sheep",
+      "Drawing water"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-272",
+    "question": "When Jesus met the Samaritan woman at the well, what kind of water did he offer her?",
+    "correctAnswer": "Living water",
+    "incorrectAnswers": [
+      "Holy water",
+      "Healing water",
+      "Eternal rain"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-273",
+    "question": "What is the name of Jesus' cousin who was born just six months before him?",
+    "correctAnswer": "John",
+    "incorrectAnswers": [
+      "James",
+      "Simeon",
+      "Zacharias"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-274",
+    "question": "Who tricked Jacob into marrying Leah instead of the woman he actually loved, Rachel?",
+    "correctAnswer": "Laban",
+    "incorrectAnswers": [
+      "Esau",
+      "Reuben",
+      "Bethuel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-275",
+    "question": "What animals did Jesus send his disciples to fetch before his triumphal entry into Jerusalem?",
+    "correctAnswer": "Donkey and colt",
+    "incorrectAnswers": [
+      "Two white horses",
+      "A camel",
+      "A young ox"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-276",
+    "question": "In the parable of the lost sheep, how many sheep were already safe when the shepherd went searching?",
+    "correctAnswer": "Ninety-nine",
+    "incorrectAnswers": [
+      "Forty-nine",
+      "Seventy-seven",
+      "One hundred"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-277",
+    "question": "According to James, what phrase should we include when making plans for the future?",
+    "correctAnswer": "If the Lord wills",
+    "incorrectAnswers": [
+      "As God commands",
+      "Praise be to God",
+      "In Jesus' name"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-278",
+    "question": "What type of coins did Judas receive as payment for betraying Jesus?",
+    "correctAnswer": "Silver coins",
+    "incorrectAnswers": [
+      "Gold coins",
+      "Bronze coins",
+      "Copper coins"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-279",
+    "question": "In Paul's letter to Philemon, what was Paul asking Philemon to do?",
+    "correctAnswer": "Receive Onesimus as a brother",
+    "incorrectAnswers": [
+      "Forgive a financial debt",
+      "Release a prisoner",
+      "Fund a missionary journey"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-280",
+    "question": "Which Old Testament prophet foretold that a virgin would conceive and bear a son?",
+    "correctAnswer": "Isaiah",
+    "incorrectAnswers": [
+      "Jeremiah",
+      "Micah",
+      "Ezekiel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-281",
+    "question": "When Naomi returned to Bethlehem after great loss, what name did she ask the townspeople to call her?",
+    "correctAnswer": "Mara",
+    "incorrectAnswers": [
+      "Miriam",
+      "Abigail",
+      "Deborah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-282",
+    "question": "When Jesus warned his disciples about the leaven of the Pharisees and Sadducees, what did he actually mean?",
+    "correctAnswer": "Their false doctrines",
+    "incorrectAnswers": [
+      "Their unleavened bread",
+      "Their corrupt offerings",
+      "Their ritual hand-washing"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-283",
+    "question": "How did God protect Daniel from being eaten alive in the lions' den?",
+    "correctAnswer": "Shut the lions' mouths",
+    "incorrectAnswers": [
+      "The lions were already fed",
+      "God made Daniel invisible",
+      "The lions fell into a deep sleep"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-284",
+    "question": "According to Proverbs, everyone who is proud in heart is what to the Lord?",
+    "correctAnswer": "An abomination",
+    "incorrectAnswers": [
+      "A stumbling block",
+      "A lost sheep",
+      "A fool"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-285",
+    "question": "What famous declaration did John the Baptist make when he first saw Jesus approaching?",
+    "correctAnswer": "Behold the Lamb of God",
+    "incorrectAnswers": [
+      "This is the Son of David",
+      "The Kingdom of Heaven is at hand",
+      "Repent and be baptized"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-286",
+    "question": "When Jonah finally delivered God's warning to Nineveh, how did the city respond?",
+    "correctAnswer": "They repented",
+    "incorrectAnswers": [
+      "They attacked Jonah",
+      "They ignored the message",
+      "They expelled Jonah from the city"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-287",
+    "question": "While hanging on the cross, who asked Jesus to remember him when he entered his kingdom?",
+    "correctAnswer": "The criminal beside him",
+    "incorrectAnswers": [
+      "Mary Magdalene",
+      "Simon of Cyrene",
+      "A Roman soldier"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-288",
+    "question": "What specific tree was off-limits for Adam and Eve to eat from in the Garden of Eden?",
+    "correctAnswer": "Tree of knowledge",
+    "incorrectAnswers": [
+      "Tree of life",
+      "Tree of wisdom",
+      "Tree of eternal fruit"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-289",
+    "question": "In the Garden of Gethsemane, who told Peter to watch and pray so he would not fall into temptation?",
+    "correctAnswer": "Jesus",
+    "incorrectAnswers": [
+      "An angel",
+      "James",
+      "John"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-290",
+    "question": "In his letter to the Colossians, what does Paul specifically command husbands to do?",
+    "correctAnswer": "Love your wives",
+    "incorrectAnswers": [
+      "Provide for your household",
+      "Lead your family in prayer",
+      "Honor your wife above all others"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-291",
+    "question": "Which river did the prophet Elisha tell Naaman to wash in seven times to be healed of leprosy?",
+    "correctAnswer": "Jordan",
+    "incorrectAnswers": [
+      "Euphrates",
+      "Nile",
+      "Abana"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-292",
+    "question": "Jesus said 'It is I, be not afraid' right after performing which miracle?",
+    "correctAnswer": "Walking on water",
+    "incorrectAnswers": [
+      "Feeding the 5,000",
+      "Raising Lazarus",
+      "Turning water into wine"
+    ],
+    "category": "Miracles"
+  },
+  {
+    "id": "amen-triv-293",
+    "question": "What led Solomon to turn away from God in his old age?",
+    "correctAnswer": "His foreign wives",
+    "incorrectAnswers": [
+      "His great wealth",
+      "His failing health",
+      "His son Rehoboam"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-294",
+    "question": "Every single verse in Psalm 136 ends with the same phrase - what is it?",
+    "correctAnswer": "His mercy endures forever",
+    "incorrectAnswers": [
+      "Praise the Lord on high",
+      "He is God alone",
+      "His name is holy"
+    ],
+    "category": "Psalms & Proverbs"
+  },
+  {
+    "id": "amen-triv-295",
+    "question": "In which city did Jesus grow up as a child?",
+    "correctAnswer": "Nazareth",
+    "incorrectAnswers": [
+      "Bethlehem",
+      "Capernaum",
+      "Jerusalem"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-296",
+    "question": "Which female judge in Israel called herself 'a mother in Israel'?",
+    "correctAnswer": "Deborah",
+    "incorrectAnswers": [
+      "Jael",
+      "Miriam",
+      "Esther"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-297",
+    "question": "After the angels announced Jesus's birth and departed, what did the shepherds do next?",
+    "correctAnswer": "Rushed to Bethlehem",
+    "incorrectAnswers": [
+      "Fell asleep in the fields",
+      "Told the nearby villagers",
+      "Offered sacrifices to God"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-298",
+    "question": "Who discovered baby Moses floating in the Nile in a basket of bulrushes?",
+    "correctAnswer": "Pharaoh's daughter",
+    "incorrectAnswers": [
+      "Pharaoh's wife",
+      "A Hebrew midwife",
+      "An Egyptian soldier"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-299",
+    "question": "Why were Shadrach, Meshach, and Abednego thrown into the fiery furnace?",
+    "correctAnswer": "Refused to bow",
+    "incorrectAnswers": [
+      "They prayed to God openly",
+      "They refused to eat the king's food",
+      "They helped Hebrew prisoners escape"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-300",
+    "question": "Jesus healed ten lepers, but how many actually came back to thank him?",
+    "correctAnswer": "One",
+    "incorrectAnswers": [
+      "Three",
+      "Five",
+      "None"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-301",
+    "question": "When Jesus drove out the sellers in the temple, what did he say they had turned his house of prayer into?",
+    "correctAnswer": "A den of thieves",
+    "incorrectAnswers": [
+      "A marketplace",
+      "A house of idols",
+      "A place of corruption"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-302",
+    "question": "In the New Jerusalem, where are the names of the twelve tribes of Israel written?",
+    "correctAnswer": "The twelve gates",
+    "incorrectAnswers": [
+      "On the twelve foundations",
+      "On the walls",
+      "On the altar"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-303",
+    "question": "Which tribe of Israel was set apart to handle the religious duties and care for the tabernacle?",
+    "correctAnswer": "Levi",
+    "incorrectAnswers": [
+      "Judah",
+      "Benjamin",
+      "Reuben"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-304",
+    "question": "Where was Paul when he wrote his letter to Philemon?",
+    "correctAnswer": "In prison",
+    "incorrectAnswers": [
+      "In Corinth",
+      "In Antioch",
+      "In Rome as a free man"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-305",
+    "question": "Who famously preached 'Repent, for the kingdom of heaven is at hand'?",
+    "correctAnswer": "John the Baptist",
+    "incorrectAnswers": [
+      "Isaiah",
+      "Peter",
+      "Stephen"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-306",
+    "question": "What bird did God send to feed the Israelites with meat while they wandered in the wilderness?",
+    "correctAnswer": "Quail",
+    "incorrectAnswers": [
+      "Dove",
+      "Raven",
+      "Sparrow"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-307",
+    "question": "Who wrote the beloved opening line 'The Lord is my shepherd, I shall not want'?",
+    "correctAnswer": "David",
+    "incorrectAnswers": [
+      "Solomon",
+      "Asaph",
+      "Moses"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-308",
+    "question": "Jesus prayed that whose faith would not fail during the night of his betrayal?",
+    "correctAnswer": "Peter",
+    "incorrectAnswers": [
+      "John",
+      "James",
+      "Andrew"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-309",
+    "question": "What new name was Daniel given by his Babylonian captors?",
+    "correctAnswer": "Belteshazzar",
+    "incorrectAnswers": [
+      "Shadrach",
+      "Abednego",
+      "Arioch"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-310",
+    "question": "Who proclaimed 'Glory to God in the highest, and on earth peace, goodwill to men' at Jesus's birth?",
+    "correctAnswer": "Angels",
+    "incorrectAnswers": [
+      "The shepherds",
+      "The wise men",
+      "Simeon"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-311",
+    "question": "In which book of the Bible does the story of Noah's ark appear?",
+    "correctAnswer": "Genesis",
+    "incorrectAnswers": [
+      "Exodus",
+      "Numbers",
+      "Deuteronomy"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-312",
+    "question": "When God called young Samuel in the night, who did Samuel think was calling him?",
+    "correctAnswer": "Eli the priest",
+    "incorrectAnswers": [
+      "His mother Hannah",
+      "His father Elkanah",
+      "The prophet Nathan"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-313",
+    "question": "Jesus told which nighttime visitor that one must be born again to see the kingdom of God?",
+    "correctAnswer": "Nicodemus",
+    "incorrectAnswers": [
+      "Joseph of Arimathea",
+      "Zacchaeus",
+      "The rich young ruler"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-314",
+    "question": "Whose mother was told by an angel to avoid wine and strong drink during her pregnancy?",
+    "correctAnswer": "Samson's",
+    "incorrectAnswers": [
+      "Samuel's",
+      "John the Baptist's",
+      "Isaac's"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-315",
+    "question": "What was the name of the woman who hid the Israelite spies in Jericho?",
+    "correctAnswer": "Rahab",
+    "incorrectAnswers": [
+      "Deborah",
+      "Tamar",
+      "Abigail"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-316",
+    "question": "In Paul's second letter to the Corinthians, who does he say is a new creature?",
+    "correctAnswer": "Anyone in Christ",
+    "incorrectAnswers": [
+      "The baptized believer",
+      "The repentant sinner",
+      "The chosen apostle"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-317",
+    "question": "Which prophet prayed earnestly for no rain — and God actually answered?",
+    "correctAnswer": "Elijah",
+    "incorrectAnswers": [
+      "Elisha",
+      "Isaiah",
+      "Jeremiah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-318",
+    "question": "According to 1 Thessalonians, what will happen to believers who are still alive when Christ returns?",
+    "correctAnswer": "Caught up in the clouds",
+    "incorrectAnswers": [
+      "Transformed on the earth",
+      "Taken into the sea",
+      "Gathered in Jerusalem"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-319",
+    "question": "How did the Philistines finally crack the answer to Samson's riddle?",
+    "correctAnswer": "They threatened his bride",
+    "incorrectAnswers": [
+      "They bribed a servant",
+      "They spied on Samson",
+      "They consulted a prophet"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-320",
+    "question": "When Jesus approached the demon-possessed man, who cried out, asking Jesus not to torment him?",
+    "correctAnswer": "Legion",
+    "incorrectAnswers": [
+      "Beelzebub",
+      "Apollyon",
+      "The Gadarene elders"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-321",
+    "question": "Why did Jacob pack up his whole family and move to Egypt?",
+    "correctAnswer": "Famine in Canaan",
+    "incorrectAnswers": [
+      "War with the Philistines",
+      "Flooding of the Jordan",
+      "A divine command to leave"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-322",
+    "question": "Which of Solomon's sons took over the throne after him?",
+    "correctAnswer": "Rehoboam",
+    "incorrectAnswers": [
+      "Jeroboam",
+      "Absalom",
+      "Adonijah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-323",
+    "question": "After the Sermon on the Mount, how did the crowd describe Jesus as a teacher?",
+    "correctAnswer": "One who taught with authority",
+    "incorrectAnswers": [
+      "A scribe of the Pharisees",
+      "A gentle storyteller",
+      "A student of Moses"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-324",
+    "question": "According to James, what does faith need in order to truly be alive?",
+    "correctAnswer": "Works",
+    "incorrectAnswers": [
+      "Prayer",
+      "Fasting",
+      "Sacrifice"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-325",
+    "question": "Jesus said if someone asks you to walk one mile with them, what should you do?",
+    "correctAnswer": "Go two miles",
+    "incorrectAnswers": [
+      "Carry their burden home",
+      "Pray for them instead",
+      "Offer them food"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-326",
+    "question": "In the parable of the mustard seed, once it grows into a tree, what do the birds come and do in its branches?",
+    "correctAnswer": "Build nests",
+    "incorrectAnswers": [
+      "Sing praises",
+      "Find shade",
+      "Eat its fruit"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-327",
+    "question": "The field Judas bought with his betrayal money had a nickname — what was it?",
+    "correctAnswer": "Field of Blood",
+    "incorrectAnswers": [
+      "Potter's Field",
+      "Valley of Hinnom",
+      "Field of Sorrow"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-328",
+    "question": "Jesus prayed a prayer of thanks to God before raising which man from the dead?",
+    "correctAnswer": "Lazarus",
+    "incorrectAnswers": [
+      "Jairus's daughter",
+      "The widow's son",
+      "Eutychus"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-329",
+    "question": "According to James, if you break even one commandment of the law, what does that make you?",
+    "correctAnswer": "Guilty of all",
+    "incorrectAnswers": [
+      "Guilty of one sin only",
+      "In need of a new covenant",
+      "Unworthy of prayer"
+    ],
+    "category": "Ten Commandments"
+  },
+  {
+    "id": "amen-triv-330",
+    "question": "Proverbs tells the lazy person to go study which creature and learn wisdom from its ways?",
+    "correctAnswer": "Ant",
+    "incorrectAnswers": [
+      "Bee",
+      "Ox",
+      "Sparrow"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-331",
+    "question": "How did the wise men know a new King of the Jews had been born?",
+    "correctAnswer": "A star in the east",
+    "incorrectAnswers": [
+      "An angel appeared to them",
+      "They read a prophecy scroll",
+      "A dream led them to Bethlehem"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-332",
+    "question": "What challenge did Elijah give the prophets of Baal that they completely failed at, exposing their god as powerless?",
+    "correctAnswer": "Call down fire",
+    "incorrectAnswers": [
+      "Parting the Jordan River",
+      "Healing a leper",
+      "Raising someone from the dead"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-333",
+    "question": "Which tax collector climbed a tree just to catch a glimpse of Jesus passing by?",
+    "correctAnswer": "Zacchaeus",
+    "incorrectAnswers": [
+      "Matthew",
+      "Levi",
+      "Bartimaeus"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-334",
+    "question": "God told Rebekah that the two babies in her womb would become two what?",
+    "correctAnswer": "Nations",
+    "incorrectAnswers": [
+      "Tribes",
+      "Kingdoms",
+      "Armies"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-335",
+    "question": "When someone asked Jesus, who is my neighbor? which parable did Jesus tell in response?",
+    "correctAnswer": "The Good Samaritan",
+    "incorrectAnswers": [
+      "The Prodigal Son",
+      "The Lost Sheep",
+      "The Ten Virgins"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-336",
+    "question": "Jesus said that anyone who puts his hand to the plow and looks back is not fit for what?",
+    "correctAnswer": "The Kingdom of God",
+    "incorrectAnswers": [
+      "The priesthood",
+      "Eternal life",
+      "The covenant of Abraham"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-337",
+    "question": "After Samson found out his bride had been given away, what did he do to the Philistines' crops?",
+    "correctAnswer": "Burned them",
+    "incorrectAnswers": [
+      "Flooded them",
+      "Salted the fields",
+      "Trampled them with oxen"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-338",
+    "question": "When Jesus taught the Lord's Prayer, who was his audience?",
+    "correctAnswer": "His disciples",
+    "incorrectAnswers": [
+      "The Pharisees",
+      "A crowd of thousands",
+      "The chief priests"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-339",
+    "question": "Ananias and Sapphira secretly held back money from a property sale they claimed to give fully. What happened to them?",
+    "correctAnswer": "They both died",
+    "incorrectAnswers": [
+      "They were exiled from the church",
+      "They were struck blind",
+      "They were handed over to the Romans"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-340",
+    "question": "Jesus said even King Solomon in all his glory couldn't match the beauty of which flower?",
+    "correctAnswer": "Lilies of the field",
+    "incorrectAnswers": [
+      "Roses of Sharon",
+      "Cedar blossoms",
+      "Hyssop flowers"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-341",
+    "question": "What was sitting on top of the Ark of the Covenant?",
+    "correctAnswer": "Mercy seat and two cherubim",
+    "incorrectAnswers": [
+      "The stone tablets of the law",
+      "A golden lampstand",
+      "Aaron's budding staff"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-342",
+    "question": "In the book of Revelation, how long was the dragon locked away in the bottomless pit?",
+    "correctAnswer": "1,000 years",
+    "incorrectAnswers": [
+      "500 years",
+      "7 years",
+      "40 years"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-343",
+    "question": "For how many pieces of silver did Judas agree to betray Jesus?",
+    "correctAnswer": "Thirty",
+    "incorrectAnswers": [
+      "Twenty",
+      "Fifty",
+      "One hundred"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-344",
+    "question": "In his farewell words to the disciples, what did Jesus say he would leave with them?",
+    "correctAnswer": "Peace",
+    "incorrectAnswers": [
+      "Joy",
+      "Power",
+      "The Holy Spirit"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-345",
+    "question": "In his letter to Philemon, what personal favor did Paul ask him to prepare?",
+    "correctAnswer": "A guest room",
+    "incorrectAnswers": [
+      "A meal",
+      "A horse",
+      "A money offering"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-346",
+    "question": "When Joseph first met his brothers in Egypt, what did he accuse them of being?",
+    "correctAnswer": "Spies",
+    "incorrectAnswers": [
+      "Thieves",
+      "Liars",
+      "Enemies"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-347",
+    "question": "During the horrific Babylonian siege of Jerusalem, what desperate act did some women commit against their own children?",
+    "correctAnswer": "Boiled and ate them",
+    "incorrectAnswers": [
+      "Sold them into slavery",
+      "Abandoned them at the gates",
+      "Sacrificed them to idols"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-348",
+    "question": "When the Pharisees tried to trap Jesus over paying taxes to Caesar, what everyday object did he use to make his point?",
+    "correctAnswer": "A denarius",
+    "incorrectAnswers": [
+      "A gold talent",
+      "A shekel",
+      "A signet ring"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-349",
+    "question": "When Philip and the Ethiopian eunuch came across some water, what did the eunuch immediately ask?",
+    "correctAnswer": "Can I be baptized?",
+    "incorrectAnswers": [
+      "Can we rest here a while?",
+      "Will you pray for me?",
+      "Is this water from God?"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-350",
+    "question": "Who greeted Mary with the words: Blessed are you among women, and blessed is the fruit of your womb?",
+    "correctAnswer": "Elisabeth",
+    "incorrectAnswers": [
+      "Anna",
+      "Mary Magdalene",
+      "Salome"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-351",
+    "question": "In Pharaoh's famous dream, seven fat and seven thin of what animal came up out of the Nile?",
+    "correctAnswer": "Cows",
+    "incorrectAnswers": [
+      "Sheep",
+      "Horses",
+      "Goats"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-352",
+    "question": "How old was Sarah when she gave birth to her son Isaac?",
+    "correctAnswer": "Ninety",
+    "incorrectAnswers": [
+      "Seventy",
+      "One hundred",
+      "Eighty"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-353",
+    "question": "After King Saul failed God, who was anointed as the next king of Israel?",
+    "correctAnswer": "David",
+    "incorrectAnswers": [
+      "Solomon",
+      "Jonathan",
+      "Samuel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-354",
+    "question": "What kind of tree did the short tax collector Zacchaeus climb just to catch a glimpse of Jesus?",
+    "correctAnswer": "Sycamore",
+    "incorrectAnswers": [
+      "Fig",
+      "Olive",
+      "Cedar"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-355",
+    "question": "When Jesus forgave the sins of the paralyzed man lowered through the roof, why were the Pharisees outraged?",
+    "correctAnswer": "Only God can forgive sins",
+    "incorrectAnswers": [
+      "Jesus healed on the Sabbath",
+      "The man was a known sinner",
+      "Jesus ignored the temple priests"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-356",
+    "question": "After Solomon's reign, Israel split in two. What was the southern kingdom called?",
+    "correctAnswer": "Judah",
+    "incorrectAnswers": [
+      "Samaria",
+      "Edom",
+      "Benjamin"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-357",
+    "question": "After Judas Iscariot betrayed Jesus and died, who was chosen to take his place among the twelve?",
+    "correctAnswer": "Matthias",
+    "incorrectAnswers": [
+      "Barnabas",
+      "Stephen",
+      "Silas"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-358",
+    "question": "In which book of the Bible does the villain Haman, son of Hammedatha, appear?",
+    "correctAnswer": "Esther",
+    "incorrectAnswers": [
+      "Daniel",
+      "Nehemiah",
+      "Ezra"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-359",
+    "question": "Baby Jesus and his parents stayed in Egypt until what event allowed them to return home?",
+    "correctAnswer": "Death of Herod the Great",
+    "incorrectAnswers": [
+      "A vision told them to leave",
+      "The Roman census ended",
+      "An angel appeared in the temple"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-360",
+    "question": "In the parable of the sower, what does the seed scattered on the ground represent?",
+    "correctAnswer": "The Word of God",
+    "incorrectAnswers": [
+      "Faith",
+      "The Kingdom of Heaven",
+      "Prayer"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-361",
+    "question": "What was the very first plague God sent upon Egypt?",
+    "correctAnswer": "Water turned to blood",
+    "incorrectAnswers": [
+      "Frogs",
+      "Locusts",
+      "Darkness"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-362",
+    "question": "When parents brought their young children to Jesus, what did the disciples do?",
+    "correctAnswer": "Rebuked them",
+    "incorrectAnswers": [
+      "Welcomed them warmly",
+      "Asked Jesus to bless them",
+      "Led them away gently"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-363",
+    "question": "According to Jesus, who are the two most important people we should love above all others?",
+    "correctAnswer": "God and your neighbor",
+    "incorrectAnswers": [
+      "Parents and children",
+      "Friends and enemies",
+      "Yourself and your family"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-364",
+    "question": "What significant event happened to Jesus on the eighth day of his life?",
+    "correctAnswer": "He was circumcised",
+    "incorrectAnswers": [
+      "He was presented at the temple",
+      "He was named by an angel",
+      "He was visited by the Magi"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-365",
+    "question": "While men were stoning Stephen to death, whose job was it to watch over their coats?",
+    "correctAnswer": "Saul",
+    "incorrectAnswers": [
+      "Barnabas",
+      "Ananias",
+      "Philip"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-366",
+    "question": "What was the trade of Zebedee, the father of disciples James and John?",
+    "correctAnswer": "Fisherman",
+    "incorrectAnswers": [
+      "Carpenter",
+      "Tax collector",
+      "Tentmaker"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-367",
+    "question": "God told Abraham to sacrifice his son Isaac in a specific land. Which land was it?",
+    "correctAnswer": "Moriah",
+    "incorrectAnswers": [
+      "Canaan",
+      "Goshen",
+      "Midian"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-368",
+    "question": "In Revelation, what was the bride of the Lamb wearing at the great wedding feast?",
+    "correctAnswer": "Fine white linen",
+    "incorrectAnswers": [
+      "Purple and scarlet",
+      "Golden robes",
+      "Sackcloth and ashes"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-369",
+    "question": "Jesus told Peter to catch a fish to pay the temple tax. Where was the coin hidden?",
+    "correctAnswer": "In a fish's mouth",
+    "incorrectAnswers": [
+      "Under a rock",
+      "In a clay jar",
+      "Inside a loaf of bread"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-370",
+    "question": "In Nebuchadnezzar's famous dream, what did the different metals of the giant statue represent?",
+    "correctAnswer": "Kingdoms of the world",
+    "incorrectAnswers": [
+      "The tribes of Israel",
+      "Angels and demons",
+      "The ages of creation"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-371",
+    "question": "After Jonah was thrown overboard and the storm stopped, what did the ship's crew do?",
+    "correctAnswer": "Made sacrifices to God",
+    "incorrectAnswers": [
+      "Sailed back to Nineveh",
+      "Threw their cargo overboard",
+      "Returned to port in Joppa"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-372",
+    "question": "According to Proverbs, the name of the Lord is like what kind of place of safety?",
+    "correctAnswer": "A strong tower",
+    "incorrectAnswers": [
+      "A mighty fortress",
+      "A deep river",
+      "A sheltered valley"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-373",
+    "question": "When the Pharisees questioned Jesus about eating with sinners, what did he say about who needs a physician?",
+    "correctAnswer": "The sick need a doctor",
+    "incorrectAnswers": [
+      "All people are sick with sin",
+      "The blind need a guide, not the seeing",
+      "The lost sheep need a shepherd"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-374",
+    "question": "How did Moses part the Red Sea so the Israelites could cross to safety?",
+    "correctAnswer": "Stretched out his staff",
+    "incorrectAnswers": [
+      "Prayed on his knees at the water's edge",
+      "Struck the water three times with his staff",
+      "Blew a trumpet over the waves"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-375",
+    "question": "Where exactly was Jonah when he prayed to God with a voice of thanksgiving?",
+    "correctAnswer": "Inside the fish's belly",
+    "incorrectAnswers": [
+      "On the shore of Nineveh",
+      "At the bottom of the sea",
+      "On the deck of the ship"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-376",
+    "question": "During the great drought, who delivered bread and meat to Elijah each day?",
+    "correctAnswer": "Ravens",
+    "incorrectAnswers": [
+      "Angels",
+      "Doves",
+      "A widow from Zarephath"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-377",
+    "question": "Jesus said you are worth more than which common bird when talking about God's care for us?",
+    "correctAnswer": "Sparrow",
+    "incorrectAnswers": [
+      "Dove",
+      "Raven",
+      "Swallow"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-378",
+    "question": "What amazing event did Peter, James, and John witness when they went up a mountain with Jesus?",
+    "correctAnswer": "The Transfiguration",
+    "incorrectAnswers": [
+      "The Ascension",
+      "The Baptism of Jesus",
+      "The feeding of the five thousand"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-379",
+    "question": "Revelation chapter 18 dramatically describes the fall and desolation of which great city?",
+    "correctAnswer": "Babylon",
+    "incorrectAnswers": [
+      "Jerusalem",
+      "Rome",
+      "Nineveh"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-380",
+    "question": "Which Old Testament king built the very first temple in Jerusalem?",
+    "correctAnswer": "Solomon",
+    "incorrectAnswers": [
+      "David",
+      "Hezekiah",
+      "Josiah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-381",
+    "question": "After the jailer discovered Paul and Silas miraculously freed from their chains, what did he and his family do?",
+    "correctAnswer": "Believed and were baptized",
+    "incorrectAnswers": [
+      "Fled the city in fear",
+      "Reported it to the Roman authorities",
+      "Offered Paul and Silas a place to stay"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-382",
+    "question": "When Abram and Sarai first arrived in the land of Canaan, what disaster struck the land?",
+    "correctAnswer": "A famine",
+    "incorrectAnswers": [
+      "A great flood",
+      "A plague of locusts",
+      "An earthquake"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-383",
+    "question": "Paul praised which young disciple for sharing the same genuine faith as his mother?",
+    "correctAnswer": "Timothy",
+    "incorrectAnswers": [
+      "Titus",
+      "Silas",
+      "Mark"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-384",
+    "question": "After visiting the baby Jesus in Bethlehem, what did the shepherds do when they left?",
+    "correctAnswer": "Spread the news",
+    "incorrectAnswers": [
+      "Returned silently to their flocks",
+      "Brought gifts to Mary and Joseph",
+      "Went to tell King Herod"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-385",
+    "question": "Who returned to Jerusalem after the captivity and rallied the people to rebuild the city walls?",
+    "correctAnswer": "Nehemiah",
+    "incorrectAnswers": [
+      "Ezra",
+      "Zerubbabel",
+      "Daniel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-386",
+    "question": "Which apostle was the first to perform a miracle in the name of Jesus after Pentecost?",
+    "correctAnswer": "Peter",
+    "incorrectAnswers": [
+      "John",
+      "Philip",
+      "Stephen"
+    ],
+    "category": "Miracles"
+  },
+  {
+    "id": "amen-triv-387",
+    "question": "Korah challenged Moses and sought priestly duties beyond his role. How did God judge him and his family?",
+    "correctAnswer": "Swallowed by the earth",
+    "incorrectAnswers": [
+      "Struck by lightning",
+      "Consumed by fire",
+      "Killed by a plague"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-388",
+    "question": "According to Genesis, in which direction was the Garden of Eden located?",
+    "correctAnswer": "In the east",
+    "incorrectAnswers": [
+      "In the north",
+      "In the south",
+      "In the west"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-389",
+    "question": "In John's vision of Jesus in Revelation, what was coming out of Jesus' mouth?",
+    "correctAnswer": "A sharp sword",
+    "incorrectAnswers": [
+      "A tongue of fire",
+      "A golden trumpet",
+      "A stream of living water"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-390",
+    "question": "Which judge was famously betrayed to the Philistines by a woman who discovered the secret of his strength?",
+    "correctAnswer": "Samson",
+    "incorrectAnswers": [
+      "Gideon",
+      "Jephthah",
+      "Deborah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-391",
+    "question": "When some children mocked Elisha for being bald, what happened to forty-two of them?",
+    "correctAnswer": "Two bears mauled them",
+    "incorrectAnswers": [
+      "They were struck blind",
+      "The ground swallowed them",
+      "They were consumed by fire"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-392",
+    "question": "When Paul built a fire on the island of Malta, what creature slithered out and bit him?",
+    "correctAnswer": "Viper",
+    "incorrectAnswers": [
+      "Scorpion",
+      "Lizard",
+      "Asp"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-393",
+    "question": "In the Sermon on the Mount, Jesus said the meek are blessed because they will inherit what?",
+    "correctAnswer": "The earth",
+    "incorrectAnswers": [
+      "The kingdom of heaven",
+      "Eternal life",
+      "God's mercy"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-394",
+    "question": "Jesus healed ten lepers, but only one came back to say thank you. What was his nationality?",
+    "correctAnswer": "Samaritan",
+    "incorrectAnswers": [
+      "Galilean",
+      "Jewish",
+      "Roman"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-395",
+    "question": "When Jonah finally delivered God's message to Nineveh, how many days did he say the city had before it would be overthrown?",
+    "correctAnswer": "Forty days",
+    "incorrectAnswers": [
+      "Seven days",
+      "Three days",
+      "One hundred days"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-396",
+    "question": "King David's son Amnon became obsessed with a woman, then ended up hating her even more than he had loved her. Who was she?",
+    "correctAnswer": "Tamar",
+    "incorrectAnswers": [
+      "Bathsheba",
+      "Abigail",
+      "Michal"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-397",
+    "question": "When Jerusalem was destroyed, the Jewish people were taken captive to which city?",
+    "correctAnswer": "Babylon",
+    "incorrectAnswers": [
+      "Egypt",
+      "Assyria",
+      "Persia"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-398",
+    "question": "After Noah became a farmer, what sin did he fall into?",
+    "correctAnswer": "Drunkenness",
+    "incorrectAnswers": [
+      "Idolatry",
+      "Theft",
+      "Lying"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-399",
+    "question": "The Israelite spies came back from Canaan and scared the people out of entering the Promised Land. What was their frightening report?",
+    "correctAnswer": "Giants lived there",
+    "incorrectAnswers": [
+      "The land was barren",
+      "Armies were too large",
+      "The rivers were uncrossable"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-400",
+    "question": "In the Sermon on the Mount, Jesus said a city on a hill cannot be what?",
+    "correctAnswer": "Hidden",
+    "incorrectAnswers": [
+      "Destroyed",
+      "Moved",
+      "Forgotten"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-401",
+    "question": "Shechem, the prince who fell in love with Dinah, met a terrible end. What happened to him?",
+    "correctAnswer": "Killed by Dinah's brothers",
+    "incorrectAnswers": [
+      "Exiled by his father",
+      "Struck down by God",
+      "Imprisoned by Jacob"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-402",
+    "question": "When Jacob wrestled with the angel through the night, which part of his body was struck out of joint?",
+    "correctAnswer": "Hip",
+    "incorrectAnswers": [
+      "Shoulder",
+      "Knee",
+      "Ankle"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-403",
+    "question": "According to Mark, what color robe did the soldiers put on Jesus before the crucifixion?",
+    "correctAnswer": "Purple",
+    "incorrectAnswers": [
+      "Scarlet",
+      "White",
+      "Blue"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-404",
+    "question": "Paul told the Philippians to bring their requests to God in a specific way. What did he say to do?",
+    "correctAnswer": "Prayer and supplication with thanksgiving",
+    "incorrectAnswers": [
+      "Fasting and weeping",
+      "Singing and shouting",
+      "Silence and meditation"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-405",
+    "question": "In the Sermon on the Mount, Jesus says the earth is what, belonging to God?",
+    "correctAnswer": "God's footstool",
+    "incorrectAnswers": [
+      "God's throne",
+      "God's temple",
+      "God's garden"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-406",
+    "question": "In which book of the Bible does King Nebuchadnezzar see a giant statue in his dream?",
+    "correctAnswer": "Daniel",
+    "incorrectAnswers": [
+      "Ezekiel",
+      "Isaiah",
+      "Jeremiah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-407",
+    "question": "Which woman prayed so fervently in the temple that the priest thought she was drunk, and was later blessed with a son?",
+    "correctAnswer": "Hannah",
+    "incorrectAnswers": [
+      "Rachel",
+      "Leah",
+      "Rebekah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-408",
+    "question": "Which king asked God for an understanding heart so he could wisely judge his people?",
+    "correctAnswer": "Solomon",
+    "incorrectAnswers": [
+      "David",
+      "Hezekiah",
+      "Josiah"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-409",
+    "question": "The disciples got into an argument that Jesus settled by placing a child in their midst. What were they arguing about?",
+    "correctAnswer": "Who is greatest in heaven",
+    "incorrectAnswers": [
+      "Who would betray Jesus",
+      "Who would sit at his right hand",
+      "Who had the most faith"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-410",
+    "question": "Jesus raised a twelve-year-old girl from the dead. Whose daughter was she?",
+    "correctAnswer": "Jairus",
+    "incorrectAnswers": [
+      "Nicodemus",
+      "Zacchaeus",
+      "Simon of Cyrene"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-411",
+    "question": "Before God restored Nebuchadnezzar as king, what strange fate did the king experience?",
+    "correctAnswer": "Lived like a beast",
+    "incorrectAnswers": [
+      "Was blinded for seven years",
+      "Was imprisoned by his own son",
+      "Was struck mute for forty days"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-412",
+    "question": "God told Jonah to go to Nineveh, but Jonah booked a ship heading in the opposite direction. Where was he trying to go?",
+    "correctAnswer": "Tarshish",
+    "incorrectAnswers": [
+      "Egypt",
+      "Babylon",
+      "Tyre"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-413",
+    "question": "Paul commended a woman to the church in Rome and asked them to welcome her as a fellow saint. Who was she?",
+    "correctAnswer": "Phoebe",
+    "incorrectAnswers": [
+      "Priscilla",
+      "Lydia",
+      "Junia"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-414",
+    "question": "Whose mother lovingly brought him a new little coat every single year?",
+    "correctAnswer": "Samuel",
+    "incorrectAnswers": [
+      "David",
+      "Gideon",
+      "Eli"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-415",
+    "question": "In Jesus's parable about a wealthy farmer with an overflowing harvest, what did the rich man decide to do with all his extra crops?",
+    "correctAnswer": "Build larger barns",
+    "incorrectAnswers": [
+      "Sell them at market",
+      "Give them to the poor",
+      "Offer them as a sacrifice"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-416",
+    "question": "In the parable of the leaven, what is leaven more commonly known as today?",
+    "correctAnswer": "Yeast",
+    "incorrectAnswers": [
+      "Salt",
+      "Baking soda",
+      "Flour"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-417",
+    "question": "Under Mosaic Law, what birds could poor people offer as a sacrifice if they couldn't afford a lamb?",
+    "correctAnswer": "Turtledoves or pigeons",
+    "incorrectAnswers": [
+      "Sparrows or doves",
+      "Ravens or eagles",
+      "Quail or swallows"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-418",
+    "question": "Which book of prophecy was the Ethiopian eunuch reading when Philip met him on the road?",
+    "correctAnswer": "Isaiah",
+    "incorrectAnswers": [
+      "Jeremiah",
+      "Ezekiel",
+      "Daniel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-419",
+    "question": "Who wrote the famous words about putting away childish things when becoming an adult?",
+    "correctAnswer": "Paul",
+    "incorrectAnswers": [
+      "Solomon",
+      "Peter",
+      "James"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-420",
+    "question": "Which scheming woman told her daughter to ask Herod for the head of John the Baptist?",
+    "correctAnswer": "Herodias",
+    "incorrectAnswers": [
+      "Salome",
+      "Jezebel",
+      "Bernice"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-421",
+    "question": "Which Roman ruler ordered the census that brought Mary and Joseph to Bethlehem at the time of Jesus' birth?",
+    "correctAnswer": "Augustus Caesar",
+    "incorrectAnswers": [
+      "Tiberius Caesar",
+      "Pontius Pilate",
+      "Herod the Great"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-422",
+    "question": "Peter raised a kind and charitable woman from the dead in Joppa - what was her name?",
+    "correctAnswer": "Tabitha",
+    "incorrectAnswers": [
+      "Lydia",
+      "Phoebe",
+      "Priscilla"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-423",
+    "question": "What amazing ability did Daniel have that none of Nebuchadnezzar's other advisors could match?",
+    "correctAnswer": "Interpret his dreams",
+    "incorrectAnswers": [
+      "Heal the sick",
+      "Read hidden writing",
+      "Predict the weather"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-424",
+    "question": "In Revelation, what was sitting on the head of the woman clothed with the sun?",
+    "correctAnswer": "Crown of twelve stars",
+    "incorrectAnswers": [
+      "Golden diadem",
+      "Wreath of thorns",
+      "Seven-pointed crown"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-425",
+    "question": "When Paul's ship wrecked off the coast of Malta, how many people on board drowned?",
+    "correctAnswer": "None",
+    "incorrectAnswers": [
+      "Three",
+      "Twelve",
+      "Forty"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-426",
+    "question": "When Jesus spoke to the woman at the well, how did he say true worshippers must worship God?",
+    "correctAnswer": "In spirit and truth",
+    "incorrectAnswers": [
+      "With fasting and prayer",
+      "In the temple only",
+      "With sacrifices and offerings"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-427",
+    "question": "Under Mosaic Law, what was the punishment for striking your own father?",
+    "correctAnswer": "Death",
+    "incorrectAnswers": [
+      "Exile",
+      "Forty lashes",
+      "A heavy fine"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-428",
+    "question": "When Pharaoh put Joseph in charge of all Egypt, what gifts did he give him?",
+    "correctAnswer": "Ring, fine linen, gold chain",
+    "incorrectAnswers": [
+      "Chariot, horses, silver cup",
+      "Robe, scepter, sandals",
+      "Crown, sword, land"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-429",
+    "question": "In the story of Boaz and Ruth, what item was handed over to seal the agreement with the kinsman-redeemer?",
+    "correctAnswer": "Sandal",
+    "incorrectAnswers": [
+      "Ring",
+      "Staff",
+      "Cloak"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-430",
+    "question": "Why did Boaz show such kindness to Ruth and let her glean freely in his fields?",
+    "correctAnswer": "She had cared for Naomi",
+    "incorrectAnswers": [
+      "She was from his tribe",
+      "She had paid him silver",
+      "She was recommended by the elders"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-431",
+    "question": "What punishment did the angel give Zechariah for doubting the news about his son John?",
+    "correctAnswer": "He was made mute",
+    "incorrectAnswers": [
+      "He was struck blind",
+      "He was made deaf",
+      "He was struck with fever"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-432",
+    "question": "From which direction did the scorching wind blow on Jonah as he sat outside Nineveh?",
+    "correctAnswer": "East",
+    "incorrectAnswers": [
+      "West",
+      "North",
+      "South"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-433",
+    "question": "How many times did Samson lie to Delilah about the secret source of his strength?",
+    "correctAnswer": "Three",
+    "incorrectAnswers": [
+      "Two",
+      "Four",
+      "Seven"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-434",
+    "question": "Which Gospel opens with the words about the book of the generation of Jesus Christ, son of David, son of Abraham?",
+    "correctAnswer": "Matthew",
+    "incorrectAnswers": [
+      "Luke",
+      "John",
+      "Mark"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-435",
+    "question": "Jephthah made a rash vow to God before battle - what was the tragic consequence for his daughter?",
+    "correctAnswer": "She was offered up",
+    "incorrectAnswers": [
+      "She was exiled forever",
+      "She was given to another tribe",
+      "She was forbidden to marry"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-436",
+    "question": "When Mary first saw Jesus after the resurrection, who did she mistake him for?",
+    "correctAnswer": "The gardener",
+    "incorrectAnswers": [
+      "A Roman soldier",
+      "An angel",
+      "Peter"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-437",
+    "question": "At the Last Supper, how did Jesus reveal which disciple would betray him?",
+    "correctAnswer": "Gave him dipped bread",
+    "incorrectAnswers": [
+      "Called his name aloud",
+      "Pointed across the table",
+      "Washed his feet last"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-438",
+    "question": "When fiery serpents were attacking the Israelites in the wilderness, who prayed for God to take them away?",
+    "correctAnswer": "Moses",
+    "incorrectAnswers": [
+      "Aaron",
+      "Joshua",
+      "Caleb"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-439",
+    "question": "Which married couple did Paul befriend and stay with when he first arrived in Corinth?",
+    "correctAnswer": "Aquila and Priscilla",
+    "incorrectAnswers": [
+      "Ananias and Sapphira",
+      "Philemon and Apphia",
+      "Jason and Lydia"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-440",
+    "question": "When Jesus died on the cross, how long did darkness cover the land?",
+    "correctAnswer": "Three hours",
+    "incorrectAnswers": [
+      "One hour",
+      "Six hours",
+      "Forty days"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-441",
+    "question": "In the Lord's Prayer, what line comes right after asking for daily bread?",
+    "correctAnswer": "Forgive us our debts",
+    "incorrectAnswers": [
+      "Lead us not into temptation",
+      "Thy will be done",
+      "Deliver us from evil"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-442",
+    "question": "In Revelation, John received a little book from an angel - what did he do with it?",
+    "correctAnswer": "He ate it",
+    "incorrectAnswers": [
+      "He burned it",
+      "He buried it",
+      "He read it aloud"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-443",
+    "question": "Which woman made an annual trip to Shiloh to worship and once poured her heart out to God begging for a child?",
+    "correctAnswer": "Hannah",
+    "incorrectAnswers": [
+      "Naomi",
+      "Deborah",
+      "Rachel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-444",
+    "question": "What was Peter doing when he denied Jesus for the second time?",
+    "correctAnswer": "Warming himself by a fire",
+    "incorrectAnswers": [
+      "Eating a meal",
+      "Walking in the courtyard",
+      "Sleeping in the garden"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-445",
+    "question": "After delivering his prophecy, what did Jonah do while waiting to see what would happen to Nineveh?",
+    "correctAnswer": "Sat east of the city",
+    "incorrectAnswers": [
+      "Prayed inside the city gates",
+      "Fasted by the river",
+      "Climbed a nearby mountain"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-446",
+    "question": "After the great flood, on which mountain range did Noah's ark finally come to rest?",
+    "correctAnswer": "Ararat",
+    "incorrectAnswers": [
+      "Sinai",
+      "Carmel",
+      "Hermon"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-447",
+    "question": "Two of the twelve tribes of Israel were not named after sons of Jacob - which two were they?",
+    "correctAnswer": "Ephraim and Manasseh",
+    "incorrectAnswers": [
+      "Gad and Asher",
+      "Dan and Naphtali",
+      "Reuben and Simeon"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-448",
+    "question": "In Paul's letter to Philemon, what did Paul say should happen if Onesimus owed Philemon anything?",
+    "correctAnswer": "Charge it to Paul",
+    "incorrectAnswers": [
+      "Forgive the debt entirely",
+      "Settle it before the elders",
+      "Let the church decide"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-449",
+    "question": "According to Old Testament law, what were you forbidden to cook a young goat in?",
+    "correctAnswer": "Its mother's milk",
+    "incorrectAnswers": [
+      "Olive oil",
+      "Wine",
+      "Animal blood"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-450",
+    "question": "When Joseph found out Mary was pregnant, what did he initially plan to do?",
+    "correctAnswer": "Quietly divorce her",
+    "incorrectAnswers": [
+      "Confront her publicly",
+      "Report her to the priests",
+      "Send her to Elizabeth"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-451",
+    "question": "What was the remarkable physical trait shared by 700 elite Benjamite slingers who never missed their target?",
+    "correctAnswer": "They were all left-handed",
+    "incorrectAnswers": [
+      "They were all blind in one eye",
+      "They were all twins",
+      "They were all over seven feet tall"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-452",
+    "question": "While locked up in prison, at what hour of the night did Paul and Silas pray and sing hymns to God?",
+    "correctAnswer": "Midnight",
+    "incorrectAnswers": [
+      "Dawn",
+      "The third hour",
+      "Sunset"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-453",
+    "question": "Instead of eating the king's royal food, what did Daniel and his three friends choose to eat and drink?",
+    "correctAnswer": "Vegetables and water",
+    "incorrectAnswers": [
+      "Bread and wine",
+      "Fruit and goat's milk",
+      "Grain and olive oil"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-454",
+    "question": "Which of Moses's siblings was struck with leprosy for speaking out against him?",
+    "correctAnswer": "Miriam",
+    "incorrectAnswers": [
+      "Aaron",
+      "Zipporah",
+      "Korah"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-455",
+    "question": "After returning from Babylonian exile, the people were focused on their own homes - what did God say they should have been doing instead?",
+    "correctAnswer": "Rebuilding the temple",
+    "incorrectAnswers": [
+      "Repenting with fasting",
+      "Restoring the city walls",
+      "Offering daily sacrifices"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-456",
+    "question": "What act of disobedience cost Moses his chance to lead Israel into the Promised Land?",
+    "correctAnswer": "Striking the rock twice",
+    "incorrectAnswers": [
+      "Worshipping the golden calf",
+      "Marrying a foreign woman",
+      "Failing to circumcise his son"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-457",
+    "question": "Whose hair was so famously thick that it weighed 200 shekels by the king's standard when cut each year?",
+    "correctAnswer": "Absalom",
+    "incorrectAnswers": [
+      "Samson",
+      "Solomon",
+      "Esau"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-458",
+    "question": "During a terrifying shipwreck voyage, what did the apostle Paul do that encouraged everyone on board?",
+    "correctAnswer": "Took bread and gave thanks",
+    "incorrectAnswers": [
+      "Healed the sick sailors",
+      "Calmed the storm by prayer",
+      "Baptized the ship's crew"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-459",
+    "question": "What sign did the angels give the shepherds so they would recognize the newborn Jesus?",
+    "correctAnswer": "Swaddled in a manger",
+    "incorrectAnswers": [
+      "Surrounded by a bright light",
+      "Marked with a star above him",
+      "Held by a woman in white robes"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-460",
+    "question": "Everyone expected Zechariah's son to be named after his father, but his mother stepped in - what name did she insist on?",
+    "correctAnswer": "John",
+    "incorrectAnswers": [
+      "James",
+      "Simeon",
+      "Matthias"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-461",
+    "question": "How many years had the sick man been lying at the pool of Bethesda when Jesus healed him?",
+    "correctAnswer": "Thirty-eight years",
+    "incorrectAnswers": [
+      "Twenty years",
+      "Twelve years",
+      "Forty years"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-462",
+    "question": "What did God promise to give Abraham as an everlasting possession for him and his descendants?",
+    "correctAnswer": "The land of Canaan",
+    "incorrectAnswers": [
+      "The city of Jerusalem",
+      "Mount Sinai",
+      "The land of Goshen"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-463",
+    "question": "What false accusation was made against Naboth that led to his stoning and Ahab seizing his vineyard?",
+    "correctAnswer": "Blasphemed God and king",
+    "incorrectAnswers": [
+      "He stole from the royal treasury",
+      "He practiced witchcraft",
+      "He murdered a royal servant"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-464",
+    "question": "The Sadducees were known for rejecting certain beliefs - which supernatural beings did they NOT believe in?",
+    "correctAnswer": "Angels",
+    "incorrectAnswers": [
+      "Demons",
+      "Prophets",
+      "The Holy Spirit"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-465",
+    "question": "The southern kingdom of Israel eventually fell to a mighty empire - which one brought it down?",
+    "correctAnswer": "Babylon",
+    "incorrectAnswers": [
+      "Assyria",
+      "Egypt",
+      "Persia"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-466",
+    "question": "According to James, praying for one another leads to healing - but what else must you do alongside that prayer?",
+    "correctAnswer": "Confess your faults",
+    "incorrectAnswers": [
+      "Fast for seven days",
+      "Offer a sacrifice",
+      "Anoint yourself with oil"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-467",
+    "question": "Which prophetic book gives us the famous vision of a valley filled with dry bones coming back to life?",
+    "correctAnswer": "Ezekiel",
+    "incorrectAnswers": [
+      "Jeremiah",
+      "Isaiah",
+      "Daniel"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-468",
+    "question": "There was only one day each year when the High Priest could enter the innermost part of the temple - what was that sacred day called?",
+    "correctAnswer": "Day of Atonement",
+    "incorrectAnswers": [
+      "Feast of Tabernacles",
+      "Passover",
+      "Feast of Firstfruits"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-469",
+    "question": "A lame man was laid every day at a specific gate of the temple - what was that gate called?",
+    "correctAnswer": "Beautiful Gate",
+    "incorrectAnswers": [
+      "Golden Gate",
+      "Sheep Gate",
+      "Water Gate"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-470",
+    "question": "Young Joseph had a dream that hinted at his future greatness - what was happening in that very first dream?",
+    "correctAnswer": "Sheaves of wheat bowing down",
+    "incorrectAnswers": [
+      "Stars falling from the sky",
+      "A great tree being cut down",
+      "Seven fat and thin cows"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-471",
+    "question": "James tells believers to wait for the coming of the Lord - but how should they wait?",
+    "correctAnswer": "Patiently",
+    "incorrectAnswers": [
+      "Joyfully",
+      "In fasting",
+      "With loud prayer"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-472",
+    "question": "Psalm 1 paints a beautiful picture of the blessed man - what is he compared to a tree planted by?",
+    "correctAnswer": "Rivers of water",
+    "incorrectAnswers": [
+      "The house of God",
+      "A mighty mountain",
+      "The city walls"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-473",
+    "question": "Abraham was no spring chicken when Isaac was born - how old was he exactly?",
+    "correctAnswer": "100",
+    "incorrectAnswers": [
+      "90",
+      "75",
+      "120"
+    ],
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-triv-474",
+    "question": "In the parable of the Pharisee and the Tax Collector, what did the Pharisee specifically thank God for?",
+    "correctAnswer": "Not like other men",
+    "incorrectAnswers": [
+      "His wealth and blessings",
+      "His knowledge of the law",
+      "His many prayers and fasts"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-475",
+    "question": "Jesus set a pretty high bar for forgiveness - how many times did He say you should forgive a brother who sins against you?",
+    "correctAnswer": "Seventy times seven",
+    "incorrectAnswers": [
+      "Seven times",
+      "Forty-nine times",
+      "Three times"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-476",
+    "question": "The Pharisees tried to trap Jesus with a tricky marriage question - what did they ask Him about?",
+    "correctAnswer": "Is divorce lawful",
+    "incorrectAnswers": [
+      "Paying taxes to Caesar",
+      "Marrying a widow",
+      "Marrying a foreigner"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-477",
+    "question": "Paul tells the Philippians to work out their own salvation - but in what manner should they do it?",
+    "correctAnswer": "With fear and trembling",
+    "incorrectAnswers": [
+      "With joy and singing",
+      "With fasting and prayer",
+      "With boldness and confidence"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-478",
+    "question": "In the parable of new wine and old wineskins, why is it a bad idea to pour new wine into old bottles?",
+    "correctAnswer": "It will burst the bottles",
+    "incorrectAnswers": [
+      "The wine will turn sour",
+      "The flavor will be ruined",
+      "The bottles will be defiled"
+    ],
+    "category": "Parables"
+  },
+  {
+    "id": "amen-triv-479",
+    "question": "When the wise men came looking for the newborn Jesus, which city was King Herod living in?",
+    "correctAnswer": "Jerusalem",
+    "incorrectAnswers": [
+      "Bethlehem",
+      "Jericho",
+      "Caesarea"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-480",
+    "question": "The Mosaic law had a surprisingly specific rule about finding a bird in its nest - what were you supposed to do with the mother bird?",
+    "correctAnswer": "Release the mother bird",
+    "incorrectAnswers": [
+      "Offer it as a sacrifice",
+      "Bring it to the priest",
+      "Release it on the Sabbath"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-481",
+    "question": "In Nebuchadnezzar's dream of a great statue, what caused the whole thing to come crashing down?",
+    "correctAnswer": "A stone struck the feet",
+    "incorrectAnswers": [
+      "A great wind blew it over",
+      "Fire melted it down",
+      "An angel pushed it"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-482",
+    "question": "After His resurrection, Jesus spent time appearing to His disciples before ascending - for how many days did this go on?",
+    "correctAnswer": "Forty",
+    "incorrectAnswers": [
+      "Three",
+      "Seven",
+      "Thirty"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-483",
+    "question": "Paul wrote a personal letter about a runaway slave named Onesimus - who was that letter addressed to?",
+    "correctAnswer": "Philemon",
+    "incorrectAnswers": [
+      "Titus",
+      "Timothy",
+      "Silas"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-484",
+    "question": "The book of Revelation opens with letters addressed to churches in Asia Minor - how many churches were on that list?",
+    "correctAnswer": "Seven",
+    "incorrectAnswers": [
+      "Twelve",
+      "Three",
+      "Ten"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-485",
+    "question": "Gideon asked God for a sign and laid something on the ground overnight to test it - what was that object?",
+    "correctAnswer": "A fleece",
+    "incorrectAnswers": [
+      "A clay pot",
+      "A staff",
+      "A linen cloth"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-486",
+    "question": "King Cyrus gave the Israelites permission to rebuild the temple - in which city did he say it should be built?",
+    "correctAnswer": "Jerusalem",
+    "incorrectAnswers": [
+      "Bethel",
+      "Samaria",
+      "Hebron"
+    ],
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-triv-487",
+    "question": "Which young missionary was praised for knowing the holy scriptures from childhood?",
+    "correctAnswer": "Timothy",
+    "incorrectAnswers": [
+      "Titus",
+      "Silas",
+      "Barnabas"
+    ],
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-triv-488",
+    "question": "When Paul confronted the sorcerer Elymas, what did he strike him down with?",
+    "correctAnswer": "Blindness",
+    "incorrectAnswers": [
+      "Paralysis",
+      "Deafness",
+      "Leprosy"
+    ],
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-triv-489",
+    "question": "After the resurrection, Jesus appeared to His disciples by the Sea of Tiberias and cooked them a meal. What did they eat for breakfast?",
+    "correctAnswer": "Bread and fish",
+    "incorrectAnswers": [
+      "Lamb and unleavened bread",
+      "Figs and honey",
+      "Loaves and wine"
+    ],
+    "category": "Gospels"
+  },
+  {
+    "id": "amen-triv-490",
+    "question": "The daughters of Zelophehad were allowed to inherit their father's land, but there was one big condition on who they could marry. What was the rule?",
+    "correctAnswer": "Marry within their tribe",
+    "incorrectAnswers": [
+      "Marry a Levite priest",
+      "Marry a firstborn son",
+      "Marry before age 30"
+    ],
+    "category": "Biblical Figures"
+  }
 ]

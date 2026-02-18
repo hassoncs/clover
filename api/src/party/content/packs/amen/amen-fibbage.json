@@ -1,117 +1,875 @@
 [
-	{
-		"id": "amen-fib-001",
-		"question": "The name of Moses' wife was _____. (Exodus 2:21)",
-		"answer": "Zipporah",
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-fib-002",
-		"question": "Paul's job before becoming a missionary was _____. (Acts 18:3)",
-		"answer": "tentmaker",
-		"category": "Acts & Epistles",
-		"alternateSpellings": ["tent maker"]
-	},
-	{
-		"id": "amen-fib-003",
-		"question": "The animal that spoke to Balaam was a _____. (Numbers 22:28)",
-		"answer": "donkey",
-		"category": "Old Testament",
-		"alternateSpellings": ["donkey colt", "ass"]
-	},
-	{
-		"id": "amen-fib-004",
-		"question": "King Nebuchadnezzar spent years living like a _____ in the wilderness. (Daniel 4:33)",
-		"answer": "wild animal",
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-fib-005",
-		"question": "The first high priest of Israel was _____. (Exodus 28:1)",
-		"answer": "Aaron",
-		"category": "Biblical Figures"
-	},
-	{
-		"id": "amen-fib-006",
-		"question": "The woman who hid the Israelite spies in Jericho was _____. (Joshua 2:1-4)",
-		"answer": "Rahab",
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-fib-007",
-		"question": "The disciple who replaced Judas was _____. (Acts 1:26)",
-		"answer": "Matthias",
-		"category": "Acts & Epistles"
-	},
-	{
-		"id": "amen-fib-008",
-		"question": "The river where Jesus was baptized is called the _____. (Matthew 3:13)",
-		"answer": "Jordan",
-		"category": "Biblical Geography",
-		"alternateSpellings": ["Jordan River"]
-	},
-	{
-		"id": "amen-fib-009",
-		"question": "Jesus was born in the city of _____. (Luke 2:4)",
-		"answer": "Bethlehem",
-		"category": "Biblical Geography"
-	},
-	{
-		"id": "amen-fib-010",
-		"question": "The event where God confused human language is called the _____. (Genesis 11:9)",
-		"answer": "Tower of Babel",
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-fib-011",
-		"question": "The Roman governor who sentenced Jesus to crucifixion was _____. (Matthew 27:24-26)",
-		"answer": "Pontius Pilate",
-		"category": "Gospels",
-		"alternateSpellings": ["Pilate"]
-	},
-	{
-		"id": "amen-fib-012",
-		"question": "The tax collector who climbed a sycamore tree to see Jesus was _____. (Luke 19:4)",
-		"answer": "Zacchaeus",
-		"category": "Gospels"
-	},
-	{
-		"id": "amen-fib-013",
-		"question": "The island where Paul was shipwrecked was _____. (Acts 28:1)",
-		"answer": "Malta",
-		"category": "Acts & Epistles"
-	},
-	{
-		"id": "amen-fib-014",
-		"question": "The disciple known for saying 'I am not worthy' to untie Jesus' sandals was _____. (John 1:27)",
-		"answer": "John the Baptist",
-		"category": "Gospels",
-		"alternateSpellings": ["John Baptist"]
-	},
-	{
-		"id": "amen-fib-015",
-		"question": "The queen who visited Solomon with hard questions was _____. (1 Kings 10:1)",
-		"answer": "Queen of Sheba",
-		"category": "Old Testament",
-		"alternateSpellings": ["Sheba"]
-	},
-	{
-		"id": "amen-fib-016",
-		"question": "The man lowered through a roof to reach Jesus was healed of _____ first. (Mark 2:5)",
-		"answer": "sin",
-		"category": "Miracles",
-		"alternateSpellings": ["his sins", "sins"]
-	},
-	{
-		"id": "amen-fib-017",
-		"question": "The woman who became Esther's guardian and adoptive father was _____. (Esther 2:7)",
-		"answer": "Mordecai",
-		"category": "Old Testament"
-	},
-	{
-		"id": "amen-fib-018",
-		"question": "The city where believers were first called Christians was _____. (Acts 11:26)",
-		"answer": "Antioch",
-		"category": "Acts & Epistles"
-	}
+  {
+    "id": "amen-fib-001",
+    "question": "The name of Moses' wife was _____. (Exodus 2:21)",
+    "answer": "Zipporah",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-002",
+    "question": "Paul's job before becoming a missionary was _____. (Acts 18:3)",
+    "answer": "tentmaker",
+    "category": "Acts & Epistles",
+    "alternateSpellings": [
+      "tent maker"
+    ]
+  },
+  {
+    "id": "amen-fib-003",
+    "question": "Balaam was rebuked by his _____. (Numbers 22:28)",
+    "answer": "donkey",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "donkey colt",
+      "ass"
+    ]
+  },
+  {
+    "id": "amen-fib-004",
+    "question": "King Nebuchadnezzar spent years eating grass like a _____. (Daniel 4:33)",
+    "answer": "ox",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-005",
+    "question": "The first high priest of Israel was _____. (Exodus 28:1)",
+    "answer": "Aaron",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-006",
+    "question": "The woman who hid the Israelite spies in Jericho was _____. (Joshua 2:1-4)",
+    "answer": "Rahab",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-007",
+    "question": "The disciple who replaced Judas was _____. (Acts 1:26)",
+    "answer": "Matthias",
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-fib-008",
+    "question": "The island where Paul was shipwrecked was _____. (Acts 28:1)",
+    "answer": "Malta",
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-fib-009",
+    "question": "The man lowered through a roof to reach Jesus was healed of _____ first. (Mark 2:5)",
+    "answer": "sin",
+    "category": "Miracles",
+    "alternateSpellings": [
+      "his sins",
+      "sins"
+    ]
+  },
+  {
+    "id": "amen-fib-010",
+    "question": "The man who raised Esther as his own daughter was _____. (Esther 2:7)",
+    "answer": "Mordecai",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-011",
+    "question": "The city where believers were first called Christians was _____. (Acts 11:26)",
+    "answer": "Antioch",
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-fib-012",
+    "question": "In 2 Kings, Elisha was mocked by youths for being _____. (2 Kings 2:23)",
+    "answer": "bald",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "baldheaded"
+    ]
+  },
+  {
+    "id": "amen-fib-013",
+    "question": "Shamgar killed 600 Philistines with an _____. (Judges 3:31)",
+    "answer": "oxgoad",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "ox goad"
+    ]
+  },
+  {
+    "id": "amen-fib-014",
+    "question": "John the Baptist's clothes were made of _____ hair. (Matthew 3:4)",
+    "answer": "camel",
+    "category": "Gospels",
+    "alternateSpellings": [
+      "camel's"
+    ]
+  },
+  {
+    "id": "amen-fib-015",
+    "question": "The prophet who was fed by ravens was _____. (1 Kings 17:6)",
+    "answer": "Elijah",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-016",
+    "question": "Jacob's pillow at Bethel was made of _____. (Genesis 28:11)",
+    "answer": "stone",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "a stone",
+      "rock"
+    ]
+  },
+  {
+    "id": "amen-fib-017",
+    "question": "The color of the cord Rahab hung from her window was _____. (Joshua 2:18)",
+    "answer": "scarlet",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "red"
+    ]
+  },
+  {
+    "id": "amen-fib-018",
+    "question": "King Og's bed was made of _____. (Deuteronomy 3:11)",
+    "answer": "iron",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-019",
+    "question": "Samson found honey inside a dead _____. (Judges 14:8)",
+    "answer": "lion",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-020",
+    "question": "Eutychus fell asleep during Paul's sermon and fell from a _____. (Acts 20:9)",
+    "answer": "window",
+    "category": "Acts & Epistles",
+    "alternateSpellings": [
+      "third story window"
+    ]
+  },
+  {
+    "id": "amen-fib-021",
+    "question": "Jesus healed a man who had been ill for _____ years at the Pool of Bethesda. (John 5:5)",
+    "answer": "38",
+    "category": "Miracles",
+    "alternateSpellings": [
+      "thirty-eight"
+    ]
+  },
+  {
+    "id": "amen-fib-022",
+    "question": "In Revelation, the lukewarm church was located in _____. (Revelation 3:14)",
+    "answer": "Laodicea",
+    "category": "Acts & Epistles"
+  },
+  {
+    "id": "amen-fib-023",
+    "question": "The prophet Amos was originally a _____ by profession. (Amos 1:1)",
+    "answer": "shepherd",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-024",
+    "question": "Absalom's hair got caught in an _____ tree. (2 Samuel 18:9)",
+    "answer": "oak",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "terebinth"
+    ]
+  },
+  {
+    "id": "amen-fib-025",
+    "question": "Jesus healed a blind man at Bethsaida by spitting on his _____. (Mark 8:23)",
+    "answer": "eyes",
+    "category": "Miracles"
+  },
+  {
+    "id": "amen-fib-026",
+    "question": "The idol Dagon fell on its face before the _____. (1 Samuel 5:3)",
+    "answer": "Ark",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "Ark of the Covenant"
+    ]
+  },
+  {
+    "id": "amen-fib-027",
+    "question": "Gideon asked God for a sign using a _____ of wool. (Judges 6:37)",
+    "answer": "fleece",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-028",
+    "question": "The prophet who walked naked and barefoot for three years was _____. (Isaiah 20:3)",
+    "answer": "Isaiah",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-029",
+    "question": "Jonah was angry because a _____ that provided him shade died. (Jonah 4:7)",
+    "answer": "plant",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "vine",
+      "gourd"
+    ]
+  },
+  {
+    "id": "amen-fib-030",
+    "question": "The man who touched the Ark of the Covenant and died was _____. (2 Samuel 6:7)",
+    "answer": "Uzzah",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-031",
+    "question": "The name of the place where the Israelites found bitter water was _____. (Exodus 15:23)",
+    "answer": "Marah",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-032",
+    "question": "Moses' mother hid him in a basket made of _____. (Exodus 2:3)",
+    "answer": "papyrus",
+    "category": "Old Testament",
+    "alternateSpellings": [
+      "bulrushes"
+    ]
+  },
+  {
+    "id": "amen-fib-033",
+    "question": "The prophet who had a vision of a valley of dry bones was _____. (Ezekiel 37:1)",
+    "answer": "Ezekiel",
+    "category": "Old Testament"
+  },
+  {
+    "id": "amen-fib-034",
+    "question": "In the Bible, this clever woman saved her household from David's wrath after her foolish husband Nabal insulted the future king - her name was _____.",
+    "answer": "Abigail",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-035",
+    "question": "In biblical times, King Ahaz of Judah was married to a woman named _____, who would become the mother of the righteous King Hezekiah.",
+    "answer": "Abijah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-036",
+    "question": "In the Book of Judges, the military commander Barak who fought alongside the prophetess Deborah was the son of _____.",
+    "answer": "Abinoam",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-037",
+    "question": "When Hiel the Bethelite defied an ancient curse to rebuild the city of Jericho, his eldest son _____ died as punishment, just as the prophet Joshua had warned centuries earlier.",
+    "answer": "Abiram",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-038",
+    "question": "In biblical times, this nephew of King David was known as the eldest son of Zeruiah and became one of David's mighty warriors named _____.",
+    "answer": "Abishai",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-039",
+    "question": "In the Bible, King Saul's wife was named _____. (1 Samuel 14:50)",
+    "answer": "Ahinoam",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-040",
+    "question": "In the Bible, the high priest Zadok was the son of _____. (2 Samuel 8:17)",
+    "answer": "Ahitub",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-041",
+    "question": "In the Gospels, James son of _____ is often identified as James the Less. (Matthew 10:3)",
+    "answer": "Alphaeus",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-042",
+    "question": "According to the Bible, the whale-swallowed prophet Jonah was the son of _____.",
+    "answer": "Amittai",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-043",
+    "question": "In biblical genealogy, the man who fathered Nahshon (a leader of the tribe of Judah during the Exodus) was named _____.",
+    "answer": "Amminadab",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-044",
+    "question": "In biblical times, King David's firstborn son _____ met a tragic end after committing a terrible crime against his half-sister Tamar.",
+    "answer": "Amnon",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-045",
+    "question": "According to the Bible, the prophet Isaiah's father had the unusual name _____",
+    "answer": "Amoz",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-046",
+    "question": "In biblical tradition, Moses and Aaron shared the same father, a man named _____.",
+    "answer": "Amram",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-047",
+    "question": "In the New Testament, this woman welcomed the apostle Paul into her home alongside her husband Philemon, making her name _____.",
+    "answer": "Apphia",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-048",
+    "question": "In the New Testament, Paul escaped Damascus when the governor under King _____ guarded the city. (2 Corinthians 11:32)",
+    "answer": "Aretas",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-049",
+    "question": "In the Bible, this wicked queen mother tried to wipe out the entire royal family of Judah to seize the throne for herself - her name was _____.",
+    "answer": "Athaliah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-050",
+    "question": "In 2 Kings, Hoshea, the last king of Israel, is called the son of _____. (2 Kings 15:30)",
+    "answer": "Elah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-051",
+    "question": "In the Bible, Caleb's wife was named _____. (1 Chronicles 2:18)",
+    "answer": "Azubah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-052",
+    "question": "In the Book of Job, the young man who boldly challenged Job and his three friends was Elihu, son of _____.",
+    "answer": "Barachel",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-053",
+    "question": "In biblical times, this man named _____ had a son called Adriel who was originally promised to marry King Saul's daughter.",
+    "answer": "Barzillai",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-054",
+    "question": "In the Bible, the mighty hunter Nimrod was the son of _____",
+    "answer": "Cush",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-055",
+    "question": "According to biblical accounts, King Solomon's most politically significant marriage was to the _____, cementing a powerful alliance between Israel and Egypt.",
+    "answer": "Daughter of Pharaoh",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-056",
+    "question": "In the Bible, the woman David saw from the rooftop was _____. (2 Samuel 11:3)",
+    "answer": "Bathsheba",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-057",
+    "question": "In biblical times, Aaron the high priest was married to a woman whose name means \"God is my oath\" - her name was _____.",
+    "answer": "Elisheba",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-058",
+    "question": "In the Bible, Jezebel's father was _____. (1 Kings 16:31)",
+    "answer": "Ethbaal",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-059",
+    "question": "In the Book of Judges, the left-handed warrior who assassinated the obese King Eglon with a hidden dagger was Ehud, son of _____.",
+    "answer": "Gera",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-060",
+    "question": "In 2 Samuel, Amasa is identified as the son of _____. (2 Samuel 17:25)",
+    "answer": "Jether",
+    "category": "Biblical Figures",
+    "alternateSpellings": [
+      "Ithra"
+    ]
+  },
+  {
+    "id": "amen-fib-061",
+    "question": "In the Bible, Abraham's older brother who died young and left behind three children including Lot was named _____.",
+    "answer": "Haran",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-062",
+    "question": "In the Old Testament, this prophetess who advised King Josiah was married to Shallum the keeper of the wardrobe and was named _____.",
+    "answer": "Huldah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-063",
+    "question": "In the Bible, the prophet Micaiah who boldly challenged King Ahab was the son of _____.",
+    "answer": "Imla",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-064",
+    "question": "According to the Bible, the first person to live as a nomadic herder with livestock and tents was _____.",
+    "answer": "Jabal",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-065",
+    "question": "In the Book of Judges, this woman killed the Canaanite general Sisera by driving a tent peg through his skull while he slept in her tent - her name was _____.",
+    "answer": "Jael",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-066",
+    "question": "In the Bible, King Uzziah's mother was named _____. (2 Kings 15:2)",
+    "answer": "Jecoliah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-067",
+    "question": "In the Bible, King Joash's mother was _____. (2 Kings 14:2)",
+    "answer": "Jehoaddan",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-068",
+    "question": "In ancient biblical times, the mighty warrior Benaiah—famous for slaying a lion in a pit on a snowy day—called _____ his father.",
+    "answer": "Jehoiada",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-069",
+    "question": "In biblical times, this man named _____ had a son who was one of only two Israelites allowed to enter the Promised Land after the 40-year wilderness wandering.",
+    "answer": "Jephunneh",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-070",
+    "question": "King Uzziah of Judah ruled for 52 years and was married to a woman named _____, whose name means \"possessed by God.\"",
+    "answer": "Jerushah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-071",
+    "question": "In the New Testament, this woman was known for being among the wealthy supporters of Jesus and was married to Chuza, who managed King Herod's household - her name was _____.",
+    "answer": "Joanna",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-072",
+    "question": "In the Bible, this king became ruler of Judah at just seven years old and his name was _____.",
+    "answer": "Joash",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-073",
+    "question": "In the Bible, Moses' mother who hid him in a basket among the reeds was named _____.",
+    "answer": "Jochebed",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-074",
+    "question": "In the New Testament, the fisherman who would become the apostle Peter was the son of a man named _____.",
+    "answer": "Jonas",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-075",
+    "question": "In the Bible, King Saul's eldest son who became David's legendary best friend despite their fathers being enemies was _____.",
+    "answer": "Jonathan",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-076",
+    "question": "In the New Testament's Book of Romans, Paul sends greetings to a man named Philologus and his wife _____.",
+    "answer": "Julia",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-077",
+    "question": "After Sarah's death, the biblical patriarch Abraham took a new wife named _____, who bore him six more children.",
+    "answer": "Keturah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-078",
+    "question": "In the Bible, Moses and Aaron had to deal with a rebellious cousin named _____ who challenged their authority and was swallowed up by the earth.",
+    "answer": "Korah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-079",
+    "question": "In biblical times, this man named _____ had a son called Phalti who would later become entangled in a dramatic love triangle involving King David.",
+    "answer": "Laish",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-080",
+    "question": "In the Bible, the strongman Samson who famously brought down a temple with his bare hands was the son of _____.",
+    "answer": "Manoah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-081",
+    "question": "In Matthew's genealogy, Joseph's father is named _____.",
+    "answer": "Jacob",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-082",
+    "question": "In the Old Testament, King Manasseh of Judah was married to a woman with the unusual name _____.",
+    "answer": "Meshullemeth",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-083",
+    "question": "In Genesis, Abraham's grandfather was named _____. (Genesis 11:22-26)",
+    "answer": "Nahor",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-084",
+    "question": "In ancient biblical times, the rebellious king Jeroboam who split Israel into two kingdoms was the son of _____.",
+    "answer": "Nebat",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-085",
+    "question": "In ancient biblical times, the queen mother who wielded significant political influence as the wife of King Jehoiakim and mother of King Jehoiachin was _____.",
+    "answer": "Nehushta",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-086",
+    "question": "In the Bible, the man who fathered Kish (King Saul's dad) was named _____",
+    "answer": "Ner",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-087",
+    "question": "In the Bible, Joshua's father was named _____, and that's literally all we know about this guy.",
+    "answer": "Nun",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-088",
+    "question": "In the Book of Ruth, Naomi's daughter-in-law who returned to Moab was _____. (Ruth 1:14)",
+    "answer": "Orpah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-089",
+    "question": "The prophet Joel is introduced as the son of _____. (Joel 1:1)",
+    "answer": "Pethuel",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-090",
+    "question": "In the New Testament, this woman worked alongside her husband Aquila as a tentmaker and helped teach the eloquent preacher Apollos - her name was _____.",
+    "answer": "Priscilla",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-091",
+    "question": "In ancient biblical times, the warrior king Hadadezer, who commanded a vast army and clashed with King David, was the son of _____.",
+    "answer": "Rehob",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-092",
+    "question": "In ancient biblical times, the rebellious king Pekah who conspired against his own ruler was the son of _____.",
+    "answer": "Remaliah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-093",
+    "question": "According to the Bible, Jacob's firstborn son who lost his birthright after sleeping with his father's concubine was _____.",
+    "answer": "Reuben",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-094",
+    "question": "The wife of Mahlon was _____.",
+    "answer": "Ruth",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-095",
+    "question": "In the New Testament, this woman boldly asked Jesus if her two sons could sit at his right and left hand in his kingdom - her name was _____.",
+    "answer": "Salome",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-096",
+    "question": "In Nehemiah, one of Joiada's sons became the son-in-law of _____.",
+    "answer": "Sanballat",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-097",
+    "question": "In the Bible, Ananias and his wife _____ were struck dead for lying to the apostles about how much money they received from selling their property.",
+    "answer": "Sapphira",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-098",
+    "question": "In the Old Testament, the prophet Elisha was the son of _____. (1 Kings 19:16)",
+    "answer": "Shaphat",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-099",
+    "question": "According to the Gospel of John, the disciple who betrayed Jesus for thirty pieces of silver was the son of _____.",
+    "answer": "Simon",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-100",
+    "question": "In ancient times, Syrian and Samarian kings tried to overthrow King Ahaz and replace him with the son of _____, but their plot failed miserably.",
+    "answer": "Tabeal",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-101",
+    "question": "In Kings, Ben-hadad of Aram is called the son of _____. (1 Kings 15:18)",
+    "answer": "Tabrimon",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-102",
+    "question": "In 1 Kings, the Egyptian queen who sheltered Jeroboam's wife was named _____. (1 Kings 11:19)",
+    "answer": "Tahpenes",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-103",
+    "question": "The father of blind Bartimaeus was _____.",
+    "answer": "Timaeus",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-104",
+    "question": "In biblical times, the priest _____ fathered Jerusha, who would later become the mother of a king of Judah.",
+    "answer": "Zadok",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-105",
+    "question": "In the New Testament, the apostle brothers James and John were known as the \"Sons of _____\" after their fisherman father.",
+    "answer": "Zebedee",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-106",
+    "question": "In ancient biblical times, King Josiah's wife who gave birth to the future King Jehoiakim was named _____.",
+    "answer": "Zebudah",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-107",
+    "question": "In the Book of Esther, the villainous Haman's wife _____ encouraged him to build a gallows to hang Mordecai.",
+    "answer": "Zeresh",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-108",
+    "question": "In ancient biblical times, the Moabite king Balak, who famously hired the prophet Balaam to curse the Israelites, was the son of _____.",
+    "answer": "Zippor",
+    "category": "Biblical Figures"
+  },
+  {
+    "id": "amen-fib-109",
+    "question": "In 2 Samuel, the wise woman from _____ negotiated with Joab to stop a siege. (2 Samuel 20:14-22)",
+    "answer": "Abel-beth-maacah",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-110",
+    "question": "After Jacob's burial, the mourning site was named _____. (Genesis 50:11)",
+    "answer": "Abel-mizraim",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-111",
+    "question": "Israel camped at _____ before crossing the Jordan into Canaan. (Numbers 33:49)",
+    "answer": "Abel-shittim",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-112",
+    "question": "In the New Testament, Paul ministered in the region of _____. (Acts 18:12)",
+    "answer": "Achaia",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-113",
+    "question": "One of the cities destroyed with Sodom and Gomorrah was _____. (Genesis 19:24-25)",
+    "answer": "Admah",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-114",
+    "question": "During Paul's shipwreck voyage, the ship was driven across the Sea of _____ for many days. (Acts 27:27)",
+    "answer": "Adria",
+    "category": "Biblical Geography",
+    "scriptureRef": "Acts 27:27"
+  },
+  {
+    "id": "amen-fib-115",
+    "question": "David hid in the cave of _____ while fleeing Saul. (1 Samuel 22:1)",
+    "answer": "Adullam",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-116",
+    "question": "The field bought with Judas's betrayal money was called _____. (Acts 1:19)",
+    "answer": "Akeldama",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-117",
+    "question": "Paul sailed on a grain ship from _____ after wintering on Malta. (Acts 28:11)",
+    "answer": "Alexandria",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-118",
+    "question": "On his second missionary journey, Paul passed through _____. (Acts 17:1)",
+    "answer": "Amphipolis",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-119",
+    "question": "Jeremiah was from the priestly town of _____. (Jeremiah 1:1)",
+    "answer": "Anathoth",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-120",
+    "question": "Paul was escorted by night from Jerusalem to _____. (Acts 23:31)",
+    "answer": "Antipatris",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-121",
+    "question": "The Philistines camped at _____ before battle with Israel. (1 Samuel 4:1)",
+    "answer": "Aphek",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-122",
+    "question": "Traveling the Via Egnatia, Paul and Silas passed through _____. (Acts 17:1)",
+    "answer": "Apollonia",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-123",
+    "question": "On the road to Rome, believers met Paul at _____. (Acts 28:15)",
+    "answer": "Appii Forum",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-124",
+    "question": "The deep Jordan Rift Valley is called the _____.",
+    "answer": "Arabah",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-125",
+    "question": "In Genesis, Abraham's servant traveled to _____ to find a wife for Isaac. (Genesis 24:10)",
+    "answer": "Aram-naharaim",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-126",
+    "question": "After the flood, Noah's ark came to rest on the mountains of _____. (Genesis 8:4)",
+    "answer": "Ararat",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-127",
+    "question": "Joseph of _____ asked Pilate for Jesus' body. (Matthew 27:57-58)",
+    "answer": "Arimathea",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-128",
+    "question": "Revelation names _____ as the place of the final great battle. (Revelation 16:16)",
+    "answer": "Armageddon",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-129",
+    "question": "One of the five major Philistine cities was _____. (1 Samuel 5:1)",
+    "answer": "Ashdod",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-130",
+    "question": "Another major Philistine city on the coast was _____. (Judges 14:19)",
+    "answer": "Ashkelon",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-131",
+    "question": "In Revelation, letters were sent to seven churches in the Roman province of _____. (Revelation 1:4)",
+    "answer": "Asia",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-132",
+    "question": "Jonah was sent to preach to Nineveh, capital of _____. (Jonah 1:2)",
+    "answer": "Assyria",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-133",
+    "question": "Paul delivered his Areopagus speech in _____. (Acts 17:22)",
+    "answer": "Athens",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-134",
+    "question": "After baptizing the Ethiopian official, Philip was found in _____. (Acts 8:40)",
+    "answer": "Azotus",
+    "category": "Biblical Geography",
+    "scriptureRef": "Acts 8:40"
+  },
+  {
+    "id": "amen-fib-135",
+    "question": "Jerusalem's exiles were taken to _____. (2 Kings 24:14)",
+    "answer": "Babylon",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-136",
+    "question": "King Og ruled in _____. (Deuteronomy 3:1)",
+    "answer": "Bashan",
+    "category": "Biblical Geography"
+  },
+  {
+    "id": "amen-fib-137",
+    "question": "Near the end of Israel's wilderness journey, they camped at _____. (Numbers 21:16)",
+    "answer": "Beer-elim",
+    "category": "Biblical Geography"
+  }
 ]

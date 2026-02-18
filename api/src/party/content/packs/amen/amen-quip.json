@@ -1,102 +1,2077 @@
 [
-	{
-		"id": "amen-quip-001",
-		"text": "The church announcement nobody expected this Sunday: _____",
-		"category": "Church-Life Situations"
-	},
-	{
-		"id": "amen-quip-002",
-		"text": "A new worship song title about losing your car keys: _____",
-		"category": "Fake Biblical Twist Titles"
-	},
-	{
-		"id": "amen-quip-003",
-		"text": "The name of a self-help book written by Jonah: _____",
-		"category": "Fake Biblical Twist Titles"
-	},
-	{
-		"id": "amen-quip-004",
-		"text": "What Moses is actually thinking during the seventh verse of 'Just As I Am': _____",
-		"category": "What [Bible Character] Would Say If _____"
-	},
-	{
-		"id": "amen-quip-005",
-		"text": "A proverb for people who always bring store-bought cookies to the potluck: _____",
-		"category": "Proverbs for People Who _____"
-	},
-	{
-		"id": "amen-quip-006",
-		"text": "What Peter would yell if the church Wi-Fi went down mid-sermon: _____",
-		"category": "Bible Character + Modern Mashup"
-	},
-	{
-		"id": "amen-quip-007",
-		"text": "The most surprising thing about being on the coffee team at 7 a.m.: _____",
-		"category": "Best/Worst/Most Surprising"
-	},
-	{
-		"id": "amen-quip-008",
-		"text": "A Bible-themed reality show title that would cause instant church group chat drama: _____",
-		"category": "Fake Biblical Twist Titles"
-	},
-	{
-		"id": "amen-quip-009",
-		"text": "What Martha would post after hosting twelve unexpected dinner guests: _____",
-		"category": "Bible Character + Modern Mashup"
-	},
-	{
-		"id": "amen-quip-010",
-		"text": "The worst thing about trying to clap on beat in worship: _____",
-		"category": "Best/Worst/Most Surprising"
-	},
-	{
-		"id": "amen-quip-011",
-		"text": "A proverb for people who say 'I can stack chairs' and then vanish: _____",
-		"category": "Proverbs for People Who _____"
-	},
-	{
-		"id": "amen-quip-012",
-		"text": "What Moses would say if he had to parallel park the ark: _____",
-		"category": "What [Bible Character] Would Say If _____"
-	},
-	{
-		"id": "amen-quip-013",
-		"text": "The most surprising thing in the lost-and-found after youth retreat: _____",
-		"category": "Best/Worst/Most Surprising"
-	},
-	{
-		"id": "amen-quip-014",
-		"text": "A church small-group name that sounded good until someone said it out loud: _____",
-		"category": "Church-Life Situations"
-	},
-	{
-		"id": "amen-quip-015",
-		"text": "The best way to look busy when the pastor asks for volunteers: _____",
-		"category": "Best/Worst/Most Surprising"
-	},
-	{
-		"id": "amen-quip-016",
-		"text": "A proverb for people who always start testimonies with 'long story short': _____",
-		"category": "Proverbs for People Who _____"
-	},
-	{
-		"id": "amen-quip-017",
-		"text": "What Paul would text from prison if he had unlimited emoji: _____",
-		"category": "Bible Character + Modern Mashup"
-	},
-	{
-		"id": "amen-quip-018",
-		"text": "What Jonah would say if his rideshare app matched him with a whale: _____",
-		"category": "What [Bible Character] Would Say If _____"
-	},
-	{
-		"id": "amen-quip-019",
-		"text": "The church bulletin typo that changed everything: _____",
-		"category": "Church-Life Situations"
-	},
-	{
-		"id": "amen-quip-020",
-		"text": "A fake movie title about Noah's family road trip before the flood: _____",
-		"category": "Fake Biblical Twist Titles"
-	}
+  {
+    "id": "amen-quip-001",
+    "text": "The church announcement nobody expected this Sunday: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-002",
+    "text": "A new worship song title about losing your car keys: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-003",
+    "text": "The name of a self-help book written by Jonah: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-004",
+    "text": "What Moses is actually thinking during the seventh verse of 'Just As I Am': _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-005",
+    "text": "A proverb for people who always bring store-bought cookies to the potluck: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-006",
+    "text": "What Peter would yell if the church Wi-Fi went down mid-sermon: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-007",
+    "text": "The secret ingredient in the 7 a.m. church coffee: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-008",
+    "text": "The title of a reality show starring the 12 Disciples: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-009",
+    "text": "What Martha would post after hosting twelve unexpected dinner guests: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-010",
+    "text": "The real reason your church can't clap on beat: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-011",
+    "text": "A proverb for people who say 'I can stack chairs' and then vanish: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-012",
+    "text": "What Noah would say if he had to parallel park the ark: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-013",
+    "text": "The most surprising thing in the lost-and-found after youth retreat: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-014",
+    "text": "A church small-group name that sounded good until someone said it out loud: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-015",
+    "text": "The best way to look busy when the pastor asks for volunteers: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-016",
+    "text": "A proverb for people who always start testimonies with 'long story short': _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-017",
+    "text": "What Paul would text from prison if he had unlimited emoji: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-018",
+    "text": "What Jonah would say if his rideshare app matched him with a great fish: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-019",
+    "text": "The worst part about being stuck on a boat with your in-laws for over a year: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-020",
+    "text": "The 11th Commandment that didn't make the cut (Thou shalt not...): _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-021",
+    "text": "What the burning bush actually smelled like: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-022",
+    "text": "The worst theme for a Vacation Bible School: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-023",
+    "text": "What the priests bought with Judas's returned silver: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-024",
+    "text": "The title of a sermon you would definitely sleep through: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-025",
+    "text": "What God really thought of Solomon's 700 wives: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-026",
+    "text": "The awkward thing the pastor said during the baptism: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-027",
+    "text": "A modern plague God would send to teenagers today: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-028",
+    "text": "The Wi-Fi password at the Gates of Heaven: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-029",
+    "text": "What the snake in the Garden of Eden was actually trying to sell: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-030",
+    "text": "The real reason Zacchaeus climbed the tree: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-031",
+    "text": "The worst dish to bring to the Last Supper: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-032",
+    "text": "What people WISH Jesus had written in the sand: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-033",
+    "text": "A Yelp review for the Inn at Bethlehem: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-034",
+    "text": "The most annoying thing about living to be 969 years old: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-035",
+    "text": "What the donkey really wanted to say to Balaam: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-036",
+    "text": "The youth pastor's new slang word for 'sin': _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-037",
+    "text": "Why the lions didn't eat Daniel: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-038",
+    "text": "The real reason the Israelites wandered for 40 years: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-039",
+    "text": "What Eve really said when Adam blamed her: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-040",
+    "text": "A proverb for people who sit in your unassigned assigned seat: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-041",
+    "text": "The clickbait title of Paul's latest epistle: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-042",
+    "text": "What the prodigal son's brother actually muttered under his breath: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-043",
+    "text": "The weirdest thing found in a church pew pocket: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-044",
+    "text": "A modern miracle that would impress nobody: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-045",
+    "text": "What Goliath was thinking right before the rock hit: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-046",
+    "text": "The worst song to play during the offering: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-047",
+    "text": "A proverb for the person who sings harmony loudly and incorrectly: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-048",
+    "text": "What Job's friends would text him today: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-049",
+    "text": "The title of a memoir written by the church sound technician who has heard every private conversation on a hot mic: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-050",
+    "text": "The title of a fashion magazine founded by Joseph showcasing the latest in technicolor dreamcoat trends: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-051",
+    "text": "The most surprising item discovered when the church finally cleaned out the storage closet that had been locked since 1987: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-052",
+    "text": "The most creative way a children's ministry has ever explained a difficult Old Testament story using only felt boards: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-053",
+    "text": "The title of a LinkedIn article written by the Tower of Babel project manager explaining why the team fell apart: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-054",
+    "text": "The best (or worst) reaction to a surprise pop-quiz on the sermon's main point: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-055",
+    "text": "What Demas would write on his resignation letter after abandoning Paul because he loved the present world: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-056",
+    "text": "The title of a church bulletin insert that nobody reads but someone spent fourteen hours designing: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-057",
+    "text": "The title of a budget airline named after the wings of a seraphim with very limited legroom: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-058",
+    "text": "The best (or worst) line to whisper when the worship leader says, \"Let's lift our voices\": _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-059",
+    "text": "The most chaos ever caused by a single potluck dish that was labeled incorrectly: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-060",
+    "text": "The name of a luxury travel agency run by Paul describing all the places he has been shipwrecked: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-061",
+    "text": "The title of a lifestyle magazine aimed at wilderness wanderers who have been told they will definitely arrive eventually: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-062",
+    "text": "The best (or worst) line to shout when the worship team unexpectedly adds a percussion solo: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-063",
+    "text": "What Joash would say to the priest Jehoiada after he finally got around to fixing the temple after a very long delay: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-064",
+    "text": "The best thing anyone has ever won at a church raffle that made absolutely no sense as a prize: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-065",
+    "text": "What the men who carried the paralyzed man through the roof would say on their contractor insurance claim: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-066",
+    "text": "A proverb for people who set a daily Bible reading plan every January first and finish the book of Genesis by February: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-067",
+    "text": "The most dramatic moment at a church holiday craft fair that nobody saw coming: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-068",
+    "text": "What Ananias of Damascus would say to a friend who asked him to go visit a stranger who had literally just been persecuting everyone: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-069",
+    "text": "The strangest tradition that has somehow survived every church pastoral transition for forty years: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-070",
+    "text": "What Tabitha would say on Etsy about her handmade robes and the very unusual five-star review she received: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-071",
+    "text": "A proverb for people who change their spiritual gifts test results until they get one they like: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-072",
+    "text": "The title of a self-improvement course taught by Joseph about how to thrive in situations you absolutely did not choose: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-073",
+    "text": "The worst item to bring to a church white elephant gift exchange: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-074",
+    "text": "What John the apostle would say if he opened a quiet contemplative retreat center and Zoom calls kept getting booked in his silent room: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-075",
+    "text": "The best thing overheard between two older church members during the passing of the peace: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-076",
+    "text": "What Sosthenes would say after being beaten in front of the proconsul and then later becoming a Christian anyway: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-077",
+    "text": "The title of a competitive show where church elders attempt to send the most diplomatically phrased correction email: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-078",
+    "text": "The most surprising thing you might hear when the church's ceiling fan turns on during a quiet prayer: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-079",
+    "text": "What Jochebed would say on a parenting podcast about trusting the process when everything feels impossible: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-080",
+    "text": "The most elaborate decoration scheme anyone has ever brought to the church Easter egg hunt: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-081",
+    "text": "What Naaman would write in his product review for the Jordan River after seven dips cured his leprosy: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-082",
+    "text": "The title of a gardening show where contestants attempt to grow a mustard tree from the smallest possible seed: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-083",
+    "text": "The most quietly heroic thing a Sunday school teacher has ever done without anyone noticing: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-084",
+    "text": "What Lydia would say on Shark Tank pitching her purple fabric business: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-085",
+    "text": "The best unintentional sermon illustration a child has ever provided from the front row: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-086",
+    "text": "What Pilate would write in his 'lessons learned' memo after the trial of Jesus: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-087",
+    "text": "The title of a financial recovery podcast for people who have just sold all their possessions and given the money to the poor: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-088",
+    "text": "The best thing overheard from two toddlers in the nursery during the sermon on humility: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-089",
+    "text": "What Zechariah would say to his doctor after nine months of not being able to speak: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-090",
+    "text": "The church-wide announcement that accidentally combines the youth retreat with \"shark-tank\" pitches: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-091",
+    "text": "What Timothy would say if Paul sent him a very long letter with a lot of instructions and he had not even gotten settled yet: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-092",
+    "text": "The strangest question ever asked during a new members interview that somehow made perfect sense later: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-093",
+    "text": "What Joshua would say if a building code inspector told him the walls of Jericho were actually structurally sound: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-094",
+    "text": "The most chaotic Sunday that resulted from two ministry teams accidentally booking the fellowship hall at the same time: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-095",
+    "text": "The name of a competitive renovation show hosted by Ezra and Nehemiah with a strict historically-accurate ruleset: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-096",
+    "text": "A proverb for people who add 'bless their heart' to the end of anything they say about someone else: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-097",
+    "text": "The title of a Netflix docuseries about the church nursery workers who have never once been thanked: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-098",
+    "text": "The most unexpected thing a church tech volunteer could discover tangled in the cables: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-099",
+    "text": "What Aquila would say if he found out Apollos had been teaching things slightly off and had to figure out how to bring it up: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-100",
+    "text": "The most memorable thing a guest preacher has ever accidentally said that was clearly meant for a different church: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-101",
+    "text": "The title of a podcast where the two disciples on the road to Emmaus recount the best walk they never fully understood: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-102",
+    "text": "The most unexpected thing a church librarian could discover in the donation bin: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-103",
+    "text": "What Phoebe would write in her delivery confirmation note after carrying Paul's letter to Rome: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-104",
+    "text": "The most surprising confession made during the church annual general meeting under any other business: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-105",
+    "text": "What the centurion who believed without Jesus coming to his house would say in a masterclass on remote faith: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-106",
+    "text": "The title of a business etiquette seminar hosted by Laban about negotiating fairly with family members: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-107",
+    "text": "The most surprisingly emotional moment that ever happened at a church garage sale: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-108",
+    "text": "What Gideon would say to the career counselor who asked why he needed so many qualifications before saying yes: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-109",
+    "text": "The most creative excuse ever given for not attending the church workday but still showing up at lunch: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-110",
+    "text": "What Caleb would post on a fitness app at age eighty-five when he finally conquered the mountain he wanted: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-111",
+    "text": "The title of a small group curriculum about radical generosity that everyone admires from a safe distance: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-112",
+    "text": "The best (or worst) line to whisper when the pastor pauses for dramatic effect: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-113",
+    "text": "What Silas would say if someone asked him how he stayed positive while chained in a Philippian dungeon at midnight: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-114",
+    "text": "The strangest rule on the sign-up sheet for the church Thanksgiving dinner that nobody questioned: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-115",
+    "text": "What John the Baptist would review on Yelp for a local restaurant that uses processed food: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-116",
+    "text": "The title of a children's animated series where the four horsemen of Revelation teach road safety: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-117",
+    "text": "The most surprising church bulletin typo that somehow changed the entire tone of the announcement: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-118",
+    "text": "What Samson would say if he walked into a hair-care salon looking for a trim: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-119",
+    "text": "The weirdest item a church volunteer has ever used to solve a last-minute problem during the service: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-120",
+    "text": "What Leah would write on her anniversary card to Jacob knowing he wished she were someone else: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-121",
+    "text": "The title of a leadership manual written by Moses exclusively about managing difficult people in small, enclosed spaces: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-122",
+    "text": "The best (or worst) name for the church's mascot that's a dancing dove: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-123",
+    "text": "What Eli would say if he found out his sons were microwaving fish in the church kitchen again: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-124",
+    "text": "The phrase the youth leader whispers when the lights flicker: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-125",
+    "text": "What Elisha would post in a neighborhood app after his neighbor's axe head fell in the river: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-126",
+    "text": "The title of a wilderness navigation app built by Moses with extremely confusing route options: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-127",
+    "text": "The most unexpected church role that somehow became the most important job in the building: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-128",
+    "text": "What David would say if his slingshot was upgraded to a laser tag gun: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-129",
+    "text": "The most dramatic moment in the history of the church children's Christmas play dress rehearsal: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-130",
+    "text": "What Priscilla and Aquila would name their tent-making side hustle on Etsy: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-131",
+    "text": "The title of an unsolicited church cookbook submitted by someone who lists 'gifted in hospitality' as their spiritual gift: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-132",
+    "text": "The most surprising thing you might hear when the church's fire alarm rings during a quiet meditation: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-133",
+    "text": "What Jonah would say if his vacation brochure highlighted \"Whale-Watching Tours\": _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-134",
+    "text": "The most memorable way a pastor has ever recovered from accidentally mispronouncing a Bible name in front of the whole congregation: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-135",
+    "text": "The name of a financial advice column written by the widow who gave two small coins and got the most famous review of all time: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-136",
+    "text": "The title of a church drama about two families who both claimed the same casserole dish for forty years: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-137",
+    "text": "The most surprising thing to find in the church's recycling bin after a big event: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-138",
+    "text": "What Jonah would say if a mental health app asked him to describe his current environment: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-139",
+    "text": "The church-wide sign that accidentally mixes up \"Vegan\" and \"Vigil\": _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-140",
+    "text": "What the rich young ruler would post on Reddit after walking away sad: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-141",
+    "text": "The title of a workplace thriller where the entire plot hinges on who has the key to the church boiler room: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-142",
+    "text": "The best (or worst) hashtag for the congregation's 2026 mission trip: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-143",
+    "text": "The weirdest rule someone tried to enforce at the church potluck that actually stuck: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-144",
+    "text": "What the Gadarene demoniac would write in his testimony for the church bulletin after his encounter with Jesus: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-145",
+    "text": "A proverb for people who know every worship song from 2007 but refuse to learn any new ones: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-146",
+    "text": "The title of a legal drama about who is responsible for the missing church van keys from the 2009 missions trip: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-147",
+    "text": "The worst name ever given to a church capital campaign: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-148",
+    "text": "The name of a conflict resolution workshop run by the church board that has been in conflict for eleven years: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-149",
+    "text": "What the man healed at the pool of Bethesda would post on a physical therapy review site: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-150",
+    "text": "The title of a competitive debate show where church committee members argue about the correct color for the fellowship hall chairs: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-151",
+    "text": "The best thing anyone has ever written in a church prayer request card that was clearly meant for a different form: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-152",
+    "text": "What Shadrach, Meshach, and Abednego would text from inside the furnace: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-153",
+    "text": "The church-wide scavenger hunt clue that ends up at the milk fridge: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-154",
+    "text": "The title of a podcast where Paul grades all of his letters by how well the churches actually followed through: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-155",
+    "text": "The title of a lifestyle blog written by the Proverbs 31 woman that makes everyone feel simultaneously inspired and exhausted: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-156",
+    "text": "The most unexpected compliment a church janitor could receive: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-157",
+    "text": "What Isaac would say to a couple's therapist trying to understand how his marriage was arranged: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-158",
+    "text": "What someone always prays about that makes everyone shift uncomfortably: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-159",
+    "text": "What Job would write as the caption for a photo of himself sitting in the ash heap after losing everything: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-160",
+    "text": "The title of a cooking show where every episode begins with Elijah sitting under a juniper tree waiting for the angel to bring snacks: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-161",
+    "text": "The best (or worst) line to shout when the worship team switches to a surprise song: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-162",
+    "text": "What Elijah would say if he found out Elisha had been posting all his miracles on social media without tagging him: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-163",
+    "text": "The most creative category name for a church awards night that has gotten completely out of hand: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-164",
+    "text": "What Amos would write in his Glassdoor review of working as a shepherd before becoming a prophet: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-165",
+    "text": "The title of a true crime podcast about the missing donkeys that sent Saul looking and ended in an unexpected coronation: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-166",
+    "text": "The most memorable thing the church sound system has ever accidentally broadcast to the entire building: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-167",
+    "text": "What Rahab would say if she had to justify a very unusual networking contact list to an auditor: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-168",
+    "text": "The most awkward church announcement that got worse the longer it went on: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-169",
+    "text": "The name of a competitive decluttering show hosted by the disciples after Jesus told them to take nothing for the journey: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-170",
+    "text": "The title of a thriller series set entirely in the weeks leading up to the church annual budget vote: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-171",
+    "text": "The worst thing that has ever been written inside a donated Bible found at a church library sale: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-172",
+    "text": "What Shimei would post after David finally became king and Shimei had to reconsider everything he had shouted: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-173",
+    "text": "The strangest item ever auctioned at a church fundraiser that somehow raised the most money: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-174",
+    "text": "The title of a documentary series following the children of Israel as they attempt to pack and move an entire nation: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-175",
+    "text": "The worst excuse a kid gives for being late to Sunday school: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-176",
+    "text": "What Abigail would say if someone asked her how she stayed calm during a crisis while her husband completely fell apart: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-177",
+    "text": "The most unusual prayer chain request that somehow got forwarded to the entire denomination: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-178",
+    "text": "The name of a financial planning firm started by Joseph after managing Pharaoh's grain: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-179",
+    "text": "A proverb for people who say 'I'm not a hugger' at church but fully hug someone they like five minutes later: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-180",
+    "text": "The title of a competitive organization challenge show where contestants must properly catalog the genealogies of Chronicles: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-181",
+    "text": "The best (or worst) name for a junior-pastor mascot that's a llama: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-182",
+    "text": "What Elijah would say if someone told him the still small voice was probably just the HVAC unit: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-183",
+    "text": "The most chaotic thing that has ever happened when the church projection slides got completely out of order mid-sermon: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-184",
+    "text": "What Pharaoh would post on LinkedIn after the tenth plague finally convinced him to let the people go: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-185",
+    "text": "The title of a competitive flower arranging show where all displays must be inspired by the tabernacle curtains: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-186",
+    "text": "The most surprising item on the church kitchen's 'do not touch' shelf: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-187",
+    "text": "What Uzzah would have wanted on his tombstone if given the chance to write it himself: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-188",
+    "text": "The title of a survival memoir written by the church tech volunteer who ran the slides alone on Christmas Eve: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-189",
+    "text": "What Sarai would post to a parenting forum when she is eighty-nine years old and expecting: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-190",
+    "text": "The title of a courtroom drama about who ate the last piece of pie at the church social: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-191",
+    "text": "The best excuse a church volunteer has ever given for not finishing decorations: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-192",
+    "text": "The least expected genre for a sermon series on the book of Leviticus: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-193",
+    "text": "The title of a wellness blog written by the woman who anointed Jesus's feet and did not care what anyone thought: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-194",
+    "text": "The most surprising thing you might hear when the pastor's microphone cuts out mid-sermon: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-195",
+    "text": "What Ananias would say to Saul on the way to his house if he had GPS navigation giving him second thoughts: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-196",
+    "text": "The parking lot sign that tells drivers to ___ instead of park: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-197",
+    "text": "What Felix would write in his performance review after leaving Paul in prison for two years because it was convenient: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-198",
+    "text": "The title of a relationship advice column written by Isaac and Rebekah about long-distance courtship: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-199",
+    "text": "The best (or worst) theme for a Christian costume party: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-200",
+    "text": "What Bathsheba would say if she had to give a TED Talk about pivoting from unexpected circumstances: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-201",
+    "text": "The least appropriate song the children's choir has ever performed on Easter Sunday: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-202",
+    "text": "What Salome would write in her dance recital program bio: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-203",
+    "text": "A proverb for people who say 'we should get together soon' after every service and have been saying it for four years: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-204",
+    "text": "The title of a church conflict resolution workbook written by someone who has been in the same dispute for six years: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-205",
+    "text": "The most unexpected thing a church custodian could find behind the altar: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-206",
+    "text": "What Jonah would say if a motivational speaker told him every setback is a setup for a comeback: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-207",
+    "text": "The weirdest thing the church handbell choir has ever played at an inappropriate moment: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-208",
+    "text": "The name of an interior design firm run by Bezalel, the craftsman of the Tabernacle: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-209",
+    "text": "The title of a competitive speed-reading championship where all texts are exclusively from Numbers: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-210",
+    "text": "The best (or worst) line to shout when the pastor says \"Let me tell you a story...\": _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-211",
+    "text": "What the Apostle John would write in a Google Doc titled \"Future Prophecies\": _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-212",
+    "text": "The most quietly chaotic thing that has ever occurred in the church nursery during a sermon on patience: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-213",
+    "text": "What Cain would write in the 'reason for absence' field after missing the family gathering: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-214",
+    "text": "The title of a home security company founded by the angels who guarded the Garden of Eden: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-215",
+    "text": "The most surprising thing a Sunday school teacher could find in the supply closet: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-216",
+    "text": "What Joseph would say if Pharaoh asked him to explain his methodology for dream interpretation on a job application: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-217",
+    "text": "The church-wide text that accidentally reads \"Please bring muffins, not swords\": _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-218",
+    "text": "What Abigail would write in her crisis management consulting bio after the Nabal situation: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-219",
+    "text": "The title of a competitive endurance show where contestants must sit through an entire church committee meeting without checking their phone: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-220",
+    "text": "The most surprising thing you might hear when the church's bell rings during a prayer: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-221",
+    "text": "What Methuselah would complain about at his 969th birthday party: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-222",
+    "text": "The strangest thing ever requested in a church missions trip packing list: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-223",
+    "text": "Jonah's motivational quote for staying beneath the surface: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-224",
+    "text": "The title of a competitive cooking show where all dishes must be prepared in a wilderness camp with only what a raven brought: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-225",
+    "text": "The most surprising thing the church's gift-registry actually requests: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-226",
+    "text": "What Naomi would say to a travel agent trying to book her a one-way ticket back to Bethlehem: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-227",
+    "text": "The worst possible moment to realize you've been harmonizing the wrong note during worship: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-228",
+    "text": "What Gehazi would post on social media after being caught lying to Naaman: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-229",
+    "text": "A proverb for people who consider their daily devotional done after reading the scripture reference but not the actual scripture: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-230",
+    "text": "The title of a home staging tutorial series where every episode ends with the house being immediately destroyed: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-231",
+    "text": "The best (or worst) line to whisper when the organist plays an unexpected chord: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-232",
+    "text": "What Philip would text to the Ethiopian official after their chariot Bible study concluded: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-233",
+    "text": "The most passive-aggressive thing ever sung by a church choir member who did not get the solo: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-234",
+    "text": "What the prodigal son's father would post on a parenting forum about radical welcome and also running: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-235",
+    "text": "The title of a competitive landscaping show where contestants must turn a desert into a fruitful field in one season: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-236",
+    "text": "The most surprising thing a church greeter could hand out on the first day of fall: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-237",
+    "text": "What Barnabas would say if he ran an encouragement hotline and got a really tough caller: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-238",
+    "text": "The church-wide flyer that accidentally advertises a \"pot-luck\" as a \"pot-lock\": _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-239",
+    "text": "What Caiaphas would write in his performance review of the temple money changers before Jesus showed up: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-240",
+    "text": "The title of a memoir written by the church pianist who has played every service for thirty-seven years without a substitute: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-241",
+    "text": "The most surprising thing to discover in the church basement after the remodel: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-242",
+    "text": "What Rebekah would text Jacob before he approached his father Isaac with the stew: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-243",
+    "text": "The most creative thing the children's ministry has ever made out of construction paper that ended up in the sanctuary: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-244",
+    "text": "What Miriam would post in the group chat right after crossing the Red Sea: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-245",
+    "text": "A proverb for people who raise their hand in the sermon as if it were a call to respond but it was actually a rhetorical question: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-246",
+    "text": "The worst possible Bible verse to cross-stitch on a throw pillow: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-247",
+    "text": "The most surprising thing to happen when the church Wi-Fi drops during a live stream: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-248",
+    "text": "What Aaron would say if someone asked him to explain the golden calf situation at his performance review: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-249",
+    "text": "The best plot twist in a church nativity play that nobody in the script approved: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-250",
+    "text": "What the Pharisee and the tax collector would say if they had to share a table at the church fellowship lunch: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-251",
+    "text": "The title of a competitive job placement show where twelve tribes compete to see who gets the best territory: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-252",
+    "text": "The most unexpected thing a church greeter could hear from a newcomer: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-253",
+    "text": "What Miriam would say to Moses after she complained and then got leprosy for seven days: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-254",
+    "text": "The most creative use of leftover palm branches the week after Palm Sunday: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-255",
+    "text": "What Jezebel would post on her interior design blog about Naboth's vineyard: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-256",
+    "text": "Fake Biblical title for a legal drama titled \"The Judges of Israel vs. The Court of Heaven\": _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-257",
+    "text": "The most unexpected item on the church missions committee's approved expenses list: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-258",
+    "text": "What Nehemiah would DM someone who keeps asking 'are we there yet' during the wall rebuild: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-259",
+    "text": "The most creative use of a leftover church banner that was ordered for a service two years ago: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-260",
+    "text": "What Absalom would write in his shampoo commercial script: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-261",
+    "text": "The title of a cooking competition where the mystery ingredient is always something found in the book of Leviticus that nobody recognizes: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-262",
+    "text": "The best (or worst) line to drop when the worship leader says \"Turn it up!\": _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-263",
+    "text": "What Andrew would say if he kept being introduced only as Simon Peter's brother: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-264",
+    "text": "The most quietly devastating thing said at a church potluck when someone asks who made the casserole: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-265",
+    "text": "What Jonah would rate his Uber driver who dropped him off at the port: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-266",
+    "text": "The title of a competitive baking show where all recipes must feed at least five thousand people: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-267",
+    "text": "The most surprising thing you might hear when the church's sprinkler system accidentally activates during a worship song: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-268",
+    "text": "What Joab would post on a leadership forum about knowing when to act without waiting for permission: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-269",
+    "text": "The weirdest way the church has ever tried to make announcements feel exciting: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-270",
+    "text": "Fake biblical twist title for a rom-com about two choir members falling in love: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-271",
+    "text": "The most surprising thing the church's \"suggestion box\" actually suggested: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-272",
+    "text": "What the apostle Luke would post if he were asked to create a \"travel diary\" of his journeys: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-273",
+    "text": "The strangest thing anyone has ever accidentally projected on the church screen instead of the sermon notes: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-274",
+    "text": "What Gideon would put in his out-of-office message while he is still deciding whether to go into battle: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-275",
+    "text": "The title of a competitive talent show where all acts must represent one of the twelve tribes: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-276",
+    "text": "The most surprising thing you might hear when the sound system goes rogue mid-song: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-277",
+    "text": "What the ten bridesmaids would text the group chat when the oil situation became a crisis: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-278",
+    "text": "The most unexpected thing found in the church library that someone donated and nobody removed: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-279",
+    "text": "What Philip would say if the Ethiopian official left a Google review for their roadside Bible study: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-280",
+    "text": "The title of a legal thriller about whether the church fellowship hall belongs to the morning or evening congregation: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-281",
+    "text": "The most surprising thing the church's suggestion box actually contains: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-282",
+    "text": "What Micah would tweet if he could only use 140 characters about justice: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-283",
+    "text": "The Sunday School lesson plan that got swapped with a cooking class: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-284",
+    "text": "The name of a mindfulness app developed by Moses during the forty years of wilderness wandering: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-285",
+    "text": "The title of a children's book about Moses as a baby told from the perspective of the basket: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-286",
+    "text": "The worst thing to accidentally blare over the children's choir rehearsal: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-287",
+    "text": "What Deborah would say when someone tells her that women can't lead the battle strategy meeting: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-288",
+    "text": "The best \"thank-you\" note to slip into the pastor's coffee mug: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-289",
+    "text": "What the disciples would say in their group chat after Jesus fed five thousand people and they were the ones handing it all out: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-290",
+    "text": "Fake Biblical title for a comedy where Noah tries to fit a pet llama on the Ark: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-291",
+    "text": "The best excuse for a choir member who missed rehearsal: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-292",
+    "text": "What Boaz would say on a first date trying to explain the whole kinsman-redeemer thing: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-293",
+    "text": "The most confusing church sign anyone has ever driven past on a Sunday morning: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-294",
+    "text": "What Samson's gym membership profile would say under 'fitness goals': _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-295",
+    "text": "Fake Biblical title for an adventure series about Daniel in the lion-cage gym: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-296",
+    "text": "The best (or worst) line to whisper when the organist takes a dramatic pause: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-297",
+    "text": "What Esther would say if she had to RSVP to a royal banquet via SMS: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-298",
+    "text": "The worst possible time for the offering plate to skip your row by accident: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-299",
+    "text": "What Nicodemus would ask a search engine at three in the morning: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-300",
+    "text": "The title of a home organizing guide written by Noah about what to pack when everything you own has to fit on one boat: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-301",
+    "text": "The most unexpected thing you could hear when the church's microphone feedback squeals: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-302",
+    "text": "What the apostle Peter would say if He were asked to write a quick \"congratulations\" text to a newly baptized member: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-303",
+    "text": "The church-wide reminder that accidentally reads \"Don't forget to bring your *spirit* (and snacks)\": _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-304",
+    "text": "What Onesimus would write in his cover letter when applying for a job back where he started: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-305",
+    "text": "The title of a competitive landscaping show where all contestants must make a garden better than Eden: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-306",
+    "text": "The most surprising thing a first-time visitor ever said after attending a church for the first time: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-307",
+    "text": "The most passive-aggressive way to respond when someone takes your seat at the church Christmas concert: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-308",
+    "text": "What the angel who rolled the stone away would write in their incident report: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-309",
+    "text": "A fake Biblical title for a travel guide to the Promised Land's Airbnb listings: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-310",
+    "text": "The most surprising thing you might hear when the church's sprinkler system activates during a sermon: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-311",
+    "text": "What Zacchaeus would say if he ended up on a home makeover show and the whole town showed up to watch: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-312",
+    "text": "The potluck dish that always disappears before dessert: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-313",
+    "text": "What Lot would write as his real estate listing description for Sodom before leaving: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-314",
+    "text": "The title of a home organization series written by Mary of Bethany and co-written reluctantly by Martha: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-315",
+    "text": "The most surprising item a church volunteer will discover behind the altar: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-316",
+    "text": "What Habakkuk would say if someone told him his complaint was 'too negative' for the church newsletter: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-317",
+    "text": "What the woman at the well would write in her community water conservation blog: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-318",
+    "text": "The title of a productivity guide written by Nehemiah for people who keep getting distracted mid-project: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-319",
+    "text": "The worst possible time for someone's phone to ring in church: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-320",
+    "text": "What Jephthah would say if he had to explain to a therapist why he makes decisions the way he makes decisions: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-321",
+    "text": "What the innkeeper who had no room would write as his TripAdvisor response to Mary and Joseph's review: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-322",
+    "text": "The title of a competitive trivia game show where the only category is obscure Old Testament genealogies: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-323",
+    "text": "The best (or worst) excuse for not remembering the fundraiser deadline: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-324",
+    "text": "What the choir director would whisper to the organist during the climax of \"Amazing Grace\": _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-325",
+    "text": "The hymn that suddenly needs a bridge about coffee: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-326",
+    "text": "What Dorcas would sell on her Etsy shop and what her five-star review section would say: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-327",
+    "text": "Fake biblical twist title for a dating-app that matches saints by virtue: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-328",
+    "text": "The most unexpected compliment a worship leader could receive after a set: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-329",
+    "text": "What Elijah would order from a modern drive-through after the prophets of Baal incident: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-330",
+    "text": "The best thing a Sunday school teacher has ever said to explain something to a six-year-old and accidentally changed everyone's theology: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-331",
+    "text": "The title of a road trip travel vlog filmed by the disciples on the way to every town Jesus sent them to: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-332",
+    "text": "The title of a cooking channel hosted by the ravens who fed Elijah by the brook: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-333",
+    "text": "The most surprising thing that could happen when the church's Wi-Fi goes down during a livestream: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-334",
+    "text": "What Jael would say if she had to explain her hospitality methods on a home cooking competition: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-335",
+    "text": "The worst possible theme for a church youth group lock-in that someone approved without thinking it through: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-336",
+    "text": "What Sapphira would say to Ananias right before they got their story straight: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-337",
+    "text": "The title of a nature documentary about the burning bush narrated in a very calm voice: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-338",
+    "text": "The most surprising thing about the church nursery nobody warned you about: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-339",
+    "text": "What Laban would say if he was asked to be a reference on someone's integrity exam: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-340",
+    "text": "What David would post on SoundCloud before his audition for the royal court: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-341",
+    "text": "Fake Biblical title for a superhero movie starring \"The Light-Bringer\": _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-342",
+    "text": "The most surprising thing you might hear when the child's choir takes a break: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-343",
+    "text": "What Noah would post if he had to write a weather forecast for the Ark's second cruise: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-344",
+    "text": "The funniest thing a child has ever said out loud during the moment of silent prayer: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-345",
+    "text": "The title of a home cooking show hosted by the woman who lost her coin and searched the whole house: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-346",
+    "text": "The title of a workplace management guide written by Joseph from inside an Egyptian prison: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-347",
+    "text": "The most surprisingly emotional moment that happened at a church game night: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-348",
+    "text": "What David would sing on TikTok if he had a 15-second soundbite: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-349",
+    "text": "The church-wide flyer that accidentally lists the bake-sale on the wrong date: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-350",
+    "text": "The name of a cold-weather clothing line endorsed by Elijah after his wilderness experience: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-351",
+    "text": "A proverb for people who show up to a church work day but spend the whole time supervising: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-352",
+    "text": "The title of a home budgeting podcast hosted by the prodigal son after coming back to his senses: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-353",
+    "text": "The most surprising thing you might hear when the altar call microphone crackles: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-354",
+    "text": "What Micah would say if someone asked him to summarize his whole book in one sentence: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-355",
+    "text": "The church bulletin headline that would make the whole congregation chortle: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-356",
+    "text": "What Bildad, Zophar, and Eliphaz would call their advice podcast: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-357",
+    "text": "The title of a mystery novel in which Potiphar investigates what really happened: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-358",
+    "text": "The worst karaoke song to perform at a church fundraiser: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-359",
+    "text": "What Abraham would say if he had to explain \"parking spot wars\" to his grandson: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-360",
+    "text": "The worst possible reason to show up on the church livestream in the background: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-361",
+    "text": "What Silas would post in a travel review after yet another city asked him and Paul to leave immediately: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-362",
+    "text": "Fake Biblical title for a game show where contestants must name the \"Fruit of the Spirit\" in reverse order: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-363",
+    "text": "The most surprising thing you could hear when the church's fire alarm goes off during a prayer: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-364",
+    "text": "What Malachi would say if someone told him he was being too negative for a closing act: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-365",
+    "text": "The most unexpected confession made during a church deacon nomination meeting: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-366",
+    "text": "What Priscilla would post in an online theology forum when someone confidently gets it wrong: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-367",
+    "text": "Fake Biblical title for a series about \"The Epic Quest for the Missing Calendar\": _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-368",
+    "text": "The best (or worst) excuse for arriving late to the evening worship service: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-369",
+    "text": "What Abraham would say if he tried to order a \"covenant\" on Amazon Prime: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-370",
+    "text": "The weirdest thing overheard in the church parking lot after a particularly long sermon: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-371",
+    "text": "David's Instagram caption after beating Goliath in a video game: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-372",
+    "text": "Fake biblical twist title for a musical about the Exodus told from the sand's point of view: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-373",
+    "text": "The best (or worst) karaoke song choice for the worship night: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-374",
+    "text": "The most quietly dramatic thing that has ever happened at a church deacon installation service: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-375",
+    "text": "The name of a subscription box service started by the widow with two mites: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-376",
+    "text": "A proverb for people who always volunteer to pray before meals but go way too long while the food gets cold: _____",
+    "category": "Proverbs for People Who _____"
+  },
+  {
+    "id": "amen-quip-377",
+    "text": "The title of a reality competition show where twelve spies compete to give the most accurate report: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-378",
+    "text": "The best (or worst) line to shout when the worship band drops the mic: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-379",
+    "text": "What Hosea would say to a marriage counselor trying to understand the situation: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-380",
+    "text": "The choir director's secret playlist for rehearsals: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-381",
+    "text": "What James and John's mother would post on a parenting blog about advocating for your children: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-382",
+    "text": "The title of a competitive flower arrangement show where all designs must be inspired by the Song of Solomon: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-383",
+    "text": "The most creative excuse for not joining the church choir: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-384",
+    "text": "What Adam would say on a wilderness therapy retreat when the counselor asks him to name his feelings: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-385",
+    "text": "The name of the children's ministry curriculum nobody asked for but someone wrote anyway: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-386",
+    "text": "The title of Esther's makeup tutorial series on YouTube: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-387",
+    "text": "The title of a motivational book written by Caleb, the eighty-five-year-old who still wanted a mountain: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-388",
+    "text": "The best (or worst) line to whisper when the pastor says, \"And that's why God is...\": _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-389",
+    "text": "What the apostle John would say if He were asked to write a short \"thanks\" note to the catering team after a fellowship dinner: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-390",
+    "text": "The volunteer shirt slogan that nobody can read: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-391",
+    "text": "The title of a competitive swimwear line endorsed by Pharaoh's daughter: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-392",
+    "text": "The most unexpected thing that could happen during a silent prayer marathon: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-393",
+    "text": "The most uncomfortable thing that has ever happened during a church icebreaker game: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-394",
+    "text": "What the ten lepers would post in a group chat after only one went back to say thank you: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-395",
+    "text": "The title of a competitive maze-running show where contestants follow a pillar of fire at night only: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-396",
+    "text": "The worst possible name for the church's new contemporary service: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-397",
+    "text": "What Mary Magdalene would put on a \"Top 5\" list of prayer topics: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-398",
+    "text": "What Elisha's Uber driver rating comment would say: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-399",
+    "text": "The title of a wellness retreat brochure written by the apostle John during his time on the island of Patmos: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-400",
+    "text": "The most unexpected thing you might find in the church's break-room fridge: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-401",
+    "text": "What Joshua would say if he had to announce a \"virtual\" battle plan: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-402",
+    "text": "The worst job title for someone who is terrible at keeping secrets: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-403",
+    "text": "What Hagar would post on a hiking app after finding water in the desert: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-404",
+    "text": "Fake Biblical title for a horror film about the ten-plagues of home-office: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-405",
+    "text": "The worst thing to write on the whiteboard during a prayer-chain: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-406",
+    "text": "What Balaam would say if his donkey left a one-star review for him on a riding app: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-407",
+    "text": "The church-wide bulletin that accidentally lists pizza as communion: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-408",
+    "text": "What Bildad the Shuhite would write in an unsolicited advice column: _____",
+    "category": "Bible Character + Modern Mashup"
+  },
+  {
+    "id": "amen-quip-409",
+    "text": "The title of a detective novel about who keeps eating the communion bread before the service starts: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-410",
+    "text": "The best (or worst) excuse for forgetting the prayer request cards: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-411",
+    "text": "What the apostle Jude would say if He had to comment on a trending conspiracy: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  },
+  {
+    "id": "amen-quip-412",
+    "text": "The most elaborate thing anyone has ever done to avoid being asked to lead the opening prayer: _____",
+    "category": "Church-Life Situations"
+  },
+  {
+    "id": "amen-quip-413",
+    "text": "The title of a competitive barbecue show set entirely during the offerings at the Temple: _____",
+    "category": "Fake Biblical Twist Titles"
+  },
+  {
+    "id": "amen-quip-414",
+    "text": "The most surprising thing found in the pastor's briefcase: _____",
+    "category": "Best/Worst/Most Surprising"
+  },
+  {
+    "id": "amen-quip-415",
+    "text": "What Nehemiah would say if he were asked to supervise a Lego-building workshop: _____",
+    "category": "What [Bible Character] Would Say If _____"
+  }
 ]
