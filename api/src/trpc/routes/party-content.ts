@@ -1100,4 +1100,68 @@ export const partyContentRouter = router({
 			contentCount: row.content_count,
 		}));
 	}),
+
+	loadFromSnapshot: adminProcedure
+		.input(
+			z.object({
+				brand: z.enum(["amen", "slopcade"]),
+				contentType: z.string(),
+				version: z.number().int().min(1).optional(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+
+			const snapshotSql = input.version
+				? "SELECT version, content_ids FROM party_content_snapshots WHERE version = ?"
+				: "SELECT version, content_ids FROM party_content_snapshots ORDER BY version DESC LIMIT 1";
+			const snapshotParams = input.version ? [input.version] : [];
+
+			const snapshot = await db
+				.prepare(snapshotSql)
+				.bind(...snapshotParams)
+				.first<{ version: number; content_ids: string }>();
+
+			if (!snapshot) {
+				return {
+					source: "json" as const,
+					version: null,
+					items: [] as unknown[],
+					count: 0,
+				};
+			}
+
+			const allIds: string[] = JSON.parse(snapshot.content_ids);
+			if (allIds.length === 0) {
+				return {
+					source: "db" as const,
+					version: snapshot.version,
+					items: [] as unknown[],
+					count: 0,
+				};
+			}
+
+			const placeholders = allIds.map(() => "?").join(",");
+			const result = await db
+				.prepare(
+					`SELECT body FROM party_content
+					 WHERE id IN (${placeholders})
+					   AND brand_id = ?
+					   AND content_type = ?
+					   AND deleted_at IS NULL`,
+				)
+				.bind(...allIds, input.brand, input.contentType)
+				.all<{ body: string }>();
+
+			const items = (result.results ?? []).map(
+				(r) => JSON.parse(r.body) as unknown,
+			);
+
+			return {
+				source: "db" as const,
+				version: snapshot.version,
+				items,
+				count: items.length,
+			};
+		}),
 });

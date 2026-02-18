@@ -23,6 +23,8 @@ import type {
 import fakeWordsData from "./fake-words.json";
 import { getActivePacksForType } from "./pack-scheduler";
 
+type D1Database = import("@cloudflare/workers-types").D1Database;
+
 // ============================================================================
 // Content Type Definitions
 // ============================================================================
@@ -291,6 +293,53 @@ export async function loadContentPack<T extends ContentType>(
 	}
 
 	return mergedPack;
+}
+
+export async function loadContentPackFromDB<T extends ContentType>(
+	type: T,
+	brandId: string,
+	db: D1Database,
+): Promise<ContentItem<T>[]> {
+	try {
+		const snapshot = await db
+			.prepare(
+				"SELECT content_ids FROM party_content_snapshots ORDER BY version DESC LIMIT 1",
+			)
+			.first<{ content_ids: string }>();
+
+		if (!snapshot) {
+			return loadContentPack(type, brandId);
+		}
+
+		const allIds: string[] = JSON.parse(snapshot.content_ids);
+
+		if (allIds.length === 0) {
+			return loadContentPack(type, brandId);
+		}
+
+		const placeholders = allIds.map(() => "?").join(",");
+		const result = await db
+			.prepare(
+				`SELECT body FROM party_content
+				 WHERE id IN (${placeholders})
+				   AND brand_id = ?
+				   AND content_type = ?
+				   AND deleted_at IS NULL`,
+			)
+			.bind(...allIds, brandId, type)
+			.all<{ body: string }>();
+
+		const rows = result.results ?? [];
+
+		if (rows.length === 0) {
+			return loadContentPack(type, brandId);
+		}
+
+		return rows.map((row) => JSON.parse(row.body) as ContentItem<T>);
+	} catch (err) {
+		console.error("loadContentPackFromDB failed, falling back to JSON:", err);
+		return loadContentPack(type, brandId);
+	}
 }
 
 /**
