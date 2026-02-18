@@ -65,6 +65,9 @@ Updated: 2026-02-12 (post-audit)
 ### Voice & Real-time
 - [transcription-do](transcription-do.md) - Whisper STT via RealtimeRelayDO, GameRepoDO for git-on-R2
 
+### Debugging & Diagnostics 
+- [ios-debugging](ios-debugging.md) - **Autonomous iOS simulator debugging: black screens, crashes, native logs, asset integrity** 
+
 ### Testing
 - [testing-patterns](testing-patterns.md) - Vitest, GDUnit4, tRPC createCaller, D1/R2 mocking
 
