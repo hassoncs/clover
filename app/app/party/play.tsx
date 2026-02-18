@@ -18,6 +18,7 @@ import { registerRivalRosterPhases } from "@/lib/party/rivalRosterPhases";
 import { registerShirtClashPhases } from "@/lib/party/shirtClashPhases";
 import { registerSketchBluffPhases } from "@/lib/party/sketchBluffPhases";
 import { registerSpectrumGuessPhases } from "@/lib/party/spectrumGuessPhases";
+import { usePartyMusic } from "@/lib/party/usePartyMusic";
 
 registerDefaultPhases();
 registerChromaCluesPhases();
@@ -38,6 +39,8 @@ function GameContent() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { roomState, connectionStatus } = useParty();
+
+	usePartyMusic(roomState);
 
 	if (!roomState) {
 		return (

@@ -5,6 +5,7 @@ export {
 	type MusicModelDef,
 } from "./constants/audio-music-models";
 export * from "./constants/audio-music-prompts";
+export * from "./constants/audio-phase-music";
 export * from "./constants/audio-sfx-prompts";
 export * from "./constants/voice-presets";
 export * from "./economy/currency";
