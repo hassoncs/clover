@@ -1,3 +1,11 @@
+export * from "./constants/audio-announcer-lines";
+export {
+	DEFAULT_MUSIC_MODEL,
+	MUSIC_MODELS,
+	type MusicModelDef,
+} from "./constants/audio-music-models";
+export * from "./constants/audio-music-prompts";
+export * from "./constants/audio-sfx-prompts";
 export * from "./constants/voice-presets";
 export * from "./economy/currency";
 export * from "./events";

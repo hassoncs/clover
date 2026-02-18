@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { ANNOUNCER_LINES } from "../../shared/src/constants/audio-announcer-lines";
+import {
+	DEFAULT_MUSIC_MODEL,
+	MUSIC_MODELS,
+} from "../../shared/src/constants/audio-music-models";
 import { MUSIC_PROMPTS } from "../../shared/src/constants/audio-music-prompts";
 import { SFX_PROMPTS } from "../../shared/src/constants/audio-sfx-prompts";
 import { BRAND_VOICES } from "../../shared/src/constants/voice-presets";
@@ -29,6 +33,9 @@ interface AudioJob {
 const SAMPLE_SIZE = 5;
 const OUTPUT_FORMAT = "mp3_44100_128";
 const VALID_BRANDS: Brand[] = ["amen", "slopcade"];
+const SCENARIO_API_URL = "https://api.cloud.scenario.com/v1";
+const SCENARIO_POLL_INTERVAL_MS = 3000;
+const SCENARIO_MAX_POLL_ATTEMPTS = 200;
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..", "..");
@@ -48,6 +55,7 @@ function printUsage(): void {
 Options:
   --type <sfx|voice|music|content-voice>
   --brand <amen|slopcade>                   (default: amen)
+  --model <beatoven|minimax|musicgen|lyria> (music only, default: beatoven)
   --id <item-id>                            Generate one item
   --sample                                  Generate a representative sample (first ${SAMPLE_SIZE})
   --generate-all                            Generate all items for this type
@@ -58,7 +66,14 @@ Examples:
   hush run -- npx tsx api/scripts/generate-audio.ts --type sfx --id tick
   hush run -- npx tsx api/scripts/generate-audio.ts --type sfx --sample
   hush run -- npx tsx api/scripts/generate-audio.ts --type voice --brand amen --generate-all
+  hush run -- npx tsx api/scripts/generate-audio.ts --type music --model beatoven --sample
 `);
+}
+
+function sanitizeBlankMarkers(text: string): string {
+	let cleaned = text.replace(/[,:;]\s*_+\s*$/, "");
+	cleaned = cleaned.replace(/__{2,}/g, "blank");
+	return cleaned.trim();
 }
 
 function formatSize(bytes: number): string {
@@ -81,6 +96,7 @@ function parseCli() {
 		options: {
 			type: { type: "string" },
 			brand: { type: "string", default: "amen" },
+			model: { type: "string", default: DEFAULT_MUSIC_MODEL },
 			id: { type: "string" },
 			sample: { type: "boolean", default: false },
 			"generate-all": { type: "boolean", default: false },
@@ -128,11 +144,124 @@ function parseCli() {
 	return {
 		type: type as AudioType,
 		brand: values.brand,
+		model: values.model,
 		id: values.id,
 		sample: values.sample,
 		generateAll: values["generate-all"],
 		force: values.force,
 	};
+}
+
+async function generateMusicViaScenario(options: {
+	scenarioApiKey: string;
+	scenarioApiSecret: string;
+	scenarioModelId: string;
+	prompt: string;
+	durationSeconds: number;
+	negativePrompt?: string;
+}): Promise<Uint8Array> {
+	const authHeader = `Basic ${Buffer.from(
+		`${options.scenarioApiKey}:${options.scenarioApiSecret}`,
+	).toString("base64")}`;
+
+	const headers = {
+		Authorization: authHeader,
+		"Content-Type": "application/json",
+	};
+
+	const createResponse = await fetch(
+		`${SCENARIO_API_URL}/generate/custom/${options.scenarioModelId}`,
+		{
+			method: "POST",
+			headers,
+			body: JSON.stringify({
+				prompt: options.prompt,
+				duration: options.durationSeconds,
+				...(options.negativePrompt
+					? { negativePrompt: options.negativePrompt }
+					: {}),
+			}),
+		},
+	);
+	if (!createResponse.ok) {
+		const err = await createResponse.text();
+		throw new Error(
+			`Scenario music job creation failed (${createResponse.status}): ${err}`,
+		);
+	}
+	const createData = (await createResponse.json()) as {
+		job?: { jobId?: string };
+	};
+	const jobId = createData.job?.jobId;
+	if (!jobId) {
+		throw new Error("No jobId returned from Scenario");
+	}
+
+	for (let attempt = 0; attempt < SCENARIO_MAX_POLL_ATTEMPTS; attempt++) {
+		const pollResponse = await fetch(`${SCENARIO_API_URL}/jobs/${jobId}`, {
+			method: "GET",
+			headers,
+		});
+		if (!pollResponse.ok) {
+			throw new Error(`Scenario poll failed (${pollResponse.status})`);
+		}
+		const pollData = (await pollResponse.json()) as {
+			job?: {
+				status?: string;
+				metadata?: { assetIds?: string[] };
+				error?: string;
+			};
+		};
+
+		const status = pollData.job?.status;
+		if (attempt % 5 === 0 || status !== "pending") {
+			console.log(
+				`  Polling ${jobId}: status=${status} (attempt ${attempt + 1})`,
+			);
+		}
+		if (status === "success" || status === "succeeded") {
+			const assetIds = pollData.job?.metadata?.assetIds ?? [];
+			if (assetIds.length === 0) {
+				throw new Error("Music job succeeded but no assets");
+			}
+
+			const assetResponse = await fetch(
+				`${SCENARIO_API_URL}/assets/${assetIds[0]}`,
+				{
+					method: "GET",
+					headers,
+				},
+			);
+			if (!assetResponse.ok) {
+				throw new Error(`Asset details failed (${assetResponse.status})`);
+			}
+			const assetData = (await assetResponse.json()) as {
+				asset?: { url?: string };
+			};
+			const assetUrl = assetData.asset?.url;
+			if (!assetUrl) {
+				throw new Error("No URL for music asset");
+			}
+
+			const audioResponse = await fetch(assetUrl);
+			if (!audioResponse.ok) {
+				throw new Error(`Download failed (${audioResponse.status})`);
+			}
+			return new Uint8Array(await audioResponse.arrayBuffer());
+		}
+
+		if (status === "failed" || status === "cancelled") {
+			throw new Error(
+				`Music job ${status}: ${pollData.job?.error ?? "unknown"}`,
+			);
+		}
+
+		await new Promise((resolve) =>
+			setTimeout(resolve, SCENARIO_POLL_INTERVAL_MS),
+		);
+	}
+
+	throw new Error("Music job timed out");
 }
 
 async function generateSfxAudio(options: {
@@ -281,13 +410,26 @@ function selectTargets<T extends { id: string }>(options: {
 
 async function buildJobs(params: {
 	apiKey: string;
+	scenarioApiKey?: string;
+	scenarioApiSecret?: string;
 	type: AudioType;
 	brand: Brand;
+	model: string;
 	id?: string;
 	sample: boolean;
 	generateAll: boolean;
 }): Promise<AudioJob[]> {
-	const { apiKey, type, brand, id, sample, generateAll } = params;
+	const {
+		apiKey,
+		scenarioApiKey,
+		scenarioApiSecret,
+		type,
+		brand,
+		model,
+		id,
+		sample,
+		generateAll,
+	} = params;
 
 	if (type === "sfx") {
 		const targets = selectTargets({
@@ -353,6 +495,18 @@ async function buildJobs(params: {
 	}
 
 	if (type === "music") {
+		const musicModel = MUSIC_MODELS[model];
+		if (!musicModel) {
+			throw new Error(
+				`Invalid --model value: ${model}. Expected one of: ${Object.keys(MUSIC_MODELS).join(", ")}`,
+			);
+		}
+		if (!scenarioApiKey || !scenarioApiSecret) {
+			throw new Error(
+				"Scenario credentials are required for music generation. Set SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY.",
+			);
+		}
+
 		const shared = MUSIC_PROMPTS.filter((entry) => !entry.brand);
 		const brandOverrides = MUSIC_PROMPTS.filter(
 			(entry) => entry.brand === brand,
@@ -377,26 +531,26 @@ async function buildJobs(params: {
 				? path.join(audioRoot, "music", brand, `${entry.id}.mp3`)
 				: path.join(audioRoot, "music", "shared", `${entry.id}.mp3`);
 
-			// ElevenLabs SFX endpoint caps at 22 seconds.
-			// For now we generate 22-second quality samples.
-			// Full-length tracks will need a different API (Suno, Udio, etc.) or looping.
-			const maxSfxDuration = 22;
-			const requestedSeconds = Math.round(entry.durationMinutes * 60);
+			const requestedSeconds = Math.max(
+				1,
+				Math.round(entry.durationMinutes * 60),
+			);
 			const durationSeconds = Math.min(
-				Math.max(1, requestedSeconds),
-				maxSfxDuration,
+				requestedSeconds,
+				musicModel.maxDurationSeconds,
 			);
 
 			return {
 				id: entry.id,
-				label: `Generating Music: ${entry.id} (${durationSeconds}s sample of ${requestedSeconds}s)`,
+				label: `Generating Music (${musicModel.name}): ${entry.id} (${durationSeconds}s)`,
 				outputPath,
 				generate: () =>
-					generateSfxAudio({
-						apiKey,
-						text: entry.prompt,
+					generateMusicViaScenario({
+						scenarioApiKey,
+						scenarioApiSecret,
+						scenarioModelId: musicModel.scenarioModelId,
+						prompt: entry.prompt,
 						durationSeconds,
-						promptInfluence: 0.35,
 					}),
 			} satisfies AudioJob;
 		});
@@ -430,7 +584,7 @@ async function buildJobs(params: {
 		generate: () =>
 			generateTtsAudio({
 				apiKey,
-				text: entry.text,
+				text: sanitizeBlankMarkers(entry.text),
 				voiceId: voice.voiceId,
 				modelId: voice.model,
 				stability: voice.settings.stability,
@@ -444,16 +598,35 @@ async function run(): Promise<void> {
 	const cli = parseCli();
 
 	const apiKey = process.env.ELEVENLABS_API_KEY;
-	if (!apiKey) {
+	if (cli.type !== "music" && !apiKey) {
 		throw new Error(
 			"ELEVENLABS_API_KEY is required. Run with: hush run -- npx tsx api/scripts/generate-audio.ts ...",
 		);
 	}
 
+	const scenarioApiKey = process.env.SCENARIO_API_KEY;
+	const scenarioApiSecret = process.env.SCENARIO_SECRET_API_KEY;
+	if (cli.type === "music") {
+		if (!scenarioApiKey || !scenarioApiSecret) {
+			throw new Error(
+				"SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY are required for music generation. Run with: hush run -- npx tsx api/scripts/generate-audio.ts ...",
+			);
+		}
+
+		const musicModel =
+			MUSIC_MODELS[cli.model] ?? MUSIC_MODELS[DEFAULT_MUSIC_MODEL];
+		console.log(
+			`Music model: ${musicModel.name} (${musicModel.id}, max ${musicModel.maxDurationSeconds}s)`,
+		);
+	}
+
 	const jobs = await buildJobs({
-		apiKey,
+		apiKey: apiKey ?? "",
+		scenarioApiKey,
+		scenarioApiSecret,
 		type: cli.type,
 		brand: cli.brand,
+		model: cli.model,
 		id: cli.id,
 		sample: cli.sample,
 		generateAll: cli.generateAll,

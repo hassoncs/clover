@@ -1,9 +1,14 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { VOICE_PRESETS } from "@slopcade/shared";
+import {
+	DEFAULT_MUSIC_MODEL,
+	MUSIC_MODELS,
+	VOICE_PRESETS,
+} from "@slopcade/shared";
 import { TRPCError } from "@trpc/server";
 import type { LanguageModel } from "ai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { createScenarioClient } from "@/ai/providers/scenario/client";
 import { AuditService } from "@/services/audit-service";
 import { adminProcedure, router } from "@/trpc/index";
 
@@ -334,6 +339,91 @@ export const adminToolsRouter = router({
 				url: `/assets/${key}`,
 				sizeBytes: audio.byteLength,
 				voiceName: preset.name,
+			};
+		}),
+
+	generateMusic: adminProcedure
+		.input(
+			z.object({
+				prompt: z.string().describe("Music description"),
+				outputName: z.string().describe("Output filename without extension"),
+				durationSeconds: z.number().min(5).max(240).default(30),
+				model: z
+					.string()
+					.default(DEFAULT_MUSIC_MODEL)
+					.describe("Music model: beatoven, minimax, musicgen, lyria"),
+				negativePrompt: z.string().optional(),
+				lyrics: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const modelDef = MUSIC_MODELS[input.model as keyof typeof MUSIC_MODELS];
+			if (!modelDef) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Unknown music model: ${input.model}`,
+				});
+			}
+
+			if (input.durationSeconds > modelDef.maxDurationSeconds) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `durationSeconds exceeds max for ${input.model} (${modelDef.maxDurationSeconds}s)`,
+				});
+			}
+
+			const client = createScenarioClient({
+				SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
+				SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
+				SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
+			});
+
+			const jobId = await client.createMusicJob({
+				modelId: modelDef.scenarioModelId,
+				prompt: input.prompt,
+				durationSeconds: input.durationSeconds,
+				negativePrompt: input.negativePrompt,
+				lyrics: input.lyrics,
+			});
+			const assetIds = await client.pollJobUntilComplete(jobId);
+			const firstAssetId = assetIds[0];
+			if (!firstAssetId) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "No audio assets generated",
+				});
+			}
+
+			const audio = await client.downloadAsset(firstAssetId);
+			const key = `audio/music/${input.outputName}.mp3`;
+			await ctx.env.ASSETS.put(key, audio.buffer, {
+				httpMetadata: { contentType: "audio/mpeg" },
+				customMetadata: {
+					model: input.model,
+					scenarioModelId: modelDef.scenarioModelId,
+					providerAssetId: firstAssetId,
+					providerJobId: jobId,
+					durationSeconds: String(input.durationSeconds),
+				},
+			});
+
+			const audit = new AuditService(ctx.env.DB);
+			await audit.logEvent({
+				actorId: ctx.user.id,
+				action: "admin.generate_music",
+				metadata: {
+					outputName: input.outputName,
+					model: input.model,
+					durationSeconds: input.durationSeconds,
+					sizeBytes: audio.buffer.byteLength,
+				},
+			});
+
+			return {
+				url: `/assets/${key}`,
+				sizeBytes: audio.buffer.byteLength,
+				model: input.model,
+				durationSeconds: input.durationSeconds,
 			};
 		}),
 
