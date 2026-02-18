@@ -15,6 +15,7 @@
 		"dev": "devmux ensure metro",
 		"dev:amen": "devmux ensure metro-amen",
 		"dev:slopcade": "devmux ensure metro",
+		"dev:admin": "devmux ensure admin",
 		"dev:api": "devmux ensure api",
 		"dev:web": "devmux ensure web",
 		"web": "devmux ensure web",

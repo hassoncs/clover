@@ -85,6 +85,14 @@
 			"health": { "type": "port", "port": 6420 },
 			"dashboard": false
 		},
+		"admin": {
+			"cwd": "apps/admin",
+			"comment": "Admin web app (port 8787). Requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in apps/admin/.env.local",
+			"command": "pnpm dev",
+			"health": { "type": "port", "port": 8787 },
+			"dashboard": true,
+			"dependsOn": ["api"]
+		},
 		"storybook": {
 			"cwd": "apps/storybook",
 			"command": "npx hush run -t app -- pnpm storybook",

@@ -1,5 +1,6 @@
 packages:
   - 'api'
+  - 'apps/admin'
   - 'apps/slopcade'
   - 'apps/amen'
   - 'apps/landing-slopcade'
