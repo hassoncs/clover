@@ -29,6 +29,10 @@ jobs:
       - name: Build workspace packages
         run: pnpm --filter './packages/*' run build
 
+      - name: Build game definitions
+        run: npx tsx scripts/sync-r2.ts --build-only
+        working-directory: api
+
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:

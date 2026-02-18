@@ -14,9 +14,10 @@
  * Changes to definition.json and metadata.json are ignored (they're build outputs).
  *
  * Usage:
- *   npx tsx scripts/sync-r2.ts            # One-shot build + sync to local
- *   npx tsx scripts/sync-r2.ts --watch    # Watch mode (local)
- *   npx tsx scripts/sync-r2.ts --remote   # Sync to production R2
+ *   npx tsx scripts/sync-r2.ts              # One-shot build + sync to local
+ *   npx tsx scripts/sync-r2.ts --watch      # Watch mode (local)
+ *   npx tsx scripts/sync-r2.ts --remote     # Sync to production R2
+ *   npx tsx scripts/sync-r2.ts --build-only # Build definitions only (CI)
  */
 
 import { DEFAULT_BRAND_ID } from "@slopcade/brands";
@@ -236,13 +237,16 @@ function syncR2(remote: boolean): void {
 
 const WATCH_MODE = process.argv.includes("--watch");
 const REMOTE_MODE = process.argv.includes("--remote");
+const BUILD_ONLY = process.argv.includes("--build-only");
 
 console.log("[sync-r2] Building games...");
 buildGames();
 
-const syncTarget = REMOTE_MODE ? "production" : "local";
-console.log(`[sync-r2] Syncing to ${syncTarget} R2...`);
-syncR2(REMOTE_MODE);
+if (!BUILD_ONLY) {
+	const syncTarget = REMOTE_MODE ? "production" : "local";
+	console.log(`[sync-r2] Syncing to ${syncTarget} R2...`);
+	syncR2(REMOTE_MODE);
+}
 
 if (WATCH_MODE) {
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
