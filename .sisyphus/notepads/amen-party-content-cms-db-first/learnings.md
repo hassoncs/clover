@@ -27,3 +27,35 @@
 2. `party_content_assets` - 1:N R2 asset links (audio, images)
 3. `party_content_reviews` - quality/humor ratings (unique per content+reviewer)
 4. `party_content_status_transitions` - audit trail for status changes
+
+## 2026-02-18: Import Pipeline
+
+### tRPC Route Location
+- Router: `api/src/trpc/routes/party-content.ts`
+- Registered in `api/src/trpc/router.ts` as `partyContent`
+- Routes: `partyContent.importPacks`, `partyContent.importStatus`
+
+### Database Access Pattern
+- Use raw D1 queries via `ctx.env.DB.prepare().bind().run()` - NOT Drizzle ORM
+- Context has `ctx.env.DB` (D1Database), not `ctx.db`
+- Use `.first<T>()` for single row, `.all<T>()` for multiple rows
+
+### Pack File Structure
+- **Amen packs**: `packs/amen/amen-{type}.json` with IDs like `amen-quip-001`
+- **Slopcade packs**: `packs/slopcade/{type}.json` with UUID IDs
+- Extract brand from directory name, content type from filename
+
+### Content Hashing
+- SHA-256 of JSON body for deduplication
+- Update only if content_hash differs
+
+### Audio Asset Key Pattern
+- `audio/voice/{brand}/content/{contentType}/{contentId}.mp3`
+- Skip voice for: headsup, wordlist, FakeWord (no text to narrate)
+
+### Text Extraction by Type
+- quip/personal: `text` field
+- trivia/fibbage/estimation: `question` field
+- drawing: `prompt` field
+- ranking: `topic` field
+- dilemma/wyr: combine `optionA` + `optionB` as "Would you rather: A, or, B?"
