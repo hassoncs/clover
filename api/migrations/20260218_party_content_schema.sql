@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_party_content_hash ON party_content(content_hash)
 CREATE TABLE IF NOT EXISTS party_content_assets (
   id TEXT PRIMARY KEY,
   content_id TEXT NOT NULL REFERENCES party_content(id) ON DELETE CASCADE,
-  r2_key TEXT NOT NULL,
+  r2_key TEXT,
   asset_type TEXT NOT NULL CHECK (asset_type IN ('audio', 'image')),
   role TEXT NOT NULL DEFAULT 'primary' CHECK (role IN ('primary', 'alt', 'background')),
   mime_type TEXT,

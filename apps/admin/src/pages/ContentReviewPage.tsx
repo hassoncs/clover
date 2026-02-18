@@ -395,7 +395,8 @@ export function ContentReviewPage() {
 	const missingAudioItems =
 		data?.items.filter(
 			(item) =>
-				!item.assets?.[0] && !SKIP_VOICE_CONTENT_TYPES.has(item.contentType),
+				!item.assets?.[0]?.r2_key &&
+				!SKIP_VOICE_CONTENT_TYPES.has(item.contentType),
 		) ?? [];
 	const missingIds = missingAudioItems.map((item) => item.id);
 
@@ -632,7 +633,7 @@ export function ContentReviewPage() {
 											/>
 										</td>
 										<td className="p-3.5 text-center">
-											{item.assets?.[0] ? (
+											{item.assets?.[0]?.r2_key ? (
 												<AudioButton r2Key={item.assets[0].r2_key} />
 											) : SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
 												<span className="text-slate-700">—</span>

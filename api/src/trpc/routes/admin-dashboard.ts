@@ -101,7 +101,7 @@ export const adminDashboardRouter = router({
 					pc.brand_id,
 					pc.content_type,
 					COUNT(*) as total,
-					SUM(CASE WHEN pca.id IS NOT NULL THEN 1 ELSE 0 END) as has_audio,
+					SUM(CASE WHEN pca.r2_key IS NOT NULL THEN 1 ELSE 0 END) as has_audio,
 					SUM(CASE WHEN pcr.id IS NOT NULL THEN 1 ELSE 0 END) as reviewed
 				FROM party_content pc
 				LEFT JOIN party_content_assets pca
