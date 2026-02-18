@@ -978,4 +978,126 @@ export const partyContentRouter = router({
 				transitionedAt: now,
 			};
 		}),
+
+	// ============================================================================
+	// Snapshot Pipeline
+	// ============================================================================
+
+	publish: adminProcedure
+		.input(
+			z
+				.object({
+					metadata: z.string().nullable().optional(),
+				})
+				.optional(),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+			const now = Date.now();
+
+			const activeContent = await db
+				.prepare(
+					"SELECT id FROM party_content WHERE status = 'active' AND deleted_at IS NULL",
+				)
+				.all<{ id: string }>();
+
+			const contentIds = (activeContent.results ?? []).map((r) => r.id);
+			const contentCount = contentIds.length;
+
+			if (contentCount === 0) {
+				throw new Error("No active content to publish");
+			}
+
+			const versionResult = await db
+				.prepare(
+					"SELECT COALESCE(MAX(version), 0) + 1 as next_version FROM party_content_snapshots",
+				)
+				.first<{ next_version: number }>();
+
+			const version = versionResult?.next_version ?? 1;
+			const snapshotId = crypto.randomUUID();
+
+			await db
+				.prepare(
+					`INSERT INTO party_content_snapshots (id, version, published_by, published_at, content_count, content_ids, metadata)
+					 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				)
+				.bind(
+					snapshotId,
+					version,
+					ctx.user.id,
+					now,
+					contentCount,
+					JSON.stringify(contentIds),
+					input?.metadata ?? null,
+				)
+				.run();
+
+			return { snapshotId, version, contentCount, publishedAt: now };
+		}),
+
+	getSnapshot: adminProcedure
+		.input(
+			z.object({
+				version: z.number().int().min(1),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+
+			const snapshot = await db
+				.prepare(
+					"SELECT id, version, published_by, published_at, content_count, content_ids, metadata FROM party_content_snapshots WHERE version = ?",
+				)
+				.bind(input.version)
+				.first<{
+					id: string;
+					version: number;
+					published_by: string;
+					published_at: number;
+					content_count: number;
+					content_ids: string;
+					metadata: string | null;
+				}>();
+
+			if (!snapshot) {
+				return null;
+			}
+
+			const contentIds: string[] = JSON.parse(snapshot.content_ids);
+
+			return {
+				id: snapshot.id,
+				version: snapshot.version,
+				publishedBy: snapshot.published_by,
+				publishedAt: snapshot.published_at,
+				contentCount: snapshot.content_count,
+				contentIds,
+				metadata: snapshot.metadata,
+			};
+		}),
+
+	listSnapshots: adminProcedure.query(async ({ ctx }) => {
+		const db = ctx.env.DB;
+
+		const result = await db
+			.prepare(
+				"SELECT id, version, published_by, published_at, content_count FROM party_content_snapshots ORDER BY version DESC",
+			)
+			.all<{
+				id: string;
+				version: number;
+				published_by: string;
+				published_at: number;
+				content_count: number;
+			}>();
+
+		return (result.results ?? []).map((row) => ({
+			id: row.id,
+			version: row.version,
+			publishedBy: row.published_by,
+			publishedAt: row.published_at,
+			contentCount: row.content_count,
+		}));
+	}),
 });

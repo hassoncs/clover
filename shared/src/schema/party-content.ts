@@ -152,11 +152,37 @@ export const insertPartyContentReviewSchema =
 export const selectPartyContentReviewSchema =
 	createSelectSchema(partyContentReviews);
 
+export const partyContentSnapshots = sqliteTable(
+	"party_content_snapshots",
+	{
+		id: text("id").primaryKey(),
+		version: integer("version").notNull().unique(),
+		publishedBy: text("published_by").notNull(),
+		publishedAt: integer("published_at", { mode: "timestamp" }).notNull(),
+		contentCount: integer("content_count").notNull(),
+		contentIds: text("content_ids").notNull(),
+		metadata: text("metadata"),
+	},
+	(table) => ({
+		versionIdx: index("idx_party_content_snapshots_version").on(table.version),
+		publishedAtIdx: index("idx_party_content_snapshots_published_at").on(
+			table.publishedAt,
+		),
+	}),
+);
+
 export const insertPartyContentStatusTransitionSchema = createInsertSchema(
 	partyContentStatusTransitions,
 );
 export const selectPartyContentStatusTransitionSchema = createSelectSchema(
 	partyContentStatusTransitions,
+);
+
+export const insertPartyContentSnapshotSchema = createInsertSchema(
+	partyContentSnapshots,
+);
+export const selectPartyContentSnapshotSchema = createSelectSchema(
+	partyContentSnapshots,
 );
 
 export type PartyContent = z.infer<typeof selectPartyContentSchema>;
@@ -177,4 +203,11 @@ export type PartyContentStatusTransition = z.infer<
 >;
 export type NewPartyContentStatusTransition = z.infer<
 	typeof insertPartyContentStatusTransitionSchema
+>;
+
+export type PartyContentSnapshot = z.infer<
+	typeof selectPartyContentSnapshotSchema
+>;
+export type NewPartyContentSnapshot = z.infer<
+	typeof insertPartyContentSnapshotSchema
 >;
