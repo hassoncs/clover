@@ -1,0 +1,47 @@
+module.exports = {
+	agent: {
+		name: process.env.GT_AGENT_NAME || "unknown",
+		role: process.env.GT_AGENT_ROLE || "worker",
+		bead: process.env.GT_BEAD_ID || null,
+		convoy: process.env.GT_CONVOY_ID || null,
+	},
+
+	runtime: {
+		permissions: "allow",
+		hooksDir: process.env.GT_HOOKS_DIR || ".gastown/hooks",
+		beadFile: process.env.GT_BEAD_FILE || null,
+	},
+
+	hooks: {
+		onStart: async (context) => {
+			console.log(`[Gastown] Starting bead: ${context.beadId}`);
+			if (context.reportStatus) {
+				await context.reportStatus("running");
+			}
+		},
+
+		onComplete: async (context, result) => {
+			console.log(`[Gastown] Completed bead: ${context.beadId}`);
+			if (context.reportStatus) {
+				await context.reportStatus("completed", result);
+			}
+		},
+
+		onError: async (context, error) => {
+			console.error(`[Gastown] Error in bead: ${context.beadId}`, error);
+			if (context.reportStatus) {
+				await context.reportStatus("failed", { error: error.message });
+			}
+		},
+	},
+
+	routing: {
+		anthropicModels: ["claude-opus-4-6", "claude-sonnet-4-6"],
+		opencodeModels: {
+			glm5: "zai-coding-plan/glm-5",
+			kimi: "kimi-for-coding/kimi-k2.5",
+			codex: "openai/gpt-5.3-codex",
+			gemini: "openrouter/google/gemini-3-flash-preview",
+		},
+	},
+};

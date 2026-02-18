@@ -93,6 +93,13 @@
 			"command": "npx hush run -t app -- pnpm storybook",
 			"health": { "type": "port", "port": 6007 },
 			"dashboard": true
+		},
+		"beads-ui": {
+			"cwd": ".",
+			"comment": "Beads issue tracker web UI. Visit http://localhost:8030",
+			"command": "BEADS_DOLT_DATABASE=beads_sl BEADS_DB=/Users/hassoncs/gt/slopcade/.beads/dolt bdui start --port 8030",
+			"health": { "type": "port", "port": 8030 },
+			"dashboard": false
 		}
 	}
 }
