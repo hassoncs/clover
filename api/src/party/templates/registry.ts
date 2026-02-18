@@ -82,9 +82,10 @@ const runFromDefinition =
 		}
 
 		const contentPackIds = definition.party?.contentPacks ?? [];
-		const contentPack = contentPackIds.flatMap((packId) =>
-			loadContentPack(packId),
+		const contentPackGroups = await Promise.all(
+			contentPackIds.map((packId) => loadContentPack(packId)),
 		);
+		const contentPack = contentPackGroups.flat();
 
 		const runner = new QuickJSServerRunner(room);
 		await runner.execute(scriptCode, {

@@ -16,9 +16,7 @@ const ROUTE_ICON_MAP: Record<
 		inactive: keyof typeof Ionicons.glyphMap;
 	}
 > = {
-	feed: { active: "flame", inactive: "flame-outline" },
 	browse: { active: "compass", inactive: "compass-outline" },
-	lab: { active: "flask", inactive: "flask-outline" },
 	profile: { active: "person", inactive: "person-outline" },
 };
 

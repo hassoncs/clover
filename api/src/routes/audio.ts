@@ -1,9 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { Hono } from "hono";
 import { nanoid } from "nanoid";
-
+import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import { trackGeneration } from "@/billing/generationTracker";
-import { ElevenLabsService } from "@/services/ElevenLabsService";
 import type { Env } from "@/trpc/context";
 
 const router = new Hono<{ Bindings: Env }>();

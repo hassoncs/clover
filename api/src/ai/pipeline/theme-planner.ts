@@ -5,9 +5,14 @@
  * Takes game template context + theme/style and returns validated ThemePlan JSON.
  */
 
-import type { EntityType } from '@/ai/pipeline/types';
-import type { ThemePlan, CohesionAnchors } from '@/ai/pipeline/theme-plan';
-import { parseThemePlan, validatePlanCoherence } from '@/ai/pipeline/theme-plan';
+import { generateText } from "ai";
+import { createModel } from "@/ai/model-factory";
+import type { CohesionAnchors, ThemePlan } from "@/ai/pipeline/theme-plan";
+import {
+	parseThemePlan,
+	validatePlanCoherence,
+} from "@/ai/pipeline/theme-plan";
+import type { EntityType } from "@/ai/pipeline/types";
 
 // =============================================================================
 // INPUT TYPES
@@ -17,59 +22,57 @@ import { parseThemePlan, validatePlanCoherence } from '@/ai/pipeline/theme-plan'
  * Template information for theme planning.
  */
 export interface PrefabInfo {
-  prefabId: string;
-  whatDescription?: string;
-  entityType: EntityType;
-  physicsShape: 'box' | 'circle';
-  tags: string[];
+	prefabId: string;
+	whatDescription?: string;
+	entityType: EntityType;
+	physicsShape: "box" | "circle";
+	tags: string[];
 }
 
 /**
  * Input parameters for the theme planner.
  */
 export interface ThemePlannerInput {
-  prefabs: PrefabInfo[];
-  theme: string;
-  style?: string;
-  gameTitle?: string;
-  existingAnchors?: CohesionAnchors;
-  model?: string;
+	prefabs: PrefabInfo[];
+	theme: string;
+	style?: string;
+	gameTitle?: string;
+	existingAnchors?: CohesionAnchors;
+	model?: string;
 }
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
 
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'openai/gpt-4o-mini';
-const DEFAULT_MAX_TOKENS = 4000;
+const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 // =============================================================================
 // SYSTEM PROMPT
 // =============================================================================
 
 function buildSystemPrompt(input: ThemePlannerInput): string {
-  const prefabList = input.prefabs
-    .map((t) => {
-      const desc = t.whatDescription ? ` - "${t.whatDescription}"` : '';
-      return `  - ${t.prefabId}: entityType=${t.entityType}, shape=${t.physicsShape}, tags=[${t.tags.join(', ')}]${desc}`;
-    })
-    .join('\n');
+	const prefabList = input.prefabs
+		.map((t) => {
+			const desc = t.whatDescription ? ` - "${t.whatDescription}"` : "";
+			return `  - ${t.prefabId}: entityType=${t.entityType}, shape=${t.physicsShape}, tags=[${t.tags.join(", ")}]${desc}`;
+		})
+		.join("\n");
 
-  const existingAnchorsSection = input.existingAnchors
-    ? `
+	const existingAnchorsSection = input.existingAnchors
+		? `
 EXISTING COHESION ANCHORS (maintain consistency with these):
 - Motif Family: ${input.existingAnchors.motifFamily}
 - Color Harmony: ${input.existingAnchors.colorHarmony}
 - Mood Descriptor: ${input.existingAnchors.moodDescriptor}
 `
-    : '';
+		: "";
 
-  return `You are a game art director planning a coherent visual theme for ALL assets in a game.
+	return `You are a game art director planning a coherent visual theme for ALL assets in a game.
 
 THEME: ${input.theme}
-${input.style ? `STYLE: ${input.style}` : ''}
-${input.gameTitle ? `GAME TITLE: ${input.gameTitle}` : ''}
+${input.style ? `STYLE: ${input.style}` : ""}
+${input.gameTitle ? `GAME TITLE: ${input.gameTitle}` : ""}
 
 TEMPLATES TO DESIGN:
 ${prefabList}
@@ -131,71 +134,19 @@ Output ONLY the JSON object. No markdown, no explanation, no code fences.`;
 // =============================================================================
 
 function extractJson(text: string): string {
-  let cleaned = text.trim();
+	let cleaned = text.trim();
 
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.slice(7);
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.slice(3);
-  }
+	if (cleaned.startsWith("```json")) {
+		cleaned = cleaned.slice(7);
+	} else if (cleaned.startsWith("```")) {
+		cleaned = cleaned.slice(3);
+	}
 
-  if (cleaned.endsWith('```')) {
-    cleaned = cleaned.slice(0, -3);
-  }
+	if (cleaned.endsWith("```")) {
+		cleaned = cleaned.slice(0, -3);
+	}
 
-  return cleaned.trim();
-}
-
-// =============================================================================
-// OPENROUTER API CALL
-// =============================================================================
-
-interface OpenRouterResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
-}
-
-async function callOpenRouter(
-  systemPrompt: string,
-  userPrompt: string,
-  apiKey: string,
-  model: string,
-  temperature: number,
-): Promise<string | null> {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: DEFAULT_MAX_TOKENS,
-      temperature,
-    }),
-  });
-
-  if (!response.ok) {
-    console.log('[ThemePlanner] OpenRouter request failed:', response.status, response.statusText);
-    return null;
-  }
-
-  const data = (await response.json()) as OpenRouterResponse;
-  const content = data.choices[0]?.message?.content?.trim();
-
-  if (!content) {
-    console.log('[ThemePlanner] OpenRouter returned empty content');
-    return null;
-  }
-
-  return content;
+	return cleaned.trim();
 }
 
 // =============================================================================
@@ -210,59 +161,82 @@ async function callOpenRouter(
  * @returns Validated ThemePlan or null if generation fails
  */
 export async function generateThemePlan(
-  input: ThemePlannerInput,
-  openrouterApiKey: string,
+	input: ThemePlannerInput,
+	openrouterApiKey: string,
 ): Promise<ThemePlan | null> {
-  const model = input.model ?? DEFAULT_MODEL;
-  const systemPrompt = buildSystemPrompt(input);
-  const expectedPrefabIds = new Set(input.prefabs.map(t => t.prefabId));
-  const userPrompt = `Generate the theme plan JSON for ALL ${input.prefabs.length} prefabs listed above. Every single prefabId must appear in prefabPlans.`;
+	const modelId = input.model ?? DEFAULT_MODEL;
+	const systemPrompt = buildSystemPrompt(input);
+	const expectedPrefabIds = new Set(input.prefabs.map((t) => t.prefabId));
+	const userPrompt = `Generate the theme plan JSON for ALL ${input.prefabs.length} prefabs listed above. Every single prefabId must appear in prefabPlans.`;
 
-  console.log('[ThemePlanner] Starting theme plan generation', {
-    prefabCount: input.prefabs.length,
-    theme: input.theme,
-    model,
-  });
+	console.log("[ThemePlanner] Starting theme plan generation", {
+		prefabCount: input.prefabs.length,
+		theme: input.theme,
+		model: modelId,
+	});
 
-  const MAX_ATTEMPTS = 3;
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const temperature = attempt === 0 ? 0.7 : 0.3;
-    const attemptPrompt = attempt === 0
-      ? userPrompt
-      : `Generate the theme plan JSON for ALL ${input.prefabs.length} prefabs listed above.
+	const MAX_ATTEMPTS = 3;
+	for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+		const temperature = attempt === 0 ? 0.7 : 0.3;
+		const attemptPrompt =
+			attempt === 0
+				? userPrompt
+				: `Generate the theme plan JSON for ALL ${input.prefabs.length} prefabs listed above.
 
 IMPORTANT: Output ONLY valid JSON. No markdown code fences, no explanation text.
 The JSON must be parseable directly.
-You MUST include ALL of these prefabIds: ${[...expectedPrefabIds].join(', ')}`;
+You MUST include ALL of these prefabIds: ${[...expectedPrefabIds].join(", ")}`;
 
-    console.log(`[ThemePlanner] Attempt ${attempt + 1}/${MAX_ATTEMPTS} (temperature: ${temperature})`);
+		console.log(
+			`[ThemePlanner] Attempt ${attempt + 1}/${MAX_ATTEMPTS} (temperature: ${temperature})`,
+		);
 
-    const content = await callOpenRouter(systemPrompt, attemptPrompt, openrouterApiKey, model, temperature);
+		try {
+			const { text } = await generateText({
+				model: createModel({ apiKey: openrouterApiKey, model: modelId }),
+				system: systemPrompt,
+				prompt: attemptPrompt,
+				temperature,
+			});
 
-    if (!content) {
-      console.log(`[ThemePlanner] Attempt ${attempt + 1} failed to get response`);
-      continue;
-    }
+			const content = text.trim();
+			if (!content) {
+				console.log(
+					`[ThemePlanner] Attempt ${attempt + 1} failed to get response`,
+				);
+				continue;
+			}
 
-    const plan = tryParseAndValidate(content, model);
+			const plan = tryParseAndValidate(content, modelId);
 
-    if (!plan) {
-      console.log(`[ThemePlanner] Attempt ${attempt + 1} failed validation`);
-      continue;
-    }
+			if (!plan) {
+				console.log(`[ThemePlanner] Attempt ${attempt + 1} failed validation`);
+				continue;
+			}
 
-    const missingPrefabs = [...expectedPrefabIds].filter(id => !plan.prefabPlans[id]);
-    if (missingPrefabs.length > 0) {
-      console.log(`[ThemePlanner] Attempt ${attempt + 1} missing ${missingPrefabs.length} prefabs: ${missingPrefabs.join(', ')}`);
-      continue;
-    }
+			const missingPrefabs = [...expectedPrefabIds].filter(
+				(id) => !plan.prefabPlans[id],
+			);
+			if (missingPrefabs.length > 0) {
+				console.log(
+					`[ThemePlanner] Attempt ${attempt + 1} missing ${missingPrefabs.length} prefabs: ${missingPrefabs.join(", ")}`,
+				);
+				continue;
+			}
 
-    console.log(`[ThemePlanner] Successfully generated theme plan on attempt ${attempt + 1}`);
-    return plan;
-  }
+			console.log(
+				`[ThemePlanner] Successfully generated theme plan on attempt ${attempt + 1}`,
+			);
+			return plan;
+		} catch (error) {
+			console.log(`[ThemePlanner] Attempt ${attempt + 1} error:`, error);
+		}
+	}
 
-  console.log('[ThemePlanner] Failed to generate valid theme plan after all attempts');
-  return null;
+	console.log(
+		"[ThemePlanner] Failed to generate valid theme plan after all attempts",
+	);
+	return null;
 }
 
 // =============================================================================
@@ -270,29 +244,36 @@ You MUST include ALL of these prefabIds: ${[...expectedPrefabIds].join(', ')}`;
 // =============================================================================
 
 function tryParseAndValidate(content: string, model: string): ThemePlan | null {
-  try {
-    const jsonStr = extractJson(content);
-    const parsed = JSON.parse(jsonStr) as unknown;
+	try {
+		const jsonStr = extractJson(content);
+		const parsed = JSON.parse(jsonStr) as unknown;
 
-    if (typeof parsed === 'object' && parsed !== null && !('providerModel' in parsed)) {
-      (parsed as Record<string, unknown>).providerModel = model;
-    }
+		if (
+			typeof parsed === "object" &&
+			parsed !== null &&
+			!("providerModel" in parsed)
+		) {
+			(parsed as Record<string, unknown>).providerModel = model;
+		}
 
-    const plan = parseThemePlan(parsed);
-    const coherenceResult = validatePlanCoherence(plan);
+		const plan = parseThemePlan(parsed);
+		const coherenceResult = validatePlanCoherence(plan);
 
-    if (!coherenceResult.valid) {
-      console.log('[ThemePlanner] Coherence validation failed:', coherenceResult.errors);
-      return null;
-    }
+		if (!coherenceResult.valid) {
+			console.log(
+				"[ThemePlanner] Coherence validation failed:",
+				coherenceResult.errors,
+			);
+			return null;
+		}
 
-    return plan;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      console.log('[ThemePlanner] JSON parse error:', error.message);
-    } else if (error instanceof Error) {
-      console.log('[ThemePlanner] Validation error:', error.message);
-    }
-    return null;
-  }
+		return plan;
+	} catch (error) {
+		if (error instanceof SyntaxError) {
+			console.log("[ThemePlanner] JSON parse error:", error.message);
+		} else if (error instanceof Error) {
+			console.log("[ThemePlanner] Validation error:", error.message);
+		}
+		return null;
+	}
 }

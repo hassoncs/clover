@@ -28,12 +28,6 @@ const TAB_HEADER_CONFIG: Record<
 		leftIcons: ["menu", "search"],
 		rightIcons: ["notifications-outline", "person-add-outline"],
 	},
-	lab: {
-		title: "Lab",
-		showHeader: true,
-		leftIcons: [],
-		rightIcons: [],
-	},
 	profile: {
 		showHeader: false,
 		leftIcons: [],
@@ -160,13 +154,6 @@ export default function TabLayout() {
 				/>
 				<Tabs.Screen name="browse" options={{ title: "Browse" }} />
 				<Tabs.Screen name="chat" options={{ title: "Chat", href: null }} />
-				<Tabs.Screen
-					name="lab"
-					options={{
-						title: "Lab",
-						href: activeBrand.features.gameEditor ? undefined : null,
-					}}
-				/>
 				<Tabs.Screen name="maker" options={{ title: "Maker", href: null }} />
 				<Tabs.Screen name="profile" options={{ title: "Profile" }} />
 			</Tabs>

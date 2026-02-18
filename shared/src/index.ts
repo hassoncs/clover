@@ -6,7 +6,24 @@ export {
 } from "./constants/audio-music-models";
 export * from "./constants/audio-music-prompts";
 export * from "./constants/audio-phase-music";
+export {
+	DEFAULT_SFX_MODEL,
+	SFX_MODELS,
+	SFX_OUTPUT_FORMATS,
+	type SfxModelDef,
+	type SfxOutputFormat,
+} from "./constants/audio-sfx-models";
 export * from "./constants/audio-sfx-prompts";
+export {
+	DEFAULT_VOICE_MODEL,
+	MINIMAX_VOICES,
+	type MinimaxVoiceId,
+	PRESET_TO_SCENARIO_VOICE,
+	SCENARIO_VOICES,
+	type ScenarioVoiceId,
+	VOICE_MODELS,
+	type VoiceModelDef,
+} from "./constants/audio-voice-models";
 export * from "./constants/voice-presets";
 export * from "./economy/currency";
 export * from "./events";

@@ -1,0 +1,1042 @@
+[
+	{
+		"question": "How many hours of video are uploaded to YouTube every single minute?",
+		"answer": 500,
+		"unit": "hours",
+		"category": "Internet Culture",
+		"funFact": "That means while you were reading this question, roughly 8 hours of content got uploaded. Your backlog is not getting smaller.",
+		"id": "1d3ba9dd-49aa-456c-96ea-df1485cafac3"
+	},
+	{
+		"question": "How many miles of Twizzlers are produced every year in the US?",
+		"answer": 3000,
+		"unit": "miles",
+		"category": "Absurdist Facts",
+		"funFact": "That's enough to stretch from New York to Los Angeles and back... with enough left over to ruin a movie theater experience.",
+		"id": "58143b1b-f3d4-4800-8178-ddbf4cfc9c65"
+	},
+	{
+		"question": "How many Instagram posts are shared every single day?",
+		"answer": 100000000,
+		"unit": "posts",
+		"category": "Social Media",
+		"funFact": "One hundred million. And somehow your post with the sunset photo still only got 11 likes. Devastating.",
+		"id": "f33972cd-0d81-4fce-9924-8731b1f31ca2"
+	},
+	{
+		"question": "How many times has 'Never Gonna Give You Up' been viewed on YouTube?",
+		"answer": 1400000000,
+		"unit": "views",
+		"category": "Internet Culture",
+		"funFact": "Rick Astley has rickrolled over a billion people. He is, statistically speaking, the most successful prankster in human history.",
+		"id": "fc49c10c-cad9-469c-9e37-0713adee6f94"
+	},
+	{
+		"question": "How tall is the Minecraft world height limit in blocks (as of the 1.18 update)?",
+		"answer": 384,
+		"unit": "blocks",
+		"category": "Gaming Culture",
+		"funFact": "They added 64 blocks underground too. Your strip mine just got a basement. Several basements.",
+		"id": "55e396c2-775a-4e48-b151-c881c6d395db"
+	},
+	{
+		"question": "How many active Discord servers exist approximately?",
+		"answer": 19000000,
+		"unit": "servers",
+		"category": "Internet Culture",
+		"funFact": "19 million servers. At least 18 million of them are dead after 3 messages and a bot test.",
+		"id": "f976c325-2539-4d5a-8061-f972447e5c08"
+	},
+	{
+		"question": "How long is the Great Wall of China in miles?",
+		"answer": 13171,
+		"unit": "miles",
+		"category": "History & Geography",
+		"funFact": "You cannot see it from space, despite what your teacher said. That was a lie. A very patriotic lie.",
+		"id": "db4d9319-c078-436a-815d-7ca8e5f7fdde"
+	},
+	{
+		"question": "How many hot dogs are consumed in the US on the 4th of July alone?",
+		"answer": 150000000,
+		"unit": "hot dogs",
+		"category": "Absurdist Facts",
+		"funFact": "150 million hot dogs. That's roughly one hot dog per two Americans. Democracy is working as intended.",
+		"id": "53861b34-e5ce-4b8e-8c1f-bc29f2c49f3c"
+	},
+	{
+		"question": "How many Pokemon exist in total as of Generation 9?",
+		"answer": 1025,
+		"unit": "Pokemon",
+		"category": "Pop Culture",
+		"funFact": "We went from 151 to over a thousand. At some point they added a literal keychain and a pokeball as Pokemon. No notes.",
+		"id": "4942c468-1ba3-4656-b975-7cf804039fcf"
+	},
+	{
+		"question": "How many followers does the most followed account on TikTok have (Khaby Lame, approximately)?",
+		"answer": 162000000,
+		"unit": "followers",
+		"category": "Social Media",
+		"funFact": "He became the most followed person on TikTok almost entirely by silently judging people. Respect the grind.",
+		"id": "c7fdaf8d-5036-49d7-9b80-1cd2c3b735b2"
+	},
+	{
+		"question": "How many times does the average person check their phone per day?",
+		"answer": 96,
+		"unit": "times",
+		"category": "Social Media",
+		"funFact": "96 times a day. That's once every 10 minutes if you sleep 8 hours. You are basically in a relationship with your phone.",
+		"id": "5ad27866-7a91-4448-a3c9-4a48f43b3ecc"
+	},
+	{
+		"question": "How many copies has Minecraft sold worldwide?",
+		"answer": 238000000,
+		"unit": "copies",
+		"category": "Gaming Culture",
+		"funFact": "238 million copies. More humans have bought Minecraft than live in Brazil. Steve is more culturally significant than most countries.",
+		"id": "0b6a6ae4-00b6-448a-9a8d-3d6b7a99450f"
+	},
+	{
+		"question": "How many people watched the Super Bowl in 2024?",
+		"answer": 123400000,
+		"unit": "viewers",
+		"category": "Pop Culture",
+		"funFact": "123 million people. A significant portion of them were just there for the Taylor Swift camera cuts.",
+		"id": "1add41fa-2ac5-4b59-8534-ef16d0d8ac0f"
+	},
+	{
+		"question": "How many hours did the longest Twitch stream ever go?",
+		"answer": 161,
+		"unit": "hours",
+		"category": "Gaming Culture",
+		"funFact": "That's nearly 7 days straight. Their sleep schedule didn't just get destroyed, it got deleted, formatted, and thrown in a river.",
+		"id": "8fca2d06-4967-48ef-b057-1a41ea5a1993"
+	},
+	{
+		"question": "How many calories are in a Double Quarter Pounder with Cheese from McDonald's?",
+		"answer": 740,
+		"unit": "calories",
+		"category": "Absurdist Facts",
+		"funFact": "740 calories. That's approximately the fuel needed to scroll Twitter for 12 hours without getting up. Efficiency.",
+		"id": "030d6aea-2e67-4498-ab26-fc4bf8a55d8e"
+	},
+	{
+		"question": "How many languages does Wikipedia have content in?",
+		"answer": 321,
+		"unit": "languages",
+		"category": "Internet Culture",
+		"funFact": "321 languages. Including Scots, which is just English that decided to take a different path in life.",
+		"id": "60acbadd-551d-4837-92ad-d5a0e97f032e"
+	},
+	{
+		"question": "How old was the oldest verified cat ever (Creme Puff)?",
+		"answer": 38,
+		"unit": "years",
+		"category": "Absurdist Facts",
+		"funFact": "Creme Puff lived to 38 in Austin, Texas. Her diet reportedly included bacon and eggs. Veterinarians have questions.",
+		"id": "172b6eba-6fe7-4ed2-9c5e-25c7c840a494"
+	},
+	{
+		"question": "How many subreddits exist on Reddit approximately?",
+		"answer": 3400000,
+		"unit": "subreddits",
+		"category": "Internet Culture",
+		"funFact": "3.4 million subreddits. There is a subreddit for people who hate the word 'moist' and a subreddit for people who love moist cake. The internet contains multitudes.",
+		"id": "3a02c9fb-e99a-40c5-b923-61cd4bed266a"
+	},
+	{
+		"question": "How many McDonald's locations exist worldwide?",
+		"answer": 40000,
+		"unit": "locations",
+		"category": "Pop Culture",
+		"funFact": "40,000 locations. There are more McDonald's on Earth than there are species of birds. Let that sentence live in your head.",
+		"id": "582a1676-bd25-414f-9fdb-5ab55b9ff5ec"
+	},
+	{
+		"question": "How many hours of content does Netflix have available?",
+		"answer": 36000,
+		"unit": "hours",
+		"category": "Pop Culture",
+		"funFact": "36,000 hours of content. You will never watch all of it. You will instead spend 45 minutes scrolling and rewatch The Office.",
+		"id": "bc0455f2-1170-4dbb-aaa8-8819c4446326"
+	},
+	{
+		"question": "How many words are in the entire Harry Potter book series?",
+		"answer": 1084170,
+		"unit": "words",
+		"category": "Pop Culture",
+		"funFact": "Over a million words. J.K. Rowling invented a sport where the seeker almost always decides the game and nobody questioned it for years.",
+		"id": "fb6c1c2a-fdc0-4cd6-b1c0-5508135fcc8d"
+	},
+	{
+		"question": "How many active users does Reddit have per month approximately?",
+		"answer": 1500000000,
+		"unit": "monthly active users",
+		"category": "Internet Culture",
+		"funFact": "1.5 billion. A massive chunk of them are people who swore they deleted their account.",
+		"id": "8664976b-f490-4569-9967-1d9d6bbc88ce"
+	},
+	{
+		"question": "How many total episodes of SpongeBob SquarePants have aired?",
+		"answer": 281,
+		"unit": "episodes",
+		"category": "Pop Culture",
+		"funFact": "281 episodes and counting. SpongeBob has been 'working at the Krusty Krab' for over 25 years and still hasn't gotten a raise. Unionize the Krabby Patty workers.",
+		"id": "1f78d298-c551-4de4-8a27-bdae1c03f4ca"
+	},
+	{
+		"question": "How long in seconds is the world's longest recorded hiccup case (Charles Osborne)?",
+		"answer": 2198880000,
+		"unit": "seconds",
+		"category": "Absurdist Facts",
+		"funFact": "Charles Osborne hiccupped for 68 years straight. He hiccupped through two World Wars and multiple presidential elections. Absolute legend.",
+		"id": "7199a5ef-13b5-41a2-b3e1-387d6af0e13e"
+	},
+	{
+		"question": "How many satellites are currently orbiting Earth approximately?",
+		"answer": 8000,
+		"unit": "satellites",
+		"category": "Science & Geography",
+		"funFact": "8,000 satellites. Over 5,000 of them are Starlink. Elon Musk has put more objects in orbit than every government before him combined. The sky is a parking lot now.",
+		"id": "aeb312b8-80ad-4279-b3ce-5b5d0a32237f"
+	},
+	{
+		"question": "How many copies did GTA V sell in its first three days?",
+		"answer": 1000000000,
+		"unit": "dollars in revenue",
+		"category": "Gaming Culture",
+		"funFact": "A billion dollars in three days. GTA V made more money faster than almost any entertainment product in history. Rockstar said hold my controller.",
+		"id": "f3adff5a-9409-420b-9858-412d7bc9e1da"
+	},
+	{
+		"question": "How many tweets are sent per day on X (formerly Twitter)?",
+		"answer": 500000000,
+		"unit": "tweets",
+		"category": "Social Media",
+		"funFact": "500 million tweets a day. The platform renamed itself to X and people still call it Twitter. Branding is fake.",
+		"id": "37df73b8-2a11-45d9-b979-ae5abf68cf69"
+	},
+	{
+		"question": "How many hours did it take the fastest player to finish Elden Ring?",
+		"answer": 2.5,
+		"unit": "hours",
+		"category": "Gaming Culture",
+		"funFact": "2.5 hours. Speedrunners found bugs so busted they basically skipped an entire open world epic fantasy. FromSoftware is in shambles.",
+		"id": "24508f1c-9c2e-48ee-8863-fc3411e6ea23"
+	},
+	{
+		"question": "How many calories does the average American consume on Thanksgiving?",
+		"answer": 4500,
+		"unit": "calories",
+		"category": "Absurdist Facts",
+		"funFact": "4,500 calories. That's double the recommended daily intake. Nobody is normal on Thanksgiving. That is the day we agreed as a society to go feral.",
+		"id": "971e2740-6164-4b70-8667-cba9ee0ebeaa"
+	},
+	{
+		"question": "How many copies of Tetris have been sold across all platforms?",
+		"answer": 520000000,
+		"unit": "copies",
+		"category": "Gaming Culture",
+		"funFact": "520 million copies. Tetris is statistically the game most humans have played. You've felt that panic. We've all felt that panic.",
+		"id": "c3108686-3e7c-4b6d-8406-220a6deafc47"
+	},
+	{
+		"question": "How tall in feet is the Eiffel Tower?",
+		"answer": 1083,
+		"unit": "feet",
+		"category": "History & Geography",
+		"funFact": "1,083 feet including the antenna. It was supposed to be torn down after 20 years. Paris looked at it and said 'actually never mind it's kind of good.'",
+		"id": "18e294c3-0918-4f79-948b-a97f058389b3"
+	},
+	{
+		"question": "How many TikTok videos are watched per day globally?",
+		"answer": 1000000000,
+		"unit": "videos",
+		"category": "Social Media",
+		"funFact": "A billion videos per day. The average session is 95 minutes. You opened TikTok to watch one video and it is now 3am.",
+		"id": "02631887-a409-4901-bcf8-11748e59c252"
+	},
+	{
+		"question": "How many people have walked on the Moon?",
+		"answer": 12,
+		"unit": "people",
+		"category": "History & Science",
+		"funFact": "Only 12 people. All American, all between 1969 and 1972, and then we just... stopped. We have not been back since. The Moon is waiting.",
+		"id": "2534e1bd-57eb-46cd-97ca-50f9a40b1a33"
+	},
+	{
+		"question": "How many followers did PewDiePie have at his peak on YouTube?",
+		"answer": 111000000,
+		"unit": "subscribers",
+		"category": "Internet Culture",
+		"funFact": "111 million subscribers. He was the most subscribed individual creator on YouTube for years and lost the top spot to a channel that posts Hindu devotional content. The internet contains surprises.",
+		"id": "f562b206-597c-4f75-834f-28cf7685561b"
+	},
+	{
+		"question": "How many hours of gameplay does the average Skyrim playthrough take for completionists?",
+		"answer": 232,
+		"unit": "hours",
+		"category": "Gaming Culture",
+		"funFact": "232 hours for 100% completion. Skyrim has been ported to so many platforms that at this point it's basically a law of physics.",
+		"id": "5e2beda7-199d-4ff6-a7db-e19470bd21ba"
+	},
+	{
+		"question": "How many characters can a tweet be on X (formerly Twitter) now?",
+		"answer": 25000,
+		"unit": "characters",
+		"category": "Social Media",
+		"funFact": "25,000 characters for premium users. Twitter invented brevity. Then it uninvented it. We live in strange times.",
+		"id": "98a3a14e-ae9a-41a0-8239-c04e20402e0c"
+	},
+	{
+		"question": "How many pieces are in the world's largest completed jigsaw puzzle (Ravensburger)?",
+		"answer": 40320,
+		"unit": "pieces",
+		"category": "Absurdist Facts",
+		"funFact": "40,320 pieces. Completing it takes around 460 hours. This is what peak human activity looks like. Archaeologists will find it.",
+		"id": "87dda8d7-6051-4e76-96db-7ac4da94cf89"
+	},
+	{
+		"question": "How many people play Roblox daily?",
+		"answer": 88200000,
+		"unit": "daily active users",
+		"category": "Gaming Culture",
+		"funFact": "88 million daily users. Roblox has a GDP-sized economy and most of its transactions involve hats. The future of commerce is a virtual top hat.",
+		"id": "eca18f96-d94e-4b38-b80c-8d4b7f464174"
+	},
+	{
+		"question": "How long in days was the longest Monopoly game ever played?",
+		"answer": 70,
+		"unit": "days",
+		"category": "Absurdist Facts",
+		"funFact": "70 days. There is no scenario in which this was fun for anyone involved by day 40. This is not a game. This is a commitment.",
+		"id": "d46ff289-3db0-4aca-8329-98011046188a"
+	},
+	{
+		"question": "How many emojis exist in the official Unicode standard?",
+		"answer": 3782,
+		"unit": "emojis",
+		"category": "Internet Culture",
+		"funFact": "3,782 emojis. We have an emoji for a person shrugging, a moose, and a dotted line face. We are advanced.",
+		"id": "d4f3cca4-465f-4508-a669-749c32ec14e8"
+	},
+	{
+		"question": "How many hours of sleep does the average teenager get per night?",
+		"answer": 6.5,
+		"unit": "hours",
+		"category": "Science & Body",
+		"funFact": "6.5 hours. The recommended amount is 9. The difference is being spent on YouTube, Discord, and thinking about that one weird thing you said three years ago.",
+		"id": "fa281adb-c23b-43c8-b201-4b6c469ef5d8"
+	},
+	{
+		"question": "How many eyes does a bee have?",
+		"answer": 5,
+		"unit": "eyes",
+		"category": "Science & Nature",
+		"funFact": "5 eyes. Three simple eyes on top, two compound eyes on the side. Bees have better peripheral vision than your entire gaming setup can see.",
+		"id": "a3a55dec-baf6-41c9-9d6f-da878f9b0bf1"
+	},
+	{
+		"question": "How many times has the 'This is Fine' meme dog been shared approximately (in millions of shares)?",
+		"answer": 25,
+		"unit": "million shares",
+		"category": "Internet Culture",
+		"funFact": "The dog first appeared in a 2013 webcomic. It became the official meme of every ongoing situation. It is now the default human coping mechanism.",
+		"id": "0987ea39-192c-4c71-9f1f-eefb78a2b838"
+	},
+	{
+		"question": "How old was the youngest person to ever climb Mount Everest (Jordan Romero)?",
+		"answer": 13,
+		"unit": "years old",
+		"category": "History & Geography",
+		"funFact": "13 years old. Jordan Romero summited Everest at an age when most kids are still figuring out lockers. Absolutely unhinged achievement.",
+		"id": "0e2ad7c2-e5b3-4026-bed6-4fc0099efbe1"
+	},
+	{
+		"question": "How many total achievements exist in the Xbox achievement system?",
+		"answer": 2000000,
+		"unit": "achievements",
+		"category": "Gaming Culture",
+		"funFact": "Over 2 million achievements across all Xbox games. Somewhere out there is an achievement for something like 'open the pause menu' and someone is proud of it.",
+		"id": "c5885e22-6193-4e71-b818-2d320b5dc1cd"
+	},
+	{
+		"question": "How many views did 'Baby Shark' get on YouTube?",
+		"answer": 13000000000,
+		"unit": "views",
+		"category": "Pop Culture",
+		"funFact": "13 billion views. Baby Shark is the most viewed video in YouTube history by a massive margin. It has defeated every musician, meme, and moment in internet history. Baby wins.",
+		"id": "0b736b35-409f-4b23-855a-84bd499ecfdc"
+	},
+	{
+		"question": "How many Super Mario Bros games have been released across all Nintendo platforms?",
+		"answer": 27,
+		"unit": "games",
+		"category": "Gaming Culture",
+		"funFact": "27 mainline Mario titles. Mario is statistically the most successful video game franchise of all time. He's a plumber who has never fixed a pipe in any of them.",
+		"id": "9879a1eb-d1e0-4981-8a22-2d249b78b0b5"
+	},
+	{
+		"question": "How many total hours did Americans spend playing video games in 2023 (in billions)?",
+		"answer": 17,
+		"unit": "billion hours",
+		"category": "Gaming Culture",
+		"funFact": "17 billion hours. That's enough to build the pyramids approximately 1 million times over. We chose games. No regrets.",
+		"id": "f8501540-5853-491b-8fe2-ef9c8ef6dd2c"
+	},
+	{
+		"question": "How long in miles is the longest road in the world (Pan-American Highway)?",
+		"answer": 19000,
+		"unit": "miles",
+		"category": "History & Geography",
+		"funFact": "19,000 miles from Alaska to Argentina. There is one gap in the jungle called the Darien Gap that is impassable. The road just gives up for a bit. Relatable.",
+		"id": "126a7eeb-39d8-4032-855b-3c1c9b602fe5"
+	},
+	{
+		"question": "How many Cheeto dust particles does the average bag leave on your fingers (estimated)?",
+		"answer": 10000,
+		"unit": "particles",
+		"category": "Absurdist Facts",
+		"funFact": "Scientists estimate thousands of flavor particles per serving. Cheeto dust has been identified as the reason controllers get sticky. Gaming companies know. They say nothing.",
+		"id": "150d648b-ff02-4b48-9e5f-a77a3cf0e00e"
+	},
+	{
+		"question": "How long in years has chess been played?",
+		"answer": 1500,
+		"unit": "years",
+		"category": "History & Games",
+		"funFact": "1,500 years. Chess predates most modern countries. The game has been causing family tension for longer than most families have existed.",
+		"id": "63be2975-812e-4ce7-aeea-1292817d2fef"
+	},
+	{
+		"question": "How many total Fortnite players have registered accounts?",
+		"answer": 350000000,
+		"unit": "players",
+		"category": "Gaming Culture",
+		"funFact": "350 million registered accounts. Fortnite has more registered players than the US has people. It also accidentally taught an entire generation what a build permit is.",
+		"id": "c8eceaa2-7ed4-479a-8629-7e3a22229653"
+	},
+	{
+		"question": "How many total mods exist for Skyrim on Nexus Mods?",
+		"answer": 70000,
+		"unit": "mods",
+		"category": "Gaming Culture",
+		"funFact": "Over 70,000 mods. Someone has made a mod that replaces every dragon with Thomas the Tank Engine. It's one of the most downloaded mods ever. Todd Howard is honored.",
+		"id": "05684ebd-36fc-4e1c-8f5e-958f0a478fe2"
+	},
+	{
+		"question": "How many people watched the final episode of Game of Thrones?",
+		"answer": 19300000,
+		"unit": "viewers",
+		"category": "Pop Culture",
+		"funFact": "19.3 million viewers. Many of them were furious. A petition to remake Season 8 got nearly 2 million signatures. Democracy tried its best.",
+		"id": "fabd434b-77ba-463e-a788-b25e4864c532"
+	},
+	{
+		"question": "How old in years is the oldest known living tree (Methuselah)?",
+		"answer": 4855,
+		"unit": "years",
+		"category": "Science & Nature",
+		"funFact": "The Methuselah tree in California is nearly 5,000 years old. It was a seedling when the Egyptians were building pyramids. Its exact location is kept secret so humans don't ruin it. Wise call.",
+		"id": "b7f2d630-82ae-479f-856f-198e41872c97"
+	},
+	{
+		"question": "How many pounds of food does the average American throw away per year?",
+		"answer": 219,
+		"unit": "pounds",
+		"category": "Absurdist Facts",
+		"funFact": "219 pounds per person. That's like throwing away an entire large human's worth of food every year. The fridge is a graveyard and leftovers are its ghosts.",
+		"id": "ccd1825f-5430-4a8a-a684-cf6a16b11b8c"
+	},
+	{
+		"question": "How many Chrome tabs does the average person have open right now (estimated)?",
+		"answer": 23,
+		"unit": "tabs",
+		"category": "Internet Culture",
+		"funFact": "Studies suggest people average over 20 tabs. One of them is muted and you cannot find it. One is something you meant to read. It's been there for 11 months.",
+		"id": "7d32af2b-e2b6-4b42-a297-2a572703c058"
+	},
+	{
+		"question": "How many total episodes does The Simpsons have?",
+		"answer": 757,
+		"unit": "episodes",
+		"category": "Pop Culture",
+		"funFact": "Over 757 episodes. The Simpsons has been running since 1989. Bart Simpson has been 10 years old for 35 years. He has seen empires fall.",
+		"id": "2daa561b-835f-4fb1-9faf-f3729b3fc6ec"
+	},
+	{
+		"question": "How many GB of data does the average gamer download per month?",
+		"answer": 185,
+		"unit": "GB",
+		"category": "Gaming Culture",
+		"funFact": "185 GB. A single Call of Duty update once required 250 GB of free space. The game takes up more space than most people's high school memories.",
+		"id": "52126888-d66e-442c-b354-6e569bafa141"
+	},
+	{
+		"question": "How many views did Gangnam Style get before YouTube had to upgrade its view counter?",
+		"answer": 2147483647,
+		"unit": "views",
+		"category": "Internet Culture",
+		"funFact": "Gangnam Style hit the literal maximum number YouTube's integer counter could hold. YouTube had to rewrite their code. PSY broke mathematics.",
+		"id": "2683a779-6646-4a38-a095-c533271b8a21"
+	},
+	{
+		"question": "How long in minutes is the average TikTok session?",
+		"answer": 95,
+		"unit": "minutes",
+		"category": "Social Media",
+		"funFact": "95 minutes per day on average. You opened it to watch one video about a cat. It is now tomorrow. The cat was not even that funny.",
+		"id": "5a0db1f8-4d12-4433-a40f-eed454c5696b"
+	},
+	{
+		"question": "How many bottles of wine are produced worldwide every year (in millions)?",
+		"answer": 25000,
+		"unit": "million bottles",
+		"category": "Absurdist Facts",
+		"funFact": "25 billion bottles. That's roughly 3 bottles per person on Earth per year. Not everyone drinks. Some people are carrying extra weight for the rest of us.",
+		"id": "561b6bc1-da82-4759-8109-f36a85957010"
+	},
+	{
+		"question": "How many colors can the human eye distinguish?",
+		"answer": 10000000,
+		"unit": "colors",
+		"category": "Science & Body",
+		"funFact": "10 million colors. And yet the dress was either blue-black or white-gold and it almost ended the internet. We have 10 million options and we chose chaos.",
+		"id": "cfe0c170-8585-40dc-a15b-9b106a970bf0"
+	},
+	{
+		"question": "How long in hours is the longest commercial flight in the world (Singapore to New York)?",
+		"answer": 18.5,
+		"unit": "hours",
+		"category": "History & Geography",
+		"funFact": "18.5 hours in a metal tube. You will watch every movie, eat every snack, and still have 9 hours left. The movies have run out. You are alone with your thoughts now.",
+		"id": "c75607bd-b869-488a-a211-07f1834c4b9b"
+	},
+	{
+		"question": "How many GameStop locations were there at their peak?",
+		"answer": 6000,
+		"unit": "locations",
+		"category": "Pop Culture",
+		"funFact": "6,000 GameStop stores at peak. Then Reddit users collectively decided not to let it die, bought the stock, and launched a financial meme revolution. We live in an era of legends.",
+		"id": "a9cf80fa-95e8-4951-bc0c-cc9a249a70a4"
+	},
+	{
+		"question": "How many copies of Animal Crossing: New Horizons sold in its first 6 weeks?",
+		"answer": 13000000,
+		"unit": "copies",
+		"category": "Gaming Culture",
+		"funFact": "13 million copies in 6 weeks. It launched during global lockdowns. People needed turnip prices and a reason to maintain a schedule. Tom Nook delivered.",
+		"id": "e8bd7032-da27-4020-baca-d0cbb41841ac"
+	},
+	{
+		"question": "How many songs are on Spotify?",
+		"answer": 100000000,
+		"unit": "songs",
+		"category": "Pop Culture",
+		"funFact": "Over 100 million songs. And yet your Discover Weekly keeps recommending something that sounds exactly like the last 400 things you listened to.",
+		"id": "0f3ce737-c2c3-4b0e-a290-ec397b8de6d3"
+	},
+	{
+		"question": "How many hearts does an octopus have?",
+		"answer": 3,
+		"unit": "hearts",
+		"category": "Science & Nature",
+		"funFact": "3 hearts. Two pump blood to the gills, one pumps it to the body. When they swim, the main heart stops beating. Octopuses literally work themselves to near-death just to move. Relate.",
+		"id": "d5464e93-bdce-41a3-8017-0966d9511cda"
+	},
+	{
+		"question": "How many years did it take to build the Great Pyramid of Giza?",
+		"answer": 20,
+		"unit": "years",
+		"category": "History",
+		"funFact": "About 20 years. The ancient Egyptians built a literal wonder of the world in 20 years. Your IKEA bookshelf took 6 hours and is still wobbling.",
+		"id": "45f3d5da-0683-40ff-a620-519e47340b41"
+	},
+	{
+		"question": "How many people have played Among Us since launch?",
+		"answer": 500000000,
+		"unit": "players",
+		"category": "Gaming Culture",
+		"funFact": "Half a billion players. Among Us was released in 2018 and nobody cared. In 2020 it became the most downloaded mobile game in history. Timing is everything. Sus.",
+		"id": "b29843e7-09e0-44d1-94a7-a1d2a002f3db"
+	},
+	{
+		"question": "How many hours of content has been removed by YouTube's automated copyright system per year (estimated in millions)?",
+		"answer": 8.3,
+		"unit": "million videos",
+		"category": "Internet Culture",
+		"funFact": "Millions of videos removed by bots. Entire documentaries, essays, and original works deleted because a bird sang in the background and a music label owns birds now.",
+		"id": "89686d31-0cc5-420b-8909-210c8ec45d57"
+	},
+	{
+		"question": "How many sold-out seconds did Travis Scott's Fortnite concert sell in?",
+		"answer": 90,
+		"unit": "seconds",
+		"category": "Pop Culture",
+		"funFact": "Travis Scott's Fortnite concert was watched by 12.3 million concurrent players. It was arguably a bigger event than most real concerts. The venue was unlimited. No one was late.",
+		"id": "c849f23f-6131-49f8-8dca-8c782c68e7b0"
+	},
+	{
+		"question": "How many hours per year does the average gamer play?",
+		"answer": 720,
+		"unit": "hours",
+		"category": "Gaming Culture",
+		"funFact": "720 hours per year. That's 30 full days of gaming annually. If you worked those hours at minimum wage you could afford one graphics card. The math hurts.",
+		"id": "079ac079-6999-4f85-8e45-4b50fbf6ed13"
+	},
+	{
+		"question": "How many noodles are in the average bowl of ramen?",
+		"answer": 1500,
+		"unit": "noodles",
+		"category": "Absurdist Facts",
+		"funFact": "Approximately 1,500 noodles per bowl. Every single one matters. The noodles in instant ramen are the same noodles in a $35 artisanal bowl. Price is a construct.",
+		"id": "85027a15-e661-4358-81f6-bf5903a95336"
+	},
+	{
+		"question": "How many total Pokémon games have been released?",
+		"answer": 122,
+		"unit": "games",
+		"category": "Gaming Culture",
+		"funFact": "Over 122 games. That includes mainline, spinoffs, and stuff like Pokémon Pinball. Nintendo has been finding new ways to put Pikachu in things for 28 years and they are not stopping.",
+		"id": "057ce23b-ce96-47a0-bb99-b560c3db58d2"
+	},
+	{
+		"question": "How many people are online on Steam at peak hours?",
+		"answer": 35000000,
+		"unit": "concurrent users",
+		"category": "Gaming Culture",
+		"funFact": "35 million users online simultaneously at peak. Steam's peak concurrent record is over 33 million. The servers have never apologized for their behavior during a big sale.",
+		"id": "9d68ad13-6070-4d28-b925-ce60c0e9ddee"
+	},
+	{
+		"question": "How many hours did it take to sell out Taylor Swift's Eras Tour tickets when they first went on sale?",
+		"answer": 1,
+		"unit": "hours",
+		"category": "Pop Culture",
+		"funFact": "The demand was so massive it crashed Ticketmaster, triggered a Senate hearing, and became the main character of the entire internet for a week.",
+		"id": "171583e9-cca7-4e3c-a943-0a87ed21173f"
+	},
+	{
+		"question": "How many minutes long is the average YouTube ad that you can skip after 5 seconds?",
+		"answer": 15,
+		"unit": "minutes",
+		"category": "Internet Culture",
+		"funFact": "Nobody has ever watched the full thing. This is a universal human truth.",
+		"id": "5dedadfb-fe0e-448a-91b4-947d652ba553"
+	},
+	{
+		"question": "How many dollars did the first iPhone sell for at launch in 2007?",
+		"answer": 599,
+		"unit": "dollars",
+		"category": "Pop Culture",
+		"funFact": "That's $599 for 4GB of storage and a camera that made everything look like a fever dream.",
+		"id": "7e177b45-d659-4a2d-abe4-c2abfbfae8c3"
+	},
+	{
+		"question": "How many feet underground is the deepest mine in the world (Mponeng Gold Mine in South Africa)?",
+		"answer": 25000,
+		"unit": "feet",
+		"category": "Geography",
+		"funFact": "So deep that the rock walls reach 140°F and they have to pump in ice slurry just to keep workers alive. Casual.",
+		"id": "20819202-4590-4f5f-859b-dffed5996182"
+	},
+	{
+		"question": "How many hot pockets are sold in the United States every year (in millions)?",
+		"answer": 800,
+		"unit": "million",
+		"category": "Pop Culture",
+		"funFact": "800 million Hot Pockets and every single one has been simultaneously frozen on the outside and molten lava on the inside.",
+		"id": "f9d3908e-e286-41f5-90e4-c9ed1a264df5"
+	},
+	{
+		"question": "How many times did Shrek win the Nickelodeon Kids' Choice Award for Favorite Movie?",
+		"answer": 4,
+		"unit": "wins",
+		"category": "Pop Culture",
+		"funFact": "Kids collectively recognized Shrek as the GOAT four separate times. They were right.",
+		"id": "3e53939c-03fb-4dbc-a7d9-aeedf531e827"
+	},
+	{
+		"question": "How many dollars in quarters would fill an Olympic swimming pool?",
+		"answer": 11298000,
+		"unit": "dollars",
+		"category": "Absurdist",
+		"funFact": "That's over 11 million dollars in quarters. The pool would weigh about 11,000 tons. Please do not try this.",
+		"id": "0d5fa53e-87e8-4764-9e91-3a5cffbfadff"
+	},
+	{
+		"question": "How many versions of Monopoly have been officially released worldwide?",
+		"answer": 1144,
+		"unit": "versions",
+		"category": "Pop Culture",
+		"funFact": "There's a version of Monopoly for almost every franchise, city, and niche interest on Earth. None of them end friendships any less.",
+		"id": "8bef95c7-ae1c-4ebf-8d7c-38e8031d9e0c"
+	},
+	{
+		"question": "How many times does the word 'the' appear in the English Wikipedia?",
+		"answer": 418000000,
+		"unit": "times",
+		"category": "Internet Culture",
+		"funFact": "'The' is doing the most. Absolute workhorse. No recognition. Just vibes.",
+		"id": "eddcf618-a955-4ba2-a946-c1be51ede742"
+	},
+	{
+		"question": "How many people were playing World of Warcraft at its peak in 2010?",
+		"answer": 12000000,
+		"unit": "players",
+		"category": "Gaming",
+		"funFact": "12 million subscribers all simultaneously neglecting their responsibilities. Peak civilization.",
+		"id": "7b24dee6-6f60-4242-acb7-e23ef58a87f4"
+	},
+	{
+		"question": "How many calories are in a Starbucks Venti White Chocolate Mocha with whipped cream?",
+		"answer": 610,
+		"unit": "calories",
+		"category": "Pop Culture",
+		"funFact": "You could run a 10K and it would still be a wash. Drink it anyway. You've earned it.",
+		"id": "7c067e9f-7764-4d92-b365-3688d8e0e488"
+	},
+	{
+		"question": "How many seconds long is the average human attention span in 2024?",
+		"answer": 8,
+		"unit": "seconds",
+		"category": "Science",
+		"funFact": "Goldfish are at 9 seconds. We lost to goldfish. Incredible.",
+		"id": "2b80e03f-1898-4c4e-893f-9a0b8a59b6e2"
+	},
+	{
+		"question": "How many people watched the first episode of The Last of Us on HBO Max?",
+		"answer": 4700000,
+		"unit": "viewers",
+		"category": "Pop Culture",
+		"funFact": "And then every single one of them screamed at someone who hadn't seen it yet to watch it immediately.",
+		"id": "63cfe773-792b-4e24-851a-1ee325de95fe"
+	},
+	{
+		"question": "How many square feet is the world's largest McDonald's (in Orlando, Florida)?",
+		"answer": 19000,
+		"unit": "square feet",
+		"category": "Pop Culture",
+		"funFact": "It has a DJ booth, arcade, and multiple floors. It's basically a theme park that also has McNuggets.",
+		"id": "eafa0bd3-d637-4f67-9b0a-df0d87e74264"
+	},
+	{
+		"question": "How many missions are in the main story of GTA San Andreas?",
+		"answer": 100,
+		"unit": "missions",
+		"category": "Gaming",
+		"funFact": "One hundred missions to go from the Grove to ruling an empire. The jump from Los Santos to the rest of the map still hits different.",
+		"id": "cae65f31-95c9-4b16-a5a9-532841d193f0"
+	},
+	{
+		"question": "How many inches of pizza are consumed per second in the United States?",
+		"answer": 350,
+		"unit": "inches per second",
+		"category": "Absurdist",
+		"funFact": "That's 350 inches of pizza every second. America is running on pure cheese and vibes.",
+		"id": "b5649d8c-dbed-4f6c-a886-c42b965727b4"
+	},
+	{
+		"question": "How many total cards are in a standard Magic: The Gathering collection as of 2024?",
+		"answer": 27000,
+		"unit": "cards",
+		"category": "Gaming",
+		"funFact": "27,000 unique cards. If you stacked them all up, the pile would be taller than a five-story building.",
+		"id": "43ea9e07-fa59-4441-ad15-125afc14fbff"
+	},
+	{
+		"question": "How old was Markiplier when he started his YouTube channel?",
+		"answer": 22,
+		"unit": "years old",
+		"category": "Pop Culture",
+		"funFact": "22 years old, freshly dropped out of college, screaming at horror games. The rest is history.",
+		"id": "0251af24-3019-4824-9881-423a69b643e1"
+	},
+	{
+		"question": "How many dogs are in the US as pets approximately?",
+		"answer": 90000000,
+		"unit": "dogs",
+		"category": "Science",
+		"funFact": "90 million dogs, all convinced they are the main character. They're correct.",
+		"id": "34feb724-ff74-4078-ba1e-b2a7e845c0c6"
+	},
+	{
+		"question": "How many pounds does the average American consume in fast food per year?",
+		"answer": 50,
+		"unit": "pounds",
+		"category": "Pop Culture",
+		"funFact": "50 pounds of fast food. That's basically a small golden retriever made of burgers.",
+		"id": "4d99e171-e1df-41b6-b9b7-5c8101f40143"
+	},
+	{
+		"question": "How many gigabytes of RAM did the Nintendo 64 have?",
+		"answer": 0.000004,
+		"unit": "GB",
+		"category": "Gaming",
+		"funFact": "0.000004 GB. Your phone notification badge uses more memory than this entire console. Absolute legend regardless.",
+		"id": "d13c5d32-1632-4f7d-832d-bc449e1c0915"
+	},
+	{
+		"question": "How many hours does it take to read the entire Lord of the Rings trilogy out loud?",
+		"answer": 60,
+		"unit": "hours",
+		"category": "Pop Culture",
+		"funFact": "60 hours of pure Tolkien. That's watching every Marvel movie back to back twice and still having time for a nap.",
+		"id": "9b6745c1-f46e-4340-b4b0-3e24a29fdcbc"
+	},
+	{
+		"question": "How many people use LinkedIn (and definitely actually update their profile)?",
+		"answer": 1000000000,
+		"unit": "users",
+		"category": "Social Media",
+		"funFact": "One billion people are 'excited to announce' something on LinkedIn at any given moment.",
+		"id": "f7a43025-0005-4fe8-9061-27ef73986cd4"
+	},
+	{
+		"question": "How many subscribers did the fastest YouTube channel take to reach 1 million (MrBeast's record in days)?",
+		"answer": 1,
+		"unit": "day",
+		"category": "Internet Culture",
+		"funFact": "One day. MrBeast broke reality and the internet just accepted it.",
+		"id": "95fdeff9-9838-4952-bf41-4e0f127e229a"
+	},
+	{
+		"question": "How many episodes of Naruto are considered filler?",
+		"answer": 294,
+		"unit": "episodes",
+		"category": "Pop Culture",
+		"funFact": "294 filler episodes. Entire arcs that happened and also didn't matter. A spiritual test of patience.",
+		"id": "f3e750a1-2825-4aef-812f-ddf5edaa3231"
+	},
+	{
+		"question": "How many kilometers long is the entire Tokyo train system?",
+		"answer": 2400,
+		"unit": "kilometers",
+		"category": "Geography",
+		"funFact": "2,400 km of train lines, and they're still on time. Meanwhile everywhere else a train is 11 minutes late and it's national news.",
+		"id": "a1199975-9109-4865-8c84-ddc731e6adfc"
+	},
+	{
+		"question": "How many total seasons does the anime One Piece have?",
+		"answer": 21,
+		"unit": "seasons",
+		"category": "Pop Culture",
+		"funFact": "21 seasons. If you started watching One Piece when it first aired, you could have gotten a college degree three times over.",
+		"id": "2a35a7d7-ea50-4972-81f7-0525ec0e704c"
+	},
+	{
+		"question": "How many pounds of candy corn are produced every year in the US?",
+		"answer": 35000000,
+		"unit": "pounds",
+		"category": "Pop Culture",
+		"funFact": "35 million pounds of candy corn produced and approximately none of it is enjoyed by anyone.",
+		"id": "c96436bd-4967-40e6-adb8-e4edb41706e5"
+	},
+	{
+		"question": "How many digits of Pi have been calculated as of 2024?",
+		"answer": 105000000000000,
+		"unit": "digits",
+		"category": "Science",
+		"funFact": "105 trillion digits. You could write Pi nonstop every second for 3 million years and not finish. Math said no chill.",
+		"id": "64c8ccf4-5bc7-4d12-9724-a32eae712f80"
+	},
+	{
+		"question": "How many dollars did the most expensive CS:GO knife skin ever sell for?",
+		"answer": 780000,
+		"unit": "dollars",
+		"category": "Gaming",
+		"funFact": "780 thousand dollars for a texture on a virtual knife. The economy is a simulation and the simulation is broken.",
+		"id": "985f4445-ba03-4f78-bddd-491a90f0d5b1"
+	},
+	{
+		"question": "How many views did the first-ever YouTube video (Me at the Zoo) have?",
+		"answer": 330000000,
+		"unit": "views",
+		"category": "Internet Culture",
+		"funFact": "A 19-second video of a guy at a zoo about elephants launched the biggest video platform in history. Peak chaos.",
+		"id": "6fcd90d5-1509-4376-a1e8-05bfe2a89efd"
+	},
+	{
+		"question": "How many total achievements are in Hollow Knight?",
+		"answer": 63,
+		"unit": "achievements",
+		"category": "Gaming",
+		"funFact": "63 achievements, and getting all of them requires you to descend into the Pantheon of Hallownest repeatedly while questioning your choices.",
+		"id": "3e10a976-9c26-4f36-8543-c3c9adb87f00"
+	},
+	{
+		"question": "How many followers does the Duolingo TikTok account have (approximately)?",
+		"answer": 8000000,
+		"unit": "followers",
+		"category": "Social Media",
+		"funFact": "8 million people follow an owl threatening them to learn Spanish. We've made peace with this.",
+		"id": "936a55e7-3f97-486c-be9e-b7ffb8f45d93"
+	},
+	{
+		"question": "How many Lego bricks are produced every year?",
+		"answer": 19000000000,
+		"unit": "bricks",
+		"category": "Pop Culture",
+		"funFact": "19 billion Lego bricks a year. Statistically, there are more Lego bricks on Earth than people. Lego is winning.",
+		"id": "ede036e4-96a2-410b-a059-dcee6f11650c"
+	},
+	{
+		"question": "How many percent of all internet traffic was cats at peak 2012 cat meme era?",
+		"answer": 15,
+		"unit": "percent",
+		"category": "Internet Culture",
+		"funFact": "15 percent of the entire internet was cats. The bandwidth of civilization, consecrated to a small judgmental animal.",
+		"id": "26b87f73-8126-4683-881f-9678b93ae5d0"
+	},
+	{
+		"question": "How many dollars did the first tweet ever (by Jack Dorsey) sell as an NFT for?",
+		"answer": 2900000,
+		"unit": "dollars",
+		"category": "Internet Culture",
+		"funFact": "2.9 million dollars for 'just setting up my twttr.' It later was relisted for 48 million and got no bids. Timeline.",
+		"id": "c952db06-7dbd-43ab-95ba-f010dec0af44"
+	},
+	{
+		"question": "How many Nintendo Switches have been sold worldwide?",
+		"answer": 143000000,
+		"unit": "units",
+		"category": "Gaming",
+		"funFact": "143 million Switches. The device that turned 'playing Mario on the toilet' from a dream into a lifestyle.",
+		"id": "a32fb46e-bed9-4aeb-90bb-849668c207eb"
+	},
+	{
+		"question": "How many episodes does Avatar: The Last Airbender have?",
+		"answer": 61,
+		"unit": "episodes",
+		"category": "Pop Culture",
+		"funFact": "61 perfect episodes. Zero bad ones. The statistical anomaly that scientists still cannot explain.",
+		"id": "0a5f3e6c-7a0e-43fa-a4e6-c2ff02aa153d"
+	},
+	{
+		"question": "How many times has 'All Star' by Smash Mouth been streamed on Spotify?",
+		"answer": 700000000,
+		"unit": "streams",
+		"category": "Pop Culture",
+		"funFact": "700 million Smash Mouth streams. Somebody once told the algorithm and it has not stopped telling us since.",
+		"id": "75763b54-8041-43db-a48b-ab662592dfdd"
+	},
+	{
+		"question": "How many square miles is the internet if you printed every webpage (estimated)?",
+		"answer": 200000000,
+		"unit": "square miles",
+		"category": "Internet Culture",
+		"funFact": "200 million square miles of printed internet. That's bigger than the surface of several planets combined. The web is feral.",
+		"id": "f737f3ce-bd54-4481-b756-915969f97393"
+	},
+	{
+		"question": "How many calories does the average competitive eater consume in one contest?",
+		"answer": 20000,
+		"unit": "calories",
+		"category": "Pop Culture",
+		"funFact": "20,000 calories in one sitting. That's about 10 days worth of food consumed while a timer counts down and a crowd cheers.",
+		"id": "5065ace2-cdc6-40a0-8537-267f1f6290f1"
+	},
+	{
+		"question": "How many feet tall is the world's largest rubber duck (Mama Duck event in Hong Kong)?",
+		"answer": 54,
+		"unit": "feet",
+		"category": "Absurdist",
+		"funFact": "A 54-foot rubber duck was floated in Victoria Harbour. Nobody asked. Everyone was improved by it.",
+		"id": "d36afbda-51a4-4280-b1c3-3e2dd05bf94f"
+	},
+	{
+		"question": "How many dollars did Ninja earn in a single year at his peak streaming?",
+		"answer": 17000000,
+		"unit": "dollars",
+		"category": "Pop Culture",
+		"funFact": "17 million dollars playing Fortnite. The American dream has been successfully speedrun.",
+		"id": "d0db93fe-53b1-4bef-9950-b22d5110eb16"
+	},
+	{
+		"question": "How many bones does a shark have?",
+		"answer": 0,
+		"unit": "bones",
+		"category": "Science",
+		"funFact": "Zero bones. Sharks are entirely cartilage. They're basically a living stress toy that can smell blood from miles away.",
+		"id": "ea313e8a-858a-4651-a85c-d2d264875d61"
+	},
+	{
+		"question": "How many lines of dialogue are in The Witcher 3: Wild Hunt?",
+		"answer": 450000,
+		"unit": "lines",
+		"category": "Gaming",
+		"funFact": "450,000 lines of dialogue. If you read them all aloud nonstop it would take over a year. Geralt has said more words than most historical figures.",
+		"id": "7804f8d8-6122-4bea-a7e1-f27b2dea96c8"
+	},
+	{
+		"question": "How many Vine loops were watched per day at Vine's peak?",
+		"answer": 1500000000,
+		"unit": "loops",
+		"category": "Internet Culture",
+		"funFact": "1.5 billion Vine loops per day before it was killed. Pour one out. Road work ahead.",
+		"id": "ca2237c1-30d8-4dea-b259-a8b3a4976a9c"
+	},
+	{
+		"question": "How many letters are in the longest word in the English language (titin protein)?",
+		"answer": 189819,
+		"unit": "letters",
+		"category": "Science",
+		"funFact": "189,819 letters. The word takes 3.5 hours to pronounce. It's a protein. Nobody uses it in conversation. Perfect.",
+		"id": "20f0032e-b163-46db-99a3-e22a93e3f0d5"
+	},
+	{
+		"question": "How many active users does BeReal have (approximately in 2024)?",
+		"answer": 25000000,
+		"unit": "users",
+		"category": "Social Media",
+		"funFact": "25 million users being notified at random times to be authentic. Most of them are in their car or looking at their phone. Authentic confirmed.",
+		"id": "d16287b3-d526-4045-933a-deb01124a674"
+	},
+	{
+		"question": "How many hours of battery life does the original Game Boy get?",
+		"answer": 30,
+		"unit": "hours",
+		"category": "Gaming",
+		"funFact": "30 hours on 4 AA batteries. The Game Boy outlasted your childhood, your teenage years, and possibly your first relationship.",
+		"id": "3831ccec-f9d9-43d2-8bba-f0734385c4a7"
+	},
+	{
+		"question": "How many dollars was the most expensive Pokémon card ever sold?",
+		"answer": 5275000,
+		"unit": "dollars",
+		"category": "Gaming",
+		"funFact": "$5.27 million for a Pikachu Illustrator card. The electricity mouse has officially made it.",
+		"id": "f3d8b01f-9c70-4863-b843-7184a5f5ddbc"
+	},
+	{
+		"question": "How many copies did 'Stray' (the cat game) sell in its first two weeks?",
+		"answer": 1600000,
+		"unit": "copies",
+		"category": "Gaming",
+		"funFact": "1.6 million copies in two weeks because people saw a cat game and immediately needed it in their lives.",
+		"id": "b137d84c-cc2c-4f9b-ba31-495f81353a6a"
+	},
+	{
+		"question": "How many people watched Ninja and Drake's legendary Fortnite stream?",
+		"answer": 628000,
+		"unit": "concurrent viewers",
+		"category": "Pop Culture",
+		"funFact": "628,000 people simultaneously watching a rapper and a streamer drop from the Battle Bus. Peak 2018 energy.",
+		"id": "e4c6e1d1-2565-4770-ba6a-def3e2a40edc"
+	},
+	{
+		"question": "How many people attempted to storm Area 51 during the 2019 'Storm Area 51' event?",
+		"answer": 150,
+		"unit": "people",
+		"category": "Internet Culture",
+		"funFact": "150 people out of 2 million who clicked 'going' actually showed up. A 0.0075% conversion rate. Meme accountability at its finest.",
+		"id": "ff7573eb-7d93-47a4-85b6-839d072d0807"
+	},
+	{
+		"question": "How many years did it take for radio to reach 50 million users?",
+		"answer": 38,
+		"unit": "years",
+		"category": "History",
+		"funFact": "38 years for radio. Pokémon Go reached 50 million users in 19 days. We are accelerating and nobody is driving.",
+		"id": "ed1211e4-32f8-4661-8e72-b2ea9e22d435"
+	}
+]

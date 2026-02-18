@@ -1,19 +1,23 @@
-import { createOpenAI } from "@ai-sdk/openai";
 import {
 	DEFAULT_MUSIC_MODEL,
+	DEFAULT_SFX_MODEL,
+	DEFAULT_VOICE_MODEL,
 	MUSIC_MODELS,
+	PRESET_TO_SCENARIO_VOICE,
+	SCENARIO_VOICES,
+	SFX_MODELS,
+	VOICE_MODELS,
 	VOICE_PRESETS,
 } from "@slopcade/shared";
 import { TRPCError } from "@trpc/server";
 import type { LanguageModel } from "ai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { createModel } from "@/ai/model-factory";
+import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import { createScenarioClient } from "@/ai/providers/scenario/client";
 import { AuditService } from "@/services/audit-service";
 import { adminProcedure, router } from "@/trpc/index";
-
-const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1";
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
 const PARTY_CATEGORIES = [
 	"pop culture",
@@ -98,19 +102,6 @@ function assertOpenRouterApiKey(apiKey: string | undefined): string {
 		});
 	}
 	return apiKey;
-}
-
-async function assertOkResponse(
-	response: Response,
-	label: string,
-): Promise<void> {
-	if (!response.ok) {
-		const body = await response.text();
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: `${label} failed (${response.status}): ${body}`,
-		});
-	}
 }
 
 function levenshteinDistance(a: string, b: string): number {
@@ -220,6 +211,8 @@ export const adminToolsRouter = router({
 				outputName: z.string().describe("Output filename without extension"),
 				durationSeconds: z.number().default(2),
 				promptInfluence: z.number().min(0).max(1).default(0.3),
+				provider: z.enum(["scenario", "elevenlabs"]).default("scenario"),
+				model: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -230,41 +223,91 @@ export const adminToolsRouter = router({
 				});
 			}
 
-			const apiKey = assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY);
-			const response = await fetch(
-				`${ELEVENLABS_BASE_URL}/sound-generation?output_format=mp3_44100_128`,
-				{
-					method: "POST",
-					headers: {
-						"xi-api-key": apiKey,
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						text: input.text,
-						duration_seconds: input.durationSeconds,
-						prompt_influence: input.promptInfluence,
-					}),
-				},
-			);
+			let audio: ArrayBuffer;
+			let modelId: string;
+			let providerJobId: string | undefined;
 
-			await assertOkResponse(response, "Sound generation");
+			if (input.provider === "scenario") {
+				const modelDef = SFX_MODELS[input.model ?? DEFAULT_SFX_MODEL];
+				if (!modelDef) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Unknown SFX model: ${input.model}`,
+					});
+				}
+				if (input.durationSeconds > modelDef.maxDurationSeconds) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `durationSeconds exceeds max for ${modelDef.id} (${modelDef.maxDurationSeconds}s)`,
+					});
+				}
 
-			const audio = await response.arrayBuffer();
+				const client = createScenarioClient({
+					SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
+					SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
+					SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
+				});
+
+				const jobId = await client.createSfxJob({
+					modelId: modelDef.scenarioModelId,
+					text: input.text,
+					durationSeconds: input.durationSeconds,
+					promptInfluence: input.promptInfluence,
+					outputFormat: "mp3_44100_128",
+				});
+				const assetIds = await client.pollJobUntilComplete(jobId);
+				const firstAssetId = assetIds[0];
+				if (!firstAssetId) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "No audio assets generated",
+					});
+				}
+
+				const downloaded = await client.downloadAsset(firstAssetId);
+				audio = downloaded.buffer;
+				modelId = modelDef.id;
+				providerJobId = jobId;
+			} else {
+				const service = new ElevenLabsService(
+					assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY),
+				);
+				const result = await service.generateSFX({
+					text: input.text,
+					durationSeconds: input.durationSeconds,
+					promptInfluence: input.promptInfluence,
+					outputFormat: "mp3_44100_128",
+				});
+				audio = result.audio;
+				modelId = "elevenlabs-direct";
+			}
+
 			const key = `sounds/${input.outputName}.mp3`;
 			await ctx.env.ASSETS.put(key, audio, {
 				httpMetadata: { contentType: "audio/mpeg" },
+				customMetadata: {
+					provider: input.provider,
+					model: modelId,
+					providerJobId: providerJobId ?? "",
+				},
 			});
 
 			const audit = new AuditService(ctx.env.DB);
 			await audit.logEvent({
 				actorId: ctx.user.id,
 				action: "admin.generate_sound",
-				metadata: { outputName: input.outputName, sizeBytes: audio.byteLength },
+				metadata: {
+					outputName: input.outputName,
+					provider: input.provider,
+					sizeBytes: audio.byteLength,
+				},
 			});
 
 			return {
 				url: `/assets/${key}`,
 				sizeBytes: audio.byteLength,
+				provider: input.provider,
+				model: modelId,
 			};
 		}),
 
@@ -278,6 +321,8 @@ export const adminToolsRouter = router({
 					.default("announcer")
 					.describe("Voice preset ID"),
 				stability: z.number().min(0).max(1).default(0.5),
+				provider: z.enum(["scenario", "elevenlabs"]).default("scenario"),
+				model: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -290,37 +335,81 @@ export const adminToolsRouter = router({
 				});
 			}
 
-			const apiKey = assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY);
-			const response = await fetch(
-				`${ELEVENLABS_BASE_URL}/text-to-speech/${preset.voiceId}?output_format=mp3_44100_128`,
-				{
-					method: "POST",
-					headers: {
-						"xi-api-key": apiKey,
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						text: input.text,
-						model_id: "eleven_multilingual_v2",
-						voice_settings: {
-							stability: input.stability,
-							similarity_boost: 0.75,
-							style: 0,
-						},
-					}),
-				},
-			);
+			let audio: ArrayBuffer;
+			let modelId: string;
+			let providerJobId: string | undefined;
+			let voiceName: string;
 
-			await assertOkResponse(response, "Voice generation");
+			if (input.provider === "scenario") {
+				const modelDef = VOICE_MODELS[input.model ?? DEFAULT_VOICE_MODEL];
+				if (!modelDef) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Unknown voice model: ${input.model}`,
+					});
+				}
 
-			const audio = await response.arrayBuffer();
+				const scenarioVoiceId =
+					PRESET_TO_SCENARIO_VOICE[input.voicePreset] ?? "george";
+				const scenarioVoice = SCENARIO_VOICES[scenarioVoiceId];
+				voiceName = scenarioVoice?.name ?? scenarioVoiceId;
+
+				const client = createScenarioClient({
+					SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
+					SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
+					SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
+				});
+
+				const jobId = await client.createVoiceJob({
+					modelId: modelDef.scenarioModelId,
+					text: input.text,
+					voice: voiceName,
+					stability: input.stability,
+					similarityBoost: 0.75,
+					styleExaggeration: 0,
+					speed: 1,
+				});
+				const assetIds = await client.pollJobUntilComplete(jobId);
+				const firstAssetId = assetIds[0];
+				if (!firstAssetId) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "No audio assets generated",
+					});
+				}
+
+				const downloaded = await client.downloadAsset(firstAssetId);
+				audio = downloaded.buffer;
+				modelId = modelDef.id;
+				providerJobId = jobId;
+			} else {
+				const service = new ElevenLabsService(
+					assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY),
+				);
+				const result = await service.generateVoice({
+					text: input.text,
+					voiceId: preset.voiceId,
+					modelId: "eleven_multilingual_v2",
+					stability: input.stability,
+					similarityBoost: 0.75,
+					style: 0,
+					outputFormat: "mp3_44100_128",
+				});
+				audio = result.audio;
+				modelId = "elevenlabs-direct";
+				voiceName = preset.name;
+			}
+
 			const key = `sounds/${input.outputName}.mp3`;
 			await ctx.env.ASSETS.put(key, audio, {
 				httpMetadata: { contentType: "audio/mpeg" },
 				customMetadata: {
+					provider: input.provider,
+					model: modelId,
 					voicePreset: input.voicePreset,
-					voiceName: preset.name,
+					voiceName,
 					voiceId: preset.voiceId,
+					providerJobId: providerJobId ?? "",
 				},
 			});
 
@@ -330,6 +419,7 @@ export const adminToolsRouter = router({
 				action: "admin.generate_voice",
 				metadata: {
 					outputName: input.outputName,
+					provider: input.provider,
 					voicePreset: input.voicePreset,
 					sizeBytes: audio.byteLength,
 				},
@@ -338,7 +428,9 @@ export const adminToolsRouter = router({
 			return {
 				url: `/assets/${key}`,
 				sizeBytes: audio.byteLength,
-				voiceName: preset.name,
+				provider: input.provider,
+				model: modelId,
+				voiceName,
 			};
 		}),
 
@@ -452,8 +544,7 @@ export const adminToolsRouter = router({
 			}
 
 			const apiKey = assertOpenRouterApiKey(ctx.env.OPENROUTER_API_KEY);
-			const openrouter = createOpenAI({ apiKey, baseURL: OPENROUTER_BASE_URL });
-			const model = openrouter.chat(input.model);
+			const model = createModel({ apiKey, model: input.model });
 
 			const allPrompts: Array<{ text: string; category: string }> = [];
 			const batchCount = Math.ceil(input.count / input.batchSize);

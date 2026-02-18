@@ -68,15 +68,31 @@ export function builder(yargs: Argv): Argv {
 }
 
 function extractText(item: Record<string, unknown>, gameType: string): string {
-	switch (gameType) {
-		case "amen-dilemma":
+	const baseType = gameType.replace(/^[a-z]+-/, "");
+
+	switch (baseType) {
+		case "dilemma":
 			return `Would you rather: ${item.optionA} OR ${item.optionB}`;
-		case "amen-history":
-			return String(item.question);
-		case "amen-drawing":
+		case "drawing":
 			return String(item.text || item.prompt);
+		case "ranking":
+			return String(item.topic || "");
+		case "headsup":
+		case "wordlist":
+			return String(item.name || "");
+		case "wager":
+		case "history":
+		case "trivia":
+		case "fibbage":
+			return String(item.question || "");
+		case "chroma": {
+			const clues = Array.isArray(item.clues)
+				? (item.clues as string[]).join(", ")
+				: "";
+			return clues;
+		}
 		default:
-			return String(item.text || item.question || "");
+			return String(item.text || item.question || item.prompt || "");
 	}
 }
 
@@ -84,26 +100,29 @@ function summarizeForContext(
 	items: Array<Record<string, unknown>>,
 	gameType: string,
 ): string {
+	const baseType = gameType.replace(/^[a-z]+-/, "");
+
 	return items
 		.map((item) => {
-			switch (gameType) {
-				case "amen-quip":
+			switch (baseType) {
+				case "quip":
+				case "personal":
 					return `- "${item.text}"`;
-				case "amen-trivia":
+				case "trivia":
 					return `- Q: "${item.question}" A: "${item.correctAnswer}"`;
-				case "amen-fibbage":
+				case "fibbage":
 					return `- "${item.question}" → ${item.answer}`;
-				case "amen-drawing":
+				case "drawing":
 					return `- "${item.text || item.prompt}"`;
-				case "amen-ranking":
+				case "ranking":
 					return `- "${item.topic}"`;
-				case "amen-dilemma":
+				case "dilemma":
 					return `- "${item.optionA}" vs "${item.optionB}"`;
-				case "amen-history":
+				case "history":
+				case "wager":
 					return `- "${item.question}" → ${item.answer}`;
-				case "amen-wager":
-					return `- "${item.question}" → ${item.answer}`;
-				case "amen-headsup":
+				case "headsup":
+				case "wordlist":
 					return `- Deck: "${item.name}"`;
 				default:
 					return `- ${JSON.stringify(item).substring(0, 100)}`;

@@ -35,13 +35,13 @@ describe("pack scheduler", () => {
 		).toBe(false);
 	});
 
-	it("merges seasonal pack content into amen base content when active", () => {
+	it("merges seasonal pack content into amen base content when active", async () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2026-02-01T12:00:00.000Z"));
-		const outOfSeasonTrivia = loadContentPack("trivia", "amen");
+		const outOfSeasonTrivia = await loadContentPack("trivia", "amen");
 
 		vi.setSystemTime(new Date("2026-04-01T12:00:00.000Z"));
-		const inSeasonTrivia = loadContentPack("trivia", "amen");
+		const inSeasonTrivia = await loadContentPack("trivia", "amen");
 
 		expect(inSeasonTrivia.length).toBeGreaterThan(outOfSeasonTrivia.length);
 		expect(

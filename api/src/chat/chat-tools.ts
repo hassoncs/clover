@@ -6,9 +6,8 @@ import {
 import { tool } from "ai";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-
+import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import { getSkillById } from "@/ai/skills";
-import { ElevenLabsService } from "@/services/ElevenLabsService";
 import type { GitService } from "@/services/git/GitService";
 import type { Env } from "@/trpc/context";
 
