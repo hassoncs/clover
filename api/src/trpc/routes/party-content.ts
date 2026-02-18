@@ -5,8 +5,10 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { adminProcedure, router } from "@/trpc/index";
 
-const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const contentPacksRoot = path.resolve(scriptDir, "../../party/content/packs");
+function getContentPacksRoot(): string {
+	const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+	return path.resolve(scriptDir, "../../party/content/packs");
+}
 
 type Brand = "amen" | "slopcade";
 
@@ -105,6 +107,7 @@ async function loadPackFiles(brand: Brand): Promise<
 		items: Array<Record<string, unknown>>;
 	}>
 > {
+	const contentPacksRoot = getContentPacksRoot();
 	const brandDir = path.join(contentPacksRoot, brand);
 	let files: string[];
 
