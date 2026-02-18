@@ -22,7 +22,10 @@
 		"generate:ui": "npx tsx src/cli/generate-ui.ts",
 		"build:games": "tsx scripts/sync-r2.ts",
 		"watch:games": "tsx scripts/sync-r2.ts --watch",
-		"sync:r2:remote": "tsx scripts/sync-r2.ts --remote"
+		"sync:r2:remote": "tsx scripts/sync-r2.ts --remote",
+		"content:sync": "tsx scripts/sync-party-content.ts",
+		"content:import": "tsx scripts/sync-party-content.ts --direction import",
+		"content:export": "tsx scripts/sync-party-content.ts --direction export"
 	},
 	"dependencies": {
 		"@ai-sdk/anthropic": "^3.0.17",

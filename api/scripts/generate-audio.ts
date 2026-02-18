@@ -27,6 +27,11 @@ import {
 	ScenarioAudioClient,
 	type ScenarioClient,
 } from "../src/ai/providers/scenario";
+import {
+	buildContentAudioR2Key,
+	getReadableText,
+	sanitizeForTTS,
+} from "../src/party/content/audio";
 
 type AudioType = "sfx" | "voice" | "music" | "content-voice";
 type AudioProvider = "scenario" | "elevenlabs";
@@ -83,12 +88,6 @@ Examples:
   hush run -- npx tsx api/scripts/generate-audio.ts --type voice --provider scenario --model elevenlabs-v3 --sample
   hush run -- npx tsx api/scripts/generate-audio.ts --type music --model beatoven --sample
 `);
-}
-
-function sanitizeBlankMarkers(text: string): string {
-	let cleaned = text.replace(/[,:;]\s*_+\s*$/, "");
-	cleaned = cleaned.replace(/__{2,}/g, "blank");
-	return cleaned.trim();
 }
 
 function formatSize(bytes: number): string {
@@ -177,35 +176,6 @@ function parseCli() {
 	};
 }
 
-function extractVoiceText(
-	record: Record<string, unknown>,
-	contentType: string,
-): string | null {
-	switch (contentType) {
-		case "quip":
-		case "personal":
-			return typeof record.text === "string" ? record.text : null;
-		case "trivia":
-		case "fibbage":
-		case "wager":
-			return typeof record.question === "string" ? record.question : null;
-		case "drawing":
-			return typeof record.prompt === "string" ? record.prompt : null;
-		case "ranking":
-			return typeof record.topic === "string" ? record.topic : null;
-		case "dilemma":
-			if (
-				typeof record.optionA === "string" &&
-				typeof record.optionB === "string"
-			) {
-				return `Would you rather: ${record.optionA}, or, ${record.optionB}?`;
-			}
-			return null;
-		default:
-			return typeof record.text === "string" ? record.text : null;
-	}
-}
-
 async function loadContentVoiceItems(
 	brand: Brand,
 ): Promise<ContentVoiceItem[]> {
@@ -243,7 +213,7 @@ async function loadContentVoiceItems(
 			const record = entry as Record<string, unknown>;
 			if (typeof record.id !== "string") continue;
 
-			const text = extractVoiceText(record, contentType);
+			const text = getReadableText(record, contentType);
 			if (!text) continue;
 
 			items.push({
@@ -587,22 +557,19 @@ async function buildJobs(params: {
 		throw new Error(`Missing rules voice config for ${brand}`);
 	}
 
+	const r2Root = path.resolve(audioRoot, "..");
 	return targets.map((entry) => ({
 		id: entry.id,
 		label: `Generating Content Voice: ${entry.id}`,
 		outputPath: path.join(
-			audioRoot,
-			"voice",
-			brand,
-			"content",
-			entry.contentType,
-			`${entry.id}.mp3`,
+			r2Root,
+			buildContentAudioR2Key(brand, entry.contentType, entry.id),
 		),
 		generate: async () =>
 			new Uint8Array(
 				(
 					await elevenLabsService.generateVoice({
-						text: sanitizeBlankMarkers(entry.text),
+						text: sanitizeForTTS(entry.text),
 						voiceId: voice.voiceId,
 						modelId: voice.model,
 						stability: voice.settings.stability,

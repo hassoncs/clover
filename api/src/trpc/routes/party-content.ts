@@ -1,7 +1,13 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import {
+	type AudioProvider,
+	createAudioGenerator,
+	SKIP_VOICE_TYPES,
+} from "@/party/content/audio";
 import { adminProcedure, router } from "@/trpc/index";
 
 function getContentPacksRoot(): string {
@@ -27,8 +33,6 @@ const CONTENT_TYPES = [
 	"headsup",
 ] as const;
 type ContentType = (typeof CONTENT_TYPES)[number];
-
-const SKIP_VOICE_TYPES = new Set(["headsup", "wordlist", "FakeWord"]);
 
 async function computeContentHash(body: string): Promise<string> {
 	const encoder = new TextEncoder();
@@ -1164,5 +1168,110 @@ export const partyContentRouter = router({
 				items,
 				count: items.length,
 			};
+		}),
+
+	generateAudio: adminProcedure
+		.input(
+			z.object({
+				contentIds: z.array(z.string()).min(1).max(50),
+				provider: z.enum(["scenario", "elevenlabs"]).default("scenario"),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+			const r2 = ctx.env.ASSETS;
+
+			const generate = createAudioGenerator(
+				{
+					SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
+					SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
+					SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
+					ELEVENLABS_API_KEY: ctx.env.ELEVENLABS_API_KEY,
+				},
+				input.provider as AudioProvider,
+			);
+
+			const placeholders = input.contentIds.map(() => "?").join(",");
+			const contentRows = await db
+				.prepare(
+					`SELECT id, brand_id, content_type, body FROM party_content
+					 WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+				)
+				.bind(...input.contentIds)
+				.all<{
+					id: string;
+					brand_id: string;
+					content_type: string;
+					body: string;
+				}>();
+
+			const existingAssets = await db
+				.prepare(
+					`SELECT content_id FROM party_content_assets
+					 WHERE content_id IN (${placeholders}) AND asset_type = 'audio' AND deleted_at IS NULL`,
+				)
+				.bind(...input.contentIds)
+				.all<{ content_id: string }>();
+
+			const hasAudio = new Set(
+				(existingAssets.results ?? []).map((r) => r.content_id),
+			);
+
+			let generated = 0;
+			let skipped = 0;
+			const errors: string[] = [];
+
+			for (const row of contentRows.results ?? []) {
+				if (hasAudio.has(row.id)) {
+					skipped++;
+					continue;
+				}
+
+				if (SKIP_VOICE_TYPES.has(row.content_type)) {
+					skipped++;
+					continue;
+				}
+
+				try {
+					const result = await generate({
+						contentId: row.id,
+						brandId: row.brand_id,
+						contentType: row.content_type,
+						body: row.body,
+					});
+
+					if (!result) {
+						skipped++;
+						continue;
+					}
+
+					await r2.put(result.r2Key, result.audioBytes, {
+						httpMetadata: { contentType: "audio/mpeg" },
+					});
+
+					const assetId = `audio-${row.id}`;
+					await db
+						.prepare(
+							`INSERT OR REPLACE INTO party_content_assets
+							 (id, content_id, r2_key, asset_type, role, mime_type, file_size, created_at)
+							 VALUES (?, ?, ?, 'audio', 'primary', 'audio/mpeg', ?, ?)`,
+						)
+						.bind(
+							assetId,
+							row.id,
+							result.r2Key,
+							result.audioBytes.byteLength,
+							Date.now(),
+						)
+						.run();
+
+					generated++;
+				} catch (e) {
+					const msg = e instanceof Error ? e.message : String(e);
+					errors.push(`${row.id}: ${msg}`);
+				}
+			}
+
+			return { generated, skipped, errors };
 		}),
 });

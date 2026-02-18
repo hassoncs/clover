@@ -222,6 +222,24 @@ function AudioButton({ r2Key }: { r2Key: string }) {
 	);
 }
 
+function GenerateRowButton({ contentId }: { contentId: string }) {
+	const utils = trpc.useUtils();
+	const generate = trpc.partyContent.generateAudio.useMutation({
+		onSuccess: () => utils.partyContent.list.invalidate(),
+	});
+
+	return (
+		<button
+			type="button"
+			onClick={() => generate.mutate({ contentIds: [contentId] })}
+			disabled={generate.isPending}
+			className="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[10px] text-slate-300 cursor-pointer disabled:opacity-50"
+		>
+			{generate.isPending ? "..." : "Gen"}
+		</button>
+	);
+}
+
 function StarRating({
 	value,
 	onRate,
@@ -337,6 +355,10 @@ export function ContentReviewPage() {
 		onSuccess: () => utils.partyContent.list.invalidate(),
 	});
 
+	const generateAudio = trpc.partyContent.generateAudio.useMutation({
+		onSuccess: () => utils.partyContent.list.invalidate(),
+	});
+
 	const handleRate = (
 		contentId: string,
 		type: "quality" | "humor",
@@ -369,6 +391,13 @@ export function ContentReviewPage() {
 	}
 
 	const totalPages = Math.ceil((data?.total ?? 0) / pageSize);
+
+	const missingAudioItems =
+		data?.items.filter(
+			(item) =>
+				!item.assets?.[0] && !SKIP_VOICE_CONTENT_TYPES.has(item.contentType),
+		) ?? [];
+	const missingIds = missingAudioItems.map((item) => item.id);
 
 	return (
 		<div className="flex h-full overflow-hidden bg-slate-950">
@@ -502,11 +531,25 @@ export function ContentReviewPage() {
 					<h1 className="m-0 text-xl font-bold text-slate-50">
 						Content Review
 					</h1>
-					{data && (
-						<span className="text-slate-500 text-[13px]">
-							{data.total} items · page {page} of {totalPages || 1}
-						</span>
-					)}
+					<div className="flex items-center gap-4">
+						{missingIds.length > 0 && (
+							<button
+								type="button"
+								onClick={() => generateAudio.mutate({ contentIds: missingIds })}
+								disabled={generateAudio.isPending}
+								className="px-3 py-1.5 bg-emerald-900/50 hover:bg-emerald-900 border border-emerald-700/50 rounded text-emerald-200 text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
+							>
+								{generateAudio.isPending
+									? "Generating..."
+									: `Generate ${missingIds.length} Missing`}
+							</button>
+						)}
+						{data && (
+							<span className="text-slate-500 text-[13px]">
+								{data.total} items · page {page} of {totalPages || 1}
+							</span>
+						)}
+					</div>
 				</div>
 
 				<div className="flex-1 overflow-y-auto px-6 pb-6">
@@ -594,12 +637,15 @@ export function ContentReviewPage() {
 											) : SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
 												<span className="text-slate-700">—</span>
 											) : (
-												<span
-													title="Missing audio"
-													className="text-amber-500 text-sm"
-												>
-													⚠
-												</span>
+												<div className="flex items-center justify-center gap-1">
+													<span
+														title="Missing audio"
+														className="text-amber-500 text-sm"
+													>
+														⚠
+													</span>
+													<GenerateRowButton contentId={item.id} />
+												</div>
 											)}
 										</td>
 										<td className="px-3.5 py-2.5">
