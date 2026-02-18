@@ -1,11 +1,11 @@
 export const AMEN_ICONS = {
 	// Crosses
 	cross: "cross",
-	crossCeltic: "celtic-cross",
+	crossCeltic: "cross-celtic",
 	crossOutline: "cross-outline",
 
 	// Nature / Animals
-	dove: "dove",
+	dove: "bird",
 	fish: "fish",
 	lamb: "sheep",
 
@@ -30,7 +30,7 @@ export const AMEN_ICONS = {
 
 	// Other
 	halo: "circle-outline",
-	angelWings: "angel",
+	angelWings: "peace",
 	alphaOmega: "alpha-a-circle",
 } as const;
 
