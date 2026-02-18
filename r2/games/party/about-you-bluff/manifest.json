@@ -20,9 +20,7 @@
 		"maxPlayers": 8,
 		"minPlayers": 3,
 		"serverScript": "server",
-		"contentPacks": [
-			"quip"
-		],
+		"contentPacks": ["personal"],
 		"phases": [
 			"lobby",
 			"truth_writing",
@@ -32,16 +30,10 @@
 			"scores",
 			"winner"
 		],
-		"inputTypes": [
-			"text",
-			"choice"
-		],
+		"inputTypes": ["text", "choice"],
 		"roundCount": 3
 	},
-	"brands": [
-		"amen",
-		"slopcade"
-	],
+	"brands": ["amen", "slopcade"],
 	"brandTitles": {
 		"amen": {
 			"title": "Testimony or Tale?",

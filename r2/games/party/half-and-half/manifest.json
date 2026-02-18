@@ -20,27 +20,12 @@
 		"maxPlayers": 8,
 		"minPlayers": 3,
 		"serverScript": "server",
-		"contentPacks": [
-			"quip"
-		],
-		"phases": [
-			"lobby",
-			"drafting",
-			"voting",
-			"reveal",
-			"scores",
-			"winner"
-		],
-		"inputTypes": [
-			"text",
-			"choice"
-		],
+		"contentPacks": ["dilemma"],
+		"phases": ["lobby", "drafting", "voting", "reveal", "scores", "winner"],
+		"inputTypes": ["text", "choice"],
 		"roundCount": 2
 	},
-	"brands": [
-		"amen",
-		"slopcade"
-	],
+	"brands": ["amen", "slopcade"],
 	"brandTitles": {
 		"amen": {
 			"title": "The Mediator",

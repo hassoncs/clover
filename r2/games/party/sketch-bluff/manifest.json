@@ -20,7 +20,7 @@
 		"maxPlayers": 8,
 		"minPlayers": 3,
 		"serverScript": "server",
-		"contentPacks": [],
+		"contentPacks": ["drawing"],
 		"phases": [
 			"lobby",
 			"drawing",
@@ -30,17 +30,10 @@
 			"scores",
 			"winner"
 		],
-		"inputTypes": [
-			"drawing",
-			"text",
-			"choice"
-		],
+		"inputTypes": ["drawing", "text", "choice"],
 		"roundCount": 2
 	},
-	"brands": [
-		"amen",
-		"slopcade"
-	],
+	"brands": ["amen", "slopcade"],
 	"brandTitles": {
 		"amen": {
 			"title": "Draw & Discern",
