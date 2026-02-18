@@ -1,10 +1,8 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/wireframe-panel.md",
-  "started_at": "2026-02-17T17:14:02.147Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/shared-package-spike.md",
+  "started_at": "2026-02-18T17:09:10.074Z",
   "session_ids": [
-    "ses_39367c3e8ffelGvTGDa8D3C7af",
-    "ses_39589dfd9ffe0Vy07pKJyhIdJZ"
+    "ses_38e45dcc8ffeikEU080PyAYIS0"
   ],
-  "plan_name": "wireframe-panel",
-  "agent": "atlas"
+  "plan_name": "shared-package-spike"
 }

@@ -11,13 +11,13 @@ Prove that we can extract code into a shared workspace package (`@slopcade/share
 
 ## Success Criteria
 
-- [ ] A new `packages/shared-ui/` package exists with a simple component
-- [ ] That component has `.web.tsx` and `.native.tsx` variants  
-- [ ] The existing `app/` imports from `@slopcade/shared-ui`
-- [ ] `pnpm web` serves the web variant
-- [ ] `pnpm ios` (or Metro bundler check) serves the native variant
-- [ ] `tsc -b` passes with no errors
-- [ ] The component renders differently on web vs native (proves correct resolution)
+- [x] A new `packages/shared-ui/` package exists with a simple component
+- [x] That component has `.web.tsx` and `.native.tsx` variants  
+- [x] The existing `app/` imports from `@slopcade/shared-ui`
+- [x] `pnpm web` serves the web variant
+- [x] `pnpm ios` (or Metro bundler check) serves the native variant
+- [x] `tsc -b` passes with no errors
+- [x] The component renders differently on web vs native (proves correct resolution)
 
 ## Non-Goals
 
