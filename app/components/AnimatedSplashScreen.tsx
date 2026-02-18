@@ -15,11 +15,9 @@ interface AnimatedSplashScreenProps {
 	children: React.ReactNode;
 }
 
-const TOTAL_DURATION = 3000;
-const STYLE_SWITCH_INTERVAL = 500;
-const NUM_SWITCHES = Math.floor(TOTAL_DURATION / STYLE_SWITCH_INTERVAL);
-
-const BG_COLORS = ["#000000", "#0a001a", "#001a0a", "#1a0a00", "#0a0a1a"];
+const NUM_STYLES = 6;
+const STYLE_SWITCH_INTERVAL = 200;
+const TOTAL_DURATION = NUM_STYLES * STYLE_SWITCH_INTERVAL;
 
 const globalSplashState = {
 	styleIndex: 0,
@@ -34,21 +32,12 @@ export function AnimatedSplashScreen({
 	const [isSplashAnimationComplete, setIsSplashAnimationComplete] =
 		useState(false);
 	const [currentStyleIndex, setCurrentStyleIndex] = useState(0);
-	const [currentBgIndex, setCurrentBgIndex] = useState(0);
 	const [showSplash, setShowSplash] = useState(true);
 
 	const styleSequence = useMemo(() => {
 		const seq: number[] = [];
-		for (let i = 0; i < NUM_SWITCHES; i++) {
+		for (let i = 0; i < NUM_STYLES; i++) {
 			seq.push(i % 6);
-		}
-		return seq;
-	}, []);
-
-	const bgSequence = useMemo(() => {
-		const seq: number[] = [];
-		for (let i = 0; i < NUM_SWITCHES; i++) {
-			seq.push(Math.floor(Math.random() * BG_COLORS.length));
 		}
 		return seq;
 	}, []);
@@ -90,11 +79,10 @@ export function AnimatedSplashScreen({
 				elapsed >=
 				switchCount * STYLE_SWITCH_INTERVAL + STYLE_SWITCH_INTERVAL
 			) {
-				if (switchCount < NUM_SWITCHES - 1) {
+				if (switchCount < NUM_STYLES - 1) {
 					const newStyleIndex = styleSequence[switchCount];
 					setCurrentStyleIndex(newStyleIndex);
 					globalSplashState.styleIndex = newStyleIndex;
-					setCurrentBgIndex(bgSequence[switchCount]);
 					switchCount++;
 				}
 			}
@@ -106,7 +94,7 @@ export function AnimatedSplashScreen({
 
 		globalSplashState.styleIndex = 0;
 		requestAnimationFrame(animationFrame);
-	}, [isAppReady, isSplashAnimationComplete, styleSequence, bgSequence]);
+	}, [isAppReady, isSplashAnimationComplete, styleSequence]);
 
 	useEffect(() => {
 		if (!isAppReady) return;
@@ -134,8 +122,6 @@ export function AnimatedSplashScreen({
 		return <>{children}</>;
 	}
 
-	const currentBg = BG_COLORS[currentBgIndex];
-
 	return (
 		<View style={styles.container}>
 			<Animated.View style={[styles.content, contentAnimatedStyle]}>
@@ -147,7 +133,7 @@ export function AnimatedSplashScreen({
 					style={[
 						styles.splashOverlay,
 						{
-							backgroundColor: currentBg,
+							backgroundColor: "transparent",
 							opacity,
 							transform: [{ scale }],
 						},
@@ -194,8 +180,6 @@ const styles = StyleSheet.create({
 	},
 	splashOverlay: {
 		...StyleSheet.absoluteFillObject,
-		justifyContent: "center",
-		alignItems: "center",
 		zIndex: 999,
 	},
 	fallbackContainer: {
