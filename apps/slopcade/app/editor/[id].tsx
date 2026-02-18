@@ -14,7 +14,7 @@ import { DEV_USER_ID } from "@/lib/auth/token";
 import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
 import { useGameWebSocket } from "@/lib/editor/hooks/useGameWebSocket";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
-import { LivePreviewController } from "@/lib/game-engine/live/LivePreviewController";
+import { LivePreviewController } from "@slopcade/game-runtime/live/LivePreviewController";
 import { ThemeProvider } from "@/lib/theme";
 import { trpc } from "@/lib/trpc/client";
 

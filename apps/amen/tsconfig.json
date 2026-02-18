@@ -4,7 +4,11 @@
 		"strict": true,
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./*"],
+			"@slopcade/game-runtime": ["../../packages/game-runtime/src/index.ts"],
+			"@slopcade/game-runtime/*": ["../../packages/game-runtime/src/*"],
+			"@slopcade/godot-bridge": ["../../packages/godot-bridge/src/index.ts"],
+			"@slopcade/godot-bridge/*": ["../../packages/godot-bridge/src/*"]
 		},
 		"types": ["node", "react"]
 	},

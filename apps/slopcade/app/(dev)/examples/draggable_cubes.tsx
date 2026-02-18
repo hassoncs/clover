@@ -141,7 +141,7 @@ export default function DraggableCubesExample() {
 	}> | null>(null);
 
 	useEffect(() => {
-		import("@/lib/game-engine/GameRuntime.godot").then((mod) => {
+		import("@slopcade/game-runtime/GameRuntime.godot").then((mod) => {
 			setGameRuntime(() => mod.GameRuntimeGodotWithDevTools);
 		});
 	}, []);

@@ -1,10 +1,10 @@
+import type { GodotBridge } from "@slopcade/godot-bridge";
 import type { GameDefinition } from "@slopcade/shared";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import type { GodotBridge } from "@/lib/godot/types";
-import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
+import type { ExampleMeta } from "@/lib/registry/types";
 
 export const metadata: ExampleMeta = {
 	title: "3D GLB Viewer",
@@ -51,7 +51,7 @@ export default function GLBViewerExample() {
 	useEffect(() => {
 		let mounted = true;
 
-		import("@/lib/godot")
+		import("@slopcade/godot-bridge")
 			.then(async (mod) => {
 				if (!mounted) return;
 				const newBridge = await mod.createGodotBridge();

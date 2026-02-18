@@ -10,7 +10,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GodotBridge } from "@/lib/godot/types";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import type { ExampleMeta } from "@/lib/registry/types";
 
 function TextureButton({
@@ -110,7 +110,7 @@ export default function TextureButtonExample() {
 
 		addLog("Loading Godot module...");
 
-		import("@/lib/godot")
+		import("@slopcade/godot-bridge")
 			.then(async (mod) => {
 				if (!mounted) return;
 

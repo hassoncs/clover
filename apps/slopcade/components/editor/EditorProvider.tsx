@@ -20,7 +20,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import type { EntityManager } from "@/lib/game-engine/EntityManager";
+import type { EntityManager } from "@slopcade/game-runtime/EntityManager";
 import type { Physics2D } from "@/lib/physics2d";
 import { getStorageItem } from "@/lib/utils/storage";
 import { usePackageReadiness } from "./usePackageReadiness";

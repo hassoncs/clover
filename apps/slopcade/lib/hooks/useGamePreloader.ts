@@ -1,3 +1,4 @@
+import type { GodotBridge } from "@slopcade/godot-bridge";
 import type { GameDefinition } from "@slopcade/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -6,7 +7,6 @@ import {
 	type PreloadProgress,
 	type PreloadResult,
 } from "../assets";
-import type { GodotBridge } from "../godot/types";
 
 export type LoadingPhase =
 	| "idle"

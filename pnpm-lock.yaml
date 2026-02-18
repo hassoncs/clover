@@ -282,6 +282,12 @@ importers:
       '@slopcade/game-bundler':
         specifier: workspace:*
         version: link:../../packages/game-bundler
+      '@slopcade/game-runtime':
+        specifier: workspace:*
+        version: link:../../packages/game-runtime
+      '@slopcade/godot-bridge':
+        specifier: workspace:*
+        version: link:../../packages/godot-bridge
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../../shared
@@ -648,6 +654,12 @@ importers:
       '@slopcade/game-bundler':
         specifier: workspace:*
         version: link:../../packages/game-bundler
+      '@slopcade/game-runtime':
+        specifier: workspace:*
+        version: link:../../packages/game-runtime
+      '@slopcade/godot-bridge':
+        specifier: workspace:*
+        version: link:../../packages/godot-bridge
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../../shared
@@ -1089,6 +1101,56 @@ importers:
       '@types/node':
         specifier: ^22.10.5
         version: 22.19.11
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+
+  packages/game-runtime:
+    dependencies:
+      '@jitl/quickjs-singlefile-browser-release-sync':
+        specifier: 0.31.0
+        version: 0.31.0
+      '@slopcade/godot-bridge':
+        specifier: workspace:*
+        version: link:../godot-bridge
+      '@slopcade/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      expr-eval:
+        specifier: ^2.0.2
+        version: 2.0.2
+      quickjs-emscripten:
+        specifier: ^0.31.0
+        version: 0.31.0
+      quickjs-emscripten-core:
+        specifier: ^0.31.0
+        version: 0.31.0
+      react:
+        specifier: '*'
+        version: 18.3.1
+      react-native:
+        specifier: 0.81.4
+        version: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1)
+    devDependencies:
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.2.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/godot-bridge:
+    dependencies:
+      '@borndotcom/react-native-godot':
+        specifier: ^1.0.1
+        version: 1.0.1(react-native-worklets-core@1.6.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1))(react@18.3.1))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: '*'
+        version: 18.3.1
+      react-native:
+        specifier: 0.81.4
+        version: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1)
+    devDependencies:
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
@@ -11682,6 +11744,12 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
+  '@borndotcom/react-native-godot@1.0.1(react-native-worklets-core@1.6.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1))(react@18.3.1))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+      react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1)
+      react-native-worklets-core: 1.6.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1))(react@18.3.1)
+
   '@borndotcom/react-native-godot@1.0.1(react-native-worklets-core@1.6.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
@@ -19461,6 +19529,12 @@ snapshots:
       invariant: 2.2.4
       react: 19.1.0
       react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
+
+  react-native-worklets-core@1.6.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@18.3.1)
+      string-hash-64: 1.0.3
 
   react-native-worklets-core@1.6.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:

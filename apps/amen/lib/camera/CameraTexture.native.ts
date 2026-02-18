@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Camera } from 'react-native-vision-camera';
-import type { GodotBridge } from '@/lib/godot/types';
+import type { GodotBridge } from '@slopcade/godot-bridge/types';
 import type { CameraTextureOptions, CameraTextureController } from './types';
 
 const RESOLUTION_MAP = {

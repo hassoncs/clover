@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GodotBridge } from "@/lib/godot/types";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 
@@ -37,7 +37,7 @@ export default function ThreeDSceneExample() {
 	useEffect(() => {
 		let mounted = true;
 
-		import("@/lib/godot")
+		import("@slopcade/godot-bridge")
 			.then(async (mod) => {
 				if (!mounted) return;
 				const newBridge = await mod.createGodotBridge();

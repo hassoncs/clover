@@ -1,7 +1,7 @@
 import type { GameDefinition } from "@slopcade/shared";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GameRuntimeGodot } from "@/lib/game-engine/GameRuntime.godot";
+import { GameRuntimeGodot } from "@slopcade/game-runtime/GameRuntime.godot";
 import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 

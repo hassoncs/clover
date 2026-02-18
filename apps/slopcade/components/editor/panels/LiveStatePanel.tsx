@@ -7,8 +7,8 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import type { ReactGameState } from "@/lib/game-engine/BehaviorContext";
-import type { RuntimeEntity } from "@/lib/game-engine/types";
+import type { ReactGameState } from "@slopcade/game-runtime/BehaviorContext";
+import type { RuntimeEntity } from "@slopcade/game-runtime/types";
 import { useTheme } from "@/lib/theme";
 import { useEditor } from "../EditorProvider";
 

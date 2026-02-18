@@ -1,12 +1,12 @@
+import type { GodotBridge } from "@slopcade/godot-bridge";
 import type { GameDefinition } from "@slopcade/shared";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CameraCapture, useCameraTexture } from "@/lib/camera";
-import type { GodotBridge } from "@/lib/godot/types";
-import type { ExampleMeta } from "@/lib/registry/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
+import { CameraCapture, useCameraTexture } from "@/lib/camera";
+import type { ExampleMeta } from "@/lib/registry/types";
 
 export const metadata: ExampleMeta = {
 	title: "Camera Feed",
@@ -118,7 +118,7 @@ export default function CameraFeedExample() {
 
 		addLog("Loading Godot module...");
 
-		import("@/lib/godot")
+		import("@slopcade/godot-bridge")
 			.then(async (mod) => {
 				if (!mounted) return;
 

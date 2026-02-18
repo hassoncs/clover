@@ -7,7 +7,7 @@ import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { WithGodot } from "../../components/WithGodot";
 
 const loadGameRuntimeModule = () =>
-	import("@/lib/game-engine/GameRuntime.godot") as Promise<
+	import("@slopcade/game-runtime/GameRuntime.godot") as Promise<
 		Record<string, unknown>
 	>;
 

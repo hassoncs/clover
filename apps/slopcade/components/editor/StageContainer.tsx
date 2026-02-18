@@ -2,12 +2,12 @@ import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { WithGodot } from "@/components/WithGodot";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
-import type { GodotBridge } from "@/lib/godot/types";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import { useEditor } from "./EditorProvider";
 import { InteractionLayer } from "./InteractionLayer";
 
 const loadGameRuntimeModule = () =>
-	import("@/lib/game-engine/GameRuntime.godot") as Promise<
+	import("@slopcade/game-runtime/GameRuntime.godot") as Promise<
 		Record<string, unknown>
 	>;
 

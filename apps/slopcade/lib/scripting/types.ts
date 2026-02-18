@@ -7,7 +7,7 @@ import type {
 	WorldOps,
 } from "@slopcade/shared/types";
 import type { Vec2, Vec3 } from "@slopcade/shared/types/common";
-import type { InputEvents } from "@/lib/game-engine/BehaviorContext";
+import type { InputEvents } from "@slopcade/game-runtime/BehaviorContext";
 
 export interface ScriptBudgetConfig {
 	maxExecutionTimeMs: number;

@@ -55,6 +55,8 @@
 		"@slopcade/codemirror-lang-glsl": "workspace:^",
 		"@slopcade/economy-engine": "workspace:*",
 		"@slopcade/game-bundler": "workspace:*",
+		"@slopcade/game-runtime": "workspace:*",
+		"@slopcade/godot-bridge": "workspace:*",
 		"@slopcade/shared": "workspace:*",
 		"@slopcade/shared-ui": "workspace:*",
 		"@supabase/supabase-js": "^2.90.1",

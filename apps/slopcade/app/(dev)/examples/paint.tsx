@@ -3,7 +3,7 @@ import type { CompiledPlan, EffectGraphSpec } from "@slopcade/shared/effects";
 import { compileGraph } from "@slopcade/shared/effects";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import type { GodotBridge, NormalizedDrawCommand } from "@/lib/godot/types";
+import type { GodotBridge, NormalizedDrawCommand } from "@slopcade/godot-bridge/types";
 import type { ExampleMeta } from "@/lib/registry/types";
 
 export const metadata: ExampleMeta = {
@@ -298,7 +298,7 @@ export default function PaintExample() {
 	useEffect(() => {
 		let mounted = true;
 
-		import("@/lib/godot")
+		import("@slopcade/godot-bridge")
 			.then(async (mod) => {
 				if (!mounted) return;
 				const newBridge = await mod.createGodotBridge();

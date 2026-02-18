@@ -8,7 +8,7 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import type { GodotBridge } from "@/lib/godot/types";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import type { ExampleMeta } from "@/lib/registry/types";
 
 export const metadata: ExampleMeta = {
@@ -118,7 +118,7 @@ export default function DynamicShaderExample() {
 	useEffect(() => {
 		let mounted = true;
 
-		import("@/lib/godot")
+		import("@slopcade/godot-bridge")
 			.then(async (mod) => {
 				if (!mounted) return;
 				const newBridge = await mod.createGodotBridge();

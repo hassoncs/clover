@@ -5,8 +5,8 @@ import {
 	LivePreviewController,
 	type PreviewLoadState,
 	type PreviewMode,
-} from "@/lib/game-engine/live/LivePreviewController";
-import type { GodotBridge } from "@/lib/godot/types";
+} from "@slopcade/game-runtime/live/LivePreviewController";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 
 const STATE_POLL_INTERVAL_MS = 200;
 

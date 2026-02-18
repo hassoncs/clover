@@ -1,3 +1,8 @@
+import { GameRuntimeGodot } from "@slopcade/game-runtime/GameRuntime.godot";
+import {
+	FONT_PRESETS,
+	getGoogleFontUrl,
+} from "@slopcade/game-runtime/ui/overlay/FontRegistry";
 import type { FontPreset, GameDefinition } from "@slopcade/shared";
 import type { EffectGraphSpec } from "@slopcade/shared/effects";
 import {
@@ -13,11 +18,6 @@ import {
 	View,
 } from "react-native";
 import { TextEffectEditor } from "@/components/effects/TextEffectEditor";
-import { GameRuntimeGodot } from "@/lib/game-engine/GameRuntime.godot";
-import {
-	FONT_PRESETS,
-	getGoogleFontUrl,
-} from "@/lib/game-engine/ui/overlay/FontRegistry";
 import type { ExampleMeta } from "@/lib/registry/types";
 
 export const metadata: ExampleMeta = {

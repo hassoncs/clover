@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
-import type { GodotBridge } from "@/lib/godot/types";
+import type { GodotBridge } from "@slopcade/godot-bridge/types";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
@@ -45,7 +45,7 @@ export default function ThemedUIGalleryExample() {
 
     addLog("Loading Godot module...");
 
-    import("@/lib/godot")
+    import("@slopcade/godot-bridge")
       .then(async (mod) => {
         if (!mounted) return;
 

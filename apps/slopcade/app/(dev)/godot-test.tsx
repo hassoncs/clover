@@ -7,7 +7,7 @@ import {
 	Text,
 	View,
 } from "react-native";
-import { createGodotBridge, type GodotBridge, GodotView } from "@/lib/godot";
+import { createGodotBridge, type GodotBridge, GodotView } from "@slopcade/godot-bridge";
 
 const RENDERING_TEST_GAME = {
 	metadata: {
