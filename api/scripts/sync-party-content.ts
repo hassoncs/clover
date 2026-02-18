@@ -260,9 +260,10 @@ async function exportFromDb(opts: SyncOptions): Promise<void> {
 	const tmpSqlFile = path.join(apiDir, ".export-query.sql");
 	const tmpJsonFile = path.join(apiDir, ".export-results.json");
 
-	const escapedQuery = query.replace(/\?/g, (_, i) => {
-		const param = params[i];
-		return typeof param === "string" ? `'${escSql(param)}'` : param;
+	let paramIndex = 0;
+	const escapedQuery = query.replace(/\?/g, () => {
+		const param = params[paramIndex++];
+		return typeof param === "string" ? `'${escSql(param)}'` : String(param);
 	});
 
 	await writeFile(tmpSqlFile, escapedQuery, "utf-8");

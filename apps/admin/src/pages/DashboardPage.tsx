@@ -1,11 +1,35 @@
 import { trpc } from "../lib/trpc";
 
+const SKIP_VOICE = new Set(["headsup", "wordlist", "FakeWord"]);
+
+const TYPE_LABELS: Record<string, string> = {
+	quip: "Quip",
+	trivia: "Trivia",
+	drawing: "Drawing",
+	dilemma: "Dilemma",
+	wyr: "WYR",
+	estimation: "Estimation",
+	fibbage: "Fibbage",
+	caption: "Caption",
+	wordgame: "Wordgame",
+	wordlist: "Wordlist",
+	personal: "Personal",
+	FakeWord: "FakeWord",
+	ranking: "Ranking",
+	headsup: "HeadsUp",
+};
+
 export function DashboardPage() {
 	const {
 		data: stats,
 		isLoading,
 		error,
 	} = trpc.adminDashboard.getStats.useQuery(undefined, { retry: false });
+
+	const { data: inventory } = trpc.adminDashboard.contentInventory.useQuery(
+		undefined,
+		{ retry: false },
+	);
 
 	if (isLoading) {
 		return (
@@ -121,6 +145,8 @@ export function DashboardPage() {
 					</CardRow>
 				)}
 			</Section>
+
+			{inventory && <ContentInventory rows={inventory.rows} />}
 		</div>
 	);
 }
@@ -206,6 +232,168 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 				{label}
 			</p>
 		</div>
+	);
+}
+
+interface InventoryRow {
+	brand_id: string;
+	content_type: string;
+	total: number;
+	has_audio: number;
+	reviewed: number;
+}
+
+function ContentInventory({ rows }: { rows: InventoryRow[] }) {
+	const brands = [...new Set(rows.map((r) => r.brand_id))].sort();
+
+	const brandTotals = (brand: string) => {
+		const brandRows = rows.filter((r) => r.brand_id === brand);
+		return {
+			total: brandRows.reduce((s, r) => s + r.total, 0),
+			audio: brandRows.reduce((s, r) => s + r.has_audio, 0),
+			reviewed: brandRows.reduce((s, r) => s + r.reviewed, 0),
+			needsAudio: brandRows.reduce(
+				(s, r) =>
+					s + (SKIP_VOICE.has(r.content_type) ? 0 : r.total - r.has_audio),
+				0,
+			),
+		};
+	};
+
+	const thStyle: React.CSSProperties = {
+		padding: "8px 12px",
+		textAlign: "left",
+		fontSize: 10,
+		fontWeight: 600,
+		color: "#475569",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		whiteSpace: "nowrap",
+	};
+
+	const tdStyle: React.CSSProperties = {
+		padding: "8px 12px",
+		fontSize: 13,
+		color: "#cbd5e1",
+		borderTop: "1px solid #1e293b",
+	};
+
+	const numStyle: React.CSSProperties = {
+		...tdStyle,
+		textAlign: "right",
+		fontVariantNumeric: "tabular-nums",
+	};
+
+	return (
+		<Section title="Content Inventory">
+			<div
+				style={{
+					background: "#1e293b",
+					borderRadius: 12,
+					border: "1px solid #334155",
+					overflow: "hidden",
+				}}
+			>
+				{brands.map((brand) => {
+					const brandRows = rows.filter((r) => r.brand_id === brand);
+					const totals = brandTotals(brand);
+					return (
+						<div
+							key={brand}
+							style={{
+								marginBottom: brand !== brands[brands.length - 1] ? 4 : 0,
+							}}
+						>
+							<div
+								style={{
+									padding: "12px 16px 4px",
+									fontSize: 13,
+									fontWeight: 700,
+									color: "#f8fafc",
+									textTransform: "capitalize",
+								}}
+							>
+								{brand}
+								<span
+									style={{
+										fontWeight: 400,
+										color: "#64748b",
+										marginLeft: 8,
+										fontSize: 12,
+									}}
+								>
+									{totals.total} items · {totals.audio} audio ·{" "}
+									{totals.reviewed} reviewed
+									{totals.needsAudio > 0 && (
+										<span style={{ color: "#f59e0b" }}>
+											{" "}
+											· {totals.needsAudio} need audio
+										</span>
+									)}
+								</span>
+							</div>
+							<table style={{ width: "100%", borderCollapse: "collapse" }}>
+								<thead>
+									<tr>
+										<th style={thStyle}>Type</th>
+										<th style={{ ...thStyle, textAlign: "right" }}>Total</th>
+										<th style={{ ...thStyle, textAlign: "right" }}>Audio</th>
+										<th style={{ ...thStyle, textAlign: "right" }}>Reviewed</th>
+										<th style={{ ...thStyle, textAlign: "right" }}>
+											Needs Audio
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{brandRows.map((r) => {
+										const needsAudio = SKIP_VOICE.has(r.content_type)
+											? 0
+											: r.total - r.has_audio;
+										return (
+											<tr key={r.content_type}>
+												<td style={tdStyle}>
+													{TYPE_LABELS[r.content_type] ?? r.content_type}
+												</td>
+												<td style={numStyle}>{r.total}</td>
+												<td style={numStyle}>
+													{r.has_audio > 0 ? (
+														<span style={{ color: "#86efac" }}>
+															{r.has_audio}
+														</span>
+													) : SKIP_VOICE.has(r.content_type) ? (
+														<span style={{ color: "#475569" }}>—</span>
+													) : (
+														<span style={{ color: "#475569" }}>0</span>
+													)}
+												</td>
+												<td style={numStyle}>
+													{r.reviewed > 0 ? (
+														<span style={{ color: "#93c5fd" }}>
+															{r.reviewed}
+														</span>
+													) : (
+														<span style={{ color: "#475569" }}>0</span>
+													)}
+												</td>
+												<td style={numStyle}>
+													{needsAudio > 0 ? (
+														<span style={{ color: "#f59e0b" }}>
+															{needsAudio}
+														</span>
+													) : (
+														<span style={{ color: "#475569" }}>—</span>
+													)}
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					);
+				})}
+			</div>
+		</Section>
 	);
 }
 

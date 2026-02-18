@@ -91,4 +91,35 @@ export const adminDashboardRouter = router({
 			moderationRejects24h: moderationRejects,
 		};
 	}),
+
+	contentInventory: adminProcedure.query(async ({ ctx }) => {
+		const db = ctx.env.DB;
+
+		const rows = await db
+			.prepare(
+				`SELECT 
+					pc.brand_id,
+					pc.content_type,
+					COUNT(*) as total,
+					SUM(CASE WHEN pca.id IS NOT NULL THEN 1 ELSE 0 END) as has_audio,
+					SUM(CASE WHEN pcr.id IS NOT NULL THEN 1 ELSE 0 END) as reviewed
+				FROM party_content pc
+				LEFT JOIN party_content_assets pca
+					ON pca.content_id = pc.id AND pca.asset_type = 'audio' AND pca.deleted_at IS NULL
+				LEFT JOIN party_content_reviews pcr
+					ON pcr.content_id = pc.id
+				WHERE pc.deleted_at IS NULL
+				GROUP BY pc.brand_id, pc.content_type
+				ORDER BY pc.brand_id, pc.content_type`,
+			)
+			.all<{
+				brand_id: string;
+				content_type: string;
+				total: number;
+				has_audio: number;
+				reviewed: number;
+			}>();
+
+		return { rows: rows.results ?? [] };
+	}),
 });

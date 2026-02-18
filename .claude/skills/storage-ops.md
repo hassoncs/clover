@@ -1,6 +1,6 @@
 ---
 name: storage-ops
-description: "Database and storage operations. Covers Cloudflare D1 (SQLite), R2 object storage, Supabase auth, migrations, BlobStore, asset uploads, and wallet transactions. Use when working on database queries, migrations, blob storage, or auth."
+description: "Database and storage operations. Covers Cloudflare D1 (SQLite), R2 object storage, Supabase auth, migrations, BlobStore, asset uploads, wallet transactions, and party content sync. Use when working on database queries, migrations, blob storage, auth, or syncing party content."
 ---
 
 # Storage Operations
@@ -9,7 +9,7 @@ description: "Database and storage operations. Covers Cloudflare D1 (SQLite), R2
 
 ## When to Use This Skill
 
-Load when working on: database queries, D1, R2, migrations, schema changes, blob storage, asset uploads, Supabase auth, wallet transactions
+Load when working on: database queries, D1, R2, migrations, schema changes, blob storage, asset uploads, Supabase auth, wallet transactions, party content sync
 
 ## Key Concepts
 
@@ -76,6 +76,85 @@ User data synced to D1 `users` table on first interaction.
 
 - [agent-orchestration](agent-orchestration.md) — Uses D1 for threads/messages
 - [testing-patterns](testing-patterns.md) — D1/R2 mocking strategies
+
+## Party Content Database
+
+Party game content (trivia, quips, dilemmas, etc.) is stored in D1 with the following tables:
+- `party_content` — Content items with JSON body, brand, type, status
+- `party_content_assets` — Audio/image assets linked to content
+- `party_content_reviews` — Quality/humor ratings from reviewers
+- `party_content_snapshots` — Versioned snapshots for publishing
+
+### Architecture
+
+```
+D1 Database (canonical)
+       │
+       ├──► Admin UI (content review, rating, publishing)
+       │
+       └──► App (live fetch at runtime, no bundling)
+```
+
+The database is the single source of truth. JSON files in `api/src/party/content/packs/` are backup/seed files.
+
+### Content Sync Commands
+
+```bash
+# Import JSON packs into D1 (upsert)
+pnpm --filter @slopcade/api content:import --target local   # JSON → local D1
+pnpm --filter @slopcade/api content:import --target remote  # JSON → prod D1
+
+# Export D1 content to JSON files (backup)
+pnpm --filter @slopcade/api content:export --target local   # local D1 → JSON
+pnpm --filter @slopcade/api content:export --target remote  # prod D1 → JSON
+```
+
+**Options:**
+- `--brand <amen|slopcade>` — Filter by brand
+- `--type <contentType>` — Filter by type (trivia, quip, fibbage, etc.)
+- `--dry-run` — Preview without executing
+
+**Examples:**
+```bash
+# Seed production from JSON files
+pnpm --filter @slopcade/api content:import --target remote
+
+# Export production content for backup
+pnpm --filter @slopcade/api content:export --target remote
+
+# Export only Amen trivia
+pnpm --filter @slopcade/api content:export --target local --brand amen --type trivia
+
+# Preview import without executing
+pnpm --filter @slopcade/api content:import --target remote --dry-run
+```
+
+### Content Types
+
+| Type | Description |
+|------|-------------|
+| `trivia` | Multiple choice questions with correct/incorrect answers |
+| `quip` | Short funny phrases |
+| `dilemma` / `wyr` | Would you rather choices (optionA/optionB) |
+| `fibbage` | Fill-in-the-blank with real answer |
+| `estimation` | Numeric estimation questions |
+| `drawing` | Drawing prompts |
+| `ranking` | Items to rank in order |
+| `headsup` | Heads Up word packs |
+| `wordlist` | Word lists for word games |
+| `personal` | Personal questions |
+| `FakeWord` | Fake word definitions |
+| `caption` | Caption prompts |
+| `wordgame` | Word game content |
+
+### File References
+
+| File | Purpose |
+|------|---------|
+| `api/scripts/sync-party-content.ts` | Bidirectional sync script |
+| `api/src/party/content/packs/` | JSON content packs by brand |
+| `api/src/trpc/routes/party-content.ts` | tRPC routes for content CRUD |
+| `shared/src/schema/party-content.ts` | Drizzle schema definitions |
 
 ## Consolidated from docs/ (2026-02-17)
 
