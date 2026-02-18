@@ -177,14 +177,14 @@ Now that both apps are complete forks, we remove what doesn't belong in each.
 This is the main shared code extraction. Both apps play games, so the engine must be shared.
 
 Tasks:
-- [ ] Create `packages/game-runtime/` (`@chriscode/game-runtime`) from `app/lib/game-engine/`
+- [x] Create `packages/game-runtime/` (`@slopcade/game-runtime`) from `app/lib/game-engine/`
   - Public API: game loading, entity management, scripting sandbox, physics config
   - Platform-split where needed (`.web.ts` / `.native.ts`)
-- [ ] Create `packages/godot-bridge/` (`@chriscode/godot-bridge`) from `app/lib/godot/`
+- [x] Create `packages/godot-bridge/` (`@slopcade/godot-bridge`) from `app/lib/godot/`
   - Public API: `createGodotBridge()`, `GodotView` component
   - Already has platform-split pattern (`GodotBridge.web.ts`, `GodotBridge.native.ts`)
-- [ ] Both apps depend on `@chriscode/game-runtime` and `@chriscode/godot-bridge`
-- [ ] Remove duplicated engine code from both apps' `lib/` directories
+- [x] Both apps depend on `@slopcade/game-runtime` and `@slopcade/godot-bridge`
+- [x] Remove duplicated engine code from both apps' `lib/` directories
 - [ ] Validate iOS native module linking works from workspace package location (CocoaPods + Expo autolinking)
 - [ ] Validate game plays correctly in both apps
 
@@ -202,7 +202,7 @@ Tasks:
 - [x] Amen `global.css`: warm cream/gold/navy palette, dignified, reverent feel
 - [x] Audit shared packages (`@chriscode/ui`, `@chriscode/shared-ui`) to ensure they ONLY reference semantic tokens (`bg-theme-background`, `text-theme-primary`) — never hardcoded colors
 - [x] Per-app fonts loaded in each app's `_layout.tsx`
-- [ ] Per-app splash screen and app icon assets
+- [x] Per-app splash screen and app icon assets
 - [x] Each app can customize navigation structure independently (Slopcade: browse-first with creator tools, Amen: party-first with curated catalog)
 
 **Exit criteria:** Both apps are visually distinct. Shared components render correctly in both contexts.
