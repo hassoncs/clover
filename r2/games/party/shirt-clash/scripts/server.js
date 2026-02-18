@@ -542,10 +542,18 @@ exports.run = async (room, config) => {
 
 			await room.delay(MATCH_RESULT_DURATION_MS);
 
-			// Update bracket for next round
 			if (currentRoundIndex + 1 < bracket.length) {
-				bracket[currentRoundIndex + 1].winners[currentMatchupIndex] =
-					matchup.winner;
+				var nextBracketRound = bracket[currentRoundIndex + 1];
+				var winnerSlot = currentMatchupIndex;
+				var nextMatchupIdx = Math.floor(winnerSlot / 2);
+				if (nextMatchupIdx < nextBracketRound.matchups.length) {
+					if (winnerSlot % 2 === 0) {
+						nextBracketRound.matchups[nextMatchupIdx].brandA = matchup.winner;
+					} else {
+						nextBracketRound.matchups[nextMatchupIdx].brandB = matchup.winner;
+					}
+				}
+				nextBracketRound.winners[winnerSlot] = matchup.winner;
 			}
 		}
 	}
