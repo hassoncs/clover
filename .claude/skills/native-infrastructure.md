@@ -5,7 +5,7 @@ description: "Native build infrastructure for iOS/Android. Covers Metro port 808
 
 # Native Infrastructure
 
-> **Skill for AI Agents**: Metro port 8085, CocoaPods, Android, Expo plugins, preflight checks
+> Metro port 8085, CocoaPods, Android, Expo plugins, preflight checks
 
 ## When to Use This Skill
 

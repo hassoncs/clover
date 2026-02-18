@@ -5,7 +5,7 @@ description: Use when testing the editor UI via agent-browser, debugging editor 
 
 # Editor Browser Testing
 
-> **Skill for AI Agents**: Testing the editor UI via agent-browser automation
+> Testing the editor UI via agent-browser automation
 
 ## When to Use This Skill
 

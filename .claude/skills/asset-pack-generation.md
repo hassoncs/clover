@@ -5,7 +5,7 @@ description: "AI image generation pipeline for game assets. Covers Scenario.com,
 
 # Asset Generation
 
-> **Skill for AI Agents**: Generating themed assets for games using the AI image pipeline.
+> Generating themed assets for games using the AI image pipeline.
 
 ## Overview
 

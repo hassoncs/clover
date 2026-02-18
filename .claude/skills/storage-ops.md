@@ -5,7 +5,7 @@ description: "Database and storage operations. Covers Cloudflare D1 (SQLite), R2
 
 # Storage Operations
 
-> **Skill for AI Agents**: D1, R2, Supabase auth, migrations, BlobStore
+> D1, R2, Supabase auth, migrations, BlobStore
 
 ## When to Use This Skill
 

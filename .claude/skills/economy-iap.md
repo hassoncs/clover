@@ -5,7 +5,7 @@ description: "Virtual currency (Sparks/Gems), wallet transactions, RevenueCat IA
 
 # Economy & IAP
 
-> **Skill for AI Agents**: Virtual currency (Sparks/Gems), wallet transactions, RevenueCat IAP, pricing
+> Virtual currency (Sparks/Gems), wallet transactions, RevenueCat IAP, pricing
 
 ## When to Use This Skill
 

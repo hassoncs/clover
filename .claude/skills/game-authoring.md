@@ -5,7 +5,7 @@ description: "Building and modifying games using the Slopcade game engine. Cover
 
 # Game Authoring
 
-> **Skill for AI Agents**: Building and modifying games using the Slopcade game engine.
+> Building and modifying games using the Slopcade game engine.
 
 ## Architecture Overview
 

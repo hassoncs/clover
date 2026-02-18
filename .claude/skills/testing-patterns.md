@@ -5,7 +5,7 @@ description: "Testing patterns and infrastructure. Covers Vitest, GDUnit4, tRPC 
 
 # Testing Patterns
 
-> **Skill for AI Agents**: Vitest, GDUnit4, tRPC testing, D1/R2 mocking, E2E bridge
+> Vitest, GDUnit4, tRPC testing, D1/R2 mocking, E2E bridge
 
 ## When to Use This Skill
 

@@ -93,7 +93,7 @@ export default function TabLayout() {
 	}, [router]);
 
 	const goToImageSearch = useCallback(() => {
-		router.push("/image-search");
+		router.push("/(dev)/image-search");
 	}, [router]);
 
 	const goToNotifications = useCallback(() => {

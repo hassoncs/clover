@@ -5,7 +5,7 @@ description: "Godot 4 engine patterns for Slopcade. Covers GDScript, scenes, .ts
 
 # Godot Engine
 
-> **Skill for AI Agents**: GDScript patterns, scene composition, bridge architecture, exports
+> GDScript patterns, scene composition, bridge architecture, exports
 
 ## When to Use This Skill
 

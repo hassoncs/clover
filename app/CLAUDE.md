@@ -118,7 +118,8 @@ This project uses NativeWind v4 for Tailwind-style utilities:
 app/                      # Expo Router pages
 ├── _layout.tsx          # Root layout
 ├── index.tsx            # Home page
-└── examples/            # Game examples
+└── (dev)/               # Development-only routes
+    └── examples/        # Game examples
 
 lib/
 ├── godot/               # Godot bridge
@@ -139,7 +140,7 @@ godot_project/           # Godot project files
 
 ### Adding a new game example
 
-1. Create file in `app/examples/my_example.tsx`
+1. Create file in `app/(dev)/examples/my_example.tsx`
 2. Export metadata and default component:
 
 ```typescript
@@ -169,5 +170,5 @@ bridge.clearTextureCache();
 
 ## Important References
 
-- **[Project Guide](./AGENTS.md)** - Full development guide
+- **[Project Guide](../AGENTS.md)** - Full development guide
 - **[Godot Project README](../godot_project/README.md)** - Godot-specific docs

@@ -5,7 +5,7 @@ description: "Sound and audio generation pipeline. Covers ElevenLabs SFX API, au
 
 # Sound & Audio Generation
 
-> **Skill for AI Agents**: ElevenLabs SFX, audio assets, GameDefinition sounds, Godot AudioManager
+> ElevenLabs SFX, audio assets, GameDefinition sounds, Godot AudioManager
 
 ## When to Use This Skill
 

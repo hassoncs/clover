@@ -5,7 +5,7 @@ description: "Machinations-inspired economy graph engine for games. Covers resou
 
 # Economy Engine
 
-> **Skill for AI Agents**: Building and integrating economy systems using the Machinations-inspired graph engine
+> Building and integrating economy systems using the Machinations-inspired graph engine
 > **Version**: 1.0
 > **Last Updated**: 2026-02-11
 > **Source Docs**: docs/economy/ENGINE_GUIDE.md, packages/economy-engine/

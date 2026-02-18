@@ -55,7 +55,7 @@ yarn-error.*
 .hush.production
 .dev.vars
 api/.dev.vars
-landing/.dev.vars
+apps/landing-*/.dev.vars
 
 # Wrangler local state
 **/.wrangler/

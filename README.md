@@ -17,13 +17,13 @@ Physics-based game engine and AI-powered game maker built with React Native.
 
 ### AI Asset Generation
 - **Scenario.com**: Sprite and image generation
-- **ElevenLabs**: Sound effects generation ([docs](docs/shared/reference/sound-generation.md))
+- **ElevenLabs**: Sound effects generation
 
 ---
 
 ## Documentation
 
-- **Project Guide**: [app/AGENTS.md](./app/AGENTS.md)
+- **Project Guide**: [AGENTS.md](./AGENTS.md)
 - **Documentation Hub**: [docs/INDEX.md](./docs/INDEX.md)
 
 ## Quick Start
@@ -37,4 +37,4 @@ pnpm ios
 pnpm android
 ```
 
-For more details, see [app/AGENTS.md](./app/AGENTS.md).
+For more details, see [AGENTS.md](./AGENTS.md).

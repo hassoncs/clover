@@ -5,7 +5,7 @@ description: "User input handling across web and native platforms. Covers touch,
 
 # Input Handling
 
-> **Skill for AI Agents**: Handling user input across web and native platforms
+> Handling user input across web and native platforms
 > **Version**: 1.0
 > **Last Updated**: 2026-02-11
 > **Source Docs**: docs/godot/WEB_INPUT_HANDLING.md, docs/game-inspector/unified-input-simulation-plan.md

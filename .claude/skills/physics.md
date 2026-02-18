@@ -5,7 +5,7 @@ description: "Physics system covering bodies, collision, joints, gravity, densit
 
 # Physics
 
-> **Skill for AI Agents**: Physics bodies, collision, joints, coordinates, world settings
+> Physics bodies, collision, joints, coordinates, world settings
 
 ## When to Use This Skill
 

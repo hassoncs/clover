@@ -551,6 +551,6 @@ Each refactoring should follow:
 
 ## Related Documentation
 
-- **Architecture Overview:** `app/AGENTS.md`
+- **Architecture Overview:** `AGENTS.md`
 - **Game Engine Architecture:** `docs/game-maker/architecture/`
-- **Godot Integration:** `docs/godot-migration/`
+- **Godot Integration:** `docs/godot/`

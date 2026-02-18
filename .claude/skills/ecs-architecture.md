@@ -5,7 +5,7 @@ description: "Entity-Component-System architecture for the game engine. Covers p
 
 # ECS Architecture
 
-> **Skill for AI Agents**: Prefabs, entities, components, GameDefinition, scriptRef, modules
+> Prefabs, entities, components, GameDefinition, scriptRef, modules
 
 ## When to Use This Skill
 

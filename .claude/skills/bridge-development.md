@@ -5,7 +5,7 @@ description: "Godot-TypeScript bridge communication layer. Covers method registr
 
 # Bridge Development
 
-> **Skill for AI Agents**: Working with the Godot-TypeScript bridge for game engine communication
+> Working with the Godot-TypeScript bridge for game engine communication
 > **Version**: 1.0
 > **Last Updated**: 2026-02-11
 > **Source Docs**: docs/godot/BRIDGE_REFACTOR.md, docs/godot/UNIFIED_BRIDGE_DESIGN_BRIEF.md

@@ -59,6 +59,7 @@ Options:
   --id <item-id>                            Generate one item
   --sample                                  Generate a representative sample (first ${SAMPLE_SIZE})
   --generate-all                            Generate all items for this type
+  --concurrency <n>                          Parallel jobs (default: 5)
   --force                                   Overwrite existing files
   --help                                    Show this help
 
@@ -100,6 +101,7 @@ function parseCli() {
 			id: { type: "string" },
 			sample: { type: "boolean", default: false },
 			"generate-all": { type: "boolean", default: false },
+			concurrency: { type: "string", default: "5" },
 			force: { type: "boolean", default: false },
 			help: { type: "boolean", default: false },
 		},
@@ -141,6 +143,8 @@ function parseCli() {
 		);
 	}
 
+	const concurrency = Math.max(1, parseInt(values.concurrency, 10) || 5);
+
 	return {
 		type: type as AudioType,
 		brand: values.brand,
@@ -148,6 +152,7 @@ function parseCli() {
 		id: values.id,
 		sample: values.sample,
 		generateAll: values["generate-all"],
+		concurrency,
 		force: values.force,
 	};
 }
@@ -158,6 +163,7 @@ async function generateMusicViaScenario(options: {
 	scenarioModelId: string;
 	prompt: string;
 	durationSeconds: number;
+	lyrics?: string;
 	negativePrompt?: string;
 }): Promise<Uint8Array> {
 	const authHeader = `Basic ${Buffer.from(
@@ -177,6 +183,7 @@ async function generateMusicViaScenario(options: {
 			body: JSON.stringify({
 				prompt: options.prompt,
 				duration: options.durationSeconds,
+				lyrics: options.lyrics ?? "",
 				...(options.negativePrompt
 					? { negativePrompt: options.negativePrompt }
 					: {}),
@@ -250,7 +257,7 @@ async function generateMusicViaScenario(options: {
 			return new Uint8Array(await audioResponse.arrayBuffer());
 		}
 
-		if (status === "failed" || status === "cancelled") {
+		if (status === "failed" || status === "failure" || status === "cancelled") {
 			throw new Error(
 				`Music job ${status}: ${pollData.job?.error ?? "unknown"}`,
 			);
@@ -551,6 +558,10 @@ async function buildJobs(params: {
 						scenarioModelId: musicModel.scenarioModelId,
 						prompt: entry.prompt,
 						durationSeconds,
+						lyrics:
+							entry.lyrics ??
+							(musicModel.supportsLyrics ? "[instrumental]" : undefined),
+						negativePrompt: entry.negativePrompt,
 					}),
 			} satisfies AudioJob;
 		});
@@ -637,22 +648,26 @@ async function run(): Promise<void> {
 	}
 
 	console.log(
-		`Generating ${jobs.length} ${cli.type} item(s) for brand ${cli.brand} (force=${cli.force ? "yes" : "no"})`,
+		`Generating ${jobs.length} ${cli.type} item(s) for brand ${cli.brand} (concurrency=${cli.concurrency}, force=${cli.force ? "yes" : "no"})`,
 	);
 
 	let generated = 0;
 	let skipped = 0;
+	let completed = 0;
 
-	for (const [index, job] of jobs.entries()) {
-		const displayIndex = index + 1;
-		const prefix = `[${displayIndex}/${jobs.length}] ${job.label}`;
+	const pending = jobs.map((job, index) => ({ job, index }));
+
+	async function executeJob(entry: { job: AudioJob; index: number }) {
+		const { job, index } = entry;
+		const prefix = `[${index + 1}/${jobs.length}] ${job.label}`;
 
 		try {
 			await stat(job.outputPath);
 			if (!cli.force) {
 				console.log(`${prefix}... skipped (exists)`);
 				skipped++;
-				continue;
+				completed++;
+				return;
 			}
 		} catch {}
 
@@ -663,10 +678,16 @@ async function run(): Promise<void> {
 		await mkdir(path.dirname(job.outputPath), { recursive: true });
 		await writeFile(job.outputPath, bytes);
 
-		console.log(
-			`${prefix}... done (${formatDurationMs(elapsed)}, ${formatSize(bytes.byteLength)})`,
-		);
 		generated++;
+		completed++;
+		console.log(
+			`${prefix}... done (${formatDurationMs(elapsed)}, ${formatSize(bytes.byteLength)}) [${completed}/${jobs.length} complete]`,
+		);
+	}
+
+	for (let i = 0; i < pending.length; i += cli.concurrency) {
+		const batch = pending.slice(i, i + cli.concurrency);
+		await Promise.all(batch.map(executeJob));
 	}
 
 	console.log(`Complete: ${generated} generated, ${skipped} skipped`);

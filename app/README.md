@@ -56,5 +56,5 @@ The Godot project lives in `godot_project/`:
 
 ## Documentation
 
-- **[Project Guide](./AGENTS.md)** - Development guide
-- **[Godot Migration](../docs/godot-migration/)** - Migration documentation
+- **[Project Guide](../AGENTS.md)** - Development guide
+- **[Godot Migration](../docs/godot/)** - Godot documentation

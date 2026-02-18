@@ -14,9 +14,8 @@
 		"api": {
 			"ignoreDependencies": ["cloudflare"]
 		},
-		"landing-slopcade": {},
+		"apps/landing-slopcade": {},
 		"shared": {},
-		"games": {},
 		"packages/game-inspector-mcp": {
 			"entry": [
 				"src/index.ts",

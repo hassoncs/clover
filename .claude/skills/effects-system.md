@@ -5,7 +5,7 @@ description: "Multi-pass shader effects system for visual post-processing. Cover
 
 # Effects System
 
-> **Skill for AI Agents**: Working with the multi-pass shader effects system for visual effects
+> Working with the multi-pass shader effects system for visual effects
 > **Version**: 1.0
 > **Last Updated**: 2026-02-11
 > **Source Docs**: docs/effects/EFFECTS_ARCHITECTURE.md

@@ -5,7 +5,7 @@ description: "MCP-based game debugging and testing tools. Covers entity inspecti
 
 # Game Inspector
 
-> **Skill for AI Agents**: Debugging and testing games via the game-inspector MCP
+> Debugging and testing games via the game-inspector MCP
 > **Version**: 2.0
 > **Last Updated**: 2026-02-12
 
