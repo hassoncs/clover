@@ -8,7 +8,7 @@ import type {
 } from "@/ai/pipeline/types";
 import { createComfyUIAdapter } from "@/ai/providers/comfyui/client";
 import { PROVIDER_DEFAULTS } from "@/ai/providers/contract";
-import { createScenarioAdapter } from "@/ai/providers/scenario/client";
+import { createScenarioAdapter } from "@/ai/providers/scenario";
 
 /**
  * Create a Scenario ImageGenerationAdapter for Node.js pipeline usage.

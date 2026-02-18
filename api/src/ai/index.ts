@@ -46,9 +46,12 @@ export type {
 	ParallaxLayerConfig,
 } from "@/ai/providers/comfyui/types";
 export {
+	createScenarioAdapter,
 	createScenarioClient,
+	ScenarioAudioClient,
 	ScenarioClient,
-} from "@/ai/providers/scenario/client";
+	ScenarioImageClient,
+} from "@/ai/providers/scenario";
 export type {
 	GenerationParams,
 	GenerationResult as ScenarioGenerationResult,

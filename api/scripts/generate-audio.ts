@@ -22,7 +22,11 @@ import {
 } from "../../shared/src/constants/audio-voice-models";
 import { BRAND_VOICES } from "../../shared/src/constants/voice-presets";
 import { ElevenLabsService } from "../src/ai/providers/elevenlabs";
-import { ScenarioClient } from "../src/ai/providers/scenario/client";
+import {
+	createScenarioClient,
+	ScenarioAudioClient,
+	type ScenarioClient,
+} from "../src/ai/providers/scenario";
 
 type AudioType = "sfx" | "voice" | "music" | "content-voice";
 type AudioProvider = "scenario" | "elevenlabs";
@@ -281,7 +285,8 @@ function selectTargets<T extends { id: string }>(options: {
 
 async function buildJobs(params: {
 	provider: AudioProvider;
-	scenarioClient?: ScenarioClient;
+	scenarioBase?: ScenarioClient;
+	scenarioAudio?: ScenarioAudioClient;
 	elevenLabsService?: ElevenLabsService;
 	type: AudioType;
 	brand: Brand;
@@ -292,7 +297,8 @@ async function buildJobs(params: {
 }): Promise<AudioJob[]> {
 	const {
 		provider,
-		scenarioClient,
+		scenarioBase,
+		scenarioAudio,
 		elevenLabsService,
 		type,
 		brand,
@@ -304,7 +310,7 @@ async function buildJobs(params: {
 
 	if (type === "sfx") {
 		if (provider === "scenario") {
-			if (!scenarioClient) {
+			if (!scenarioBase || !scenarioAudio) {
 				throw new Error("Scenario client is required for Scenario generation");
 			}
 
@@ -329,7 +335,7 @@ async function buildJobs(params: {
 				label: `Generating SFX: ${entry.id}`,
 				outputPath: path.join(audioRoot, "sfx", "shared", `${entry.id}.mp3`),
 				generate: async () => {
-					const jobId = await scenarioClient.createSfxJob({
+					const jobId = await scenarioAudio.createSfxJob({
 						modelId: sfxModel.scenarioModelId,
 						text: entry.prompt,
 						durationSeconds: Math.min(
@@ -339,12 +345,12 @@ async function buildJobs(params: {
 						promptInfluence: entry.promptInfluence,
 						outputFormat: OUTPUT_FORMAT,
 					});
-					const assetIds = await scenarioClient.pollJobUntilComplete(jobId);
+					const assetIds = await scenarioBase.pollJobUntilComplete(jobId);
 					const assetId = assetIds[0];
 					if (!assetId) {
 						throw new Error("SFX job succeeded but no assets");
 					}
-					const downloaded = await scenarioClient.downloadAsset(assetId);
+					const downloaded = await scenarioBase.downloadAsset(assetId);
 					return new Uint8Array(downloaded.buffer);
 				},
 			}));
@@ -384,7 +390,7 @@ async function buildJobs(params: {
 
 	if (type === "voice") {
 		if (provider === "scenario") {
-			if (!scenarioClient) {
+			if (!scenarioBase || !scenarioAudio) {
 				throw new Error("Scenario client is required for Scenario generation");
 			}
 
@@ -422,7 +428,7 @@ async function buildJobs(params: {
 						`${entry.id}.mp3`,
 					),
 					generate: async () => {
-						const jobId = await scenarioClient.createVoiceJob({
+						const jobId = await scenarioAudio.createVoiceJob({
 							modelId: voiceModel.scenarioModelId,
 							text,
 							voice: voice.voiceId,
@@ -430,12 +436,12 @@ async function buildJobs(params: {
 							similarityBoost: voice.settings.similarityBoost,
 							styleExaggeration: voice.settings.style,
 						});
-						const assetIds = await scenarioClient.pollJobUntilComplete(jobId);
+						const assetIds = await scenarioBase.pollJobUntilComplete(jobId);
 						const assetId = assetIds[0];
 						if (!assetId) {
 							throw new Error("Voice job succeeded but no assets");
 						}
-						const downloaded = await scenarioClient.downloadAsset(assetId);
+						const downloaded = await scenarioBase.downloadAsset(assetId);
 						return new Uint8Array(downloaded.buffer);
 					},
 				} satisfies AudioJob;
@@ -492,7 +498,7 @@ async function buildJobs(params: {
 	}
 
 	if (type === "music") {
-		if (!scenarioClient) {
+		if (!scenarioBase || !scenarioAudio) {
 			throw new Error("Scenario client is required for music generation");
 		}
 
@@ -542,7 +548,7 @@ async function buildJobs(params: {
 				label: `Generating Music (${musicModel.name}): ${entry.id} (${durationSeconds}s)`,
 				outputPath,
 				generate: async () => {
-					const jobId = await scenarioClient.createMusicJob({
+					const jobId = await scenarioAudio.createMusicJob({
 						modelId: musicModel.scenarioModelId,
 						prompt: entry.prompt,
 						durationSeconds,
@@ -551,12 +557,12 @@ async function buildJobs(params: {
 							(musicModel.supportsLyrics ? "[instrumental]" : undefined),
 						negativePrompt: entry.negativePrompt,
 					});
-					const assetIds = await scenarioClient.pollJobUntilComplete(jobId);
+					const assetIds = await scenarioBase.pollJobUntilComplete(jobId);
 					const assetId = assetIds[0];
 					if (!assetId) {
 						throw new Error("Music job succeeded but no assets");
 					}
-					const downloaded = await scenarioClient.downloadAsset(assetId);
+					const downloaded = await scenarioBase.downloadAsset(assetId);
 					return new Uint8Array(downloaded.buffer);
 				},
 			} satisfies AudioJob;
@@ -639,11 +645,15 @@ async function run(): Promise<void> {
 		);
 	}
 
-	const scenarioClient = requiresScenario
-		? new ScenarioClient({
-				apiKey: scenarioApiKey as string,
-				apiSecret: scenarioApiSecret as string,
+	const scenarioBase = requiresScenario
+		? createScenarioClient({
+				SCENARIO_API_KEY: scenarioApiKey,
+				SCENARIO_SECRET_API_KEY: scenarioApiSecret,
+				SCENARIO_API_URL: process.env.SCENARIO_API_URL,
 			})
+		: undefined;
+	const scenarioAudio = scenarioBase
+		? new ScenarioAudioClient(scenarioBase)
 		: undefined;
 	const elevenLabsService = requiresElevenLabs
 		? new ElevenLabsService(elevenLabsApiKey as string)
@@ -660,7 +670,8 @@ async function run(): Promise<void> {
 
 	const jobs = await buildJobs({
 		provider: cli.provider,
-		scenarioClient,
+		scenarioBase,
+		scenarioAudio,
 		elevenLabsService,
 		type: cli.type,
 		brand: cli.brand,

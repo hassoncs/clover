@@ -15,7 +15,10 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { createModel } from "@/ai/model-factory";
 import { ElevenLabsService } from "@/ai/providers/elevenlabs";
-import { createScenarioClient } from "@/ai/providers/scenario/client";
+import {
+	createScenarioClient,
+	ScenarioAudioClient,
+} from "@/ai/providers/scenario";
 import { AuditService } from "@/services/audit-service";
 import { adminProcedure, router } from "@/trpc/index";
 
@@ -242,20 +245,21 @@ export const adminToolsRouter = router({
 					});
 				}
 
-				const client = createScenarioClient({
+				const base = createScenarioClient({
 					SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
 					SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
 					SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
 				});
+				const audioClient = new ScenarioAudioClient(base);
 
-				const jobId = await client.createSfxJob({
+				const jobId = await audioClient.createSfxJob({
 					modelId: modelDef.scenarioModelId,
 					text: input.text,
 					durationSeconds: input.durationSeconds,
 					promptInfluence: input.promptInfluence,
 					outputFormat: "mp3_44100_128",
 				});
-				const assetIds = await client.pollJobUntilComplete(jobId);
+				const assetIds = await base.pollJobUntilComplete(jobId);
 				const firstAssetId = assetIds[0];
 				if (!firstAssetId) {
 					throw new TRPCError({
@@ -264,7 +268,7 @@ export const adminToolsRouter = router({
 					});
 				}
 
-				const downloaded = await client.downloadAsset(firstAssetId);
+				const downloaded = await base.downloadAsset(firstAssetId);
 				audio = downloaded.buffer;
 				modelId = modelDef.id;
 				providerJobId = jobId;
@@ -354,13 +358,14 @@ export const adminToolsRouter = router({
 				const scenarioVoice = SCENARIO_VOICES[scenarioVoiceId];
 				voiceName = scenarioVoice?.name ?? scenarioVoiceId;
 
-				const client = createScenarioClient({
+				const base = createScenarioClient({
 					SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
 					SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
 					SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
 				});
+				const audioClient = new ScenarioAudioClient(base);
 
-				const jobId = await client.createVoiceJob({
+				const jobId = await audioClient.createVoiceJob({
 					modelId: modelDef.scenarioModelId,
 					text: input.text,
 					voice: voiceName,
@@ -369,7 +374,7 @@ export const adminToolsRouter = router({
 					styleExaggeration: 0,
 					speed: 1,
 				});
-				const assetIds = await client.pollJobUntilComplete(jobId);
+				const assetIds = await base.pollJobUntilComplete(jobId);
 				const firstAssetId = assetIds[0];
 				if (!firstAssetId) {
 					throw new TRPCError({
@@ -378,7 +383,7 @@ export const adminToolsRouter = router({
 					});
 				}
 
-				const downloaded = await client.downloadAsset(firstAssetId);
+				const downloaded = await base.downloadAsset(firstAssetId);
 				audio = downloaded.buffer;
 				modelId = modelDef.id;
 				providerJobId = jobId;
@@ -464,20 +469,21 @@ export const adminToolsRouter = router({
 				});
 			}
 
-			const client = createScenarioClient({
+			const base = createScenarioClient({
 				SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
 				SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
 				SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
 			});
+			const audioClient = new ScenarioAudioClient(base);
 
-			const jobId = await client.createMusicJob({
+			const jobId = await audioClient.createMusicJob({
 				modelId: modelDef.scenarioModelId,
 				prompt: input.prompt,
 				durationSeconds: input.durationSeconds,
 				negativePrompt: input.negativePrompt,
 				lyrics: input.lyrics,
 			});
-			const assetIds = await client.pollJobUntilComplete(jobId);
+			const assetIds = await base.pollJobUntilComplete(jobId);
 			const firstAssetId = assetIds[0];
 			if (!firstAssetId) {
 				throw new TRPCError({
@@ -486,7 +492,7 @@ export const adminToolsRouter = router({
 				});
 			}
 
-			const audio = await client.downloadAsset(firstAssetId);
+			const audio = await base.downloadAsset(firstAssetId);
 			const key = `audio/music/${input.outputName}.mp3`;
 			await ctx.env.ASSETS.put(key, audio.buffer, {
 				httpMetadata: { contentType: "audio/mpeg" },

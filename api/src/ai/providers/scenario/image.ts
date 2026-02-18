@@ -8,7 +8,7 @@ import {
 	ProviderErrorCode,
 	tryGetPngDimensions,
 } from "@/ai/providers/contract";
-import { ScenarioClient, scenarioLog } from "@/ai/providers/scenario/client";
+import { ScenarioClient, scenarioLog } from "./client";
 import type {
 	GenerationParams,
 	GenerationResult,
@@ -16,11 +16,8 @@ import type {
 	RemoveBackgroundParams,
 	ScenarioConfig,
 	ThirdPartyGenerationParams,
-} from "@/ai/providers/scenario/types";
-import {
-	CUSTOM_MODEL_PREFIXES,
-	SCENARIO_DEFAULTS,
-} from "@/ai/providers/scenario/types";
+} from "./types";
+import { CUSTOM_MODEL_PREFIXES, SCENARIO_DEFAULTS } from "./types";
 
 export class ScenarioImageClient {
 	constructor(private client: ScenarioClient) {}

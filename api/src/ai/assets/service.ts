@@ -5,7 +5,8 @@ import { PROVIDER_DEFAULTS } from "@/ai/providers/contract";
 import {
 	createScenarioAdapter,
 	createScenarioClient,
-} from "@/ai/providers/scenario/client";
+	ScenarioImageClient,
+} from "@/ai/providers/scenario";
 import { BlobStore, type BlobStoreResult } from "@/services/BlobStore";
 import type { Env } from "@/trpc/context";
 
@@ -566,6 +567,7 @@ export async function createImageGenerationAdapter({
 			SCENARIO_API_KEY: env.SCENARIO_API_KEY,
 			SCENARIO_SECRET_API_KEY: env.SCENARIO_SECRET_API_KEY,
 		});
+		const imageClient = new ScenarioImageClient(client);
 
 		return {
 			configured: true,
@@ -578,7 +580,7 @@ export async function createImageGenerationAdapter({
 				return { assetId };
 			},
 			img2img: async (params) => {
-				const result = await client.generateImg2Img({
+				const result = await imageClient.generateImg2Img({
 					image: params.image,
 					prompt: params.prompt,
 					strength: params.strength ?? PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
