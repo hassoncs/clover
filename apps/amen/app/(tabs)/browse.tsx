@@ -6,100 +6,120 @@ import {
 	RefreshControl,
 	ScrollView,
 	Text,
+	TextInput,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FilterBar } from "@/components/browse/FilterBar";
 import { GameGridCard } from "@/components/browse/GameCard";
-import { useBrowseGames } from "@/hooks/useBrowseGames";
-
-type SortOption = "newest" | "popular" | "alphabetical" | "rating";
-
-const PAGE_SIZE = 20;
+import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
 
 export default function BrowseScreen() {
 	const router = useRouter();
-
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortBy, setSortBy] = useState<SortOption>("popular");
-	const [showFilters, setShowFilters] = useState(false);
 
-	const {
-		games,
-		isLoading,
-		isFetching,
-		isRefreshing,
-		hasMore,
-		loadMore,
-		refresh,
-	} = useBrowseGames({ pageSize: PAGE_SIZE, searchQuery, sortBy });
+	const { templates, isLoading, refetch } = useBrowsePartyGames();
 
-	const clearFilters = () => {
-		setSortBy("popular");
-		setSearchQuery("");
-	};
+	const filtered = searchQuery.trim()
+		? templates.filter(
+				(t) =>
+					t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					(t.description ?? "")
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase()),
+			)
+		: templates;
 
 	return (
-		<SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
+		<SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
 			<ScrollView
 				className="flex-1"
 				refreshControl={
 					<RefreshControl
-						refreshing={isRefreshing}
-						onRefresh={refresh}
-						tintColor="#4CAF50"
+						refreshing={false}
+						onRefresh={() => refetch()}
+						tintColor="rgb(var(--color-theme-primary))"
 					/>
 				}
 			>
 				<View className="p-4">
 					<View className="mb-4">
-						<Text className="text-2xl font-bold text-white">Browse Games</Text>
-						<Text className="text-gray-400 mt-1">
-							Discover and play physics-based games
+						<Text className="text-2xl font-bold text-theme-text">Games</Text>
+						<Text className="text-theme-text-secondary mt-1">
+							Choose a game for your group
 						</Text>
 					</View>
 
-					<FilterBar
-						searchQuery={searchQuery}
-						onSearchChange={setSearchQuery}
-						sortBy={sortBy}
-						onSortByChange={setSortBy}
-						showFilters={showFilters}
-						onToggleFilters={() => setShowFilters(!showFilters)}
-						onClearFilters={clearFilters}
-					/>
+					<Pressable
+						className="mb-4 bg-theme-primary py-3 rounded-xl items-center active:opacity-80"
+						onPress={() => router.push("/party/join")}
+					>
+						<Text className="text-theme-text-inverse font-bold text-base">
+							Join a Party
+						</Text>
+					</Pressable>
+
+					<View className="mb-4">
+						<View className="flex-row items-center bg-theme-surface rounded-xl px-4 py-3 border border-theme-border">
+							<Text className="text-theme-text-secondary mr-3">🔍</Text>
+							<TextInput
+								className="flex-1 text-theme-text text-base"
+								placeholder="Search games..."
+								placeholderTextColor="rgb(var(--color-theme-text-tertiary))"
+								value={searchQuery}
+								onChangeText={setSearchQuery}
+								autoCapitalize="none"
+								autoCorrect={false}
+								accessibilityLabel="Search games"
+							/>
+							{searchQuery.length > 0 && (
+								<Pressable
+									onPress={() => setSearchQuery("")}
+									accessibilityRole="button"
+									accessibilityLabel="Clear search"
+								>
+									<Text className="text-theme-text-secondary text-lg">✕</Text>
+								</Pressable>
+							)}
+						</View>
+					</View>
 
 					<View className="mb-6">
 						<View className="flex-row items-center justify-between mb-3">
-							<Text className="text-lg font-semibold text-white">Games</Text>
-							{!isLoading && games.length > 0 && (
-								<View className="flex-row items-center gap-2">
-									{isFetching && (
-										<ActivityIndicator size="small" color="#4CAF50" />
-									)}
-									<Text className="text-gray-500 text-sm">
-										{games.length} {games.length === 1 ? "game" : "games"}
-									</Text>
-								</View>
+							<Text className="text-lg font-semibold text-theme-text">
+								{searchQuery.trim() ? "Results" : "All Games"}
+							</Text>
+							{!isLoading && filtered.length > 0 && (
+								<Text className="text-theme-text-secondary text-sm">
+									{filtered.length}{" "}
+									{filtered.length === 1 ? "game" : "games"}
+								</Text>
 							)}
 						</View>
 
 						{isLoading ? (
 							<View className="items-center py-12">
-								<ActivityIndicator size="large" color="#4CAF50" />
-								<Text className="text-gray-400 mt-4">Loading games...</Text>
+								<ActivityIndicator
+									size="large"
+									color="rgb(var(--color-theme-primary))"
+								/>
+								<Text className="text-theme-text-secondary mt-4">
+									Loading games...
+								</Text>
 							</View>
-						) : games.length === 0 ? (
-							<View className="p-6 bg-gray-800 rounded-xl border border-gray-700 items-center">
+						) : filtered.length === 0 ? (
+							<View className="p-6 bg-theme-surface rounded-xl border border-theme-border items-center">
 								<Text className="text-4xl mb-3">🎮</Text>
-								<Text className="text-gray-400 text-center">
+								<Text className="text-theme-text-secondary text-center">
 									{searchQuery
 										? "No games match your search."
 										: "No games available yet."}
 								</Text>
 								{searchQuery && (
-									<Pressable onPress={clearFilters} className="mt-3">
-										<Text className="text-indigo-400 font-medium">
+									<Pressable
+										onPress={() => setSearchQuery("")}
+										className="mt-3"
+									>
+										<Text className="text-theme-primary font-medium">
 											Clear search
 										</Text>
 									</Pressable>
@@ -107,32 +127,21 @@ export default function BrowseScreen() {
 							</View>
 						) : (
 							<View className="flex-row flex-wrap justify-between">
-								{games.map((game) => (
+								{filtered.map((template) => (
 									<GameGridCard
-										key={game.id}
-										title={game.title}
-										thumbnailUrl={game.thumbnailUrl}
-										thumbnailEmoji="🌟"
-										thumbnailBgClass="bg-green-900/30"
+										key={template.id}
+										title={template.title}
+										thumbnailEmoji={template.emoji}
+										thumbnailBgClass="bg-theme-primary/10"
+										players={`${template.minPlayers}-${template.maxPlayers}`}
 										onPress={() =>
 											router.push({
 												pathname: "/game-detail/[id]",
-												params: { id: game.id },
+												params: { id: template.id },
 											})
 										}
 									/>
 								))}
-
-								{hasMore && (
-									<Pressable
-										onPress={loadMore}
-										className="w-full bg-gray-800 p-4 rounded-xl border border-gray-700 items-center active:bg-gray-700 mt-2"
-									>
-										<Text className="text-indigo-400 font-medium">
-											Load more games
-										</Text>
-									</Pressable>
-								)}
 							</View>
 						)}
 					</View>

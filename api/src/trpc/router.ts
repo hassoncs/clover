@@ -18,6 +18,7 @@ import { organizationsRouter } from "./routes/organizations";
 import { packageCompilerRouter } from "./routes/package-compiler";
 import { packageReadinessRouter } from "./routes/package-readiness";
 import { partyContentRouter } from "./routes/party-content";
+import { partyTemplatesRouter } from "./routes/party-templates";
 import { searchRouter } from "./routes/search";
 import { socialRouter } from "./routes/social";
 import { socialExtraRouter } from "./routes/social-extra";
@@ -38,6 +39,7 @@ export const appRouter = router({
 	games: gamesRouter,
 	invites: invitesRouter,
 	partyContent: partyContentRouter,
+	partyTemplates: partyTemplatesRouter,
 	search: searchRouter,
 	social: socialRouter,
 	socialExtra: socialExtraRouter,
