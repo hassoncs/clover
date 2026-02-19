@@ -1,14 +1,8 @@
-import { FinalPodium as _FinalPodium } from "@slopcade/ui";
-import type React from "react";
-import { getAudioManager } from "@/lib/audio/AudioManager";
-
-type Props = Omit<React.ComponentProps<typeof _FinalPodium>, "playSfx">;
-
-export function FinalPodium(props: Props) {
-	return (
-		<_FinalPodium playSfx={(id) => getAudioManager().playSfx(id)} {...props} />
-	);
-}
+import { AmenIcon, HaloBadge } from "@slopcade/ui/amen";
+import React, { useEffect } from "react";
+import { Pressable, Text, View } from "react-native";
+import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
+import { ConfettiOverlay } from "./ConfettiOverlay";
 
 interface FinalPodiumProps {
 	players: Array<{
@@ -18,26 +12,27 @@ interface FinalPodiumProps {
 	}>;
 	onPlayAgain: () => void;
 	onBackToHall: () => void;
+	playSfx?: (soundId: string) => void;
 }
 
 export function FinalPodium({
 	players,
 	onPlayAgain,
 	onBackToHall,
+	playSfx,
 }: FinalPodiumProps) {
 	const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 	const [first, second, third] = sortedPlayers;
 
 	useEffect(() => {
-		const audio = getAudioManager();
-		audio.playSfx("winner-fanfare");
+		playSfx?.("winner-fanfare");
 
 		const timer = setTimeout(() => {
-			audio.playSfx("crowd-cheer");
+			playSfx?.("crowd-cheer");
 		}, 1000);
 
 		return () => clearTimeout(timer);
-	}, []);
+	}, [playSfx]);
 
 	return (
 		<View className="flex-1 bg-amen-navy items-center justify-center p-6">
