@@ -15,3 +15,9 @@
 - Updated `usePartyConnection` and `PartyContext` to pass `avatar` through the connection flow.
 - Added Avatar Picker step to `apps/amen/app/join.tsx`.
 - `PartyPlayer` type already had `avatar` field, so no changes needed in shared types.
+
+## W1.2 — Detail Panel (2026-02-19)
+- Created GameDetailPanel and GameMetaBadge components.
+- Added 'clock' and 'alert' icons to Amen icon registry to support session length and content note badges.
+- Used MotifDivider for visual separation.
+- Implemented null state for when no game is selected.
