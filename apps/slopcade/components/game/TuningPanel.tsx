@@ -1,1 +1,1 @@
-export { TuningPanel } from "@slopcade/ui";
+export { hasTunables, TuningPanel } from "@slopcade/ui";

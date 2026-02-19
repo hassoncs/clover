@@ -11,7 +11,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import StripeCheckout from "@/components/billing/StripeCheckout";
+import { StripeCheckout } from "@/components/billing/StripeCheckout";
 import SubscriptionStatus from "@/components/billing/SubscriptionStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { useProStatus } from "@/hooks/useProStatus";
