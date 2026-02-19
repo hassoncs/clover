@@ -298,6 +298,149 @@ function StarRating({
 	);
 }
 
+function AiReviewModal({
+	selectedIds,
+	onClose,
+	onComplete,
+}: {
+	selectedIds: Set<string>;
+	onClose: () => void;
+	onComplete: () => void;
+}) {
+	const [model, setModel] = useState(AI_MODELS[0].value);
+	const [dimensions, setDimensions] = useState<("quality" | "humor")[]>([
+		"quality",
+		"humor",
+	]);
+
+	const aiReview = trpc.partyContent.aiReview.useMutation({
+		onSuccess: (data) => {
+			const errorNote =
+				data.errors.length > 0 ? `\nErrors: ${data.errors.length}` : "";
+			alert(
+				`AI review complete!\nReviewed: ${data.reviewed}\nSkipped: ${data.skipped}${errorNote}`,
+			);
+			onComplete();
+			onClose();
+		},
+		onError: (err) => {
+			alert(`Error: ${err.message}`);
+		},
+	});
+
+	const toggleDimension = (dim: "quality" | "humor") => {
+		setDimensions((prev) =>
+			prev.includes(dim) ? prev.filter((d) => d !== dim) : [...prev, dim],
+		);
+	};
+
+	return (
+		<div className="fixed inset-0 z-50">
+			<button
+				type="button"
+				aria-label="Close modal"
+				className="absolute inset-0 bg-black/70 w-full h-full border-none cursor-default"
+				onClick={onClose}
+			/>
+			<div
+				role="dialog"
+				aria-modal="true"
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 rounded-xl p-6 w-[420px] flex flex-col gap-4"
+				onClick={(e) => e.stopPropagation()}
+				onKeyDown={(e) => e.stopPropagation()}
+			>
+				<div className="flex items-center justify-between">
+					<h3 className="text-slate-50 font-semibold text-base m-0">
+						AI Review — {selectedIds.size} item
+						{selectedIds.size !== 1 ? "s" : ""}
+					</h3>
+					<button
+						type="button"
+						onClick={onClose}
+						className="text-slate-500 hover:text-slate-300 bg-transparent border-none cursor-pointer text-lg p-0"
+					>
+						✕
+					</button>
+				</div>
+
+				<div className="flex flex-col gap-1.5">
+					<label
+						htmlFor="ai-model-select"
+						className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
+					>
+						Model
+					</label>
+					<select
+						id="ai-model-select"
+						value={model}
+						onChange={(e) => setModel(e.target.value)}
+						className="px-2.5 py-2 rounded-md border border-slate-700 bg-slate-800 text-slate-300 text-sm outline-none focus:border-slate-500"
+					>
+						{AI_MODELS.map((m) => (
+							<option key={m.value} value={m.value}>
+								{m.label}
+							</option>
+						))}
+					</select>
+				</div>
+
+				<div className="flex flex-col gap-1.5">
+					<span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+						Dimensions to Rate
+					</span>
+					<div className="flex gap-3">
+						{(["quality", "humor"] as const).map((dim) => (
+							<label
+								key={dim}
+								className="flex items-center gap-2 cursor-pointer text-slate-300 text-sm"
+							>
+								<input
+									type="checkbox"
+									checked={dimensions.includes(dim)}
+									onChange={() => toggleDimension(dim)}
+									className="rounded border-slate-700 bg-slate-900 text-blue-600"
+								/>
+								{dim.charAt(0).toUpperCase() + dim.slice(1)}
+							</label>
+						))}
+					</div>
+				</div>
+
+				<p className="text-slate-500 text-[12px] m-0">
+					Bot reviewer ID:{" "}
+					<code className="text-slate-400 font-mono text-[11px]">
+						bot:{model}
+					</code>
+				</p>
+
+				<div className="flex gap-2 justify-end">
+					<button
+						type="button"
+						onClick={onClose}
+						className="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-300 text-sm cursor-pointer hover:bg-slate-700"
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						disabled={aiReview.isPending || dimensions.length === 0}
+						onClick={() =>
+							aiReview.mutate({
+								contentIds: Array.from(selectedIds),
+								model,
+								dimensions,
+							})
+						}
+						className="px-4 py-1.5 bg-violet-800 hover:bg-violet-700 border border-violet-600 rounded text-violet-100 text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
+					>
+						{aiReview.isPending ? "Reviewing..." : "Run AI Review"}
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
 export function ContentReviewPage() {
 	const [params, setParams] = useSearchParams();
 
@@ -356,6 +499,7 @@ export function ContentReviewPage() {
 	);
 
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+	const [showAiModal, setShowAiModal] = useState(false);
 
 	const utils = trpc.useUtils();
 
@@ -467,6 +611,17 @@ export function ContentReviewPage() {
 
 	return (
 		<div className="flex h-full overflow-hidden bg-slate-950">
+			{showAiModal && (
+				<AiReviewModal
+					selectedIds={selectedIds}
+					onClose={() => setShowAiModal(false)}
+					onComplete={() => {
+						utils.partyContent.list.invalidate();
+						setSelectedIds(new Set());
+					}}
+				/>
+			)}
+
 			{/* Sidebar */}
 			<div className="w-64 shrink-0 bg-slate-800 border-r border-slate-700 p-5 overflow-y-auto flex flex-col gap-3.5">
 				<h2 className="m-0 text-[15px] font-bold text-slate-50">Filters</h2>
@@ -623,21 +778,30 @@ export function ContentReviewPage() {
 					</h1>
 					<div className="flex items-center gap-4">
 						{selectedIds.size > 0 && (
-							<button
-								type="button"
-								onClick={() =>
-									generateAudio.mutate({
-										contentIds: Array.from(selectedIds),
-										provider: "scenario",
-									})
-								}
-								disabled={generateAudio.isPending}
-								className="px-3 py-1.5 bg-emerald-900/50 hover:bg-emerald-900 border border-emerald-700/50 rounded text-emerald-200 text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
-							>
-								{generateAudio.isPending
-									? "Generating..."
-									: `Generate ${selectedIds.size} Selected`}
-							</button>
+							<>
+								<button
+									type="button"
+									onClick={() => setShowAiModal(true)}
+									className="px-3 py-1.5 bg-violet-900/50 hover:bg-violet-900 border border-violet-700/50 rounded text-violet-200 text-xs font-medium cursor-pointer transition-colors"
+								>
+									🤖 AI Review {selectedIds.size} Selected
+								</button>
+								<button
+									type="button"
+									onClick={() =>
+										generateAudio.mutate({
+											contentIds: Array.from(selectedIds),
+											provider: "scenario",
+										})
+									}
+									disabled={generateAudio.isPending}
+									className="px-3 py-1.5 bg-emerald-900/50 hover:bg-emerald-900 border border-emerald-700/50 rounded text-emerald-200 text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
+								>
+									{generateAudio.isPending
+										? "Generating..."
+										: `Generate ${selectedIds.size} Selected`}
+								</button>
+							</>
 						)}
 						{missingIds.length > 0 && (
 							<button
@@ -691,8 +855,16 @@ export function ContentReviewPage() {
 										{ label: "", width: "w-[24px]", title: "Status" },
 										{ label: "Content", width: "" },
 										{ label: "♪", width: "w-[32px]", title: "Audio" },
-										{ label: "Qual", width: "w-[80px]", title: "Quality" },
-										{ label: "Fun", width: "w-[80px]", title: "Humor" },
+										{
+											label: "Qual",
+											width: "w-[90px]",
+											title: "Quality (your rating + avg)",
+										},
+										{
+											label: "Fun",
+											width: "w-[90px]",
+											title: "Humor (your rating + avg)",
+										},
 										{ label: "", width: "w-[50px]" },
 									].map((h) => (
 										<th

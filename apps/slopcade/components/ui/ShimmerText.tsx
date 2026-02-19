@@ -1,1 +1,1 @@
-export { ShimmerText } from './ShimmerText.web';
+export { ShimmerText } from "@slopcade/ui";

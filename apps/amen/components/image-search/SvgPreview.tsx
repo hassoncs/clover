@@ -1,1 +1,1 @@
-export { SvgPreview } from "./SvgPreview.web";
+export { SvgPreview } from "@slopcade/ui";
