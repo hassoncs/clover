@@ -1,7 +1,9 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	ActivityIndicator,
+	Modal,
 	Pressable,
 	RefreshControl,
 	ScrollView,
@@ -12,16 +14,21 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GameGridCard } from "@/components/browse/GameCard";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
+import { createPartyRoom } from "@/lib/party/api";
 
 export default function BrowseScreen() {
 	const router = useRouter();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [launching, setLaunching] = useState<string | null>(null);
+	const [launchError, setLaunchError] = useState<string | null>(null);
 
 	const { templates, isLoading, refetch } = useBrowsePartyGames();
 
+	type Template = (typeof templates)[number];
+
 	const filtered = searchQuery.trim()
 		? templates.filter(
-				(t) =>
+				(t: Template) =>
 					t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
 					(t.description ?? "")
 						.toLowerCase()
@@ -29,8 +36,53 @@ export default function BrowseScreen() {
 			)
 		: templates;
 
+	const handlePlay = async (
+		templateId: string,
+		templateTitle: string,
+		minPlayers: number,
+	) => {
+		try {
+			setLaunching(templateTitle);
+			setLaunchError(null);
+			const { code, hostToken } = await createPartyRoom(templateId, minPlayers);
+			router.push({
+				pathname: "/party/host",
+				params: {
+					code,
+					hostToken,
+					templateId,
+					templateTitle,
+					minPlayers: String(minPlayers),
+				},
+			});
+		} catch (err) {
+			setLaunchError(
+				err instanceof Error ? err.message : "Failed to create room",
+			);
+		} finally {
+			setLaunching(null);
+		}
+	};
+
 	return (
 		<SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
+			<Modal transparent animationType="fade" visible={!!launching}>
+				<View className="flex-1 bg-black/60 items-center justify-center">
+					<View className="bg-theme-surface rounded-2xl p-8 items-center gap-4 mx-8">
+						<ActivityIndicator
+							size="large"
+							color="rgb(var(--color-theme-primary))"
+						/>
+						<Text className="text-theme-text font-semibold text-lg text-center">
+							Starting {launching}…
+						</Text>
+						<Text className="text-theme-text-secondary text-sm text-center">
+							Setting up your room
+						</Text>
+					</View>
+				</View>
+			</Modal>
+
 			<ScrollView
 				className="flex-1"
 				refreshControl={
@@ -42,21 +94,43 @@ export default function BrowseScreen() {
 				}
 			>
 				<View className="p-4">
-					<View className="mb-4">
-						<Text className="text-2xl font-bold text-theme-text">Games</Text>
-						<Text className="text-theme-text-secondary mt-1">
-							Choose a game for your group
-						</Text>
+					<View className="mb-4 flex-row justify-between items-start">
+						<View>
+							<Text className="text-2xl font-bold text-theme-text">Games</Text>
+							<Text className="text-theme-text-secondary mt-1">
+								Tap a game to host it for your group
+							</Text>
+						</View>
+						<Pressable
+							onPress={() => router.push("/settings/game-settings")}
+							className="p-2 -mr-2"
+							accessibilityLabel="Settings"
+						>
+							<Ionicons name="settings-outline" size={24} color="#C9A84C" />
+						</Pressable>
 					</View>
 
 					<Pressable
-						className="mb-4 bg-theme-primary py-3 rounded-xl items-center active:opacity-80"
-						onPress={() => router.push("/party/join")}
+						className="mb-4 bg-theme-surface py-3 rounded-xl items-center active:opacity-80 border border-theme-border"
+						onPress={() => router.push("/join")}
 					>
-						<Text className="text-theme-text-inverse font-bold text-base">
-							Join a Party
+						<Text className="text-theme-text font-bold text-base">
+							Join a Party →
 						</Text>
 					</Pressable>
+
+					{launchError && (
+						<View className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+							<Text className="text-red-400 text-center text-sm">
+								{launchError}
+							</Text>
+							<Pressable onPress={() => setLaunchError(null)} className="mt-1">
+								<Text className="text-red-400 text-center text-xs underline">
+									Dismiss
+								</Text>
+							</Pressable>
+						</View>
+					)}
 
 					<View className="mb-4">
 						<View className="flex-row items-center bg-theme-surface rounded-xl px-4 py-3 border border-theme-border">
@@ -90,8 +164,7 @@ export default function BrowseScreen() {
 							</Text>
 							{!isLoading && filtered.length > 0 && (
 								<Text className="text-theme-text-secondary text-sm">
-									{filtered.length}{" "}
-									{filtered.length === 1 ? "game" : "games"}
+									{filtered.length} {filtered.length === 1 ? "game" : "games"}
 								</Text>
 							)}
 						</View>
@@ -127,7 +200,7 @@ export default function BrowseScreen() {
 							</View>
 						) : (
 							<View className="flex-row flex-wrap justify-between">
-								{filtered.map((template) => (
+								{filtered.map((template: Template) => (
 									<GameGridCard
 										key={template.id}
 										title={template.title}
@@ -135,10 +208,11 @@ export default function BrowseScreen() {
 										thumbnailBgClass="bg-theme-primary/10"
 										players={`${template.minPlayers}-${template.maxPlayers}`}
 										onPress={() =>
-											router.push({
-												pathname: "/game-detail/[id]",
-												params: { id: template.id },
-											})
+											handlePlay(
+												template.id,
+												template.title,
+												template.minPlayers,
+											)
 										}
 									/>
 								))}
