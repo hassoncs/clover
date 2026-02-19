@@ -22,12 +22,17 @@
 			"cwd": "api",
 			"command": "npx tsx scripts/sync-r2.ts --watch"
 		},
+		"r2-pull-watcher": {
+			"cwd": "api",
+			"command": "npx tsx scripts/sync-r2-pull.ts --watch",
+			"dashboard": false
+		},
 		"api": {
 			"cwd": ".",
 			"command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
 			"health": { "type": "port", "port": 8789 },
 			"dashboard": false,
-			"dependsOn": ["games-watcher"]
+			"dependsOn": ["games-watcher", "r2-pull-watcher"]
 		},
 		"godot": {
 			"cwd": ".",

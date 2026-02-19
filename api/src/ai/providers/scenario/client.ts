@@ -75,12 +75,18 @@ export class ScenarioClient {
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
-			const message =
-				(errorData as { error?: { message?: string }; message?: string }).error
-					?.message ??
-				(errorData as { message?: string }).message ??
-				`HTTP ${response.status}`;
+			const errorText = await response.text().catch(() => "");
+			let message = `HTTP ${response.status}`;
+			try {
+				const errorData = JSON.parse(errorText);
+				message =
+					errorData?.error?.message ??
+					errorData?.message ??
+					errorData?.detail ??
+					message;
+			} catch {
+				if (errorText) message = `${message}: ${errorText.slice(0, 200)}`;
+			}
 			throw new Error(`Scenario API error: ${message}`);
 		}
 

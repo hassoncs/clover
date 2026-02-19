@@ -1251,6 +1251,7 @@ export const partyContentRouter = router({
 					generated++;
 				} catch (e) {
 					const msg = e instanceof Error ? e.message : String(e);
+					console.error(`[generateAudio] ${row.id}: ${msg}`);
 					errors.push(`${row.id}: ${msg}`);
 				}
 			}

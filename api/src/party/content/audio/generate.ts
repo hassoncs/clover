@@ -86,10 +86,12 @@ export function createAudioGenerator(
 			if (!voiceModel)
 				throw new Error(`Voice model not found: ${DEFAULT_VOICE_MODEL}`);
 
+			const scenarioVoice = "George";
+
 			const jobId = await scenarioAudio.createVoiceJob({
 				modelId: voiceModel.scenarioModelId,
 				text,
-				voice: voice.voiceId,
+				voice: scenarioVoice,
 				stability: voice.settings.stability,
 				similarityBoost: voice.settings.similarityBoost,
 				styleExaggeration: voice.settings.style,

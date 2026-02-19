@@ -63,6 +63,8 @@ apps/landing-*/.dev.vars
 .seed-state.json
 .r2-sync-manifest.json
 .r2-sync-manifest-remote.json
+.r2-pull-manifest.json
+prod
 
 # typescript
 *.tsbuildinfo
