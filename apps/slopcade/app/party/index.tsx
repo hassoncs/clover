@@ -10,44 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createPartyRoom } from "@/lib/party/api";
-
-const AVAILABLE_GAMES = [
-	{
-		id: "crowd-comedy",
-		name: "Crowd Comedy",
-		description: "The party game where you write the punchlines!",
-		icon: "game-controller" as const,
-		color: "#A855F7",
-	},
-	{
-		id: "chroma-clues",
-		name: "Chroma Clues",
-		description: "A color-guessing party game. Give word clues!",
-		icon: "color-palette" as const,
-		color: "#EC4899",
-	},
-	{
-		id: "punchline-duel",
-		name: "Punchline Duel",
-		description: "Head-to-head comedy battles. Two answers enter, one wins!",
-		icon: "flash" as const,
-		color: "#F59E0B",
-	},
-	{
-		id: "quiplash",
-		name: "Quiplash",
-		description: "Fill-in-the-blank comedy. Submit answers, vote head-to-head!",
-		icon: "chatbubbles" as const,
-		color: "#10B981",
-	},
-	{
-		id: "heads-up",
-		name: "Heads Up",
-		description: "Guess the word on the TV while your friends give clues!",
-		icon: "person" as const,
-		color: "#EF4444",
-	},
-];
+import { trpcReact } from "@/lib/trpc/react";
 
 export default function PartyIndexScreen() {
 	const router = useRouter();
@@ -55,9 +18,16 @@ export default function PartyIndexScreen() {
 	const [isCreating, setIsCreating] = useState(false);
 	const [selectedGameIndex, setSelectedGameIndex] = useState(0);
 
-	const selectedGame = AVAILABLE_GAMES[selectedGameIndex];
+	const { data: templates = [], isLoading } =
+		trpcReact.partyTemplates.listByBrand.useQuery(
+			{ brandId: "slopcade" },
+			{ staleTime: 1000 * 60 * 5 },
+		);
+
+	const selectedGame = templates[selectedGameIndex];
 
 	const handleHostGame = async () => {
+		if (!selectedGame) return;
 		try {
 			setIsCreating(true);
 			const { code, hostToken } = await createPartyRoom(selectedGame.id);
@@ -88,50 +58,50 @@ export default function PartyIndexScreen() {
 			</View>
 
 			<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-				<View className="items-center mb-8">
-					<Ionicons
-						name={selectedGame.icon}
-						size={80}
-						color={selectedGame.color}
-						className="mb-4"
-					/>
-					<Text className="text-4xl font-bold text-theme-text text-center">
-						{selectedGame.name}
-					</Text>
-					<Text className="text-lg text-theme-text-secondary text-center mt-2">
-						{selectedGame.description}
-					</Text>
-				</View>
-
-				<View className="flex-row flex-wrap justify-center gap-4 mb-12">
-					{AVAILABLE_GAMES.map((game, index) => (
-						<Pressable
-							key={game.id}
-							onPress={() => setSelectedGameIndex(index)}
-							className={`p-4 rounded-2xl items-center justify-center border-2 ${selectedGameIndex === index ? "bg-theme-surface border-theme-primary" : "bg-theme-surface/50 border-transparent"}`}
-							style={{ width: "45%" }}
-						>
-							<Ionicons
-								name={game.icon}
-								size={32}
-								color={selectedGameIndex === index ? game.color : "#666"}
-								className="mb-2"
-							/>
-							<Text
-								className={`font-bold text-center ${selectedGameIndex === index ? "text-theme-text" : "text-theme-text-secondary"}`}
-							>
-								{game.name}
+				{isLoading ? (
+					<View className="items-center justify-center py-20">
+						<ActivityIndicator color="white" size="large" />
+					</View>
+				) : (
+					<>
+						<View className="items-center mb-8">
+							<Text className="text-7xl mb-4">
+								{selectedGame?.emoji ?? "🎮"}
 							</Text>
-						</Pressable>
-					))}
-				</View>
+							<Text className="text-4xl font-bold text-theme-text text-center">
+								{selectedGame?.title ?? ""}
+							</Text>
+							<Text className="text-lg text-theme-text-secondary text-center mt-2">
+								{selectedGame?.description ?? ""}
+							</Text>
+						</View>
+
+						<View className="flex-row flex-wrap justify-center gap-4 mb-12">
+							{templates.map((game, index) => (
+								<Pressable
+									key={game.id}
+									onPress={() => setSelectedGameIndex(index)}
+									className={`p-4 rounded-2xl items-center justify-center border-2 ${selectedGameIndex === index ? "bg-theme-surface border-theme-primary" : "bg-theme-surface/50 border-transparent"}`}
+									style={{ width: "45%" }}
+								>
+									<Text className="text-3xl mb-2">{game.emoji}</Text>
+									<Text
+										className={`font-bold text-center ${selectedGameIndex === index ? "text-theme-text" : "text-theme-text-secondary"}`}
+									>
+										{game.title}
+									</Text>
+								</Pressable>
+							))}
+						</View>
+					</>
+				)}
 			</ScrollView>
 
 			<View className="w-full max-w-sm self-center gap-4">
 				<Pressable
 					onPress={handleHostGame}
-					disabled={isCreating}
-					className={`w-full bg-theme-primary p-4 rounded-xl items-center flex-row justify-center gap-3 active:opacity-90 ${isCreating ? "opacity-70" : ""}`}
+					disabled={isCreating || isLoading || !selectedGame}
+					className={`w-full bg-theme-primary p-4 rounded-xl items-center flex-row justify-center gap-3 active:opacity-90 ${isCreating || isLoading ? "opacity-70" : ""}`}
 				>
 					{isCreating ? (
 						<ActivityIndicator color="white" />

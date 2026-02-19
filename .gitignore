@@ -161,3 +161,8 @@ godot_project/reports/
 
 # Code search index (codesearch)
 .codesearch.db/
+
+# Gas Town (added by gt)
+.runtime/
+.claude/commands/
+.logs/
