@@ -1,13 +1,16 @@
+import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { ChoiceGrid } from "@/components/party/ChoiceGrid";
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
 import { ResultRevealCard } from "@/components/party/ResultRevealCard";
-import { Scoreboard } from "@/components/party/Scoreboard";
+import { FinalPodium } from "@/components/party/results/FinalPodium";
 import { Timer } from "@/components/party/Timer";
 import { parseJson } from "./parseSharedData";
 import { type PhaseRendererProps, registerGamePhases } from "./phaseRegistry";
+import { usePartyNarration } from "./usePartyNarration";
 
 const QUICKFIRE_ACCENT = "#eab308";
 const CORRECT_GREEN = "#22c55e";
@@ -260,7 +263,11 @@ function RevealPhase({ sharedData, role, roomState }: PhaseRendererProps) {
 }
 
 function ScoresPhase({ sharedData, role }: PhaseRendererProps) {
+	const router = useRouter();
+	const { narrate } = usePartyNarration();
+	const narratedRef = useRef(false);
 	const isHost = role === "host";
+
 	const parsedJsonScoreboard = parseJson<unknown[]>(
 		sharedData.scoreboardJson,
 		[],
@@ -272,26 +279,40 @@ function ScoresPhase({ sharedData, role }: PhaseRendererProps) {
 		parsedJsonScoreboard.length > 0 ? parsedJsonScoreboard : fallbackScoreboard,
 	);
 
-	return (
-		<PhaseShell
-			title="Final Scores"
-			subtitle="Quickfire results"
-			accentColor={QUICKFIRE_ACCENT}
-			isHost={isHost}
-		>
-			{scoreboard.length > 0 ? (
-				<Scoreboard
-					data={scoreboard}
-					highlightWinner
-					size={isHost ? "large" : "normal"}
-				/>
-			) : (
+	useEffect(() => {
+		if (!narratedRef.current && isHost && scoreboard.length > 0) {
+			narratedRef.current = true;
+			void narrate("Well done, good and faithful servant!");
+		}
+	}, [isHost, narrate, scoreboard.length]);
+
+	if (scoreboard.length === 0) {
+		return (
+			<PhaseShell
+				title="Final Scores"
+				subtitle="Quickfire results"
+				accentColor={QUICKFIRE_ACCENT}
+				isHost={isHost}
+			>
 				<HostWaitCard
 					message="Calculating final scores..."
 					accentColor={QUICKFIRE_ACCENT}
 				/>
-			)}
-		</PhaseShell>
+			</PhaseShell>
+		);
+	}
+
+	const players = scoreboard.map((entry) => ({
+		name: entry.playerName,
+		score: entry.score,
+	}));
+
+	return (
+		<FinalPodium
+			players={players}
+			onPlayAgain={() => router.replace("/party")}
+			onBackToHall={() => router.replace("/")}
+		/>
 	);
 }
 

@@ -81,7 +81,7 @@
   - CREATE `apps/amen/components/browse/GameMetaBadge.tsx` — player count/time/format pills
   - MODIFY `apps/amen/app/(tabs)/browse.tsx` — wire panel to selected tile state
 
-- [ ] **W1.3** · How to Play Tutorial Screen `[L]`
+- [x] **W1.3** · How to Play Tutorial Screen `[L]`
 
   Per-game illustrated walkthrough from "The Hall":
   - Full-screen comic-panel style, 3–5 steps from `how_to_play_steps`
@@ -142,7 +142,7 @@
   - CREATE `apps/amen/components/party/LobbyCountdown.tsx` — animated countdown overlay
   - CREATE `apps/amen/components/party/PlayerChip.tsx` — avatar + name tile
 
-- [ ] **W2.3** · Per-Game Settings Sheet `[L]`
+- [x] **W2.3** · Per-Game Settings Sheet `[L]`
 
   Pre-start config sheet accessible from host lobby:
   - Number of rounds (3/5/7)
@@ -189,7 +189,7 @@
   - CREATE `apps/amen/lib/party/usePartyNarration.ts`
   - MODIFY `shared/src/constants/audio-announcer-lines.ts` — add Amen podium line
 
-- [ ] **W3.2** · Wire Results into Text-Heavy Games `[L]`
+- [x] **W3.2** · Wire Results into Text-Heavy Games `[L]`
 
   Integrate results components into 4 text-heavy primary games:
   - The Fellowship Table (quiplash)
@@ -202,7 +202,7 @@
   - MODIFY relevant phase files as needed
   - MODIFY `apps/amen/app/party/play.tsx` — route to podium on game end
 
-- [ ] **W3.3** · Wire Results into Remaining Games `[L]`
+- [x] **W3.3** · Wire Results into Remaining Games `[L]`
 
   Same treatment for other 4 primary games:
   - The Great Hall of Wisdom (quickfire-qa)

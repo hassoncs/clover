@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 import { AnswerInput } from "@/components/party/AnswerInput";
 
@@ -7,10 +8,12 @@ const DrawingInput = lazy(() => import("@/components/party/DrawingInput"));
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
-import { ResultRevealCard } from "@/components/party/ResultRevealCard";
-import { Scoreboard } from "@/components/party/Scoreboard";
+import { AnswerRevealSequence } from "@/components/party/results/AnswerRevealSequence";
+import { FinalPodium } from "@/components/party/results/FinalPodium";
+import { RoundScoreBoard } from "@/components/party/results/RoundScoreBoard";
 import { VoteList } from "@/components/party/VoteList";
 import { type PhaseRendererProps, registerGamePhases } from "./phaseRegistry";
+import { usePartyNarration } from "./usePartyNarration";
 
 const ACCENT_COLOR = "#f59e0b";
 
@@ -340,49 +343,29 @@ function VotingPhase({
 	);
 }
 
-function RevealPhase({ sharedData, role }: PhaseRendererProps) {
-	const isHost = role === "host";
+function RevealPhase({ sharedData }: PhaseRendererProps) {
 	const data = sharedData as unknown as RevealSharedData;
 	const results = data.results;
 
-	const revealTitles = useMemo(() => {
+	const answers = useMemo(() => {
 		const titles = Array.isArray(results?.titles)
 			? (results.titles as RevealTitle[])
 			: [];
-		const pointsEarned =
-			typeof results?.pointsEarned === "object" && results?.pointsEarned
-				? (results.pointsEarned as Record<string, unknown>)
-				: {};
+		const votes = Array.isArray(results?.votes)
+			? (results.votes as RevealVote[])
+			: [];
 
-		return titles.map((title) => {
-			const authorId = toStringOrEmpty(title.authorId);
-			const points = authorId ? toNumber(pointsEarned[authorId]) : 0;
-			return {
-				label: toStringOrEmpty(title.text) || "Untitled",
-				detail:
-					toStringOrEmpty(title.authorName) ||
-					(authorId ? `By ${authorId}` : undefined),
-				points,
-				highlight: Boolean(title.isReal),
-			};
-		});
+		return titles.map((title) => ({
+			text: toStringOrEmpty(title.text) || "Untitled",
+			authorName: toStringOrEmpty(title.authorName) || "Unknown",
+			voteCount: votes.filter(
+				(v) => toStringOrEmpty(v.votedText) === toStringOrEmpty(title.text),
+			).length,
+		}));
 	}, [results]);
 
-	const votes = Array.isArray(results?.votes)
-		? (results.votes as RevealVote[])
-		: [];
-
 	return (
-		<PhaseShell
-			title="Reveal"
-			subtitle={
-				toStringOrEmpty(results?.realPrompt)
-					? `Real title: ${toStringOrEmpty(results?.realPrompt)}`
-					: "Revealing the correct title"
-			}
-			accentColor={ACCENT_COLOR}
-			isHost={isHost}
-		>
+		<View className="flex-1 bg-amen-navy">
 			<AnimationFlipPreview
 				frame1={toStringOrEmpty(results?.animation?.frame1)}
 				frame2={toStringOrEmpty(results?.animation?.frame2)}
@@ -392,90 +375,50 @@ function RevealPhase({ sharedData, role }: PhaseRendererProps) {
 						: undefined
 				}
 			/>
-			<ResultRevealCard
-				title="Submitted Titles"
-				rows={revealTitles}
-				isHost={isHost}
-			/>
-			{votes.length > 0 ? (
-				<View className="w-full mt-4 gap-2">
-					<Text className="text-theme-text font-bold text-center text-lg">
-						Votes
-					</Text>
-					{votes.map((vote, index) => (
-						<View
-							key={`${toStringOrEmpty(vote.guesserName)}-${index}`}
-							className="bg-theme-surface border rounded-xl p-3"
-							style={{ borderColor: ACCENT_COLOR }}
-						>
-							<Text className="text-theme-text">
-								{toStringOrEmpty(vote.guesserName)} chose "
-								{toStringOrEmpty(vote.votedText)}"
-								{vote.isCorrect ? " (correct)" : ""}
-							</Text>
-						</View>
-					))}
-				</View>
-			) : null}
-			<View className="w-full mt-4">
-				<Scoreboard
-					data={mapScoreboard(data.scores)}
-					size={isHost ? "large" : "normal"}
-				/>
-			</View>
-		</PhaseShell>
+			<AnswerRevealSequence answers={answers} />
+		</View>
 	);
 }
 
-function ScoresPhase({ sharedData, role }: PhaseRendererProps) {
-	const isHost = role === "host";
+function ScoresPhase({ sharedData }: PhaseRendererProps) {
 	const data = sharedData as unknown as ScoresSharedData;
+	const scoreboard = mapScoreboard(data.scoreboard);
 
-	return (
-		<PhaseShell
-			round={toNumber(data.round)}
-			title="Scores"
-			subtitle="Round standings"
-			accentColor={ACCENT_COLOR}
-			isHost={isHost}
-		>
-			<Scoreboard
-				data={mapScoreboard(data.scoreboard)}
-				size={isHost ? "large" : "normal"}
-			/>
-		</PhaseShell>
-	);
+	const players = scoreboard.map((row) => ({
+		name: row.playerName,
+		score: row.score,
+		scoreDelta: 0,
+	}));
+
+	return <RoundScoreBoard players={players} round={toNumber(data.round, 1)} />;
 }
 
 function WinnerPhase({ sharedData, role }: PhaseRendererProps) {
+	const router = useRouter();
+	const { narrate } = usePartyNarration();
+	const narratedRef = useRef(false);
 	const isHost = role === "host";
 	const data = sharedData as unknown as WinnerSharedData;
-	const winnerName = toStringOrEmpty(data.winner?.name);
-	const winnerScore = toNumber(data.winner?.score);
+	const scoreboard = mapScoreboard(data.scoreboard);
+
+	const players = scoreboard.map((row) => ({
+		name: row.playerName,
+		score: row.score,
+	}));
+
+	useEffect(() => {
+		if (!narratedRef.current && isHost) {
+			narratedRef.current = true;
+			void narrate("Well done, good and faithful servant!");
+		}
+	}, [isHost, narrate]);
 
 	return (
-		<PhaseShell
-			title="Winner"
-			subtitle={
-				winnerName
-					? `${winnerName} wins with ${winnerScore} points!`
-					: "Game over"
-			}
-			accentColor={ACCENT_COLOR}
-			isHost={isHost}
-		>
-			{winnerName ? (
-				<PromptCard
-					text={`Champion: ${winnerName}`}
-					size={isHost ? "large" : "normal"}
-				/>
-			) : null}
-			<Scoreboard
-				data={mapScoreboard(data.scoreboard)}
-				highlightWinner
-				size={isHost ? "large" : "normal"}
-			/>
-		</PhaseShell>
+		<FinalPodium
+			players={players}
+			onPlayAgain={() => router.replace("/party")}
+			onBackToHall={() => router.replace("/")}
+		/>
 	);
 }
 

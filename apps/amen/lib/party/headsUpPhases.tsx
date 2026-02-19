@@ -1,24 +1,22 @@
+import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { ChoiceGrid } from "@/components/party/ChoiceGrid";
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
-import { ResultRevealCard } from "@/components/party/ResultRevealCard";
-import { Scoreboard } from "@/components/party/Scoreboard";
+import { FinalPodium } from "@/components/party/results/FinalPodium";
+import { RoundScoreBoard } from "@/components/party/results/RoundScoreBoard";
 import { Timer } from "@/components/party/Timer";
 import { parseJson } from "./parseSharedData";
 import { type PhaseRendererProps, registerGamePhases } from "./phaseRegistry";
+import { usePartyNarration } from "./usePartyNarration";
 
 const ACCENT = "#84cc16";
 
 type ScoreEntry = {
 	playerName: string;
 	score: number;
-};
-
-type HistoryEntry = {
-	word: string;
-	outcome: string;
 };
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -42,19 +40,6 @@ function parseScoreboard(value: unknown): ScoreEntry[] {
 		});
 }
 
-function parseHistory(value: unknown): HistoryEntry[] {
-	const parsed = parseJson<unknown[]>(value, []);
-	return parsed
-		.filter((item) => typeof item === "object" && item !== null)
-		.map((item) => {
-			const row = item as { word?: unknown; outcome?: unknown };
-			return {
-				word: toText(row.word, "Unknown word"),
-				outcome: toText(row.outcome, "pass"),
-			};
-		});
-}
-
 function getChoiceOptions(
 	activeInputRequest: PhaseRendererProps["activeInputRequest"],
 ) {
@@ -71,12 +56,6 @@ function getChoiceOptions(
 		.filter((option) => option.length > 0);
 
 	return options.length > 0 ? options : ["correct", "pass"];
-}
-
-function outcomeDetail(outcome: string): string {
-	if (outcome === "correct") return "Correct";
-	if (outcome === "time") return "Time expired";
-	return "Pass";
 }
 
 function GuessingPhase({
@@ -189,112 +168,57 @@ function GuessingPhase({
 	);
 }
 
-function RoundResultsPhase({ sharedData, role }: PhaseRendererProps) {
-	const isHost = role === "host";
+function RoundResultsPhase({ sharedData }: PhaseRendererProps) {
 	const roundNumber = toNumber(sharedData.roundNumber, 1);
-	const totalRounds = toNumber(sharedData.totalRounds, 1);
-	const activeGuesserName = toText(sharedData.activeGuesserName, "Guesser");
-	const roundCorrect = toNumber(sharedData.roundCorrect, 0);
-	const roundPasses = toNumber(sharedData.roundPasses, 0);
-	const history = parseHistory(sharedData.historyJson);
 	const scoreboard = parseScoreboard(sharedData.scoreboardJson);
 
-	return (
-		<PhaseShell
-			round={roundNumber}
-			totalRounds={totalRounds}
-			title="Round Results"
-			subtitle={`${activeGuesserName}'s turn recap`}
-			accentColor={ACCENT}
-			isHost={isHost}
-		>
-			<ResultRevealCard
-				title="Turn Stats"
-				rows={[
-					{
-						label: "Correct guesses",
-						detail: String(roundCorrect),
-						highlight: true,
-					},
-					{
-						label: "Passes",
-						detail: String(roundPasses),
-					},
-				]}
-				isHost={isHost}
-			/>
+	const players = scoreboard.map((entry) => ({
+		name: entry.playerName,
+		score: entry.score,
+		scoreDelta: 0,
+	}));
 
-			<View className="w-full mt-4">
-				<ResultRevealCard
-					title="Word History"
-					rows={history.map((entry) => ({
-						label: entry.word,
-						detail: outcomeDetail(entry.outcome),
-						highlight: entry.outcome === "correct",
-					}))}
-					isHost={isHost}
-				/>
-			</View>
-
-			<View className="w-full mt-4">
-				<Scoreboard data={scoreboard} size={isHost ? "large" : "normal"} />
-			</View>
-		</PhaseShell>
-	);
+	return <RoundScoreBoard players={players} round={roundNumber} />;
 }
 
-function ScoresPhase({ sharedData, role }: PhaseRendererProps) {
-	const isHost = role === "host";
+function ScoresPhase({ sharedData }: PhaseRendererProps) {
 	const roundNumber = toNumber(sharedData.roundNumber, 1);
-	const totalRounds = toNumber(sharedData.totalRounds, 1);
 	const scoreboard = parseScoreboard(sharedData.scoreboardJson);
 
-	return (
-		<PhaseShell
-			round={roundNumber}
-			totalRounds={totalRounds}
-			title="Scores"
-			subtitle="Leaderboard"
-			accentColor={ACCENT}
-			isHost={isHost}
-		>
-			<Scoreboard data={scoreboard} size={isHost ? "large" : "normal"} />
-		</PhaseShell>
-	);
+	const players = scoreboard.map((entry) => ({
+		name: entry.playerName,
+		score: entry.score,
+		scoreDelta: 0,
+	}));
+
+	return <RoundScoreBoard players={players} round={roundNumber} />;
 }
 
 function WinnerPhase({ sharedData, role }: PhaseRendererProps) {
+	const router = useRouter();
+	const { narrate } = usePartyNarration();
+	const narratedRef = useRef(false);
 	const isHost = role === "host";
 	const scoreboard = parseScoreboard(sharedData.scoreboardJson);
-	const winnerName = toText(sharedData.winnerName, "Nobody");
-	const winnerScore = toNumber(sharedData.winnerScore, 0);
+
+	const players = scoreboard.map((entry) => ({
+		name: entry.playerName,
+		score: entry.score,
+	}));
+
+	useEffect(() => {
+		if (!narratedRef.current && isHost) {
+			narratedRef.current = true;
+			void narrate("Well done, good and faithful servant!");
+		}
+	}, [isHost, narrate]);
 
 	return (
-		<PhaseShell
-			title="Winner"
-			subtitle="Final standings"
-			accentColor={ACCENT}
-			isHost={isHost}
-		>
-			<ResultRevealCard
-				title="Champion"
-				rows={[
-					{
-						label: winnerName,
-						detail: `${winnerScore} points`,
-						highlight: true,
-					},
-				]}
-				isHost={isHost}
-			/>
-			<View className="w-full mt-4">
-				<Scoreboard
-					data={scoreboard}
-					highlightWinner
-					size={isHost ? "large" : "normal"}
-				/>
-			</View>
-		</PhaseShell>
+		<FinalPodium
+			players={players}
+			onPlayAgain={() => router.replace("/party")}
+			onBackToHall={() => router.replace("/")}
+		/>
 	);
 }
 

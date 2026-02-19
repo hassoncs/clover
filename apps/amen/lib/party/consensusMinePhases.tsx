@@ -1,12 +1,16 @@
+import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
 import { Text, View } from "react-native";
 import { ChoiceGrid } from "@/components/party/ChoiceGrid";
 import { HostWaitCard } from "@/components/party/HostWaitCard";
 import { PhaseShell } from "@/components/party/PhaseShell";
 import { PromptCard } from "@/components/party/PromptCard";
 import { ResultRevealCard } from "@/components/party/ResultRevealCard";
+import { FinalPodium } from "@/components/party/results/FinalPodium";
 import { Scoreboard } from "@/components/party/Scoreboard";
 import { Timer } from "@/components/party/Timer";
 import { type PhaseRendererProps, registerGamePhases } from "./phaseRegistry";
+import { usePartyNarration } from "./usePartyNarration";
 
 const CONSENSUS_MINE_ACCENT = "#f59e0b";
 
@@ -458,51 +462,31 @@ function TeamTurnsPhase({
 }
 
 function WinnerPhase({ sharedData, role }: PhaseRendererProps) {
+	const router = useRouter();
+	const { narrate } = usePartyNarration();
+	const narratedRef = useRef(false);
 	const isHost = role === "host";
 	const teamNames = parseTeamNames(sharedData.teamNames);
-	const winnerTeamId = asTeamId(sharedData.winnerTeamId);
-	const winnerTeamName = asString(
-		sharedData.winnerTeamName,
-		winnerTeamId ? teamNames[winnerTeamId] : "Winning Team",
-	);
 	const teamScores = parseTeamNumbers(sharedData.teamScores, 0);
-	const masterList = parseMasterList(sharedData.masterList).map(
-		(item, index) => ({
-			...item,
-			revealed: true,
-			rank: item.rank ?? index + 1,
-		}),
-	);
+
+	const players = [
+		{ name: teamNames.diggers, score: teamScores.diggers },
+		{ name: teamNames.drillers, score: teamScores.drillers },
+	];
+
+	useEffect(() => {
+		if (!narratedRef.current && isHost) {
+			narratedRef.current = true;
+			void narrate("Well done, good and faithful servant!");
+		}
+	}, [isHost, narrate]);
 
 	return (
-		<PhaseShell
-			title="Winner"
-			subtitle={`${winnerTeamName} takes the mine`}
-			accentColor={CONSENSUS_MINE_ACCENT}
-			isHost={isHost}
-		>
-			<PromptCard text={winnerTeamName} size={isHost ? "large" : "normal"} />
-			<ResultRevealCard
-				title="Final Master List"
-				rows={masterList.map((item) => ({
-					label: `#${item.rank ?? 0} ${item.text}`,
-					detail:
-						item.score != null ? `Consensus score ${item.score}` : undefined,
-					highlight: (item.rank ?? 99) <= 3,
-				}))}
-				isHost={isHost}
-			/>
-			<View className="w-full mt-4">
-				<Scoreboard
-					data={[
-						{ playerName: teamNames.diggers, score: teamScores.diggers },
-						{ playerName: teamNames.drillers, score: teamScores.drillers },
-					]}
-					highlightWinner
-					size={isHost ? "large" : "normal"}
-				/>
-			</View>
-		</PhaseShell>
+		<FinalPodium
+			players={players}
+			onPlayAgain={() => router.replace("/party")}
+			onBackToHall={() => router.replace("/")}
+		/>
 	);
 }
 
