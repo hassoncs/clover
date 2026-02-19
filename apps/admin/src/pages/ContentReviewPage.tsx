@@ -633,18 +633,20 @@ export function ContentReviewPage() {
 											/>
 										</td>
 										<td className="p-3.5 text-center">
-											{item.assets?.[0]?.r2_key ? (
-												<AudioButton r2Key={item.assets[0].r2_key} />
-											) : SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
+											{SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
 												<span className="text-slate-700">—</span>
 											) : (
 												<div className="flex items-center justify-center gap-1">
-													<span
-														title="Missing audio"
-														className="text-amber-500 text-sm"
-													>
-														⚠
-													</span>
+													{item.assets?.[0]?.r2_key ? (
+														<AudioButton r2Key={item.assets[0].r2_key} />
+													) : (
+														<span
+															title="Missing audio"
+															className="text-amber-500 text-sm"
+														>
+															⚠
+														</span>
+													)}
 													<GenerateRowButton contentId={item.id} />
 												</div>
 											)}

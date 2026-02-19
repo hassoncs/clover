@@ -1205,28 +1205,11 @@ export const partyContentRouter = router({
 					body: string;
 				}>();
 
-			const existingAssets = await db
-				.prepare(
-					`SELECT content_id FROM party_content_assets
-					 WHERE content_id IN (${placeholders}) AND asset_type = 'audio' AND deleted_at IS NULL`,
-				)
-				.bind(...input.contentIds)
-				.all<{ content_id: string }>();
-
-			const hasAudio = new Set(
-				(existingAssets.results ?? []).map((r) => r.content_id),
-			);
-
 			let generated = 0;
 			let skipped = 0;
 			const errors: string[] = [];
 
 			for (const row of contentRows.results ?? []) {
-				if (hasAudio.has(row.id)) {
-					skipped++;
-					continue;
-				}
-
 				if (SKIP_VOICE_TYPES.has(row.content_type)) {
 					skipped++;
 					continue;
