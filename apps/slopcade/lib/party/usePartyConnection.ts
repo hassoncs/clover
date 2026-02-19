@@ -3,6 +3,7 @@ import { getAuthToken } from "@/lib/auth/token";
 import { env } from "@/lib/config/env";
 import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import type {
+	GameConfig,
 	InputResponseMessage,
 	PartyInputRequest,
 	PartyMessage,
@@ -30,6 +31,7 @@ export interface UsePartyConnectionParams {
 	code: string;
 	role: "host" | "player";
 	name?: string;
+	avatar?: string;
 	hostToken?: string;
 }
 
@@ -46,13 +48,14 @@ export interface UsePartyConnectionResult {
 	activeInputRequest: ActiveInputRequest | null;
 	playerId: string | null;
 	sendInput: (value: unknown) => void;
-	sendStartGame: () => void;
+	sendStartGame: (gameConfig?: GameConfig) => void;
 }
 
 export function usePartyConnection({
 	code,
 	role,
 	name,
+	avatar,
 	hostToken,
 }: UsePartyConnectionParams): UsePartyConnectionResult {
 	const [roomState, setRoomState] = useState<PartyRoomState | null>(null);
@@ -139,6 +142,9 @@ export function usePartyConnection({
 			} else if (role === "player") {
 				if (name) {
 					params.set("name", name);
+				}
+				if (avatar) {
+					params.set("avatar", avatar);
 				}
 				const reconnectToken =
 					playerTokenRef.current ??
@@ -265,7 +271,15 @@ export function usePartyConnection({
 			isConnectingRef.current = false;
 			scheduleReconnect();
 		}
-	}, [clearReconnectTimer, code, hostToken, name, role, scheduleReconnect]);
+	}, [
+		clearReconnectTimer,
+		code,
+		hostToken,
+		name,
+		avatar,
+		role,
+		scheduleReconnect,
+	]);
 
 	const disconnect = useCallback(() => {
 		shouldReconnectRef.current = false;
@@ -310,8 +324,8 @@ export function usePartyConnection({
 		[activeInputRequest],
 	);
 
-	const sendStartGame = useCallback(() => {
-		const message = { type: "start_game" };
+	const sendStartGame = useCallback((gameConfig?: GameConfig) => {
+		const message = { type: "start_game", gameConfig };
 		if (wsRef.current?.readyState === WebSocket.OPEN) {
 			wsRef.current.send(JSON.stringify(message));
 		}

@@ -12,6 +12,7 @@ export {
 } from "./Grainient";
 export * from "./Input";
 export * from "./lib/cn";
+export * from "./party";
 export * from "./SortableList";
 export * from "./Text";
 export * from "./TextureButton";

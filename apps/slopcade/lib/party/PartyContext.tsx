@@ -1,6 +1,11 @@
 import type React from "react";
-import { createContext, useContext, useMemo } from "react";
-import type { PartyInputRequest, PartyPlayer, PartyRoomState } from "./types";
+import { createContext, useContext, useMemo, useState } from "react";
+import type {
+	GameConfig,
+	PartyInputRequest,
+	PartyPlayer,
+	PartyRoomState,
+} from "./types";
 import type {
 	ActiveInputRequest,
 	ConnectionStatus,
@@ -14,9 +19,19 @@ export interface PartyContextValue {
 	connectionStatus: ConnectionStatus;
 	players: PartyPlayer[];
 	activeInputRequest: ActiveInputRequest | null;
+	gameConfig: GameConfig;
+	setGameConfig: (config: GameConfig) => void;
 	sendInput: (value: unknown) => void;
 	sendStartGame: () => void;
 }
+
+const DEFAULT_GAME_CONFIG: GameConfig = {
+	rounds: 5,
+	contentPack: "default",
+	difficulty: "standard",
+	timerMode: "standard",
+	audienceVoting: true,
+};
 
 const PartyContext = createContext<PartyContextValue | null>(null);
 
@@ -24,6 +39,7 @@ export interface PartyProviderProps {
 	code: string;
 	role: "host" | "player";
 	name?: string;
+	avatar?: string;
 	hostToken?: string;
 	children: React.ReactNode;
 }
@@ -32,17 +48,28 @@ export function PartyProvider({
 	code,
 	role,
 	name,
+	avatar,
 	hostToken,
 	children,
 }: PartyProviderProps) {
-	const connection = usePartyConnection({ code, role, name, hostToken });
+	const [gameConfig, setGameConfig] = useState<GameConfig>(DEFAULT_GAME_CONFIG);
+	const connection = usePartyConnection({
+		code,
+		role,
+		name,
+		avatar,
+		hostToken,
+	});
 
 	const value = useMemo<PartyContextValue>(
 		() => ({
 			role,
 			...connection,
+			gameConfig,
+			setGameConfig,
+			sendStartGame: () => connection.sendStartGame(gameConfig),
 		}),
-		[role, connection],
+		[role, connection, gameConfig],
 	);
 
 	return (

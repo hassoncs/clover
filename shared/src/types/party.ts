@@ -108,8 +108,8 @@ export interface PlayerReconnectMessage {
 
 export interface GameConfig {
 	rounds: 3 | 5 | 7;
-	contentPack: "old-testament" | "new-testament" | "full-bible" | "advent-lent";
-	difficulty: "seeker" | "disciple" | "scholar";
+	contentPack: string;
+	difficulty: string;
 	timerMode: "standard" | "relaxed" | "none";
 	audienceVoting: boolean;
 }

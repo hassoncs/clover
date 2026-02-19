@@ -3,6 +3,14 @@ import { useSearchParams } from "react-router-dom";
 import { env } from "../lib/env";
 import { trpc } from "../lib/trpc";
 
+const AI_MODELS = [
+	{ label: "Gemini 2.0 Flash", value: "google/gemini-2.0-flash-001" },
+	{ label: "Gemini 1.5 Flash", value: "google/gemini-flash-1.5" },
+	{ label: "GPT-4o Mini", value: "openai/gpt-4o-mini" },
+	{ label: "Claude 3 Haiku", value: "anthropic/claude-3-haiku" },
+	{ label: "Llama 3.1 8B", value: "meta-llama/llama-3.1-8b-instruct" },
+];
+
 const CONTENT_TYPES = [
 	{ label: "Quip", value: "quip" },
 	{ label: "Trivia", value: "trivia" },
@@ -251,28 +259,42 @@ function GenerateRowButton({ contentId }: { contentId: string }) {
 
 function StarRating({
 	value,
+	avgValue,
+	reviewCount,
 	onRate,
 }: {
 	value: number | null;
+	avgValue: number | null;
+	reviewCount: number;
 	onRate: (score: number) => void;
 }) {
 	return (
-		<span className="flex">
-			{[1, 2, 3, 4, 5].map((star) => (
-				<button
-					type="button"
-					key={star}
-					onClick={() => onRate(star)}
-					className={`cursor-pointer text-[15px] px-[1px] border-none bg-transparent ${
-						star <= (value ?? 0)
-							? "text-amber-400"
-							: "text-slate-700 hover:text-slate-600"
-					}`}
-				>
-					★
-				</button>
-			))}
-		</span>
+		<div className="flex flex-col gap-0.5">
+			<span className="flex">
+				{[1, 2, 3, 4, 5].map((star) => (
+					<button
+						type="button"
+						key={star}
+						onClick={() => onRate(star)}
+						className={`cursor-pointer text-[15px] px-[1px] border-none bg-transparent ${
+							star <= (value ?? 0)
+								? "text-amber-400"
+								: "text-slate-700 hover:text-slate-600"
+						}`}
+					>
+						★
+					</button>
+				))}
+			</span>
+			{reviewCount > 0 && (
+				<span className="text-[10px] text-slate-500 pl-[1px]">
+					{avgValue !== null ? `avg ${avgValue.toFixed(1)}` : "—"}
+					{reviewCount > 1 && (
+						<span className="text-slate-600 ml-1">({reviewCount})</span>
+					)}
+				</span>
+			)}
+		</div>
 	);
 }
 
@@ -405,14 +427,13 @@ export function ContentReviewPage() {
 
 	const handleRate = (
 		contentId: string,
-		type: "quality" | "humor",
+		dimension: "quality" | "humor",
 		score: number,
-		current: { qualityScore: number | null; humorScore: number | null } | null,
 	) => {
 		upsertReview.mutate({
 			contentId,
-			qualityScore: type === "quality" ? score : (current?.qualityScore ?? 1),
-			humorScore: type === "humor" ? score : (current?.humorScore ?? 1),
+			qualityScore: dimension === "quality" ? score : undefined,
+			humorScore: dimension === "humor" ? score : undefined,
 		});
 	};
 
@@ -766,18 +787,18 @@ export function ContentReviewPage() {
 											</td>
 											<td className="px-3.5 py-2.5">
 												<StarRating
-													value={item.latestReview?.qualityScore ?? null}
-													onRate={(s) =>
-														handleRate(item.id, "quality", s, item.latestReview)
-													}
+													value={item.myReview?.qualityScore ?? null}
+													avgValue={item.avgQuality ?? null}
+													reviewCount={item.reviewCount ?? 0}
+													onRate={(s) => handleRate(item.id, "quality", s)}
 												/>
 											</td>
 											<td className="px-3.5 py-2.5">
 												<StarRating
-													value={item.latestReview?.humorScore ?? null}
-													onRate={(s) =>
-														handleRate(item.id, "humor", s, item.latestReview)
-													}
+													value={item.myReview?.humorScore ?? null}
+													avgValue={item.avgHumor ?? null}
+													reviewCount={item.reviewCount ?? 0}
+													onRate={(s) => handleRate(item.id, "humor", s)}
 												/>
 											</td>
 											<td className="p-3.5">

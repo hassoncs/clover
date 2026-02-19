@@ -92,6 +92,9 @@ export const partyContentAssets = sqliteTable(
 	}),
 );
 
+export const REVIEWER_TYPES = ["human", "bot"] as const;
+export type ReviewerType = (typeof REVIEWER_TYPES)[number];
+
 export const partyContentReviews = sqliteTable(
 	"party_content_reviews",
 	{
@@ -99,11 +102,11 @@ export const partyContentReviews = sqliteTable(
 		contentId: text("content_id")
 			.notNull()
 			.references(() => partyContent.id, { onDelete: "cascade" }),
-		reviewerUserId: text("reviewer_user_id")
-			.notNull()
-			.references(() => users.id),
-		qualityScore: integer("quality_score").notNull(),
-		humorScore: integer("humor_score").notNull(),
+		reviewerUserId: text("reviewer_user_id").notNull(),
+		reviewerType: text("reviewer_type").notNull().default("human"),
+		model: text("model"),
+		qualityScore: integer("quality_score"),
+		humorScore: integer("humor_score"),
 		notes: text("notes"),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},
@@ -116,6 +119,7 @@ export const partyContentReviews = sqliteTable(
 		reviewerIdx: index("idx_party_content_reviews_reviewer").on(
 			table.reviewerUserId,
 		),
+		typeIdx: index("idx_party_content_reviews_type").on(table.reviewerType),
 	}),
 );
 

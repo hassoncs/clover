@@ -7,12 +7,15 @@ interface CreateRoomResponse {
 }
 
 export async function createPartyRoom(
-	template = "crowd-comedy",
+	template: string,
 	minPlayers = 3,
 ): Promise<CreateRoomResponse> {
 	const response = await fetch(`${env.apiUrl}/api/party/create`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: {
+			"Content-Type": "application/json",
+			"x-brand-id": "slopcade",
+		},
 		body: JSON.stringify({ template, minPlayers }),
 	});
 
