@@ -100,41 +100,23 @@ export async function loadContentPackFromDB<T extends ContentType>(
 	brandId: string,
 	db: D1Database,
 ): Promise<ContentItem<T>[]> {
-	const snapshot = await db
-		.prepare(
-			"SELECT content_ids FROM party_content_snapshots ORDER BY version DESC LIMIT 1",
-		)
-		.first<{ content_ids: string }>();
-
-	if (!snapshot) {
-		throw new Error(
-			`No published snapshot found for brand "${brandId}" type "${type}". Run importPacks then publish.`,
-		);
-	}
-
-	const allIds: string[] = JSON.parse(snapshot.content_ids);
-
-	if (allIds.length === 0) {
-		throw new Error(`Published snapshot exists but contains no content IDs.`);
-	}
-
-	const placeholders = allIds.map(() => "?").join(",");
 	const result = await db
 		.prepare(
 			`SELECT body FROM party_content
-			 WHERE id IN (${placeholders})
-			   AND brand_id = ?
+			 WHERE brand_id = ?
 			   AND content_type = ?
-			   AND deleted_at IS NULL`,
+			   AND status = 'active'
+			   AND deleted_at IS NULL
+			 LIMIT 2000`,
 		)
-		.bind(...allIds, brandId, type)
+		.bind(brandId, type)
 		.all<{ body: string }>();
 
 	const rows = result.results ?? [];
 
 	if (rows.length === 0) {
 		throw new Error(
-			`Snapshot has no active "${type}" content for brand "${brandId}". Run importPacks and republish.`,
+			`No active "${type}" content for brand "${brandId}". Run partyContent.importPacks first.`,
 		);
 	}
 

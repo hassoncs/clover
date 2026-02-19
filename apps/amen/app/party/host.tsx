@@ -6,11 +6,6 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PartyProvider, useParty } from "@/lib/party/PartyContext";
 
-const GAME_NAMES: Record<string, string> = {
-	"crowd-comedy": "Crowd Comedy",
-	"chroma-clues": "Chroma Clues",
-};
-
 function HostLobbyContent({
 	code,
 	hostToken,
@@ -21,9 +16,13 @@ function HostLobbyContent({
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { roomState, players, sendStartGame, connectionStatus } = useParty();
-	const { template } = useLocalSearchParams<{ template: string }>();
+	const { templateTitle, minPlayers } = useLocalSearchParams<{
+		templateTitle: string;
+		minPlayers: string;
+	}>();
 
-	const gameName = GAME_NAMES[template || "crowd-comedy"] || "Crowd Comedy";
+	const gameName = templateTitle || "Party Game";
+	const requiredPlayers = Number(minPlayers) || 3;
 
 	useEffect(() => {
 		if (roomState?.phase === "playing") {
@@ -44,7 +43,7 @@ function HostLobbyContent({
 		}
 	};
 
-	const canStart = players.length >= 3;
+	const canStart = players.length >= requiredPlayers;
 
 	return (
 		<View
@@ -151,7 +150,7 @@ function HostLobbyContent({
 						>
 							<Ionicons name="play" size={32} color="white" />
 							<Text className="text-white text-3xl font-bold">
-								{canStart ? "Start Game" : "Need 3 Players"}
+								{canStart ? "Start Game" : `Need ${requiredPlayers} Players`}
 							</Text>
 						</Pressable>
 					</View>
@@ -162,7 +161,13 @@ function HostLobbyContent({
 }
 
 export default function PartyHostScreen() {
-	const params = useLocalSearchParams<{ code: string; hostToken: string }>();
+	const params = useLocalSearchParams<{
+		code: string;
+		hostToken: string;
+		templateId: string;
+		templateTitle: string;
+		minPlayers: string;
+	}>();
 
 	if (!params.code || !params.hostToken) {
 		return (
@@ -172,15 +177,15 @@ export default function PartyHostScreen() {
 		);
 	}
 
-	const content = (
+	const hostRole = "host" as const;
+
+	return (
 		<PartyProvider
 			code={params.code}
-			role="host" // eslint-disable-line jsx-a11y/aria-role
+			role={hostRole}
 			hostToken={params.hostToken}
 		>
 			<HostLobbyContent code={params.code} hostToken={params.hostToken} />
 		</PartyProvider>
 	);
-
-	return content;
 }

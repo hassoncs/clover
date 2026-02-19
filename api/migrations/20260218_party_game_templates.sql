@@ -30,4 +30,4 @@ INSERT OR REPLACE INTO party_game_templates (id, brand_id, title, emoji, descrip
   ('drawful-animate', 'amen', 'Illustrated Scripture', '🎨', 'Draw prompts and guess what others drew', 'Draw a Biblical scene or concept. Others guess what you illustrated.', 'drawing', 3, 8, 1, 10),
   ('sketch-bluff', 'amen', 'Draw & Discern', '✏️', 'Draw and bluff your way to victory', 'Draw the prompt, then write fake titles for others'' drawings. Spot the real one.', 'drawing', 3, 8, 1, 11),
   ('consensus-mine', 'amen', 'The Council', '🏛️', 'Rank items and find consensus', 'Everyone ranks the same items. Score points by matching the group consensus.', 'ranking', 2, 10, 1, 12),
-  ('headsUp', 'amen', 'Who Am I?', '👤', 'Guess the person or thing on your head', 'A word is on your forehead. Your friends give clues while you guess.', 'headsup', 2, 12, 1, 13);
+  ('heads-up', 'amen', 'Who Am I?', '👤', 'Guess the person or thing on your head', 'A word is on your forehead. Your friends give clues while you guess.', 'headsup', 2, 12, 1, 13);

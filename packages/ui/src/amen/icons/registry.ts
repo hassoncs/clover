@@ -27,6 +27,7 @@ export const AMEN_ICONS = {
 	// Nature
 	oliveBranch: "leaf",
 	wheat: "barley",
+	bread: "bread-slice",
 
 	// Other
 	halo: "circle-outline",

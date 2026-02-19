@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	ActivityIndicator,
@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { trpcReact } from "@/lib/trpc/react";
 
 export default function LandingPage() {
+	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [submitted, setSubmitted] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -77,14 +78,24 @@ export default function LandingPage() {
 							church, youth group, and family closer together.
 						</Text>
 
-						<Pressable
-							onPress={scrollToWaitlist}
-							className="bg-[#C9A84C] px-10 py-4 rounded-full shadow-lg hover:bg-[#D4B65C] transition-colors"
-						>
-							<Text className="text-[#1B3A6B] font-bold text-xl tracking-wide">
-								Get Started Free
-							</Text>
-						</Pressable>
+						<View className="flex-col md:flex-row gap-4 items-center">
+							<Pressable
+								onPress={scrollToWaitlist}
+								className="bg-[#C9A84C] px-10 py-4 rounded-full shadow-lg hover:bg-[#D4B65C] transition-colors"
+							>
+								<Text className="text-[#1B3A6B] font-bold text-xl tracking-wide">
+									Get Started Free
+								</Text>
+							</Pressable>
+							<Pressable
+								onPress={() => router.push("/join")}
+								className="bg-white/10 border border-white/30 px-10 py-4 rounded-full hover:bg-white/20 transition-colors"
+							>
+								<Text className="text-white font-bold text-xl tracking-wide">
+									Join a Game →
+								</Text>
+							</Pressable>
+						</View>
 
 						<View className="mt-16 flex-row gap-8 opacity-80">
 							<View className="items-center">

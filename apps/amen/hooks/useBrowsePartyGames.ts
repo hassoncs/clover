@@ -1,3 +1,4 @@
+import type { PartyTemplate } from "@/lib/party/template-types";
 import { trpcReact } from "@/lib/trpc/react";
 
 export function useBrowsePartyGames() {
@@ -6,7 +7,7 @@ export function useBrowsePartyGames() {
 	});
 
 	return {
-		templates: query.data ?? [],
+		templates: (query.data ?? []) as PartyTemplate[],
 		isLoading: query.isLoading,
 		error: query.error,
 		refetch: query.refetch,

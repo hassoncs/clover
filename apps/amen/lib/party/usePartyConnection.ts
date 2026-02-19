@@ -30,6 +30,7 @@ export interface UsePartyConnectionParams {
 	code: string;
 	role: "host" | "player";
 	name?: string;
+	avatar?: string;
 	hostToken?: string;
 }
 
@@ -53,6 +54,7 @@ export function usePartyConnection({
 	code,
 	role,
 	name,
+	avatar,
 	hostToken,
 }: UsePartyConnectionParams): UsePartyConnectionResult {
 	const [roomState, setRoomState] = useState<PartyRoomState | null>(null);
@@ -139,6 +141,9 @@ export function usePartyConnection({
 			} else if (role === "player") {
 				if (name) {
 					params.set("name", name);
+				}
+				if (avatar) {
+					params.set("avatar", avatar);
 				}
 				const reconnectToken =
 					playerTokenRef.current ??
@@ -265,7 +270,15 @@ export function usePartyConnection({
 			isConnectingRef.current = false;
 			scheduleReconnect();
 		}
-	}, [clearReconnectTimer, code, hostToken, name, role, scheduleReconnect]);
+	}, [
+		clearReconnectTimer,
+		code,
+		hostToken,
+		name,
+		avatar,
+		role,
+		scheduleReconnect,
+	]);
 
 	const disconnect = useCallback(() => {
 		shouldReconnectRef.current = false;

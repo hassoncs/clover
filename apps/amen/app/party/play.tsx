@@ -95,6 +95,7 @@ export default function PartyPlayScreen() {
 	const params = useLocalSearchParams<{
 		code: string;
 		name?: string;
+		avatar?: string;
 		role: "host" | "player";
 		hostToken?: string;
 	}>();
@@ -113,6 +114,7 @@ export default function PartyPlayScreen() {
 			code={params.code}
 			role={params.role}
 			name={params.name}
+			avatar={params.avatar}
 			hostToken={params.hostToken}
 		>
 			<GameContent />

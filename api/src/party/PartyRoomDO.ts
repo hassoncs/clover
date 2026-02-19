@@ -53,6 +53,7 @@ interface SocketAttachment {
 	role: string;
 	playerId?: string;
 	name?: string;
+	avatar?: string;
 }
 
 export class PartyRoomDO {
@@ -233,6 +234,7 @@ export class PartyRoomDO {
 		const role = url.searchParams.get("role");
 		const token = url.searchParams.get("token");
 		const name = url.searchParams.get("name");
+		const avatar = url.searchParams.get("avatar");
 
 		if (role !== "host" && role !== "player" && role !== "audience") {
 			return jsonResponse(
@@ -259,6 +261,7 @@ export class PartyRoomDO {
 			role,
 			playerId: undefined as string | undefined,
 			name: name ?? undefined,
+			avatar: avatar ?? undefined,
 		};
 		this.setSocketMeta(server, attachment);
 
@@ -271,6 +274,7 @@ export class PartyRoomDO {
 						server,
 						token ?? undefined,
 						name ?? "Player",
+						avatar ?? "dove",
 						role as "player" | "audience",
 					);
 				}
@@ -314,6 +318,7 @@ export class PartyRoomDO {
 		ws: WebSocket,
 		token: string | undefined,
 		name: string,
+		avatar: string,
 		role: "player" | "audience" = "player",
 	): Promise<void> {
 		let playerId: string | undefined;
@@ -337,19 +342,21 @@ export class PartyRoomDO {
 			this.setSocketMeta(ws, meta);
 		}
 
-		await this.handlePlayerConnect(ws, playerId, name, role);
+		await this.handlePlayerConnect(ws, playerId, name, avatar, role);
 	}
 
 	private async handlePlayerConnect(
 		ws: WebSocket,
 		playerId: string,
 		name: string,
+		avatar: string,
 		role: "player" | "audience",
 	): Promise<void> {
 		const existing = this.players.get(playerId);
 		if (existing) {
 			existing.connected = true;
 			existing.role = role;
+			existing.avatar = avatar;
 			this.players.set(playerId, existing);
 
 			const timer = this.disconnectTimers.get(playerId);
@@ -380,6 +387,7 @@ export class PartyRoomDO {
 			const player: PartyPlayer = {
 				id: playerId,
 				name,
+				avatar,
 				connected: true,
 				role,
 			};

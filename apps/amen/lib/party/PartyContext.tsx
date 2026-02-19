@@ -24,6 +24,7 @@ export interface PartyProviderProps {
 	code: string;
 	role: "host" | "player";
 	name?: string;
+	avatar?: string;
 	hostToken?: string;
 	children: React.ReactNode;
 }
@@ -32,10 +33,17 @@ export function PartyProvider({
 	code,
 	role,
 	name,
+	avatar,
 	hostToken,
 	children,
 }: PartyProviderProps) {
-	const connection = usePartyConnection({ code, role, name, hostToken });
+	const connection = usePartyConnection({
+		code,
+		role,
+		name,
+		avatar,
+		hostToken,
+	});
 
 	const value = useMemo<PartyContextValue>(
 		() => ({
