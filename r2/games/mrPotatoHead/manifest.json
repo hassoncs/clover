@@ -1,0 +1,27 @@
+{
+	"name": "02b87353-0c1f-45a3-8868-f75ea5362778",
+	"version": "1.0.0",
+	"title": "Mr. Potato Head",
+	"description": "Drag and drop pieces onto the potato to build your own Mr. Potato Head!",
+	"instructions": "Drag pieces from the drawer onto the potato. Tap Reset to start over!",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 16
+		}
+	},
+	"background": {
+		"type": "static",
+		"whatDescription": "A soft, blurry, colorful children's bedroom background with warm lighting, toys on shelves, pastel walls, and a cozy playful atmosphere, out of focus bokeh effect"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"slug": "mrPotatoHead"
+}

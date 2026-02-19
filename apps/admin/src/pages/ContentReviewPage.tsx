@@ -18,6 +18,7 @@ const CONTENT_TYPES = [
 	{ label: "FakeWord", value: "FakeWord" },
 	{ label: "Ranking", value: "ranking" },
 	{ label: "HeadsUp", value: "headsup" },
+	{ label: "Chroma", value: "chroma" },
 ];
 
 const TYPE_ABBREVIATIONS: Record<string, string> = {
@@ -35,9 +36,15 @@ const TYPE_ABBREVIATIONS: Record<string, string> = {
 	FakeWord: "FKW",
 	ranking: "RNK",
 	headsup: "HU",
+	chroma: "CHR",
 };
 
-const SKIP_VOICE_CONTENT_TYPES = new Set(["headsup", "wordlist", "FakeWord"]);
+const SKIP_VOICE_CONTENT_TYPES = new Set([
+	"headsup",
+	"wordlist",
+	"FakeWord",
+	"chroma",
+]);
 
 function ContentBody({
 	body,
@@ -231,7 +238,9 @@ function GenerateRowButton({ contentId }: { contentId: string }) {
 	return (
 		<button
 			type="button"
-			onClick={() => generate.mutate({ contentIds: [contentId] })}
+			onClick={() =>
+				generate.mutate({ contentIds: [contentId], provider: "scenario" })
+			}
 			disabled={generate.isPending}
 			className="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-[10px] text-slate-300 cursor-pointer disabled:opacity-50"
 		>
@@ -324,6 +333,8 @@ export function ContentReviewPage() {
 		[setParams],
 	);
 
+	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
 	const utils = trpc.useUtils();
 
 	const { data, isLoading, error } = trpc.partyContent.list.useQuery(
@@ -346,6 +357,39 @@ export function ContentReviewPage() {
 		},
 		{ retry: false },
 	);
+
+	const toggleSelection = useCallback((id: string) => {
+		setSelectedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	}, []);
+
+	const toggleAll = useCallback(() => {
+		if (!data?.items) return;
+		setSelectedIds((prev) => {
+			if (prev.size === data.items.length) return new Set();
+			return new Set(data.items.map((i) => i.id));
+		});
+	}, [data?.items]);
+
+	const { data: snapshots } = trpc.partyContent.listSnapshots.useQuery();
+
+	const importPacks = trpc.partyContent.importPacks.useMutation({
+		onSuccess: () => {
+			utils.partyContent.list.invalidate();
+			alert("Packs imported successfully!");
+		},
+	});
+
+	const publishSnapshot = trpc.partyContent.publish.useMutation({
+		onSuccess: (data) => {
+			utils.partyContent.listSnapshots.invalidate();
+			alert(`Snapshot published: v${data.version}`);
+		},
+	});
 
 	const upsertReview = trpc.partyContent.upsertReview.useMutation({
 		onSuccess: () => utils.partyContent.list.invalidate(),
@@ -528,15 +572,61 @@ export function ContentReviewPage() {
 
 			{/* Main */}
 			<div className="flex-1 flex flex-col overflow-hidden">
+				<div className="px-6 py-3.5 border-b border-slate-800 flex items-center gap-4 shrink-0 bg-slate-900/50">
+					<button
+						type="button"
+						onClick={() => importPacks.mutate({ brands: ["amen", "slopcade"] })}
+						disabled={importPacks.isPending}
+						className="px-3 py-1.5 bg-blue-900/50 hover:bg-blue-900 border border-blue-700/50 rounded text-blue-200 text-xs font-medium cursor-pointer disabled:opacity-50 transition-colors"
+					>
+						{importPacks.isPending ? "Importing..." : "Import Packs"}
+					</button>
+					<button
+						type="button"
+						onClick={() => publishSnapshot.mutate()}
+						disabled={publishSnapshot.isPending}
+						className="px-3 py-1.5 bg-purple-900/50 hover:bg-purple-900 border border-purple-700/50 rounded text-purple-200 text-xs font-medium cursor-pointer disabled:opacity-50 transition-colors"
+					>
+						{publishSnapshot.isPending ? "Publishing..." : "Publish Snapshot"}
+					</button>
+					{snapshots && snapshots.length > 0 && (
+						<span className="text-slate-400 text-xs font-mono">
+							Current: v{snapshots[0].version}
+						</span>
+					)}
+				</div>
+
 				<div className="px-6 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0">
 					<h1 className="m-0 text-xl font-bold text-slate-50">
 						Content Review
 					</h1>
 					<div className="flex items-center gap-4">
+						{selectedIds.size > 0 && (
+							<button
+								type="button"
+								onClick={() =>
+									generateAudio.mutate({
+										contentIds: Array.from(selectedIds),
+										provider: "scenario",
+									})
+								}
+								disabled={generateAudio.isPending}
+								className="px-3 py-1.5 bg-emerald-900/50 hover:bg-emerald-900 border border-emerald-700/50 rounded text-emerald-200 text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
+							>
+								{generateAudio.isPending
+									? "Generating..."
+									: `Generate ${selectedIds.size} Selected`}
+							</button>
+						)}
 						{missingIds.length > 0 && (
 							<button
 								type="button"
-								onClick={() => generateAudio.mutate({ contentIds: missingIds })}
+								onClick={() =>
+									generateAudio.mutate({
+										contentIds: missingIds,
+										provider: "scenario",
+									})
+								}
 								disabled={generateAudio.isPending}
 								className="px-3 py-1.5 bg-emerald-900/50 hover:bg-emerald-900 border border-emerald-700/50 rounded text-emerald-200 text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
 							>
@@ -562,6 +652,17 @@ export function ContentReviewPage() {
 						<table className="w-full border-collapse text-slate-300 text-[13px]">
 							<thead>
 								<tr className="border-b border-slate-800">
+									<th className="px-3.5 py-2 text-left w-[24px]">
+										<input
+											type="checkbox"
+											checked={
+												(data?.items.length ?? 0) > 0 &&
+												selectedIds.size === data?.items.length
+											}
+											onChange={toggleAll}
+											className="rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+										/>
+									</th>
 									{[
 										{ label: "ID", width: "w-[60px]" },
 										{ label: "B", width: "w-[28px]", title: "Brand" },
@@ -584,103 +685,116 @@ export function ContentReviewPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{data.items.map((item) => (
-									<tr
-										key={item.id}
-										className={`border-b border-slate-900 hover:bg-slate-900/50 ${
-											item.deletedAt ? "bg-red-900/10" : ""
-										}`}
-									>
-										<td className="p-3.5">
-											<code className="font-mono text-slate-500 text-[11px]">
-												{item.id.slice(0, 8)}
-											</code>
-										</td>
-										<td className="p-3.5">
-											<div
-												className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-													item.brandId === "amen"
-														? "bg-blue-900 text-blue-200"
-														: "bg-violet-900 text-violet-200"
-												}`}
-												title={item.brandId}
-											>
-												{item.brandId === "amen" ? "A" : "S"}
-											</div>
-										</td>
-										<td className="p-3.5">
-											<span className="text-[10px] font-mono text-slate-400 uppercase">
-												{TYPE_ABBREVIATIONS[item.contentType] ??
-													item.contentType.slice(0, 3)}
-											</span>
-										</td>
-										<td className="p-3.5">
-											<div
-												className={`w-2 h-2 rounded-full ${
-													item.status === "active"
-														? "bg-green-500"
-														: item.status === "draft"
-															? "bg-amber-500"
-															: "bg-zinc-600"
-												}`}
-												title={item.status}
-											/>
-										</td>
-										<td className="p-3.5 max-w-md break-words">
-											<ContentBody
-												body={item.body}
-												contentType={item.contentType}
-											/>
-										</td>
-										<td className="p-3.5 text-center">
-											{SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
-												<span className="text-slate-700">—</span>
-											) : (
-												<div className="flex items-center justify-center gap-1">
-													{item.assets?.[0]?.r2_key ? (
-														<AudioButton r2Key={item.assets[0].r2_key} />
-													) : (
-														<span
-															title="Missing audio"
-															className="text-amber-500 text-sm"
-														>
-															⚠
-														</span>
-													)}
-													<GenerateRowButton contentId={item.id} />
+								{data.items.map((item) => {
+									const audioAsset =
+										item.assets?.find((a) => a.asset_type === "audio") ??
+										item.assets?.[0];
+									return (
+										<tr
+											key={item.id}
+											className={`border-b border-slate-900 hover:bg-slate-900/50 ${
+												item.deletedAt ? "bg-red-900/10" : ""
+											}`}
+										>
+											<td className="p-3.5">
+												<input
+													type="checkbox"
+													checked={selectedIds.has(item.id)}
+													onChange={() => toggleSelection(item.id)}
+													className="rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+												/>
+											</td>
+											<td className="p-3.5">
+												<code className="font-mono text-slate-500 text-[11px]">
+													{item.id.slice(0, 8)}
+												</code>
+											</td>
+											<td className="p-3.5">
+												<div
+													className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+														item.brandId === "amen"
+															? "bg-blue-900 text-blue-200"
+															: "bg-violet-900 text-violet-200"
+													}`}
+													title={item.brandId}
+												>
+													{item.brandId === "amen" ? "A" : "S"}
 												</div>
-											)}
-										</td>
-										<td className="px-3.5 py-2.5">
-											<StarRating
-												value={item.latestReview?.qualityScore ?? null}
-												onRate={(s) =>
-													handleRate(item.id, "quality", s, item.latestReview)
-												}
-											/>
-										</td>
-										<td className="px-3.5 py-2.5">
-											<StarRating
-												value={item.latestReview?.humorScore ?? null}
-												onRate={(s) =>
-													handleRate(item.id, "humor", s, item.latestReview)
-												}
-											/>
-										</td>
-										<td className="p-3.5">
-											<button
-												type="button"
-												onClick={() => handleDelete(item.id)}
-												disabled={!!item.deletedAt}
-												className={`bg-transparent border-none cursor-pointer text-red-400 text-[13px] p-0 hover:text-red-300 ${
-													item.deletedAt ? "opacity-35 cursor-default" : ""
-												}`}
-											>
-												{item.deletedAt ? "Deleted" : "Delete"}
-											</button>
-										</td>
-									</tr>
-								))}
+											</td>
+											<td className="p-3.5">
+												<span className="text-[10px] font-mono text-slate-400 uppercase">
+													{TYPE_ABBREVIATIONS[item.contentType] ??
+														item.contentType.slice(0, 3)}
+												</span>
+											</td>
+											<td className="p-3.5">
+												<div
+													className={`w-2 h-2 rounded-full ${
+														item.status === "active"
+															? "bg-green-500"
+															: item.status === "draft"
+																? "bg-amber-500"
+																: "bg-zinc-600"
+													}`}
+													title={item.status}
+												/>
+											</td>
+											<td className="p-3.5 max-w-md break-words">
+												<ContentBody
+													body={item.body}
+													contentType={item.contentType}
+												/>
+											</td>
+											<td className="p-3.5 text-center">
+												{SKIP_VOICE_CONTENT_TYPES.has(item.contentType) ? (
+													<span className="text-slate-700">—</span>
+												) : (
+													<div className="flex items-center justify-center gap-1">
+														{audioAsset?.r2_key ? (
+															<AudioButton r2Key={audioAsset.r2_key} />
+														) : (
+															<span
+																title="Audio file missing"
+																className="text-amber-500 text-sm"
+															>
+																⚠
+															</span>
+														)}
+														<GenerateRowButton contentId={item.id} />
+													</div>
+												)}
+											</td>
+											<td className="px-3.5 py-2.5">
+												<StarRating
+													value={item.latestReview?.qualityScore ?? null}
+													onRate={(s) =>
+														handleRate(item.id, "quality", s, item.latestReview)
+													}
+												/>
+											</td>
+											<td className="px-3.5 py-2.5">
+												<StarRating
+													value={item.latestReview?.humorScore ?? null}
+													onRate={(s) =>
+														handleRate(item.id, "humor", s, item.latestReview)
+													}
+												/>
+											</td>
+											<td className="p-3.5">
+												<button
+													type="button"
+													onClick={() => handleDelete(item.id)}
+													disabled={!!item.deletedAt}
+													className={`bg-transparent border-none cursor-pointer text-red-400 text-[13px] p-0 hover:text-red-300 ${
+														item.deletedAt ? "opacity-35 cursor-default" : ""
+													}`}
+												>
+													{item.deletedAt ? "Deleted" : "Delete"}
+												</button>
+											</td>
+										</tr>
+									);
+								})}
 							</tbody>
 						</table>
 					)}

@@ -1,0 +1,59 @@
+{
+	"name": "3c6616ac-d60b-4ff5-b85b-1a6aae5c6725",
+	"version": "1.0.0",
+	"title": "Sokoban",
+	"description": "Push boxes onto target spots to win!",
+	"instructions": "Swipe up/down/left/right to move. Push all boxes onto the glowing targets!",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 12
+		}
+	},
+	"background": {
+		"type": "static",
+		"color": "#2c3e50"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"overlay": {
+		"elements": [
+			{
+				"id": "var-moves",
+				"type": "text",
+				"anchor": "top-center",
+				"offset": {
+					"x": 0,
+					"y": 16
+				},
+				"fontSize": 18,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "MOVES\n{{variables.moves}}"
+				},
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 8,
+					"paddingHorizontal": 12,
+					"paddingVertical": 6
+				}
+			}
+		]
+	},
+	"variables": {
+		"moves": 0,
+		"allBoxesOnTargets": 0
+	},
+	"winCondition": {
+		"expr": "allBoxesOnTargets == 1"
+	},
+	"slug": "sokoban"
+}

@@ -31,6 +31,7 @@ const CONTENT_TYPES = [
 	"FakeWord",
 	"ranking",
 	"headsup",
+	"chroma",
 ] as const;
 type ContentType = (typeof CONTENT_TYPES)[number];
 
@@ -42,11 +43,21 @@ async function computeContentHash(body: string): Promise<string> {
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const FILENAME_TO_CONTENT_TYPE: Record<string, ContentType> = {
+	wager: "estimation",
+	"amen-wager": "estimation",
+	"amen-chroma": "chroma",
+};
+
 function extractContentTypeFromFilename(
 	filename: string,
 	brand: Brand,
 ): ContentType | null {
 	const baseName = filename.replace(/\.json$/i, "");
+
+	if (FILENAME_TO_CONTENT_TYPE[baseName]) {
+		return FILENAME_TO_CONTENT_TYPE[baseName];
+	}
 
 	if (brand === "amen") {
 		const withoutPrefix = baseName.replace(/^amen-/, "");
@@ -337,6 +348,115 @@ export const partyContentRouter = router({
 				skipped,
 				inserted,
 				updated,
+			};
+		}),
+
+	importItems: adminProcedure
+		.input(
+			z.object({
+				brand: z.enum(["amen", "slopcade"]),
+				contentType: z.enum(CONTENT_TYPES),
+				items: z.array(z.record(z.unknown())).min(1).max(500),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+			const now = Date.now();
+			let inserted = 0;
+			let updated = 0;
+			let skipped = 0;
+			let assetsLinked = 0;
+
+			for (const item of input.items) {
+				if (typeof item.id !== "string" || !item.id) {
+					skipped++;
+					continue;
+				}
+
+				const contentId = item.id;
+				const body = JSON.stringify(item);
+				const encoder = new TextEncoder();
+				const hashBuffer = await crypto.subtle.digest(
+					"SHA-256",
+					encoder.encode(body),
+				);
+				const contentHash = Array.from(new Uint8Array(hashBuffer))
+					.map((b) => b.toString(16).padStart(2, "0"))
+					.join("");
+				const category =
+					typeof item.category === "string" ? item.category : null;
+				const difficulty =
+					typeof item.difficulty === "number" ? item.difficulty : null;
+
+				const existing = await db
+					.prepare("SELECT id, content_hash FROM party_content WHERE id = ?")
+					.bind(contentId)
+					.first<{ id: string; content_hash: string | null }>();
+
+				if (!existing) {
+					await db
+						.prepare(
+							`INSERT INTO party_content (id, brand_id, content_type, body, category, difficulty, status, source, content_hash, created_at, updated_at)
+							 VALUES (?, ?, ?, ?, ?, ?, 'active', 'imported', ?, ?, ?)`,
+						)
+						.bind(
+							contentId,
+							input.brand,
+							input.contentType,
+							body,
+							category,
+							difficulty,
+							contentHash,
+							now,
+							now,
+						)
+						.run();
+					inserted++;
+				} else if (existing.content_hash !== contentHash) {
+					await db
+						.prepare(
+							`UPDATE party_content SET body = ?, category = ?, difficulty = ?, content_hash = ?, updated_at = ? WHERE id = ?`,
+						)
+						.bind(body, category, difficulty, contentHash, now, contentId)
+						.run();
+					updated++;
+				}
+
+				if (!SKIP_VOICE_TYPES.has(input.contentType)) {
+					const audioFields = getAudioTextFields(item, input.contentType);
+					if (audioFields) {
+						const r2Key = buildAudioR2Key(
+							input.brand,
+							input.contentType,
+							contentId,
+						);
+						const assetId = `audio-${contentId}`;
+						const assetExists = await db
+							.prepare(
+								"SELECT id FROM party_content_assets WHERE id = ? AND deleted_at IS NULL",
+							)
+							.bind(assetId)
+							.first();
+						if (!assetExists) {
+							await db
+								.prepare(
+									`INSERT INTO party_content_assets (id, content_id, r2_key, asset_type, role, mime_type, created_at)
+									 VALUES (?, ?, ?, 'audio', 'primary', 'audio/mpeg', ?)`,
+								)
+								.bind(assetId, contentId, r2Key, now)
+								.run();
+							assetsLinked++;
+						}
+					}
+				}
+			}
+
+			return {
+				inserted,
+				updated,
+				skipped,
+				assetsLinked,
+				total: input.items.length,
 			};
 		}),
 

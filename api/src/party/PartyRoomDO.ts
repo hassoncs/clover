@@ -19,7 +19,7 @@ import {
 	stateUpdateMessage,
 } from "./protocol";
 import { QuickJSServerRunner } from "./QuickJSServerRunner";
-import { TEMPLATE_REGISTRY } from "./templates/registry";
+import { buildRunnerFromPreloadedContent } from "./templates/registry";
 
 // Timeout constants (all in milliseconds)
 const CLEANUP_ALARM_MS = 4 * 60 * 60 * 1000; // 4 hours - room lifetime
@@ -63,6 +63,7 @@ export class PartyRoomDO {
 	private sharedData: Record<string, unknown> = {};
 	private minPlayers = DEFAULT_MIN_PLAYERS;
 	private templateId: string | null = null;
+	private templateContentPack: unknown[] | null = null;
 	private serverScriptCode: string | null = null;
 	private serverScriptConfig: Record<string, unknown> = {};
 	private rateLimits: Map<string, RateLimitEntry> = new Map();
@@ -170,6 +171,7 @@ export class PartyRoomDO {
 			roomCode?: string;
 			minPlayers?: number;
 			template?: string;
+			contentPack?: unknown[];
 			modules?: Record<string, string>;
 			scriptConfig?: Record<string, unknown>;
 			gameDefinition?: {
@@ -191,6 +193,9 @@ export class PartyRoomDO {
 		}
 		if (body.template) {
 			this.templateId = body.template;
+			this.templateContentPack = Array.isArray(body.contentPack)
+				? body.contentPack
+				: null;
 		}
 
 		const serverScript =
@@ -762,18 +767,23 @@ export class PartyRoomDO {
 			return;
 		}
 
-		if (this.templateId && TEMPLATE_REGISTRY[this.templateId]) {
-			// Inject gameTemplate so clients can look up the correct phase renderer
-			await this.updateSharedData({ gameTemplate: this.templateId });
-			const runner = TEMPLATE_REGISTRY[this.templateId];
-			runner(this).catch(async (error) => {
-				const message = error instanceof Error ? error.message : String(error);
-				console.error("[PartyRoomDO] Template runner failed:", error);
-				ws.send(encodeMessage(errorMessage("SCRIPT_ERROR", message)));
-				await this.updateSharedData({ scriptError: message });
-				await this.setPhase("ended");
-			});
-			return;
+		if (this.templateId) {
+			const contentPack = this.templateContentPack ?? [];
+			const runner = buildRunnerFromPreloadedContent(
+				this.templateId,
+				contentPack,
+			);
+			if (runner) {
+				await this.updateSharedData({ gameTemplate: this.templateId });
+				runner(this).catch(async (err: unknown) => {
+					const message = err instanceof Error ? err.message : String(err);
+					console.error("[PartyRoomDO] Template runner failed:", err);
+					ws.send(encodeMessage(errorMessage("SCRIPT_ERROR", message)));
+					await this.updateSharedData({ scriptError: message });
+					await this.setPhase("ended");
+				});
+				return;
+			}
 		}
 
 		if (this.serverScriptCode) {
@@ -920,6 +930,7 @@ export class PartyRoomDO {
 			sharedData: this.sharedData,
 			minPlayers: this.minPlayers,
 			templateId: this.templateId,
+			templateContentPack: this.templateContentPack,
 			serverScriptCode: this.serverScriptCode,
 			serverScriptConfig: this.serverScriptConfig,
 			stateVersion: this.stateVersion,
@@ -935,6 +946,7 @@ export class PartyRoomDO {
 			sharedData: Record<string, unknown>;
 			minPlayers: number | undefined;
 			templateId: string | null;
+			templateContentPack: unknown[] | null | undefined;
 			serverScriptCode: string | null;
 			serverScriptConfig: Record<string, unknown> | undefined;
 			stateVersion: number | undefined;
@@ -951,6 +963,9 @@ export class PartyRoomDO {
 			}
 			if (saved.templateId) {
 				this.templateId = saved.templateId;
+			}
+			if (Array.isArray(saved.templateContentPack)) {
+				this.templateContentPack = saved.templateContentPack;
 			}
 			if (typeof saved.serverScriptCode === "string") {
 				this.serverScriptCode = saved.serverScriptCode;

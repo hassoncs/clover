@@ -37,16 +37,12 @@
 			"scores",
 			"winner"
 		],
-		"roundCount": 3
+		"roundCount": 3,
+		"contentPacks": [
+			"chroma"
+		]
 	},
 	"brands": [
-		"amen",
 		"slopcade"
-	],
-	"brandTitles": {
-		"amen": {
-			"title": "Stained Glass Clues",
-			"description": "Give one-word clues to help your team find the secret color. Communication through constraint!"
-		}
-	}
+	]
 }

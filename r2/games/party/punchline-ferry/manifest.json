@@ -21,7 +21,7 @@
 		"minPlayers": 3,
 		"serverScript": "server",
 		"contentPacks": [
-			"joke-template"
+			"quip"
 		],
 		"phases": [
 			"lobby",

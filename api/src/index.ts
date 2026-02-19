@@ -14,7 +14,10 @@ import { USER_COSTS } from "@/economy/pricing";
 import { WalletService } from "@/economy/wallet-service";
 import { autoSeedGamesFromR2 } from "@/lib/auto-seed";
 import { handleMcpRequest } from "@/mcp/server";
+import type { ContentType } from "@/party/content/prompt-loader";
+import { loadContentPackFromDB } from "@/party/content/prompt-loader";
 import { PartyRoomDO } from "@/party/PartyRoomDO";
+import { DEFINITION_BY_TEMPLATE_ID } from "@/party/templates/registry";
 import audioRouter from "@/routes/audio";
 import textGridRouter from "@/routes/text-grid";
 import revenuecatWebhookRouter from "@/routes/webhooks/revenuecat";
@@ -184,6 +187,33 @@ app.post("/api/party/create", async (c) => {
 	};
 	if (body.template) {
 		initBody.template = body.template;
+		const definition = DEFINITION_BY_TEMPLATE_ID[body.template];
+		const contentPackIds = definition?.party?.contentPacks ?? [];
+		if (contentPackIds.length > 0) {
+			try {
+				const packs = await Promise.all(
+					contentPackIds.map((packId) =>
+						loadContentPackFromDB(
+							packId as ContentType,
+							c.req.header("x-brand-id") ?? "slopcade",
+							c.env.DB,
+						),
+					),
+				);
+				initBody.contentPack = packs.flat();
+			} catch (err) {
+				console.error(
+					`[party/create] Failed to load content for ${body.template}:`,
+					err,
+				);
+				return c.json(
+					{
+						error: "Content not available. Run importPacks and publish first.",
+					},
+					503,
+				);
+			}
+		}
 	}
 	if (body.minPlayers !== undefined) {
 		initBody.minPlayers = body.minPlayers;

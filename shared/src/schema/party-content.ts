@@ -24,6 +24,7 @@ export const CONTENT_TYPES = [
 	"FakeWord",
 	"ranking",
 	"headsup",
+	"chroma",
 ] as const;
 export type ContentType = (typeof CONTENT_TYPES)[number];
 

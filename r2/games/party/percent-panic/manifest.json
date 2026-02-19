@@ -21,7 +21,7 @@
 		"minPlayers": 3,
 		"serverScript": "server",
 		"contentPacks": [
-			"percentage-facts"
+			"estimation"
 		],
 		"phases": [
 			"lobby",

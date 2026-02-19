@@ -10,7 +10,7 @@
 	"party": {
 		"serverScript": "server",
 		"contentPacks": [
-			"NonsensoryScale"
+			"estimation"
 		],
 		"roundCount": 3
 	},

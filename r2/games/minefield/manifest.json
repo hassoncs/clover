@@ -1,0 +1,108 @@
+{
+	"name": "46e5a13e-46c3-48d7-a668-063ea2b57cfe",
+	"version": "1.0.0",
+	"title": "Minefield",
+	"description": "Classic Minesweeper puzzle game",
+	"instructions": "Tap to reveal cells. Long press to flag mines. Clear all safe cells to win!",
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 0
+		},
+		"pixelsPerMeter": 50,
+		"bounds": {
+			"width": 12,
+			"height": 12
+		}
+	},
+	"background": {
+		"type": "static",
+		"color": "#2c3e50"
+	},
+	"camera": {
+		"type": "fixed",
+		"zoom": 1
+	},
+	"overlay": {
+		"elements": [
+			{
+				"id": "var-flagsRemaining",
+				"type": "text",
+				"anchor": "top-left",
+				"offset": {
+					"x": 16,
+					"y": 16
+				},
+				"fontSize": 18,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "FLAGS\n{{variables.flagsRemaining}}"
+				},
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 8,
+					"paddingHorizontal": 12,
+					"paddingVertical": 6
+				}
+			},
+			{
+				"id": "timer",
+				"type": "text",
+				"anchor": "top-center",
+				"offset": {
+					"x": 0,
+					"y": 16
+				},
+				"fontSize": 20,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "{{formatTime(elapsed)}}"
+				},
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 8,
+					"paddingHorizontal": 12,
+					"paddingVertical": 6
+				}
+			},
+			{
+				"id": "var-cellsRemaining",
+				"type": "text",
+				"anchor": "top-right",
+				"offset": {
+					"x": 16,
+					"y": 16
+				},
+				"fontSize": 18,
+				"fontWeight": "bold",
+				"color": "#FFFFFF",
+				"bindings": {
+					"text": "CELLS\n{{variables.cellsRemaining}}"
+				},
+				"style": {
+					"backgroundColor": "rgba(0,0,0,0.6)",
+					"borderRadius": 8,
+					"paddingHorizontal": 12,
+					"paddingVertical": 6
+				}
+			}
+		]
+	},
+	"variables": {
+		"hasWon": 0,
+		"hasLost": 0,
+		"flagsRemaining": 10,
+		"cellsRemaining": 54,
+		"firstTap": 1
+	},
+	"winCondition": {
+		"expr": "hasWon == 1"
+	},
+	"loseCondition": {
+		"type": "custom",
+		"expr": "hasLost == 1"
+	},
+	"slug": "minefield"
+}
