@@ -1,76 +1,163 @@
-import { describe, expect, it } from "vitest";
-import { createPublicContext } from "@/__fixtures__/test-utils";
-import { appRouter } from "../../router";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+	createPublicCaller,
+	initTestDatabase,
+} from "@/__fixtures__/test-utils";
 
 describe("partyTemplates router", () => {
-	const caller = appRouter.createCaller(createPublicContext());
+	beforeAll(async () => {
+		await initTestDatabase();
+	});
 
-	describe("list", () => {
-		it("returns all registered templates when no brand filter", async () => {
-			const templates = await caller.partyTemplates.list();
-			expect(templates.length).toBeGreaterThan(0);
+	beforeEach(async () => {
+		const env = (await import("cloudflare:test")).env as any;
+		await env.DB.prepare("DELETE FROM party_game_templates").run();
+
+		await env.DB.prepare(
+			`INSERT INTO party_game_templates
+				(id, brand_id, title, emoji, description, mechanic, content_pack, min_players, max_players, is_active, sort_order)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		)
+			.bind(
+				"quiplash",
+				"slopcade",
+				"Quiplash",
+				"🍞",
+				"Answer funny prompts",
+				"Vote-based",
+				"quip",
+				3,
+				8,
+				1,
+				1,
+			)
+			.run();
+
+		await env.DB.prepare(
+			`INSERT INTO party_game_templates
+				(id, brand_id, title, emoji, description, mechanic, content_pack, min_players, max_players, is_active, sort_order)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		)
+			.bind(
+				"truth-trap",
+				"slopcade",
+				"Truth Trap",
+				"📖",
+				"Spot the real answer",
+				"Bluffing",
+				"fibbage",
+				3,
+				8,
+				1,
+				2,
+			)
+			.run();
+
+		await env.DB.prepare(
+			`INSERT INTO party_game_templates
+				(id, brand_id, title, emoji, description, mechanic, content_pack, min_players, max_players, is_active, sort_order)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		)
+			.bind(
+				"heads-up",
+				"amen",
+				"Who Am I?",
+				"👤",
+				"Guess what's on your head",
+				"Charades",
+				"headsup",
+				2,
+				12,
+				1,
+				3,
+			)
+			.run();
+	});
+
+	describe("listByBrand", () => {
+		it("returns only templates for the given brand", async () => {
+			const caller = createPublicCaller();
+			const templates = await caller.partyTemplates.listByBrand({
+				brandId: "slopcade",
+			});
+			expect(templates.length).toBe(2);
 			for (const t of templates) {
+				expect(t.brandId).toBe("slopcade");
 				expect(t.id).toBeTruthy();
 				expect(t.title).toBeTruthy();
-				expect(t.description).toBeTruthy();
 				expect(t.minPlayers).toBeGreaterThan(0);
 				expect(t.maxPlayers).toBeGreaterThanOrEqual(t.minPlayers);
 			}
 		});
 
-		it("filters by brand", async () => {
-			const slopcadeTemplates = await caller.partyTemplates.list({
-				brand: "slopcade",
+		it("returns templates ordered by sort_order", async () => {
+			const caller = createPublicCaller();
+			const templates = await caller.partyTemplates.listByBrand({
+				brandId: "slopcade",
 			});
-			const amenTemplates = await caller.partyTemplates.list({ brand: "amen" });
-			expect(slopcadeTemplates.length).toBeGreaterThan(0);
-			expect(amenTemplates.length).toBeGreaterThan(0);
-			for (const t of slopcadeTemplates) {
-				expect(t.brands).toContain("slopcade");
-			}
+			expect(templates[0]!.id).toBe("quiplash");
+			expect(templates[1]!.id).toBe("truth-trap");
 		});
 
-		it("applies brand title overrides when brand is specified", async () => {
-			const all = await caller.partyTemplates.list();
-			const amen = await caller.partyTemplates.list({ brand: "amen" });
-			const quiplashAll = all.find((t) => t.id === "quiplash");
-			const quiplashAmen = amen.find((t) => t.id === "quiplash");
-			expect(quiplashAll).toBeDefined();
-			expect(quiplashAmen).toBeDefined();
-			expect(quiplashAmen!.title).toBe("The Fellowship Table");
-			expect(quiplashAll!.title).toBe("Quiplash");
+		it("excludes inactive templates", async () => {
+			const env = (await import("cloudflare:test")).env as any;
+			await env.DB.prepare(
+				"UPDATE party_game_templates SET is_active = 0 WHERE id = 'quiplash'",
+			).run();
+
+			const caller = createPublicCaller();
+			const templates = await caller.partyTemplates.listByBrand({
+				brandId: "slopcade",
+			});
+			expect(templates.length).toBe(1);
+			expect(templates[0]!.id).toBe("truth-trap");
 		});
 
-		it("includes known template ids", async () => {
-			const templates = await caller.partyTemplates.list();
-			const ids = templates.map((t) => t.id);
-			expect(ids).toContain("quiplash");
-			expect(ids).toContain("chroma-clues");
-			expect(ids).toContain("headsUp");
+		it("returns empty array for unknown brand", async () => {
+			const caller = createPublicCaller();
+			const templates = await caller.partyTemplates.listByBrand({
+				brandId: "nonexistent",
+			});
+			expect(templates).toEqual([]);
 		});
 	});
 
 	describe("getById", () => {
 		it("returns template by id", async () => {
+			const caller = createPublicCaller();
 			const template = await caller.partyTemplates.getById({ id: "quiplash" });
-			expect(template).not.toBeNull();
-			expect(template!.id).toBe("quiplash");
-			expect(template!.title).toBe("Quiplash");
+			expect(template.id).toBe("quiplash");
+			expect(template.title).toBe("Quiplash");
+			expect(template.emoji).toBe("🍞");
+			expect(template.minPlayers).toBe(3);
+			expect(template.maxPlayers).toBe(8);
 		});
 
-		it("applies brand override when brand is specified", async () => {
-			const template = await caller.partyTemplates.getById({
-				id: "quiplash",
-				brand: "amen",
-			});
-			expect(template!.title).toBe("The Fellowship Table");
+		it("maps snake_case columns to camelCase fields", async () => {
+			const caller = createPublicCaller();
+			const template = await caller.partyTemplates.getById({ id: "quiplash" });
+			expect(template.brandId).toBe("slopcade");
+			expect(template.contentPack).toBe("quip");
+			expect(template.sortOrder).toBe(1);
 		});
 
-		it("returns null for unknown template id", async () => {
-			const template = await caller.partyTemplates.getById({
-				id: "nonexistent-game",
-			});
-			expect(template).toBeNull();
+		it("throws NOT_FOUND for unknown id", async () => {
+			const caller = createPublicCaller();
+			await expect(
+				caller.partyTemplates.getById({ id: "nonexistent-game" }),
+			).rejects.toThrow(/not found/i);
+		});
+
+		it("throws NOT_FOUND for inactive template", async () => {
+			const env = (await import("cloudflare:test")).env as any;
+			await env.DB.prepare(
+				"UPDATE party_game_templates SET is_active = 0 WHERE id = 'quiplash'",
+			).run();
+
+			const caller = createPublicCaller();
+			await expect(
+				caller.partyTemplates.getById({ id: "quiplash" }),
+			).rejects.toThrow(/not found/i);
 		});
 	});
 });

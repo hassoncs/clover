@@ -893,3 +893,33 @@ CREATE TABLE IF NOT EXISTS email_waitlist (
   created_at INTEGER NOT NULL,
   UNIQUE(email, brand_id)
 );
+
+-- =============================================================================
+-- PARTY GAME TEMPLATES
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS party_game_templates (
+  id TEXT PRIMARY KEY,
+  brand_id TEXT NOT NULL DEFAULT 'amen',
+  title TEXT NOT NULL,
+  emoji TEXT NOT NULL DEFAULT '',
+  description TEXT,
+  mechanic TEXT,
+  content_pack TEXT NOT NULL,
+  min_players INTEGER NOT NULL DEFAULT 2,
+  max_players INTEGER NOT NULL DEFAULT 8,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  tagline TEXT,
+  format_tag TEXT,
+  session_length TEXT,
+  content_note TEXT,
+  thumbnail_url TEXT,
+  hero_image_url TEXT,
+  how_to_play_steps TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+);
+
+CREATE INDEX IF NOT EXISTS idx_party_game_templates_brand ON party_game_templates(brand_id);
+CREATE INDEX IF NOT EXISTS idx_party_game_templates_active ON party_game_templates(is_active);

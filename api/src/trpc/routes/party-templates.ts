@@ -1,180 +1,99 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "@/trpc/index";
 
-import aboutYouBluffManifest from "../../../../r2/games/party/about-you-bluff/manifest.json";
-import chainReactionManifest from "../../../../r2/games/party/chain-reaction/manifest.json";
-import chromaCluesManifest from "../../../../r2/games/party/chroma-clues/manifest.json";
-import consensusMineManifest from "../../../../r2/games/party/consensus-mine/manifest.json";
-import drawfulAnimateManifest from "../../../../r2/games/party/drawful-animate/manifest.json";
-import halfAndHalfManifest from "../../../../r2/games/party/half-and-half/manifest.json";
-import headsUpManifest from "../../../../r2/games/party/headsUp/manifest.json";
-import lexiconLadderManifest from "../../../../r2/games/party/lexicon-ladder/manifest.json";
-import outOfContextManifest from "../../../../r2/games/party/out-of-context/manifest.json";
-import percentPanicManifest from "../../../../r2/games/party/percent-panic/manifest.json";
-import punchlineFerryManifest from "../../../../r2/games/party/punchline-ferry/manifest.json";
-import quickfireQAManifest from "../../../../r2/games/party/quickfire-qa/manifest.json";
-import quiplashManifest from "../../../../r2/games/party/quiplash/manifest.json";
-import rivalRosterManifest from "../../../../r2/games/party/rival-roster/manifest.json";
-import roleReplayManifest from "../../../../r2/games/party/role-replay/manifest.json";
-import ruinAndRedeemManifest from "../../../../r2/games/party/ruin-and-redeem/manifest.json";
-import shirtClashManifest from "../../../../r2/games/party/shirt-clash/manifest.json";
-import sketchBluffManifest from "../../../../r2/games/party/sketch-bluff/manifest.json";
-import spectrumGuessManifest from "../../../../r2/games/party/spectrum-guess/manifest.json";
-import truthTrapManifest from "../../../../r2/games/party/truth-trap/manifest.json";
-import yearJinxManifest from "../../../../r2/games/party/year-jinx/manifest.json";
-
-// Manifests have two schemas: flat (most games) and metadata-nested (spectrum-guess)
-type FlatManifest = {
-	slug: string;
+type HowToPlayStep = {
+	step: number;
 	title: string;
-	description: string;
-	instructions?: string;
-	brands?: string[];
-	brandTitles?: Record<string, { title: string; description: string }>;
-	party?: {
-		minPlayers?: number;
-		maxPlayers?: number;
-		contentPacks?: string[];
-		phases?: string[];
-		inputTypes?: string[];
-		roundCount?: number;
-	};
+	body: string;
+	panelImageUrl: string | null;
 };
 
-type NestedManifest = {
-	metadata: {
-		slug: string;
-		title: string;
-		description: string;
-		instructions?: string;
-	};
-	brands?: string[];
-	brandTitles?: Record<string, { title: string; description: string }>;
-	party?: {
-		minPlayers?: number;
-		maxPlayers?: number;
-		contentPacks?: string[];
-		roundCount?: number;
-	};
+type PartyGameTemplateRow = {
+	id: string;
+	brand_id: string;
+	title: string;
+	emoji: string;
+	description: string | null;
+	mechanic: string | null;
+	content_pack: string;
+	min_players: number;
+	max_players: number;
+	sort_order: number;
+	tagline: string | null;
+	format_tag: string | null;
+	session_length: string | null;
+	content_note: string | null;
+	thumbnail_url: string | null;
+	hero_image_url: string | null;
+	how_to_play_steps: string | null;
 };
 
-type RawManifest = FlatManifest | NestedManifest;
+const SELECT_COLUMNS = `
+	id, brand_id, title, emoji, description, mechanic, content_pack,
+	min_players, max_players, sort_order,
+	tagline, format_tag, session_length, content_note,
+	thumbnail_url, hero_image_url, how_to_play_steps
+`;
 
-function normalizeManifest(raw: RawManifest): {
-	slug: string;
-	title: string;
-	description: string;
-	instructions: string;
-	brands: string[];
-	brandTitles: Record<string, { title: string; description: string }>;
-	party: {
-		minPlayers: number;
-		maxPlayers: number;
-		contentPacks: string[];
-		roundCount: number;
-	};
-} {
-	const isNested = "metadata" in raw;
-	const meta = isNested
-		? (raw as NestedManifest).metadata
-		: (raw as FlatManifest);
-	const party = raw.party ?? {};
-
+function mapRow(row: PartyGameTemplateRow) {
 	return {
-		slug: meta.slug,
-		title: meta.title,
-		description: meta.description,
-		instructions: meta.instructions ?? "",
-		brands: raw.brands ?? [],
-		brandTitles: raw.brandTitles ?? {},
-		party: {
-			minPlayers: party.minPlayers ?? 3,
-			maxPlayers: party.maxPlayers ?? 8,
-			contentPacks: party.contentPacks ?? [],
-			roundCount: party.roundCount ?? 1,
-		},
+		id: row.id,
+		brandId: row.brand_id,
+		title: row.title,
+		emoji: row.emoji,
+		description: row.description,
+		mechanic: row.mechanic,
+		contentPack: row.content_pack,
+		minPlayers: row.min_players,
+		maxPlayers: row.max_players,
+		sortOrder: row.sort_order,
+		tagline: row.tagline,
+		formatTag: row.format_tag,
+		sessionLength: row.session_length,
+		contentNote: row.content_note,
+		thumbnailUrl: row.thumbnail_url,
+		heroImageUrl: row.hero_image_url,
+		howToPlaySteps: row.how_to_play_steps
+			? (JSON.parse(row.how_to_play_steps) as HowToPlayStep[])
+			: null,
 	};
 }
 
-const ALL_MANIFESTS: RawManifest[] = [
-	aboutYouBluffManifest as RawManifest,
-	chainReactionManifest as RawManifest,
-	chromaCluesManifest as RawManifest,
-	consensusMineManifest as RawManifest,
-	drawfulAnimateManifest as RawManifest,
-	halfAndHalfManifest as RawManifest,
-	headsUpManifest as RawManifest,
-	lexiconLadderManifest as RawManifest,
-	outOfContextManifest as RawManifest,
-	percentPanicManifest as RawManifest,
-	punchlineFerryManifest as RawManifest,
-	quickfireQAManifest as RawManifest,
-	quiplashManifest as RawManifest,
-	rivalRosterManifest as RawManifest,
-	roleReplayManifest as RawManifest,
-	ruinAndRedeemManifest as RawManifest,
-	shirtClashManifest as RawManifest,
-	sketchBluffManifest as RawManifest,
-	spectrumGuessManifest as RawManifest,
-	truthTrapManifest as RawManifest,
-	yearJinxManifest as RawManifest,
-];
-
-const TEMPLATES = ALL_MANIFESTS.map(normalizeManifest).filter((t) => t.slug);
-
 export const partyTemplatesRouter = router({
-	list: publicProcedure
-		.input(
-			z
-				.object({
-					brand: z.enum(["amen", "slopcade"]).optional(),
-				})
-				.optional(),
-		)
-		.query(({ input }) => {
-			const brand = input?.brand;
-			const templates = brand
-				? TEMPLATES.filter((t) => t.brands.includes(brand))
-				: TEMPLATES;
+	listByBrand: publicProcedure
+		.input(z.object({ brandId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const result = await ctx.env.DB.prepare(
+				`SELECT ${SELECT_COLUMNS}
+				 FROM party_game_templates
+				 WHERE brand_id = ? AND is_active = 1
+				 ORDER BY sort_order ASC`,
+			)
+				.bind(input.brandId)
+				.all<PartyGameTemplateRow>();
 
-			return templates.map((t) => {
-				const brandOverride = brand ? t.brandTitles[brand] : undefined;
-				return {
-					id: t.slug,
-					title: brandOverride?.title ?? t.title,
-					description: brandOverride?.description ?? t.description,
-					instructions: t.instructions,
-					minPlayers: t.party.minPlayers,
-					maxPlayers: t.party.maxPlayers,
-					roundCount: t.party.roundCount,
-					brands: t.brands,
-				};
-			});
+			return (result.results ?? []).map(mapRow);
 		}),
 
 	getById: publicProcedure
-		.input(
-			z.object({
-				id: z.string(),
-				brand: z.enum(["amen", "slopcade"]).optional(),
-			}),
-		)
-		.query(({ input }) => {
-			const template = TEMPLATES.find((t) => t.slug === input.id);
-			if (!template) return null;
+		.input(z.object({ id: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const row = await ctx.env.DB.prepare(
+				`SELECT ${SELECT_COLUMNS}
+				 FROM party_game_templates
+				 WHERE id = ? AND is_active = 1`,
+			)
+				.bind(input.id)
+				.first<PartyGameTemplateRow>();
 
-			const brandOverride = input.brand
-				? template.brandTitles[input.brand]
-				: undefined;
-			return {
-				id: template.slug,
-				title: brandOverride?.title ?? template.title,
-				description: brandOverride?.description ?? template.description,
-				instructions: template.instructions,
-				minPlayers: template.party.minPlayers,
-				maxPlayers: template.party.maxPlayers,
-				roundCount: template.party.roundCount,
-				brands: template.brands,
-			};
+			if (!row) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Game template not found",
+				});
+			}
+
+			return mapRow(row);
 		}),
 });
