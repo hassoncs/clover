@@ -35,7 +35,7 @@ export function VoteList({
 					} ${disabled && selectedId !== option.id ? "opacity-50" : ""}`}
 				>
 					<Text
-						className={`text-lg font-medium text-center ${selectedId === option.id ? "text-white" : "text-theme-text"}`}
+						className={`text-lg font-medium text-center ${selectedId === option.id ? "text-theme-secondary" : "text-theme-text"}`}
 					>
 						{option.text}
 					</Text>

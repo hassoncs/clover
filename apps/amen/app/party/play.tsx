@@ -45,7 +45,7 @@ function GameContent() {
 	if (!roomState) {
 		return (
 			<View className="flex-1 items-center justify-center bg-theme-background">
-				<ActivityIndicator size="large" color="#A855F7" />
+				<ActivityIndicator size="large" color="#C9A84C" />
 				<Text className="text-theme-text mt-4">Connecting...</Text>
 			</View>
 		);
@@ -73,13 +73,13 @@ function GameContent() {
 					onPress={() => router.replace("/party")}
 					className="p-2 rounded-full bg-theme-surface active:opacity-80"
 				>
-					<Ionicons name="close" size={24} color="white" />
+					<Ionicons name="close" size={24} color="#FDF8F0" />
 				</Pressable>
 				<View
-					className={`px-3 py-1 rounded-full ${connectionStatus === "connected" ? "bg-green-500/20" : "bg-red-500/20"}`}
+					className={`px-3 py-1 rounded-full ${connectionStatus === "connected" ? "bg-theme-success/20" : "bg-theme-error/20"}`}
 				>
 					<Text
-						className={`text-xs font-bold ${connectionStatus === "connected" ? "text-green-400" : "text-red-400"}`}
+						className={`text-xs font-bold ${connectionStatus === "connected" ? "text-theme-success" : "text-theme-error"}`}
 					>
 						{connectionStatus.toUpperCase()}
 					</Text>

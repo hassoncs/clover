@@ -18,8 +18,8 @@ export default function GameRedirect() {
 	}
 
 	return (
-		<View className="flex-1 bg-gray-900 items-center justify-center">
-			<ActivityIndicator size="large" color="#4CAF50" />
+		<View className="flex-1 bg-theme-background items-center justify-center">
+			<ActivityIndicator size="large" color="#C9A84C" />
 		</View>
 	);
 }

@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { tokens } from "@slopcade/theme";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -19,6 +18,21 @@ import { CreditBalance } from "@/components/economy/CreditBalance";
 import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import { useAuth } from "@/hooks/useAuth";
 import { trpcReact } from "@/lib/trpc/react";
+
+const AMEN = {
+	background: "#0D1C33",
+	surface: "#152A4D",
+	surfaceElevated: "#1E3866",
+	border: "#2A4A80",
+	text: "#FDF8F0",
+	textSecondary: "#A89B7D",
+	textTertiary: "#6B7280",
+	primary: "#C9A84C",
+	secondary: "#1B3A6B",
+	success: "#5B7F3B",
+	warning: "#F59E0B",
+	error: "#EF4444",
+};
 
 const heroImage = require("@/assets/brands/amen/splash.png");
 
@@ -127,7 +141,7 @@ function LoginScreen() {
 							<TextInput
 								className="bg-theme-surface-elevated p-4 rounded-xl border border-theme-border text-theme-text text-base mb-3"
 								placeholder="Enter your email"
-								placeholderTextColor={tokens.semantic.colors.text.secondary}
+								placeholderTextColor={AMEN.textSecondary}
 								value={loginEmail}
 								onChangeText={(text) => {
 									setLoginEmail(text);
@@ -145,7 +159,7 @@ function LoginScreen() {
 										<View className="flex-row items-center">
 											<ActivityIndicator
 												size="small"
-												color={tokens.semantic.colors.text.secondary}
+												color={AMEN.textSecondary}
 											/>
 											<Text className="text-theme-text-secondary ml-2 text-sm">
 												Checking invite status...
@@ -198,12 +212,12 @@ function LoginScreen() {
 							className={`w-full py-4 rounded-xl items-center flex-row justify-center ${
 								isLoggingIn
 									? "bg-theme-surface-elevated"
-									: "bg-white active:bg-gray-100"
+									: "bg-theme-text active:bg-theme-text-secondary"
 							}`}
 							onPress={handleGoogleSignIn}
 							disabled={isLoggingIn}
 						>
-							<Text className="text-black font-semibold text-base">
+							<Text className="text-theme-background font-semibold text-base">
 								Continue with Google
 							</Text>
 						</Pressable>
@@ -220,7 +234,7 @@ function LoginScreen() {
 									className="w-full py-4 rounded-xl items-center bg-theme-warning active:opacity-90"
 									onPress={signInAsDev}
 								>
-									<Text className="text-white font-semibold text-base">
+									<Text className="text-theme-text-inverse font-semibold text-base">
 										Login as Dev User
 									</Text>
 								</Pressable>
@@ -286,10 +300,7 @@ export default function ProfileScreen() {
 				className="flex-1 bg-theme-background items-center justify-center"
 				edges={["bottom"]}
 			>
-				<ActivityIndicator
-					size="large"
-					color={tokens.semantic.colors.primary}
-				/>
+				<ActivityIndicator size="large" color={AMEN.primary} />
 				<Text className="text-theme-text-secondary mt-4">Loading...</Text>
 			</SafeAreaView>
 		);
@@ -312,7 +323,7 @@ export default function ProfileScreen() {
 					<RefreshControl
 						refreshing={isRefreshing}
 						onRefresh={handleRefresh}
-						tintColor={tokens.semantic.colors.primary}
+						tintColor={AMEN.primary}
 					/>
 				}
 			>
@@ -340,8 +351,10 @@ export default function ProfileScreen() {
 								Edit
 							</Text>
 						</Pressable>
-						<Pressable className="flex-1 h-14 rounded-full bg-white items-center justify-center">
-							<Text className="text-black text-2xl font-semibold">Share</Text>
+						<Pressable className="flex-1 h-14 rounded-full bg-theme-text items-center justify-center">
+							<Text className="text-theme-background text-2xl font-semibold">
+								Share
+							</Text>
 						</Pressable>
 					</View>
 
@@ -384,7 +397,7 @@ export default function ProfileScreen() {
 								className="flex-1 bg-theme-success h-12 rounded-full items-center justify-center"
 								onPress={() => setShowInviteModal(true)}
 							>
-								<Text className="text-white text-base font-semibold">
+								<Text className="text-theme-text-inverse text-base font-semibold">
 									Invite
 								</Text>
 							</Pressable>
@@ -426,7 +439,7 @@ export default function ProfileScreen() {
 						<TextInput
 							className="w-full bg-theme-surface-elevated text-theme-text p-4 rounded-xl border border-theme-border"
 							placeholder="friend@example.com"
-							placeholderTextColor={tokens.semantic.colors.text.secondary}
+							placeholderTextColor={AMEN.textSecondary}
 							value={inviteEmail}
 							onChangeText={setInviteEmail}
 							autoCapitalize="none"
@@ -464,13 +477,13 @@ export default function ProfileScreen() {
 						>
 							{isInviting ? (
 								<View className="flex-row items-center">
-									<ActivityIndicator color="white" size="small" />
-									<Text className="text-white font-bold text-lg ml-2">
+									<ActivityIndicator color="#FDF8F0" size="small" />
+									<Text className="text-theme-text-inverse font-bold text-lg ml-2">
 										Sending...
 									</Text>
 								</View>
 							) : (
-								<Text className="text-white font-bold text-lg">
+								<Text className="text-theme-text-inverse font-bold text-lg">
 									Send Invite
 								</Text>
 							)}

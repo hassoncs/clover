@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 	},
 	button: {
-		backgroundColor: "#4CAF50",
+		backgroundColor: "#C9A84C",
 		paddingHorizontal: 40,
 		paddingVertical: 15,
 		borderRadius: 10,
@@ -153,13 +153,13 @@ const styles = StyleSheet.create({
 		boxShadow: "0px 2px 3.84px rgba(0, 0, 0, 0.25)",
 	},
 	secondaryButton: {
-		backgroundColor: "#666",
+		backgroundColor: "#6B7280",
 	},
 	buttonMargin: {
 		marginTop: 12,
 	},
 	buttonText: {
-		color: "#fff",
+		color: "#FDF8F0",
 		fontSize: 20,
 		fontWeight: "bold",
 	},

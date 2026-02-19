@@ -32,12 +32,12 @@ function OrgMemberItem({
 	onRemove: (userId: string) => void;
 }) {
 	return (
-		<View className="flex-row items-center justify-between py-3 border-b border-gray-800">
+		<View className="flex-row items-center justify-between py-3 border-b border-theme-border">
 			<View className="flex-1">
-				<Text className="text-white font-medium">
+				<Text className="text-theme-text font-medium">
 					{member.displayName || member.email || "Unknown User"}
 				</Text>
-				<Text className="text-gray-500 text-xs">
+				<Text className="text-theme-text-tertiary text-xs">
 					{member.role} • Joined{" "}
 					{new Date(member.joinedAt).toLocaleDateString()}
 				</Text>
@@ -45,11 +45,11 @@ function OrgMemberItem({
 			{canRemove && member.userId !== currentUserId && (
 				<Pressable
 					onPress={() => onRemove(member.userId)}
-					className="bg-red-900/30 px-3 py-1 rounded-lg border border-red-900"
+					className="bg-theme-error/10 px-3 py-1 rounded-lg border border-theme-error"
 					accessibilityLabel={`Remove ${member.displayName || member.email || "member"}`}
 					accessibilityRole="button"
 				>
-					<Text className="text-red-400 text-xs font-bold">Remove</Text>
+					<Text className="text-theme-error text-xs font-bold">Remove</Text>
 				</Pressable>
 			)}
 		</View>
@@ -155,47 +155,47 @@ function OrgDetail({ org }: { org: Org }) {
 	const canManageMembers = isAdmin || isLeader;
 
 	return (
-		<View className="bg-gray-800 rounded-2xl p-4 mb-6 border border-gray-700">
+		<View className="bg-theme-surface rounded-2xl p-4 mb-6 border border-theme-border">
 			<View className="flex-row justify-between items-start mb-4">
 				<View className="flex-1">
-					<Text className="text-white text-xl font-bold">{org.name}</Text>
-					<Text className="text-gray-400 text-sm">
+					<Text className="text-theme-text text-xl font-bold">{org.name}</Text>
+					<Text className="text-theme-text-secondary text-sm">
 						{org.city && org.state
 							? `${org.city}, ${org.state}`
 							: org.denomination || "Organization"}
 					</Text>
 				</View>
-				<View className="bg-gray-700 px-3 py-1 rounded-full">
-					<Text className="text-gray-300 text-xs font-bold uppercase">
+				<View className="bg-theme-surface-elevated px-3 py-1 rounded-full">
+					<Text className="text-theme-text-secondary text-xs font-bold uppercase">
 						{org.memberRole}
 					</Text>
 				</View>
 			</View>
 
 			{isAdmin && org.joinCode && (
-				<View className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-6">
-					<Text className="text-gray-400 text-xs uppercase font-bold mb-2 text-center">
+				<View className="bg-theme-background/50 p-4 rounded-xl border border-theme-border mb-6">
+					<Text className="text-theme-text-tertiary text-xs uppercase font-bold mb-2 text-center">
 						Join Code
 					</Text>
 					<Pressable onPress={handleShareCode}>
-						<Text className="text-white text-3xl font-bold text-center tracking-[8px]">
+						<Text className="text-theme-text text-3xl font-bold text-center tracking-[8px]">
 							{org.joinCode}
 						</Text>
 					</Pressable>
 					<View className="flex-row justify-center gap-4 mt-4">
 						<Pressable
 							onPress={handleShareCode}
-							className="flex-row items-center bg-indigo-600/20 px-4 py-2 rounded-lg border border-indigo-600/50"
+							className="flex-row items-center bg-theme-primary/20 px-4 py-2 rounded-lg border border-theme-primary/50"
 							accessibilityLabel="Share join code"
 							accessibilityRole="button"
 						>
-							<Ionicons name="share-outline" size={16} color="#818CF8" />
-							<Text className="text-indigo-400 font-bold ml-2">Share</Text>
+							<Ionicons name="share-outline" size={16} color="#C9A84C" />
+							<Text className="text-theme-primary font-bold ml-2">Share</Text>
 						</Pressable>
 						<Pressable
 							onPress={handleRegenerateCode}
 							disabled={regenerateCodeMutation.isPending}
-							className="flex-row items-center bg-gray-700 px-4 py-2 rounded-lg"
+							className="flex-row items-center bg-theme-surface-elevated px-4 py-2 rounded-lg"
 							accessibilityLabel="Regenerate join code"
 							accessibilityRole="button"
 							accessibilityState={{
@@ -204,22 +204,24 @@ function OrgDetail({ org }: { org: Org }) {
 							}}
 						>
 							{regenerateCodeMutation.isPending ? (
-								<ActivityIndicator size="small" color="#9CA3AF" />
+								<ActivityIndicator size="small" color="#A89B7D" />
 							) : (
-								<Ionicons name="refresh" size={16} color="#9CA3AF" />
+								<Ionicons name="refresh" size={16} color="#A89B7D" />
 							)}
-							<Text className="text-gray-400 font-bold ml-2">Reset</Text>
+							<Text className="text-theme-text-secondary font-bold ml-2">
+								Reset
+							</Text>
 						</Pressable>
 					</View>
 				</View>
 			)}
 
 			<View className="mb-6">
-				<Text className="text-gray-400 text-sm font-bold mb-3 uppercase">
+				<Text className="text-theme-text-tertiary text-sm font-bold mb-3 uppercase">
 					Members ({members?.length ?? 0})
 				</Text>
 				{isLoadingMembers ? (
-					<ActivityIndicator color="#9CA3AF" />
+					<ActivityIndicator color="#A89B7D" />
 				) : (
 					<View>
 						{members?.map((member) => (
@@ -238,7 +240,7 @@ function OrgDetail({ org }: { org: Org }) {
 			<Pressable
 				onPress={handleLeave}
 				disabled={leaveMutation.isPending}
-				className="w-full py-3 rounded-xl items-center bg-red-900/20 border border-red-900/50 active:bg-red-900/30"
+				className="w-full py-3 rounded-xl items-center bg-theme-error/10 border border-theme-error/50 active:bg-theme-error/20"
 				accessibilityLabel="Leave Organization"
 				accessibilityRole="button"
 				accessibilityState={{
@@ -247,9 +249,9 @@ function OrgDetail({ org }: { org: Org }) {
 				}}
 			>
 				{leaveMutation.isPending ? (
-					<ActivityIndicator color="#F87171" />
+					<ActivityIndicator color="#EF4444" />
 				) : (
-					<Text className="text-red-400 font-bold">Leave Organization</Text>
+					<Text className="text-theme-error font-bold">Leave Organization</Text>
 				)}
 			</Pressable>
 		</View>
@@ -266,27 +268,29 @@ export default function MyOrgScreen() {
 	} = trpcReact.organizations.listMyOrgs.useQuery();
 
 	return (
-		<SafeAreaView className="flex-1 bg-gray-900">
-			<View className="flex-row items-center px-4 py-3 border-b border-gray-800">
+		<SafeAreaView className="flex-1 bg-theme-background">
+			<View className="flex-row items-center px-4 py-3 border-b border-theme-border">
 				<Pressable
 					onPress={() => router.back()}
 					className="mr-3"
 					accessibilityLabel="Go back"
 					accessibilityRole="button"
 				>
-					<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
+					<Ionicons name="arrow-back" size={24} color="#FDF8F0" />
 				</Pressable>
-				<Text className="text-white font-semibold text-lg">
+				<Text className="text-theme-text font-semibold text-lg">
 					My Organization
 				</Text>
 				<View className="flex-1" />
 				<Pressable
 					onPress={() => router.push("/settings/join-org")}
-					className="bg-indigo-600 px-3 py-1.5 rounded-lg"
+					className="bg-theme-primary px-3 py-1.5 rounded-lg"
 					accessibilityLabel="Join another organization"
 					accessibilityRole="button"
 				>
-					<Text className="text-white font-bold text-xs">Join Another</Text>
+					<Text className="text-theme-secondary font-bold text-xs">
+						Join Another
+					</Text>
 				</Pressable>
 			</View>
 
@@ -296,33 +300,33 @@ export default function MyOrgScreen() {
 					<RefreshControl
 						refreshing={isRefetching}
 						onRefresh={refetch}
-						tintColor="#818CF8"
+						tintColor="#C9A84C"
 					/>
 				}
 			>
 				{isLoading ? (
-					<ActivityIndicator size="large" color="#818CF8" className="mt-12" />
+					<ActivityIndicator size="large" color="#C9A84C" className="mt-12" />
 				) : orgs && orgs.length > 0 ? (
 					orgs.map((org) => <OrgDetail key={org.id} org={org} />)
 				) : (
 					<View className="items-center justify-center py-12">
-						<View className="w-20 h-20 bg-gray-800 rounded-full items-center justify-center mb-6">
-							<Ionicons name="people-outline" size={40} color="#6B7280" />
+						<View className="w-20 h-20 bg-theme-surface rounded-full items-center justify-center mb-6">
+							<Ionicons name="people-outline" size={40} color="#A89B7D" />
 						</View>
-						<Text className="text-white text-xl font-bold text-center mb-2">
+						<Text className="text-theme-text text-xl font-bold text-center mb-2">
 							No Organization Found
 						</Text>
-						<Text className="text-gray-400 text-center mb-8 px-8">
+						<Text className="text-theme-text-secondary text-center mb-8 px-8">
 							You haven't joined an organization yet. Join one to connect with
 							your community.
 						</Text>
 						<Pressable
 							onPress={() => router.push("/settings/join-org")}
-							className="bg-indigo-600 px-8 py-4 rounded-xl active:bg-indigo-700"
+							className="bg-theme-primary px-8 py-4 rounded-xl active:bg-theme-primary/90"
 							accessibilityLabel="Join Organization"
 							accessibilityRole="button"
 						>
-							<Text className="text-white font-bold text-lg">
+							<Text className="text-theme-secondary font-bold text-lg">
 								Join Organization
 							</Text>
 						</Pressable>

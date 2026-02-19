@@ -197,24 +197,24 @@ export default function PlayScreen() {
 
 	if (isLoadingDefinition) {
 		return (
-			<SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
-				<ActivityIndicator size="large" color="#4CAF50" />
-				<Text className="text-white mt-4">Loading game...</Text>
+			<SafeAreaView className="flex-1 bg-theme-background items-center justify-center">
+				<ActivityIndicator size="large" color="#C9A84C" />
+				<Text className="text-theme-text mt-4">Loading game...</Text>
 			</SafeAreaView>
 		);
 	}
 
 	if (error || !gameDefinition) {
 		return (
-			<SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
-				<Text className="text-red-400 text-center text-lg">
+			<SafeAreaView className="flex-1 bg-theme-background items-center justify-center p-6">
+				<Text className="text-theme-error text-center text-lg">
 					{error ?? "No game found"}
 				</Text>
 				<Pressable
-					className="mt-6 py-3 px-6 bg-gray-700 rounded-lg"
+					className="mt-6 py-3 px-6 bg-theme-surface-elevated rounded-lg"
 					onPress={handleBack}
 				>
-					<Text className="text-white font-semibold">← Go Back</Text>
+					<Text className="text-theme-text font-semibold">← Go Back</Text>
 				</Pressable>
 			</SafeAreaView>
 		);
@@ -224,7 +224,7 @@ export default function PlayScreen() {
 	const showLoadingOverlay = !loadingDismissed;
 
 	return (
-		<View className="flex-1 bg-gray-900">
+		<View className="flex-1 bg-theme-background">
 			<FullScreenHeader onBack={handleBack} />
 
 			{canMountGame && (

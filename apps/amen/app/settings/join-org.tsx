@@ -37,17 +37,17 @@ export default function JoinOrgScreen() {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-gray-900">
-			<View className="flex-row items-center px-4 py-3 border-b border-gray-800">
+		<SafeAreaView className="flex-1 bg-theme-background">
+			<View className="flex-row items-center px-4 py-3 border-b border-theme-border">
 				<Pressable
 					onPress={() => router.back()}
 					className="mr-3"
 					accessibilityLabel="Go back"
 					accessibilityRole="button"
 				>
-					<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
+					<Ionicons name="arrow-back" size={24} color="#FDF8F0" />
 				</Pressable>
-				<Text className="text-white font-semibold text-lg">
+				<Text className="text-theme-text font-semibold text-lg">
 					Join Amen Organization
 				</Text>
 			</View>
@@ -55,29 +55,29 @@ export default function JoinOrgScreen() {
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<View className="flex-1 p-6 items-center pt-12">
 					<View
-						className="w-16 h-16 bg-gray-800 rounded-2xl items-center justify-center mb-6"
+						className="w-16 h-16 bg-theme-surface rounded-2xl items-center justify-center mb-6"
 						accessible={true}
 						accessibilityLabel="Organization icon"
 					>
-						<Ionicons name="people" size={32} color="#E4E4E7" />
+						<Ionicons name="people" size={32} color="#FDF8F0" />
 					</View>
 
 					<Text
-						className="text-white text-2xl font-bold text-center mb-2"
+						className="text-theme-text text-2xl font-bold text-center mb-2"
 						accessibilityRole="header"
 					>
 						Enter Join Code
 					</Text>
-					<Text className="text-gray-400 text-center mb-8 px-4">
+					<Text className="text-theme-text-secondary text-center mb-8 px-4">
 						Ask your organization leader for the 6-character code to join their
 						group.
 					</Text>
 
 					<View className="w-full max-w-xs">
 						<TextInput
-							className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-4 text-white text-center font-bold text-2xl tracking-[8px] mb-4"
+							className="bg-theme-surface border border-theme-border rounded-xl px-4 py-4 text-theme-text text-center font-bold text-2xl tracking-[8px] mb-4"
 							placeholder="CODE"
-							placeholderTextColor="#4B5563"
+							placeholderTextColor="#A89B7D"
 							value={code}
 							onChangeText={(text) => {
 								setCode(
@@ -99,12 +99,12 @@ export default function JoinOrgScreen() {
 
 						{error && (
 							<View
-								className="bg-red-900/30 p-3 rounded-lg border border-red-800 mb-4"
+								className="bg-theme-error/30 p-3 rounded-lg border border-theme-error mb-4"
 								accessible={true}
 								accessibilityLabel={`Error: ${error}`}
 								accessibilityLiveRegion="polite"
 							>
-								<Text className="text-red-400 text-center text-sm">
+								<Text className="text-theme-error text-center text-sm">
 									{error}
 								</Text>
 							</View>
@@ -113,8 +113,8 @@ export default function JoinOrgScreen() {
 						<Pressable
 							className={`w-full py-4 rounded-xl items-center ${
 								joinMutation.isPending || code.length !== 6
-									? "bg-gray-800 opacity-50"
-									: "bg-indigo-600 active:bg-indigo-700"
+									? "bg-theme-surface-elevated opacity-50"
+									: "bg-theme-primary active:bg-theme-primary/90"
 							}`}
 							onPress={handleJoin}
 							disabled={joinMutation.isPending || code.length !== 6}
@@ -126,9 +126,9 @@ export default function JoinOrgScreen() {
 							}}
 						>
 							{joinMutation.isPending ? (
-								<ActivityIndicator color="white" />
+								<ActivityIndicator color="#1B3A6B" />
 							) : (
-								<Text className="text-white font-bold text-lg">
+								<Text className="text-theme-secondary font-bold text-lg">
 									Join Organization
 								</Text>
 							)}

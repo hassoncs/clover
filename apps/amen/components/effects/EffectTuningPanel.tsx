@@ -45,16 +45,16 @@ function NodeParams({ node, onParamChange }: NodeParamsProps) {
 	if (!paramsSchema || paramsSchema.length === 0) return null;
 
 	return (
-		<View className="mb-6 border-b border-gray-800 pb-4">
+		<View className="mb-6 border-b border-theme-border pb-4">
 			<View className="flex-row items-center justify-between mb-2">
-				<Text className="text-purple-400 font-bold text-lg">{type}</Text>
-				<Text className="text-gray-600 text-xs font-mono">{id}</Text>
+				<Text className="text-theme-primary font-bold text-lg">{type}</Text>
+				<Text className="text-theme-text-tertiary text-xs font-mono">{id}</Text>
 			</View>
 
 			{Object.entries(groupedParams).map(([category, schemas]) => (
 				<View key={category} className="mb-2">
 					{category !== "General" && (
-						<Text className="text-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider mt-2">
+						<Text className="text-theme-text-tertiary font-semibold mb-3 uppercase text-xs tracking-wider mt-2">
 							{category}
 						</Text>
 					)}
@@ -86,7 +86,7 @@ export function EffectTuningPanel({
 	if (nodesWithParams.length === 0) {
 		return (
 			<View className="p-4 items-center justify-center flex-1">
-				<Text className="text-gray-500 text-center">
+				<Text className="text-theme-text-tertiary text-center">
 					No tunable parameters found in this effect graph.
 				</Text>
 			</View>
@@ -94,7 +94,7 @@ export function EffectTuningPanel({
 	}
 
 	return (
-		<ScrollView className="flex-1 bg-gray-900 p-4">
+		<ScrollView className="flex-1 bg-theme-background p-4">
 			{nodesWithParams.map((node) => (
 				<NodeParams key={node.id} node={node} onParamChange={onParamChange} />
 			))}

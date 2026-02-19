@@ -34,23 +34,23 @@ export function BuzzerInput({
 				disabled={disabled || pressed}
 				className={`w-64 h-64 rounded-full items-center justify-center border-8 shadow-lg active:scale-95 transition-transform ${
 					pressed
-						? "bg-green-500 border-green-600"
+						? "bg-theme-success border-theme-success"
 						: disabled
-							? "bg-gray-500 border-gray-600 opacity-50"
-							: "bg-red-500 border-red-600"
+							? "bg-theme-surface-elevated border-theme-border opacity-50"
+							: "bg-theme-error border-theme-error"
 				}`}
 			>
 				{pressed ? (
-					<Ionicons name="checkmark" size={80} color="white" />
+					<Ionicons name="checkmark" size={80} color="#FDF8F0" />
 				) : (
-					<Text className="text-4xl font-black text-white tracking-wider">
+					<Text className="text-4xl font-black text-theme-text-inverse tracking-wider">
 						BUZZ!
 					</Text>
 				)}
 			</Pressable>
 
 			{pressed && (
-				<Text className="text-xl font-bold text-green-400 animate-bounce">
+				<Text className="text-xl font-bold text-theme-success animate-bounce">
 					Buzzed in!
 				</Text>
 			)}

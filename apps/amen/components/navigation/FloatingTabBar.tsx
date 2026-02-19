@@ -1,8 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { tokens } from "@slopcade/theme";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const AMEN = {
+	background: "#0D1C33",
+	surface: "#152A4D",
+	surfaceElevated: "#1E3866",
+	border: "#2A4A80",
+	text: "#FDF8F0",
+	textSecondary: "#A89B7D",
+	textTertiary: "#6B7280",
+	primary: "#C9A84C",
+	secondary: "#1B3A6B",
+};
 
 const ROUTE_ICON_MAP: Record<
 	string,
@@ -76,11 +87,7 @@ export function FloatingTabBar({
 								<Ionicons
 									name={isFocused ? icon.active : icon.inactive}
 									size={26}
-									color={
-										isFocused
-											? tokens.colors.text.inverse
-											: tokens.colors.text.tertiary
-									}
+									color={isFocused ? AMEN.text : AMEN.textTertiary}
 								/>
 							</Pressable>
 						);
@@ -108,9 +115,9 @@ const styles = StyleSheet.create({
 		height: 68,
 		minWidth: 278,
 		borderRadius: 34,
-		backgroundColor: tokens.colors.secondary[900],
+		backgroundColor: AMEN.surface,
 		borderWidth: StyleSheet.hairlineWidth,
-		borderColor: tokens.colors.border,
+		borderColor: AMEN.border,
 		paddingHorizontal: 14,
 		flexDirection: "row",
 		alignItems: "center",

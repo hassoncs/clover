@@ -63,7 +63,7 @@ export default function PartyJoinScreen() {
 						onPress={() => router.back()}
 						className="p-2 rounded-full bg-theme-surface active:opacity-80"
 					>
-						<Ionicons name="arrow-back" size={24} color="white" />
+						<Ionicons name="arrow-back" size={24} color="#FDF8F0" />
 					</Pressable>
 				</View>
 
@@ -75,8 +75,8 @@ export default function PartyJoinScreen() {
 					</View>
 
 					{error && (
-						<View className="bg-red-500/10 border border-red-500/50 p-3 rounded-xl mb-2">
-							<Text className="text-red-500 text-center font-medium">
+						<View className="bg-theme-error/10 border border-theme-error/50 p-3 rounded-xl mb-2">
+							<Text className="text-theme-error text-center font-medium">
 								{error}
 							</Text>
 						</View>
@@ -90,7 +90,7 @@ export default function PartyJoinScreen() {
 							value={code}
 							onChangeText={(text) => setCode(text.toUpperCase())}
 							placeholder="ABCD"
-							placeholderTextColor="#666"
+							placeholderTextColor="#A89B7D"
 							maxLength={4}
 							autoFocus={true}
 							inputMode="numeric"
@@ -110,7 +110,7 @@ export default function PartyJoinScreen() {
 							value={name}
 							onChangeText={setName}
 							placeholder="Enter your name"
-							placeholderTextColor="#666"
+							placeholderTextColor="#A89B7D"
 							maxLength={12}
 							autoCorrect={false}
 							className="bg-theme-surface text-theme-text p-4 rounded-xl text-lg border border-theme-border"
@@ -123,7 +123,9 @@ export default function PartyJoinScreen() {
 						disabled={!code || !name}
 						className={`w-full bg-theme-primary p-4 rounded-xl items-center mt-4 active:opacity-90 ${!code || !name ? "opacity-50" : ""}`}
 					>
-						<Text className="text-white text-xl font-bold">Join Party</Text>
+						<Text className="text-theme-secondary text-xl font-bold">
+							Join Party
+						</Text>
 					</Pressable>
 				</View>
 			</View>

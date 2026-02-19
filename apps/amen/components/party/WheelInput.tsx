@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, {
 	Easing,
@@ -56,7 +56,7 @@ export function WheelInput({
 		});
 	};
 
-	const spin = () => {
+	const spin = useCallback(() => {
 		if (spinning || disabled || completed) return;
 
 		setSpinning(true);
@@ -92,13 +92,21 @@ export function WheelInput({
 				}
 			},
 		);
-	};
+	}, [
+		spinning,
+		disabled,
+		completed,
+		seed,
+		slices.length,
+		sliceAngle,
+		rotation,
+	]);
 
 	useEffect(() => {
 		if (autoSpin && !completed && !spinning) {
 			spin();
 		}
-	}, [autoSpin]);
+	}, [autoSpin, completed, spinning, spin]);
 
 	const createSlicePath = (index: number, total: number) => {
 		const startAngle = (index * 360) / total;
@@ -175,18 +183,22 @@ export function WheelInput({
 					onPress={spin}
 					disabled={disabled || spinning}
 					className={`px-10 py-4 rounded-full shadow-lg active:scale-95 transition-transform ${
-						disabled || spinning ? "bg-gray-400 opacity-50" : "bg-blue-600"
+						disabled || spinning
+							? "bg-theme-surface-elevated opacity-50"
+							: "bg-theme-primary"
 					}`}
 				>
-					<Text className="text-white font-bold text-xl tracking-wider">
+					<Text
+						className={`font-bold text-xl tracking-wider ${disabled || spinning ? "text-theme-text-tertiary" : "text-theme-secondary"}`}
+					>
 						{spinning ? "SPINNING..." : "SPIN!"}
 					</Text>
 				</Pressable>
 			)}
 
 			{completed && (
-				<View className="px-6 py-3 bg-green-100 rounded-xl border border-green-200">
-					<Text className="text-green-800 font-bold text-lg">
+				<View className="px-6 py-3 bg-theme-success/20 rounded-xl border border-theme-success">
+					<Text className="text-theme-success font-bold text-lg">
 						Result Locked!
 					</Text>
 				</View>

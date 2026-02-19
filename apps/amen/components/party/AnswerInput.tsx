@@ -46,8 +46,10 @@ export function AnswerInput({
 					disabled={!answer.trim() || disabled}
 					className={`w-full bg-theme-primary p-4 rounded-xl items-center flex-row justify-center gap-2 active:opacity-90 ${!answer.trim() || disabled ? "opacity-50" : ""}`}
 				>
-					<Text className="text-white text-lg font-bold">Submit Answer</Text>
-					<Ionicons name="send" size={20} color="white" />
+					<Text className="text-theme-text-inverse text-lg font-bold">
+						Submit Answer
+					</Text>
+					<Ionicons name="send" size={20} color="#FDF8F0" />
 				</Pressable>
 			</View>
 		</KeyboardAvoidingView>

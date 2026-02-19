@@ -110,16 +110,14 @@ export function MicButton({
 				{isConnecting ? (
 					<ActivityIndicator
 						size="small"
-						color={tokens.colors.text.secondary}
+						color="#A89B7D"
 						testID="loading-indicator"
 					/>
 				) : (
 					<Ionicons
 						name={isRecording ? "mic" : "mic-outline"}
 						size={24}
-						color={
-							isRecording ? tokens.colors.error : tokens.colors.text.secondary
-						}
+						color={isRecording ? "#EF4444" : "#A89B7D"}
 						testID="mic-icon"
 					/>
 				)}

@@ -57,11 +57,11 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
 
 	if (isValid) {
 		return (
-			<View className="w-full bg-green-900/30 p-4 rounded-xl border border-green-700 mb-4">
-				<Text className="text-green-300 text-center font-semibold">
+			<View className="w-full bg-theme-success/30 p-4 rounded-xl border border-theme-success mb-4">
+				<Text className="text-theme-success text-center font-semibold">
 					✓ Invite code verified
 				</Text>
-				<Text className="text-green-400 text-center text-sm mt-1">
+				<Text className="text-theme-success text-center text-sm mt-1">
 					You can now sign in below
 				</Text>
 			</View>
@@ -69,19 +69,19 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
 	}
 
 	return (
-		<View className="w-full bg-gray-800/50 p-4 rounded-xl border border-gray-700 mb-4">
-			<Text className="text-white font-semibold text-center mb-2">
+		<View className="w-full bg-theme-surface/50 p-4 rounded-xl border border-theme-border mb-4">
+			<Text className="text-theme-text font-semibold text-center mb-2">
 				🎫 Have an Invite Code?
 			</Text>
-			<Text className="text-gray-400 text-center text-sm mb-3">
+			<Text className="text-theme-text-secondary text-center text-sm mb-3">
 				Amen is invite-only during beta
 			</Text>
 
 			<View className="mb-2">
 				<TextInput
-					className="bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white text-center font-bold tracking-widest"
+					className="bg-theme-surface border border-theme-border rounded-xl px-4 py-3 text-theme-text text-center font-bold tracking-widest"
 					placeholder="ENTER INVITE CODE"
-					placeholderTextColor="#666"
+					placeholderTextColor="#A89B7D"
 					value={code}
 					onChangeText={(text) => {
 						setCode(text.toUpperCase());
@@ -93,15 +93,17 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
 					accessibilityLabel="Invite code input"
 				/>
 				{error && (
-					<Text className="text-red-400 text-center mt-2 text-sm">{error}</Text>
+					<Text className="text-theme-error text-center mt-2 text-sm">
+						{error}
+					</Text>
 				)}
 			</View>
 
 			<TouchableOpacity
 				className={`w-full py-3 rounded-xl items-center ${
 					isValidating || !code.trim()
-						? "bg-gray-700"
-						: "bg-indigo-600 active:bg-indigo-700"
+						? "bg-theme-surface-elevated"
+						: "bg-theme-primary active:bg-theme-primary/90"
 				}`}
 				onPress={handleValidate}
 				disabled={isValidating || !code.trim()}
@@ -110,9 +112,11 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
 				accessibilityState={{ disabled: isValidating || !code.trim() }}
 			>
 				{isValidating ? (
-					<ActivityIndicator color="white" />
+					<ActivityIndicator color="#FDF8F0" />
 				) : (
-					<Text className="text-white font-bold">Verify Invite Code</Text>
+					<Text className="text-theme-secondary font-bold">
+						Verify Invite Code
+					</Text>
 				)}
 			</TouchableOpacity>
 		</View>

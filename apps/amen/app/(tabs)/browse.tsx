@@ -1,145 +1,149 @@
-import { Ionicons } from "@expo/vector-icons";
-import { AmenGrainOverlay, PatternBackground } from "@slopcade/ui/amen";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
 	ActivityIndicator,
-	Modal,
 	Pressable,
-	StyleSheet,
+	RefreshControl,
+	ScrollView,
 	Text,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
-import { GameHallCarousel } from "@/components/browse/GameHallCarousel";
-import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
-import { createPartyRoom } from "@/lib/party/api";
+import { FilterBar } from "@/components/browse/FilterBar";
+import { GameGridCard } from "@/components/browse/GameCard";
+import { useBrowseGames } from "@/hooks/useBrowseGames";
+
+type SortOption = "newest" | "popular" | "alphabetical" | "rating";
+
+const PAGE_SIZE = 20;
 
 export default function BrowseScreen() {
 	const router = useRouter();
-	const [launching, setLaunching] = useState<string | null>(null);
-	const [launchError, setLaunchError] = useState<string | null>(null);
-	const [selectedId, setSelectedId] = useState<string | null>(null);
 
-	const { templates, isLoading } = useBrowsePartyGames();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [sortBy, setSortBy] = useState<SortOption>("popular");
+	const [showFilters, setShowFilters] = useState(false);
 
-	useEffect(() => {
-		if (templates.length > 0 && !selectedId) {
-			setSelectedId(templates[0].id);
-		}
-	}, [templates, selectedId]);
+	const {
+		games,
+		isLoading,
+		isFetching,
+		isRefreshing,
+		hasMore,
+		loadMore,
+		refresh,
+	} = useBrowseGames({ pageSize: PAGE_SIZE, searchQuery, sortBy });
 
-	const selectedTemplate = templates.find((t) => t.id === selectedId);
-
-	const handlePlay = async () => {
-		if (!selectedTemplate) return;
-		try {
-			setLaunching(selectedTemplate.title);
-			setLaunchError(null);
-			const { code, hostToken } = await createPartyRoom(
-				selectedTemplate.id,
-				selectedTemplate.minPlayers,
-			);
-			router.push({
-				pathname: "/party/host",
-				params: {
-					code,
-					hostToken,
-					templateId: selectedTemplate.id,
-					templateTitle: selectedTemplate.title,
-					minPlayers: String(selectedTemplate.minPlayers),
-				},
-			});
-		} catch (err) {
-			setLaunchError(
-				err instanceof Error ? err.message : "Failed to create room",
-			);
-		} finally {
-			setLaunching(null);
-		}
-	};
-
-	const handleHowToPlay = () => {
-		if (!selectedTemplate) return;
-		router.push({
-			pathname: "/how-to-play/[templateId]",
-			params: { templateId: selectedTemplate.id },
-		});
+	const clearFilters = () => {
+		setSortBy("popular");
+		setSearchQuery("");
 	};
 
 	return (
-		<View className="flex-1 bg-[#1B3A6B]">
-			<PatternBackground
-				pattern="dots"
-				color="rgba(255, 255, 255, 0.05)"
-				style={StyleSheet.absoluteFill}
-			/>
-			<AmenGrainOverlay />
+		<SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
+			<ScrollView
+				className="flex-1"
+				refreshControl={
+					<RefreshControl
+						refreshing={isRefreshing}
+						onRefresh={refresh}
+						tintColor="#C9A84C"
+					/>
+				}
+			>
+				<View className="p-4">
+					<View className="mb-4">
+						<Text className="text-2xl font-bold text-theme-text">
+							Browse Games
+						</Text>
+						<Text className="text-theme-text-secondary mt-1">
+							Discover and play physics-based games
+						</Text>
+					</View>
 
-			<SafeAreaView className="flex-1" edges={["top", "bottom"]}>
-				<Modal transparent animationType="fade" visible={!!launching}>
-					<View className="flex-1 bg-black/60 items-center justify-center">
-						<View className="bg-theme-surface rounded-2xl p-8 items-center gap-4 mx-8">
-							<ActivityIndicator
-								size="large"
-								color="rgb(var(--color-theme-primary))"
-							/>
-							<Text className="text-theme-text font-semibold text-lg text-center">
-								Starting {launching}…
+					<FilterBar
+						searchQuery={searchQuery}
+						onSearchChange={setSearchQuery}
+						sortBy={sortBy}
+						onSortByChange={setSortBy}
+						showFilters={showFilters}
+						onToggleFilters={() => setShowFilters(!showFilters)}
+						onClearFilters={clearFilters}
+					/>
+
+					<View className="mb-6">
+						<View className="flex-row items-center justify-between mb-3">
+							<Text className="text-lg font-semibold text-theme-text">
+								Games
 							</Text>
-							<Text className="text-theme-text-secondary text-sm text-center">
-								Setting up your room
-							</Text>
+							{!isLoading && games.length > 0 && (
+								<View className="flex-row items-center gap-2">
+									{isFetching && (
+										<ActivityIndicator size="small" color="#C9A84C" />
+									)}
+									<Text className="text-theme-text-tertiary text-sm">
+										{games.length} {games.length === 1 ? "game" : "games"}
+									</Text>
+								</View>
+							)}
 						</View>
+
+						{isLoading ? (
+							<View className="items-center py-12">
+								<ActivityIndicator size="large" color="#C9A84C" />
+								<Text className="text-theme-text-secondary mt-4">
+									Loading games...
+								</Text>
+							</View>
+						) : games.length === 0 ? (
+							<View className="p-6 bg-theme-surface rounded-xl border border-theme-border items-center">
+								<Text className="text-4xl mb-3">🎮</Text>
+								<Text className="text-theme-text-secondary text-center">
+									{searchQuery
+										? "No games match your search."
+										: "No games available yet."}
+								</Text>
+								{searchQuery && (
+									<Pressable onPress={clearFilters} className="mt-3">
+										<Text className="text-theme-primary font-medium">
+											Clear search
+										</Text>
+									</Pressable>
+								)}
+							</View>
+						) : (
+							<View className="flex-row flex-wrap justify-between">
+								{games.map((game) => (
+									<GameGridCard
+										key={game.id}
+										title={game.title}
+										thumbnailUrl={game.thumbnailUrl}
+										thumbnailEmoji="🌟"
+										thumbnailBgClass="bg-theme-secondary/30"
+										onPress={() =>
+											router.push({
+												pathname: "/game-detail/[id]",
+												params: { id: game.id },
+											})
+										}
+									/>
+								))}
+
+								{hasMore && (
+									<Pressable
+										onPress={loadMore}
+										className="w-full bg-theme-surface p-4 rounded-xl border border-theme-border items-center active:bg-theme-surface-elevated mt-2"
+									>
+										<Text className="text-theme-primary font-medium">
+											Load more games
+										</Text>
+									</Pressable>
+								)}
+							</View>
+						)}
 					</View>
-				</Modal>
-
-				<View className="px-6 py-4 flex-row justify-between items-center z-10">
-					<View>
-						<Text
-							className="text-[#C9A84C] text-3xl font-serif tracking-widest text-center"
-							style={{ fontFamily: "Lora_700Bold" }}
-						>
-							A·MEN
-						</Text>
-						<Text className="text-[#FFFDF7]/60 text-xs uppercase tracking-[0.2em] text-center -mt-1">
-							The Hall
-						</Text>
-					</View>
-					<Pressable
-						onPress={() => router.push("/settings/game-settings")}
-						className="p-2 -mr-2 bg-[#0F2347]/50 rounded-full"
-						accessibilityLabel="Settings"
-					>
-						<Ionicons name="settings-outline" size={24} color="#C9A84C" />
-					</Pressable>
 				</View>
-
-				<View className="flex-1 justify-center">
-					{isLoading ? (
-						<ActivityIndicator size="large" color="#C9A84C" />
-					) : (
-						<GameHallCarousel
-							templates={templates}
-							selectedId={selectedId}
-							onSelect={setSelectedId}
-						/>
-					)}
-				</View>
-
-				{launchError && (
-					<Text className="text-red-400 text-center text-sm px-6 mb-2">
-						{launchError}
-					</Text>
-				)}
-
-				<GameDetailPanel
-					template={selectedTemplate ?? null}
-					onPlay={handlePlay}
-					onHowToPlay={handleHowToPlay}
-				/>
-			</SafeAreaView>
-		</View>
+			</ScrollView>
+		</SafeAreaView>
 	);
 }

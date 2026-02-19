@@ -32,7 +32,7 @@ export function ResultRevealCard({
 					key={row.label}
 					className={`w-full bg-theme-surface rounded-xl border ${
 						row.highlight
-							? "border-purple-500 bg-purple-500/10"
+							? "border-theme-primary bg-theme-primary/10"
 							: "border-theme-border"
 					} ${isHost ? "p-6 max-w-3xl" : "p-4"}`}
 				>
@@ -53,7 +53,7 @@ export function ResultRevealCard({
 						</View>
 						{row.points != null && (
 							<Text
-								className={`font-bold text-purple-400 ${isHost ? "text-2xl" : "text-base"}`}
+								className={`font-bold text-theme-primary ${isHost ? "text-2xl" : "text-base"}`}
 							>
 								+{row.points}
 							</Text>

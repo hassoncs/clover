@@ -98,54 +98,62 @@ export function TextEffectEditor({
 	);
 
 	return (
-		<ScrollView className="flex-1 bg-gray-900">
+		<ScrollView className="flex-1 bg-theme-background">
 			<View className="p-4">
-				<Text className="text-white text-xl font-bold mb-4">
+				<Text className="text-theme-text text-xl font-bold mb-4">
 					Text Effect Editor
 				</Text>
 
 				<View className="mb-4">
-					<Text className="text-gray-400 text-sm mb-2">Text Content</Text>
+					<Text className="text-theme-text-secondary text-sm mb-2">
+						Text Content
+					</Text>
 					<TextInput
 						value={text}
 						onChangeText={setText}
-						className="bg-gray-800 text-white p-3 rounded-lg"
+						className="bg-theme-surface text-theme-text p-3 rounded-lg"
 						placeholder="Enter text..."
-						placeholderTextColor="#666"
+						placeholderTextColor="#A89B7D"
 						accessibilityLabel="Text content"
 					/>
 				</View>
 
 				<View className="mb-4">
-					<Text className="text-gray-400 text-sm mb-2">Device Tier</Text>
+					<Text className="text-theme-text-secondary text-sm mb-2">
+						Device Tier
+					</Text>
 					<View className="flex-row gap-2">
 						{(["low", "mid", "high"] as DeviceTier[]).map((tier) => (
 							<TouchableOpacity
 								key={tier}
 								onPress={() => setSelectedTier(tier)}
 								className={`px-4 py-2 rounded-lg ${
-									selectedTier === tier ? "bg-purple-600" : "bg-gray-800"
+									selectedTier === tier
+										? "bg-theme-primary"
+										: "bg-theme-surface"
 								}`}
 								accessibilityRole="button"
 								accessibilityLabel={`${tier} device tier`}
 								accessibilityState={{ selected: selectedTier === tier }}
 							>
 								<Text
-									className={`capitalize ${selectedTier === tier ? "text-white" : "text-gray-400"}`}
+									className={`capitalize ${selectedTier === tier ? "text-theme-secondary" : "text-theme-text-secondary"}`}
 								>
 									{tier}
 								</Text>
 							</TouchableOpacity>
 						))}
 					</View>
-					<Text className="text-gray-500 text-xs mt-2">
+					<Text className="text-theme-text-tertiary text-xs mt-2">
 						Max {limits.maxEffectsPerText} effects, {limits.maxSamples} samples
 						{limits.enableBlur ? ", blur enabled" : ", no blur"}
 					</Text>
 				</View>
 
 				<View className="mb-4">
-					<Text className="text-gray-400 text-sm mb-2">Presets</Text>
+					<Text className="text-theme-text-secondary text-sm mb-2">
+						Presets
+					</Text>
 					<View className="flex-row flex-wrap gap-2">
 						{Object.entries(TEXT_EFFECT_PRESETS).map(([key, preset]) => (
 							<TouchableOpacity
@@ -153,25 +161,29 @@ export function TextEffectEditor({
 								onPress={() =>
 									handlePresetSelect(key as keyof typeof TEXT_EFFECT_PRESETS)
 								}
-								className="bg-gray-800 px-3 py-2 rounded-lg"
+								className="bg-theme-surface px-3 py-2 rounded-lg"
 								accessibilityRole="button"
 								accessibilityLabel={`${preset.name} preset, ${preset.tier} tier`}
 							>
-								<Text className="text-white text-sm">{preset.name}</Text>
-								<Text className="text-gray-500 text-xs">{preset.tier}</Text>
+								<Text className="text-theme-text text-sm">{preset.name}</Text>
+								<Text className="text-theme-text-tertiary text-xs">
+									{preset.tier}
+								</Text>
 							</TouchableOpacity>
 						))}
 					</View>
 				</View>
 
 				<View className="mb-4">
-					<Text className="text-gray-400 text-sm mb-2">AI Description</Text>
+					<Text className="text-theme-text-secondary text-sm mb-2">
+						AI Description
+					</Text>
 					<TextInput
 						value={description}
 						onChangeText={setDescription}
-						className="bg-gray-800 text-white p-3 rounded-lg h-20"
+						className="bg-theme-surface text-theme-text p-3 rounded-lg h-20"
 						placeholder="Describe the effect (e.g., 'Neon sign with cyan glow')..."
-						placeholderTextColor="#666"
+						placeholderTextColor="#A89B7D"
 						multiline
 						accessibilityLabel="AI effect description"
 					/>
@@ -180,8 +192,8 @@ export function TextEffectEditor({
 						disabled={isGenerating || !description.trim()}
 						className={`mt-2 p-3 rounded-lg ${
 							isGenerating || !description.trim()
-								? "bg-gray-700"
-								: "bg-purple-600"
+								? "bg-theme-surface-elevated"
+								: "bg-theme-primary"
 						}`}
 						accessibilityRole="button"
 						accessibilityLabel="Generate effect"
@@ -190,9 +202,9 @@ export function TextEffectEditor({
 						}}
 					>
 						{isGenerating ? (
-							<ActivityIndicator color="white" />
+							<ActivityIndicator color="#FDF8F0" />
 						) : (
-							<Text className="text-white text-center font-semibold">
+							<Text className="text-theme-secondary text-center font-semibold">
 								Generate Effect
 							</Text>
 						)}
@@ -201,7 +213,7 @@ export function TextEffectEditor({
 
 				{generatedEffect && (
 					<View className="mt-4">
-						<Text className="text-white text-lg font-semibold mb-2">
+						<Text className="text-theme-text text-lg font-semibold mb-2">
 							Effect Parameters
 						</Text>
 						<EffectTuningPanel
@@ -210,11 +222,11 @@ export function TextEffectEditor({
 						/>
 						<TouchableOpacity
 							onPress={() => onApply(generatedEffect.spec)}
-							className="mt-4 bg-green-600 p-3 rounded-lg"
+							className="mt-4 bg-theme-success p-3 rounded-lg"
 							accessibilityRole="button"
 							accessibilityLabel="Apply effect to game"
 						>
-							<Text className="text-white text-center font-semibold">
+							<Text className="text-theme-text-inverse text-center font-semibold">
 								Apply to Game
 							</Text>
 						</TouchableOpacity>

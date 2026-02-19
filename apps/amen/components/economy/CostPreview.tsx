@@ -23,7 +23,7 @@ export function CostPreview({
 	if (isLoading) {
 		return (
 			<View className="bg-theme-surface-elevated p-6 rounded-lg items-center justify-center">
-				<ActivityIndicator size="small" color={tokens.colors.text.secondary} />
+				<ActivityIndicator size="small" color="#A89B7D" />
 				<Text className="text-theme-text-secondary mt-2 text-sm">
 					Estimating cost...
 				</Text>

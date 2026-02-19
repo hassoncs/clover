@@ -25,24 +25,24 @@ export function Scoreboard({
 		>
 			{sortedData.map((player, index) => {
 				const rank = index + 1;
-				let rankColor = "bg-theme-surface";
+				let rankColor = "bg-theme-surface-elevated";
 				let textColor = "text-theme-text";
 
 				if (rank === 1) {
-					rankColor = "bg-yellow-500";
-					textColor = "text-black";
+					rankColor = "bg-theme-primary";
+					textColor = "text-theme-secondary";
 				} else if (rank === 2) {
-					rankColor = "bg-gray-300";
-					textColor = "text-black";
+					rankColor = "bg-theme-text-secondary";
+					textColor = "text-theme-background";
 				} else if (rank === 3) {
-					rankColor = "bg-orange-400";
-					textColor = "text-black";
+					rankColor = "bg-theme-text-tertiary";
+					textColor = "text-theme-background";
 				}
 
 				return (
 					<View
 						key={player.playerName}
-						className={`flex-row items-center ${padding} rounded-xl border border-theme-border ${rank === 1 && highlightWinner ? "bg-yellow-500/20 border-yellow-500" : "bg-theme-surface"}`}
+						className={`flex-row items-center ${padding} rounded-xl border border-theme-border ${rank === 1 && highlightWinner ? "bg-theme-primary/20 border-theme-primary" : "bg-theme-surface"}`}
 					>
 						<View
 							className={`${rankSize} rounded-full items-center justify-center mr-4 ${rankColor}`}
@@ -59,7 +59,7 @@ export function Scoreboard({
 							<Ionicons
 								name="trophy"
 								size={iconSize}
-								color="#EAB308"
+								color="#C9A84C"
 								className="ml-2"
 							/>
 						)}

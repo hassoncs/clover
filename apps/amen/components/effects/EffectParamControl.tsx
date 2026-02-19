@@ -57,16 +57,18 @@ export function EffectParamControl({
 		return (
 			<View className="flex-row justify-between items-center mb-4">
 				<View className="flex-1 mr-4">
-					<Text className="text-white font-medium">{label}</Text>
+					<Text className="text-theme-text font-medium">{label}</Text>
 					{description && (
-						<Text className="text-gray-500 text-xs">{description}</Text>
+						<Text className="text-theme-text-secondary text-xs">
+							{description}
+						</Text>
 					)}
 				</View>
 				<Switch
 					value={getBool(value)}
 					onValueChange={onChange}
-					trackColor={{ false: "#374151", true: "#a855f7" }}
-					thumbColor="#fff"
+					trackColor={{ false: "#374151", true: "#C9A84C" }}
+					thumbColor="#FDF8F0"
 					accessibilityLabel={label}
 				/>
 			</View>
@@ -76,21 +78,23 @@ export function EffectParamControl({
 	if (type === "color") {
 		return (
 			<View className="mb-4">
-				<Text className="text-white font-medium mb-1">{label}</Text>
+				<Text className="text-theme-text font-medium mb-1">{label}</Text>
 				{description && (
-					<Text className="text-gray-500 text-xs mb-2">{description}</Text>
+					<Text className="text-theme-text-secondary text-xs mb-2">
+						{description}
+					</Text>
 				)}
 				<View className="flex-row items-center gap-2">
 					<View
-						className="w-8 h-8 rounded border border-gray-600"
+						className="w-8 h-8 rounded border border-theme-border"
 						style={{ backgroundColor: getString(value) || "#000000" }}
 					/>
 					<TextInput
-						className="flex-1 bg-gray-800 text-white p-2 rounded border border-gray-700 font-mono"
+						className="flex-1 bg-theme-surface text-theme-text p-2 rounded border border-theme-border font-mono"
 						value={getString(value)}
 						onChangeText={onChange}
 						placeholder="#RRGGBB"
-						placeholderTextColor="#6B7280"
+						placeholderTextColor="#A89B7D"
 						accessibilityLabel={`${label} color value`}
 					/>
 				</View>
@@ -109,18 +113,20 @@ export function EffectParamControl({
 
 		return (
 			<View className="mb-4">
-				<Text className="text-white font-medium mb-1">{label}</Text>
+				<Text className="text-theme-text font-medium mb-1">{label}</Text>
 				{description && (
-					<Text className="text-gray-500 text-xs mb-2">{description}</Text>
+					<Text className="text-theme-text-secondary text-xs mb-2">
+						{description}
+					</Text>
 				)}
 				<View className="flex-row gap-2">
 					{components.map((comp, i) => (
 						<View key={comp} className="flex-1">
-							<Text className="text-gray-400 text-xs mb-1 uppercase text-center">
+							<Text className="text-theme-text-tertiary text-xs mb-1 uppercase text-center">
 								{comp}
 							</Text>
 							<TextInput
-								className="bg-gray-800 text-white p-2 rounded border border-gray-700 font-mono text-center"
+								className="bg-theme-surface text-theme-text p-2 rounded border border-theme-border font-mono text-center"
 								value={String(currentValues[i] ?? 0)}
 								keyboardType="numeric"
 								onChangeText={(text) => {

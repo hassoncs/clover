@@ -181,7 +181,7 @@ export function BuySparksModal({ visible, onClose }: BuySparksModalProps) {
 								<TextInput
 									className="flex-1 bg-theme-surface border border-theme-border rounded-xl px-4 py-3 text-theme-text"
 									placeholder="Enter promo code"
-									placeholderTextColor={tokens.colors.text.tertiary}
+									placeholderTextColor="#6B7280"
 									value={promoCode}
 									onChangeText={(text) => {
 										setPromoCode(text.toUpperCase());
@@ -207,10 +207,7 @@ export function BuySparksModal({ visible, onClose }: BuySparksModalProps) {
 									}}
 								>
 									{redeemPromoMutation.isPending ? (
-										<ActivityIndicator
-											color={tokens.colors.text.inverse}
-											size="small"
-										/>
+										<ActivityIndicator color="#FDF8F0" size="small" />
 									) : (
 										<Text className="text-theme-text-inverse font-bold">
 											Redeem

@@ -137,7 +137,7 @@ export function RoundResultsPhase({ sharedData, role }: PhaseRendererProps) {
 								— {r.authorName}
 							</Text>
 							<Text
-								className={`text-purple-400 font-bold ${isHost ? "text-2xl" : "text-sm"}`}
+								className={`text-theme-primary font-bold ${isHost ? "text-2xl" : "text-sm"}`}
 							>
 								{r.voteCount} vote
 								{r.voteCount !== 1 ? "s" : ""} (+{r.points})

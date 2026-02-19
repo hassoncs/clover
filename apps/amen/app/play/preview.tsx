@@ -50,27 +50,27 @@ export default function PreviewScreen() {
 
 	if (error || !gameDefinition) {
 		return (
-			<SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
-				<Text className="text-red-400 text-center text-lg">
+			<SafeAreaView className="flex-1 bg-theme-background items-center justify-center p-6">
+				<Text className="text-theme-error text-center text-lg">
 					{error ?? "No game found"}
 				</Text>
 				<Pressable
-					className="mt-6 py-3 px-6 bg-gray-700 rounded-lg"
+					className="mt-6 py-3 px-6 bg-theme-surface-elevated rounded-lg"
 					onPress={handleBack}
 				>
-					<Text className="text-white font-semibold">← Go Back</Text>
+					<Text className="text-theme-text font-semibold">← Go Back</Text>
 				</Pressable>
 			</SafeAreaView>
 		);
 	}
 
 	return (
-		<View className="flex-1 bg-gray-900">
+		<View className="flex-1 bg-theme-background">
 			<FullScreenHeader
 				onBack={handleBack}
 				centerContent={
-					<View className="bg-yellow-500/80 px-3 py-1 rounded-full">
-						<Text className="text-yellow-900 font-semibold text-sm">
+					<View className="bg-theme-warning/80 px-3 py-1 rounded-full">
+						<Text className="text-theme-text-inverse font-semibold text-sm">
 							PREVIEW
 						</Text>
 					</View>
@@ -99,7 +99,7 @@ export default function PreviewScreen() {
 				}}
 				fallback={
 					<View className="flex-1 items-center justify-center">
-						<ActivityIndicator size="large" color="#4CAF50" />
+						<ActivityIndicator size="large" color="#C9A84C" />
 					</View>
 				}
 			/>

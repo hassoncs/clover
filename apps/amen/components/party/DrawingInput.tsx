@@ -116,10 +116,10 @@ export default function DrawingInput({
 	};
 
 	return (
-		<View className="flex-1 w-full bg-white rounded-xl overflow-hidden shadow-sm">
+		<View className="flex-1 w-full bg-theme-surface rounded-xl overflow-hidden shadow-sm">
 			{/* Canvas Area */}
 			<View
-				className="flex-1 bg-gray-50"
+				className="flex-1 bg-theme-background"
 				onTouchStart={onTouchStart}
 				onTouchMove={onTouchMove}
 				onTouchEnd={onTouchEnd}
@@ -127,7 +127,7 @@ export default function DrawingInput({
 				<Canvas style={{ flex: 1 }}>
 					{paths.map((p, i) => (
 						<Path
-							key={i}
+							key={`path-${i}`}
 							path={p.path}
 							color={p.color}
 							style="stroke"
@@ -150,7 +150,7 @@ export default function DrawingInput({
 			</View>
 
 			{/* Controls */}
-			<View className="p-4 bg-white border-t border-gray-100 gap-4">
+			<View className="p-4 bg-theme-surface border-t border-theme-border gap-4">
 				{/* Color Palette */}
 				<View className="flex-row justify-center gap-3 flex-wrap">
 					{colors.map((c) => (
@@ -159,7 +159,7 @@ export default function DrawingInput({
 							onPress={() => setSelectedColor(c)}
 							className={`w-10 h-10 rounded-full border-2 ${
 								selectedColor === c
-									? "border-gray-900 scale-110"
+									? "border-theme-text scale-110"
 									: "border-transparent"
 							}`}
 							style={{ backgroundColor: c }}
@@ -173,28 +173,30 @@ export default function DrawingInput({
 						<Pressable
 							onPress={handleUndo}
 							disabled={strokes.length === 0}
-							className={`p-3 rounded-lg bg-gray-100 ${
-								strokes.length === 0 ? "opacity-50" : "active:bg-gray-200"
+							className={`p-3 rounded-lg bg-theme-surface-elevated ${
+								strokes.length === 0 ? "opacity-50" : "active:bg-theme-surface"
 							}`}
 						>
-							<Ionicons name="arrow-undo" size={24} color="#374151" />
+							<Ionicons name="arrow-undo" size={24} color="#FDF8F0" />
 						</Pressable>
 						<Pressable
 							onPress={handleClear}
 							disabled={strokes.length === 0}
-							className={`p-3 rounded-lg bg-gray-100 ${
-								strokes.length === 0 ? "opacity-50" : "active:bg-gray-200"
+							className={`p-3 rounded-lg bg-theme-surface-elevated ${
+								strokes.length === 0 ? "opacity-50" : "active:bg-theme-surface"
 							}`}
 						>
-							<Ionicons name="trash-outline" size={24} color="#ef4444" />
+							<Ionicons name="trash-outline" size={24} color="#EF4444" />
 						</Pressable>
 					</View>
 
 					<Pressable
 						onPress={handleSubmit}
-						className="bg-black px-8 py-3 rounded-full active:bg-gray-800"
+						className="bg-theme-primary px-8 py-3 rounded-full active:bg-theme-primary/90"
 					>
-						<Text className="text-white font-bold text-lg">Submit</Text>
+						<Text className="text-theme-secondary font-bold text-lg">
+							Submit
+						</Text>
 					</Pressable>
 				</View>
 			</View>

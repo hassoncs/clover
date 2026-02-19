@@ -1,4 +1,3 @@
-import { tokens } from "@slopcade/theme";
 import { useEffect, useRef, useState } from "react";
 import {
 	Animated,
@@ -8,6 +7,19 @@ import {
 	Text,
 	View,
 } from "react-native";
+
+const AMEN = {
+	background: "#0D1C33",
+	surface: "#152A4D",
+	surfaceElevated: "#1E3866",
+	border: "#2A4A80",
+	text: "#FDF8F0",
+	textSecondary: "#A89B7D",
+	textTertiary: "#6B7280",
+	primary: "#C9A84C",
+	secondary: "#1B3A6B",
+	black: "#000000",
+};
 
 interface SidebarPlaceholderProps {
 	visible: boolean;
@@ -77,25 +89,25 @@ export function SidebarPlaceholder({
 const styles = StyleSheet.create({
 	overlay: {
 		...StyleSheet.absoluteFillObject,
-		backgroundColor: tokens.colors.black,
+		backgroundColor: AMEN.black,
 	},
 	panel: {
 		width: PANEL_WIDTH,
 		height: "100%",
-		backgroundColor: tokens.colors.secondary[900],
+		backgroundColor: AMEN.surface,
 		borderRightWidth: StyleSheet.hairlineWidth,
-		borderRightColor: tokens.colors.border,
+		borderRightColor: AMEN.border,
 		paddingTop: 72,
 		paddingHorizontal: 18,
 		gap: 10,
 	},
 	title: {
-		color: tokens.colors.text.primary,
+		color: AMEN.text,
 		fontSize: 22,
 		fontWeight: "700",
 	},
 	subtitle: {
-		color: tokens.colors.text.tertiary,
+		color: AMEN.textTertiary,
 		fontSize: 14,
 		lineHeight: 20,
 	},

@@ -67,13 +67,13 @@ function CheckoutForm({
 
 	return (
 		<View className="w-full">
-			<View className="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-4">
+			<View className="bg-theme-surface border border-theme-border rounded-xl p-4 mb-4">
 				<PaymentElement />
 			</View>
 
 			{errorMessage && (
-				<View className="bg-red-900/30 p-4 rounded-xl border border-red-700 mb-4">
-					<Text className="text-red-400 text-sm text-center">
+				<View className="bg-theme-error/30 p-4 rounded-xl border border-theme-error mb-4">
+					<Text className="text-theme-error text-sm text-center">
 						{errorMessage}
 					</Text>
 				</View>
@@ -84,14 +84,14 @@ function CheckoutForm({
 				disabled={!stripe || isProcessing}
 				className={`py-4 rounded-xl items-center ${
 					!stripe || isProcessing
-						? "bg-gray-700"
-						: "bg-[#1B3A6B] active:bg-[#152C52]"
+						? "bg-theme-surface-elevated"
+						: "bg-theme-secondary active:bg-theme-secondary/90"
 				}`}
 			>
 				{isProcessing ? (
-					<ActivityIndicator size="small" color="#FFFFFF" />
+					<ActivityIndicator size="small" color="#FDF8F0" />
 				) : (
-					<Text className="text-white font-semibold text-lg">
+					<Text className="text-theme-text font-semibold text-lg">
 						Subscribe — {priceDisplay || "$9.99/mo"}
 					</Text>
 				)}
@@ -153,16 +153,18 @@ export default function StripeCheckout(props: StripeCheckoutProps) {
 	if (isLoading) {
 		return (
 			<View className="py-12 items-center justify-center">
-				<ActivityIndicator size="large" color="#818CF8" />
-				<Text className="text-gray-400 mt-4">Loading secure checkout...</Text>
+				<ActivityIndicator size="large" color="#C9A84C" />
+				<Text className="text-theme-text-secondary mt-4">
+					Loading secure checkout...
+				</Text>
 			</View>
 		);
 	}
 
 	if (initError || !clientSecret || !stripePromise) {
 		return (
-			<View className="bg-red-900/30 p-4 rounded-xl border border-red-700 mb-6">
-				<Text className="text-red-400 text-center">
+			<View className="bg-theme-error/30 p-4 rounded-xl border border-theme-error mb-6">
+				<Text className="text-theme-error text-center">
 					{initError || "Could not load checkout. Please try again."}
 				</Text>
 			</View>
@@ -172,9 +174,9 @@ export default function StripeCheckout(props: StripeCheckoutProps) {
 	const appearance = {
 		theme: "night" as const,
 		variables: {
-			colorPrimary: "#4F46E5",
-			colorBackground: "#1F2937",
-			colorText: "#F3F4F6",
+			colorPrimary: "#C9A84C",
+			colorBackground: "#152A4D",
+			colorText: "#FDF8F0",
 			colorDanger: "#EF4444",
 			fontFamily: "system-ui, sans-serif",
 			borderRadius: "12px",

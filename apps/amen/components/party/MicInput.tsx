@@ -40,12 +40,14 @@ export function MicInput({
 		if (timeLimit && timeLimit > 0) {
 			const timer = setTimeout(() => {
 				if (!submitted && transcript.trim()) {
-					handleSubmit();
+					setSubmitted(true);
+					stopRecording();
+					onSubmit({ transcript: transcript.trim() });
 				}
 			}, timeLimit * 1000);
 			return () => clearTimeout(timer);
 		}
-	}, [timeLimit, transcript, submitted]);
+	}, [timeLimit, transcript, submitted, onSubmit, stopRecording]);
 
 	const handleToggleRecording = () => {
 		if (disabled || submitted) return;
@@ -59,7 +61,7 @@ export function MicInput({
 	const handleSubmit = () => {
 		if (submitted) return;
 		if (!transcript.trim()) return;
-		
+
 		setSubmitted(true);
 		stopRecording();
 		onSubmit({ transcript: transcript.trim() });
@@ -78,13 +80,13 @@ export function MicInput({
 				</Text>
 			)}
 
-			<View className="w-full max-w-md min-h-[120px] bg-black/5 rounded-2xl p-6 items-center justify-center border-2 border-black/5">
+			<View className="w-full max-w-md min-h-[120px] bg-theme-surface/50 rounded-2xl p-6 items-center justify-center border-2 border-theme-border/50">
 				{transcript ? (
 					<Text className="text-xl text-theme-text text-center font-medium leading-relaxed">
 						{transcript}
 					</Text>
 				) : (
-					<Text className="text-lg text-theme-text/40 text-center italic">
+					<Text className="text-lg text-theme-text-tertiary text-center italic">
 						{isRecording ? "Listening..." : "Tap the mic to start speaking"}
 					</Text>
 				)}
@@ -103,8 +105,8 @@ export function MicInput({
 				</View>
 
 				{error && (
-					<View className="bg-red-50 px-4 py-2 rounded-lg">
-						<Text className="text-red-500 text-sm text-center font-medium">
+					<View className="bg-theme-error/10 px-4 py-2 rounded-lg">
+						<Text className="text-theme-error text-sm text-center font-medium">
 							{error.message}
 						</Text>
 					</View>
@@ -117,11 +119,11 @@ export function MicInput({
 						<Pressable
 							onPress={handleClear}
 							disabled={disabled || isRecording}
-							className={`w-14 h-14 rounded-full bg-gray-200 items-center justify-center active:bg-gray-300 ${
-								(disabled || isRecording) ? "opacity-50" : ""
+							className={`w-14 h-14 rounded-full bg-theme-surface-elevated items-center justify-center active:bg-theme-surface ${
+								disabled || isRecording ? "opacity-50" : ""
 							}`}
 						>
-							<Ionicons name="refresh" size={24} color="#374151" />
+							<Ionicons name="refresh" size={24} color="#FDF8F0" />
 						</Pressable>
 					)}
 
@@ -129,18 +131,20 @@ export function MicInput({
 						onPress={handleSubmit}
 						disabled={disabled || submitted}
 						className={`h-14 px-8 rounded-full flex-row items-center gap-2 ${
-							submitted 
-								? "bg-green-500" 
-								: disabled 
-									? "bg-gray-400" 
-									: "bg-black active:bg-gray-800"
+							submitted
+								? "bg-theme-success"
+								: disabled
+									? "bg-theme-surface-elevated"
+									: "bg-theme-primary active:bg-theme-primary/90"
 						}`}
 					>
-						<Text className="text-white font-bold text-lg">
+						<Text
+							className={`font-bold text-lg ${submitted ? "text-theme-text-inverse" : "text-theme-secondary"}`}
+						>
 							{submitted ? "Sent!" : "Submit Answer"}
 						</Text>
 						{!submitted && (
-							<Ionicons name="arrow-forward" size={20} color="white" />
+							<Ionicons name="arrow-forward" size={20} color="#1B3A6B" />
 						)}
 					</Pressable>
 				</View>

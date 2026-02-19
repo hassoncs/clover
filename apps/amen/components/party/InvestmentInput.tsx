@@ -32,12 +32,14 @@ export function InvestmentInput({
 		if (timeLimit && timeLimit > 0) {
 			const timer = setTimeout(() => {
 				if (!submitted) {
-					handleSubmit();
+					setSubmitted(true);
+					Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+					onSubmit(allocations);
 				}
 			}, timeLimit * 1000);
 			return () => clearTimeout(timer);
 		}
-	}, [timeLimit, submitted, allocations]);
+	}, [timeLimit, submitted, onSubmit, allocations]);
 
 	const handleChange = (id: string, value: number) => {
 		if (disabled || submitted) return;
@@ -85,19 +87,19 @@ export function InvestmentInput({
 	const isFullyAllocated = remainingBudget === 0;
 
 	return (
-		<View className="flex-1 w-full bg-gray-50">
-			<View className="bg-white p-4 shadow-sm border-b border-gray-200 items-center z-10">
-				<Text className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+		<View className="flex-1 w-full bg-theme-background">
+			<View className="bg-theme-surface p-4 shadow-sm border-b border-theme-border items-center z-10">
+				<Text className="text-sm font-medium text-theme-text-secondary uppercase tracking-wider">
 					Remaining Budget
 				</Text>
 				<Text
 					className={`text-4xl font-black ${
-						remainingBudget === 0 ? "text-green-600" : "text-gray-900"
+						remainingBudget === 0 ? "text-theme-success" : "text-theme-text"
 					}`}
 				>
 					{formatCurrency(remainingBudget)}
 				</Text>
-				<Text className="text-xs text-gray-400 mt-1">
+				<Text className="text-xs text-theme-text-tertiary mt-1">
 					Total: {formatCurrency(totalBudget)}
 				</Text>
 			</View>
@@ -113,13 +115,13 @@ export function InvestmentInput({
 					return (
 						<View
 							key={option.id}
-							className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+							className="bg-theme-surface rounded-2xl p-4 shadow-sm border border-theme-border"
 						>
 							<View className="flex-row justify-between items-center mb-4">
-								<Text className="text-lg font-bold text-gray-800 flex-1 mr-2">
+								<Text className="text-lg font-bold text-theme-text flex-1 mr-2">
 									{option.label}
 								</Text>
-								<Text className="text-xl font-bold text-blue-600">
+								<Text className="text-xl font-bold text-theme-primary">
 									{formatCurrency(amount)}
 								</Text>
 							</View>
@@ -138,9 +140,9 @@ export function InvestmentInput({
 									onSlidingComplete={() => {
 										Haptics.selectionAsync();
 									}}
-									minimumTrackTintColor="#2563eb"
-									maximumTrackTintColor="#e5e7eb"
-									thumbTintColor="#2563eb"
+									minimumTrackTintColor="#C9A84C"
+									maximumTrackTintColor="#1E3866"
+									thumbTintColor="#C9A84C"
 									disabled={disabled || submitted}
 								/>
 
@@ -149,15 +151,15 @@ export function InvestmentInput({
 									disabled={disabled || submitted || remainingBudget <= 0}
 									className={`px-3 py-2 rounded-lg border ${
 										disabled || submitted || remainingBudget <= 0
-											? "bg-gray-100 border-gray-200"
-											: "bg-blue-50 border-blue-200 active:bg-blue-100"
+											? "bg-theme-surface-elevated border-theme-border"
+											: "bg-theme-primary/20 border-theme-primary active:bg-theme-primary/30"
 									}`}
 								>
 									<Text
 										className={`text-xs font-bold ${
 											disabled || submitted || remainingBudget <= 0
-												? "text-gray-400"
-												: "text-blue-600"
+												? "text-theme-text-tertiary"
+												: "text-theme-primary"
 										}`}
 									>
 										ALL IN
@@ -169,23 +171,23 @@ export function InvestmentInput({
 				})}
 			</ScrollView>
 
-			<View className="p-4 pb-8 bg-white border-t border-gray-200">
+			<View className="p-4 pb-8 bg-theme-surface border-t border-theme-border">
 				<Pressable
 					onPress={handleSubmit}
 					disabled={disabled || submitted || !isFullyAllocated}
 					className={`w-full py-4 rounded-xl flex-row items-center justify-center gap-2 shadow-sm ${
 						submitted
-							? "bg-green-500"
+							? "bg-theme-success"
 							: disabled || !isFullyAllocated
-								? "bg-gray-200"
-								: "bg-black active:bg-gray-800"
+								? "bg-theme-surface-elevated"
+								: "bg-theme-primary active:bg-theme-primary/90"
 					}`}
 				>
 					<Text
 						className={`text-lg font-bold ${
 							submitted || (!disabled && isFullyAllocated)
-								? "text-white"
-								: "text-gray-400"
+								? "text-theme-secondary"
+								: "text-theme-text-tertiary"
 						}`}
 					>
 						{submitted
@@ -195,7 +197,7 @@ export function InvestmentInput({
 								: "Allocate Remaining Budget"}
 					</Text>
 					{!submitted && isFullyAllocated && (
-						<Ionicons name="arrow-forward" size={20} color="white" />
+						<Ionicons name="arrow-forward" size={20} color="#1B3A6B" />
 					)}
 				</Pressable>
 			</View>

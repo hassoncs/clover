@@ -40,8 +40,8 @@ export function EntityAssetList({
 
 	if (prefabs.length === 0) {
 		return (
-			<View className="p-4 bg-gray-700 rounded-lg">
-				<Text className="text-gray-400 text-center">
+			<View className="p-4 bg-theme-surface-elevated rounded-lg">
+				<Text className="text-theme-text-secondary text-center">
 					No prefabs in this game
 				</Text>
 			</View>
@@ -50,7 +50,7 @@ export function EntityAssetList({
 
 	return (
 		<View>
-			<Text className="text-gray-400 mb-2">Entity Assets</Text>
+			<Text className="text-theme-text-secondary mb-2">Entity Assets</Text>
 			<ScrollView className="max-h-48">
 				{prefabs.map(([prefabId, prefab]) => {
 					const asset = assets?.[prefabId];
@@ -58,12 +58,12 @@ export function EntityAssetList({
 					const visualColor =
 						prefab.visual && "color" in prefab.visual
 							? prefab.visual.color
-							: "#666";
+							: "#6B7280";
 
 					return (
 						<View
 							key={prefabId}
-							className="flex-row items-center p-2 bg-gray-700 rounded-lg mb-2"
+							className="flex-row items-center p-2 bg-theme-surface-elevated rounded-lg mb-2"
 						>
 							{asset?.imageUrl ? (
 								<Image
@@ -76,19 +76,19 @@ export function EntityAssetList({
 									className="w-12 h-12 rounded items-center justify-center"
 									style={{ backgroundColor: visualColor }}
 								>
-									<Text className="text-white text-xs">Shape</Text>
+									<Text className="text-theme-text-inverse text-xs">Shape</Text>
 								</View>
 							)}
 
 							<View className="flex-1 ml-3">
-								<Text className="text-white font-medium">{prefabId}</Text>
-								<Text className="text-gray-400 text-xs">
+								<Text className="text-theme-text font-medium">{prefabId}</Text>
+								<Text className="text-theme-text-secondary text-xs">
 									{asset?.imageUrl ? "Generated" : "Using shape fallback"}
 								</Text>
 							</View>
 
 							<Pressable
-								className={`p-2 rounded mr-2 ${isRegenerating ? "bg-gray-600" : "bg-indigo-600"}`}
+								className={`p-2 rounded mr-2 ${isRegenerating ? "bg-theme-surface" : "bg-theme-primary"}`}
 								onPress={() => onRegenerateAsset(prefabId)}
 								disabled={isRegenerating}
 								accessibilityRole="button"
@@ -96,20 +96,20 @@ export function EntityAssetList({
 								accessibilityState={{ disabled: isRegenerating }}
 							>
 								{isRegenerating ? (
-									<ActivityIndicator color="white" size="small" />
+									<ActivityIndicator color="#FDF8F0" size="small" />
 								) : (
-									<Text className="text-white text-xs">Regen</Text>
+									<Text className="text-theme-secondary text-xs">Regen</Text>
 								)}
 							</Pressable>
 
 							{asset?.imageUrl && (
 								<Pressable
-									className="p-2 bg-red-600 rounded"
+									className="p-2 bg-theme-error rounded"
 									onPress={() => onClearAsset(prefabId)}
 									accessibilityRole="button"
 									accessibilityLabel={`Clear ${prefabId} asset`}
 								>
-									<Text className="text-white text-xs">Clear</Text>
+									<Text className="text-theme-text-inverse text-xs">Clear</Text>
 								</Pressable>
 							)}
 						</View>

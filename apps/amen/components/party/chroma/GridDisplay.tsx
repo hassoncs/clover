@@ -24,14 +24,14 @@ export function ColorGrid({
 	}, []);
 
 	return (
-		<View className="flex-row flex-wrap w-full aspect-square bg-black overflow-hidden rounded-lg">
+		<View className="flex-row flex-wrap w-full aspect-square bg-theme-background overflow-hidden rounded-lg">
 			{cells.map(({ row, col, color }) => {
 				const isSelected =
 					selectedCell?.row === row && selectedCell?.col === col;
 				return (
 					<Pressable
 						key={`${row}-${col}`}
-						className={`w-[5%] h-[5%] border-[0.5px] border-black/10 ${isSelected ? "border-2 border-white z-10" : ""}`}
+						className={`w-[5%] h-[5%] border-[0.5px] border-theme-background/10 ${isSelected ? "border-2 border-theme-text z-10" : ""}`}
 						style={{ backgroundColor: color }}
 						onPress={() => !disabled && onCellSelect?.(row, col)}
 						disabled={disabled}

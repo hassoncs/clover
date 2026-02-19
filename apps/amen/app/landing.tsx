@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Redirect, Stack, useRouter } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import { useState } from "react";
 import {
 	ActivityIndicator,
@@ -17,7 +17,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { trpcReact } from "@/lib/trpc/react";
 
 export default function LandingPage() {
-	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [submitted, setSubmitted] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -55,60 +54,54 @@ export default function LandingPage() {
 	};
 
 	return (
-		<View className="flex-1 bg-[#FDF8F0]">
+		<View className="flex-1 bg-theme-background">
 			<Stack.Screen options={{ headerShown: false }} />
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 				{/* Hero Section */}
-				<View className="bg-[#1B3A6B] px-6 py-16 md:py-32 items-center">
+				<View className="bg-theme-secondary px-6 py-16 md:py-32 items-center">
 					<View className="max-w-6xl w-full items-center">
 						<Text
-							className="text-[#C9A84C] font-bold text-lg md:text-xl tracking-[0.2em] mb-6 uppercase text-center"
+							className="text-theme-primary font-bold text-lg md:text-xl tracking-[0.2em] mb-6 uppercase text-center"
 							accessibilityRole="header"
 						>
 							Amen Games
 						</Text>
 						<Text
-							className="text-white text-5xl md:text-7xl font-bold text-center mb-8 leading-tight"
+							className="text-theme-text font-bold text-5xl md:text-7xl text-center mb-8 leading-tight"
 							accessibilityRole="header"
 						>
 							Scripture. Fellowship. Fun.
 						</Text>
-						<Text className="text-gray-200 text-xl md:text-2xl text-center max-w-3xl mb-12 leading-relaxed font-light">
+						<Text className="text-theme-text-secondary text-xl md:text-2xl text-center max-w-3xl mb-12 leading-relaxed font-light">
 							Reverent, educational Christian party games designed to bring your
 							church, youth group, and family closer together.
 						</Text>
 
-						<View className="flex-col md:flex-row gap-4 items-center">
-							<Pressable
-								onPress={scrollToWaitlist}
-								className="bg-[#C9A84C] px-10 py-4 rounded-full shadow-lg hover:bg-[#D4B65C] transition-colors"
-							>
-								<Text className="text-[#1B3A6B] font-bold text-xl tracking-wide">
-									Get Started Free
-								</Text>
-							</Pressable>
-							<Pressable
-								onPress={() => router.push("/join")}
-								className="bg-white/10 border border-white/30 px-10 py-4 rounded-full hover:bg-white/20 transition-colors"
-							>
-								<Text className="text-white font-bold text-xl tracking-wide">
-									Join a Game →
-								</Text>
-							</Pressable>
-						</View>
+						<Pressable
+							onPress={scrollToWaitlist}
+							className="bg-theme-primary px-10 py-4 rounded-full shadow-lg hover:bg-theme-primary/90 transition-colors"
+						>
+							<Text className="text-theme-secondary font-bold text-xl tracking-wide">
+								Get Started Free
+							</Text>
+						</Pressable>
 
 						<View className="mt-16 flex-row gap-8 opacity-80">
 							<View className="items-center">
 								<Ionicons name="people" size={32} color="#C9A84C" />
-								<Text className="text-white mt-2 font-medium">Multiplayer</Text>
+								<Text className="text-theme-text mt-2 font-medium">
+									Multiplayer
+								</Text>
 							</View>
 							<View className="items-center">
 								<Ionicons name="book" size={32} color="#C9A84C" />
-								<Text className="text-white mt-2 font-medium">Biblical</Text>
+								<Text className="text-theme-text mt-2 font-medium">
+									Biblical
+								</Text>
 							</View>
 							<View className="items-center">
 								<Ionicons name="phone-portrait" size={32} color="#C9A84C" />
-								<Text className="text-white mt-2 font-medium">
+								<Text className="text-theme-text mt-2 font-medium">
 									Mobile First
 								</Text>
 							</View>
@@ -117,13 +110,13 @@ export default function LandingPage() {
 				</View>
 
 				{/* Game Showcase Section */}
-				<View className="bg-white py-20 px-6 items-center">
+				<View className="bg-theme-text py-20 px-6 items-center">
 					<View className="max-w-6xl w-full">
 						<View className="items-center mb-16">
-							<Text className="text-[#1B3A6B] font-bold text-sm tracking-widest uppercase mb-3">
+							<Text className="text-theme-secondary font-bold text-sm tracking-widest uppercase mb-3">
 								Our Collection
 							</Text>
-							<Text className="text-[#2D2D2D] text-4xl md:text-5xl font-bold text-center">
+							<Text className="text-theme-background text-4xl md:text-5xl font-bold text-center">
 								Games for Every Gathering
 							</Text>
 						</View>
@@ -174,13 +167,13 @@ export default function LandingPage() {
 				</View>
 
 				{/* How It Works Section */}
-				<View className="bg-[#FDF8F0] py-20 px-6 items-center border-t border-[#E6DCC8]">
+				<View className="bg-theme-background py-20 px-6 items-center border-t border-theme-border">
 					<View className="max-w-6xl w-full">
 						<View className="items-center mb-16">
-							<Text className="text-[#1B3A6B] font-bold text-sm tracking-widest uppercase mb-3">
+							<Text className="text-theme-primary font-bold text-sm tracking-widest uppercase mb-3">
 								Simple & Easy
 							</Text>
-							<Text className="text-[#2D2D2D] text-4xl md:text-5xl font-bold text-center">
+							<Text className="text-theme-text text-4xl md:text-5xl font-bold text-center">
 								How It Works
 							</Text>
 						</View>
@@ -212,16 +205,16 @@ export default function LandingPage() {
 				</View>
 
 				{/* Pricing Section */}
-				<View className="bg-[#1B3A6B] py-24 px-6 items-center">
+				<View className="bg-theme-secondary py-24 px-6 items-center">
 					<View className="max-w-6xl w-full">
 						<View className="items-center mb-16">
-							<Text className="text-[#C9A84C] font-bold text-sm tracking-widest uppercase mb-3">
+							<Text className="text-theme-primary font-bold text-sm tracking-widest uppercase mb-3">
 								Membership
 							</Text>
-							<Text className="text-white text-4xl md:text-5xl font-bold text-center mb-6">
+							<Text className="text-theme-text font-bold text-4xl md:text-5xl text-center mb-6">
 								Plans for Everyone
 							</Text>
-							<Text className="text-gray-300 text-xl text-center max-w-2xl">
+							<Text className="text-theme-text-secondary text-xl text-center max-w-2xl">
 								Whether you're a family, a small group, or a whole church, we
 								have a plan for you.
 							</Text>
@@ -275,23 +268,23 @@ export default function LandingPage() {
 				</View>
 
 				{/* Email Capture / Waitlist Section */}
-				<View className="bg-white py-24 px-6 items-center">
-					<View className="max-w-3xl w-full bg-[#FDF8F0] p-8 md:p-16 rounded-3xl border border-[#E6DCC8] items-center text-center shadow-sm">
-						<Text className="text-[#1B3A6B] text-3xl md:text-4xl font-bold mb-4">
+				<View className="bg-theme-text py-24 px-6 items-center">
+					<View className="max-w-3xl w-full bg-theme-background p-8 md:p-16 rounded-3xl border border-theme-border items-center text-center shadow-sm">
+						<Text className="text-theme-text text-3xl md:text-4xl font-bold mb-4">
 							Be the First to Know
 						</Text>
-						<Text className="text-gray-600 text-lg mb-10 max-w-lg">
+						<Text className="text-theme-text-secondary text-lg mb-10 max-w-lg">
 							We're launching Easter 2026. Join the waitlist to get early access
 							and exclusive founder rewards.
 						</Text>
 
 						{submitted ? (
-							<View className="bg-[#5B7F3B]/10 p-8 rounded-2xl items-center w-full">
+							<View className="bg-theme-success/10 p-8 rounded-2xl items-center w-full">
 								<Ionicons name="checkmark-circle" size={56} color="#5B7F3B" />
-								<Text className="text-[#5B7F3B] font-bold text-2xl mt-4 mb-2">
+								<Text className="text-theme-success font-bold text-2xl mt-4 mb-2">
 									You're on the list!
 								</Text>
-								<Text className="text-[#5B7F3B] text-lg">
+								<Text className="text-theme-success text-lg">
 									Thank you for your interest. We'll be in touch soon.
 								</Text>
 							</View>
@@ -300,16 +293,16 @@ export default function LandingPage() {
 								<View className="flex-col gap-4">
 									<TextInput
 										id="email-input"
-										className="w-full bg-white border border-[#E6DCC8] rounded-xl px-6 py-4 text-[#2D2D2D] text-lg shadow-sm"
+										className="w-full bg-theme-surface border border-theme-border rounded-xl px-6 py-4 text-theme-text text-lg shadow-sm"
 										placeholder="pastor@church.org"
-										placeholderTextColor="#9CA3AF"
+										placeholderTextColor="#A89B7D"
 										value={email}
 										onChangeText={setEmail}
 										autoCapitalize="none"
 										keyboardType="email-address"
 									/>
 									<Pressable
-										className={`bg-[#1B3A6B] w-full py-4 rounded-xl justify-center items-center shadow-md hover:bg-[#2A4A80] transition-colors ${
+										className={`bg-theme-secondary w-full py-4 rounded-xl justify-center items-center shadow-md hover:bg-theme-secondary/90 transition-colors ${
 											joinWaitlist.isPending ? "opacity-70" : ""
 										}`}
 										onPress={handleSubmit}
@@ -318,14 +311,14 @@ export default function LandingPage() {
 										{joinWaitlist.isPending ? (
 											<ActivityIndicator color="white" />
 										) : (
-											<Text className="text-white font-bold text-xl">
+											<Text className="text-theme-text font-bold text-xl">
 												Join Waitlist
 											</Text>
 										)}
 									</Pressable>
 								</View>
 								{error && (
-									<Text className="text-[#B84233] mt-4 font-medium">
+									<Text className="text-theme-error mt-4 font-medium">
 										{error}
 									</Text>
 								)}
@@ -335,13 +328,13 @@ export default function LandingPage() {
 				</View>
 
 				{/* Footer */}
-				<View className="bg-[#0D1C33] py-16 px-6 border-t border-[#1B3A6B]">
+				<View className="bg-theme-background py-16 px-6 border-t border-theme-border">
 					<View className="max-w-6xl w-full mx-auto flex-col md:flex-row justify-between items-center md:items-start gap-8">
 						<View className="items-center md:items-start">
-							<Text className="text-[#C9A84C] font-bold text-2xl tracking-widest uppercase mb-4">
+							<Text className="text-theme-primary font-bold text-2xl tracking-widest uppercase mb-4">
 								Amen Games
 							</Text>
-							<Text className="text-gray-400 text-sm max-w-xs text-center md:text-left">
+							<Text className="text-theme-text-secondary text-sm max-w-xs text-center md:text-left">
 								Building the future of Christian fellowship through play.
 							</Text>
 						</View>
@@ -355,8 +348,8 @@ export default function LandingPage() {
 							/>
 						</View>
 					</View>
-					<View className="max-w-6xl w-full mx-auto mt-12 pt-8 border-t border-[#1B3A6B]/50 text-center">
-						<Text className="text-gray-500 text-sm text-center">
+					<View className="max-w-6xl w-full mx-auto mt-12 pt-8 border-t border-theme-border/50 text-center">
+						<Text className="text-theme-text-tertiary text-sm text-center">
 							© 2026 Amen Games. All rights reserved.
 						</Text>
 					</View>
@@ -376,12 +369,12 @@ function GameCard({
 	description: string;
 }) {
 	return (
-		<View className="bg-[#FDF8F0] p-6 rounded-2xl border border-[#E6DCC8] w-full md:w-[280px] hover:shadow-md transition-shadow">
+		<View className="bg-theme-background p-6 rounded-2xl border border-theme-border w-full md:w-[280px] hover:shadow-md transition-shadow">
 			<Text className="text-4xl mb-4">{emoji}</Text>
-			<Text className="text-[#1B3A6B] font-bold text-lg mb-2 leading-tight">
+			<Text className="text-theme-secondary font-bold text-lg mb-2 leading-tight">
 				{title}
 			</Text>
-			<Text className="text-gray-600 text-sm leading-relaxed">
+			<Text className="text-theme-text-secondary text-sm leading-relaxed">
 				{description}
 			</Text>
 		</View>
@@ -399,11 +392,13 @@ function StepCard({
 }) {
 	return (
 		<View className="items-center max-w-[280px]">
-			<View className="w-16 h-16 rounded-full bg-[#1B3A6B] justify-center items-center mb-6 shadow-lg">
-				<Text className="text-[#C9A84C] font-bold text-2xl">{number}</Text>
+			<View className="w-16 h-16 rounded-full bg-theme-secondary justify-center items-center mb-6 shadow-lg">
+				<Text className="text-theme-primary font-bold text-2xl">{number}</Text>
 			</View>
-			<Text className="text-[#1B3A6B] font-bold text-2xl mb-3">{title}</Text>
-			<Text className="text-gray-600 text-center text-lg leading-relaxed">
+			<Text className="text-theme-secondary font-bold text-2xl mb-3">
+				{title}
+			</Text>
+			<Text className="text-theme-text-secondary text-center text-lg leading-relaxed">
 				{description}
 			</Text>
 		</View>
@@ -435,14 +430,14 @@ function PricingCard({
 		<View
 			className={`p-8 rounded-3xl w-full md:w-[340px] flex-col ${
 				isGold
-					? "bg-[#C9A84C] shadow-xl transform md:-translate-y-4 border-none"
-					: "bg-white border border-gray-200 shadow-sm"
+					? "bg-theme-primary shadow-xl transform md:-translate-y-4 border-none"
+					: "bg-theme-text border border-theme-border shadow-sm"
 			}`}
 		>
 			<View className="flex-1">
 				<Text
 					className={`font-bold text-xl mb-2 uppercase tracking-wider ${
-						isGold ? "text-[#1B3A6B]" : "text-[#1B3A6B]"
+						isGold ? "text-theme-secondary" : "text-theme-secondary"
 					}`}
 				>
 					{title}
@@ -450,14 +445,14 @@ function PricingCard({
 				<View className="flex-row items-baseline mb-4">
 					<Text
 						className={`text-5xl font-bold ${
-							isGold ? "text-[#1B3A6B]" : "text-[#2D2D2D]"
+							isGold ? "text-theme-secondary" : "text-theme-background"
 						}`}
 					>
 						{price}
 					</Text>
 					<Text
 						className={`ml-1 text-lg ${
-							isGold ? "text-[#1B3A6B]/70" : "text-gray-500"
+							isGold ? "text-theme-secondary/70" : "text-theme-background/70"
 						}`}
 					>
 						{period}
@@ -465,7 +460,7 @@ function PricingCard({
 				</View>
 				<Text
 					className={`mb-8 text-lg leading-relaxed ${
-						isGold ? "text-[#1B3A6B]/80" : "text-gray-600"
+						isGold ? "text-theme-secondary/80" : "text-theme-background/80"
 					}`}
 				>
 					{description}
@@ -481,7 +476,7 @@ function PricingCard({
 							/>
 							<Text
 								className={`ml-3 text-base flex-1 ${
-									isGold ? "text-[#1B3A6B]" : "text-gray-700"
+									isGold ? "text-theme-secondary" : "text-theme-background"
 								}`}
 							>
 								{feature}
@@ -493,12 +488,14 @@ function PricingCard({
 
 			<Pressable
 				className={`w-full py-4 rounded-xl justify-center items-center ${
-					isGold ? "bg-[#1B3A6B]" : "bg-[#FDF8F0] border border-[#E6DCC8]"
+					isGold
+						? "bg-theme-secondary"
+						: "bg-theme-background border border-theme-border"
 				}`}
 			>
 				<Text
 					className={`font-bold text-lg ${
-						isGold ? "text-white" : "text-[#1B3A6B]"
+						isGold ? "text-theme-text" : "text-theme-secondary"
 					}`}
 				>
 					{buttonText}
@@ -511,7 +508,7 @@ function PricingCard({
 function FooterLink({ href, text }: { href: string; text: string }) {
 	return (
 		<Pressable onPress={() => Linking.openURL(href)}>
-			<Text className="text-gray-400 hover:text-[#C9A84C] transition-colors">
+			<Text className="text-theme-text-secondary hover:text-theme-primary transition-colors">
 				{text}
 			</Text>
 		</Pressable>

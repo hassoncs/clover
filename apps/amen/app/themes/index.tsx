@@ -79,21 +79,21 @@ export default function ThemesScreen() {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
+		<SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
 			<ScrollView
 				className="flex-1"
 				refreshControl={
 					<RefreshControl
 						refreshing={isRefreshing}
 						onRefresh={handleRefresh}
-						tintColor="#4CAF50"
+						tintColor="#C9A84C"
 					/>
 				}
 			>
 				<View className="p-4">
 					<View className="mb-4">
-						<Text className="text-2xl font-bold text-white">Themes</Text>
-						<Text className="text-gray-400 mt-1">
+						<Text className="text-2xl font-bold text-theme-text">Themes</Text>
+						<Text className="text-theme-text-secondary mt-1">
 							Create and discover visual styles for your games
 						</Text>
 					</View>
@@ -105,21 +105,23 @@ export default function ThemesScreen() {
 
 					<Pressable
 						onPress={handleCreate}
-						className="bg-indigo-600 p-4 rounded-xl mb-6 active:bg-indigo-700 items-center"
+						className="bg-theme-primary p-4 rounded-xl mb-6 active:bg-theme-primary/90 items-center"
 					>
-						<Text className="text-white font-semibold text-lg">
+						<Text className="text-theme-secondary font-semibold text-lg">
 							+ Create New Theme
 						</Text>
 					</Pressable>
 
 					<View className="mb-8">
-						<Text className="text-xl font-bold text-white mb-3">My Themes</Text>
+						<Text className="text-xl font-bold text-theme-text mb-3">
+							My Themes
+						</Text>
 
 						{isLoadingMy && myThemes.length === 0 ? (
-							<ActivityIndicator size="large" color="#818CF8" />
+							<ActivityIndicator size="large" color="#C9A84C" />
 						) : myThemes.length === 0 ? (
-							<View className="bg-gray-800 p-6 rounded-xl border border-gray-700 items-center">
-								<Text className="text-gray-400 text-center">
+							<View className="bg-theme-surface p-6 rounded-xl border border-theme-border items-center">
+								<Text className="text-theme-text-secondary text-center">
 									{searchQuery
 										? "No themes match your search."
 										: "You haven't created any themes yet."}
@@ -146,9 +148,9 @@ export default function ThemesScreen() {
 								{hasMoreMyThemes && (
 									<Pressable
 										onPress={loadMoreMyThemes}
-										className="bg-gray-800 p-3 rounded-lg border border-gray-700 items-center mt-2 active:bg-gray-700"
+										className="bg-theme-surface p-3 rounded-lg border border-theme-border items-center mt-2 active:bg-theme-surface-elevated"
 									>
-										<Text className="text-indigo-400 font-medium">
+										<Text className="text-theme-primary font-medium">
 											Load more
 										</Text>
 									</Pressable>
@@ -158,15 +160,15 @@ export default function ThemesScreen() {
 					</View>
 
 					<View className="mb-6">
-						<Text className="text-xl font-bold text-white mb-3">
+						<Text className="text-xl font-bold text-theme-text mb-3">
 							Public Themes
 						</Text>
 
 						{isLoadingPublic && publicThemes.length === 0 ? (
-							<ActivityIndicator size="large" color="#818CF8" />
+							<ActivityIndicator size="large" color="#C9A84C" />
 						) : publicThemes.length === 0 ? (
-							<View className="bg-gray-800 p-6 rounded-xl border border-gray-700 items-center">
-								<Text className="text-gray-400 text-center">
+							<View className="bg-theme-surface p-6 rounded-xl border border-theme-border items-center">
+								<Text className="text-theme-text-secondary text-center">
 									{searchQuery
 										? "No public themes match your search."
 										: "No public themes available."}
@@ -191,9 +193,9 @@ export default function ThemesScreen() {
 								{hasMorePublicThemes && (
 									<Pressable
 										onPress={loadMorePublicThemes}
-										className="bg-gray-800 p-3 rounded-lg border border-gray-700 items-center mt-2 active:bg-gray-700"
+										className="bg-theme-surface p-3 rounded-lg border border-theme-border items-center mt-2 active:bg-theme-surface-elevated"
 									>
-										<Text className="text-indigo-400 font-medium">
+										<Text className="text-theme-primary font-medium">
 											Load more
 										</Text>
 									</Pressable>
