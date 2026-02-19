@@ -108,13 +108,26 @@ export default function BrowseScreen() {
 							The Hall
 						</Text>
 					</View>
-					<Pressable
-						onPress={() => router.push("/settings/game-settings")}
-						className="p-2 -mr-2 bg-[#0F2347]/50 rounded-full"
-						accessibilityLabel="Settings"
-					>
-						<Ionicons name="settings-outline" size={24} color="#C9A84C" />
-					</Pressable>
+					<View className="flex-row items-center gap-1">
+						<Pressable
+							onPress={() => router.push("/(tabs)/profile")}
+							className="p-2"
+							accessibilityLabel="Profile"
+						>
+							<Ionicons
+								name="person-circle-outline"
+								size={28}
+								color="#C9A84C"
+							/>
+						</Pressable>
+						<Pressable
+							onPress={() => router.push("/settings/game-settings")}
+							className="p-2 -mr-2"
+							accessibilityLabel="Settings"
+						>
+							<Ionicons name="settings-outline" size={24} color="#C9A84C" />
+						</Pressable>
+					</View>
 				</View>
 
 				<View className="flex-1 justify-center">
@@ -125,6 +138,7 @@ export default function BrowseScreen() {
 							items={templates}
 							selectedId={selectedId}
 							onSelect={setSelectedId}
+							getImageUrl={(t) => t.thumbnailUrl}
 							renderTile={(template, selected, onPress) => (
 								<GameHallTile
 									template={template}

@@ -1,11 +1,5 @@
 import type React from "react";
-import { useEffect } from "react";
-import { Pressable, type ViewStyle } from "react-native";
-import Animated, {
-	useAnimatedStyle,
-	useSharedValue,
-	withSpring,
-} from "react-native-reanimated";
+import { Pressable, View, type ViewStyle } from "react-native";
 
 export interface GameHallTileProps {
 	selected: boolean;
@@ -26,19 +20,6 @@ export function GameHallTile({
 	children,
 	style,
 }: GameHallTileProps) {
-	const scale = useSharedValue(0.85);
-
-	useEffect(() => {
-		scale.value = withSpring(selected ? 1.15 : 0.85, {
-			damping: 15,
-			stiffness: 150,
-		});
-	}, [selected, scale]);
-
-	const animatedStyle = useAnimatedStyle(() => ({
-		transform: [{ scale: scale.value }],
-	}));
-
 	return (
 		<Pressable
 			onPress={onPress}
@@ -47,9 +28,7 @@ export function GameHallTile({
 			accessibilityState={{ selected }}
 			style={style}
 		>
-			<Animated.View style={[{ width, height }, animatedStyle]}>
-				{children}
-			</Animated.View>
+			<View style={{ width, height }}>{children}</View>
 		</Pressable>
 	);
 }

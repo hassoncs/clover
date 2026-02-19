@@ -1,7 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import { GameHallCarousel } from "@slopcade/ui";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
 import { GameHallTile } from "@/components/browse/GameHallTile";
@@ -108,6 +109,13 @@ export default function BrowseScreen() {
 							The Arcade
 						</Text>
 					</View>
+					<Pressable
+						onPress={() => router.push("/(tabs)/profile")}
+						className="p-2 -mr-2"
+						accessibilityLabel="Profile"
+					>
+						<Ionicons name="person-circle-outline" size={28} color="#A5B4FC" />
+					</Pressable>
 				</View>
 
 				<View className="flex-1 justify-center">
@@ -118,6 +126,7 @@ export default function BrowseScreen() {
 							items={templates}
 							selectedId={selectedId}
 							onSelect={setSelectedId}
+							getImageUrl={(t) => t.thumbnailUrl}
 							renderTile={(template, selected, onPress) => (
 								<GameHallTile
 									template={template}
