@@ -1,4 +1,5 @@
 import type {
+	GameConfig,
 	PartyInputRequest,
 	PartyInputResponse,
 	PartyPlayer,
@@ -67,6 +68,7 @@ export class PartyRoomDO {
 	private templateContentPack: unknown[] | null = null;
 	private serverScriptCode: string | null = null;
 	private serverScriptConfig: Record<string, unknown> = {};
+	private gameConfig: GameConfig | null = null;
 	private rateLimits: Map<string, RateLimitEntry> = new Map();
 	private disconnectTimers: Map<string, ReturnType<typeof setTimeout>> =
 		new Map();
@@ -480,7 +482,7 @@ export class PartyRoomDO {
 				break;
 			case "start_game":
 				if (meta.role === "host") {
-					await this.handleStartGame(ws);
+					await this.handleStartGame(ws, parsed.gameConfig);
 				}
 				break;
 			default:
@@ -749,7 +751,10 @@ export class PartyRoomDO {
 		}
 	}
 
-	private async handleStartGame(ws: WebSocket): Promise<void> {
+	private async handleStartGame(
+		ws: WebSocket,
+		gameConfig?: GameConfig,
+	): Promise<void> {
 		if (this.phase !== "lobby") {
 			ws.send(
 				encodeMessage(
@@ -795,6 +800,11 @@ export class PartyRoomDO {
 		}
 
 		if (this.serverScriptCode) {
+			if (gameConfig) {
+				this.gameConfig = gameConfig;
+				await this.updateSharedData({ gameConfig });
+			}
+
 			if (this.templateId) {
 				await this.updateSharedData({ gameTemplate: this.templateId });
 			}
@@ -941,6 +951,7 @@ export class PartyRoomDO {
 			templateContentPack: this.templateContentPack,
 			serverScriptCode: this.serverScriptCode,
 			serverScriptConfig: this.serverScriptConfig,
+			gameConfig: this.gameConfig,
 			stateVersion: this.stateVersion,
 		});
 	}
@@ -957,6 +968,7 @@ export class PartyRoomDO {
 			templateContentPack: unknown[] | null | undefined;
 			serverScriptCode: string | null;
 			serverScriptConfig: Record<string, unknown> | undefined;
+			gameConfig: GameConfig | null | undefined;
 			stateVersion: number | undefined;
 		}>("room");
 
@@ -980,6 +992,9 @@ export class PartyRoomDO {
 			}
 			if (saved.serverScriptConfig) {
 				this.serverScriptConfig = saved.serverScriptConfig;
+			}
+			if (saved.gameConfig) {
+				this.gameConfig = saved.gameConfig;
 			}
 
 			if (

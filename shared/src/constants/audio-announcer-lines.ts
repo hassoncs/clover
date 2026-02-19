@@ -51,6 +51,12 @@ export const ANNOUNCER_LINES: AnnouncerLineDef[] = [
 	{ id: "and-the-winner", phase: "winner", text: "And the winner is..." },
 	{ id: "congrats", phase: "winner", text: "Congratulations!" },
 	{ id: "what-a-game", phase: "winner", text: "What a game!" },
+	// Amen Podium
+	{
+		id: "amen-podium-winner",
+		phase: "winner",
+		text: "Well done, good and faithful servant!",
+	},
 	// Timer
 	{ id: "ten-seconds", phase: "timer", text: "Ten seconds left!" },
 	{ id: "five-seconds", phase: "timer", text: "Five seconds!" },

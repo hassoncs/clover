@@ -1,4 +1,5 @@
 import type {
+	GameConfig,
 	PartyInputRequest,
 	PartyInputResponse,
 	PartyMessage,
@@ -6,6 +7,8 @@ import type {
 	PartyRoomPhase,
 	PartyRoomState,
 } from "@slopcade/shared/types/party";
+
+export type { GameConfig };
 
 const VALID_MESSAGE_TYPES = new Set([
 	"state_update",
@@ -94,4 +97,8 @@ export function playerTokenMessage(
 	playerId: string,
 ): PartyMessage {
 	return { type: "player_token", token, playerId };
+}
+
+export function startGameMessage(gameConfig?: GameConfig): PartyMessage {
+	return { type: "start_game", gameConfig };
 }

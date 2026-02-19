@@ -11,6 +11,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
 import { GameHallCarousel } from "@/components/browse/GameHallCarousel";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
 import { createPartyRoom } from "@/lib/party/api";
@@ -21,7 +22,7 @@ export default function BrowseScreen() {
 	const [launchError, setLaunchError] = useState<string | null>(null);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 
-	const { templates, isLoading, refetch } = useBrowsePartyGames();
+	const { templates, isLoading } = useBrowsePartyGames();
 
 	useEffect(() => {
 		if (templates.length > 0 && !selectedId) {
@@ -29,23 +30,25 @@ export default function BrowseScreen() {
 		}
 	}, [templates, selectedId]);
 
-	const handlePlay = async (
-		templateId: string,
-		templateTitle: string,
-		minPlayers: number,
-	) => {
+	const selectedTemplate = templates.find((t) => t.id === selectedId);
+
+	const handlePlay = async () => {
+		if (!selectedTemplate) return;
 		try {
-			setLaunching(templateTitle);
+			setLaunching(selectedTemplate.title);
 			setLaunchError(null);
-			const { code, hostToken } = await createPartyRoom(templateId, minPlayers);
+			const { code, hostToken } = await createPartyRoom(
+				selectedTemplate.id,
+				selectedTemplate.minPlayers,
+			);
 			router.push({
 				pathname: "/party/host",
 				params: {
 					code,
 					hostToken,
-					templateId,
-					templateTitle,
-					minPlayers: String(minPlayers),
+					templateId: selectedTemplate.id,
+					templateTitle: selectedTemplate.title,
+					minPlayers: String(selectedTemplate.minPlayers),
 				},
 			});
 		} catch (err) {
@@ -57,7 +60,13 @@ export default function BrowseScreen() {
 		}
 	};
 
-	const selectedTemplate = templates.find((t) => t.id === selectedId);
+	const handleHowToPlay = () => {
+		if (!selectedTemplate) return;
+		router.push({
+			pathname: "/how-to-play/[templateId]",
+			params: { templateId: selectedTemplate.id },
+		});
+	};
 
 	return (
 		<View className="flex-1 bg-[#1B3A6B]">
@@ -107,56 +116,29 @@ export default function BrowseScreen() {
 					</Pressable>
 				</View>
 
-				<View className="flex-1 justify-center gap-8">
+				<View className="flex-1 justify-center">
 					{isLoading ? (
 						<ActivityIndicator size="large" color="#C9A84C" />
 					) : (
-						<>
-							<GameHallCarousel
-								templates={templates}
-								selectedId={selectedId}
-								onSelect={setSelectedId}
-							/>
-
-							<View className="mx-6 p-6 bg-[#0F2347] rounded-2xl border border-white/10 items-center gap-4">
-								{selectedTemplate ? (
-									<>
-										<Text className="text-[#FFFDF7] text-lg font-serif text-center">
-											{selectedTemplate.title}
-										</Text>
-										<Text className="text-[#FFFDF7]/60 text-center text-sm">
-											{selectedTemplate.minPlayers}-
-											{selectedTemplate.maxPlayers} Players
-										</Text>
-
-										{launchError && (
-											<Text className="text-red-400 text-center text-sm">
-												{launchError}
-											</Text>
-										)}
-
-										<Pressable
-											onPress={() =>
-												handlePlay(
-													selectedTemplate.id,
-													selectedTemplate.title,
-													selectedTemplate.minPlayers,
-												)
-											}
-											className="bg-[#C9A84C] px-8 py-3 rounded-full active:opacity-90"
-										>
-											<Text className="text-[#0F2347] font-bold uppercase tracking-wider">
-												Play Now
-											</Text>
-										</Pressable>
-									</>
-								) : (
-									<Text className="text-[#FFFDF7]/40">Select a game</Text>
-								)}
-							</View>
-						</>
+						<GameHallCarousel
+							templates={templates}
+							selectedId={selectedId}
+							onSelect={setSelectedId}
+						/>
 					)}
 				</View>
+
+				{launchError && (
+					<Text className="text-red-400 text-center text-sm px-6 mb-2">
+						{launchError}
+					</Text>
+				)}
+
+				<GameDetailPanel
+					template={selectedTemplate ?? null}
+					onPlay={handlePlay}
+					onHowToPlay={handleHowToPlay}
+				/>
 			</SafeAreaView>
 		</View>
 	);

@@ -3,6 +3,7 @@ import { getAuthToken } from "@/lib/auth/token";
 import { env } from "@/lib/config/env";
 import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import type {
+	GameConfig,
 	InputResponseMessage,
 	PartyInputRequest,
 	PartyMessage,
@@ -47,7 +48,7 @@ export interface UsePartyConnectionResult {
 	activeInputRequest: ActiveInputRequest | null;
 	playerId: string | null;
 	sendInput: (value: unknown) => void;
-	sendStartGame: () => void;
+	sendStartGame: (gameConfig?: GameConfig) => void;
 }
 
 export function usePartyConnection({
@@ -323,8 +324,8 @@ export function usePartyConnection({
 		[activeInputRequest],
 	);
 
-	const sendStartGame = useCallback(() => {
-		const message = { type: "start_game" };
+	const sendStartGame = useCallback((gameConfig?: GameConfig) => {
+		const message = { type: "start_game", gameConfig };
 		if (wsRef.current?.readyState === WebSocket.OPEN) {
 			wsRef.current.send(JSON.stringify(message));
 		}

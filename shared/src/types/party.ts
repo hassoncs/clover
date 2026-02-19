@@ -106,8 +106,17 @@ export interface PlayerReconnectMessage {
 	playerId: string;
 }
 
+export interface GameConfig {
+	rounds: 3 | 5 | 7;
+	contentPack: "old-testament" | "new-testament" | "full-bible" | "advent-lent";
+	difficulty: "seeker" | "disciple" | "scholar";
+	timerMode: "standard" | "relaxed" | "none";
+	audienceVoting: boolean;
+}
+
 export interface StartGameMessage {
 	type: "start_game";
+	gameConfig?: GameConfig;
 }
 
 export interface PrivateStateMessage {

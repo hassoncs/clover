@@ -1,6 +1,11 @@
 import type React from "react";
-import { createContext, useContext, useMemo } from "react";
-import type { PartyInputRequest, PartyPlayer, PartyRoomState } from "./types";
+import { createContext, useContext, useMemo, useState } from "react";
+import type {
+	GameConfig,
+	PartyInputRequest,
+	PartyPlayer,
+	PartyRoomState,
+} from "./types";
 import type {
 	ActiveInputRequest,
 	ConnectionStatus,
@@ -14,9 +19,19 @@ export interface PartyContextValue {
 	connectionStatus: ConnectionStatus;
 	players: PartyPlayer[];
 	activeInputRequest: ActiveInputRequest | null;
+	gameConfig: GameConfig;
+	setGameConfig: (config: GameConfig) => void;
 	sendInput: (value: unknown) => void;
 	sendStartGame: () => void;
 }
+
+const DEFAULT_GAME_CONFIG: GameConfig = {
+	rounds: 5,
+	contentPack: "full-bible",
+	difficulty: "disciple",
+	timerMode: "standard",
+	audienceVoting: true,
+};
 
 const PartyContext = createContext<PartyContextValue | null>(null);
 
@@ -37,6 +52,7 @@ export function PartyProvider({
 	hostToken,
 	children,
 }: PartyProviderProps) {
+	const [gameConfig, setGameConfig] = useState<GameConfig>(DEFAULT_GAME_CONFIG);
 	const connection = usePartyConnection({
 		code,
 		role,
@@ -49,8 +65,11 @@ export function PartyProvider({
 		() => ({
 			role,
 			...connection,
+			gameConfig,
+			setGameConfig,
+			sendStartGame: () => connection.sendStartGame(gameConfig),
 		}),
-		[role, connection],
+		[role, connection, gameConfig],
 	);
 
 	return (

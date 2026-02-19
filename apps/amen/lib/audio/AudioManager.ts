@@ -15,6 +15,7 @@ export interface AudioManagerConfig {
 	sfxVolume?: number;
 	musicVolume?: number;
 	masterVolume?: number;
+	narrationVolume?: number;
 }
 
 interface CachedSound {
@@ -58,6 +59,7 @@ class AudioManagerClass {
 			sfxVolume: config.sfxVolume ?? 1.0,
 			musicVolume: config.musicVolume ?? 0.7,
 			masterVolume: config.masterVolume ?? 1.0,
+			narrationVolume: config.narrationVolume ?? 1.0,
 		};
 	}
 
@@ -362,6 +364,16 @@ class AudioManagerClass {
 			case "master":
 				return this.config.masterVolume;
 		}
+	}
+
+	setVolumes(music: number, sfx: number, narration: number): void {
+		this.setVolume("music", music);
+		this.setVolume("sfx", sfx);
+		this.config.narrationVolume = Math.max(0, Math.min(1, narration));
+	}
+
+	getNarrationVolume(): number {
+		return this.config.narrationVolume;
 	}
 
 	mute(): void {

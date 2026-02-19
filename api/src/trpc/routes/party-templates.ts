@@ -1,5 +1,7 @@
+import { BRAND_VOICES } from "@slopcade/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import { publicProcedure, router } from "@/trpc/index";
 
 type HowToPlayStep = {
@@ -95,5 +97,59 @@ export const partyTemplatesRouter = router({
 			}
 
 			return mapRow(row);
+		}),
+
+	generateNarration: publicProcedure
+		.input(
+			z.object({
+				text: z.string().min(1).max(1000),
+				brand: z.string().default("amen"),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.env.ELEVENLABS_API_KEY) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "TTS not configured",
+				});
+			}
+
+			const brandConfig = BRAND_VOICES[input.brand];
+			if (!brandConfig) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Unknown brand: ${input.brand}`,
+				});
+			}
+
+			const service = new ElevenLabsService(ctx.env.ELEVENLABS_API_KEY);
+			const result = await service.generateVoice({
+				text: input.text,
+				voiceId: brandConfig.announcer.voiceId,
+				modelId: brandConfig.announcer.model,
+				stability: brandConfig.announcer.settings.stability,
+				similarityBoost: brandConfig.announcer.settings.similarityBoost,
+				style: brandConfig.announcer.settings.style,
+			});
+
+			const assetId = crypto.randomUUID();
+			const r2Key = `audio/narration/${assetId}.mp3`;
+
+			await ctx.env.ASSETS.put(r2Key, result.audio, {
+				httpMetadata: { contentType: result.contentType },
+				customMetadata: {
+					type: "narration",
+					text: input.text,
+					brand: input.brand,
+					generatedAt: new Date().toISOString(),
+				},
+			});
+
+			return {
+				assetId,
+				url: `/assets/${r2Key}`,
+				contentType: result.contentType,
+				durationSeconds: result.durationSeconds,
+			};
 		}),
 });

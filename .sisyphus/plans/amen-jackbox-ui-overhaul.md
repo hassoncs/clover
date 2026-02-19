@@ -47,7 +47,7 @@
 
 ## Wave 1 — Game Selection "The Hall"
 
-- [ ] **W1.4** · Template Types + Hook Update `[S]`
+- [x] **W1.4** · Template Types + Hook Update `[S]`
 
   Strong typing for new metadata fields throughout the frontend.
 
@@ -55,7 +55,7 @@
   - CREATE `apps/amen/lib/party/template-types.ts` — `PartyTemplate` interface with all fields
   - MODIFY `apps/amen/hooks/useBrowsePartyGames.ts` — return typed data
 
-- [ ] **W1.1** · Hall Screen Layout + Horizontal Carousel `[L]`
+- [x] **W1.1** · Hall Screen Layout + Horizontal Carousel `[L]`
 
   Complete redesign of browse.tsx into "The Hall":
   - Amen wordmark top-center (gold on navy)
@@ -69,7 +69,7 @@
   - CREATE `apps/amen/components/browse/GameHallTile.tsx` — tile with art, name, glow border
   - Use: `GlowIcon`, `HaloBadge`, `AmenGrainOverlay` from `packages/ui/src/amen/`
 
-- [ ] **W1.2** · Selected Game Detail Panel `[M]`
+- [x] **W1.2** · Selected Game Detail Panel `[M]`
 
   Info panel below carousel for selected game:
   - Game name (large), format tag, tagline
@@ -115,7 +115,7 @@
 
 ## Wave 2 — Join + Host Polish
 
-- [ ] **W2.1** · Avatar Picker at Join `[M]`
+- [x] **W2.1** · Avatar Picker at Join `[M]`
 
   Biblical avatar selection in join flow:
   - Grid of 8 avatar icons (dove, lamb, flame, fish, star, scroll, cross, bread)
@@ -128,7 +128,7 @@
   - MODIFY `api/src/party/PartyRoomDO.ts` — accept/store avatar in player data
   - MODIFY `api/src/party/protocol.ts` — add avatar to player state type
 
-- [ ] **W2.2** · Host Lobby UI Upgrade `[M]`
+- [x] **W2.2** · Host Lobby UI Upgrade `[M]`
 
   Enhance host lobby:
   - Game name displayed prominently at top
@@ -161,7 +161,7 @@
 
 ## Wave 3 — Results & Scoring Overhaul
 
-- [ ] **W3.1** · Results Animation Component Kit `[L]`
+- [x] **W3.1** · Results Animation Component Kit `[L]`
 
   Reusable results components:
   - **AnswerRevealSequence**: answers revealed one-at-a-time with scroll/page-turn animation
@@ -178,7 +178,7 @@
   - CREATE `apps/amen/components/party/results/ConfettiOverlay.tsx`
   - CREATE `apps/amen/components/party/results/ShareScoreCard.tsx`
 
-- [ ] **W3.4** · Narration Hook + Amen Podium Line `[M]`
+- [x] **W3.4** · Narration Hook + Amen Podium Line `[M]`
 
   Wire narrator into results flow using existing infrastructure:
   - `usePartyNarration` hook triggers TTS for dynamic content (reads winning answers aloud)
@@ -220,7 +220,7 @@
 
 ## Wave 4 — Settings/Options
 
-- [ ] **W4.1** · App Settings Screen `[M]`
+- [x] **W4.1** · App Settings Screen `[M]`
 
   Gear icon from browse screen opens settings:
   - Volume sliders (music / SFX / voice narration)
@@ -237,7 +237,7 @@
   - CREATE `apps/amen/lib/settings/useAppSettings.ts` — AsyncStorage-backed
   - MODIFY `apps/amen/app/(tabs)/browse.tsx` — add gear icon to header
 
-- [ ] **W4.2** · Settings Runtime Wiring `[M]`
+- [x] **W4.2** · Settings Runtime Wiring `[M]`
 
   Apply saved settings to live gameplay:
   - Audio volumes → AudioManager

@@ -1,5 +1,6 @@
 export type {
 	ErrorMessage,
+	GameConfig,
 	HostReconnectMessage,
 	InputRequestMessage,
 	InputResponseMessage,

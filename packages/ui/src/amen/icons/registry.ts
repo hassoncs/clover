@@ -35,6 +35,8 @@ export const AMEN_ICONS = {
 	alphaOmega: "alpha-a-circle",
 	clock: "clock-outline",
 	alert: "alert-circle-outline",
+	arrowLeft: "arrow-left",
+	arrowRight: "arrow-right",
 } as const;
 
 export type AmenIconName = keyof typeof AMEN_ICONS;
