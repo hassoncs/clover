@@ -40,3 +40,10 @@
 - **Pattern**: Full-screen result components (`FinalPodium`, `RoundScoreBoard`, `AnswerRevealSequence`) return directly without `PhaseShell` wrapper — they own their full layout.
 - **Pattern**: `scoreDelta: 0` is valid — `RoundScoreBoard` only renders `+delta` when `> 0`.
 - **Pattern**: Narration uses `narratedRef` + `isHost` guard in `useEffect` to prevent duplicate API calls from multiple player devices.
+
+## W1.5 — Asset Generation (2026-02-19)
+- Added canonical Amen asset prompt catalog at `api/src/party/assets/amen-game-art-prompts.ts` for all 8 primary game IDs (`tilePrompt`, `heroPrompt`, 4 `panelPrompts`, and `voiceoverScript`).
+- Added `generateAmenAssets` admin mutation in `api/src/trpc/routes/admin-tools.ts` using `adminProcedure`, `ScenarioImageClient`, `ElevenLabsService`, and `BlobStore` to store generated assets and update `party_game_templates` fields (`thumbnail_url`, `hero_image_url`, `how_to_play_steps[].panelImageUrl`).
+- Voiceovers use `BRAND_VOICES.amen.rules` (voiceId `m7ylp1ry3hFqafo4tS3s`, model `eleven_multilingual_v2`, stability `0.7`, similarityBoost `0.75`, style `0.1`) and are logged as URLs for manual wiring.
+- Avatar assets (`dove`, `lamb`, `flame`, `fish`, `star`, `scroll`, `cross`, `bread`) are generated as standalone assets and logged; no DB table writes were added.
+- CLI script `api/src/party/assets/generate-amen-assets.ts` intentionally uses direct Scenario HTTP calls instead of importing Scenario providers because root-level `tsx` execution (`hush run -- npx tsx ...`) does not resolve `@/` aliases in nested provider modules.

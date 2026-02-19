@@ -1,4 +1,5 @@
 import {
+	BRAND_VOICES,
 	DEFAULT_MUSIC_MODEL,
 	DEFAULT_SFX_MODEL,
 	DEFAULT_VOICE_MODEL,
@@ -18,8 +19,17 @@ import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import {
 	createScenarioClient,
 	ScenarioAudioClient,
+	ScenarioImageClient,
 } from "@/ai/providers/scenario";
+import {
+	AMEN_AVATAR_ICON_PROMPTS,
+	AMEN_GAME_ASSET_PROMPTS,
+	AMEN_GAME_IDS,
+	type AmenAvatarType,
+	type AmenGameId,
+} from "@/party/assets/amen-game-art-prompts";
 import { AuditService } from "@/services/audit-service";
+import { BlobStore } from "@/services/BlobStore";
 import { adminProcedure, router } from "@/trpc/index";
 
 const PARTY_CATEGORIES = [
@@ -105,6 +115,60 @@ function assertOpenRouterApiKey(apiKey: string | undefined): string {
 		});
 	}
 	return apiKey;
+}
+
+const AMEN_ASSET_TYPES = [
+	"tiles",
+	"heroes",
+	"avatars",
+	"panels",
+	"voiceovers",
+] as const;
+
+type StoredAssetResult = {
+	assetId: string;
+	hash: string;
+	url: string;
+	isNew: boolean;
+};
+
+type HowToPlayStep = {
+	step: number;
+	title: string;
+	body: string;
+	panelImageUrl: string | null;
+};
+
+function parseHowToPlaySteps(raw: string | null): HowToPlayStep[] {
+	if (!raw) {
+		return [];
+	}
+
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		if (!Array.isArray(parsed)) {
+			return [];
+		}
+
+		return parsed.map((step, index) => {
+			const record = (step ?? {}) as Record<string, unknown>;
+			return {
+				step:
+					typeof record.step === "number"
+						? record.step
+						: Math.max(index + 1, 1),
+				title:
+					typeof record.title === "string" ? record.title : `Step ${index + 1}`,
+				body: typeof record.body === "string" ? record.body : "",
+				panelImageUrl:
+					typeof record.panelImageUrl === "string"
+						? record.panelImageUrl
+						: null,
+			};
+		});
+	} catch {
+		return [];
+	}
 }
 
 function levenshteinDistance(a: string, b: string): number {
@@ -522,6 +586,241 @@ export const adminToolsRouter = router({
 				sizeBytes: audio.buffer.byteLength,
 				model: input.model,
 				durationSeconds: input.durationSeconds,
+			};
+		}),
+
+	generateAmenAssets: adminProcedure
+		.input(
+			z.object({
+				assetTypes: z.array(z.enum(AMEN_ASSET_TYPES)),
+				gameIds: z.array(z.enum(AMEN_GAME_IDS)).optional(),
+				dryRun: z.boolean().default(false),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const selectedGameIds = input.gameIds?.length
+				? input.gameIds
+				: [...AMEN_GAME_IDS];
+
+			const publicAssetBase =
+				ctx.env.ASSET_HOST?.replace(/\/$/, "") ?? "https://assets.amen.games";
+			const urls: Record<string, string> = {};
+			const generated: string[] = [];
+			const avatarUrls: Record<string, string> = {};
+			const voiceoverUrls: Record<string, string> = {};
+
+			if (input.dryRun) {
+				return {
+					generated,
+					urls,
+					avatarUrls,
+					voiceoverUrls,
+					gameIds: selectedGameIds,
+					assetTypes: input.assetTypes,
+					dryRun: true,
+				};
+			}
+
+			const blobStore = new BlobStore(ctx.env.ASSETS, ctx.env.DB);
+			const scenarioBase = createScenarioClient({
+				SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
+				SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
+				SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
+			});
+			const imageClient = new ScenarioImageClient(scenarioBase);
+			const elevenLabs = new ElevenLabsService(
+				assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY),
+			);
+			const amenRulesVoice = BRAND_VOICES.amen.rules;
+
+			const storeGeneratedImage = async (options: {
+				prompt: string;
+				width: number;
+				height: number;
+				metaLabel: string;
+			}): Promise<StoredAssetResult> => {
+				const result = await imageClient.generate({
+					prompt: options.prompt,
+					width: options.width,
+					height: options.height,
+					guidance: 3.5,
+					numSamples: 1,
+					numInferenceSteps: 28,
+				});
+
+				const providerAssetId = result.assetIds[0];
+				if (!providerAssetId) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: `No image asset generated for ${options.metaLabel}`,
+					});
+				}
+
+				const downloaded = await scenarioBase.downloadAsset(providerAssetId);
+				const stored = await blobStore.put(
+					downloaded.buffer,
+					downloaded.mimeType,
+					{
+						width: options.width,
+						height: options.height,
+						source: "generated",
+						compiledPrompt: options.prompt,
+						modelId: "flux.1-dev",
+					},
+				);
+
+				const relative = blobStore.getUrl(stored.hash);
+				return {
+					assetId: stored.assetId,
+					hash: stored.hash,
+					url: `${publicAssetBase}${relative}`,
+					isNew: stored.isNew,
+				};
+			};
+
+			for (const gameId of selectedGameIds) {
+				const game = AMEN_GAME_ASSET_PROMPTS[gameId as AmenGameId];
+				if (!game) continue;
+
+				if (input.assetTypes.includes("tiles")) {
+					const tile = await storeGeneratedImage({
+						prompt: game.tilePrompt,
+						width: 512,
+						height: 512,
+						metaLabel: `${gameId}:tile`,
+					});
+
+					await ctx.env.DB.prepare(
+						"UPDATE party_game_templates SET thumbnail_url = ? WHERE id = ?",
+					)
+						.bind(tile.url, gameId)
+						.run();
+
+					urls[`${gameId}:thumbnail`] = tile.url;
+					generated.push(`${gameId}:thumbnail`);
+				}
+
+				if (input.assetTypes.includes("heroes")) {
+					const hero = await storeGeneratedImage({
+						prompt: game.heroPrompt,
+						width: 1024,
+						height: 512,
+						metaLabel: `${gameId}:hero`,
+					});
+
+					await ctx.env.DB.prepare(
+						"UPDATE party_game_templates SET hero_image_url = ? WHERE id = ?",
+					)
+						.bind(hero.url, gameId)
+						.run();
+
+					urls[`${gameId}:hero`] = hero.url;
+					generated.push(`${gameId}:hero`);
+				}
+
+				if (input.assetTypes.includes("panels")) {
+					const row = await ctx.env.DB.prepare(
+						"SELECT how_to_play_steps FROM party_game_templates WHERE id = ?",
+					)
+						.bind(gameId)
+						.first<{ how_to_play_steps: string | null }>();
+
+					const existingSteps = parseHowToPlaySteps(
+						row?.how_to_play_steps ?? null,
+					);
+					if (existingSteps.length > 0) {
+						for (
+							let panelIndex = 0;
+							panelIndex <
+							Math.min(game.panelPrompts.length, existingSteps.length);
+							panelIndex++
+						) {
+							const panel = await storeGeneratedImage({
+								prompt: game.panelPrompts[panelIndex],
+								width: 1024,
+								height: 1024,
+								metaLabel: `${gameId}:panel-${panelIndex + 1}`,
+							});
+
+							existingSteps[panelIndex] = {
+								...existingSteps[panelIndex],
+								panelImageUrl: panel.url,
+							};
+
+							urls[`${gameId}:panel-${panelIndex + 1}`] = panel.url;
+							generated.push(`${gameId}:panel-${panelIndex + 1}`);
+						}
+
+						await ctx.env.DB.prepare(
+							"UPDATE party_game_templates SET how_to_play_steps = ? WHERE id = ?",
+						)
+							.bind(JSON.stringify(existingSteps), gameId)
+							.run();
+					}
+				}
+
+				if (input.assetTypes.includes("voiceovers")) {
+					const audio = await elevenLabs.generateVoice({
+						text: game.voiceoverScript,
+						voiceId: amenRulesVoice.voiceId,
+						modelId: amenRulesVoice.model,
+						stability: amenRulesVoice.settings.stability,
+						similarityBoost: amenRulesVoice.settings.similarityBoost,
+						style: amenRulesVoice.settings.style,
+						outputFormat: "mp3_44100_128",
+					});
+
+					const storedAudio = await blobStore.put(audio.audio, "audio/mpeg", {
+						source: "generated",
+						compiledPrompt: game.voiceoverScript,
+						modelId: amenRulesVoice.model,
+					});
+
+					const voiceoverUrl = `${publicAssetBase}${blobStore.getUrl(storedAudio.hash)}`;
+					voiceoverUrls[gameId] = voiceoverUrl;
+					urls[`${gameId}:voiceover`] = voiceoverUrl;
+					generated.push(`${gameId}:voiceover`);
+					console.log(`[AmenAssets] voiceover ${gameId}: ${voiceoverUrl}`);
+				}
+			}
+
+			if (input.assetTypes.includes("avatars")) {
+				for (const avatarType of Object.keys(
+					AMEN_AVATAR_ICON_PROMPTS,
+				) as AmenAvatarType[]) {
+					const avatar = await storeGeneratedImage({
+						prompt: AMEN_AVATAR_ICON_PROMPTS[avatarType],
+						width: 256,
+						height: 256,
+						metaLabel: `avatar:${avatarType}`,
+					});
+
+					avatarUrls[avatarType] = avatar.url;
+					urls[`avatar:${avatarType}`] = avatar.url;
+					generated.push(`avatar:${avatarType}`);
+					console.log(`[AmenAssets] avatar ${avatarType}: ${avatar.url}`);
+				}
+			}
+
+			const audit = new AuditService(ctx.env.DB);
+			await audit.logEvent({
+				actorId: ctx.user.id,
+				action: "admin.generate_amen_assets",
+				metadata: {
+					assetTypes: input.assetTypes,
+					gameIds: selectedGameIds,
+					generatedCount: generated.length,
+				},
+			});
+
+			return {
+				generated,
+				urls,
+				avatarUrls,
+				voiceoverUrls,
+				gameIds: selectedGameIds,
+				assetTypes: input.assetTypes,
+				dryRun: false,
 			};
 		}),
 
