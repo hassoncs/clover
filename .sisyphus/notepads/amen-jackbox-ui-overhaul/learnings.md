@@ -21,3 +21,11 @@
 - Added 'clock' and 'alert' icons to Amen icon registry to support session length and content note badges.
 - Used MotifDivider for visual separation.
 - Implemented null state for when no game is selected.
+
+## W2.2 — Host Lobby (2026-02-19)
+- Implemented `PlayerChip` with `AmenIcon` support and fallback to initials.
+- Created `LobbyCountdown` overlay with `react-native-reanimated` zoom animations.
+- Upgraded `host.tsx` with game name header, player grid, and room code display.
+- Added player-join SFX using `getAudioManager().playSfx("player-join")` inside a `useEffect` tracking `players.length`.
+- Used `useParty()` hook to get `roomState`, `players`, `sendStartGame`, and `connectionStatus`.
+- `PartyPlayer` has an `avatar` field which maps to `AmenIconName`.

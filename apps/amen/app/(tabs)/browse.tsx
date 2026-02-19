@@ -1,40 +1,33 @@
 import { Ionicons } from "@expo/vector-icons";
+import { AmenGrainOverlay, PatternBackground } from "@slopcade/ui/amen";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	Modal,
 	Pressable,
-	RefreshControl,
-	ScrollView,
+	StyleSheet,
 	Text,
-	TextInput,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GameGridCard } from "@/components/browse/GameCard";
+import { GameHallCarousel } from "@/components/browse/GameHallCarousel";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
 import { createPartyRoom } from "@/lib/party/api";
 
 export default function BrowseScreen() {
 	const router = useRouter();
-	const [searchQuery, setSearchQuery] = useState("");
 	const [launching, setLaunching] = useState<string | null>(null);
 	const [launchError, setLaunchError] = useState<string | null>(null);
+	const [selectedId, setSelectedId] = useState<string | null>(null);
 
 	const { templates, isLoading, refetch } = useBrowsePartyGames();
 
-	type Template = (typeof templates)[number];
-
-	const filtered = searchQuery.trim()
-		? templates.filter(
-				(t: Template) =>
-					t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					(t.description ?? "")
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()),
-			)
-		: templates;
+	useEffect(() => {
+		if (templates.length > 0 && !selectedId) {
+			setSelectedId(templates[0].id);
+		}
+	}, [templates, selectedId]);
 
 	const handlePlay = async (
 		templateId: string,
@@ -64,163 +57,107 @@ export default function BrowseScreen() {
 		}
 	};
 
+	const selectedTemplate = templates.find((t) => t.id === selectedId);
+
 	return (
-		<SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
-			<Modal transparent animationType="fade" visible={!!launching}>
-				<View className="flex-1 bg-black/60 items-center justify-center">
-					<View className="bg-theme-surface rounded-2xl p-8 items-center gap-4 mx-8">
-						<ActivityIndicator
-							size="large"
-							color="rgb(var(--color-theme-primary))"
-						/>
-						<Text className="text-theme-text font-semibold text-lg text-center">
-							Starting {launching}…
-						</Text>
-						<Text className="text-theme-text-secondary text-sm text-center">
-							Setting up your room
-						</Text>
-					</View>
-				</View>
-			</Modal>
+		<View className="flex-1 bg-[#1B3A6B]">
+			<PatternBackground
+				pattern="dots"
+				color="rgba(255, 255, 255, 0.05)"
+				style={StyleSheet.absoluteFill}
+			/>
+			<AmenGrainOverlay />
 
-			<ScrollView
-				className="flex-1"
-				refreshControl={
-					<RefreshControl
-						refreshing={false}
-						onRefresh={() => refetch()}
-						tintColor="rgb(var(--color-theme-primary))"
-					/>
-				}
-			>
-				<View className="p-4">
-					<View className="mb-4 flex-row justify-between items-start">
-						<View>
-							<Text className="text-2xl font-bold text-theme-text">Games</Text>
-							<Text className="text-theme-text-secondary mt-1">
-								Tap a game to host it for your group
-							</Text>
-						</View>
-						<Pressable
-							onPress={() => router.push("/settings/game-settings")}
-							className="p-2 -mr-2"
-							accessibilityLabel="Settings"
-						>
-							<Ionicons name="settings-outline" size={24} color="#C9A84C" />
-						</Pressable>
-					</View>
-
-					<Pressable
-						className="mb-4 bg-theme-surface py-3 rounded-xl items-center active:opacity-80 border border-theme-border"
-						onPress={() => router.push("/join")}
-					>
-						<Text className="text-theme-text font-bold text-base">
-							Join a Party →
-						</Text>
-					</Pressable>
-
-					{launchError && (
-						<View className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
-							<Text className="text-red-400 text-center text-sm">
-								{launchError}
-							</Text>
-							<Pressable onPress={() => setLaunchError(null)} className="mt-1">
-								<Text className="text-red-400 text-center text-xs underline">
-									Dismiss
-								</Text>
-							</Pressable>
-						</View>
-					)}
-
-					<View className="mb-4">
-						<View className="flex-row items-center bg-theme-surface rounded-xl px-4 py-3 border border-theme-border">
-							<Text className="text-theme-text-secondary mr-3">🔍</Text>
-							<TextInput
-								className="flex-1 text-theme-text text-base"
-								placeholder="Search games..."
-								placeholderTextColor="rgb(var(--color-theme-text-tertiary))"
-								value={searchQuery}
-								onChangeText={setSearchQuery}
-								autoCapitalize="none"
-								autoCorrect={false}
-								accessibilityLabel="Search games"
+			<SafeAreaView className="flex-1" edges={["top", "bottom"]}>
+				<Modal transparent animationType="fade" visible={!!launching}>
+					<View className="flex-1 bg-black/60 items-center justify-center">
+						<View className="bg-theme-surface rounded-2xl p-8 items-center gap-4 mx-8">
+							<ActivityIndicator
+								size="large"
+								color="rgb(var(--color-theme-primary))"
 							/>
-							{searchQuery.length > 0 && (
-								<Pressable
-									onPress={() => setSearchQuery("")}
-									accessibilityRole="button"
-									accessibilityLabel="Clear search"
-								>
-									<Text className="text-theme-text-secondary text-lg">✕</Text>
-								</Pressable>
-							)}
+							<Text className="text-theme-text font-semibold text-lg text-center">
+								Starting {launching}…
+							</Text>
+							<Text className="text-theme-text-secondary text-sm text-center">
+								Setting up your room
+							</Text>
 						</View>
 					</View>
+				</Modal>
 
-					<View className="mb-6">
-						<View className="flex-row items-center justify-between mb-3">
-							<Text className="text-lg font-semibold text-theme-text">
-								{searchQuery.trim() ? "Results" : "All Games"}
-							</Text>
-							{!isLoading && filtered.length > 0 && (
-								<Text className="text-theme-text-secondary text-sm">
-									{filtered.length} {filtered.length === 1 ? "game" : "games"}
-								</Text>
-							)}
-						</View>
+				<View className="px-6 py-4 flex-row justify-between items-center z-10">
+					<View>
+						<Text
+							className="text-[#C9A84C] text-3xl font-serif tracking-widest text-center"
+							style={{ fontFamily: "Lora_700Bold" }}
+						>
+							A·MEN
+						</Text>
+						<Text className="text-[#FFFDF7]/60 text-xs uppercase tracking-[0.2em] text-center -mt-1">
+							The Hall
+						</Text>
+					</View>
+					<Pressable
+						onPress={() => router.push("/settings/game-settings")}
+						className="p-2 -mr-2 bg-[#0F2347]/50 rounded-full"
+						accessibilityLabel="Settings"
+					>
+						<Ionicons name="settings-outline" size={24} color="#C9A84C" />
+					</Pressable>
+				</View>
 
-						{isLoading ? (
-							<View className="items-center py-12">
-								<ActivityIndicator
-									size="large"
-									color="rgb(var(--color-theme-primary))"
-								/>
-								<Text className="text-theme-text-secondary mt-4">
-									Loading games...
-								</Text>
-							</View>
-						) : filtered.length === 0 ? (
-							<View className="p-6 bg-theme-surface rounded-xl border border-theme-border items-center">
-								<Text className="text-4xl mb-3">🎮</Text>
-								<Text className="text-theme-text-secondary text-center">
-									{searchQuery
-										? "No games match your search."
-										: "No games available yet."}
-								</Text>
-								{searchQuery && (
-									<Pressable
-										onPress={() => setSearchQuery("")}
-										className="mt-3"
-									>
-										<Text className="text-theme-primary font-medium">
-											Clear search
+				<View className="flex-1 justify-center gap-8">
+					{isLoading ? (
+						<ActivityIndicator size="large" color="#C9A84C" />
+					) : (
+						<>
+							<GameHallCarousel
+								templates={templates}
+								selectedId={selectedId}
+								onSelect={setSelectedId}
+							/>
+
+							<View className="mx-6 p-6 bg-[#0F2347] rounded-2xl border border-white/10 items-center gap-4">
+								{selectedTemplate ? (
+									<>
+										<Text className="text-[#FFFDF7] text-lg font-serif text-center">
+											{selectedTemplate.title}
 										</Text>
-									</Pressable>
+										<Text className="text-[#FFFDF7]/60 text-center text-sm">
+											{selectedTemplate.minPlayers}-
+											{selectedTemplate.maxPlayers} Players
+										</Text>
+
+										{launchError && (
+											<Text className="text-red-400 text-center text-sm">
+												{launchError}
+											</Text>
+										)}
+
+										<Pressable
+											onPress={() =>
+												handlePlay(
+													selectedTemplate.id,
+													selectedTemplate.title,
+													selectedTemplate.minPlayers,
+												)
+											}
+											className="bg-[#C9A84C] px-8 py-3 rounded-full active:opacity-90"
+										>
+											<Text className="text-[#0F2347] font-bold uppercase tracking-wider">
+												Play Now
+											</Text>
+										</Pressable>
+									</>
+								) : (
+									<Text className="text-[#FFFDF7]/40">Select a game</Text>
 								)}
 							</View>
-						) : (
-							<View className="flex-row flex-wrap justify-between">
-								{filtered.map((template: Template) => (
-									<GameGridCard
-										key={template.id}
-										title={template.title}
-										thumbnailEmoji={template.emoji}
-										thumbnailBgClass="bg-theme-primary/10"
-										players={`${template.minPlayers}-${template.maxPlayers}`}
-										onPress={() =>
-											handlePlay(
-												template.id,
-												template.title,
-												template.minPlayers,
-											)
-										}
-									/>
-								))}
-							</View>
-						)}
-					</View>
+						</>
+					)}
 				</View>
-			</ScrollView>
-		</SafeAreaView>
+			</SafeAreaView>
+		</View>
 	);
 }
