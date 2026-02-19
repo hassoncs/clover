@@ -14,6 +14,7 @@ import { ToastHost } from "@/components/toast/ToastHost";
 import { AuthProvider } from "@/hooks/useAuth";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
+import { isRequested, subscribe } from "@/lib/toast/store";
 import { TRPCProvider } from "@/lib/trpc/react";
 import "../global.css";
 import { useFonts } from "expo-font";
@@ -142,7 +143,7 @@ function RootLayout() {
 							<AnimatedSplashScreen onAnimationComplete={() => {}}>
 								<RootLayoutContent />
 							</AnimatedSplashScreen>
-							<ToastHost />
+							<ToastHost subscribe={subscribe} isRequested={isRequested} />
 						</SafeAreaProvider>
 					</AuthProvider>
 				</BrandProvider>

@@ -280,6 +280,12 @@ export default function ProfileScreen() {
 		{ enabled: isAuthenticated && !!user?.id },
 	);
 
+	const { data: balanceData, isLoading: isBalanceLoading } =
+		trpcReact.economy.getBalance.useQuery(undefined, {
+			refetchInterval: 30000,
+			enabled: isAuthenticated,
+		});
+
 	const utils = trpcReact.useUtils();
 	const [myGames, setMyGames] = useState<MyGameItem[]>([]);
 	const [isLoadingGames, setIsLoadingGames] = useState(false);
@@ -566,7 +572,11 @@ export default function ProfileScreen() {
 							<Text className="text-theme-text-secondary text-base">
 								Sparks
 							</Text>
-							<CreditBalance onPress={() => setShowCurrencySheet(true)} />
+							<CreditBalance
+								balanceSparks={balanceData?.balanceSparks}
+								isLoading={isBalanceLoading}
+								onPress={() => setShowCurrencySheet(true)}
+							/>
 						</View>
 						<Pressable
 							className="mb-3 bg-theme-surface-elevated h-12 rounded-full items-center justify-center border border-theme-border"

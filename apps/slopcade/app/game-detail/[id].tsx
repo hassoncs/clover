@@ -18,7 +18,10 @@ import { LikeButton } from "@/components/social/LikeButton";
 import { ReportModal } from "@/components/social/ReportModal";
 import { StarRating } from "@/components/social/StarRating";
 import { useAuth } from "@/hooks/useAuth";
+import { env } from "@/lib/config/env";
 import {
+	deleteOfflineGame,
+	downloadGameForOffline,
 	isGameDownloaded,
 	loadLocalGameDefinition,
 } from "@/lib/offline/download-manager";
@@ -305,7 +308,23 @@ export default function GameDetailScreen() {
 
 						{gameInfo && (
 							<View className="flex-1 py-2">
-								<DownloadForOfflineButton gameId={gameInfo.id} size="md" />
+								<DownloadForOfflineButton
+									gameId={gameInfo.id}
+									size="md"
+									onDownload={async (gameId, onProgress) => {
+										await downloadGameForOffline(
+											gameId,
+											env.assetCdnUrl,
+											onProgress,
+										);
+									}}
+									onDelete={async (gameId) => {
+										await deleteOfflineGame(gameId);
+									}}
+									onCheckDownloaded={async (gameId) => {
+										return isGameDownloaded(gameId);
+									}}
+								/>
 							</View>
 						)}
 

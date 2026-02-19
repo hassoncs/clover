@@ -209,6 +209,18 @@ export default function ThemesScreen() {
 				onClose={handleModalClose}
 				onSave={handleModalSave}
 				editingTheme={editingTheme}
+				onEnhancePrompt={async (prompt, name) => {
+					return await trpc.assetSystem.themes.enhancePrompt.mutate({
+						prompt,
+						name,
+					});
+				}}
+				onCreateTheme={async (data) => {
+					await trpc.assetSystem.themes.create.mutate(data);
+				}}
+				onUpdateTheme={async (data) => {
+					await trpc.assetSystem.themes.update.mutate(data);
+				}}
 			/>
 		</SafeAreaView>
 	);

@@ -5,6 +5,6 @@ interface StripeCheckoutProps {
 	onError: (error: string) => void;
 }
 
-export default function StripeCheckout(_props: StripeCheckoutProps) {
+export function StripeCheckout(_props: StripeCheckoutProps) {
 	return null;
 }

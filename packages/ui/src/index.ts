@@ -4,6 +4,7 @@ export * from "./Box";
 export * from "./BrandContext";
 export * from "./Button";
 export * from "./billing";
+export * from "./DownloadForOfflineButton";
 export * from "./discover";
 export * from "./economy";
 export * from "./effects";
