@@ -1,2 +1,1 @@
-export type { Physics2D } from "./Physics2D";
-export * from "./types";
+export * from "@slopcade/app-lib/physics2d";

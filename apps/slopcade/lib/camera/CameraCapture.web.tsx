@@ -1,3 +1,1 @@
-export function CameraCapture(_props: { isActive: boolean; facing?: 'back' | 'front' }) {
-  return null;
-}
+export * from "@slopcade/app-lib/camera/CameraCapture.web";

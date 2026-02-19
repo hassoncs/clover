@@ -1,1 +1,1 @@
-export * from "./index.web";
+export * from "@slopcade/app-lib/haptics";

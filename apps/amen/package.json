@@ -52,6 +52,7 @@
 		"@shopify/flash-list": "^2.2.2",
 		"@shopify/react-native-skia": "^2.4.14",
 		"@slopcade/api": "workspace:*",
+		"@slopcade/app-lib": "workspace:*",
 		"@slopcade/brands": "workspace:*",
 		"@slopcade/codemirror-lang-glsl": "workspace:^",
 		"@slopcade/economy-engine": "workspace:*",

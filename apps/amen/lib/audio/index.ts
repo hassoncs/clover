@@ -1,2 +1,1 @@
-export { getAudioManager, resetAudioManager } from './AudioManager';
-export type { AudioManager, SoundConfig, SoundType, AudioManagerConfig } from './AudioManager';
+export * from "@slopcade/app-lib/audio";

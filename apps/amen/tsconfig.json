@@ -5,6 +5,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"],
+			"@slopcade/app-lib": ["../../packages/app-lib/src/index.ts"],
+			"@slopcade/app-lib/*": ["../../packages/app-lib/src/*"],
 			"@slopcade/game-runtime": ["../../packages/game-runtime/src/index.ts"],
 			"@slopcade/game-runtime/*": ["../../packages/game-runtime/src/*"],
 			"@slopcade/godot-bridge": ["../../packages/godot-bridge/src/index.ts"],
