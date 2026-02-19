@@ -1,7 +1,6 @@
 import { WithCanvasKit } from "@slopcade/ui/Grainient";
 import * as SplashScreen from "expo-splash-screen";
-import type React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
@@ -23,6 +22,22 @@ const globalSplashState = {
 	styleIndex: 0,
 	time: 0,
 };
+
+class SkiaErrorBoundary extends React.Component<
+	{ fallback: React.ReactNode; children: React.ReactNode },
+	{ hasError: boolean }
+> {
+	state = { hasError: false };
+	static getDerivedStateFromError() {
+		return { hasError: true };
+	}
+	componentDidCatch(error: Error) {
+		console.warn("Skia failed to load:", error.message);
+	}
+	render() {
+		return this.state.hasError ? this.props.fallback : this.props.children;
+	}
+}
 
 export function AnimatedSplashScreen({
 	onAnimationComplete,
@@ -139,21 +154,25 @@ export function AnimatedSplashScreen({
 						},
 					]}
 				>
-					<WithCanvasKit
-						getComponent={async () => {
-							const mod = await import("./SplashSkiaCanvas");
-							return {
-								default: () => (
-									<mod.default
-										styleIndex={globalSplashState.styleIndex}
-										time={globalSplashState.time}
-									/>
-								),
-							};
-						}}
+					<SkiaErrorBoundary
 						fallback={<FallbackText styleIndex={currentStyleIndex} />}
-						fadeInDuration={0}
-					/>
+					>
+						<WithCanvasKit
+							getComponent={async () => {
+								const mod = await import("./SplashSkiaCanvas");
+								return {
+									default: () => (
+										<mod.default
+											styleIndex={globalSplashState.styleIndex}
+											time={globalSplashState.time}
+										/>
+									),
+								};
+							}}
+							fallback={<FallbackText styleIndex={currentStyleIndex} />}
+							fadeInDuration={0}
+						/>
+					</SkiaErrorBoundary>
 				</Animated.View>
 			)}
 		</View>
