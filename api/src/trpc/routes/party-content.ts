@@ -8,6 +8,16 @@ import {
 	createAudioGenerator,
 	SKIP_VOICE_TYPES,
 } from "@/party/content/audio";
+import {
+	composeGameTypeConfig,
+	computeContentHash as computeGenerationHash,
+	containsBlockedKeyword,
+	generateItems,
+} from "@/party/content-generation";
+import {
+	getBrandContentConfig,
+	getGameTypeConfig,
+} from "@/party/content-generation/brand-content-config";
 import { adminProcedure, router } from "@/trpc/index";
 
 function getContentPacksRoot(): string {
@@ -167,6 +177,38 @@ async function loadPackFiles(brand: Brand): Promise<
 	}
 
 	return packs;
+}
+
+function extractItemText(
+	item: Record<string, unknown>,
+	gameType: string,
+): string {
+	switch (gameType) {
+		case "dilemma":
+		case "wyr":
+			return `Would you rather: ${item.optionA} OR ${item.optionB}`;
+		case "drawing":
+			return String(item.text || item.prompt || "");
+		case "ranking":
+			return String(item.topic || "");
+		case "headsup":
+		case "wordlist":
+			return String(item.name || "");
+		case "wager":
+		case "history":
+		case "trivia":
+		case "fibbage":
+		case "estimation":
+			return String(item.question || "");
+		case "chroma": {
+			const clues = Array.isArray(item.clues)
+				? (item.clues as string[]).join(", ")
+				: "";
+			return clues;
+		}
+		default:
+			return String(item.text || item.question || item.prompt || "");
+	}
 }
 
 export const partyContentRouter = router({
@@ -1377,5 +1419,355 @@ export const partyContentRouter = router({
 			}
 
 			return { generated, skipped, errors };
+		}),
+
+	generateContent: adminProcedure
+		.input(
+			z.object({
+				brandId: z.string(),
+				gameType: z.string(),
+				count: z.number().int().min(1).max(5000).optional(),
+				model: z.string().optional(),
+				temperature: z.number().min(0).max(2).optional(),
+				batchSize: z.number().int().min(1).max(100).optional(),
+				mode: z
+					.enum(["fill-to-target", "generate-count"])
+					.default("fill-to-target"),
+				dryRun: z.boolean().default(false),
+				jobId: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const gameConfig = getGameTypeConfig(input.brandId, input.gameType);
+			const model = input.model ?? gameConfig.model;
+			const temperature = input.temperature ?? gameConfig.temperature;
+			const batchSize = input.batchSize ?? gameConfig.batchSize;
+
+			const currentCountResult = await ctx.env.DB.prepare(
+				`SELECT COUNT(*) as cnt FROM party_content
+				 WHERE brand_id = ? AND content_type = ? AND status = 'active' AND deleted_at IS NULL`,
+			)
+				.bind(input.brandId, input.gameType)
+				.first<{ cnt: number }>();
+			const currentCount = currentCountResult?.cnt ?? 0;
+
+			let requestedCount: number;
+			if (input.mode === "fill-to-target") {
+				const target = input.count ?? gameConfig.targetCount;
+				requestedCount = Math.max(target - currentCount, 0);
+				if (requestedCount === 0) {
+					return {
+						jobId: input.jobId ?? crypto.randomUUID(),
+						status: "completed" as const,
+						requestedCount: 0,
+						currentCount,
+						targetCount: target,
+						generated: 0,
+						inserted: 0,
+						duplicatesSkipped: 0,
+						moderationRejected: 0,
+						done: true,
+						message: `Target ${target} already met (current: ${currentCount})`,
+					};
+				}
+			} else {
+				requestedCount = input.count ?? batchSize;
+			}
+
+			const thisBatchSize = Math.min(batchSize, requestedCount);
+			const jobId = input.jobId ?? crypto.randomUUID();
+			const now = Date.now();
+
+			if (!input.jobId) {
+				await ctx.env.DB.prepare(
+					`INSERT INTO party_content_generation_jobs
+					 (id, brand_id, game_type, status, mode, requested_count, target_count, model, temperature, batch_size, started_at, created_by)
+					 VALUES (?, ?, ?, 'running', ?, ?, ?, ?, ?, ?, ?, ?)`,
+				)
+					.bind(
+						jobId,
+						input.brandId,
+						input.gameType,
+						input.mode,
+						requestedCount,
+						input.mode === "fill-to-target"
+							? (input.count ?? gameConfig.targetCount)
+							: null,
+						model,
+						temperature,
+						batchSize,
+						now,
+						ctx.user.id,
+					)
+					.run();
+			}
+
+			if (input.dryRun) {
+				return {
+					jobId,
+					status: "completed" as const,
+					requestedCount,
+					currentCount,
+					targetCount:
+						input.mode === "fill-to-target"
+							? (input.count ?? gameConfig.targetCount)
+							: null,
+					generated: 0,
+					inserted: 0,
+					duplicatesSkipped: 0,
+					moderationRejected: 0,
+					done: true,
+					dryRun: true,
+					message: `Would generate ${requestedCount} items (batch size ${thisBatchSize})`,
+				};
+			}
+
+			const apiKey = ctx.env.OPENROUTER_API_KEY;
+			if (!apiKey) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "OPENROUTER_API_KEY not configured",
+				});
+			}
+
+			const config = composeGameTypeConfig(input.brandId, input.gameType);
+			const prompt = config.promptTemplate(thisBatchSize);
+
+			let items: Array<Record<string, unknown>>;
+			try {
+				const result = await generateItems({
+					schema: config.schema,
+					system: config.system,
+					prompt,
+					apiKey,
+					model,
+					temperature,
+				});
+				items = (result as { items: Array<Record<string, unknown>> }).items;
+			} catch (e) {
+				const errorMsg = e instanceof Error ? e.message : String(e);
+				await ctx.env.DB.prepare(
+					`UPDATE party_content_generation_jobs SET errors = ?, status = 'failed', completed_at = ? WHERE id = ?`,
+				)
+					.bind(errorMsg, Date.now(), jobId)
+					.run();
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Generation failed: ${errorMsg}`,
+				});
+			}
+
+			let inserted = 0;
+			let duplicatesSkipped = 0;
+			let moderationRejected = 0;
+
+			for (const item of items.slice(0, thisBatchSize)) {
+				const text = extractItemText(item, input.gameType);
+
+				if (containsBlockedKeyword(text).blocked) {
+					moderationRejected++;
+					continue;
+				}
+
+				const body = JSON.stringify(item);
+				const contentHash = await computeGenerationHash(text);
+
+				const existing = await ctx.env.DB.prepare(
+					"SELECT id FROM party_content WHERE content_hash = ? AND brand_id = ?",
+				)
+					.bind(contentHash, input.brandId)
+					.first();
+
+				if (existing) {
+					duplicatesSkipped++;
+					continue;
+				}
+
+				const contentId = crypto.randomUUID();
+				const category =
+					typeof item.category === "string" ? item.category : null;
+
+				await ctx.env.DB.prepare(
+					`INSERT INTO party_content (id, brand_id, content_type, body, category, status, source, content_hash, created_at, updated_at)
+					 VALUES (?, ?, ?, ?, ?, 'active', 'ai', ?, ?, ?)`,
+				)
+					.bind(
+						contentId,
+						input.brandId,
+						input.gameType,
+						body,
+						category,
+						contentHash,
+						now,
+						now,
+					)
+					.run();
+
+				inserted++;
+			}
+
+			const generatedCount = items.length;
+			await ctx.env.DB.prepare(
+				`UPDATE party_content_generation_jobs
+				 SET generated = generated + ?, inserted = inserted + ?,
+				     duplicates_skipped = duplicates_skipped + ?, moderation_rejected = moderation_rejected + ?
+				 WHERE id = ?`,
+			)
+				.bind(
+					generatedCount,
+					inserted,
+					duplicatesSkipped,
+					moderationRejected,
+					jobId,
+				)
+				.run();
+
+			const updatedJob = await ctx.env.DB.prepare(
+				"SELECT inserted, requested_count FROM party_content_generation_jobs WHERE id = ?",
+			)
+				.bind(jobId)
+				.first<{ inserted: number; requested_count: number }>();
+
+			const totalInserted = updatedJob?.inserted ?? inserted;
+			const totalRequested = updatedJob?.requested_count ?? requestedCount;
+			const done =
+				totalInserted >= totalRequested || generatedCount < thisBatchSize;
+
+			if (done) {
+				await ctx.env.DB.prepare(
+					"UPDATE party_content_generation_jobs SET status = 'completed', completed_at = ? WHERE id = ?",
+				)
+					.bind(Date.now(), jobId)
+					.run();
+			}
+
+			return {
+				jobId,
+				status: done ? ("completed" as const) : ("running" as const),
+				requestedCount: totalRequested,
+				currentCount: currentCount + totalInserted,
+				generated: generatedCount,
+				inserted,
+				duplicatesSkipped,
+				moderationRejected,
+				totalInserted,
+				remaining: Math.max(totalRequested - totalInserted, 0),
+				done,
+			};
+		}),
+
+	getGenerationJob: adminProcedure
+		.input(z.object({ jobId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const job = await ctx.env.DB.prepare(
+				`SELECT id, brand_id, game_type, status, mode, requested_count, target_count,
+				        model, temperature, batch_size, generated, inserted,
+				        duplicates_skipped, moderation_rejected, errors,
+				        started_at, completed_at, created_by
+				 FROM party_content_generation_jobs WHERE id = ?`,
+			)
+				.bind(input.jobId)
+				.first();
+
+			if (!job) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Generation job not found",
+				});
+			}
+
+			return {
+				id: job.id as string,
+				brandId: job.brand_id as string,
+				gameType: job.game_type as string,
+				status: job.status as string,
+				mode: job.mode as string,
+				requestedCount: job.requested_count as number,
+				targetCount: job.target_count as number | null,
+				model: job.model as string,
+				temperature: job.temperature as number,
+				batchSize: job.batch_size as number,
+				generated: job.generated as number,
+				inserted: job.inserted as number,
+				duplicatesSkipped: job.duplicates_skipped as number,
+				moderationRejected: job.moderation_rejected as number,
+				errors: job.errors as string | null,
+				startedAt: job.started_at as number,
+				completedAt: job.completed_at as number | null,
+				createdBy: job.created_by as string | null,
+			};
+		}),
+
+	listGenerationJobs: adminProcedure
+		.input(
+			z.object({
+				brandId: z.string().optional(),
+				gameType: z.string().optional(),
+				status: z
+					.enum(["running", "completed", "failed", "cancelled"])
+					.optional(),
+				limit: z.number().int().min(1).max(100).default(20),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const conditions: string[] = [];
+			const params: unknown[] = [];
+
+			if (input.brandId) {
+				conditions.push("brand_id = ?");
+				params.push(input.brandId);
+			}
+			if (input.gameType) {
+				conditions.push("game_type = ?");
+				params.push(input.gameType);
+			}
+			if (input.status) {
+				conditions.push("status = ?");
+				params.push(input.status);
+			}
+
+			const where =
+				conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+			const result = await ctx.env.DB.prepare(
+				`SELECT id, brand_id, game_type, status, mode, requested_count, target_count,
+				        model, generated, inserted, duplicates_skipped, moderation_rejected,
+				        started_at, completed_at
+				 FROM party_content_generation_jobs ${where}
+				 ORDER BY started_at DESC
+				 LIMIT ?`,
+			)
+				.bind(...params, input.limit)
+				.all();
+
+			return (result.results ?? []).map((row: Record<string, unknown>) => ({
+				id: row.id as string,
+				brandId: row.brand_id as string,
+				gameType: row.game_type as string,
+				status: row.status as string,
+				mode: row.mode as string,
+				requestedCount: row.requested_count as number,
+				targetCount: row.target_count as number | null,
+				model: row.model as string,
+				generated: row.generated as number,
+				inserted: row.inserted as number,
+				duplicatesSkipped: row.duplicates_skipped as number,
+				moderationRejected: row.moderation_rejected as number,
+				startedAt: row.started_at as number,
+				completedAt: row.completed_at as number | null,
+			}));
+		}),
+
+	listBrandGameTypes: adminProcedure
+		.input(z.object({ brandId: z.string() }))
+		.query(({ input }) => {
+			const config = getBrandContentConfig(input.brandId);
+			return Object.entries(config.gameTypes).map(([gameType, cfg]) => ({
+				gameType,
+				targetCount: cfg.targetCount,
+				model: cfg.model,
+				temperature: cfg.temperature,
+				batchSize: cfg.batchSize,
+			}));
 		}),
 });

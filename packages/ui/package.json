@@ -6,6 +6,8 @@
 	"types": "./src/index.ts",
 	"exports": {
 		".": "./src/index.ts",
+		"./BrandContext": "./src/BrandContext.tsx",
+		"./GameHallCarousel": "./src/GameHallCarousel/index.tsx",
 		"./amen": "./src/amen/index.ts",
 		"./Button": "./src/Button.tsx",
 		"./Text": "./src/Text.tsx",

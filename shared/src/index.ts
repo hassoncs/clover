@@ -1,3 +1,4 @@
+export * from "./brands/config";
 export * from "./constants/audio-announcer-lines";
 export {
 	DEFAULT_MUSIC_MODEL,

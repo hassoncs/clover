@@ -24,9 +24,9 @@ const TAB_HEADER_CONFIG: Record<
 	},
 	browse: {
 		title: "Slopcade",
-		showHeader: true,
-		leftIcons: ["menu", "search"],
-		rightIcons: ["notifications-outline", "person-add-outline"],
+		showHeader: false,
+		leftIcons: [],
+		rightIcons: [],
 	},
 	profile: {
 		showHeader: false,

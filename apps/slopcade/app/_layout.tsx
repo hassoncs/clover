@@ -1,6 +1,8 @@
 import "react-native-get-random-values";
 import "@/lib/notifications/setup";
 import * as Sentry from "@sentry/react-native";
+import { getBrandConfig } from "@slopcade/shared";
+import { BrandProvider } from "@slopcade/ui";
 import * as Linking from "expo-linking";
 import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -10,7 +12,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import { ToastHost } from "@/components/toast/ToastHost";
 import { AuthProvider } from "@/hooks/useAuth";
-
 import { preloadEditorModules } from "@/lib/editor/hooks/useEditorPreloader";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
@@ -129,6 +130,7 @@ function RootLayout() {
 	});
 
 	const { setColorScheme } = useColorScheme();
+	const brandConfig = getBrandConfig("slopcade");
 	useEffect(() => {
 		setColorScheme("dark");
 	}, [setColorScheme]);
@@ -149,14 +151,16 @@ function RootLayout() {
 			className={Platform.OS === "web" ? "no-select" : undefined}
 		>
 			<TRPCProvider>
-				<AuthProvider>
-					<SafeAreaProvider>
-						<AnimatedSplashScreen onAnimationComplete={handleSplashComplete}>
-							<RootLayoutContent />
-						</AnimatedSplashScreen>
-						<ToastHost />
-					</SafeAreaProvider>
-				</AuthProvider>
+				<BrandProvider config={brandConfig}>
+					<AuthProvider>
+						<SafeAreaProvider>
+							<AnimatedSplashScreen onAnimationComplete={handleSplashComplete}>
+								<RootLayoutContent />
+							</AnimatedSplashScreen>
+							<ToastHost />
+						</SafeAreaProvider>
+					</AuthProvider>
+				</BrandProvider>
 			</TRPCProvider>
 		</GestureHandlerRootView>
 	);

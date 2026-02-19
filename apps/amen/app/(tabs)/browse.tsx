@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { GameHallCarousel } from "@slopcade/ui";
 import { AmenGrainOverlay, PatternBackground } from "@slopcade/ui/amen";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -12,7 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
-import { GameHallCarousel } from "@/components/browse/GameHallCarousel";
+import { GameHallTile } from "@/components/browse/GameHallTile";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
 import { createPartyRoom } from "@/lib/party/api";
 
@@ -98,10 +99,10 @@ export default function BrowseScreen() {
 				<View className="px-6 py-4 flex-row justify-between items-center z-10">
 					<View>
 						<Text
-							className="text-[#C9A84C] text-3xl font-serif tracking-widest text-center"
-							style={{ fontFamily: "Lora_700Bold" }}
+							className="text-[#C9A84C] text-3xl tracking-widest text-center"
+							style={{ fontFamily: "Cinzel_900Black", letterSpacing: 6 }}
 						>
-							A·MEN
+							AMEN
 						</Text>
 						<Text className="text-[#FFFDF7]/60 text-xs uppercase tracking-[0.2em] text-center -mt-1">
 							The Hall
@@ -121,9 +122,16 @@ export default function BrowseScreen() {
 						<ActivityIndicator size="large" color="#C9A84C" />
 					) : (
 						<GameHallCarousel
-							templates={templates}
+							items={templates}
 							selectedId={selectedId}
 							onSelect={setSelectedId}
+							renderTile={(template, selected, onPress) => (
+								<GameHallTile
+									template={template}
+									selected={selected}
+									onPress={onPress}
+								/>
+							)}
 						/>
 					)}
 				</View>

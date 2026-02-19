@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
- * Uploads locally generated Amen assets to the local R2 mirror and updates local D1.
- * Run: npx tsx api/src/party/assets/upload-to-local-r2.ts --dir api/debug-output/amen-assets/full-run
+ * Uploads locally generated brand assets to the local R2 mirror and updates local D1.
+ * Run: npx tsx api/src/party/assets/upload-to-local-r2.ts --brand amen --dir api/debug-output/amen-assets/full-run
  */
 
 import crypto from "node:crypto";
@@ -9,19 +9,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import Database from "better-sqlite3";
-
-const GAME_IDS = [
-	"quiplash",
-	"half-and-half",
-	"about-you-bluff",
-	"role-replay",
-	"ruin-and-redeem",
-	"chain-reaction",
-	"quickfire-qa",
-	"truth-trap",
-] as const;
-
-type GameId = (typeof GAME_IDS)[number];
+import { getBrandArtConfig } from "./brand-art-registry";
 
 function sha256(buf: Buffer): string {
 	return crypto.createHash("sha256").update(buf).digest("hex");
@@ -110,16 +98,21 @@ async function run(): Promise<void> {
 		args: process.argv.slice(2),
 		options: {
 			dir: { type: "string" },
+			brand: { type: "string" },
 			help: { type: "boolean", default: false },
 		},
 	});
 
-	if (values.help || !values.dir) {
+	if (values.help || !values.dir || !values.brand) {
 		console.log(
-			"Usage: npx tsx api/src/party/assets/upload-to-local-r2.ts --dir <path-to-output-dir>",
+			"Usage: npx tsx api/src/party/assets/upload-to-local-r2.ts --brand <brand> --dir <path-to-output-dir>",
 		);
 		process.exit(values.help ? 0 : 1);
 	}
+
+	const brandId = values.brand;
+	const brandConfig = getBrandArtConfig(brandId);
+	const GAME_IDS = brandConfig.gameIds;
 
 	const outputDir = path.resolve(values.dir);
 	const repoRoot = path.resolve(
@@ -239,16 +232,7 @@ async function run(): Promise<void> {
 
 	// Upload avatars (log URLs only — no DB table yet)
 	const avatarDir = path.join(outputDir, "avatars");
-	const avatarTypes = [
-		"dove",
-		"lamb",
-		"flame",
-		"fish",
-		"star",
-		"scroll",
-		"cross",
-		"bread",
-	];
+	const avatarTypes = Object.keys(brandConfig.avatarPrompts);
 	console.log("\n--- Avatar URLs (wire manually into AvatarPicker) ---");
 	for (const avatarType of avatarTypes) {
 		const avatarPath = path.join(avatarDir, `${avatarType}.png`);

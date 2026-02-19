@@ -63,6 +63,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
 		extra: {
 			...baseConfig.extra,
+			brandId: "slopcade",
+			brandDisplayName: "Slopcade",
+			brandDomain: "slopcade.com",
 		},
 
 		plugins,

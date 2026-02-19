@@ -11,10 +11,7 @@ import {
 	VOICE_PRESETS,
 } from "@slopcade/shared";
 import { TRPCError } from "@trpc/server";
-import type { LanguageModel } from "ai";
-import { generateObject } from "ai";
 import { z } from "zod";
-import { createModel } from "@/ai/model-factory";
 import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import {
 	createScenarioClient,
@@ -22,52 +19,13 @@ import {
 	ScenarioImageClient,
 } from "@/ai/providers/scenario";
 import {
-	AMEN_AVATAR_ICON_PROMPTS,
-	AMEN_GAME_ASSET_PROMPTS,
-	AMEN_GAME_IDS,
-	type AmenAvatarType,
-	type AmenGameId,
-} from "@/party/assets/amen-game-art-prompts";
+	ALL_ASSET_TYPES,
+	type AssetType,
+	getBrandArtConfig,
+} from "@/party/assets/brand-art-registry";
 import { AuditService } from "@/services/audit-service";
 import { BlobStore } from "@/services/BlobStore";
 import { adminProcedure, router } from "@/trpc/index";
-
-const PARTY_CATEGORIES = [
-	"pop culture",
-	"food",
-	"animals",
-	"workplace",
-	"hypothetical",
-	"absurd",
-	"relationships",
-	"technology",
-] as const;
-
-const PARTY_PROMPT_FORMATS = [
-	"The worst X: _____",
-	"A rejected X",
-	"Something you should never bring/say/do at X: _____",
-	"If X had/could/were Y, they would: _____",
-	"The real reason X: _____",
-	"An honest X would say: _____",
-	"A terrible name/slogan for X: _____",
-	"The most X thing you could Y: _____",
-] as const;
-
-const PartyBatchSchema = z.object({
-	prompts: z.array(
-		z.object({
-			text: z
-				.string()
-				.describe(
-					"A fill-in-the-blank comedy prompt, 10-25 words, ending with _____",
-				),
-			category: z
-				.string()
-				.describe("One of the 8 categories provided in the system prompt"),
-		}),
-	),
-});
 
 const THEME_PROMPT_MODIFIERS = [
 	{
@@ -116,14 +74,6 @@ function assertOpenRouterApiKey(apiKey: string | undefined): string {
 	}
 	return apiKey;
 }
-
-const AMEN_ASSET_TYPES = [
-	"tiles",
-	"heroes",
-	"avatars",
-	"panels",
-	"voiceovers",
-] as const;
 
 type StoredAssetResult = {
 	assetId: string;
@@ -206,68 +156,8 @@ function isTooSimilar(a: string, b: string, threshold = 0.3): boolean {
 	return similarity > 1 - threshold;
 }
 
-function deduplicatePrompts(
-	prompts: Array<{ text: string; category: string }>,
-): Array<{ text: string; category: string }> {
-	const unique: Array<{ text: string; category: string }> = [];
-	for (const prompt of prompts) {
-		const duplicate = unique.some((existing) =>
-			isTooSimilar(existing.text, prompt.text),
-		);
-		if (!duplicate) {
-			unique.push(prompt);
-		}
-	}
-	return unique;
-}
-
 function toSqlLiteral(value: string): string {
 	return `'${value.replaceAll("'", "''")}'`;
-}
-
-async function generatePartyBatch(options: {
-	model: LanguageModel;
-	batchSize: number;
-	batchIndex: number;
-}) {
-	const categoryRotation =
-		PARTY_CATEGORIES[options.batchIndex % PARTY_CATEGORIES.length];
-	const formatHint =
-		PARTY_PROMPT_FORMATS[options.batchIndex % PARTY_PROMPT_FORMATS.length];
-
-	const result = await generateObject({
-		model: options.model,
-		schema: PartyBatchSchema,
-		system: [
-			"You are a comedy writer for a party game like Quiplash.",
-			"Generate fill-in-the-blank comedy prompts that are open-ended and inspire creative, funny answers.",
-			"Each prompt should be 10-25 words and end with _____.",
-			"",
-			`Available categories: ${PARTY_CATEGORIES.join(", ")}`,
-			"",
-			"Format variety examples:",
-			'- "The worst X: _____"',
-			'- "A rejected X"',
-			'- "Something you should never bring to X: _____"',
-			'- "If X had a side hustle, it would be: _____"',
-			'- "The real reason X: _____"',
-			'- "An honest X would say: _____"',
-			"",
-			"Make prompts genuinely funny, surprising, and open-ended.",
-			"Avoid prompts that are too specific or have only one obvious answer.",
-			"Distribute across all categories but lean toward the focus category.",
-		].join("\n"),
-		prompt: [
-			`Generate ${options.batchSize} unique comedy prompts for a party game.`,
-			`Focus category for this batch: "${categoryRotation}"`,
-			`Try using this format style as inspiration (but vary it): "${formatHint}"`,
-			"Ensure variety in phrasing - don't start every prompt the same way.",
-			"Make them funny and open-ended so players can give creative answers.",
-		].join("\n"),
-		temperature: 0.9,
-	});
-
-	return result.object.prompts;
 }
 
 export const adminToolsRouter = router({
@@ -589,21 +479,25 @@ export const adminToolsRouter = router({
 			};
 		}),
 
-	generateAmenAssets: adminProcedure
+	generateBrandAssets: adminProcedure
 		.input(
 			z.object({
-				assetTypes: z.array(z.enum(AMEN_ASSET_TYPES)),
-				gameIds: z.array(z.enum(AMEN_GAME_IDS)).optional(),
+				brandId: z.string(),
+				assetTypes: z.array(
+					z.enum(ALL_ASSET_TYPES as [AssetType, ...AssetType[]]),
+				),
+				gameIds: z.array(z.string()).optional(),
 				dryRun: z.boolean().default(false),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const brandConfig = getBrandArtConfig(input.brandId);
 			const selectedGameIds = input.gameIds?.length
 				? input.gameIds
-				: [...AMEN_GAME_IDS];
+				: [...brandConfig.gameIds];
 
 			const publicAssetBase =
-				ctx.env.ASSET_HOST?.replace(/\/$/, "") ?? "https://assets.amen.games";
+				ctx.env.ASSET_HOST?.replace(/\/$/, "") ?? brandConfig.defaultAssetHost;
 			const urls: Record<string, string> = {};
 			const generated: string[] = [];
 			const avatarUrls: Record<string, string> = {};
@@ -631,7 +525,14 @@ export const adminToolsRouter = router({
 			const elevenLabs = new ElevenLabsService(
 				assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY),
 			);
-			const amenRulesVoice = BRAND_VOICES.amen.rules;
+			const brandVoice = BRAND_VOICES[input.brandId];
+			if (!brandVoice) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `No voice config for brand ${input.brandId}`,
+				});
+			}
+			const rulesVoice = brandVoice.rules;
 
 			const storeGeneratedImage = async (options: {
 				prompt: string;
@@ -678,8 +579,18 @@ export const adminToolsRouter = router({
 				};
 			};
 
+			if (
+				input.assetTypes.includes("voiceovers") &&
+				!brandConfig.supportsVoiceovers
+			) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Voiceovers not enabled for brand ${input.brandId}`,
+				});
+			}
+
 			for (const gameId of selectedGameIds) {
-				const game = AMEN_GAME_ASSET_PROMPTS[gameId as AmenGameId];
+				const game = brandConfig.gamePrompts[gameId];
 				if (!game) continue;
 
 				if (input.assetTypes.includes("tiles")) {
@@ -762,34 +673,34 @@ export const adminToolsRouter = router({
 				if (input.assetTypes.includes("voiceovers")) {
 					const audio = await elevenLabs.generateVoice({
 						text: game.voiceoverScript,
-						voiceId: amenRulesVoice.voiceId,
-						modelId: amenRulesVoice.model,
-						stability: amenRulesVoice.settings.stability,
-						similarityBoost: amenRulesVoice.settings.similarityBoost,
-						style: amenRulesVoice.settings.style,
+						voiceId: rulesVoice.voiceId,
+						modelId: rulesVoice.model,
+						stability: rulesVoice.settings.stability,
+						similarityBoost: rulesVoice.settings.similarityBoost,
+						style: rulesVoice.settings.style,
 						outputFormat: "mp3_44100_128",
 					});
 
 					const storedAudio = await blobStore.put(audio.audio, "audio/mpeg", {
 						source: "generated",
 						compiledPrompt: game.voiceoverScript,
-						modelId: amenRulesVoice.model,
+						modelId: rulesVoice.model,
 					});
 
 					const voiceoverUrl = `${publicAssetBase}${blobStore.getUrl(storedAudio.hash)}`;
 					voiceoverUrls[gameId] = voiceoverUrl;
 					urls[`${gameId}:voiceover`] = voiceoverUrl;
 					generated.push(`${gameId}:voiceover`);
-					console.log(`[AmenAssets] voiceover ${gameId}: ${voiceoverUrl}`);
+					console.log(
+						`[BrandAssets:${input.brandId}] voiceover ${gameId}: ${voiceoverUrl}`,
+					);
 				}
 			}
 
 			if (input.assetTypes.includes("avatars")) {
-				for (const avatarType of Object.keys(
-					AMEN_AVATAR_ICON_PROMPTS,
-				) as AmenAvatarType[]) {
+				for (const avatarType of Object.keys(brandConfig.avatarPrompts)) {
 					const avatar = await storeGeneratedImage({
-						prompt: AMEN_AVATAR_ICON_PROMPTS[avatarType],
+						prompt: brandConfig.avatarPrompts[avatarType],
 						width: 256,
 						height: 256,
 						metaLabel: `avatar:${avatarType}`,
@@ -798,15 +709,18 @@ export const adminToolsRouter = router({
 					avatarUrls[avatarType] = avatar.url;
 					urls[`avatar:${avatarType}`] = avatar.url;
 					generated.push(`avatar:${avatarType}`);
-					console.log(`[AmenAssets] avatar ${avatarType}: ${avatar.url}`);
+					console.log(
+						`[BrandAssets:${input.brandId}] avatar ${avatarType}: ${avatar.url}`,
+					);
 				}
 			}
 
 			const audit = new AuditService(ctx.env.DB);
 			await audit.logEvent({
 				actorId: ctx.user.id,
-				action: "admin.generate_amen_assets",
+				action: "admin.generate_brand_assets",
 				metadata: {
+					brandId: input.brandId,
 					assetTypes: input.assetTypes,
 					gameIds: selectedGameIds,
 					generatedCount: generated.length,
@@ -821,86 +735,6 @@ export const adminToolsRouter = router({
 				gameIds: selectedGameIds,
 				assetTypes: input.assetTypes,
 				dryRun: false,
-			};
-		}),
-
-	generatePartyContent: adminProcedure
-		.input(
-			z.object({
-				game: z.string().describe("Game type, e.g. 'quiplash'"),
-				count: z.number().default(100).describe("Target number of prompts"),
-				model: z.string().default("openai/gpt-4o-mini"),
-				batchSize: z.number().default(15),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			if (input.game !== "quiplash") {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Unsupported game type: ${input.game}. Supported: quiplash`,
-				});
-			}
-
-			if (input.count <= 0 || input.batchSize <= 0) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "count and batchSize must be greater than 0",
-				});
-			}
-
-			const apiKey = assertOpenRouterApiKey(ctx.env.OPENROUTER_API_KEY);
-			const model = createModel({ apiKey, model: input.model });
-
-			const allPrompts: Array<{ text: string; category: string }> = [];
-			const batchCount = Math.ceil(input.count / input.batchSize);
-
-			for (let i = 0; i < batchCount; i++) {
-				const remaining = input.count - allPrompts.length;
-				if (remaining <= 0) {
-					break;
-				}
-
-				const currentBatchSize = Math.min(input.batchSize, remaining);
-				const batch = await generatePartyBatch({
-					model,
-					batchSize: currentBatchSize,
-					batchIndex: i,
-				});
-
-				const beforeCount = allPrompts.length;
-				const newPrompts = deduplicatePrompts([...allPrompts, ...batch]).slice(
-					beforeCount,
-				);
-				allPrompts.push(...newPrompts);
-			}
-
-			const finalPrompts = allPrompts.map((prompt, index) => ({
-				id: `q${String(index + 1).padStart(3, "0")}`,
-				text: prompt.text,
-				category: prompt.category,
-			}));
-
-			const key = `party-content/${input.game}-prompts.json`;
-			const payload = JSON.stringify(finalPrompts, null, "\t") + "\n";
-			await ctx.env.ASSETS.put(key, payload, {
-				httpMetadata: { contentType: "application/json" },
-			});
-
-			const categories: Record<string, number> = {};
-			for (const prompt of finalPrompts) {
-				categories[prompt.category] = (categories[prompt.category] ?? 0) + 1;
-			}
-
-			const audit = new AuditService(ctx.env.DB);
-			await audit.logEvent({
-				actorId: ctx.user.id,
-				action: "admin.generate_party_content",
-				metadata: { game: input.game, promptCount: finalPrompts.length },
-			});
-
-			return {
-				promptCount: finalPrompts.length,
-				categories,
 			};
 		}),
 

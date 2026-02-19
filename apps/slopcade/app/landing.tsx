@@ -58,19 +58,19 @@ export default function LandingPage() {
 			<Stack.Screen options={{ headerShown: false }} />
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 				{/* Hero Section */}
-				<View className="bg-[#1B3A6B] px-6 py-16 md:py-32 items-center">
+				<View className="bg-[#0A0A1A] px-6 py-16 md:py-32 items-center">
 					<View className="max-w-6xl w-full items-center">
 						<Text
-							className="text-[#C9A84C] font-bold text-lg md:text-xl tracking-[0.2em] mb-6 uppercase text-center"
+							className="text-[#6366F1] font-bold text-lg md:text-xl tracking-[0.2em] mb-6 uppercase text-center"
 							accessibilityRole="header"
 						>
-							Amen Games
+							Slopcade
 						</Text>
 						<Text
 							className="text-white text-5xl md:text-7xl font-bold text-center mb-8 leading-tight"
 							accessibilityRole="header"
 						>
-							Scripture. Fellowship. Fun.
+							The Arcade. Party Games for Everyone.
 						</Text>
 						<Text className="text-gray-200 text-xl md:text-2xl text-center max-w-3xl mb-12 leading-relaxed font-light">
 							Reverent, educational Christian party games designed to bring your
@@ -221,7 +221,7 @@ export default function LandingPage() {
 								title="Free"
 								price="$0"
 								period="/forever"
-								description="Perfect for trying out Amen Games."
+								description="Perfect for trying out Slopcade."
 								features={[
 									"2 Free games per week",
 									"Up to 8 players",
@@ -231,7 +231,7 @@ export default function LandingPage() {
 								variant="light"
 							/>
 							<PricingCard
-								title="Amen+"
+								title="Slopcade+"
 								price="$4.99"
 								period="/month"
 								description="For families and small groups."
@@ -327,26 +327,26 @@ export default function LandingPage() {
 				<View className="bg-[#0D1C33] py-16 px-6 border-t border-[#1B3A6B]">
 					<View className="max-w-6xl w-full mx-auto flex-col md:flex-row justify-between items-center md:items-start gap-8">
 						<View className="items-center md:items-start">
-							<Text className="text-[#C9A84C] font-bold text-2xl tracking-widest uppercase mb-4">
-								Amen Games
+							<Text className="text-[#6366F1] font-bold text-2xl tracking-widest uppercase mb-4">
+								Slopcade
 							</Text>
 							<Text className="text-gray-400 text-sm max-w-xs text-center md:text-left">
-								Building the future of Christian fellowship through play.
+								The Arcade. Party games for everyone.
 							</Text>
 						</View>
 
 						<View className="flex-row gap-8">
-							<FooterLink href="https://amen.games/terms" text="Terms" />
-							<FooterLink href="https://amen.games/privacy" text="Privacy" />
+							<FooterLink href="https://slopcade.com/terms" text="Terms" />
+							<FooterLink href="https://slopcade.com/privacy" text="Privacy" />
 							<FooterLink
-								href="mailto:support@amen.games"
-								text="support@amen.games"
+								href="mailto:support@slopcade.com"
+								text="support@slopcade.com"
 							/>
 						</View>
 					</View>
 					<View className="max-w-6xl w-full mx-auto mt-12 pt-8 border-t border-[#1B3A6B]/50 text-center">
 						<Text className="text-gray-500 text-sm text-center">
-							© 2026 Amen Games. All rights reserved.
+							© 2026 Slopcade. All rights reserved.
 						</Text>
 					</View>
 				</View>

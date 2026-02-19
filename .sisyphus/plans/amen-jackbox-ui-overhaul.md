@@ -94,7 +94,7 @@
   - CREATE `apps/amen/components/browse/TutorialPager.tsx` — swipeable step cards
   - CREATE `apps/amen/components/browse/TutorialStep.tsx` — single step (image + text + audio)
 
-- [ ] **W1.5** · Asset Generation — Game Tiles + Hero Banners + Tutorial Art `[XL]`
+- [x] **W1.5** · Asset Generation — Game Tiles + Hero Banners + Tutorial Art `[XL]`
 
   Generate all visual assets for 8 primary games via existing Scenario.com pipeline:
   - 8 game tile illustrations (illuminated manuscript / stained glass style, ~512×512)

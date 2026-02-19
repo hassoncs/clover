@@ -1,15 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useBrandConfig } from "@slopcade/ui";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PartyProvider, useParty } from "@/lib/party/PartyContext";
-
-const GAME_NAMES: Record<string, string> = {
-	"crowd-comedy": "Crowd Comedy",
-	"chroma-clues": "Chroma Clues",
-};
 
 function HostLobbyContent({
 	code,
@@ -20,10 +16,11 @@ function HostLobbyContent({
 }) {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const brand = useBrandConfig();
 	const { roomState, players, sendStartGame, connectionStatus } = useParty();
-	const { template } = useLocalSearchParams<{ template: string }>();
+	const { templateTitle } = useLocalSearchParams<{ templateTitle: string }>();
 
-	const gameName = GAME_NAMES[template || "crowd-comedy"] || "Crowd Comedy";
+	const gameName = templateTitle || "Party Game";
 
 	useEffect(() => {
 		if (roomState?.phase === "playing") {
@@ -57,7 +54,9 @@ function HostLobbyContent({
 		>
 			<View className="w-full flex-row justify-between items-center absolute top-0 left-0 right-0 p-8 z-10">
 				<Pressable
-					onPress={() => router.back()}
+					onPress={() =>
+						router.canGoBack() ? router.back() : router.replace("/browse")
+					}
 					className="p-3 rounded-full bg-theme-surface/50 active:opacity-80"
 				>
 					<Ionicons name="arrow-back" size={32} color="white" />
@@ -83,7 +82,7 @@ function HostLobbyContent({
 							Join at
 						</Text>
 						<Text className="text-theme-primary text-5xl font-bold tracking-tight">
-							amen.games
+							{brand.domain}
 						</Text>
 					</View>
 

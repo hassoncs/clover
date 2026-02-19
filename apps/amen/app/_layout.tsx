@@ -1,6 +1,8 @@
 import "react-native-get-random-values";
 import "@/lib/notifications/setup";
 import * as Sentry from "@sentry/react-native";
+import { getBrandConfig } from "@slopcade/shared";
+import { BrandProvider } from "@slopcade/ui";
 import * as Linking from "expo-linking";
 import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -113,9 +115,13 @@ function RootLayout() {
 		"Lora-SemiBold": require("../assets/fonts/Lora-SemiBold.ttf"),
 		"Lora-Bold": require("../assets/fonts/Lora-Bold.ttf"),
 		"Lora-Italic": require("../assets/fonts/Lora-Italic.ttf"),
+		Cinzel_400Regular: require("../assets/fonts/Cinzel_400Regular.ttf"),
+		Cinzel_700Bold: require("../assets/fonts/Cinzel_700Bold.ttf"),
+		Cinzel_900Black: require("../assets/fonts/Cinzel_900Black.ttf"),
 	});
 
 	const { setColorScheme } = useColorScheme();
+	const brandConfig = getBrandConfig("amen");
 	useEffect(() => {
 		setColorScheme("dark");
 	}, [setColorScheme]);
@@ -130,14 +136,16 @@ function RootLayout() {
 			className={Platform.OS === "web" ? "no-select" : ""}
 		>
 			<TRPCProvider>
-				<AuthProvider>
-					<SafeAreaProvider>
-						<AnimatedSplashScreen onAnimationComplete={() => {}}>
-							<RootLayoutContent />
-						</AnimatedSplashScreen>
-						<ToastHost />
-					</SafeAreaProvider>
-				</AuthProvider>
+				<BrandProvider config={brandConfig}>
+					<AuthProvider>
+						<SafeAreaProvider>
+							<AnimatedSplashScreen onAnimationComplete={() => {}}>
+								<RootLayoutContent />
+							</AnimatedSplashScreen>
+							<ToastHost />
+						</SafeAreaProvider>
+					</AuthProvider>
+				</BrandProvider>
 			</TRPCProvider>
 		</GestureHandlerRootView>
 	);

@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { GameHallTile as SharedTile } from "@slopcade/ui";
+import React from "react";
+import { Image, Text, View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
-	useSharedValue,
-	withSpring,
 	withTiming,
 } from "react-native-reanimated";
 import type { PartyTemplate } from "@/lib/party/template-types";
@@ -22,34 +21,22 @@ export function GameHallTile({
 	selected,
 	onPress,
 }: GameHallTileProps) {
-	const scale = useSharedValue(1);
-	const borderOpacity = useSharedValue(0);
-
-	useEffect(() => {
-		scale.value = withSpring(selected ? 1.05 : 1.0, {
-			damping: 15,
-			stiffness: 150,
-		});
-		borderOpacity.value = withTiming(selected ? 1 : 0.3, { duration: 300 });
-	}, [selected, scale, borderOpacity]);
-
 	const animatedStyle = useAnimatedStyle(() => ({
-		transform: [{ scale: scale.value }],
 		borderColor: selected ? "#C9A84C" : "rgba(255, 255, 255, 0.1)",
 		borderWidth: selected ? 3 : 1,
 	}));
 
 	return (
-		<Pressable onPress={onPress}>
+		<SharedTile
+			selected={selected}
+			onPress={onPress}
+			title={template.title}
+			width={TILE_WIDTH}
+			height={TILE_HEIGHT}
+		>
 			<Animated.View
-				className="bg-[#0F2347] rounded-2xl overflow-hidden shadow-lg"
-				style={[
-					{
-						width: TILE_WIDTH,
-						height: TILE_HEIGHT,
-					},
-					animatedStyle,
-				]}
+				className="bg-[#0F2347] rounded-2xl overflow-hidden shadow-lg flex-1"
+				style={[animatedStyle]}
 			>
 				<View className="h-[60%] w-full bg-[#0A1833] items-center justify-center overflow-hidden relative">
 					{template.thumbnailUrl ? (
@@ -85,6 +72,6 @@ export function GameHallTile({
 					)}
 				</View>
 			</Animated.View>
-		</Pressable>
+		</SharedTile>
 	);
 }
