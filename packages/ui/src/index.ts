@@ -21,6 +21,7 @@ export * from "./image-search";
 export * from "./lib/cn";
 export * from "./navigation";
 export * from "./party";
+export * from "./providers/AppDepsProvider";
 export * from "./SortableList";
 export * from "./shared";
 export * from "./Text";
