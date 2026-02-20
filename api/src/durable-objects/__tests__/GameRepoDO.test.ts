@@ -135,9 +135,11 @@ function createMockState(): DurableObjectState {
 			get: vi.fn(),
 			put: vi.fn(),
 			delete: vi.fn(),
-			list: vi.fn(),
+			list: vi.fn().mockResolvedValue(new Map()),
 			setAlarm: vi.fn(),
 		},
+		getWebSockets: vi.fn().mockReturnValue([]),
+		acceptWebSocket: vi.fn(),
 		id: { toString: () => "test-id" },
 	} as unknown as DurableObjectState;
 }

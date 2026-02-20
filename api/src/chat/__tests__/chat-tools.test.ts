@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import type { ArtifactService } from "../../agent/artifact-service";
+import type { GitService } from "../../services/git/GitService";
 import { createChatTools } from "../chat-tools";
 
 type ExecutableTool<TInput, TOutput> = {
@@ -11,9 +10,6 @@ type ListFilesResult = {
 	ok: true;
 	files: Array<{
 		filename: string;
-		size: number;
-		uploaded: number;
-		contentHash: null;
 	}>;
 };
 
@@ -29,18 +25,19 @@ type ReadFilesBatchResult = {
 
 type WriteFileResult = {
 	ok: true;
-	key: string;
+	commitSha: string;
 	bytesWritten: number;
 };
 
 const GAME_ID = "test-game-id";
 
-function createArtifactServiceMock() {
+function createGitServiceMock() {
 	return {
-		listWorkspaceFileMeta: vi.fn<ArtifactService["listWorkspaceFileMeta"]>(),
-		readWorkspaceFiles: vi.fn<ArtifactService["readWorkspaceFiles"]>(),
-		storeWorkspaceFile: vi.fn<ArtifactService["storeWorkspaceFile"]>(),
-	} as unknown as ArtifactService;
+		listFiles: vi.fn<GitService["listFiles"]>(),
+		readFile: vi.fn<GitService["readFile"]>(),
+		commitFiles: vi.fn<GitService["commitFiles"]>(),
+		log: vi.fn<GitService["log"]>(),
+	} as unknown as GitService;
 }
 
 describe("createChatTools", () => {
@@ -49,13 +46,13 @@ describe("createChatTools", () => {
 	});
 
 	it("listFiles returns all files when no prefix is provided", async () => {
-		const artifactService = createArtifactServiceMock();
-		vi.mocked(artifactService.listWorkspaceFileMeta).mockResolvedValue([
-			{ filename: "world.json", size: 128, uploaded: 1000 },
-			{ filename: "prefabs/player.json", size: 256, uploaded: 2000 },
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.listFiles).mockResolvedValue([
+			"world.json",
+			"prefabs/player.json",
 		]);
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const listFilesTool = tools.listFiles as unknown as ExecutableTool<
 			{ prefix?: string },
 			ListFilesResult
@@ -63,36 +60,23 @@ describe("createChatTools", () => {
 
 		const result = await listFilesTool.execute({});
 
-		expect(artifactService.listWorkspaceFileMeta).toHaveBeenCalledWith(GAME_ID);
+		expect(gitService.listFiles).toHaveBeenCalledWith(GAME_ID);
 		expect(result).toEqual({
 			ok: true,
-			files: [
-				{
-					filename: "world.json",
-					size: 128,
-					uploaded: 1000,
-					contentHash: null,
-				},
-				{
-					filename: "prefabs/player.json",
-					size: 256,
-					uploaded: 2000,
-					contentHash: null,
-				},
-			],
+			files: [{ filename: "world.json" }, { filename: "prefabs/player.json" }],
 		});
 	});
 
 	it("listFiles filters files by prefix", async () => {
-		const artifactService = createArtifactServiceMock();
-		vi.mocked(artifactService.listWorkspaceFileMeta).mockResolvedValue([
-			{ filename: "world.json", size: 128, uploaded: 1000 },
-			{ filename: "prefabs/player.json", size: 256, uploaded: 2000 },
-			{ filename: "prefabs/enemy.json", size: 512, uploaded: 3000 },
-			{ filename: "scripts/init.ts", size: 64, uploaded: 4000 },
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.listFiles).mockResolvedValue([
+			"world.json",
+			"prefabs/player.json",
+			"prefabs/enemy.json",
+			"scripts/init.ts",
 		]);
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const listFilesTool = tools.listFiles as unknown as ExecutableTool<
 			{ prefix?: string },
 			ListFilesResult
@@ -100,34 +84,26 @@ describe("createChatTools", () => {
 
 		const result = await listFilesTool.execute({ prefix: "prefabs/" });
 
-		expect(artifactService.listWorkspaceFileMeta).toHaveBeenCalledWith(GAME_ID);
+		expect(gitService.listFiles).toHaveBeenCalledWith(GAME_ID);
 		expect(result.files).toEqual([
-			{
-				filename: "prefabs/player.json",
-				size: 256,
-				uploaded: 2000,
-				contentHash: null,
-			},
-			{
-				filename: "prefabs/enemy.json",
-				size: 512,
-				uploaded: 3000,
-				contentHash: null,
-			},
+			{ filename: "prefabs/player.json" },
+			{ filename: "prefabs/enemy.json" },
 		]);
 	});
 
 	it("readFilesBatch returns content for existing files", async () => {
-		const artifactService = createArtifactServiceMock();
+		const gitService = createGitServiceMock();
 		const filenames = ["world.json", "scripts/init.ts"];
-		vi.mocked(artifactService.readWorkspaceFiles).mockResolvedValue(
-			new Map([
-				["world.json", '{"world":true}'],
-				["scripts/init.ts", "export const init = true;"],
-			]),
-		);
+		const fileMap = new Map([
+			["world.json", '{"world":true}'],
+			["scripts/init.ts", "export const init = true;"],
+		]);
+		vi.mocked(gitService.readFile).mockImplementation(async (_gameId, name) => {
+			const content = fileMap.get(name);
+			return content ? new TextEncoder().encode(content) : null;
+		});
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const readFilesBatchTool =
 			tools.readFilesBatch as unknown as ExecutableTool<
 				{ filenames: string[] },
@@ -136,10 +112,7 @@ describe("createChatTools", () => {
 
 		const result = await readFilesBatchTool.execute({ filenames });
 
-		expect(artifactService.readWorkspaceFiles).toHaveBeenCalledWith(
-			GAME_ID,
-			filenames,
-		);
+		expect(gitService.readFile).toHaveBeenCalledTimes(filenames.length);
 		expect(result).toEqual({
 			ok: true,
 			files: [
@@ -160,13 +133,16 @@ describe("createChatTools", () => {
 	});
 
 	it("readFilesBatch marks missing files as non-existent", async () => {
-		const artifactService = createArtifactServiceMock();
+		const gitService = createGitServiceMock();
 		const filenames = ["world.json", "missing.json"];
-		vi.mocked(artifactService.readWorkspaceFiles).mockResolvedValue(
-			new Map([["world.json", '{"world":true}']]),
-		);
+		vi.mocked(gitService.readFile).mockImplementation(async (_gameId, name) => {
+			if (name === "world.json") {
+				return new TextEncoder().encode('{"world":true}');
+			}
+			return null;
+		});
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const readFilesBatchTool =
 			tools.readFilesBatch as unknown as ExecutableTool<
 				{ filenames: string[] },
@@ -195,12 +171,10 @@ describe("createChatTools", () => {
 	});
 
 	it("writeFile creates a new file successfully", async () => {
-		const artifactService = createArtifactServiceMock();
-		vi.mocked(artifactService.storeWorkspaceFile).mockResolvedValue({
-			key: `workspace/${GAME_ID}/hello.txt`,
-		});
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.commitFiles).mockResolvedValue("commit-sha-123");
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const writeFileTool = tools.writeFile as unknown as ExecutableTool<
 			{ filename: string; content: string },
 			WriteFileResult
@@ -211,26 +185,24 @@ describe("createChatTools", () => {
 			content: "Hello, world!",
 		});
 
-		expect(artifactService.storeWorkspaceFile).toHaveBeenCalledWith({
-			gameId: GAME_ID,
-			filename: "hello.txt",
-			data: "Hello, world!",
-			contentType: "text/plain",
-		});
+		expect(gitService.commitFiles).toHaveBeenCalledWith(
+			GAME_ID,
+			[{ path: "hello.txt", content: "Hello, world!" }],
+			"AI: Update hello.txt",
+			{ name: "AI Assistant", email: "ai@slopcade.app" },
+		);
 		expect(result).toEqual({
 			ok: true,
-			key: `workspace/${GAME_ID}/hello.txt`,
+			commitSha: "commit-sha-123",
 			bytesWritten: 13,
 		});
 	});
 
 	it("writeFile overwrites an existing file", async () => {
-		const artifactService = createArtifactServiceMock();
-		vi.mocked(artifactService.storeWorkspaceFile).mockResolvedValue({
-			key: `workspace/${GAME_ID}/world.json`,
-		});
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.commitFiles).mockResolvedValue("commit-sha-456");
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const writeFileTool = tools.writeFile as unknown as ExecutableTool<
 			{ filename: string; content: string },
 			WriteFileResult
@@ -242,26 +214,24 @@ describe("createChatTools", () => {
 			content: updatedContent,
 		});
 
-		expect(artifactService.storeWorkspaceFile).toHaveBeenCalledWith({
-			gameId: GAME_ID,
-			filename: "world.json",
-			data: updatedContent,
-			contentType: "text/plain",
-		});
+		expect(gitService.commitFiles).toHaveBeenCalledWith(
+			GAME_ID,
+			[{ path: "world.json", content: updatedContent }],
+			"AI: Update world.json",
+			{ name: "AI Assistant", email: "ai@slopcade.app" },
+		);
 		expect(result).toEqual({
 			ok: true,
-			key: `workspace/${GAME_ID}/world.json`,
+			commitSha: "commit-sha-456",
 			bytesWritten: 30,
 		});
 	});
 
 	it("writeFile returns correct bytesWritten for content length", async () => {
-		const artifactService = createArtifactServiceMock();
-		vi.mocked(artifactService.storeWorkspaceFile).mockResolvedValue({
-			key: `workspace/${GAME_ID}/prefabs/player.json`,
-		});
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.commitFiles).mockResolvedValue("commit-sha-789");
 
-		const tools = createChatTools({ gameId: GAME_ID, artifactService });
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
 		const writeFileTool = tools.writeFile as unknown as ExecutableTool<
 			{ filename: string; content: string },
 			WriteFileResult
@@ -274,7 +244,7 @@ describe("createChatTools", () => {
 		});
 
 		expect(result.ok).toBe(true);
-		expect(result.key).toBe(`workspace/${GAME_ID}/prefabs/player.json`);
+		expect(result.commitSha).toBe("commit-sha-789");
 		expect(result.bytesWritten).toBe(content.length);
 	});
 });

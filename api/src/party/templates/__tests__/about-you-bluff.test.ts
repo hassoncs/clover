@@ -1,15 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => [
-		{ id: "p1", text: "What is {{player}} most likely to order at midnight?" },
-		{ id: "p2", text: "What is {{player}}'s weirdest childhood hobby?" },
-		{ id: "p3", text: "What food would {{player}} eat every day forever?" },
-	]),
-}));
-
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("about-you-bluff template runner", () => {
 	beforeEach(() => {
@@ -23,7 +14,8 @@ describe("about-you-bluff template runner", () => {
 	it("runs through all phases and ends", async () => {
 		const room = createTemplateTestRoom(["p1", "p2", "p3"]);
 
-		const runPromise = TEMPLATE_REGISTRY["about-you-bluff"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["about-you-bluff"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

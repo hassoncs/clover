@@ -1,4 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 import { ScenarioClient, ScenarioImageClient } from "../providers/scenario";
 import {
 	CUSTOM_MODEL_PREFIXES,
@@ -6,7 +14,7 @@ import {
 } from "../providers/scenario/types";
 
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+const originalFetch = global.fetch;
 
 describe("ScenarioClient", () => {
 	const validConfig = {
@@ -16,6 +24,14 @@ describe("ScenarioClient", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	beforeAll(() => {
+		global.fetch = mockFetch;
+	});
+
+	afterAll(() => {
+		global.fetch = originalFetch;
 	});
 
 	describe("constructor", () => {
@@ -162,7 +178,8 @@ describe("ScenarioClient", () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
 				status: 400,
-				json: async () => ({ error: { message: "Invalid prompt" } }),
+				text: async () =>
+					JSON.stringify({ error: { message: "Invalid prompt" } }),
 			});
 
 			await expect(

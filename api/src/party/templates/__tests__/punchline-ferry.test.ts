@@ -1,26 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => [
-		{
-			id: "pf-1",
-			template: "Why did the [BLANK] cross the road?",
-			blankPosition: 0,
-		},
-		{
-			id: "pf-2",
-			template: "A [BLANK] walks into a bar...",
-			blankPosition: 0,
-		},
-		{
-			id: "pf-3",
-			template: "How many [BLANK] does it take to change a lightbulb?",
-			blankPosition: 0,
-		},
-	]),
-}));
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("punchline-ferry template runner", () => {
 	beforeEach(() => {
@@ -32,11 +12,12 @@ describe("punchline-ferry template runner", () => {
 	});
 
 	it("runs full collaborative joke flow through winner", async () => {
-		expect(TEMPLATE_REGISTRY["punchline-ferry"]).toBeTypeOf("function");
+		const registry = createTemplateRegistry();
+		expect(registry["punchline-ferry"]).toBeTypeOf("function");
 
 		const room = createTemplateTestRoom(["p1", "p2", "p3"]);
 
-		const runPromise = TEMPLATE_REGISTRY["punchline-ferry"](room as never);
+		const runPromise = registry["punchline-ferry"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

@@ -1,4 +1,3 @@
-import { env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createAuthenticatedCaller,
@@ -8,11 +7,10 @@ import {
 	setupWalletBalance,
 	TEST_USER,
 	TEST_USER_2,
-} from "@/__fixtures__/test-utils";
-import { USER_COSTS } from "@/economy/pricing";
-import { appRouter } from "../../router";
+} from "../../../__fixtures__/test-utils";
+import { USER_COSTS } from "../../../economy/pricing";
 
-vi.mock("@/ai/game/generator", () => ({
+vi.mock("../../../ai/game/generator", () => ({
 	generateGame: vi.fn().mockResolvedValue({
 		success: true,
 		game: {
@@ -150,10 +148,11 @@ describe("MVP Launch Gate - Security Smoke Suite", () => {
 
 			// Invite TEST_USER_2
 			await testEnv.DB.prepare(
-				"INSERT INTO email_invites (id, invitee_email, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+				"INSERT INTO email_invites (id, inviter_user_id, invitee_email, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
 			)
 				.bind(
 					"test-invite-id",
+					TEST_USER.id,
 					TEST_USER_2.email.toLowerCase(),
 					"pending",
 					Date.now(),

@@ -3,8 +3,8 @@ import type {
 	PartyInputResponse,
 } from "@slopcade/shared/types/party";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 function resp(playerId: string, value: unknown): PartyInputResponse {
 	return { playerId, value, timestamp: Date.now() };
@@ -48,7 +48,8 @@ describe("heads-up template runner", () => {
 			},
 		);
 
-		const runPromise = TEMPLATE_REGISTRY["heads-up"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["heads-up"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

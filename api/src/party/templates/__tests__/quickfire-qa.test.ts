@@ -1,23 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => [
-		{
-			id: "q1",
-			question: "What color is the sky on a clear day?",
-			correctAnswer: "Blue",
-			incorrectAnswers: ["Green", "Orange", "Black"],
-		},
-		{
-			id: "q2",
-			question: "How many sides does a triangle have?",
-			correctAnswer: "3",
-			incorrectAnswers: ["2", "4", "5"],
-		},
-	]),
-}));
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("quickfire-qa template runner", () => {
 	beforeEach(() => {
@@ -29,11 +12,12 @@ describe("quickfire-qa template runner", () => {
 	});
 
 	it("runs through quickfire gameplay and emits qa phases", async () => {
-		expect(TEMPLATE_REGISTRY["quickfire-qa"]).toBeTypeOf("function");
+		const registry = createTemplateRegistry();
+		expect(registry["quickfire-qa"]).toBeTypeOf("function");
 
 		const room = createTemplateTestRoom(["p1", "p2", "p3"]);
 
-		const runPromise = TEMPLATE_REGISTRY["quickfire-qa"](room as never);
+		const runPromise = registry["quickfire-qa"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

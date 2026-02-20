@@ -1,4 +1,3 @@
-import { env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	createAuthenticatedContext,
@@ -7,7 +6,7 @@ import {
 	initTestDatabase,
 	TEST_USER,
 	TEST_USER_2,
-} from "@/__fixtures__/test-utils";
+} from "../../__fixtures__/test-utils";
 import { appRouter } from "../router";
 
 describe("Blob Assets Router", () => {
@@ -40,7 +39,9 @@ describe("Blob Assets Router", () => {
 			expect(result.assetId).toBeDefined();
 			expect(result.isNew).toBe(true);
 
-			const dbAsset = await env.DB.prepare("SELECT * FROM assets WHERE id = ?")
+			const dbAsset = await ctx.env.DB.prepare(
+				"SELECT * FROM assets WHERE id = ?",
+			)
 				.bind(result.assetId)
 				.first();
 
@@ -95,7 +96,9 @@ describe("Blob Assets Router", () => {
 				},
 			});
 
-			const dbAsset = await env.DB.prepare("SELECT * FROM assets WHERE id = ?")
+			const dbAsset = await ctx.env.DB.prepare(
+				"SELECT * FROM assets WHERE id = ?",
+			)
 				.bind(result.assetId)
 				.first();
 
@@ -133,7 +136,7 @@ describe("Blob Assets Router", () => {
 				mimeType: "text/plain",
 			});
 
-			const dbAsset = await env.DB.prepare(
+			const dbAsset = await ctx1.env.DB.prepare(
 				"SELECT creator_user_id FROM assets WHERE id = ?",
 			)
 				.bind(result.assetId)
@@ -226,7 +229,7 @@ describe("Blob Assets Router", () => {
 
 	describe("batchResolve route", () => {
 		it("should resolve multiple hashes to URLs", async () => {
-			const ctx = createPublicContext();
+			const ctx = createAuthenticatedContext(TEST_USER);
 			const caller = appRouter.createCaller(ctx);
 
 			const hash1 =
@@ -248,7 +251,7 @@ describe("Blob Assets Router", () => {
 		});
 
 		it("should handle empty array", async () => {
-			const ctx = createPublicContext();
+			const ctx = createAuthenticatedContext(TEST_USER);
 			const caller = appRouter.createCaller(ctx);
 
 			const result = await caller.blobAssets.batchResolve({ hashes: [] });
@@ -256,16 +259,16 @@ describe("Blob Assets Router", () => {
 			expect(result.urls).toEqual({});
 		});
 
-		it("should work without authentication", async () => {
+		it("should reject unauthenticated access", async () => {
 			const ctx = createPublicContext();
 			const caller = appRouter.createCaller(ctx);
 
 			const hash =
 				"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
 
-			const result = await caller.blobAssets.batchResolve({ hashes: [hash] });
-
-			expect(result.urls[hash]).toBeDefined();
+			await expect(
+				caller.blobAssets.batchResolve({ hashes: [hash] }),
+			).rejects.toThrow();
 		});
 	});
 });

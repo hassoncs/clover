@@ -15,10 +15,7 @@ import { appRouter } from "../router";
 
 describe("Health Endpoint", () => {
 	it("should return health status", async () => {
-		const ctx = {
-			env: env,
-			authToken: null,
-		} as any;
+		const ctx = createPublicContext();
 		const caller = appRouter.createCaller(ctx);
 
 		const result = await caller.health();
@@ -38,14 +35,7 @@ describe("Games Router", () => {
 	});
 
 	beforeEach(() => {
-		ctx = {
-			env: env,
-			authToken: "mock-token",
-			user: {
-				id: "test-user-id",
-				email: "test@example.com",
-			},
-		} as any;
+		ctx = createAuthenticatedContext(TEST_USER);
 	});
 
 	it("should list games for user", async () => {

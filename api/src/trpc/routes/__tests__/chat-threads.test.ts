@@ -1,5 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { USER_COSTS } from "@/economy/pricing";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createAuthenticatedCaller,
 	createAuthenticatedContext,
@@ -8,12 +7,24 @@ import {
 	setupWalletBalance,
 	TEST_USER,
 } from "../../../__fixtures__/test-utils";
+import { USER_COSTS } from "../../../economy/pricing";
+
+vi.mock("../../../services/git/GitService", () => {
+	class GitService {
+		constructor(_doNamespace: unknown) {}
+		listFiles = vi.fn().mockResolvedValue([]);
+		commitFiles = vi.fn().mockResolvedValue("commit-sha");
+	}
+
+	return { GitService };
+});
 
 describe("Chat Threads Router", () => {
 	const testEnv = createAuthenticatedContext(TEST_USER).env;
 
 	beforeAll(async () => {
 		await initTestDatabase();
+		testEnv.GAME_REPO = {} as typeof testEnv.GAME_REPO;
 	});
 
 	beforeEach(async () => {

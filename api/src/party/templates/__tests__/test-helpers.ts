@@ -1,8 +1,10 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import type {
 	PartyInputRequest,
 	PartyInputResponse,
 } from "@slopcade/shared/types/party";
 import { vi } from "vitest";
+import { buildTemplateRegistry } from "../registry";
 
 type InputMap = Map<string, PartyInputResponse>;
 type InputResponder = (
@@ -82,4 +84,9 @@ export function createTemplateTestRoom(
 			return updates[updates.length - 1] ?? {};
 		},
 	};
+}
+
+export function createTemplateRegistry(brandId = "test-brand") {
+	const db = {} as D1Database;
+	return buildTemplateRegistry(db, brandId);
 }

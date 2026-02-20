@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("shirt-clash template runner", () => {
 	beforeEach(() => {
@@ -12,11 +12,12 @@ describe("shirt-clash template runner", () => {
 	});
 
 	it("runs shirt-clash through tournament and winner", async () => {
-		expect(TEMPLATE_REGISTRY["shirt-clash"]).toBeTypeOf("function");
+		const registry = createTemplateRegistry();
+		expect(registry["shirt-clash"]).toBeTypeOf("function");
 
 		const room = createTemplateTestRoom(["p1", "p2", "p3", "p4"]);
 
-		const runPromise = TEMPLATE_REGISTRY["shirt-clash"](room as never);
+		const runPromise = registry["shirt-clash"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

@@ -214,6 +214,8 @@ describe("ForkService", () => {
 			1,
 			expect.any(Number),
 			"1.0.0",
+			"1.0.0",
+			1,
 		);
 	});
 
@@ -236,6 +238,8 @@ describe("ForkService", () => {
 			expect.anything(),
 			expect.anything(),
 			expect.any(Number),
+			expect.anything(),
+			expect.anything(),
 			expect.anything(),
 		);
 	});

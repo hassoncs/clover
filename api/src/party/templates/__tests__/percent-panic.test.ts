@@ -1,22 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => [
-		{
-			question: "What percentage of people are left-handed?",
-			percentage: 10,
-			source: "Mock Census",
-		},
-		{
-			question: "What percentage of Earth is covered by water?",
-			percentage: 71,
-			source: "Mock NASA",
-		},
-	]),
-}));
-
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("percent-panic registry runner", () => {
 	beforeEach(() => {
@@ -30,7 +14,8 @@ describe("percent-panic registry runner", () => {
 	it("runs through percent panic phases and ends", async () => {
 		const room = createTemplateTestRoom(["p1", "p2", "p3"]);
 
-		const runPromise = TEMPLATE_REGISTRY["percent-panic"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["percent-panic"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

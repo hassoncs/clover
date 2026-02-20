@@ -1,15 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => [
-		{ id: "w1", text: "Atom" },
-		{ id: "w2", text: "Electron" },
-		{ id: "w3", text: "Gravity" },
-		{ id: "w4", text: "Energy" },
-	]),
-}));
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("chain-reaction template runner", () => {
 	beforeEach(() => {
@@ -23,7 +14,8 @@ describe("chain-reaction template runner", () => {
 	it("runs through gameplay and emits core chain-reaction phases", async () => {
 		const room = createTemplateTestRoom(["p1", "p2", "p3"]);
 
-		const runPromise = TEMPLATE_REGISTRY["chain-reaction"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["chain-reaction"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

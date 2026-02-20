@@ -1,5 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { USER_COSTS } from "@/economy/pricing";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createAuthenticatedCaller,
 	createAuthenticatedContext,
@@ -8,6 +7,33 @@ import {
 	setupWalletBalance,
 	TEST_USER,
 } from "../../../__fixtures__/test-utils";
+import { USER_COSTS } from "../../../economy/pricing";
+
+vi.mock("../../../ai", async () => {
+	const actual =
+		await vi.importActual<typeof import("../../../ai")>("../../../ai");
+	const game = {
+		metadata: { id: "test-game", title: "Test Game", version: "1.0.0" },
+		prefabs: {},
+		entities: [],
+	};
+	return {
+		...actual,
+		generateGame: vi.fn().mockResolvedValue({
+			success: true,
+			game,
+			retryCount: 0,
+		}),
+		refineGame: vi.fn().mockResolvedValue({
+			success: true,
+			game,
+			retryCount: 0,
+		}),
+		getAIConfigFromEnv: vi
+			.fn()
+			.mockReturnValue({ provider: "openrouter", apiKey: "test-key" }),
+	};
+});
 
 describe("Games Router - Billing Guards", () => {
 	const testEnv = createAuthenticatedContext(TEST_USER).env;
@@ -103,17 +129,6 @@ describe("Games Router - Billing Guards", () => {
 	});
 
 	describe("refine endpoint", () => {
-		const createTestGame = async () => {
-			const gameId = crypto.randomUUID();
-			const now = Date.now();
-			await testEnv.DB.prepare(
-				"INSERT INTO games (id, user_id, title, r2_prefix, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-			)
-				.bind(gameId, TEST_USER.id, "Test Game", `games/${gameId}`, now, now)
-				.run();
-			return gameId;
-		};
-
 		it("blocks refinement when user has insufficient balance", async () => {
 			const caller = createAuthenticatedCaller(TEST_USER);
 

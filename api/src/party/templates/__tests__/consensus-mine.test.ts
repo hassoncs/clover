@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => []),
-}));
-
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("consensus-mine template runner", () => {
 	beforeEach(() => {
@@ -51,7 +46,8 @@ describe("consensus-mine template runner", () => {
 			},
 		);
 
-		const runPromise = TEMPLATE_REGISTRY["consensus-mine"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["consensus-mine"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

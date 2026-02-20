@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("rival-roster registry runner", () => {
 	beforeEach(() => {
@@ -14,7 +14,8 @@ describe("rival-roster registry runner", () => {
 	it("runs through battles to winner and end", async () => {
 		const room = createTemplateTestRoom(["p1", "p2", "p3", "p4"]);
 
-		const runPromise = TEMPLATE_REGISTRY["rival-roster"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["rival-roster"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

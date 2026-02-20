@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import validProjectileGame from "../../../__fixtures__/games/valid-projectile-game.json";
 import {
 	createAuthenticatedCaller,
@@ -7,7 +7,106 @@ import {
 	initTestDatabase,
 	TEST_USER,
 } from "../../../__fixtures__/test-utils";
+import { GitService } from "../../../services/git/GitService";
 import { WorkspaceScaffoldService } from "../../../services/WorkspaceScaffoldService";
+
+type DurableObjectNamespace =
+	import("@cloudflare/workers-types").DurableObjectNamespace;
+
+vi.mock("../../../services/git/GitService", () => {
+	class GitServiceMock {
+		static repoStore = new Map<string, Map<string, string>>();
+		static reset() {
+			GitServiceMock.repoStore.clear();
+		}
+
+		constructor(_namespace: unknown) {}
+
+		async initRepo(gameId: string): Promise<void> {
+			if (!GitServiceMock.repoStore.has(gameId)) {
+				GitServiceMock.repoStore.set(gameId, new Map());
+			}
+		}
+
+		async commitFiles(
+			gameId: string,
+			files: Array<{ path: string; content: string }>,
+		): Promise<string> {
+			const repo = GitServiceMock.repoStore.get(gameId) ?? new Map();
+			for (const file of files) {
+				repo.set(file.path, file.content);
+			}
+			GitServiceMock.repoStore.set(gameId, repo);
+			return this.computeRevision(repo);
+		}
+
+		async listFiles(gameId: string): Promise<string[]> {
+			const repo = GitServiceMock.repoStore.get(gameId);
+			if (!repo) return [];
+			return Array.from(repo.keys()).sort();
+		}
+
+		async readFile(gameId: string, path: string): Promise<Uint8Array | null> {
+			const repo = GitServiceMock.repoStore.get(gameId);
+			if (!repo) return null;
+			const content = repo.get(path);
+			if (content == null) return null;
+			return new TextEncoder().encode(content);
+		}
+
+		async getSnapshot(
+			gameId: string,
+			sinceRevision?: string,
+		): Promise<{
+			changed: boolean;
+			revision: string;
+			files?: Array<{
+				filename: string;
+				content: string;
+				contentHash: string;
+				size: number;
+			}>;
+		}> {
+			const repo = GitServiceMock.repoStore.get(gameId) ?? new Map();
+			const revision = this.computeRevision(repo);
+			if (sinceRevision && sinceRevision === revision) {
+				return { changed: false, revision };
+			}
+			const files = Array.from(repo.entries()).map(([filename, content]) => ({
+				filename,
+				content,
+				contentHash: this.computeContentHash(content),
+				size: content.length,
+			}));
+			return { changed: true, revision, files };
+		}
+
+		private computeRevision(repo: Map<string, string>): string {
+			let hash = 0x811c9dc5;
+			for (const [name, content] of Array.from(repo.entries()).sort((a, b) =>
+				a[0].localeCompare(b[0]),
+			)) {
+				const str = `${name}|${content.length}`;
+				for (let i = 0; i < str.length; i++) {
+					hash ^= str.charCodeAt(i);
+					hash = Math.imul(hash, 0x01000193);
+				}
+			}
+			return (hash >>> 0).toString(16).padStart(8, "0");
+		}
+
+		private computeContentHash(content: string): string {
+			let hash = 0x811c9dc5;
+			for (let i = 0; i < content.length; i++) {
+				hash ^= content.charCodeAt(i);
+				hash = Math.imul(hash, 0x01000193);
+			}
+			return (hash >>> 0).toString(16).padStart(8, "0");
+		}
+	}
+
+	return { GitService: GitServiceMock };
+});
 
 const SCAFFOLD_FILES = [
 	"slopcade.json",
@@ -24,6 +123,7 @@ async function createTestGame(
 	env: TestEnv,
 	gameId: string,
 	title = "Test Game",
+	gitService?: GitService,
 ) {
 	const now = Date.now();
 	await env.DB.prepare(
@@ -31,6 +131,10 @@ async function createTestGame(
 	)
 		.bind(gameId, TEST_USER.id, title, `games/${gameId}`, now, now)
 		.run();
+
+	if (gitService) {
+		await gitService.initRepo(gameId);
+	}
 }
 
 describe("Workspace Snapshot", () => {
@@ -38,6 +142,7 @@ describe("Workspace Snapshot", () => {
 
 	beforeAll(async () => {
 		await initTestDatabase();
+		testEnv.GAME_REPO = {} as DurableObjectNamespace;
 	});
 
 	beforeEach(async () => {
@@ -46,13 +151,16 @@ describe("Workspace Snapshot", () => {
 		await testEnv.DB.prepare("DELETE FROM games").run();
 
 		await createTestUser(TEST_USER);
+		(GitService as unknown as { reset: () => void }).reset();
+		vi.clearAllMocks();
 	});
 
 	it("scaffold seeds files for new game", async () => {
 		const gameId = crypto.randomUUID();
-		await createTestGame(testEnv, gameId);
+		const gitService = new GitService(testEnv.GAME_REPO);
+		await createTestGame(testEnv, gameId, "Test Game", gitService);
 
-		const service = new WorkspaceScaffoldService(testEnv.ASSETS);
+		const service = new WorkspaceScaffoldService(gitService);
 		const result = await service.seedIfMissing({
 			gameId,
 			gameTitle: "Scaffold Game",
@@ -64,9 +172,10 @@ describe("Workspace Snapshot", () => {
 
 	it("scaffold is idempotent", async () => {
 		const gameId = crypto.randomUUID();
-		await createTestGame(testEnv, gameId);
+		const gitService = new GitService(testEnv.GAME_REPO);
+		await createTestGame(testEnv, gameId, "Test Game", gitService);
 
-		const service = new WorkspaceScaffoldService(testEnv.ASSETS);
+		const service = new WorkspaceScaffoldService(gitService);
 		await service.seedIfMissing({ gameId });
 		const secondRun = await service.seedIfMissing({ gameId });
 
@@ -77,9 +186,10 @@ describe("Workspace Snapshot", () => {
 	it("snapshot returns all workspace files", async () => {
 		const caller = createAuthenticatedCaller(TEST_USER);
 		const gameId = crypto.randomUUID();
-		await createTestGame(testEnv, gameId);
+		const gitService = new GitService(testEnv.GAME_REPO);
+		await createTestGame(testEnv, gameId, "Test Game", gitService);
 
-		const service = new WorkspaceScaffoldService(testEnv.ASSETS);
+		const service = new WorkspaceScaffoldService(gitService);
 		await service.seedIfMissing({ gameId });
 
 		const result = await caller.chatThreads.getWorkspaceSnapshot({ gameId });
@@ -96,9 +206,10 @@ describe("Workspace Snapshot", () => {
 	it("snapshot sinceRevision short-circuit", async () => {
 		const caller = createAuthenticatedCaller(TEST_USER);
 		const gameId = crypto.randomUUID();
-		await createTestGame(testEnv, gameId);
+		const gitService = new GitService(testEnv.GAME_REPO);
+		await createTestGame(testEnv, gameId, "Test Game", gitService);
 
-		const service = new WorkspaceScaffoldService(testEnv.ASSETS);
+		const service = new WorkspaceScaffoldService(gitService);
 		await service.seedIfMissing({ gameId });
 
 		const first = await caller.chatThreads.getWorkspaceSnapshot({ gameId });
@@ -118,9 +229,10 @@ describe("Workspace Snapshot", () => {
 	it("revision is deterministic", async () => {
 		const caller = createAuthenticatedCaller(TEST_USER);
 		const gameId = crypto.randomUUID();
-		await createTestGame(testEnv, gameId);
+		const gitService = new GitService(testEnv.GAME_REPO);
+		await createTestGame(testEnv, gameId, "Test Game", gitService);
 
-		const service = new WorkspaceScaffoldService(testEnv.ASSETS);
+		const service = new WorkspaceScaffoldService(gitService);
 		await service.seedIfMissing({ gameId });
 
 		const first = await caller.chatThreads.getWorkspaceSnapshot({ gameId });
@@ -138,9 +250,10 @@ describe("Workspace Snapshot", () => {
 	it("revision changes when file content changes", async () => {
 		const caller = createAuthenticatedCaller(TEST_USER);
 		const gameId = crypto.randomUUID();
-		await createTestGame(testEnv, gameId);
+		const gitService = new GitService(testEnv.GAME_REPO);
+		await createTestGame(testEnv, gameId, "Test Game", gitService);
 
-		const service = new WorkspaceScaffoldService(testEnv.ASSETS);
+		const service = new WorkspaceScaffoldService(gitService);
 		await service.seedIfMissing({ gameId });
 
 		const first = await caller.chatThreads.getWorkspaceSnapshot({ gameId });
@@ -149,12 +262,16 @@ describe("Workspace Snapshot", () => {
 			throw new Error("Expected initial snapshot to be returned");
 		}
 
-		await testEnv.ASSETS.put(
-			`games/${gameId}/workspace/scripts/new-script.js`,
-			"exports.onUpdate = function() { return 1; };",
-			{
-				httpMetadata: { contentType: "text/javascript" },
-			},
+		await gitService.commitFiles(
+			gameId,
+			[
+				{
+					path: "scripts/new-script.js",
+					content: "exports.onUpdate = function() { return 1; };",
+				},
+			],
+			"Add new script",
+			{ name: "Test", email: "test@example.com" },
 		);
 
 		const second = await caller.chatThreads.getWorkspaceSnapshot({ gameId });
@@ -174,13 +291,8 @@ describe("Workspace Snapshot", () => {
 			definition: JSON.stringify(validProjectileGame),
 			isPublic: false,
 		});
-
-		const listed = await testEnv.ASSETS.list({
-			prefix: `games/${game.id}/workspace/`,
-		});
-		const filenames = listed.objects
-			.map((obj) => obj.key.replace(`games/${game.id}/workspace/`, ""))
-			.sort();
+		const gitService = new GitService(testEnv.GAME_REPO);
+		const filenames = (await gitService.listFiles(game.id)).sort();
 
 		expect(filenames).toEqual([...SCAFFOLD_FILES].sort());
 	});

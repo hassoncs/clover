@@ -3,7 +3,8 @@ import type {
 	PartyInputResponse,
 } from "@slopcade/shared/types/party";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TEMPLATE_REGISTRY } from "../registry";
+import "./mock-content-pack";
+import { createTemplateRegistry } from "./test-helpers";
 
 type InputMap = Map<string, PartyInputResponse>;
 
@@ -80,7 +81,8 @@ describe("quiplash registry runner (R2)", () => {
 	it("runs the server script from definition through winner and end", async () => {
 		const room = createRoom();
 
-		const runPromise = TEMPLATE_REGISTRY.quiplash(room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry.quiplash(room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 

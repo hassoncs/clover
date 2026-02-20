@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	getActivePacks,
+	getActivePacksForType,
 	isPackActive,
 	SCHEDULED_PACKS,
 } from "../pack-scheduler";
-import { loadContentPack } from "../prompt-loader";
 
 describe("pack scheduler", () => {
 	afterEach(() => {
@@ -35,27 +35,28 @@ describe("pack scheduler", () => {
 		).toBe(false);
 	});
 
-	it("merges seasonal pack content into amen base content when active", async () => {
-		vi.useFakeTimers();
-		vi.setSystemTime(new Date("2026-02-01T12:00:00.000Z"));
-		const outOfSeasonTrivia = await loadContentPack("trivia", "amen");
+	it("returns scheduled packs for content type when active", () => {
+		const outOfSeason = getActivePacksForType(
+			"amen",
+			"trivia",
+			new Date("2026-02-01T12:00:00.000Z"),
+		);
+		const inSeason = getActivePacksForType(
+			"amen",
+			"trivia",
+			new Date("2026-04-01T12:00:00.000Z"),
+		);
 
-		vi.setSystemTime(new Date("2026-04-01T12:00:00.000Z"));
-		const inSeasonTrivia = await loadContentPack("trivia", "amen");
-
-		expect(inSeasonTrivia.length).toBeGreaterThan(outOfSeasonTrivia.length);
-		expect(
-			inSeasonTrivia.some((item) => item.id === "amen-easter-triv-001"),
-		).toBe(true);
-		expect(
-			outOfSeasonTrivia.some((item) => item.id === "amen-easter-triv-001"),
-		).toBe(false);
+		expect(outOfSeason).toHaveLength(0);
+		expect(inSeason.some((pack) => pack.packId === "amen-easter-special")).toBe(
+			true,
+		);
 	});
 
 	it("registers easter special schedule definitions", () => {
-		expect(
-			SCHEDULED_PACKS.every((pack) => pack.packId === "amen-easter-special"),
-		).toBe(true);
+		const packIds = new Set(SCHEDULED_PACKS.map((pack) => pack.packId));
+		expect(packIds.has("amen-easter-special")).toBe(true);
+		expect(packIds.has("amen-good-friday")).toBe(true);
 		expect(SCHEDULED_PACKS.every((pack) => pack.brandId === "amen")).toBe(true);
 	});
 });

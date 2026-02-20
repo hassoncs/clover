@@ -1,15 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("../../content/prompt-loader", () => ({
-	loadContentPack: vi.fn(() => [
-		{ id: "s1", left: "Cold", right: "Hot" },
-		{ id: "s2", left: "Quiet", right: "Loud" },
-		{ id: "s3", left: "Simple", right: "Complex" },
-	]),
-}));
-
-import { TEMPLATE_REGISTRY } from "../registry";
-import { createTemplateTestRoom } from "./test-helpers";
+import "./mock-content-pack";
+import { createTemplateRegistry, createTemplateTestRoom } from "./test-helpers";
 
 describe("spectrum-guess template runner", () => {
 	beforeEach(() => {
@@ -23,7 +14,8 @@ describe("spectrum-guess template runner", () => {
 	it("runs through all spectrum-guess phases and ends", async () => {
 		const room = createTemplateTestRoom(["p1", "p2", "p3"]);
 
-		const runPromise = TEMPLATE_REGISTRY["spectrum-guess"](room as never);
+		const registry = createTemplateRegistry();
+		const runPromise = registry["spectrum-guess"](room as never);
 		await vi.runAllTimersAsync();
 		await runPromise;
 
