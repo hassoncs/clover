@@ -125,13 +125,13 @@ function ScalingWrapper({
 		const scale = interpolate(
 			distance,
 			[0, itemSize, itemSize * 2],
-			[1.25, 0.85, 0.7],
+			[1.35, 0.7, 0.55],
 			"clamp",
 		);
 		const opacity = interpolate(
 			distance,
 			[0, itemSize, itemSize * 2.5],
-			[1, 0.7, 0.4],
+			[1, 0.6, 0.35],
 			"clamp",
 		);
 		return {
@@ -212,7 +212,7 @@ export function GameHallCarousel<T extends CarouselItem>({
 	return (
 		<View
 			style={[
-				{ height: 320, justifyContent: "center", overflow: "hidden" },
+				{ flex: 1, justifyContent: "center", overflow: "hidden" },
 				containerStyle,
 			]}
 		>

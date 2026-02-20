@@ -96,7 +96,7 @@ export default function BrowseScreen() {
 					</View>
 				</Modal>
 
-				<View className="px-6 py-4 flex-row justify-between items-center z-10">
+				<View className="px-6 py-1 flex-row justify-between items-center z-10">
 					<View>
 						<Text
 							className="text-[#C9A84C] text-3xl tracking-widest text-center"
@@ -130,9 +130,11 @@ export default function BrowseScreen() {
 					</View>
 				</View>
 
-				<View className="flex-1 justify-center">
+				<View className="flex-1">
 					{isLoading ? (
-						<ActivityIndicator size="large" color="#C9A84C" />
+						<View className="flex-1 items-center justify-center">
+							<ActivityIndicator size="large" color="#C9A84C" />
+						</View>
 					) : (
 						<GameHallCarousel
 							items={templates}

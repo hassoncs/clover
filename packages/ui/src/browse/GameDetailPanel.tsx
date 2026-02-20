@@ -67,10 +67,10 @@ export function GameDetailPanel({
 
 	return (
 		<View
-			className="w-full overflow-hidden rounded-t-3xl pb-10 pt-6"
+			className="w-full overflow-hidden rounded-t-3xl pb-10 pt-4"
 			style={{ backgroundColor: "#12122A" }}
 		>
-			<View className="px-6 pb-4">
+			<View className="px-6 pb-2">
 				<Text
 					className="text-center text-3xl font-bold"
 					style={{ color: "#A5B4FC", fontFamily: "Lora-Bold" }}
@@ -90,15 +90,7 @@ export function GameDetailPanel({
 				)}
 			</View>
 
-			<View
-				className="mx-6 my-3"
-				style={{
-					height: 1,
-					backgroundColor: "rgba(99, 102, 241, 0.25)",
-				}}
-			/>
-
-			<View className="flex-row flex-wrap justify-center gap-2 px-4 py-3">
+			<View className="flex-row flex-wrap justify-center gap-2 px-4 py-2">
 				<MetaBadge
 					icon="people-outline"
 					label="Players"
@@ -127,7 +119,7 @@ export function GameDetailPanel({
 				)}
 			</View>
 
-			<View className="mt-4 gap-3 px-6">
+			<View className="mt-2 gap-3 px-6">
 				<Pressable
 					onPress={onPlay}
 					className="w-full items-center justify-center rounded-xl py-4 active:opacity-90"
