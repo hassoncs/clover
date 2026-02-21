@@ -45,7 +45,7 @@
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": false,
-			"dependsOn": ["api", "godot", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
 		"metro-amen": {
 			"cwd": "apps/amen",
@@ -53,7 +53,7 @@
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- npx expo start --dev-client --port 8086",
 			"health": { "type": "port", "port": 8086 },
 			"dashboard": false,
-			"dependsOn": ["api", "godot", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
 		"ios": {
 			"cwd": "apps/slopcade",
@@ -74,7 +74,7 @@
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
 			"health": { "type": "port", "port": 8085 },
 			"dashboard": true,
-			"dependsOn": ["api", "godot", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
 		"web-amen": {
 			"cwd": "apps/amen",
@@ -82,7 +82,7 @@
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8086",
 			"health": { "type": "port", "port": 8086 },
 			"dashboard": true,
-			"dependsOn": ["api", "godot", "bridge-watch"]
+			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
 		"backlog": {
 			"cwd": ".",

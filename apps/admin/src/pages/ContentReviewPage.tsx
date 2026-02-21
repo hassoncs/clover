@@ -4,11 +4,13 @@ import { env } from "../lib/env";
 import { trpc } from "../lib/trpc";
 
 const AI_MODELS = [
+	{ label: "Kimi K2.5", value: "moonshotai/kimi-k2.5" },
+	{ label: "Claude Sonnet 4.6", value: "anthropic/claude-sonnet-4-6" },
+	{ label: "Claude Sonnet 4.5", value: "anthropic/claude-sonnet-4-5" },
+	{ label: "GPT-4.1", value: "openai/gpt-4.1" },
+	{ label: "Gemini 2.5 Flash", value: "google/gemini-2.5-flash-preview-05-20" },
 	{ label: "Gemini 2.0 Flash", value: "google/gemini-2.0-flash-001" },
-	{ label: "Gemini 1.5 Flash", value: "google/gemini-flash-1.5" },
 	{ label: "GPT-4o Mini", value: "openai/gpt-4o-mini" },
-	{ label: "Claude 3 Haiku", value: "anthropic/claude-3-haiku" },
-	{ label: "Llama 3.1 8B", value: "meta-llama/llama-3.1-8b-instruct" },
 ];
 
 const CONTENT_TYPES = [
@@ -307,31 +309,71 @@ function AiReviewModal({
 	onClose: () => void;
 	onComplete: () => void;
 }) {
-	const [model, setModel] = useState(AI_MODELS[0].value);
+	const [selectedModels, setSelectedModels] = useState<string[]>([
+		AI_MODELS[0].value,
+	]);
 	const [dimensions, setDimensions] = useState<("quality" | "humor")[]>([
 		"quality",
 		"humor",
 	]);
+	const [progress, setProgress] = useState<string[]>([]);
+	const [isRunning, setIsRunning] = useState(false);
 
-	const aiReview = trpc.partyContent.aiReview.useMutation({
-		onSuccess: (data) => {
-			const errorNote =
-				data.errors.length > 0 ? `\nErrors: ${data.errors.length}` : "";
-			alert(
-				`AI review complete!\nReviewed: ${data.reviewed}\nSkipped: ${data.skipped}${errorNote}`,
-			);
-			onComplete();
-			onClose();
-		},
-		onError: (err) => {
-			alert(`Error: ${err.message}`);
-		},
-	});
+	const aiReview = trpc.partyContent.aiReview.useMutation();
 
 	const toggleDimension = (dim: "quality" | "humor") => {
 		setDimensions((prev) =>
 			prev.includes(dim) ? prev.filter((d) => d !== dim) : [...prev, dim],
 		);
+	};
+
+	const toggleModel = (value: string) => {
+		setSelectedModels((prev) =>
+			prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+		);
+	};
+
+	const handleRun = async () => {
+		if (selectedModels.length === 0) return;
+		setIsRunning(true);
+		setProgress([]);
+
+		for (const model of selectedModels) {
+			const modelLabel =
+				AI_MODELS.find((m) => m.value === model)?.label ?? model;
+
+			setProgress((prev) => [...prev, `Running ${modelLabel}...`]);
+
+			try {
+				const result = await aiReview.mutateAsync({
+					contentIds: Array.from(selectedIds),
+					model,
+					dimensions,
+				});
+
+				setProgress((prev) => {
+					const next = [...prev];
+					const errorNote =
+						result.errors.length > 0 ? ` (${result.errors.length} errors)` : "";
+					next[next.length - 1] =
+						`✓ ${modelLabel}: ${result.reviewed} reviewed${errorNote}`;
+					return next;
+				});
+			} catch (err) {
+				const msg = err instanceof Error ? err.message : String(err);
+				setProgress((prev) => {
+					const next = [...prev];
+					next[next.length - 1] = `✗ ${modelLabel}: ${msg}`;
+					return next;
+				});
+			}
+		}
+
+		setIsRunning(false);
+		setTimeout(() => {
+			onComplete();
+			onClose();
+		}, 1000);
 	};
 
 	return (
@@ -340,12 +382,12 @@ function AiReviewModal({
 				type="button"
 				aria-label="Close modal"
 				className="absolute inset-0 bg-black/70 w-full h-full border-none cursor-default"
-				onClick={onClose}
+				onClick={!isRunning ? onClose : undefined}
 			/>
 			<div
 				role="dialog"
 				aria-modal="true"
-				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 rounded-xl p-6 w-[420px] flex flex-col gap-4"
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 rounded-xl p-6 w-[420px] flex flex-col gap-4 shadow-2xl"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}
 			>
@@ -354,41 +396,45 @@ function AiReviewModal({
 						AI Review — {selectedIds.size} item
 						{selectedIds.size !== 1 ? "s" : ""}
 					</h3>
-					<button
-						type="button"
-						onClick={onClose}
-						className="text-slate-500 hover:text-slate-300 bg-transparent border-none cursor-pointer text-lg p-0"
-					>
-						✕
-					</button>
+					{!isRunning && (
+						<button
+							type="button"
+							onClick={onClose}
+							className="text-slate-500 hover:text-slate-300 bg-transparent border-none cursor-pointer text-lg p-0"
+						>
+							✕
+						</button>
+					)}
 				</div>
 
-				<div className="flex flex-col gap-1.5">
-					<label
-						htmlFor="ai-model-select"
-						className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
-					>
-						Model
-					</label>
-					<select
-						id="ai-model-select"
-						value={model}
-						onChange={(e) => setModel(e.target.value)}
-						className="px-2.5 py-2 rounded-md border border-slate-700 bg-slate-800 text-slate-300 text-sm outline-none focus:border-slate-500"
-					>
-						{AI_MODELS.map((m) => (
-							<option key={m.value} value={m.value}>
-								{m.label}
-							</option>
-						))}
-					</select>
-				</div>
-
-				<div className="flex flex-col gap-1.5">
+				<div className="flex flex-col gap-2">
 					<span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-						Dimensions to Rate
+						Models
 					</span>
-					<div className="flex gap-3">
+					<div className="flex flex-col gap-1 max-h-[240px] overflow-y-auto border border-slate-800 rounded p-2 bg-slate-950/30">
+						{AI_MODELS.map((m) => (
+							<label
+								key={m.value}
+								className="flex items-center gap-2.5 cursor-pointer text-slate-300 text-sm hover:bg-slate-800/50 p-1.5 rounded transition-colors"
+							>
+								<input
+									type="checkbox"
+									checked={selectedModels.includes(m.value)}
+									onChange={() => toggleModel(m.value)}
+									disabled={isRunning}
+									className="rounded border-slate-600 bg-slate-800 text-violet-600 focus:ring-0 focus:ring-offset-0"
+								/>
+								{m.label}
+							</label>
+						))}
+					</div>
+				</div>
+
+				<div className="flex flex-col gap-2">
+					<span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+						Dimensions
+					</span>
+					<div className="flex gap-4">
 						{(["quality", "humor"] as const).map((dim) => (
 							<label
 								key={dim}
@@ -398,7 +444,8 @@ function AiReviewModal({
 									type="checkbox"
 									checked={dimensions.includes(dim)}
 									onChange={() => toggleDimension(dim)}
-									className="rounded border-slate-700 bg-slate-900 text-blue-600"
+									disabled={isRunning}
+									className="rounded border-slate-600 bg-slate-800 text-violet-600 focus:ring-0 focus:ring-offset-0"
 								/>
 								{dim.charAt(0).toUpperCase() + dim.slice(1)}
 							</label>
@@ -406,34 +453,47 @@ function AiReviewModal({
 					</div>
 				</div>
 
-				<p className="text-slate-500 text-[12px] m-0">
-					Bot reviewer ID:{" "}
-					<code className="text-slate-400 font-mono text-[11px]">
-						bot:{model}
-					</code>
-				</p>
+				{progress.length > 0 && (
+					<div className="flex flex-col gap-1 text-[11px] font-mono bg-slate-950 p-3 rounded border border-slate-800 max-h-[120px] overflow-y-auto">
+						{progress.map((line, i) => (
+							<div
+								key={i}
+								className={
+									line.startsWith("✗")
+										? "text-red-400"
+										: line.startsWith("✓")
+											? "text-emerald-400"
+											: "text-slate-400 animate-pulse"
+								}
+							>
+								{line}
+							</div>
+						))}
+					</div>
+				)}
 
-				<div className="flex gap-2 justify-end">
+				<div className="flex gap-2 justify-end mt-2">
 					<button
 						type="button"
 						onClick={onClose}
-						className="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-300 text-sm cursor-pointer hover:bg-slate-700"
+						disabled={isRunning}
+						className="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-300 text-sm cursor-pointer hover:bg-slate-700 disabled:opacity-50 disabled:cursor-default"
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
-						disabled={aiReview.isPending || dimensions.length === 0}
-						onClick={() =>
-							aiReview.mutate({
-								contentIds: Array.from(selectedIds),
-								model,
-								dimensions,
-							})
+						disabled={
+							isRunning ||
+							dimensions.length === 0 ||
+							selectedModels.length === 0
 						}
-						className="px-4 py-1.5 bg-violet-800 hover:bg-violet-700 border border-violet-600 rounded text-violet-100 text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors"
+						onClick={handleRun}
+						className="px-4 py-1.5 bg-violet-800 hover:bg-violet-700 border border-violet-600 rounded text-violet-100 text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-default transition-colors min-w-[100px]"
 					>
-						{aiReview.isPending ? "Reviewing..." : "Run AI Review"}
+						{isRunning
+							? "Running..."
+							: `Run ${selectedModels.length} Model${selectedModels.length !== 1 ? "s" : ""}`}
 					</button>
 				</div>
 			</div>
