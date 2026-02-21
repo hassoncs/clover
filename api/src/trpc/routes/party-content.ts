@@ -1962,6 +1962,141 @@ Respond with valid JSON only: {"${rateQuality ? "quality_score" : ""}${rateQuali
 			}));
 		}),
 
+	generateMissingAudio: adminProcedure
+		.input(
+			z.object({
+				brand: z.enum(["amen", "slopcade"]),
+				contentType: z.string().optional(),
+				provider: z.enum(["scenario", "elevenlabs"]).default("scenario"),
+				batchSize: z.number().int().min(1).max(50).default(10),
+				limit: z.number().int().min(1).max(5000).optional(),
+				dryRun: z.boolean().default(false),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+			const r2 = ctx.env.ASSETS;
+			const skipTypes = Array.from(SKIP_VOICE_TYPES);
+			const skipPlaceholders = skipTypes.map(() => "?").join(",");
+
+			const conditions: string[] = [
+				"pc.brand_id = ?",
+				"pc.deleted_at IS NULL",
+				`pc.content_type NOT IN (${skipPlaceholders})`,
+			];
+			const params: unknown[] = [input.brand, ...skipTypes];
+
+			if (input.contentType) {
+				conditions.push("pc.content_type = ?");
+				params.push(input.contentType);
+			}
+
+			const where = conditions.join(" AND ");
+			const limitClause = input.limit ? `LIMIT ${input.limit}` : "";
+
+			const rows = await db
+				.prepare(
+					`SELECT pc.id, pc.brand_id, pc.content_type, pc.body
+					 FROM party_content pc
+					 LEFT JOIN party_content_assets pca
+					   ON pca.content_id = pc.id AND pca.asset_type = 'audio' AND pca.deleted_at IS NULL
+					 WHERE ${where} AND pca.id IS NULL
+					 ORDER BY pc.id
+					 ${limitClause}`,
+				)
+				.bind(...params)
+				.all<{
+					id: string;
+					brand_id: string;
+					content_type: string;
+					body: string;
+				}>();
+
+			const items = rows.results ?? [];
+			if (input.dryRun) {
+				const byType: Record<string, number> = {};
+				for (const row of items) {
+					byType[row.content_type] = (byType[row.content_type] ?? 0) + 1;
+				}
+				return {
+					total: items.length,
+					byType,
+					generated: 0,
+					skipped: 0,
+					errors: [] as string[],
+					dryRun: true,
+				};
+			}
+
+			const generate = createAudioGenerator(
+				{
+					SCENARIO_API_KEY: ctx.env.SCENARIO_API_KEY,
+					SCENARIO_SECRET_API_KEY: ctx.env.SCENARIO_SECRET_API_KEY,
+					SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
+					ELEVENLABS_API_KEY: ctx.env.ELEVENLABS_API_KEY,
+				},
+				input.provider as AudioProvider,
+			);
+
+			let generated = 0;
+			let skipped = 0;
+			const errors: string[] = [];
+
+			for (let i = 0; i < items.length; i += input.batchSize) {
+				const batch = items.slice(i, i + input.batchSize);
+				const results = await Promise.allSettled(
+					batch.map(async (row) => {
+						const result = await generate({
+							contentId: row.id,
+							brandId: row.brand_id,
+							contentType: row.content_type,
+							body: row.body,
+						});
+						if (!result) {
+							skipped++;
+							return;
+						}
+						await r2.put(result.r2Key, result.audioBytes, {
+							httpMetadata: { contentType: "audio/mpeg" },
+						});
+						const assetId = `audio-${row.id}`;
+						await db
+							.prepare(
+								`INSERT OR REPLACE INTO party_content_assets
+								 (id, content_id, r2_key, asset_type, role, mime_type, file_size, created_at)
+								 VALUES (?, ?, ?, 'audio', 'primary', 'audio/mpeg', ?, ?)`,
+							)
+							.bind(
+								assetId,
+								row.id,
+								result.r2Key,
+								result.audioBytes.byteLength,
+								Date.now(),
+							)
+							.run();
+						generated++;
+					}),
+				);
+
+				for (const r of results) {
+					if (r.status === "rejected") {
+						const msg =
+							r.reason instanceof Error ? r.reason.message : String(r.reason);
+						errors.push(msg);
+					}
+				}
+			}
+
+			return {
+				total: items.length,
+				byType: {},
+				generated,
+				skipped,
+				errors,
+				dryRun: false,
+			};
+		}),
+
 	backfillAudioAssets: adminProcedure
 		.input(
 			z.object({
