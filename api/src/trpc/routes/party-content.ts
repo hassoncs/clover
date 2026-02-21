@@ -1961,4 +1961,118 @@ Respond with valid JSON only: {"${rateQuality ? "quality_score" : ""}${rateQuali
 				batchSize: cfg.batchSize,
 			}));
 		}),
+
+	backfillAudioAssets: adminProcedure
+		.input(
+			z.object({
+				brand: z.enum(["amen", "slopcade"]).optional(),
+				contentType: z.string().optional(),
+				dryRun: z.boolean().default(false),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const db = ctx.env.DB;
+			const r2 = ctx.env.ASSETS;
+			const batchSize = 50;
+			const skipTypes = Array.from(SKIP_VOICE_TYPES);
+			const skipPlaceholders = skipTypes.map(() => "?").join(",");
+			const conditions: string[] = [
+				"source = 'imported'",
+				"deleted_at IS NULL",
+				`content_type NOT IN (${skipPlaceholders})`,
+			];
+			const params: unknown[] = [...skipTypes];
+
+			if (input.brand) {
+				conditions.push("brand_id = ?");
+				params.push(input.brand);
+			}
+			if (input.contentType) {
+				conditions.push("content_type = ?");
+				params.push(input.contentType);
+			}
+
+			const where =
+				conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+			let offset = 0;
+			let found = 0;
+			let alreadyLinked = 0;
+			let linked = 0;
+			let notInR2 = 0;
+
+			while (true) {
+				const rows = await db
+					.prepare(
+						`SELECT id, brand_id, content_type FROM party_content
+						 ${where}
+						 ORDER BY id
+						 LIMIT ? OFFSET ?`,
+					)
+					.bind(...params, batchSize, offset)
+					.all<{
+						id: string;
+						brand_id: string;
+						content_type: string;
+					}>();
+
+				const results = rows.results ?? [];
+				if (results.length === 0) {
+					break;
+				}
+
+				for (const row of results) {
+					found++;
+					const existing = await db
+						.prepare(
+							"SELECT id FROM party_content_assets WHERE content_id = ? AND asset_type = 'audio' AND deleted_at IS NULL",
+						)
+						.bind(row.id)
+						.first<{ id: string }>();
+
+					if (existing) {
+						alreadyLinked++;
+						continue;
+					}
+
+					const r2Key = buildAudioR2Key(
+						row.brand_id as Brand,
+						row.content_type as ContentType,
+						row.id,
+					);
+					const object = await r2.head(r2Key);
+					if (!object) {
+						notInR2++;
+						continue;
+					}
+
+					linked++;
+					if (!input.dryRun) {
+						const assetId = `audio-${row.id}`;
+						await db
+							.prepare(
+								`INSERT OR IGNORE INTO party_content_assets
+								 (id, content_id, r2_key, asset_type, role, mime_type, created_at)
+								 VALUES (?, ?, ?, 'audio', 'primary', 'audio/mpeg', ?)`,
+							)
+							.bind(assetId, row.id, r2Key, Date.now())
+							.run();
+					}
+				}
+
+				if (results.length < batchSize) {
+					break;
+				}
+
+				offset += results.length;
+			}
+
+			return {
+				found,
+				alreadyLinked,
+				linked,
+				notInR2,
+				dryRun: input.dryRun,
+			};
+		}),
 });
