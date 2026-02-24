@@ -1,5 +1,19 @@
 # Project Agents Configuration
 
+## Related Documents
+
+This file covers **how agents work** — rules, patterns, and conventions. The rest of the team's knowledge lives in companion documents:
+
+| Document | Purpose |
+|----------|---------|
+| [SOUL.md](SOUL.md) | Voice, personality, values — who we are |
+| [IDENTITY.amen.md](IDENTITY.amen.md) | Amen brand bible — audience, tone, colors, content guidelines |
+| [IDENTITY.slopcade.md](IDENTITY.slopcade.md) | Slopcade brand bible — audience, tone, colors, content guidelines |
+| [HEARTBEAT.md](HEARTBEAT.md) | Maintenance cadences — brain-sleep, skill audits, dependency health |
+| [TOOLS.md](TOOLS.md) | Environment map — services, ports, secrets, external dependencies |
+
+When working on brand-specific features (UI, content generation, copy), load the relevant IDENTITY file first.
+
 ## General Principles
 
 - When asked to implement something, start building immediately. Do not over-plan, over-research, or over-analyze before writing code. If clarification is needed, ask — otherwise start coding.
@@ -240,7 +254,39 @@ Only one script remains as a CLI — it requires direct local filesystem access:
 
 ### MCP configuration
 
-The MCP server is configured in `.opencode/opencode.json` as `slopcade-api`. It uses `mcp-remote` to bridge the HTTP MCP endpoint at `http://localhost:8789/mcp` to stdio. The API must be running (via `pnpm dev`) for the MCP server to work.
+The MCP server is configured in both `.mcp.json` (Claude Code) and `.opencode/opencode.json` (OpenCode) as `slopcade-api`. It uses `mcp-remote` to bridge the HTTP MCP endpoint at `http://localhost:8789/mcp` to stdio. The API must be running (via `pnpm dev`) for the MCP server to work.
+
+### How to call tRPC routes from agents
+
+**Preferred: MCP tools (zero config, auto-auth)**
+
+When the `slopcade-api` MCP server is connected, every tRPC route is exposed as an MCP tool. The tool name matches the tRPC path (e.g., `partyContent.reviewAll`). Auth is handled automatically via `dev-token`. Just call the tool with the route's input params as arguments.
+
+**Fallback: curl (when MCP server isn't available in current session)**
+
+The tRPC server does NOT use superjson. Pass raw JSON — no `{"json": ...}` wrapper.
+
+```bash
+# Query (GET) — use --data-urlencode for the input param
+curl -sG 'http://localhost:8789/trpc/<router>.<procedure>' \
+  -H 'Authorization: Bearer dev-token' \
+  --data-urlencode 'input={"param1":"value1","param2":42}'
+
+# Mutation (POST) — raw JSON body, no wrapper
+curl -s 'http://localhost:8789/trpc/<router>.<procedure>' \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer dev-token' \
+  -d '{"param1":"value1","param2":42}'
+```
+
+**Common mistakes to avoid:**
+- Do NOT wrap input in `{"json": {...}}` — that's for superjson-enabled clients; our server uses plain JSON
+- Do NOT use `{"0":{"json":{...}}}` batch format — that's tRPC client internal encoding
+- Queries MUST be GET (POST to a query returns 405)
+- Mutations MUST be POST
+- Always include `Authorization: Bearer dev-token` for admin routes
+- For long-running mutations (>2 min), run curl in background: `nohup curl ... > /tmp/result.json &`
 
 ---
 

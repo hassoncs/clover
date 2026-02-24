@@ -107,6 +107,7 @@ export const partyContentReviews = sqliteTable(
 		model: text("model"),
 		qualityScore: integer("quality_score"),
 		humorScore: integer("humor_score"),
+		difficultyScore: integer("difficulty_score"),
 		notes: text("notes"),
 		createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 	},

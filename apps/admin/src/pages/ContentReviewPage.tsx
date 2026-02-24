@@ -272,28 +272,32 @@ function StarRating({
 }) {
 	return (
 		<div className="flex flex-col gap-0.5">
-			<span className="flex">
-				{[1, 2, 3, 4, 5].map((star) => (
-					<button
-						type="button"
-						key={star}
-						onClick={() => onRate(star)}
-						className={`cursor-pointer text-[15px] px-[1px] border-none bg-transparent ${
-							star <= (value ?? 0)
-								? "text-amber-400"
-								: "text-slate-700 hover:text-slate-600"
-						}`}
-					>
-						★
-					</button>
-				))}
-			</span>
-			{reviewCount > 0 && (
-				<span className="text-[10px] text-slate-500 pl-[1px]">
-					{avgValue !== null ? `avg ${avgValue.toFixed(1)}` : "—"}
-					{reviewCount > 1 && (
-						<span className="text-slate-600 ml-1">({reviewCount})</span>
-					)}
+			<div className="flex items-center gap-1.5">
+				<span className="flex">
+					{[1, 2, 3, 4, 5].map((star) => (
+						<button
+							type="button"
+							key={star}
+							onClick={() => onRate(star)}
+							className={`cursor-pointer text-[13px] px-[0.5px] border-none bg-transparent ${
+								star <= (value ?? 0)
+									? "text-amber-400"
+									: "text-slate-700 hover:text-slate-600"
+							}`}
+						>
+							★
+						</button>
+					))}
+				</span>
+				{avgValue !== null && reviewCount > 0 && (
+					<span className="text-[11px] font-mono text-slate-400 tabular-nums">
+						{avgValue.toFixed(1)}
+					</span>
+				)}
+			</div>
+			{reviewCount > 1 && (
+				<span className="text-[9px] text-slate-600 pl-[1px]">
+					{reviewCount} reviews
 				</span>
 			)}
 		</div>
@@ -312,16 +316,17 @@ function AiReviewModal({
 	const [selectedModels, setSelectedModels] = useState<string[]>([
 		AI_MODELS[0].value,
 	]);
-	const [dimensions, setDimensions] = useState<("quality" | "humor")[]>([
-		"quality",
-		"humor",
-	]);
+	const [dimensions, setDimensions] = useState<
+		("quality" | "humor" | "difficulty")[]
+	>(["quality", "humor", "difficulty"]);
+	const [batchSize, setBatchSize] = useState(25);
+	const [concurrency, setConcurrency] = useState(5);
 	const [progress, setProgress] = useState<string[]>([]);
 	const [isRunning, setIsRunning] = useState(false);
 
 	const aiReview = trpc.partyContent.aiReview.useMutation();
 
-	const toggleDimension = (dim: "quality" | "humor") => {
+	const toggleDimension = (dim: "quality" | "humor" | "difficulty") => {
 		setDimensions((prev) =>
 			prev.includes(dim) ? prev.filter((d) => d !== dim) : [...prev, dim],
 		);
@@ -338,25 +343,37 @@ function AiReviewModal({
 		setIsRunning(true);
 		setProgress([]);
 
+		const ids = Array.from(selectedIds);
+		const totalChunks = Math.ceil(ids.length / batchSize);
+
 		for (const model of selectedModels) {
 			const modelLabel =
 				AI_MODELS.find((m) => m.value === model)?.label ?? model;
 
-			setProgress((prev) => [...prev, `Running ${modelLabel}...`]);
+			setProgress((prev) => [
+				...prev,
+				`Running ${modelLabel} (${ids.length} items, ${totalChunks} chunks of ${batchSize})...`,
+			]);
 
 			try {
 				const result = await aiReview.mutateAsync({
-					contentIds: Array.from(selectedIds),
+					contentIds: ids,
 					model,
 					dimensions,
+					batchSize,
+					concurrency,
 				});
 
 				setProgress((prev) => {
 					const next = [...prev];
+					const chunkNote =
+						result.failedChunks > 0
+							? ` (${result.failedChunks}/${result.totalChunks} chunks failed)`
+							: "";
 					const errorNote =
 						result.errors.length > 0 ? ` (${result.errors.length} errors)` : "";
 					next[next.length - 1] =
-						`✓ ${modelLabel}: ${result.reviewed} reviewed${errorNote}`;
+						`✓ ${modelLabel}: ${result.reviewed} reviewed${chunkNote}${errorNote}`;
 					return next;
 				});
 			} catch (err) {
@@ -435,7 +452,7 @@ function AiReviewModal({
 						Dimensions
 					</span>
 					<div className="flex gap-4">
-						{(["quality", "humor"] as const).map((dim) => (
+						{(["quality", "humor", "difficulty"] as const).map((dim) => (
 							<label
 								key={dim}
 								className="flex items-center gap-2 cursor-pointer text-slate-300 text-sm"
@@ -517,7 +534,8 @@ export function ContentReviewPage() {
 			| "created_at"
 			| "updated_at"
 			| "quality_score"
-			| "humor_score") || "created_at";
+			| "humor_score"
+			| "difficulty_score") || "created_at";
 	const sortOrder = (params.get("order") as "asc" | "desc") || "desc";
 	const page = Number(params.get("page")) || 1;
 	const pageSize = 50;
@@ -631,13 +649,14 @@ export function ContentReviewPage() {
 
 	const handleRate = (
 		contentId: string,
-		dimension: "quality" | "humor",
+		dimension: "quality" | "humor" | "difficulty",
 		score: number,
 	) => {
 		upsertReview.mutate({
 			contentId,
 			qualityScore: dimension === "quality" ? score : undefined,
 			humorScore: dimension === "humor" ? score : undefined,
+			difficultyScore: dimension === "difficulty" ? score : undefined,
 		});
 	};
 
@@ -776,6 +795,7 @@ export function ContentReviewPage() {
 							<option value="updated_at">Updated</option>
 							<option value="quality_score">Quality</option>
 							<option value="humor_score">Humor</option>
+							<option value="difficulty_score">Difficulty</option>
 						</select>
 					</div>
 					<div className="flex-1">
@@ -925,6 +945,11 @@ export function ContentReviewPage() {
 											width: "w-[90px]",
 											title: "Humor (your rating + avg)",
 										},
+										{
+											label: "Diff",
+											width: "w-[90px]",
+											title: "Difficulty (your rating + avg)",
+										},
 										{ label: "", width: "w-[50px]" },
 									].map((h) => (
 										<th
@@ -1031,6 +1056,14 @@ export function ContentReviewPage() {
 													avgValue={item.avgHumor ?? null}
 													reviewCount={item.reviewCount ?? 0}
 													onRate={(s) => handleRate(item.id, "humor", s)}
+												/>
+											</td>
+											<td className="px-3.5 py-2.5">
+												<StarRating
+													value={item.myReview?.difficultyScore ?? null}
+													avgValue={item.avgDifficulty ?? null}
+													reviewCount={item.reviewCount ?? 0}
+													onRate={(s) => handleRate(item.id, "difficulty", s)}
 												/>
 											</td>
 											<td className="p-3.5">

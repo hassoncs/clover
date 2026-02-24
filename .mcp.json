@@ -1,12 +1,16 @@
 {
-  "mcpServers": {
-    "backlog": {
-      "command": "node_modules/.bin/backlog",
-      "args": ["mcp", "start"]
-    },
-    "game-inspector": {
-      "command": "node",
-      "args": ["packages/game-inspector-mcp/dist/index.js"]
-    }
-  }
+	"mcpServers": {
+		"backlog": {
+			"command": "node_modules/.bin/backlog",
+			"args": ["mcp", "start"]
+		},
+		"game-inspector": {
+			"command": "node",
+			"args": ["packages/game-inspector-mcp/dist/index.js"]
+		},
+		"slopcade-api": {
+			"command": "npx",
+			"args": ["mcp-remote", "http://localhost:8789/mcp"]
+		}
+	}
 }

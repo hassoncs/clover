@@ -78,6 +78,9 @@ Managed by `simple-git-hooks` → `scripts/pre-commit.sh`:
 - Bridge E2E requires Godot binary available in PATH
 - Pre-commit runs `tsc` — fix type errors before committing
 - Use `createAuthenticatedCaller(TEST_USER)` for tRPC tests, never construct context manually
+- **D1 mock column names**: Vitest D1 mock returns snake_case (`actor_id`) even when TypeScript types use camelCase — map accordingly
+- **FK constraint cleanup order**: In `beforeEach`, clear child tables (messages, threads) before parent tables (games, users) to avoid FK violations
+- **Consolidated smoke suites**: For security gates (moderation, billing, admin, invites, audit), a single `launch-gate.test.ts` file is preferred over scattered assertions
 
 ## File References
 

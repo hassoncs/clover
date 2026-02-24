@@ -212,6 +212,307 @@ function extractItemText(
 	}
 }
 
+interface BatchReviewOptions {
+	db: D1Database;
+	apiKey: string;
+	contentIds: string[];
+	model: string;
+	dimensions: Array<"quality" | "humor" | "difficulty">;
+	batchSize: number;
+	concurrency: number;
+}
+
+export interface BatchReviewResult {
+	reviewed: number;
+	skipped: number;
+	errors: string[];
+	botReviewerId: string;
+	totalChunks: number;
+	failedChunks: number;
+}
+
+async function batchReviewContent(
+	options: BatchReviewOptions,
+): Promise<BatchReviewResult> {
+	const { db, apiKey, contentIds, model, dimensions, batchSize, concurrency } =
+		options;
+	const botReviewerId = `bot:${model}`;
+
+	if (contentIds.length === 0) {
+		return {
+			reviewed: 0,
+			skipped: 0,
+			errors: [],
+			botReviewerId,
+			totalChunks: 0,
+			failedChunks: 0,
+		};
+	}
+
+	const contentRows: Array<{
+		id: string;
+		brand_id: string;
+		content_type: string;
+		body: string;
+	}> = [];
+
+	const DB_CHUNK_SIZE = 100;
+	for (let i = 0; i < contentIds.length; i += DB_CHUNK_SIZE) {
+		const idChunk = contentIds.slice(i, i + DB_CHUNK_SIZE);
+		const placeholders = idChunk.map(() => "?").join(",");
+		const chunkRows = await db
+			.prepare(
+				`SELECT id, brand_id, content_type, body FROM party_content
+				 WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+			)
+			.bind(...idChunk)
+			.all<{
+				id: string;
+				brand_id: string;
+				content_type: string;
+				body: string;
+			}>();
+
+		contentRows.push(...(chunkRows.results ?? []));
+	}
+
+	let reviewed = 0;
+	let skipped = 0;
+	const errors: string[] = [];
+	let failedChunks = 0;
+
+	const preparedRows: Array<{
+		id: string;
+		brand_id: string;
+		content_type: string;
+		parsedBody: Record<string, unknown>;
+		contentText: string;
+	}> = [];
+
+	for (const row of contentRows) {
+		let parsedBody: Record<string, unknown>;
+		try {
+			parsedBody = JSON.parse(row.body);
+		} catch {
+			skipped++;
+			continue;
+		}
+
+		const contentText = extractItemText(parsedBody, row.content_type).trim();
+		if (!contentText) {
+			skipped++;
+			continue;
+		}
+
+		preparedRows.push({
+			id: row.id,
+			brand_id: row.brand_id,
+			content_type: row.content_type,
+			parsedBody,
+			contentText,
+		});
+	}
+
+	if (preparedRows.length === 0) {
+		return {
+			reviewed,
+			skipped,
+			errors,
+			botReviewerId,
+			totalChunks: 0,
+			failedChunks,
+		};
+	}
+
+	const chunks: (typeof preparedRows)[] = [];
+	for (let i = 0; i < preparedRows.length; i += batchSize) {
+		chunks.push(preparedRows.slice(i, i + batchSize));
+	}
+
+	const rateQuality = dimensions.includes("quality");
+	const rateHumor = dimensions.includes("humor");
+	const rateDifficulty = dimensions.includes("difficulty");
+
+	const dimensionInstructions = [
+		rateQuality
+			? "quality_score (1-5): 1=unusable garbage, 2=poor, 3=acceptable, 4=good, 5=excellent. Consider: clarity, creativity, appropriateness for party games."
+			: null,
+		rateHumor
+			? "humor_score (1-5): 1=not funny at all, 2=mildly amusing, 3=moderately funny, 4=quite funny, 5=hilarious. Consider: wit, absurdity, party appeal."
+			: null,
+		rateDifficulty
+			? "difficulty_score (1-5): 1=very easy (young children/beginners), 2=easy (casual knowledge), 3=medium (average adult), 4=hard (enthusiast/deep knowledge), 5=expert (specialist/obscure). Consider: how niche the knowledge is, how much context is needed, how likely an average player is to answer correctly."
+			: null,
+	]
+		.filter(Boolean)
+		.join("\n");
+
+	const llmModel = createModel({ apiKey, modelOrPreset: model });
+	const { generateObject } = await import("ai");
+	const batchRatingSchema = z.object({
+		ratings: z.array(
+			z.object({
+				id: z.string(),
+				...(rateQuality
+					? { quality_score: z.number().int().min(1).max(5) }
+					: {}),
+				...(rateHumor ? { humor_score: z.number().int().min(1).max(5) } : {}),
+				...(rateDifficulty
+					? { difficulty_score: z.number().int().min(1).max(5) }
+					: {}),
+				reasoning: z.string(),
+			}),
+		),
+	});
+
+	const reviewChunk = async (
+		chunk: typeof preparedRows,
+		chunkIndex: number,
+	): Promise<{ reviewed: number; skipped: number }> => {
+		const promptItems = chunk
+			.map(
+				(item, index) =>
+					`[${index + 1}] (id: ${item.id}) Type: ${item.content_type}\nSummary: ${item.contentText}\n${JSON.stringify(item.parsedBody)}`,
+			)
+			.join("\n\n");
+
+		const prompt = `Rate the following ${chunk.length} party game content items.
+
+For each item, provide ratings on these dimensions:
+${dimensionInstructions}
+
+Items:
+
+${promptItems}
+
+Return a JSON object with a "ratings" array containing one entry per item, in the same order as presented. Each entry must include the item's id.`;
+
+		const result = await generateObject({
+			model: llmModel,
+			schema: batchRatingSchema,
+			prompt,
+			temperature: 0.3,
+		});
+
+		let chunkReviewed = 0;
+		let chunkSkipped = 0;
+		const rowById = new Map(chunk.map((row) => [row.id, row]));
+		const returnedIds = new Set<string>();
+
+		for (const rating of result.object.ratings) {
+			const row = rowById.get(rating.id);
+			if (!row) {
+				chunkSkipped++;
+				errors.push(
+					`chunk ${chunkIndex + 1}: returned unknown id ${rating.id}`,
+				);
+				continue;
+			}
+
+			returnedIds.add(rating.id);
+			const reviewNow = Date.now();
+			const qualityScore = rateQuality ? (rating.quality_score ?? null) : null;
+			const humorScore = rateHumor ? (rating.humor_score ?? null) : null;
+			const difficultyScore = rateDifficulty
+				? (rating.difficulty_score ?? null)
+				: null;
+			const notes = rating.reasoning ?? null;
+
+			const existing = await db
+				.prepare(
+					"SELECT id FROM party_content_reviews WHERE content_id = ? AND reviewer_user_id = ?",
+				)
+				.bind(row.id, botReviewerId)
+				.first<{ id: string }>();
+
+			if (existing) {
+				await db
+					.prepare(
+						`UPDATE party_content_reviews
+						 SET quality_score = ?, humor_score = ?, difficulty_score = ?, notes = ?, created_at = ?
+						 WHERE id = ?`,
+					)
+					.bind(
+						qualityScore,
+						humorScore,
+						difficultyScore,
+						notes,
+						reviewNow,
+						existing.id,
+					)
+					.run();
+			} else {
+				const reviewId = crypto.randomUUID();
+				await db
+					.prepare(
+						`INSERT INTO party_content_reviews
+						 (id, content_id, reviewer_user_id, reviewer_type, model, quality_score, humor_score, difficulty_score, notes, created_at)
+						 VALUES (?, ?, ?, 'bot', ?, ?, ?, ?, ?, ?)`,
+					)
+					.bind(
+						reviewId,
+						row.id,
+						botReviewerId,
+						model,
+						qualityScore,
+						humorScore,
+						difficultyScore,
+						notes,
+						reviewNow,
+					)
+					.run();
+			}
+
+			chunkReviewed++;
+		}
+
+		for (const expected of chunk) {
+			if (!returnedIds.has(expected.id)) {
+				chunkSkipped++;
+				errors.push(
+					`chunk ${chunkIndex + 1}: missing rating for content ${expected.id}`,
+				);
+			}
+		}
+
+		return { reviewed: chunkReviewed, skipped: chunkSkipped };
+	};
+
+	for (let i = 0; i < chunks.length; i += concurrency) {
+		const wave = chunks.slice(i, i + concurrency);
+		const waveResults = await Promise.allSettled(
+			wave.map((chunk, offset) => reviewChunk(chunk, i + offset)),
+		);
+
+		for (let j = 0; j < waveResults.length; j++) {
+			const waveResult = waveResults[j];
+			if (waveResult.status === "fulfilled") {
+				reviewed += waveResult.value.reviewed;
+				skipped += waveResult.value.skipped;
+				continue;
+			}
+
+			failedChunks++;
+			const chunkNumber = i + j + 1;
+			const message =
+				waveResult.reason instanceof Error
+					? waveResult.reason.message
+					: String(waveResult.reason);
+			console.error(`[aiReview] chunk ${chunkNumber}: ${message}`);
+			errors.push(`chunk ${chunkNumber}: ${message}`);
+		}
+	}
+
+	return {
+		reviewed,
+		skipped,
+		errors,
+		botReviewerId,
+		totalChunks: chunks.length,
+		failedChunks,
+	};
+}
+
 export const partyContentRouter = router({
 	importPacks: adminProcedure
 		.input(
@@ -555,7 +856,13 @@ export const partyContentRouter = router({
 				search: z.string().optional(),
 				includeDeleted: z.boolean().default(false),
 				sortBy: z
-					.enum(["created_at", "updated_at", "quality_score", "humor_score"])
+					.enum([
+						"created_at",
+						"updated_at",
+						"quality_score",
+						"humor_score",
+						"difficulty_score",
+					])
 					.default("created_at"),
 				sortOrder: z.enum(["asc", "desc"]).default("desc"),
 			}),
@@ -609,7 +916,7 @@ export const partyContentRouter = router({
 
 			const myReviewJoin = `
 			LEFT JOIN (
-				SELECT content_id, quality_score, humor_score, notes, reviewer_user_id, created_at
+				SELECT content_id, quality_score, humor_score, difficulty_score, notes, reviewer_user_id, created_at
 				FROM party_content_reviews
 				WHERE reviewer_user_id = '${reviewerUserId}'
 			) mr ON mr.content_id = pc.id
@@ -620,6 +927,7 @@ export const partyContentRouter = router({
 				SELECT content_id,
 					AVG(quality_score) as avg_quality,
 					AVG(humor_score) as avg_humor,
+					AVG(difficulty_score) as avg_difficulty,
 					COUNT(*) as review_count
 				FROM party_content_reviews
 				GROUP BY content_id
@@ -648,7 +956,9 @@ export const partyContentRouter = router({
 					? "ar.avg_quality"
 					: sortBy === "humor_score"
 						? "ar.avg_humor"
-						: `pc.${sortBy}`;
+						: sortBy === "difficulty_score"
+							? "ar.avg_difficulty"
+							: `pc.${sortBy}`;
 
 			const countSql = `
 			SELECT COUNT(DISTINCT pc.id) as total
@@ -669,8 +979,9 @@ export const partyContentRouter = router({
 				pc.id, pc.brand_id, pc.content_type, pc.body, pc.category, pc.difficulty,
 				pc.status, pc.source, pc.content_hash, pc.metadata, pc.created_at, pc.updated_at, pc.deleted_at,
 				mr.quality_score as my_quality_score, mr.humor_score as my_humor_score,
+				mr.difficulty_score as my_difficulty_score,
 				mr.notes as my_notes, mr.created_at as my_review_created_at,
-				ar.avg_quality, ar.avg_humor, ar.review_count
+				ar.avg_quality, ar.avg_humor, ar.avg_difficulty, ar.review_count
 			FROM party_content pc
 			${myReviewJoin}
 			${avgReviewJoin}
@@ -698,10 +1009,12 @@ export const partyContentRouter = router({
 					deleted_at: number | null;
 					my_quality_score: number | null;
 					my_humor_score: number | null;
+					my_difficulty_score: number | null;
 					my_notes: string | null;
 					my_review_created_at: number | null;
 					avg_quality: number | null;
 					avg_humor: number | null;
+					avg_difficulty: number | null;
 					review_count: number | null;
 				}>();
 
@@ -768,16 +1081,20 @@ export const partyContentRouter = router({
 				deletedAt: row.deleted_at,
 				assets: assetsByContent[row.id] ?? [],
 				myReview:
-					row.my_quality_score !== null || row.my_humor_score !== null
+					row.my_quality_score !== null ||
+					row.my_humor_score !== null ||
+					row.my_difficulty_score !== null
 						? {
 								qualityScore: row.my_quality_score,
 								humorScore: row.my_humor_score,
+								difficultyScore: row.my_difficulty_score,
 								notes: row.my_notes,
 								createdAt: row.my_review_created_at,
 							}
 						: null,
 				avgQuality: row.avg_quality,
 				avgHumor: row.avg_humor,
+				avgDifficulty: row.avg_difficulty,
 				reviewCount: row.review_count ?? 0,
 			}));
 
@@ -851,6 +1168,7 @@ export const partyContentRouter = router({
 				contentId: z.string(),
 				qualityScore: z.number().int().min(1).max(5).nullable().optional(),
 				humorScore: z.number().int().min(1).max(5).nullable().optional(),
+				difficultyScore: z.number().int().min(1).max(5).nullable().optional(),
 				notes: z.string().nullable().optional(),
 			}),
 		)
@@ -861,13 +1179,14 @@ export const partyContentRouter = router({
 
 			const existing = await db
 				.prepare(
-					"SELECT id, quality_score, humor_score FROM party_content_reviews WHERE content_id = ? AND reviewer_user_id = ?",
+					"SELECT id, quality_score, humor_score, difficulty_score FROM party_content_reviews WHERE content_id = ? AND reviewer_user_id = ?",
 				)
 				.bind(input.contentId, reviewerUserId)
 				.first<{
 					id: string;
 					quality_score: number | null;
 					humor_score: number | null;
+					difficulty_score: number | null;
 				}>();
 
 			if (existing) {
@@ -879,13 +1198,24 @@ export const partyContentRouter = router({
 					input.humorScore !== undefined
 						? input.humorScore
 						: existing.humor_score;
+				const newDifficulty =
+					input.difficultyScore !== undefined
+						? input.difficultyScore
+						: existing.difficulty_score;
 				await db
 					.prepare(
 						`UPDATE party_content_reviews
-						 SET quality_score = ?, humor_score = ?, notes = ?, created_at = ?
+						 SET quality_score = ?, humor_score = ?, difficulty_score = ?, notes = ?, created_at = ?
 						 WHERE id = ?`,
 					)
-					.bind(newQuality, newHumor, input.notes ?? null, now, existing.id)
+					.bind(
+						newQuality,
+						newHumor,
+						newDifficulty,
+						input.notes ?? null,
+						now,
+						existing.id,
+					)
 					.run();
 
 				return { id: existing.id, created: false, updatedAt: now };
@@ -894,8 +1224,8 @@ export const partyContentRouter = router({
 			const id = crypto.randomUUID();
 			await db
 				.prepare(
-					`INSERT INTO party_content_reviews (id, content_id, reviewer_user_id, reviewer_type, quality_score, humor_score, notes, created_at)
-					 VALUES (?, ?, ?, 'human', ?, ?, ?, ?)`,
+					`INSERT INTO party_content_reviews (id, content_id, reviewer_user_id, reviewer_type, quality_score, humor_score, difficulty_score, notes, created_at)
+					 VALUES (?, ?, ?, 'human', ?, ?, ?, ?, ?)`,
 				)
 				.bind(
 					id,
@@ -903,6 +1233,7 @@ export const partyContentRouter = router({
 					reviewerUserId,
 					input.qualityScore ?? null,
 					input.humorScore ?? null,
+					input.difficultyScore ?? null,
 					input.notes ?? null,
 					now,
 				)
@@ -914,11 +1245,46 @@ export const partyContentRouter = router({
 	aiReview: adminProcedure
 		.input(
 			z.object({
-				contentIds: z.array(z.string()).min(1).max(100),
+				contentIds: z.array(z.string()).min(1).max(5000),
 				model: z.string().default("google/gemini-2.0-flash-001"),
 				dimensions: z
-					.array(z.enum(["quality", "humor"]))
-					.default(["quality", "humor"]),
+					.array(z.enum(["quality", "humor", "difficulty"]))
+					.default(["quality", "humor", "difficulty"]),
+				batchSize: z.number().int().min(1).max(100).default(25),
+				concurrency: z.number().int().min(1).max(20).default(5),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const apiKey = ctx.env.OPENROUTER_API_KEY;
+			if (!apiKey) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "OPENROUTER_API_KEY not configured",
+				});
+			}
+			return batchReviewContent({
+				db: ctx.env.DB,
+				apiKey,
+				contentIds: input.contentIds,
+				model: input.model,
+				dimensions: input.dimensions,
+				batchSize: input.batchSize,
+				concurrency: input.concurrency,
+			});
+		}),
+
+	reviewAll: adminProcedure
+		.input(
+			z.object({
+				brandId: z.string(),
+				contentType: z.string().optional(),
+				model: z.string().default("google/gemini-2.0-flash-001"),
+				dimensions: z
+					.array(z.enum(["quality", "humor", "difficulty"]))
+					.default(["quality", "humor", "difficulty"]),
+				batchSize: z.number().int().min(1).max(100).default(25),
+				concurrency: z.number().int().min(1).max(20).default(5),
+				limit: z.number().int().min(1).max(10000).default(5000),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -931,146 +1297,64 @@ export const partyContentRouter = router({
 			}
 
 			const db = ctx.env.DB;
-			const now = Date.now();
 			const botReviewerId = `bot:${input.model}`;
+			const params: unknown[] = [botReviewerId, input.brandId];
+			const UNRATEABLE_TYPES = ["wordlist"];
+			const contentTypeClause = input.contentType
+				? "AND pc.content_type = ?"
+				: `AND pc.content_type NOT IN (${UNRATEABLE_TYPES.map(() => "?").join(",")})`;
 
-			const placeholders = input.contentIds.map(() => "?").join(",");
-			const contentRows = await db
+			if (input.contentType) {
+				params.push(input.contentType);
+			} else {
+				params.push(...UNRATEABLE_TYPES);
+			}
+			params.push(input.limit);
+
+			const unreviewedResult = await db
 				.prepare(
-					`SELECT id, brand_id, content_type, body FROM party_content
-					 WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+					`SELECT pc.id FROM party_content pc
+					 LEFT JOIN party_content_reviews pcr
+					   ON pcr.content_id = pc.id AND pcr.reviewer_user_id = ?
+					 WHERE pc.brand_id = ?
+					   AND pc.deleted_at IS NULL
+					   AND pc.status = 'active'
+					   AND pcr.id IS NULL
+					   ${contentTypeClause}
+					 LIMIT ?`,
 				)
-				.bind(...input.contentIds)
-				.all<{
-					id: string;
-					brand_id: string;
-					content_type: string;
-					body: string;
-				}>();
+				.bind(...params)
+				.all<{ id: string }>();
 
-			const llmModel = createModel({ apiKey, modelOrPreset: input.model });
+			const contentIds = (unreviewedResult.results ?? []).map((row) => row.id);
+			const totalUnreviewed = contentIds.length;
 
-			let reviewed = 0;
-			let skipped = 0;
-			const errors: string[] = [];
-
-			const rateQuality = input.dimensions.includes("quality");
-			const rateHumor = input.dimensions.includes("humor");
-
-			const dimensionInstructions = [
-				rateQuality
-					? "quality_score (1-5): 1=unusable garbage, 2=poor, 3=acceptable, 4=good, 5=excellent. Consider: clarity, creativity, appropriateness for party games."
-					: null,
-				rateHumor
-					? "humor_score (1-5): 1=not funny at all, 2=mildly amusing, 3=moderately funny, 4=quite funny, 5=hilarious. Consider: wit, absurdity, party appeal."
-					: null,
-			]
-				.filter(Boolean)
-				.join("\n");
-
-			for (const row of contentRows.results ?? []) {
-				let parsedBody: Record<string, unknown>;
-				try {
-					parsedBody = JSON.parse(row.body);
-				} catch {
-					skipped++;
-					continue;
-				}
-
-				const contentText = extractItemText(parsedBody, row.content_type);
-				if (!contentText) {
-					skipped++;
-					continue;
-				}
-
-				const prompt = `Rate this party game content item.
-
-Content type: ${row.content_type}
-Brand: ${row.brand_id}
-Content: ${JSON.stringify(parsedBody)}
-
-Rate the following dimensions:
-${dimensionInstructions}
-
-Respond with valid JSON only: {"${rateQuality ? "quality_score" : ""}${rateQuality && rateHumor ? '", "' : ""}${rateHumor ? "humor_score" : ""}": number, "reasoning": "brief explanation"}`;
-
-				try {
-					const { generateObject } = await import("ai");
-					const ratingSchema = z.object({
-						...(rateQuality
-							? { quality_score: z.number().int().min(1).max(5) }
-							: {}),
-						...(rateHumor
-							? { humor_score: z.number().int().min(1).max(5) }
-							: {}),
-						reasoning: z.string(),
-					});
-
-					const result = await generateObject({
-						model: llmModel,
-						schema: ratingSchema,
-						prompt,
-						temperature: 0.3,
-					});
-
-					const rating = result.object as {
-						quality_score?: number;
-						humor_score?: number;
-						reasoning?: string;
-					};
-
-					const qualityScore = rateQuality
-						? (rating.quality_score ?? null)
-						: null;
-					const humorScore = rateHumor ? (rating.humor_score ?? null) : null;
-					const notes = rating.reasoning ?? null;
-
-					const existing = await db
-						.prepare(
-							"SELECT id FROM party_content_reviews WHERE content_id = ? AND reviewer_user_id = ?",
-						)
-						.bind(row.id, botReviewerId)
-						.first<{ id: string }>();
-
-					if (existing) {
-						await db
-							.prepare(
-								`UPDATE party_content_reviews
-								 SET quality_score = ?, humor_score = ?, notes = ?, created_at = ?
-								 WHERE id = ?`,
-							)
-							.bind(qualityScore, humorScore, notes, now, existing.id)
-							.run();
-					} else {
-						const reviewId = crypto.randomUUID();
-						await db
-							.prepare(
-								`INSERT INTO party_content_reviews
-								 (id, content_id, reviewer_user_id, reviewer_type, model, quality_score, humor_score, notes, created_at)
-								 VALUES (?, ?, ?, 'bot', ?, ?, ?, ?, ?)`,
-							)
-							.bind(
-								reviewId,
-								row.id,
-								botReviewerId,
-								input.model,
-								qualityScore,
-								humorScore,
-								notes,
-								now,
-							)
-							.run();
-					}
-
-					reviewed++;
-				} catch (e) {
-					const msg = e instanceof Error ? e.message : String(e);
-					console.error(`[aiReview] ${row.id}: ${msg}`);
-					errors.push(`${row.id}: ${msg}`);
-				}
+			if (totalUnreviewed === 0) {
+				return {
+					totalUnreviewed,
+					reviewed: 0,
+					skipped: 0,
+					errors: [],
+					botReviewerId,
+					totalChunks: 0,
+					failedChunks: 0,
+				};
 			}
 
-			return { reviewed, skipped, errors, botReviewerId };
+			const reviewResult = await batchReviewContent({
+				db,
+				apiKey,
+				contentIds,
+				model: input.model,
+				dimensions: input.dimensions,
+				batchSize: input.batchSize,
+				concurrency: input.concurrency,
+			});
+
+			return {
+				totalUnreviewed,
+				...reviewResult,
+			};
 		}),
 
 	softDelete: adminProcedure
@@ -1226,7 +1510,7 @@ Respond with valid JSON only: {"${rateQuality ? "quality_score" : ""}${rateQuali
 
 			const reviewsResult = await db
 				.prepare(
-					`SELECT id, content_id, reviewer_user_id, quality_score, humor_score, notes, created_at
+					`SELECT id, content_id, reviewer_user_id, quality_score, humor_score, difficulty_score, notes, created_at
 					 FROM party_content_reviews WHERE content_id = ? ORDER BY created_at DESC`,
 				)
 				.bind(input.id)
@@ -1234,8 +1518,9 @@ Respond with valid JSON only: {"${rateQuality ? "quality_score" : ""}${rateQuali
 					id: string;
 					content_id: string;
 					reviewer_user_id: string;
-					quality_score: number;
-					humor_score: number;
+					quality_score: number | null;
+					humor_score: number | null;
+					difficulty_score: number | null;
 					notes: string | null;
 					created_at: number;
 				}>();
@@ -1271,6 +1556,7 @@ Respond with valid JSON only: {"${rateQuality ? "quality_score" : ""}${rateQuali
 					reviewerUserId: r.reviewer_user_id,
 					qualityScore: r.quality_score,
 					humorScore: r.humor_score,
+					difficultyScore: r.difficulty_score,
 					notes: r.notes,
 					createdAt: r.created_at,
 				})),

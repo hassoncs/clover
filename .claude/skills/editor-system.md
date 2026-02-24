@@ -44,6 +44,20 @@ interface EditorContextValue {
 export function useEditor(): EditorContextValue;
 ```
 
+## Live Preview & Hot Reload
+
+The editor uses a live preview system with incremental hot-reload:
+
+- **`HotReloadOrchestrator`** stores previous payloads/hashes and determines hot-swap vs full reload per tag, in fixed order
+- **`TagHotReloadHandler`** contract: each tag (world, prefabs, entities, rules, scripts, effects) has a handler with `canHotSwap` policy
+- **Edit mode**: Incremental hot-swap via 7 generic tag handlers when `canHotSwap` returns true
+- **Play mode**: Always full reload — bypasses `canHotSwap` entirely
+- **Handler mapping**: world→`setupWorld`, prefabs→`registerPrefabs`+empty entity reset, entities→`clearEntities`+`loadEntities`, rules/scripts→runtime methods, effects→`hotSwapShader`
+- **`LivePreviewController`** polls workspace for changes; tests should use `vi.hoisted(() => vi.fn())` for mocked queries
+- **`reset()`** rebuilds the orchestrator instance — assert via bridge side-effects (`setupWorld` call count), not pre-reset spy refs
+- **`TagPayloadResolver`** tolerates both wrapped (`{ rules: [...] }`) and raw array JSON payloads
+- **Phase 5 (PrefabReconciler)**: Deferred until V1 latency measurements show need. `PrefabDiff` uses 3 categories: visual, physics, structural
+
 ## Gotchas
 
 - Code editor is **CodeMirror** (`@codemirror/*`), NOT Monaco
