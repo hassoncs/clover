@@ -53,8 +53,8 @@ importers:
         version: 0.81.4(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.1.0)
     devDependencies:
       '@chriscode/devmux':
-        specifier: ^1.5.5
-        version: 1.5.5
+        specifier: ^1.5.6
+        version: 1.5.6
       '@chriscode/hush':
         specifier: ^5.0.6
         version: 5.0.6
@@ -2206,8 +2206,8 @@ packages:
   '@cf-wasm/quickjs@0.2.4':
     resolution: {integrity: sha512-HHlBjfloy/egMwOA8gOQUoncjCjNgK4LzVWWT7pJQoYC9ddb+zHlaCtZmNdQD4ZhPXxwo0WxxYYiV0fCBHITvg==}
 
-  '@chriscode/devmux@1.5.5':
-    resolution: {integrity: sha512-9XZAyEesMkHDYBRUTR2BhpfywRddO2INICZKG97hHDIh9MuxwB/LQinMfaxmLAjVyIQAMximHbHTobpCV6Kcwg==}
+  '@chriscode/devmux@1.5.6':
+    resolution: {integrity: sha512-O0dNvrNgwArkMNovmowWQExRlehozUll6izuQRKsLmBtwUD2jYqVATeMvA6ysyT9kvewrXAI1evroeAN83h0VA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -9129,12 +9129,6 @@ packages:
     resolution: {integrity: sha512-OBatVyC/N7SCW/FaDHrSd+vn0o5cS855TOmYi4OkdWUMSJCET/xip//ch8xGUvtr3i44X9LVyWwQlRMTN3pwSA==}
     engines: {node: '>=10'}
 
-  portless@0.4.1:
-    resolution: {integrity: sha512-q/YrrtEfrPBMgdk4VXLmRaxqVbFFdnBA2wHu4c16p6cAb+INzOKRQTrqFO7NcD9R9l/BQJTJt6w6NYtODPiqCg==}
-    engines: {node: '>=20'}
-    os: [darwin, linux]
-    hasBin: true
-
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -12408,13 +12402,12 @@ snapshots:
       '@jitl/quickjs-wasmfile-release-sync': 0.31.0
       quickjs-emscripten-core: 0.31.0
 
-  '@chriscode/devmux@1.5.5':
+  '@chriscode/devmux@1.5.6':
     dependencies:
       citty: 0.1.6
       execa: 9.6.1
       fkill: 10.0.3
       pid-port: 2.0.1
-      portless: 0.4.1
       ps-list: 9.0.0
 
   '@chriscode/hush@5.0.6':
@@ -21369,10 +21362,6 @@ snapshots:
   polished@4.3.1:
     dependencies:
       '@babel/runtime': 7.28.6
-
-  portless@0.4.1:
-    dependencies:
-      chalk: 5.6.2
 
   possible-typed-array-names@1.1.0: {}
 
