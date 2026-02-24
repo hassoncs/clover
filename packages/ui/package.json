@@ -32,13 +32,15 @@
 		"@slopcade/theme": "workspace:*",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"nativewind": "^4.2.1",
 		"expo-haptics": "~15.0.8",
+		"expo-linear-gradient": "^15.0.8",
+		"nativewind": "^4.2.1",
 		"react": "19.1.0",
 		"react-native": "0.81.4",
 		"react-native-gesture-handler": "^2.30.0",
 		"react-native-reanimated": "^4.1.6",
 		"react-native-sortables": "^1.9.4",
+		"swiper": "^12.1.2",
 		"tailwind-merge": "^3.4.0"
 	},
 	"scripts": {

@@ -13,8 +13,8 @@ interface GameHallTileProps {
 	onPress: () => void;
 }
 
-const TILE_WIDTH = 200;
-const TILE_HEIGHT = 260;
+const TILE_WIDTH = 320;
+const TILE_HEIGHT = 256;
 
 export function GameHallTile({
 	template,

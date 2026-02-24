@@ -54,6 +54,8 @@ app.use(
 			if (origin.endsWith(".slopcade.app")) return origin;
 			if (origin.endsWith(".slopcade.com")) return origin;
 			if (origin.endsWith(".amen.games")) return origin;
+			// devmux proxy: *.slopcade.localhost / *.amen.localhost
+			if (origin.match(/\.localhost(:\d+)?$/)) return origin;
 			return undefined;
 		},
 		credentials: true,

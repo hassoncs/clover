@@ -161,3 +161,7 @@ godot_project/reports/
 
 # Code search index (codesearch)
 .codesearch.db/
+
+# Generated audio/sound assets (synced to R2 separately)
+r2/audio/
+r2/sounds/

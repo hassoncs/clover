@@ -141,6 +141,9 @@ export default function BrowseScreen() {
 							selectedId={selectedId}
 							onSelect={setSelectedId}
 							getImageUrl={(t) => t.thumbnailUrl}
+							tileWidth={320}
+							tileHeight={256}
+							reflectionColor="#1B3A6B"
 							renderTile={(template, selected, onPress) => (
 								<GameHallTile
 									template={template}
