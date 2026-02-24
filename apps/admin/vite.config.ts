@@ -7,5 +7,6 @@ export default defineConfig({
 	envPrefix: ["VITE_", "EXPO_PUBLIC_"],
 	server: {
 		port: 8787,
+		host: true,
 	},
 });

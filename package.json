@@ -51,7 +51,6 @@
 		"deploy:amen:web": "cd app && BRAND_ID=amen pnpm deploy:amen",
 		"fix:hermes-dsym": "node scripts/fix-hermes-dsym.mjs",
 		"generate:ui": "pnpm --filter @slopcade/api generate:ui",
-
 		"generate:editor-bundle": "node scripts/bundle-native-editor.mjs",
 		"content": "pnpm --filter @slopcade/content-pipeline",
 		"generate:bridge": "npx tsx scripts/bridge-codegen.ts",
@@ -63,9 +62,8 @@
 		"knip": "knip"
 	},
 	"devDependencies": {
-		"@chriscode/devmux": "^1.4.0",
+		"@chriscode/devmux": "^1.5.5",
 		"@chriscode/hush": "^5.0.6",
-
 		"@gltf-transform/cli": "^4.3.0",
 		"@types/node": "^25.0.10",
 		"backlog.md": "^1.35.7",

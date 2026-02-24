@@ -4,6 +4,9 @@
 	"defaults": {
 		"startupTimeoutSeconds": 120
 	},
+	"proxy": {
+		"enabled": true
+	},
 	"services": {
 		"game-inspector": {
 			"cwd": "packages/game-inspector-mcp",
@@ -44,6 +47,7 @@
 			"comment": "Slopcade Metro (port 8085). Can run simultaneously with metro-amen (port 8086).",
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
 			"health": { "type": "port", "port": 8085 },
+			"proxy": false,
 			"dashboard": false,
 			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
@@ -52,6 +56,7 @@
 			"comment": "Amen Metro (port 8086). Can run simultaneously with metro (port 8085).",
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- npx expo start --dev-client --port 8086",
 			"health": { "type": "port", "port": 8086 },
+			"proxy": false,
 			"dashboard": false,
 			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
@@ -73,6 +78,7 @@
 			"cwd": "apps/slopcade",
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
 			"health": { "type": "port", "port": 8085 },
+			"proxy": false,
 			"dashboard": true,
 			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
@@ -81,6 +87,7 @@
 			"comment": "Amen web (port 8086). Can run simultaneously with web (port 8085).",
 			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8086",
 			"health": { "type": "port", "port": 8086 },
+			"proxy": false,
 			"dashboard": true,
 			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
@@ -92,7 +99,7 @@
 		},
 		"admin": {
 			"cwd": "apps/admin",
-			"comment": "Admin web app (port 8787). Supabase creds injected via hush -t app.",
+			"comment": "Admin web app. Supabase creds injected via hush -t app.",
 			"command": "npx hush run -t app -- pnpm dev",
 			"health": { "type": "port", "port": 8787 },
 			"dashboard": true,
