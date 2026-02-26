@@ -7,35 +7,35 @@ import { useCallback, useState } from "react";
 const EDITOR_MODULES = [
 	{
 		id: "panels/explorer",
-		import: () => import("@/components/editor/panels/ExplorerPanel"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "panels/hierarchy",
-		import: () => import("@/components/editor/panels/HierarchyPanel"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "panels/properties",
-		import: () => import("@/components/editor/panels/PropertiesPanel"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "panels/assets",
-		import: () => import("@/components/editor/panels/AssetsPanel"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "panels/layers",
-		import: () => import("@/components/editor/panels/LayersPanel"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "panels/chat",
-		import: () => import("@/components/editor/ChatSidebar"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "code-editor",
-		import: () => import("@/components/editor/code-editor"),
+		import: () => import("@slopcade/editor"),
 	},
 	{
 		id: "stage-container",
-		import: () => import("@/components/editor/StageContainer"),
+		import: () => import("@slopcade/editor"),
 	},
 ] as const;
 

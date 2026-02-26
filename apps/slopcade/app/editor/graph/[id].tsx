@@ -4,12 +4,11 @@ import type {
 } from "@slopcade/shared/graph-adapters";
 import { createEmptyDocument } from "@slopcade/shared/graph-core";
 import { useLocalSearchParams } from "expo-router";
-import { Suspense, useMemo } from "react";
+import React, { Suspense, useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
-import React from "react";
 
 const GraphEditor = React.lazy(() =>
-	import("@/components/editor/graph").then((m) => ({
+	import("@slopcade/editor").then((m) => ({
 		default: m.GraphEditor,
 	})),
 );

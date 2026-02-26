@@ -1,10 +1,10 @@
+import { useDesignDocument } from "@slopcade/editor";
 import {
 	createEmptyDesignDocument,
 	type DesignDocument,
 } from "@slopcade/shared";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useDesignDocument } from "../useDesignDocument";
 
 const saveCacheSetDataMock = vi.fn();
 const mutateAsyncMock = vi.fn();

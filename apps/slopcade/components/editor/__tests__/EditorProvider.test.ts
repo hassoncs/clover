@@ -1,22 +1,26 @@
+import { EditorProvider, useEditor } from "@slopcade/editor";
 import type { GameDefinition } from "@slopcade/shared";
 import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EditorProvider, useEditor } from "../EditorProvider";
 
-vi.mock("../usePackageReadiness", () => ({
-	usePackageReadiness: () => ({
-		ready: false,
-		errors: [],
-		warnings: [],
-		isChecking: false,
-		isCompiling: false,
-		checkNow: vi.fn(),
-		triggerCompile: vi.fn(),
-		lastChecked: undefined,
-		buildId: undefined,
-	}),
-}));
+vi.mock("@slopcade/editor", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@slopcade/editor")>();
+	return {
+		...actual,
+		usePackageReadiness: () => ({
+			ready: false,
+			errors: [],
+			warnings: [],
+			isChecking: false,
+			isCompiling: false,
+			checkNow: vi.fn(),
+			triggerCompile: vi.fn(),
+			lastChecked: undefined,
+			buildId: undefined,
+		}),
+	};
+});
 
 vi.mock("@/lib/utils/storage", () => ({
 	getStorageItem: vi.fn().mockResolvedValue(false),

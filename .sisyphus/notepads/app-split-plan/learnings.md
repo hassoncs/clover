@@ -179,3 +179,73 @@ All 4 apps fail tsc with exit code 2, but ONLY due to pre-existing errors unrela
 
 ### knip outcome
 knip failed to run (`tailwind.config` missing for `apps/shader-editor/`). Manual analysis was used instead to identify dead imports. Manual scan is more reliable for this specific pattern (shim files).
+
+## [2026-02-26] Task 19: Migrate apps/amen imports to @slopcade/party
+
+### What was migrated
+
+Updated **7 files** to import directly from `@slopcade/party` instead of `@/components/party/...` or `@/lib/party/...`:
+
+| File | Symbols migrated |
+|------|-----------------|
+| `apps/amen/app/party/play.tsx` | `PartyGameRenderer`, `PartyProvider`, `useParty`, `usePartyMusic`, 18 `register*Phases` |
+| `apps/amen/app/party/host.tsx` | `GameSettingsSheet`, `LobbyCountdown`, `PlayerChip`, `PartyProvider`, `useParty` |
+| `apps/amen/app/join.tsx` | `AvatarPicker` |
+| `apps/amen/app/(tabs)/browse.tsx` | `createPartyRoom` |
+| `apps/amen/app/how-to-play/[templateId].tsx` | `PartyTemplate` (type) |
+| `apps/amen/components/browse/GameHallTile.tsx` | `PartyTemplate` (type) |
+| `apps/amen/hooks/useBrowsePartyGames.ts` | `PartyTemplate` (type) |
+
+### Shims deleted
+- `apps/amen/components/party/` — entire directory (25 files including `chroma/` and `results/` subdirs)
+- `apps/amen/lib/party/` — entire directory (28 files)
+- All files were pure `export * from "@slopcade/party"` shims (some used named: `export { X } from "@slopcade/party"`)
+
+### Bonus: game-runtime cross-app import fixed
+- `packages/game-runtime/src/systems/runner/wrappers/NetworkRuntimeSystem.ts` imported `@/lib/party/usePartyConnection` (via amen's `@/` tsconfig alias)
+- That shim was deleted, causing a new tsc error
+- Fixed by updating to `import type { ConnectionStatus, UsePartyConnectionResult } from "@slopcade/party"`
+
+### Verification
+- `npx tsc --noEmit -p apps/amen/tsconfig.json` — only pre-existing errors remain (shaders, ui/amen/animation, GameHallCarousel)
+- Zero new errors introduced
+
+## Task 20: Migrate slopcade creator imports to packages (completed)
+
+### Shim structure found
+- `apps/slopcade/components/social/` — 11 files, ALL pure shims (`export * from "@slopcade/social"`)
+- `apps/slopcade/components/editor/` — entire directory tree was shims (`export * from "@slopcade/editor"`), including subdirectories (graph/, inspector/, preview/, wireframe/, panels/, etc.)
+
+### Route files updated (social → @slopcade/social)
+- `app/(tabs)/feed.tsx` — CommentsBottomSheet, LikersBottomSheet, ReportModal
+- `app/discover.tsx` — FollowButton
+- `app/game-detail/[id].tsx` — GameComments, LikeButton, ReportModal, StarRating
+- `app/notifications.tsx` — NotificationItem
+- `app/user/[id].tsx` — FollowButton
+- `app/user/followers.tsx` — FollowButton
+
+### Route files updated (editor → @slopcade/editor)
+- `app/editor/[id].tsx` — EditorProvider, EditorTopBar, ResponsiveEditorLayout, useEditorCommandHandler, WorkspaceFilesProvider
+- `app/editor/graph/[id].tsx` — dynamic import of GraphEditor (React.lazy)
+- `lib/editor/hooks/useEditorPreloader.ts` — 8 dynamic imports for preloading
+
+### Test files updated
+- `components/editor/__tests__/EditorProvider.test.ts` — updated to import from `@slopcade/editor`; mock changed to `vi.mock("@slopcade/editor", async (importOriginal) => ...)` pattern
+- `components/editor/__tests__/useDesignDocument.test.ts` — updated to import from `@slopcade/editor`
+- `components/editor/__tests__/DesignCanvasHitTest.test.ts` — updated to import from `@slopcade/editor`
+- `components/editor/panels/WireframePanel.test.tsx` — updated to import from `@slopcade/editor`; mock updated
+- Deleted duplicate tests (identical to package versions): `wireframe/__tests__/LayoutAdapter.test.ts`, `panels/__tests__/useDesignImageResolver.test.ts`
+
+### Shims deleted
+- Entire `apps/slopcade/components/social/` directory
+- All `*.tsx`/`*.ts` shim files from `apps/slopcade/components/editor/` (top-level and subdirectories)
+- Remaining non-shim files kept: `__tests__/`, `code-editor/native/editor-entry.js`, `graph/README.md`, `panels/__fixtures__/`
+
+### Gotcha: grep missed dynamic imports
+Initial grep for `@/components/social/` and `@/components/editor/` in `app/` missed:
+- `React.lazy(() => import("@/components/editor/graph"))` in `app/editor/graph/[id].tsx`
+- Dynamic imports in `lib/editor/hooks/useEditorPreloader.ts` (outside `app/`)
+Always grep for dynamic imports too, and search `lib/` not just `app/`.
+
+### tsc result
+Only pre-existing GLSL module errors remain. No new errors introduced.
