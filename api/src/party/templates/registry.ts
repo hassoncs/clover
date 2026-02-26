@@ -9,6 +9,8 @@ import {
 	type PartyGameDefinition,
 } from "./registry-definitions";
 
+export { DEFINITION_BY_TEMPLATE_ID } from "./registry-definitions";
+
 type D1Database = import("@cloudflare/workers-types").D1Database;
 
 type PartyTemplateRunner = (room: ServerScriptRoom) => Promise<void>;
