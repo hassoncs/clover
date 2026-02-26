@@ -122,6 +122,19 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 - Implemented hit testing by converting screen coordinates to world coordinates using the camera transform, then checking frame and element bounds in reverse z-index order.
 - Used `TouchableWithoutFeedback` to capture tap events and calculate the tapped element.
 
+## [2026-02-26] T13 - Design Stage Generator
+
+### Design stage generation pattern
+- Implemented `designStage` with `generateObject` + `DesignDocumentSchema`, using planning artifact text (`context.planningDoc` fallback to `planningDocJson`) as primary prompt context.
+- Added post-schema quality gates: reject outputs with zero frames or with no elements across frames.
+- Validation failures retry up to 2 attempts; if all attempts fail, stage returns `VALIDATION_FAILED` with explicit `validationIssues` in checkpoint and persists no design artifact.
+- Success path persists `agent-runs/{runId}/steps/{stepIndex}/design/output.json` and checkpoint includes `designVersion` + `designFrameCount` plus token metrics/provider/model.
+
+### Testing approach
+- Added `api/src/ai/agent/stages/design.test.ts` with direct `designStage` tests.
+- Happy path verifies artifact persistence and checkpoint metadata when model output is valid.
+- Malformed/invalid output path verifies validation failure and ensures `ASSETS.put` is never called for `output.json`.
+
 ## Design Document Versioning & Migration (2026-02-25)
 - Implemented a migration pipeline for design documents to handle schema evolution.
 - Current version is "1.0".
