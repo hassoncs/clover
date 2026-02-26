@@ -3,6 +3,27 @@ import type { ModelMessage } from "ai";
 import { stepCountIs, streamText } from "ai";
 import { nanoid } from "nanoid";
 
+type DesignFailureReason =
+	| "VALIDATION_FAILED"
+	| "MODEL_ERROR"
+	| "MISSING_PREREQUISITE";
+
+const DESIGN_FAILURE_MESSAGES: Record<DesignFailureReason, string> = {
+	VALIDATION_FAILED: "Design generation produced invalid output. Retrying...",
+	MODEL_ERROR: "Design generation encountered an error.",
+	MISSING_PREREQUISITE: "Planning must complete before design generation.",
+};
+
+export function buildDesignStageFailedEvent(
+	failureReason: DesignFailureReason,
+): Extract<AgUiEvent, { type: "DESIGN_STAGE_FAILED" }> {
+	return {
+		type: "DESIGN_STAGE_FAILED",
+		failureReason,
+		message: DESIGN_FAILURE_MESSAGES[failureReason],
+	};
+}
+
 import { CHAT_STAGE_PROMPT } from "@/agent/engine/prompts";
 import { assembleSystemPrompt, getSkills, matchSkill } from "@/ai/skills";
 
@@ -360,6 +381,10 @@ export async function handleChatStream(
 		try {
 			console.log("[stream-handler] Starting stream for thread:", threadId);
 			await emit({ type: "RUN_STARTED", threadId, runId });
+
+			if (ctx.pendingDesignFailure) {
+				await emit(buildDesignStageFailedEvent(ctx.pendingDesignFailure));
+			}
 
 			console.log("[stream-handler] Beginning fullStream iteration");
 			for await (const part of result.fullStream) {

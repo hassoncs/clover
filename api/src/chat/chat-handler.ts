@@ -67,6 +67,10 @@ export interface ChatHandlerContext {
 	costPer1kTokensMicros?: number;
 	env?: import("@/trpc/context").Env;
 	designContext?: DesignSelectionContext;
+	pendingDesignFailure?:
+		| "VALIDATION_FAILED"
+		| "MODEL_ERROR"
+		| "MISSING_PREREQUISITE";
 }
 
 export interface PendingAskUser {

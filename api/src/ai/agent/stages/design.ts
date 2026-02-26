@@ -51,6 +51,15 @@ export async function designStage(
 	let latestValidationIssues: string[] = [];
 
 	for (let attempt = 1; attempt <= MAX_VALIDATION_RETRIES; attempt += 1) {
+		console.log(
+			JSON.stringify({
+				event: "design.attempt.start",
+				attempt,
+				runId: context.runId,
+				stepIndex: context.stepIndex,
+			}),
+		);
+
 		try {
 			const generated = await generateObject({
 				model,
@@ -74,7 +83,16 @@ export async function designStage(
 			const parsed = DesignDocumentSchema.safeParse(generated.object);
 			if (!parsed.success) {
 				latestValidationIssues = parsed.error.issues.map(
-					(issue) => issue.message,
+					(issue) => issue.path.join(".") || issue.message,
+				);
+				console.log(
+					JSON.stringify({
+						event: "design.validation.failed",
+						attempt,
+						runId: context.runId,
+						stepIndex: context.stepIndex,
+						issues: latestValidationIssues,
+					}),
 				);
 				continue;
 			}
@@ -82,6 +100,15 @@ export async function designStage(
 			const qualityIssues = collectValidationIssues(parsed.data);
 			if (qualityIssues.length > 0) {
 				latestValidationIssues = qualityIssues;
+				console.log(
+					JSON.stringify({
+						event: "design.validation.failed",
+						attempt,
+						runId: context.runId,
+						stepIndex: context.stepIndex,
+						issues: latestValidationIssues,
+					}),
+				);
 				continue;
 			}
 
@@ -92,6 +119,21 @@ export async function designStage(
 				{
 					httpMetadata: { contentType: "application/json" },
 				},
+			);
+
+			const totalElementCount = parsed.data.frames.reduce(
+				(sum, frame) => sum + frame.elements.length,
+				0,
+			);
+
+			console.log(
+				JSON.stringify({
+					event: "design.succeeded",
+					runId: context.runId,
+					stepIndex: context.stepIndex,
+					frameCount: parsed.data.frames.length,
+					elementCount: totalElementCount,
+				}),
 			);
 
 			const checkpoint: DesignStageCheckpoint = {
@@ -114,12 +156,22 @@ export async function designStage(
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "design stage failed";
+			console.log(
+				JSON.stringify({
+					event: "design.model.error",
+					attempt,
+					runId: context.runId,
+					stepIndex: context.stepIndex,
+					error: message,
+				}),
+			);
 			return {
 				status: "failed",
 				failureReason: "MODEL_ERROR",
 				errorMessage: `MODEL_ERROR: ${message}`,
 				checkpoint: {
 					stage: "design",
+					failureReason: "MODEL_ERROR",
 					error: message,
 				},
 				costMicros: 0,
@@ -137,6 +189,7 @@ export async function designStage(
 		errorMessage: `VALIDATION_FAILED: ${latestValidationIssues[0] ?? "invalid design output"}`,
 		checkpoint: {
 			stage: "design",
+			failureReason: "VALIDATION_FAILED",
 			validationIssues: latestValidationIssues,
 			retries: MAX_VALIDATION_RETRIES,
 		},

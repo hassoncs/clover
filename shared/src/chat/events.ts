@@ -58,4 +58,12 @@ export type AgUiEvent =
 			type: "EDITOR_COMMAND";
 			command: string;
 			payload: Record<string, unknown>;
+	  }
+	| {
+			type: "DESIGN_STAGE_FAILED";
+			failureReason:
+				| "VALIDATION_FAILED"
+				| "MODEL_ERROR"
+				| "MISSING_PREREQUISITE";
+			message: string;
 	  };

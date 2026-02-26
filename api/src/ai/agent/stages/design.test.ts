@@ -165,6 +165,7 @@ describe("designStage", () => {
 			);
 			expect(result.checkpoint).toMatchObject({
 				stage: "design",
+				failureReason: "VALIDATION_FAILED",
 				retries: 2,
 			});
 		}
@@ -172,5 +173,77 @@ describe("designStage", () => {
 		expect(mockGenerateObject).toHaveBeenCalledTimes(2);
 		const put = context.env.ASSETS.put as unknown as ReturnType<typeof vi.fn>;
 		expect(put).not.toHaveBeenCalled();
+	});
+
+	it("classifies model errors with MODEL_ERROR and includes failureReason in checkpoint", async () => {
+		const context = createContext();
+		const mockGenerateObject = vi.mocked(generateObject);
+
+		mockGenerateObject.mockRejectedValue(
+			new Error("model rate limit exceeded"),
+		);
+
+		const result = await designStage(context);
+
+		expect(result.status).toBe("failed");
+		if (result.status === "failed") {
+			expect(result.failureReason).toBe("MODEL_ERROR");
+			expect(result.errorMessage).toContain("MODEL_ERROR");
+			expect(result.checkpoint).toMatchObject({
+				stage: "design",
+				failureReason: "MODEL_ERROR",
+				error: "model rate limit exceeded",
+			});
+		}
+
+		expect(mockGenerateObject).toHaveBeenCalledTimes(1);
+		const put = context.env.ASSETS.put as unknown as ReturnType<typeof vi.fn>;
+		expect(put).not.toHaveBeenCalled();
+	});
+
+	it("includes validationIssues in checkpoint when quality checks fail", async () => {
+		const context = createContext();
+		const mockGenerateObject = vi.mocked(generateObject);
+		const now = Date.now();
+
+		mockGenerateObject.mockResolvedValue({
+			object: {
+				version: "1.0",
+				metadata: {
+					title: "Sky Sprint",
+					gameId: "game-1",
+					createdAt: now,
+					updatedAt: now,
+				},
+				frames: [
+					{
+						id: "frame-empty",
+						title: "Empty Frame",
+						width: 1080,
+						height: 1920,
+						position: { x: 0, y: 0 },
+						elements: [],
+					},
+				],
+			},
+			usage: {
+				inputTokens: 15,
+				outputTokens: 30,
+			},
+		} as never);
+
+		const result = await designStage(context);
+
+		expect(result.status).toBe("failed");
+		if (result.status === "failed") {
+			expect(result.failureReason).toBe("VALIDATION_FAILED");
+			expect(result.checkpoint).toMatchObject({
+				stage: "design",
+				failureReason: "VALIDATION_FAILED",
+				validationIssues: expect.arrayContaining([
+					expect.stringContaining("element"),
+				]),
+			});
+		}
 	});
 });
