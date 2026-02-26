@@ -68,7 +68,7 @@ function makeGeneratedGame(): GameDefinition {
 function makeDesignDocument(): DesignDocument {
 	const now = Date.now();
 	return {
-		version: "1.0",
+		version: "1.1",
 		metadata: {
 			title: "Neon Hopper",
 			gameId: "game-1",

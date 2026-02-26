@@ -50,7 +50,7 @@ function createContext(): AgentExecutionStageContext {
 function makeValidDesignDocument(): DesignDocument {
 	const now = Date.now();
 	return {
-		version: "1.0",
+		version: "1.1",
 		metadata: {
 			title: "Sky Sprint",
 			gameId: "game-1",
@@ -121,7 +121,7 @@ describe("designStage", () => {
 			expect(result.outputTokens).toBe(91);
 			expect(result.checkpoint).toMatchObject({
 				stage: "design",
-				designVersion: "1.0",
+				designVersion: "1.1",
 				designFrameCount: 1,
 			});
 		}
@@ -140,7 +140,7 @@ describe("designStage", () => {
 
 		mockGenerateObject.mockResolvedValue({
 			object: {
-				version: "1.0",
+				version: "1.1",
 				metadata: {
 					title: "Sky Sprint",
 					gameId: "game-1",
@@ -208,7 +208,7 @@ describe("designStage", () => {
 
 		mockGenerateObject.mockResolvedValue({
 			object: {
-				version: "1.0",
+				version: "1.1",
 				metadata: {
 					title: "Sky Sprint",
 					gameId: "game-1",

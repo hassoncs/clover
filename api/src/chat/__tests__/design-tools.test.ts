@@ -22,7 +22,7 @@ function makeDesignDocument(
 	overrides?: Partial<DesignDocument>,
 ): DesignDocument {
 	return {
-		version: "1.0",
+		version: "1.1",
 		metadata: {
 			title: "Test Design",
 			gameId: GAME_ID,
@@ -81,7 +81,7 @@ describe("readDesignDocument", () => {
 		expect(gitService.readFile).toHaveBeenCalledWith(GAME_ID, "design.json");
 		expect(result.ok).toBe(true);
 		expect(result.document).toMatchObject({
-			version: "1.0",
+			version: "1.1",
 			frames: [{ id: "frame-1", title: "Home Screen" }],
 		});
 	});
