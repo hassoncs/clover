@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { ChatConversation } from "@/components/create-game/ChatConversation";
 import { useTheme } from "@/lib/theme";
+import { useEditor } from "./EditorProvider";
 import { useEditorChatSession } from "./useEditorChatSession";
 
 const isWeb = Platform.OS === "web";
@@ -50,6 +51,7 @@ export function ChatSidebar({ style }: ChatSidebarProps) {
 		pendingQuestions,
 		error,
 	} = useEditorChatSession();
+	const { designPhase } = useEditor();
 
 	return (
 		<View
@@ -60,6 +62,18 @@ export function ChatSidebar({ style }: ChatSidebarProps) {
 			{!isWeb && (
 				<View style={[styles.header, { borderBottomColor: c.border }]}>
 					<Text style={[styles.headerTitle, { color: c.text }]}>Chat</Text>
+				</View>
+			)}
+			{designPhase !== "idle" && (
+				<View
+					style={[
+						styles.phaseBanner,
+						{ backgroundColor: c.surfaceHover, borderBottomColor: c.border },
+					]}
+				>
+					<Text style={[styles.phaseBannerText, { color: c.textSecondary }]}>
+						Phase: {designPhase.toUpperCase()}
+					</Text>
 				</View>
 			)}
 			{error && <ChatErrorBanner message={error} />}
@@ -101,5 +115,18 @@ const styles = StyleSheet.create({
 		color: "#F87171",
 		fontSize: 12,
 		lineHeight: 16,
+	},
+	phaseBanner: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+		borderBottomWidth: 1,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	phaseBannerText: {
+		fontSize: 11,
+		fontWeight: "600",
+		letterSpacing: 0.5,
 	},
 });

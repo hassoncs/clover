@@ -44,20 +44,22 @@ function makeWrapper(gameId = "game-1") {
 }
 
 describe("EditorProvider — design selection state", () => {
-	it("initial state has all design fields as null/idle", () => {
+	it("initial state has all design fields as null/idle", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
 
 		expect(result.current.selectedDesignFrameId).toBeNull();
 		expect(result.current.selectedDesignElementId).toBeNull();
 		expect(result.current.designMode).toBe("idle");
 	});
 
-	it("SELECT_DESIGN_FRAME sets frameId and clears elementId", () => {
+	it("SELECT_DESIGN_FRAME sets frameId and clears elementId", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
 
 		act(() => {
 			result.current.selectDesignElement("el-1", "frame-A");
@@ -73,10 +75,11 @@ describe("EditorProvider — design selection state", () => {
 		expect(result.current.selectedDesignElementId).toBeNull();
 	});
 
-	it("SELECT_DESIGN_ELEMENT sets both frameId and elementId", () => {
+	it("SELECT_DESIGN_ELEMENT sets both frameId and elementId", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
 
 		act(() => {
 			result.current.selectDesignElement("el-2", "frame-C");
@@ -86,10 +89,11 @@ describe("EditorProvider — design selection state", () => {
 		expect(result.current.selectedDesignElementId).toBe("el-2");
 	});
 
-	it("CLEAR_DESIGN_SELECTION resets both ids to null and mode to idle", () => {
+	it("CLEAR_DESIGN_SELECTION resets both ids to null and mode to idle", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
 
 		act(() => {
 			result.current.selectDesignElement("el-3", "frame-D");
@@ -109,10 +113,11 @@ describe("EditorProvider — design selection state", () => {
 		expect(result.current.designMode).toBe("idle");
 	});
 
-	it("SET_DESIGN_MODE updates designMode", () => {
+	it("SET_DESIGN_MODE updates designMode", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
 
 		act(() => {
 			result.current.setDesignMode("pan");
@@ -127,10 +132,38 @@ describe("EditorProvider — design selection state", () => {
 		expect(result.current.designMode).toBe("select");
 	});
 
-	it("mode transition live → author preserves design selection", () => {
+	it("SET_DESIGN_PHASE updates designPhase", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
+
+		expect(result.current.designPhase).toBe("idle");
+
+		act(() => {
+			result.current.setDesignPhase("designing");
+		});
+
+		expect(result.current.designPhase).toBe("designing");
+
+		act(() => {
+			result.current.setDesignPhase("approved");
+		});
+
+		expect(result.current.designPhase).toBe("approved");
+
+		act(() => {
+			result.current.setDesignPhase("implementing");
+		});
+
+		expect(result.current.designPhase).toBe("implementing");
+	});
+
+	it("mode transition live → author preserves design selection", async () => {
+		const { result } = renderHook(() => useEditor(), {
+			wrapper: makeWrapper(),
+		});
+		await act(async () => {});
 
 		act(() => {
 			result.current.selectDesignFrame("frame-E");
@@ -154,10 +187,11 @@ describe("EditorProvider — design selection state", () => {
 		expect(result.current.designMode).toBe("select");
 	});
 
-	it("design selection does not appear in undo stack", () => {
+	it("design selection does not appear in undo stack", async () => {
 		const { result } = renderHook(() => useEditor(), {
 			wrapper: makeWrapper(),
 		});
+		await act(async () => {});
 
 		expect(result.current.canUndo).toBe(false);
 

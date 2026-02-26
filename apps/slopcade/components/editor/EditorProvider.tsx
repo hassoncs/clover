@@ -33,6 +33,7 @@ export interface ResolvedAssetEntry {
 export type EditorMode = "author" | "live";
 export type TimeMode = "paused" | "playing";
 export type DesignMode = "idle" | "select" | "pan";
+export type DesignPhase = "idle" | "designing" | "approved" | "implementing";
 export type EditorTab =
 	| "gallery"
 	| "assets"
@@ -81,6 +82,7 @@ interface EditorState {
 	selectedDesignFrameId: string | null;
 	selectedDesignElementId: string | null;
 	designMode: DesignMode;
+	designPhase: DesignPhase;
 }
 
 type EditorStateAction =
@@ -115,7 +117,8 @@ type EditorStateAction =
 	| { type: "SELECT_DESIGN_FRAME"; frameId: string | null }
 	| { type: "SELECT_DESIGN_ELEMENT"; elementId: string | null; frameId: string }
 	| { type: "CLEAR_DESIGN_SELECTION" }
-	| { type: "SET_DESIGN_MODE"; mode: DesignMode };
+	| { type: "SET_DESIGN_MODE"; mode: DesignMode }
+	| { type: "SET_DESIGN_PHASE"; phase: DesignPhase };
 
 const MAX_HISTORY = 50;
 
@@ -558,6 +561,9 @@ function editorReducer(
 		case "SET_DESIGN_MODE":
 			return { ...state, designMode: action.mode };
 
+		case "SET_DESIGN_PHASE":
+			return { ...state, designPhase: action.phase };
+
 		default:
 			return state;
 	}
@@ -626,10 +632,12 @@ interface EditorContextValue {
 	selectedDesignFrameId: string | null;
 	selectedDesignElementId: string | null;
 	designMode: DesignMode;
+	designPhase: DesignPhase;
 	selectDesignFrame: (frameId: string | null) => void;
 	selectDesignElement: (elementId: string | null, frameId: string) => void;
 	clearDesignSelection: () => void;
 	setDesignMode: (mode: DesignMode) => void;
+	setDesignPhase: (phase: DesignPhase) => void;
 
 	runtimeRef: React.RefObject<GameRuntimeRef | null>;
 	selectedEntity: GameEntity | null;
@@ -720,6 +728,10 @@ export function EditorProvider({
 		dispatch({ type: "SET_DESIGN_MODE", mode });
 	}, []);
 
+	const setDesignPhase = useCallback((phase: DesignPhase) => {
+		dispatch({ type: "SET_DESIGN_PHASE", phase });
+	}, []);
+
 	const initialState: EditorState = {
 		mode: "author",
 		timeMode: "paused",
@@ -751,6 +763,7 @@ export function EditorProvider({
 		selectedDesignFrameId: null,
 		selectedDesignElementId: null,
 		designMode: "idle",
+		designPhase: "idle",
 	};
 
 	const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -911,10 +924,12 @@ export function EditorProvider({
 			selectedDesignFrameId: state.selectedDesignFrameId,
 			selectedDesignElementId: state.selectedDesignElementId,
 			designMode: state.designMode,
+			designPhase: state.designPhase,
 			selectDesignFrame,
 			selectDesignElement,
 			clearDesignSelection,
 			setDesignMode,
+			setDesignPhase,
 
 			runtimeRef,
 			selectedEntity,
@@ -972,6 +987,7 @@ export function EditorProvider({
 			selectDesignElement,
 			clearDesignSelection,
 			setDesignMode,
+			setDesignPhase,
 		],
 	);
 

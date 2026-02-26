@@ -23,6 +23,8 @@ export function DesignCanvasPanel() {
 		selectDesignElement,
 		clearDesignSelection,
 		setDesignMode,
+		designPhase,
+		setDesignPhase,
 	} = useEditor();
 	const { designDocument, isLoadingDesign } = useSharedWorkspaceFiles();
 
@@ -40,6 +42,12 @@ export function DesignCanvasPanel() {
 	const selectedElement = selectedFrame?.elements.find(
 		(e) => e.id === selectedDesignElementId,
 	);
+
+	useEffect(() => {
+		if (designDocument && designPhase === "idle") {
+			setDesignPhase("designing");
+		}
+	}, [designDocument, designPhase, setDesignPhase]);
 
 	const handleZoomToFit = useCallback(() => {
 		if (frames.length > 0) {
@@ -131,6 +139,70 @@ export function DesignCanvasPanel() {
 				</View>
 
 				<View style={styles.headerRight}>
+					{designPhase !== "idle" && (
+						<View
+							style={[
+								styles.phaseBadge,
+								{ backgroundColor: c.surfaceHover, borderColor: c.border },
+							]}
+						>
+							<Text style={[styles.phaseText, { color: c.textSecondary }]}>
+								{designPhase.toUpperCase()}
+							</Text>
+						</View>
+					)}
+
+					{designPhase === "designing" && (
+						<Pressable
+							style={[styles.actionButton, { backgroundColor: "#3b82f6" }]}
+							onPress={() => setDesignPhase("approved")}
+						>
+							<Text style={[styles.actionButtonText, { color: "#fff" }]}>
+								✓ Approve Design
+							</Text>
+						</Pressable>
+					)}
+
+					{designPhase === "approved" && (
+						<Pressable
+							style={[styles.actionButton, { backgroundColor: "#10b981" }]}
+							onPress={() => setDesignPhase("implementing")}
+						>
+							<Text style={[styles.actionButtonText, { color: "#fff" }]}>
+								🚀 Start Implementation
+							</Text>
+						</Pressable>
+					)}
+
+					{designPhase === "approved" && (
+						<Pressable
+							style={[
+								styles.actionButton,
+								{ backgroundColor: c.success || "#10b981" },
+							]}
+							onPress={() => setDesignPhase("implementing")}
+						>
+							<Text style={[styles.actionButtonText, { color: "#fff" }]}>
+								🚀 Start Implementation
+							</Text>
+						</Pressable>
+					)}
+
+					{designPhase === "implementing" && (
+						<View
+							style={[
+								styles.actionButton,
+								{ backgroundColor: c.surfaceHover, opacity: 0.7 },
+							]}
+						>
+							<Text
+								style={[styles.actionButtonText, { color: c.textSecondary }]}
+							>
+								Implementing...
+							</Text>
+						</View>
+					)}
+
 					<View style={[styles.navControls, { backgroundColor: c.surface }]}>
 						<Pressable onPress={handleZoomToFit} style={styles.navButton}>
 							<Ionicons name="expand" size={14} color={c.text} />
@@ -365,5 +437,28 @@ const styles = StyleSheet.create({
 	frameListText: {
 		fontSize: 12,
 		fontWeight: "500",
+	},
+	phaseBadge: {
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 4,
+		borderWidth: 1,
+	},
+	phaseText: {
+		fontSize: 10,
+		fontWeight: "600",
+		letterSpacing: 0.5,
+	},
+	actionButton: {
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 6,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+	},
+	actionButtonText: {
+		fontSize: 12,
+		fontWeight: "600",
 	},
 });
