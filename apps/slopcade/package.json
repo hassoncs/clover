@@ -60,7 +60,6 @@
 		"@slopcade/game-bundler": "workspace:*",
 		"@slopcade/game-runtime": "workspace:*",
 		"@slopcade/godot-bridge": "workspace:*",
-		"@slopcade/party": "workspace:*",
 		"@slopcade/shared": "workspace:*",
 		"@slopcade/shared-ui": "workspace:*",
 		"@slopcade/social": "workspace:*",

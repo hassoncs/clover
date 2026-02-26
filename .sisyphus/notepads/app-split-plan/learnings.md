@@ -23,3 +23,48 @@
 - The `app/_layout.tsx` is intentionally minimal (no TRPCProvider/AuthProvider/BrandProvider) — these require local lib/ implementations that can be wired up in a follow-on task.
 - Tabs: Feed, Browse, Maker, Profile — all stubs with placeholder UI. Maker tab is the shader editor entry point (to be wired to `@slopcade/editor` shader panels).
 - `plugins/withCameraFrameProcessor.js` was NOT copied or referenced in app.json — shader-editor doesn't need VisionCamera/react-native-vision-camera.
+- Successfully committed a large changeset (823 files) for the app-split-plan work.
+- Coordinated multi-file changes across packages/ and apps/ were grouped into a single atomic commit as requested.
+- Verified that 'git add .' correctly captures new app shells and extracted packages.
+
+## [2026-02-26] Task: Scaffold slopbox (tasks 23-26)
+
+### What was done
+- Copied `apps/amen/` to `apps/slopbox/` via rsync (excluding node_modules, ios, android, .expo, dist)
+- Updated all brand-specific config files: app.json, app.config.ts, metro.config.js, package.json
+- Port assignment: slopbox uses **8087** (slopcade=8085, amen=8086, slopbox=8087, shader-editor=8088)
+- Added SLOPBOX_BRAND config to `shared/src/brands/config.ts` (getBrandConfig wasn't extensible otherwise)
+- Added `metro-slopbox`, `ios-slopbox`, `web-slopbox` services to devmux.config.json
+- Added `dev:slopbox`, `web:slopbox`, `ios:slopbox`, `android:slopbox` to root package.json
+- Added `apps/slopbox` to pnpm-workspace.yaml
+- Created `apps/slopbox/assets/brands/slopbox/` (copy of amen assets as placeholder)
+- Updated all brand-identity strings: domain (slopbox.tv), bundleId (tv.slopbox.app), storage keys, filesystem paths
+- Left `@slopcade/ui/amen` imports in place — slopbox doesn't have its own UI components yet (placeholder)
+
+### Key gotchas
+- `getBrandConfig()` in `shared/src/brands/config.ts` needs explicit BRANDS record entry — doesn't auto-discover from packages/brands manifests
+- `scripts/preflight-check.mjs` hardcodes the expected port — needs updating when copying app shell
+- `plugins/withMetroPort.js` also hardcodes the port as a string constant
+- Many amen brand strings were scattered in lib/ files (storage keys, filesystem paths, trpc headers)
+- The copy is intentionally shallow: `@slopcade/ui/amen` imports remain as placeholders for later branding work
+- `apps/shader-editor` was already in pnpm-workspace.yaml when this task ran (parallel agent work)
+## [2026-02-26] Task 37: Update AGENTS.md
+- Updated Metro port table to include all 4 apps (slopcade: 8085, amen: 8086, slopbox: 8087, shader-editor: 8088).
+- Added new scripts for slopbox and shader-editor to the scripts table.
+- Documented product category distinction (Creator Tools vs Party Players).
+- Updated RCT_METRO_PORT range to 8085-8088.
+- Added 'Party System' and 'Game Editor' to the Project Context skills table.
+- Verified that all new root scripts from package.json are reflected in AGENTS.md.
+
+## [2026-02-26] Task 30: Remove party from slopcade
+
+**What was removed:**
+- `apps/slopcade/app/party/` directory (5 files: `_layout.tsx`, `index.tsx`, `host.tsx`, `join.tsx`, `play.tsx`)
+- `<Stack.Screen name="party" />` from `apps/slopcade/app/_layout.tsx`
+- `"@slopcade/party": "workspace:*"` from `apps/slopcade/package.json` dependencies
+
+**Gotchas:**
+- Party was NOT a tab in `(tabs)/_layout.tsx` — it was a root Stack screen accessible via navigation from other screens (e.g., browse.tsx → /party/host)
+- `apps/slopcade/app/(tabs)/browse.tsx` imported `createPartyRoom` from `@/lib/party/api` and navigated to `/party/host` — this was fixed by removing the import and stubbing `handlePlay` as a no-op console.warn
+- The browse screen is entirely party-game-focused (uses `useBrowsePartyGames`, launches party rooms). With party removed, the Play button is now a no-op. This screen will need redesign for the creator-only context in a future task.
+- Re-export shims in `apps/slopcade/lib/party/` and `apps/slopcade/components/party/` were left intact per task instructions — they will break at install time when @slopcade/party is absent (orchestrator handles pnpm install).

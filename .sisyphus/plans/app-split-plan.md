@@ -534,12 +534,12 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 - [x] 25. Add Slopbox assets under `apps/slopbox/assets/brands/slopbox/`.
 - [x] 26. Register Slopbox workspace/scripts/devmux (port 8087) and shared Metro config factory usage.
 - [x] 27. Scaffold `apps/shader-editor/` shell with tabs (Feed, Browse, Maker, Profile).
-- [ ] 28. Mount shader-only editor composition from `@slopcade/editor` in shader editor routes.
+- [x] 28. Mount shader-only editor composition from `@slopcade/editor` in shader editor routes.
 - [x] 29. Register shader editor workspace/scripts/devmux (port 8088).
 
 ### Wave 5 - Product boundary enforcement
 
-- [ ] 30. Remove party routes/navigation/dependencies from `apps/slopcade` (creator-only state).
+- [x] 30. Remove party routes/navigation/dependencies from `apps/slopcade` (creator-only state).
 - [ ] 31. Add API `requireFeature()` middleware and replace hardcoded brand gates with feature gates.
 - [ ] 32. Register `slopbox` and `shader-editor` in API brand validation.
 
@@ -549,7 +549,7 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 - [ ] 34. Validate party flows end-to-end in `amen` and `slopbox`.
 - [ ] 35. Validate creator flows end-to-end in `slopcade` and `shader-editor`.
 - [ ] 36. Run dead-code cleanup (`knip`) and remove migration shims.
-- [ ] 37. Update `AGENTS.md`/ops docs for ports/scripts/app matrix.
+- [x] 37. Update `AGENTS.md`/ops docs for ports/scripts/app matrix.
 - [ ] 38. Prepare CI/CD updates for four app targets.
 - [ ] 39. Track App Store/Play provisioning kickoff for Slopbox and Shader Editor.
 

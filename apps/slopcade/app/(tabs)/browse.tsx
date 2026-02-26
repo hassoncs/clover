@@ -7,7 +7,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
 import { GameHallTile } from "@/components/browse/GameHallTile";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
-import { createPartyRoom } from "@/lib/party/api";
 
 export default function BrowseScreen() {
 	const router = useRouter();
@@ -26,31 +25,7 @@ export default function BrowseScreen() {
 	const selectedTemplate = templates.find((t) => t.id === selectedId);
 
 	const handlePlay = async () => {
-		if (!selectedTemplate) return;
-		try {
-			setLaunching(selectedTemplate.title);
-			setLaunchError(null);
-			const { code, hostToken } = await createPartyRoom(
-				selectedTemplate.id,
-				selectedTemplate.minPlayers,
-			);
-			router.push({
-				pathname: "/party/host",
-				params: {
-					code,
-					hostToken,
-					templateId: selectedTemplate.id,
-					templateTitle: selectedTemplate.title,
-					minPlayers: String(selectedTemplate.minPlayers),
-				},
-			});
-		} catch (err) {
-			setLaunchError(
-				err instanceof Error ? err.message : "Failed to create room",
-			);
-		} finally {
-			setLaunching(null);
-		}
+		console.warn("[Browse] Party mode not available in Slopcade creator app");
 	};
 
 	const handleHowToPlay = () => {

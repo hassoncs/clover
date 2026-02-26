@@ -59,18 +59,33 @@ The `interactive_bash` tool runs commands in a persistent tmux session, which pr
 
 **NEVER run raw `expo` commands directly.** Always use the project's `pnpm` scripts from the **repo root**.
 
-This project uses custom Metro ports (not the default 8081): **Slopcade=8085, Amen=8086**. Both apps can run simultaneously. The port must be configured at multiple layers (Metro config, Podfile, native binary compilation). Raw expo commands bypass these safeguards and produce broken builds.
+This project uses custom Metro ports (not the default 8081): **Slopcade=8085, Amen=8086, Slopbox=8087, ShaderEditor=8088**. Multiple apps can run simultaneously. The port must be configured at multiple layers (Metro config, Podfile, native binary compilation). Raw expo commands bypass these safeguards and produce broken builds.
+
+| App | Port | Category | Description |
+|-----|------|----------|-------------|
+| slopcade | 8085 | Creator Tool | Full game builder and engine playground |
+| amen | 8086 | Party Player | Christian-themed party games |
+| slopbox | 8087 | Party Player | Secular party games |
+| shader-editor | 8088 | Creator Tool | Specialized shader and visual effects editor |
 
 | Goal | Correct Command (from repo root) | NEVER Do This |
 |------|----------------------------------|---------------|
 | Start dev server (slopcade) | `pnpm dev` | `expo start`, `npx expo start` |
 | Start dev server (amen) | `pnpm dev:amen` | `expo start`, `npx expo start` |
+| Start dev server (slopbox) | `pnpm dev:slopbox` | `expo start`, `npx expo start` |
+| Start dev server (shader) | `pnpm dev:shader` | `expo start`, `npx expo start` |
 | Run iOS (slopcade) | `pnpm ios` | `expo run:ios`, `npx expo run:ios` |
 | Run iOS (amen) | `pnpm ios:amen` | `expo run:ios`, `npx expo run:ios` |
+| Run iOS (slopbox) | `pnpm ios:slopbox` | `expo run:ios`, `npx expo run:ios` |
+| Run iOS (shader) | `pnpm ios:shader` | `expo run:ios`, `npx expo run:ios` |
 | Run Android (slopcade) | `pnpm android` | `expo run:android`, `npx expo run:android` |
 | Run Android (amen) | `pnpm android:amen` | `expo run:android`, `npx expo run:android` |
+| Run Android (slopbox) | `pnpm android:slopbox` | `expo run:android`, `npx expo run:android` |
+| Run Android (shader) | `pnpm android:shader` | `expo run:android`, `npx expo run:android` |
 | Run web (slopcade) | `pnpm web` | `expo start --web` |
 | Run web (amen) | `pnpm web:amen` | `expo start --web` |
+| Run web (slopbox) | `pnpm web:slopbox` | `expo start --web` |
+| Run web (shader) | `pnpm web:shader` | `expo start --web` |
 | Install pods (slopcade) | `cd apps/slopcade && pnpm pods` | `cd apps/slopcade/ios && pod install` |
 | Install pods (amen) | `cd apps/amen && pnpm pods` | `cd apps/amen/ios && pod install` |
 | Prebuild (slopcade) | `cd apps/slopcade && npx expo prebuild` | OK, but must be from `apps/slopcade/` dir |
@@ -79,7 +94,7 @@ This project uses custom Metro ports (not the default 8081): **Slopcade=8085, Am
 **Why this matters:**
 - The root scripts ensure Metro is running via devmux before building
 - The app scripts include `--no-bundler` (prevents duplicate Metro instances)
-- The app scripts set `RCT_METRO_PORT` env var (`8085` for slopcade, `8086` for amen) and matching `--port` flag
+- The app scripts set `RCT_METRO_PORT` env var (`8085`-`8088`) and matching `--port` flag
 - A preflight check validates port configuration before every native build
 - Running raw `expo run:ios` without these flags produces a binary that connects to port 8081
 
@@ -89,6 +104,10 @@ This project uses custom Metro ports (not the default 8081): **Slopcade=8085, Am
 RCT_METRO_PORT=8085 npx expo run:ios --no-bundler
 # Amen
 RCT_METRO_PORT=8086 npx expo run:ios --no-bundler
+# Slopbox
+RCT_METRO_PORT=8087 npx expo run:ios --no-bundler
+# Shader Editor
+RCT_METRO_PORT=8088 npx expo run:ios --no-bundler
 ```
 Note: `--port` and `--no-bundler` are mutually exclusive. The port is communicated via `RCT_METRO_PORT` env var and baked into the binary at build time.
 
@@ -183,6 +202,8 @@ For domain-specific knowledge, load the relevant skill from `.claude/skills/`:
 | Game Inspector | `game-inspector` | MCP tools, debugging |
 | Asset Generation | `asset-pack-generation` | Image pipelines, BlobStore |
 | Native/Build | `native-infrastructure` | Metro 8085, CocoaPods, Expo plugins |
+| Party System | `social-features` | Party UI, context, phases, WebSocket, social feed |
+| Game Editor | `editor-system` | Editor UI panels, graph editor, code editor, AI chat |
 
 Full skill index: `.claude/skills/INDEX.md`
 
