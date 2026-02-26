@@ -81,11 +81,6 @@ export interface ContentTypeMap {
 
 export type ContentItem<T extends ContentType> = ContentTypeMap[T];
 
-// TODO(T16): Remove after zero-hit confirmation on LEGACY_ALIASES fallback
-const LEGACY_ALIASES: Partial<Record<ContentType, string[]>> = {
-	estimation: ["wager", "history"],
-};
-
 export async function loadContentPackFromDB<T extends ContentType>(
 	type: T,
 	brandId: string,
@@ -106,33 +101,6 @@ export async function loadContentPackFromDB<T extends ContentType>(
 	const rows = result.results ?? [];
 
 	if (rows.length === 0) {
-		const aliases = LEGACY_ALIASES[type as ContentType];
-		if (aliases && aliases.length > 0) {
-			console.warn(
-				`[party-content] No "${type}" content for brand "${brandId}". ` +
-					`Falling back to legacy aliases: ${aliases.join(", ")}. ` +
-					`Run DB migration to normalize content types.`,
-			);
-			for (const alias of aliases) {
-				const fallbackResult = await db
-					.prepare(
-						`SELECT body FROM party_content
-						 WHERE brand_id = ?
-						   AND content_type = ?
-						   AND status = 'active'
-						   AND deleted_at IS NULL
-						 LIMIT 2000`,
-					)
-					.bind(brandId, alias)
-					.all<{ body: string }>();
-				const fallbackRows = fallbackResult.results ?? [];
-				if (fallbackRows.length > 0) {
-					return fallbackRows.map(
-						(row) => JSON.parse(row.body) as ContentItem<T>,
-					);
-				}
-			}
-		}
 		throw new Error(
 			`No active "${type}" content for brand "${brandId}". Run partyContent.importPacks first.`,
 		);
