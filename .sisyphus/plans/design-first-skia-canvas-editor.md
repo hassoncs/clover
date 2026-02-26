@@ -1443,16 +1443,16 @@ Max Concurrent: 6
 
 ## Final Verification Wave (MANDATORY)
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Validate Must Have / Must NOT Have and evidence completeness across all tasks.
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run static checks + test suite; detect unsafe patterns and architecture drift.
 
-- [ ] F3. **Real QA Execution** — `unspecified-high` (+ `playwright`)
+- [x] F3. **Real QA Execution** — `unspecified-high` (+ `playwright`)
   Execute all task QA scenarios, capture artifacts under `.sisyphus/evidence/final-qa/`.
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   Confirm implementation matches plan 1:1 without unauthorized scope expansion.
 
 ---
