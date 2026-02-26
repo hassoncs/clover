@@ -1,7 +1,15 @@
 import type { AgUiEvent } from "@slopcade/shared/chat";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useChatEventSubscription } from "@/lib/chat/ChatStreamProvider";
 import { trpcReact } from "@/lib/trpc/react";
+import { useDesignDocument } from "./useDesignDocument";
 
 export interface FileTreeNode {
 	id: string;
@@ -130,6 +138,8 @@ export function useWorkspaceFiles(gameId: string | null) {
 		});
 	};
 
+	const design = useDesignDocument(gameId);
+
 	return {
 		files: filesQuery.data?.files ?? [],
 		tree: filesQuery.data?.tree ?? {},
@@ -144,6 +154,7 @@ export function useWorkspaceFiles(gameId: string | null) {
 		setActiveFile,
 		saveFile,
 		isSaving: writeMutation.isPending,
+		...design,
 	};
 }
 
