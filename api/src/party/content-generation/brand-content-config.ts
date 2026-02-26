@@ -57,14 +57,8 @@ const AMEN_CONTENT_CONFIG: BrandContentConfig = {
 			temperature: 1.2,
 			batchSize: 100,
 		},
-		wager: {
+		estimation: {
 			targetCount: 500,
-			model: BALANCED_MODEL,
-			temperature: 1.0,
-			batchSize: 100,
-		},
-		history: {
-			targetCount: 350,
 			model: BALANCED_MODEL,
 			temperature: 1.0,
 			batchSize: 100,
@@ -117,14 +111,8 @@ const SLOPCADE_CONTENT_CONFIG: BrandContentConfig = {
 			temperature: 1.2,
 			batchSize: 100,
 		},
-		wager: {
+		estimation: {
 			targetCount: 500,
-			model: BALANCED_MODEL,
-			temperature: 1.0,
-			batchSize: 100,
-		},
-		history: {
-			targetCount: 350,
 			model: BALANCED_MODEL,
 			temperature: 1.0,
 			batchSize: 100,

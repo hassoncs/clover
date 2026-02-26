@@ -42,14 +42,6 @@ const HeadsupItemSchema = z.object({
 	words: z.array(z.string()).min(8).max(40),
 });
 
-const WagerItemSchema = z.object({
-	question: z.string(),
-	answer: z.number(),
-	unit: z.string().optional(),
-	category: z.string(),
-	funFact: z.string().optional(),
-});
-
 const WordlistItemSchema = z.object({
 	name: z.string(),
 	words: z.array(z.string()).min(8).max(40),
@@ -76,11 +68,6 @@ export const BASE_CONTENT_CONFIGS: Record<string, BaseContentConfig> = {
 		schema: z.object({ items: z.array(FibbageItemSchema) }),
 		promptTemplate: (count) =>
 			`Generate ${count} fibbage-style prompts with one blank using _____. The real answer should be surprising but verifiable, and the question should invite plausible fake answers.`,
-	},
-	wager: {
-		schema: z.object({ items: z.array(WagerItemSchema) }),
-		promptTemplate: (count) =>
-			`Generate ${count} numeric estimation questions for a wager-style game. Answers must be numbers. Include unit when useful and prefer surprising reveal-friendly facts.`,
 	},
 	drawing: {
 		schema: z.object({ items: z.array(DrawingItemSchema) }),
@@ -111,11 +98,6 @@ export const BASE_CONTENT_CONFIGS: Record<string, BaseContentConfig> = {
 		schema: z.object({ items: z.array(PersonalItemSchema) }),
 		promptTemplate: (count) =>
 			`Generate ${count} personal-story prompts that invite players to share funny, low-stakes real experiences. Keep prompts specific and socially safe.`,
-	},
-	history: {
-		schema: z.object({ items: z.array(EstimationItemSchema) }),
-		promptTemplate: (count) =>
-			`Generate ${count} year-estimation questions about historical moments. Answers must be numeric years and acceptableRange should reflect realistic guessing windows.`,
 	},
 	wyr: {
 		schema: z.object({ items: z.array(DilemmaItemSchema) }),
