@@ -36,16 +36,8 @@ type ContentType = (typeof CONTENT_TYPES)[number];
 
 const SKIP_VOICE_TYPES = new Set(["headsup", "wordlist", "FakeWord"]);
 
-function extractContentType(
-	filename: string,
-	brand: Brand,
-): ContentType | null {
+function extractContentType(filename: string): ContentType | null {
 	const base = filename.replace(/\.json$/i, "");
-	if (brand === "amen") {
-		const stripped = base.replace(/^amen-/, "");
-		if ((CONTENT_TYPES as readonly string[]).includes(stripped))
-			return stripped as ContentType;
-	}
 	if ((CONTENT_TYPES as readonly string[]).includes(base))
 		return base as ContentType;
 	return null;
@@ -79,7 +71,7 @@ async function main() {
 
 		for (const filename of files) {
 			if (!filename.endsWith(".json")) continue;
-			const contentType = extractContentType(filename, brand);
+			const contentType = extractContentType(filename);
 			if (!contentType) {
 				continue;
 			}
