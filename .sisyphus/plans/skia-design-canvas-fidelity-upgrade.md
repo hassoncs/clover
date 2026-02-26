@@ -1200,7 +1200,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-25-path-fallback.png
   ```
 
-- [ ] 26. Add end-to-end integration coverage for design -> build
+- [x] 26. Add end-to-end integration coverage for design -> build
 
   **What to do**:
   - Expand integration tests for richer design docs through design/build stages.
@@ -1241,7 +1241,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-26-integration-fail.txt
   ```
 
-- [ ] 27. Run backward-compatibility and regression sweep
+- [x] 27. Run backward-compatibility and regression sweep
 
   **What to do**:
   - Validate old design docs, legacy flows, and baseline editor operations.

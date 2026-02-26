@@ -66,6 +66,70 @@ describe("migrateDesignDocument", () => {
 		expect(result.frames[0].elements[0].type).toBe("rect");
 	});
 
+	it("should preserve all original v1.0 element types (rect, text, image) during migration", () => {
+		const v10DocFull = {
+			version: "1.0",
+			metadata: {
+				title: "Full V1.0 Game",
+				gameId: "game-full-v10",
+				createdAt: 1000,
+				updatedAt: 2000,
+			},
+			frames: [
+				{
+					id: "frame-1",
+					title: "Frame 1",
+					width: 400,
+					height: 400,
+					position: { x: 0, y: 0 },
+					elements: [
+						{
+							id: "rect-1",
+							type: "rect",
+							zIndex: 1,
+							x: 10,
+							y: 10,
+							width: 50,
+							height: 50,
+							fill: "#ff0000",
+						},
+						{
+							id: "text-1",
+							type: "text",
+							zIndex: 2,
+							x: 100,
+							y: 10,
+							width: 200,
+							height: 50,
+							content: "Hello World",
+							fontSize: 16,
+						},
+						{
+							id: "image-1",
+							type: "image",
+							zIndex: 3,
+							x: 10,
+							y: 100,
+							width: 100,
+							height: 100,
+						},
+					],
+				},
+			],
+		};
+
+		const result = migrateDesignDocument(v10DocFull);
+		expect(result.version).toBe("1.1");
+		const elements = result.frames[0].elements;
+		expect(elements).toHaveLength(3);
+		expect(elements[0].type).toBe("rect");
+		expect(elements[0].id).toBe("rect-1");
+		expect(elements[1].type).toBe("text");
+		expect(elements[1].id).toBe("text-1");
+		expect(elements[2].type).toBe("image");
+		expect(elements[2].id).toBe("image-1");
+	});
+
 	it("should migrate legacy v0.x (no version) to v1.1", () => {
 		const legacyDoc = {
 			metadata: {

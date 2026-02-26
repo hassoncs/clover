@@ -214,3 +214,21 @@
 - Pre-existing `hitTestHandles`/`getElementBounds` in `onMouseDown`/`onMouseMove` dep arrays — pre-existing ESLint warnings that don't affect tsc
 - Added graceful fallbacks for missing images, fonts, and invalid paths in DesignCanvasRenderer to prevent blank rendering or crashes.
 - Added a warning banner in DesignCanvasPanel to alert users when elements may not render correctly.
+
+## T27: Backward-Compatibility & Regression Sweep (2026-02-26)
+
+### What was already covered
+- `DesignCanvasHitTest.test.ts` already had full coverage for circle (point-in-ellipse), line (point-to-segment), path (AABB), group (AABB), z-index ordering, frame offsets, and screenToWorld — no changes needed.
+- `design-migrations.test.ts` already had v1.0→v1.1 migration test but only with a single rect element.
+- `design.test.ts` already had a `validDoc` that included all element types (circle/line/path/group) in one combined test, but no individual type validation tests.
+- `useDesignDocument.test.ts` had optimistic concurrency tests but no round-trip test with new element types.
+
+### What was added
+1. **design-migrations.test.ts**: Added test confirming v1.0 doc with all three original element types (rect, text, image) migrates to v1.1 with version bumped and all elements/IDs preserved.
+2. **design.test.ts**: Added `describe("v1.1 element type validation")` block with 8 tests — valid parse + missing-required-field rejection for circle, line, path, group.
+3. **useDesignDocument.test.ts**: Added round-trip test loading a v1.1 doc with circle/line/path/group elements, verifying they survive save without data loss.
+
+### Type-check results
+- `pnpm -C api type-check`: ✅ clean
+- `npx tsc --noEmit -p packages/editor/tsconfig.json`: ✅ clean (0 relevant errors)
+- `npx tsc --noEmit -p shared/tsconfig.json`: ✅ clean (npm config warnings only)

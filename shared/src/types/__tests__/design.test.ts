@@ -135,4 +135,124 @@ describe("DesignDocument", () => {
 		expect(doc.metadata.title).toBe(title);
 		expect(doc.frames).toEqual([]);
 	});
+
+	describe("v1.1 element type validation", () => {
+		function docWithSingleElement(element: unknown) {
+			return {
+				...validDoc,
+				frames: [{ ...validDoc.frames[0], elements: [element] }],
+			};
+		}
+
+		it("should parse a circle element", () => {
+			const doc = docWithSingleElement({
+				type: "circle",
+				id: "c1",
+				x: 10,
+				y: 20,
+				width: 60,
+				height: 60,
+				zIndex: 1,
+				fill: "#00ff00",
+			});
+			expect(isDesignDocument(doc)).toBe(true);
+			const parsed = parseDesignDocument(doc);
+			expect(parsed.frames[0].elements[0].type).toBe("circle");
+		});
+
+		it("should parse a line element", () => {
+			const doc = docWithSingleElement({
+				type: "line",
+				id: "l1",
+				x1: 0,
+				y1: 0,
+				x2: 100,
+				y2: 100,
+				zIndex: 1,
+				stroke: "#000000",
+				strokeWidth: 2,
+			});
+			expect(isDesignDocument(doc)).toBe(true);
+			const parsed = parseDesignDocument(doc);
+			expect(parsed.frames[0].elements[0].type).toBe("line");
+		});
+
+		it("should parse a path element", () => {
+			const doc = docWithSingleElement({
+				type: "path",
+				id: "p1",
+				x: 0,
+				y: 0,
+				data: "M 0 0 L 100 100",
+				zIndex: 1,
+				fill: "#ff00ff",
+			});
+			expect(isDesignDocument(doc)).toBe(true);
+			const parsed = parseDesignDocument(doc);
+			expect(parsed.frames[0].elements[0].type).toBe("path");
+		});
+
+		it("should parse a group element", () => {
+			const doc = docWithSingleElement({
+				type: "group",
+				id: "g1",
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 100,
+				zIndex: 1,
+				childIds: ["c1", "l1"],
+			});
+			expect(isDesignDocument(doc)).toBe(true);
+			const parsed = parseDesignDocument(doc);
+			expect(parsed.frames[0].elements[0].type).toBe("group");
+		});
+
+		it("should reject a circle missing width", () => {
+			const doc = docWithSingleElement({
+				type: "circle",
+				id: "c1",
+				x: 10,
+				y: 20,
+				height: 60,
+				zIndex: 1,
+			});
+			expect(isDesignDocument(doc)).toBe(false);
+		});
+
+		it("should reject a line missing x2/y2", () => {
+			const doc = docWithSingleElement({
+				type: "line",
+				id: "l1",
+				x1: 0,
+				y1: 0,
+				zIndex: 1,
+			});
+			expect(isDesignDocument(doc)).toBe(false);
+		});
+
+		it("should reject a path missing data", () => {
+			const doc = docWithSingleElement({
+				type: "path",
+				id: "p1",
+				x: 0,
+				y: 0,
+				zIndex: 1,
+			});
+			expect(isDesignDocument(doc)).toBe(false);
+		});
+
+		it("should reject a group missing childIds", () => {
+			const doc = docWithSingleElement({
+				type: "group",
+				id: "g1",
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 100,
+				zIndex: 1,
+			});
+			expect(isDesignDocument(doc)).toBe(false);
+		});
+	});
 });
