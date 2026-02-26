@@ -1271,9 +1271,6 @@ importers:
       '@slopcade/godot-bridge':
         specifier: workspace:*
         version: link:../../packages/godot-bridge
-      '@slopcade/party':
-        specifier: workspace:*
-        version: link:../../packages/party
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../../shared

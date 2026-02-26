@@ -1,9 +1,9 @@
-import { SystemPhase } from "@slopcade/shared";
-import type { PartyRoomState } from "@slopcade/shared/types/party";
 import type {
 	ConnectionStatus,
 	UsePartyConnectionResult,
-} from "@/lib/party/usePartyConnection";
+} from "@slopcade/party";
+import { SystemPhase } from "@slopcade/shared";
+import type { PartyRoomState } from "@slopcade/shared/types/party";
 import type { EventQueue } from "../EventQueue";
 import type { RuntimeSystem, SystemContext, UpdateContext } from "../types";
 
