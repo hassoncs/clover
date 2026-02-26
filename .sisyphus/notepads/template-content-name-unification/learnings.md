@@ -234,3 +234,25 @@ Matches CONTENT_TYPES in shared/src/schema/party-content.ts exactly.
 - Updated `year-jinx/manifest.json` contentPacks from `["wager"]` to `["estimation"]` to match canonical tokens.
 - Verified all other party templates use canonical tokens (quip, trivia, drawing, dilemma, estimation, fibbage, personal, FakeWord, ranking, headsup, chroma, wordlist).
 - Documented `headsUp` folder/slug vs `heads-up` registry ID drift in `.sisyphus/evidence/task-9-id-drift.txt`.
+
+## 2026-02-26 T7: Compatibility Fallback Window
+
+### What was added
+- `LEGACY_ALIASES` constant in `prompt-loader.ts`: maps `estimation` → `["wager", "history"]`
+- Fallback block in `loadContentPackFromDB`: only triggers when primary canonical query returns 0 rows
+- `console.warn` logs fallback hits with brand+type context for monitoring
+- `// TODO(T16): Remove after zero-hit confirmation` marks removal gate
+
+### Fallback behavior
+- Primary query for canonical type (e.g., `estimation`) runs first — no overhead if rows exist
+- Only on empty result: check `LEGACY_ALIASES[type]`
+- Iterate aliases in order (`wager` first, then `history`) — return first non-empty result
+- If all aliases also empty: throw original error (same behavior as before)
+
+### Monitoring signal
+- Presence of `[party-content] No "estimation" content for brand "..."` in logs = T8 (DB migration) not yet run
+- Absence of these warnings after T8 = safe to remove fallback (T16)
+
+### Scope constraint
+- Only `estimation` has legacy aliases — no other type was changed
+- Function signature unchanged — callers unaffected
