@@ -605,7 +605,7 @@ export function createChatTools(ctx: ChatToolContext) {
 				if (!frame) {
 					return {
 						ok: false,
-						error: `element not found: ${elementId}`,
+						error: `frame not found: ${frameId}`,
 					} as const;
 				}
 

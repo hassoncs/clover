@@ -2,7 +2,6 @@ import {
 	createEmptyDesignDocument,
 	type DesignDocument,
 	migrateDesignDocument,
-	parseDesignDocument,
 } from "@slopcade/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trpcReact } from "@/lib/trpc/react";
@@ -70,8 +69,7 @@ export function useDesignDocument(gameId: string | null) {
 		if (designFileQuery.data?.content) {
 			try {
 				const raw = JSON.parse(designFileQuery.data.content);
-				const migrated = migrateDesignDocument(raw);
-				const doc = parseDesignDocument(migrated);
+				const doc = migrateDesignDocument(raw);
 				setDesignDocument(doc);
 				setIsDesignDirty(false);
 			} catch (e) {
@@ -113,6 +111,14 @@ export function useDesignDocument(gameId: string | null) {
 		gameId,
 		saveDesignDocument,
 	]);
+
+	useEffect(() => {
+		return () => {
+			if (debounceTimerRef.current) {
+				clearTimeout(debounceTimerRef.current);
+			}
+		};
+	}, []);
 
 	return useMemo(
 		() => ({
