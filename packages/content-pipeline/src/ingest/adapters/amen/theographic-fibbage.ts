@@ -376,7 +376,7 @@ export async function fetchTheographicFibbage(
 	const now = new Date().toISOString();
 	return facts.slice(0, options.count).map((fact) => ({
 		id: randomUUID(),
-		gameType: options.gameType ?? "amen-fibbage",
+		gameType: options.gameType ?? "fibbage",
 		text: fact.question,
 		category: fact.category,
 		provenance: {

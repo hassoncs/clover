@@ -68,9 +68,7 @@ export function builder(yargs: Argv): Argv {
 }
 
 function extractText(item: Record<string, unknown>, gameType: string): string {
-	const baseType = gameType.replace(/^[a-z]+-/, "");
-
-	switch (baseType) {
+	switch (gameType) {
 		case "dilemma":
 			return `Would you rather: ${item.optionA} OR ${item.optionB}`;
 		case "drawing":
@@ -100,11 +98,9 @@ function summarizeForContext(
 	items: Array<Record<string, unknown>>,
 	gameType: string,
 ): string {
-	const baseType = gameType.replace(/^[a-z]+-/, "");
-
 	return items
 		.map((item) => {
-			switch (baseType) {
+			switch (gameType) {
 				case "quip":
 				case "personal":
 					return `- "${item.text}"`;
@@ -136,23 +132,21 @@ export async function handler(
 ): Promise<void> {
 	const { gameType, count, category, dryRun } = args;
 
-	const { resolvedBrandId, resolvedGameType, storageGameType, config } =
-		(() => {
-			try {
-				const resolved = resolveBrandGameType(gameType, args.brand);
-				return {
-					resolvedBrandId: resolved.brandId,
-					resolvedGameType: resolved.gameType,
-					storageGameType: resolved.storageGameType,
-					config: composeGameTypeConfig(resolved.brandId, resolved.gameType),
-				};
-			} catch (error) {
-				console.error(error instanceof Error ? error.message : String(error));
-				console.error(`Available game types: ${listGameTypes().join(", ")}`);
-				console.error(`Available brands: ${listBrands().join(", ")}`);
-				process.exit(1);
-			}
-		})();
+	const { resolvedBrandId, resolvedGameType, config } = (() => {
+		try {
+			const resolved = resolveBrandGameType(gameType, args.brand);
+			return {
+				resolvedBrandId: resolved.brandId,
+				resolvedGameType: resolved.gameType,
+				config: composeGameTypeConfig(resolved.brandId, resolved.gameType),
+			};
+		} catch (error) {
+			console.error(error instanceof Error ? error.message : String(error));
+			console.error(`Available game types: ${listGameTypes().join(", ")}`);
+			console.error(`Available brands: ${listBrands().join(", ")}`);
+			process.exit(1);
+		}
+	})();
 
 	const resolvedModel = resolveModelId(args.model as string | undefined);
 	const totalBatches = Math.ceil(count / BATCH_SIZE);
@@ -181,7 +175,7 @@ export async function handler(
 
 		// For subsequent batches, inject previously generated items to avoid duplicates
 		if (allItems.length > 0) {
-			const existingSummary = summarizeForContext(allItems, storageGameType);
+			const existingSummary = summarizeForContext(allItems, resolvedGameType);
 			prompt += `\n\nCRITICAL: The following ${allItems.length} items have ALREADY been generated. You MUST NOT repeat or create items similar to any of these. Explore completely different topics, characters, scenarios, and angles:\n\n${existingSummary}\n\nGenerate ${batchCount} ENTIRELY NEW and UNIQUE items that cover different ground from everything above.`;
 		}
 
@@ -209,7 +203,7 @@ export async function handler(
 			let batchDuplicates = 0;
 
 			for (const item of limitedItems) {
-				const text = extractText(item, storageGameType);
+				const text = extractText(item, resolvedGameType);
 				const itemCategory = String(item.category || category || "");
 				const contentHash = computeContentHash(text);
 
@@ -221,7 +215,7 @@ export async function handler(
 
 				db!.insertContentItem({
 					id: randomUUID(),
-					gameType: storageGameType,
+					gameType: resolvedGameType,
 					text,
 					category: itemCategory || null,
 					contentHash,

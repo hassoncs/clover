@@ -18,7 +18,7 @@ export const AMEN_SYSTEM_PREFIX = amenBrand.voice.systemPrefix;
 export const AMEN_GAME_TYPE_CONFIGS: Record<string, GameTypeConfig> =
 	Object.fromEntries(
 		AMEN_BASE_GAME_TYPES.map((gameType) => [
-			`amen-${gameType}`,
+			gameType,
 			composeGameTypeConfig("amen", gameType),
 		]),
 	);

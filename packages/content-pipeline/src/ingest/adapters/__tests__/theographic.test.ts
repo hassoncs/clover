@@ -43,7 +43,7 @@ describe("theographic adapter", () => {
 			const items = await fetchTheographic({
 				count: 10,
 				filePath,
-				gameType: "amen-trivia",
+				gameType: "trivia",
 			});
 
 			expect(items.length).toBeGreaterThanOrEqual(6);

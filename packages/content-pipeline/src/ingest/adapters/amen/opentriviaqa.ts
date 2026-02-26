@@ -198,7 +198,7 @@ export async function fetchOpenTriviaQA(
 
 	return selected.map((entry) => ({
 		id: randomUUID(),
-		gameType: options.gameType ?? "amen-trivia",
+		gameType: options.gameType ?? "trivia",
 		text: entry.question,
 		category: "Bible Trivia",
 		provenance: {

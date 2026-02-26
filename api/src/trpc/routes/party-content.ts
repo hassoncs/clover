@@ -40,25 +40,13 @@ async function computeContentHash(body: string): Promise<string> {
 
 const FILENAME_TO_CONTENT_TYPE: Record<string, ContentType> = {
 	wager: "estimation",
-	"amen-wager": "estimation",
-	"amen-chroma": "chroma",
 };
 
-function extractContentTypeFromFilename(
-	filename: string,
-	brand: Brand,
-): ContentType | null {
+function extractContentTypeFromFilename(filename: string): ContentType | null {
 	const baseName = filename.replace(/\.json$/i, "");
 
 	if (FILENAME_TO_CONTENT_TYPE[baseName]) {
 		return FILENAME_TO_CONTENT_TYPE[baseName];
-	}
-
-	if (brand === "amen") {
-		const withoutPrefix = baseName.replace(/^amen-/, "");
-		if (CONTENT_TYPES.includes(withoutPrefix as ContentType)) {
-			return withoutPrefix as ContentType;
-		}
 	}
 
 	if (CONTENT_TYPES.includes(baseName as ContentType)) {
@@ -134,7 +122,7 @@ async function loadPackFiles(brand: Brand): Promise<
 	for (const filename of files) {
 		if (!filename.endsWith(".json")) continue;
 
-		const contentType = extractContentTypeFromFilename(filename, brand);
+		const contentType = extractContentTypeFromFilename(filename);
 		if (!contentType) continue;
 
 		const filePath = path.join(brandDir, filename);

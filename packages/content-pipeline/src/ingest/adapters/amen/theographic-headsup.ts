@@ -239,7 +239,7 @@ export async function fetchTheographicHeadsUp(
 
 	return selected.map((entry) => ({
 		id: randomUUID(),
-		gameType: options.gameType ?? "amen-headsup",
+		gameType: options.gameType ?? "headsup",
 		text: entry.name,
 		category: entry.deck,
 		provenance: {
