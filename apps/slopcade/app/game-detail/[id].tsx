@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { GameDefinition } from "@slopcade/shared";
+import {
+	GameComments,
+	LikeButton,
+	ReportModal,
+	StarRating,
+} from "@slopcade/social";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -13,10 +19,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DownloadForOfflineButton } from "@/components/DownloadForOfflineButton";
-import { GameComments } from "@/components/social/GameComments";
-import { LikeButton } from "@/components/social/LikeButton";
-import { ReportModal } from "@/components/social/ReportModal";
-import { StarRating } from "@/components/social/StarRating";
 import { useAuth } from "@/hooks/useAuth";
 import { env } from "@/lib/config/env";
 import {

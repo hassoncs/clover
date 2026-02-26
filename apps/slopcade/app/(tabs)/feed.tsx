@@ -1,4 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import {
+	CommentsBottomSheet,
+	type CommentsBottomSheetHandle,
+	LikersBottomSheet,
+	type LikersBottomSheetHandle,
+	ReportModal,
+} from "@slopcade/social";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
@@ -12,15 +19,6 @@ import {
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-	CommentsBottomSheet,
-	type CommentsBottomSheetHandle,
-} from "@/components/social/CommentsBottomSheet";
-import {
-	LikersBottomSheet,
-	type LikersBottomSheetHandle,
-} from "@/components/social/LikersBottomSheet";
-import { ReportModal } from "@/components/social/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
 import { trpcReact } from "@/lib/trpc/react";
 

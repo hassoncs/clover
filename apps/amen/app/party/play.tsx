@@ -1,28 +1,31 @@
 import { Ionicons } from "@expo/vector-icons";
+import {
+	PartyGameRenderer,
+	PartyProvider,
+	registerAboutYouBluffPhases,
+	registerChainReactionPhases,
+	registerChromaCluesPhases,
+	registerConsensusMinePhases,
+	registerDefaultPhases,
+	registerDrawfulAnimatePhases,
+	registerHalfAndHalfPhases,
+	registerHeadsUpPhases,
+	registerPercentPanicPhases,
+	registerPunchlineFerryPhases,
+	registerQuickfireQaPhases,
+	registerQuiplashPhases,
+	registerRivalRosterPhases,
+	registerShirtClashPhases,
+	registerSketchBluffPhases,
+	registerSpectrumGuessPhases,
+	registerTruthTrapPhases,
+	registerYearJinxPhases,
+	useParty,
+	usePartyMusic,
+} from "@slopcade/party";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PartyGameRenderer } from "@/components/party/PartyGameRenderer";
-import { registerAboutYouBluffPhases } from "@/lib/party/aboutYouBluffPhases";
-import { registerChainReactionPhases } from "@/lib/party/chainReactionPhases";
-import { registerChromaCluesPhases } from "@/lib/party/chromaCluesPhases";
-import { registerConsensusMinePhases } from "@/lib/party/consensusMinePhases";
-import { registerDefaultPhases } from "@/lib/party/defaultPhases";
-import { registerDrawfulAnimatePhases } from "@/lib/party/drawfulAnimatePhases";
-import { registerHalfAndHalfPhases } from "@/lib/party/halfAndHalfPhases";
-import { registerHeadsUpPhases } from "@/lib/party/headsUpPhases";
-import { PartyProvider, useParty } from "@/lib/party/PartyContext";
-import { registerPercentPanicPhases } from "@/lib/party/percentPanicPhases";
-import { registerPunchlineFerryPhases } from "@/lib/party/punchlineFerryPhases";
-import { registerQuickfireQaPhases } from "@/lib/party/quickfireQaPhases";
-import { registerQuiplashPhases } from "@/lib/party/quiplashPhases";
-import { registerRivalRosterPhases } from "@/lib/party/rivalRosterPhases";
-import { registerShirtClashPhases } from "@/lib/party/shirtClashPhases";
-import { registerSketchBluffPhases } from "@/lib/party/sketchBluffPhases";
-import { registerSpectrumGuessPhases } from "@/lib/party/spectrumGuessPhases";
-import { registerTruthTrapPhases } from "@/lib/party/truthTrapPhases";
-import { usePartyMusic } from "@/lib/party/usePartyMusic";
-import { registerYearJinxPhases } from "@/lib/party/yearJinxPhases";
 import { useAppSettings } from "@/lib/settings/useAppSettings";
 import { useSpeechToText } from "@/lib/speech/useSpeechToText";
 

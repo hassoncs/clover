@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { createPartyRoom } from "@slopcade/party";
 import { GameHallCarousel } from "@slopcade/ui";
 import { AmenGrainOverlay, PatternBackground } from "@slopcade/ui/amen";
 import { useRouter } from "expo-router";
@@ -15,7 +16,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
 import { GameHallTile } from "@/components/browse/GameHallTile";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
-import { createPartyRoom } from "@/lib/party/api";
 
 export default function BrowseScreen() {
 	const router = useRouter();

@@ -1,14 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
+import {
+	GameSettingsSheet,
+	LobbyCountdown,
+	PartyProvider,
+	PlayerChip,
+	useParty,
+} from "@slopcade/party";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GameSettingsSheet } from "@/components/party/GameSettingsSheet";
-import { LobbyCountdown } from "@/components/party/LobbyCountdown";
-import { PlayerChip } from "@/components/party/PlayerChip";
 import { getAudioManager } from "@/lib/audio/AudioManager";
-import { PartyProvider, useParty } from "@/lib/party/PartyContext";
 
 function HostLobbyContent({
 	code,

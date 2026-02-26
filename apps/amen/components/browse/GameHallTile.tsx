@@ -1,3 +1,4 @@
+import type { PartyTemplate } from "@slopcade/party";
 import { GameHallTile as SharedTile } from "@slopcade/ui";
 import React from "react";
 import { Image, Text, View } from "react-native";
@@ -5,7 +6,6 @@ import Animated, {
 	useAnimatedStyle,
 	withTiming,
 } from "react-native-reanimated";
-import type { PartyTemplate } from "@/lib/party/template-types";
 
 interface GameHallTileProps {
 	template: PartyTemplate;

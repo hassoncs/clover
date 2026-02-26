@@ -548,9 +548,9 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 - [x] 33. Run type checks/build checks for all affected packages and apps.
 - [ ] 34. Validate party flows end-to-end in `amen` and `slopbox`.
 - [ ] 35. Validate creator flows end-to-end in `slopcade` and `shader-editor`.
-- [ ] 36. Run dead-code cleanup (`knip`) and remove migration shims.
+- [x] 36. Run dead-code cleanup (`knip`) and remove migration shims.
 - [x] 37. Update `AGENTS.md`/ops docs for ports/scripts/app matrix.
-- [ ] 38. Prepare CI/CD updates for four app targets.
+- [x] 38. Prepare CI/CD updates for four app targets.
 - [ ] 39. Track App Store/Play provisioning kickoff for Slopbox and Shader Editor.
 
 ### Exit Criteria

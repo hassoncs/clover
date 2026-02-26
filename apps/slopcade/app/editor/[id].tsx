@@ -1,20 +1,22 @@
+import {
+	EditorProvider,
+	EditorTopBar,
+	ResponsiveEditorLayout,
+	useEditorCommandHandler,
+	WorkspaceFilesProvider,
+} from "@slopcade/editor";
+import { LivePreviewController } from "@slopcade/game-runtime/live/LivePreviewController";
 import type { GameDefinition } from "@slopcade/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EditorProvider } from "@/components/editor/EditorProvider";
-import { EditorTopBar } from "@/components/editor/EditorTopBar";
-import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayout";
-import { useEditorCommandHandler } from "@/components/editor/useEditorCommandHandler";
-import { WorkspaceFilesProvider } from "@/components/editor/WorkspaceFilesProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { DEV_USER_ID } from "@/lib/auth/token";
 import { ChatStreamProvider } from "@/lib/chat/ChatStreamProvider";
 import { useGameWebSocket } from "@/lib/editor/hooks/useGameWebSocket";
 import { useWorkspaceSnapshot } from "@/lib/editor/hooks/useWorkspaceSnapshot";
-import { LivePreviewController } from "@slopcade/game-runtime/live/LivePreviewController";
 import { ThemeProvider } from "@/lib/theme";
 import { trpc } from "@/lib/trpc/client";
 

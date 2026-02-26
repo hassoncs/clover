@@ -1,4 +1,4 @@
-import type { PartyTemplate } from "@/lib/party/template-types";
+import type { PartyTemplate } from "@slopcade/party";
 import { trpcReact } from "@/lib/trpc/react";
 
 export function useBrowsePartyGames() {

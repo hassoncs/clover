@@ -1,9 +1,9 @@
+import type { PartyTemplate } from "@slopcade/party";
 import { AmenIcon, AmenLoadingScreen } from "@slopcade/ui/amen";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 import { TutorialPager } from "@/components/browse/TutorialPager";
-import type { PartyTemplate } from "@/lib/party/template-types";
 import { trpcReact } from "@/lib/trpc/react";
 
 export default function HowToPlayScreen() {
@@ -12,7 +12,7 @@ export default function HowToPlayScreen() {
 
 	const { data, isLoading } = trpcReact.partyTemplates.getById.useQuery(
 		{ id: templateId! },
-		{ enabled: !!templateId }
+		{ enabled: !!templateId },
 	);
 
 	const template = data as unknown as PartyTemplate;
