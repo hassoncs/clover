@@ -235,24 +235,24 @@ function ImageElementRenderer({
 				y={elY}
 				width={element.width}
 				height={element.height}
-				color="#C8D8E8"
+				color="#E0E0E0"
 			/>
 			<Rect
 				x={elX}
 				y={elY}
 				width={element.width}
 				height={element.height}
-				color="#A0B0C0"
+				color="#FF3333"
 				style="stroke"
-				strokeWidth={1}
+				strokeWidth={2}
 			/>
 			{font && (
 				<SkiaText
-					x={elX + element.width / 2 - 10}
+					x={elX + element.width / 2 - 20}
 					y={elY + element.height / 2 + 4}
-					text="IMG"
+					text="⚠ IMG"
 					font={font}
-					color="#607080"
+					color="#FF3333"
 				/>
 			)}
 		</Group>
@@ -289,6 +289,30 @@ function renderTextElement(
 	// or it requires a different setup. Let's stick to SkiaText for now, but we can try to use Paragraph if it's exported.
 	// Wait, Paragraph is exported from @shopify/react-native-skia.
 
+	if (!font) {
+		return applyEffects(
+			element,
+			<Group key={element.id}>
+				<Rect
+					x={elX}
+					y={elY}
+					width={element.width}
+					height={element.height}
+					color="#E0E0E0"
+				/>
+				<Rect
+					x={elX}
+					y={elY}
+					width={element.width}
+					height={element.height}
+					color="#FF3333"
+					style="stroke"
+					strokeWidth={2}
+				/>
+			</Group>,
+		);
+	}
+
 	return applyEffects(
 		element,
 		<Group key={element.id}>
@@ -299,15 +323,13 @@ function renderTextElement(
 				height={element.height}
 				color="transparent"
 			/>
-			{font && (
-				<SkiaText
-					x={elX}
-					y={elY + element.fontSize}
-					text={element.content}
-					font={font}
-					color={element.color || "#333333"}
-				/>
-			)}
+			<SkiaText
+				x={elX}
+				y={elY + element.fontSize}
+				text={element.content}
+				font={font}
+				color={element.color || "#333333"}
+			/>
 		</Group>,
 	);
 }
@@ -368,9 +390,37 @@ function renderLineElement(
 function renderPathElement(
 	element: any,
 	framePosition: { x: number; y: number },
+	font: any,
 ) {
 	const elX = framePosition.x + element.x;
 	const elY = framePosition.y + element.y;
+
+	if (!element.data) {
+		return applyEffects(
+			element,
+			<Group key={element.id}>
+				<Rect x={elX} y={elY} width={40} height={40} color="#E0E0E0" />
+				<Rect
+					x={elX}
+					y={elY}
+					width={40}
+					height={40}
+					color="#FF3333"
+					style="stroke"
+					strokeWidth={2}
+				/>
+				{font && (
+					<SkiaText
+						x={elX + 4}
+						y={elY + 24}
+						text="⚠ PATH"
+						font={font}
+						color="#FF3333"
+					/>
+				)}
+			</Group>,
+		);
+	}
 
 	return applyEffects(
 		element,
@@ -565,7 +615,7 @@ export function DesignCanvasRenderer({
 										}
 
 										if (element.type === "path") {
-											return renderPathElement(element, frame.position);
+											return renderPathElement(element, frame.position, font);
 										}
 
 										if (element.type === "group") {

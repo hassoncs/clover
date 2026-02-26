@@ -205,3 +205,5 @@
 ### React-hooks Lint Warnings
 - `useEffect(() => { setSelectedElementIds([]); }, [selectedDesignFrameId])` — the dep-array trigger pattern causes a lint warning ("more deps than necessary") but is a valid React pattern and doesn't fail TypeScript checks
 - Pre-existing `hitTestHandles`/`getElementBounds` in `onMouseDown`/`onMouseMove` dep arrays — pre-existing ESLint warnings that don't affect tsc
+- Added graceful fallbacks for missing images, fonts, and invalid paths in DesignCanvasRenderer to prevent blank rendering or crashes.
+- Added a warning banner in DesignCanvasPanel to alert users when elements may not render correctly.

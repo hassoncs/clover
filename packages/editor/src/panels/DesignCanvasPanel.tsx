@@ -62,6 +62,7 @@ export function DesignCanvasPanel() {
 	});
 
 	const [showFrameList, setShowFrameList] = useState(false);
+	const [dismissedWarning, setDismissedWarning] = useState(false);
 
 	const frames = designDocument?.frames || [];
 	const totalFrames = frames.length;
@@ -72,6 +73,21 @@ export function DesignCanvasPanel() {
 	const selectedElement = selectedFrame?.elements.find(
 		(e) => e.id === selectedDesignElementId,
 	);
+
+	const warningCount = useMemo(() => {
+		if (!designDocument) return 0;
+		let count = 0;
+		for (const frame of designDocument.frames) {
+			for (const el of frame.elements) {
+				if (el.type === "image" && !el.imageUrl && !el.assetRef) {
+					count++;
+				} else if (el.type === "path" && !el.data) {
+					count++;
+				}
+			}
+		}
+		return count;
+	}, [designDocument]);
 
 	useEffect(() => {
 		if (designDocument && designPhase === "idle") {
@@ -449,6 +465,16 @@ export function DesignCanvasPanel() {
 			</View>
 
 			<View style={styles.content}>
+				{warningCount > 0 && !dismissedWarning && (
+					<Pressable
+						style={styles.warningBanner}
+						onPress={() => setDismissedWarning(true)}
+					>
+						<Text style={styles.warningText}>
+							⚠ {warningCount} element(s) may not render correctly
+						</Text>
+					</Pressable>
+				)}
 				{isLoadingDesign ? (
 					<Text style={[styles.message, { color: c.textSecondary }]}>
 						Loading design...
@@ -645,5 +671,27 @@ const styles = StyleSheet.create({
 	actionButtonText: {
 		fontSize: 12,
 		fontWeight: "600",
+	},
+	warningBanner: {
+		position: "absolute",
+		top: 8,
+		alignSelf: "center",
+		backgroundColor: "#FEF3C7",
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 6,
+		borderWidth: 1,
+		borderColor: "#F59E0B",
+		zIndex: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 2,
+	},
+	warningText: {
+		color: "#92400E",
+		fontSize: 12,
+		fontWeight: "500",
 	},
 });
