@@ -4,7 +4,19 @@
  * Single source of truth for all brand configuration across the Slopcade multi-brand platform.
  */
 
-export type BrandId = "slopcade" | "amen";
+export type BrandId = "slopcade" | "amen" | "slopbox" | "shader-editor";
+
+export interface BrandFeatures {
+	// Creator capabilities
+	hasEditor: boolean;
+	hasGameBuilder: boolean; // full game builder (entities, physics, scripting)
+	hasShaderEditor: boolean; // shader/effects editor only
+	hasSocialFeed: boolean;
+	hasAIChat: boolean;
+
+	// Party capabilities
+	hasPartyGames: boolean;
+}
 
 export interface BrandTheme {
 	colors: {
@@ -79,4 +91,7 @@ export interface BrandManifest {
 
 	// Monetization
 	monetization: BrandMonetization;
+
+	// Capabilities
+	features: BrandFeatures;
 }

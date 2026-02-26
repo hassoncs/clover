@@ -1,0 +1,56 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"lib": ["ES2022", "DOM"],
+		"jsx": "react-jsx",
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "./dist",
+		"composite": false,
+		"strict": false,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@slopcade/app-lib/physics2d": ["src/types/shims/app-lib-physics2d.d.ts"],
+			"@slopcade/editor-ai": ["src/types/shims/editor-ai.d.ts"],
+			"@slopcade/godot-bridge/types": [
+				"src/types/shims/godot-bridge-types.d.ts"
+			],
+			"@slopcade/game-runtime/BehaviorContext": [
+				"src/types/shims/game-runtime/BehaviorContext.d.ts"
+			],
+			"@slopcade/game-runtime/EntityManager": [
+				"src/types/shims/game-runtime/EntityManager.d.ts"
+			],
+			"@slopcade/game-runtime/GameRuntime.godot": [
+				"src/types/shims/game-runtime/GameRuntime.godot.d.ts"
+			],
+			"@slopcade/game-runtime/live/LivePreviewController": [
+				"src/types/shims/game-runtime/live/LivePreviewController.d.ts"
+			],
+			"@slopcade/game-runtime/types": [
+				"src/types/shims/game-runtime/types.d.ts"
+			],
+			"@slopcade/shared": ["src/types/shims/shared.d.ts"],
+			"@slopcade/shared/*": ["../../shared/src/*"],
+			"@slopcade/theme": ["../theme/src/index.ts"],
+			"@slopcade/ui": ["src/types/shims/ui.d.ts"]
+		}
+	},
+	"include": ["src/**/*", "nativewind-env.d.ts"],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"src/stories/gallery",
+		"src/**/__tests__/**",
+		"src/**/*.test.ts",
+		"src/**/*.test.tsx"
+	]
+}

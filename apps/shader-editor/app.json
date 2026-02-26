@@ -1,0 +1,47 @@
+{
+	"expo": {
+		"scheme": "shader-editor",
+		"icon": "./assets/icon.png",
+		"splash": {
+			"image": "./assets/splash.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#000000"
+		},
+		"web": {
+			"output": "static",
+			"favicon": "./assets/favicon.png"
+		},
+		"plugins": [
+			"expo-router",
+			"./plugins/withGodotAssets",
+			"./plugins/withMetroPort",
+			[
+				"expo-notifications",
+				{
+					"icon": "./assets/icon.png",
+					"color": "#6366F1"
+				}
+			]
+		],
+		"userInterfaceStyle": "dark",
+		"name": "Shader Editor",
+		"slug": "shader-editor",
+		"description": "AI-powered shader and visual effects editor",
+		"runtimeVersion": "1.0.0",
+		"ios": {
+			"bundleIdentifier": "com.slopcade.shader-editor",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		},
+		"android": {
+			"package": "com.slopcade.shader_editor"
+		},
+		"assetBundlePatterns": ["**/*"],
+		"extra": {
+			"brandId": "shader-editor",
+			"router": {},
+			"eas": {}
+		}
+	}
+}

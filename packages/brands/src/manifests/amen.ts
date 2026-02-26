@@ -67,4 +67,12 @@ export const amenManifest: BrandManifest = {
 		freeGamesPerWeek: 2,
 		trialDays: 14,
 	},
+	features: {
+		hasEditor: false,
+		hasGameBuilder: false,
+		hasShaderEditor: false,
+		hasSocialFeed: false,
+		hasAIChat: false,
+		hasPartyGames: true,
+	},
 };

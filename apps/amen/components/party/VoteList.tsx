@@ -1,1 +1,1 @@
-export { VoteList } from "@slopcade/ui";
+export * from "@slopcade/party";

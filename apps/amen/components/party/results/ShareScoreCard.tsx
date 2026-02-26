@@ -1,1 +1,1 @@
-export { ShareScoreCard } from "@slopcade/ui";
+export * from "@slopcade/party";

@@ -488,3 +488,74 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 4. **Shader Editor scope:** Just shaders/effects, or also simple visual compositions (no physics)?
 5. **Do party apps need Godot?** If party games are purely UI-driven, stripping Godot saves ~15-20MB per app. But if any party game uses the physics engine for rendering, they need it.
 6. **Timeline priority:** Which app first? Slopbox (simpler, copy of amen) or Shader Editor (requires package extraction)?
+
+---
+
+## TODOs (Executable Checklist)
+
+> Status key: `- [ ]` pending, `- [x]` done.
+> Rule: update these checkboxes as execution progresses.
+
+### Wave 1 - Foundations (can run in parallel)
+
+- [x] 1. Add creator/party capability flags to `BrandManifest` in `packages/brands/src/types.ts`.
+- [x] 2. Expand `BrandId` to include `shader-editor` and `slopbox`.
+- [x] 3. Add `shader-editor` manifest in `packages/brands/src/manifests/shader-editor.ts`.
+- [x] 4. Add `slopbox` manifest in `packages/brands/src/manifests/slopbox.ts`.
+- [x] 5. Register new manifests in `packages/brands/src/index.ts`.
+- [x] 6. Validate brand defaults for all four apps (`slopcade`, `shader-editor`, `slopbox`, `amen`).
+
+### Wave 2 - Package extraction (maximum parallelism)
+
+- [x] 7. Create `packages/party/` workspace package scaffold (`package.json`, `tsconfig.json`, `src/index.ts`).
+- [x] 8. Consolidate party UI/components into `packages/party/src/components/` using Amen as canonical base.
+- [x] 9. Consolidate party phases into `packages/party/src/phases/` and unify phase registry usage.
+- [x] 10. Move `PartyContext` and party hooks into `packages/party/src/context/` and `packages/party/src/hooks/`.
+- [x] 11. Rewire party-internal imports to package-local paths (remove app-local `@/lib/party/*` coupling).
+- [x] 12. Create `packages/editor/` scaffold and export surface.
+- [x] 13. Move editor panels/layout/toolbar/preview/assets/providers/hooks from `apps/slopcade/components/editor/` to `packages/editor/src/`.
+- [x] 14. Create `packages/editor-ai/` scaffold and move chat/thread/shared-doc components from `apps/slopcade/components/create-game/`.
+- [x] 15. Create `packages/social/` scaffold and move social feed components from `apps/slopcade/components/social/`.
+- [ ] 16. Consolidate duplicated foundation components from app-local folders into `packages/ui/`.
+- [ ] 17. Consolidate duplicated hooks into `packages/app-lib/src/hooks/`.
+- [ ] 18. Extract shared provider composition (`createAppProviders`) and shared app init (`initSentry`) into packages.
+
+### Wave 3 - Consumer migration
+
+- [ ] 19. Migrate `apps/amen` imports to `@slopcade/party` and shared package paths.
+- [ ] 20. Migrate `apps/slopcade` creator imports to `@slopcade/editor`, `@slopcade/editor-ai`, `@slopcade/social`.
+- [ ] 21. Remove old party code sources from `apps/slopcade/components/party/`, `apps/amen/components/party/`, and stale `packages/ui/src/party/` once migrated.
+- [x] 22. Add temporary re-export shims where needed to keep migration incremental and low risk.
+
+### Wave 4 - New app shells
+
+- [x] 23. Scaffold `apps/slopbox/` from thin `apps/amen/` shell.
+- [x] 24. Configure Slopbox app identity (name, slug, scheme, bundle ID, domain, brand ID).
+- [x] 25. Add Slopbox assets under `apps/slopbox/assets/brands/slopbox/`.
+- [x] 26. Register Slopbox workspace/scripts/devmux (port 8087) and shared Metro config factory usage.
+- [x] 27. Scaffold `apps/shader-editor/` shell with tabs (Feed, Browse, Maker, Profile).
+- [ ] 28. Mount shader-only editor composition from `@slopcade/editor` in shader editor routes.
+- [x] 29. Register shader editor workspace/scripts/devmux (port 8088).
+
+### Wave 5 - Product boundary enforcement
+
+- [ ] 30. Remove party routes/navigation/dependencies from `apps/slopcade` (creator-only state).
+- [ ] 31. Add API `requireFeature()` middleware and replace hardcoded brand gates with feature gates.
+- [ ] 32. Register `slopbox` and `shader-editor` in API brand validation.
+
+### Wave 6 - Verification and cleanup
+
+- [ ] 33. Run type checks/build checks for all affected packages and apps.
+- [ ] 34. Validate party flows end-to-end in `amen` and `slopbox`.
+- [ ] 35. Validate creator flows end-to-end in `slopcade` and `shader-editor`.
+- [ ] 36. Run dead-code cleanup (`knip`) and remove migration shims.
+- [ ] 37. Update `AGENTS.md`/ops docs for ports/scripts/app matrix.
+- [ ] 38. Prepare CI/CD updates for four app targets.
+- [ ] 39. Track App Store/Play provisioning kickoff for Slopbox and Shader Editor.
+
+### Exit Criteria
+
+- [ ] 40. All checkboxes complete.
+- [ ] 41. No party code ships in creator app dependency graph.
+- [ ] 42. No creator code ships in party app dependency graph.
+- [ ] 43. All four apps boot with correct branding and capability boundaries.

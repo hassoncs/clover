@@ -1,1 +1,1 @@
-export { DockviewLayout } from "./DockviewLayout.web";
+export * from "@slopcade/editor";

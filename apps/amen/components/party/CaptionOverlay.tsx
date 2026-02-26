@@ -1,1 +1,1 @@
-export { CaptionOverlay } from "@slopcade/ui";
+export * from "@slopcade/party";

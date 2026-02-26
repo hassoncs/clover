@@ -52,9 +52,28 @@ const SLOPCADE_BRAND: BrandConfig = {
 	},
 };
 
+const SLOPBOX_BRAND: BrandConfig = {
+	id: "slopbox",
+	displayName: "Slopbox",
+	domain: "slopbox.tv",
+	supportEmail: "support@slopbox.tv",
+	tagline: "Party games. Pure chaos.",
+	colors: {
+		primary: "#F97316",
+		primaryLight: "#FED7AA",
+		accent: "#A855F7",
+		background: "#0F0F0F",
+		surface: "#1A1A1A",
+		border: "rgba(249, 115, 22, 0.25)",
+		textPrimary: "#F5F5F5",
+		textSecondary: "#A3A3A3",
+	},
+};
+
 const BRANDS: Record<string, BrandConfig> = {
 	amen: AMEN_BRAND,
 	slopcade: SLOPCADE_BRAND,
+	slopbox: SLOPBOX_BRAND,
 };
 
 export function getBrandConfig(brandId: string): BrandConfig {

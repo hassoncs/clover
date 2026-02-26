@@ -1,3 +1,1 @@
-export function ResizablePanelLayout() {
-	return null;
-}
+export * from "@slopcade/editor";

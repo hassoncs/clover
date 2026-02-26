@@ -1,12 +1,1 @@
-export { GameComments } from "./GameComments";
-export { CommentItem } from "./CommentItem";
-export { LikeButton } from "./LikeButton";
-export { StarRating } from "./StarRating";
-export { FollowButton } from "./FollowButton";
-export { SocialFeedCard } from "./SocialFeedCard";
-export { CommentsBottomSheet } from "./CommentsBottomSheet";
-export type { CommentsBottomSheetHandle } from "./CommentsBottomSheet";
-export { NotificationItem } from "./NotificationItem";
-export { ReportModal } from "./ReportModal";
-export { LikersBottomSheet } from "./LikersBottomSheet";
-export type { LikersBottomSheetHandle } from "./LikersBottomSheet";
+export * from "@slopcade/social";

@@ -1,0 +1,1017 @@
+{
+  "id": "perf-doc-100",
+  "frames": [
+    {
+      "id": "frame-1",
+      "title": "Frame with 100 elements",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "width": 800,
+      "height": 600,
+      "elements": [
+        {
+          "id": "rect-0",
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#1ce606",
+          "zIndex": 0
+        },
+        {
+          "id": "rect-1",
+          "type": "rect",
+          "x": 10,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#b9aa1d",
+          "zIndex": 1
+        },
+        {
+          "id": "rect-2",
+          "type": "rect",
+          "x": 20,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#5f6f71",
+          "zIndex": 2
+        },
+        {
+          "id": "rect-3",
+          "type": "rect",
+          "x": 30,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#507453",
+          "zIndex": 3
+        },
+        {
+          "id": "rect-4",
+          "type": "rect",
+          "x": 40,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#b65d5a",
+          "zIndex": 4
+        },
+        {
+          "id": "rect-5",
+          "type": "rect",
+          "x": 50,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#ff8927",
+          "zIndex": 5
+        },
+        {
+          "id": "rect-6",
+          "type": "rect",
+          "x": 60,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#33883a",
+          "zIndex": 6
+        },
+        {
+          "id": "rect-7",
+          "type": "rect",
+          "x": 70,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#4804be",
+          "zIndex": 7
+        },
+        {
+          "id": "rect-8",
+          "type": "rect",
+          "x": 80,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#d33e82",
+          "zIndex": 8
+        },
+        {
+          "id": "rect-9",
+          "type": "rect",
+          "x": 90,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#1867ac",
+          "zIndex": 9
+        },
+        {
+          "id": "rect-10",
+          "type": "rect",
+          "x": 100,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#8e2ce5",
+          "zIndex": 10
+        },
+        {
+          "id": "rect-11",
+          "type": "rect",
+          "x": 110,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#306e4f",
+          "zIndex": 11
+        },
+        {
+          "id": "rect-12",
+          "type": "rect",
+          "x": 120,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#1f8e67",
+          "zIndex": 12
+        },
+        {
+          "id": "rect-13",
+          "type": "rect",
+          "x": 130,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#9511d2",
+          "zIndex": 13
+        },
+        {
+          "id": "rect-14",
+          "type": "rect",
+          "x": 140,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#19ace1",
+          "zIndex": 14
+        },
+        {
+          "id": "rect-15",
+          "type": "rect",
+          "x": 150,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#8a5fd5",
+          "zIndex": 15
+        },
+        {
+          "id": "rect-16",
+          "type": "rect",
+          "x": 160,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#a40f09",
+          "zIndex": 16
+        },
+        {
+          "id": "rect-17",
+          "type": "rect",
+          "x": 170,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#1e8824",
+          "zIndex": 17
+        },
+        {
+          "id": "rect-18",
+          "type": "rect",
+          "x": 180,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#dd2afd",
+          "zIndex": 18
+        },
+        {
+          "id": "rect-19",
+          "type": "rect",
+          "x": 190,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#d763d3",
+          "zIndex": 19
+        },
+        {
+          "id": "rect-20",
+          "type": "rect",
+          "x": 200,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#33f84a",
+          "zIndex": 20
+        },
+        {
+          "id": "rect-21",
+          "type": "rect",
+          "x": 210,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#419d29",
+          "zIndex": 21
+        },
+        {
+          "id": "rect-22",
+          "type": "rect",
+          "x": 220,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#f53f18",
+          "zIndex": 22
+        },
+        {
+          "id": "rect-23",
+          "type": "rect",
+          "x": 230,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#0a2905",
+          "zIndex": 23
+        },
+        {
+          "id": "rect-24",
+          "type": "rect",
+          "x": 240,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#369511",
+          "zIndex": 24
+        },
+        {
+          "id": "rect-25",
+          "type": "rect",
+          "x": 250,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#53355a",
+          "zIndex": 25
+        },
+        {
+          "id": "rect-26",
+          "type": "rect",
+          "x": 260,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#154792",
+          "zIndex": 26
+        },
+        {
+          "id": "rect-27",
+          "type": "rect",
+          "x": 270,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#33f4a2",
+          "zIndex": 27
+        },
+        {
+          "id": "rect-28",
+          "type": "rect",
+          "x": 280,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#124382",
+          "zIndex": 28
+        },
+        {
+          "id": "rect-29",
+          "type": "rect",
+          "x": 290,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#faa5fe",
+          "zIndex": 29
+        },
+        {
+          "id": "rect-30",
+          "type": "rect",
+          "x": 300,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#f95abb",
+          "zIndex": 30
+        },
+        {
+          "id": "rect-31",
+          "type": "rect",
+          "x": 310,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#539b3a",
+          "zIndex": 31
+        },
+        {
+          "id": "rect-32",
+          "type": "rect",
+          "x": 320,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#ae7e03",
+          "zIndex": 32
+        },
+        {
+          "id": "rect-33",
+          "type": "rect",
+          "x": 330,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#117b73",
+          "zIndex": 33
+        },
+        {
+          "id": "rect-34",
+          "type": "rect",
+          "x": 340,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#534f77",
+          "zIndex": 34
+        },
+        {
+          "id": "rect-35",
+          "type": "rect",
+          "x": 350,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#46ed63",
+          "zIndex": 35
+        },
+        {
+          "id": "rect-36",
+          "type": "rect",
+          "x": 360,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#abaf2e",
+          "zIndex": 36
+        },
+        {
+          "id": "rect-37",
+          "type": "rect",
+          "x": 370,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#9bbe50",
+          "zIndex": 37
+        },
+        {
+          "id": "rect-38",
+          "type": "rect",
+          "x": 380,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#a9d958",
+          "zIndex": 38
+        },
+        {
+          "id": "rect-39",
+          "type": "rect",
+          "x": 390,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#ff82d8",
+          "zIndex": 39
+        },
+        {
+          "id": "rect-40",
+          "type": "rect",
+          "x": 400,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#b73929",
+          "zIndex": 40
+        },
+        {
+          "id": "rect-41",
+          "type": "rect",
+          "x": 410,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#7720b0",
+          "zIndex": 41
+        },
+        {
+          "id": "rect-42",
+          "type": "rect",
+          "x": 420,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#9e3422",
+          "zIndex": 42
+        },
+        {
+          "id": "rect-43",
+          "type": "rect",
+          "x": 430,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#84b086",
+          "zIndex": 43
+        },
+        {
+          "id": "rect-44",
+          "type": "rect",
+          "x": 440,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#aadcc2",
+          "zIndex": 44
+        },
+        {
+          "id": "rect-45",
+          "type": "rect",
+          "x": 450,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#cf9ae8",
+          "zIndex": 45
+        },
+        {
+          "id": "rect-46",
+          "type": "rect",
+          "x": 460,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#166b58",
+          "zIndex": 46
+        },
+        {
+          "id": "rect-47",
+          "type": "rect",
+          "x": 470,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#7b3f7a",
+          "zIndex": 47
+        },
+        {
+          "id": "rect-48",
+          "type": "rect",
+          "x": 480,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#968619",
+          "zIndex": 48
+        },
+        {
+          "id": "rect-49",
+          "type": "rect",
+          "x": 490,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#0be8ef",
+          "zIndex": 49
+        },
+        {
+          "id": "rect-50",
+          "type": "rect",
+          "x": 500,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#414df1",
+          "zIndex": 50
+        },
+        {
+          "id": "rect-51",
+          "type": "rect",
+          "x": 510,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#57eff9",
+          "zIndex": 51
+        },
+        {
+          "id": "rect-52",
+          "type": "rect",
+          "x": 520,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#0e2206",
+          "zIndex": 52
+        },
+        {
+          "id": "rect-53",
+          "type": "rect",
+          "x": 530,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#6ec32b",
+          "zIndex": 53
+        },
+        {
+          "id": "rect-54",
+          "type": "rect",
+          "x": 540,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#03f448",
+          "zIndex": 54
+        },
+        {
+          "id": "rect-55",
+          "type": "rect",
+          "x": 550,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#adffb8",
+          "zIndex": 55
+        },
+        {
+          "id": "rect-56",
+          "type": "rect",
+          "x": 560,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#801071",
+          "zIndex": 56
+        },
+        {
+          "id": "rect-57",
+          "type": "rect",
+          "x": 570,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#077f6e",
+          "zIndex": 57
+        },
+        {
+          "id": "rect-58",
+          "type": "rect",
+          "x": 580,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#e471b9",
+          "zIndex": 58
+        },
+        {
+          "id": "rect-59",
+          "type": "rect",
+          "x": 590,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#60958e",
+          "zIndex": 59
+        },
+        {
+          "id": "rect-60",
+          "type": "rect",
+          "x": 600,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#6a2723",
+          "zIndex": 60
+        },
+        {
+          "id": "rect-61",
+          "type": "rect",
+          "x": 610,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#f818d4",
+          "zIndex": 61
+        },
+        {
+          "id": "rect-62",
+          "type": "rect",
+          "x": 620,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#64c74b",
+          "zIndex": 62
+        },
+        {
+          "id": "rect-63",
+          "type": "rect",
+          "x": 630,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#96c0ad",
+          "zIndex": 63
+        },
+        {
+          "id": "rect-64",
+          "type": "rect",
+          "x": 640,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#423e09",
+          "zIndex": 64
+        },
+        {
+          "id": "rect-65",
+          "type": "rect",
+          "x": 650,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#4b60b0",
+          "zIndex": 65
+        },
+        {
+          "id": "rect-66",
+          "type": "rect",
+          "x": 660,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#3e9f92",
+          "zIndex": 66
+        },
+        {
+          "id": "rect-67",
+          "type": "rect",
+          "x": 670,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#2cdb32",
+          "zIndex": 67
+        },
+        {
+          "id": "rect-68",
+          "type": "rect",
+          "x": 680,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#d8baf6",
+          "zIndex": 68
+        },
+        {
+          "id": "rect-69",
+          "type": "rect",
+          "x": 690,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#6b361c",
+          "zIndex": 69
+        },
+        {
+          "id": "rect-70",
+          "type": "rect",
+          "x": 700,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#1c2211",
+          "zIndex": 70
+        },
+        {
+          "id": "rect-71",
+          "type": "rect",
+          "x": 710,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#13070e",
+          "zIndex": 71
+        },
+        {
+          "id": "rect-72",
+          "type": "rect",
+          "x": 720,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#43cc62",
+          "zIndex": 72
+        },
+        {
+          "id": "rect-73",
+          "type": "rect",
+          "x": 730,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#21a482",
+          "zIndex": 73
+        },
+        {
+          "id": "rect-74",
+          "type": "rect",
+          "x": 740,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#21132c",
+          "zIndex": 74
+        },
+        {
+          "id": "rect-75",
+          "type": "rect",
+          "x": 750,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#a7b17c",
+          "zIndex": 75
+        },
+        {
+          "id": "rect-76",
+          "type": "rect",
+          "x": 760,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#5580bf",
+          "zIndex": 76
+        },
+        {
+          "id": "rect-77",
+          "type": "rect",
+          "x": 770,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#73fd6a",
+          "zIndex": 77
+        },
+        {
+          "id": "rect-78",
+          "type": "rect",
+          "x": 780,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#55b376",
+          "zIndex": 78
+        },
+        {
+          "id": "rect-79",
+          "type": "rect",
+          "x": 790,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "fill": "#2df633",
+          "zIndex": 79
+        },
+        {
+          "id": "rect-80",
+          "type": "rect",
+          "x": 0,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#a0fa45",
+          "zIndex": 80
+        },
+        {
+          "id": "rect-81",
+          "type": "rect",
+          "x": 10,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#83cbfb",
+          "zIndex": 81
+        },
+        {
+          "id": "rect-82",
+          "type": "rect",
+          "x": 20,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#4c9ae2",
+          "zIndex": 82
+        },
+        {
+          "id": "rect-83",
+          "type": "rect",
+          "x": 30,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#9977fa",
+          "zIndex": 83
+        },
+        {
+          "id": "rect-84",
+          "type": "rect",
+          "x": 40,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#de766b",
+          "zIndex": 84
+        },
+        {
+          "id": "rect-85",
+          "type": "rect",
+          "x": 50,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#370ba6",
+          "zIndex": 85
+        },
+        {
+          "id": "rect-86",
+          "type": "rect",
+          "x": 60,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#8ee996",
+          "zIndex": 86
+        },
+        {
+          "id": "rect-87",
+          "type": "rect",
+          "x": 70,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#ae5a99",
+          "zIndex": 87
+        },
+        {
+          "id": "rect-88",
+          "type": "rect",
+          "x": 80,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#afa5f4",
+          "zIndex": 88
+        },
+        {
+          "id": "rect-89",
+          "type": "rect",
+          "x": 90,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#ad9c76",
+          "zIndex": 89
+        },
+        {
+          "id": "rect-90",
+          "type": "rect",
+          "x": 100,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#7e6fa0",
+          "zIndex": 90
+        },
+        {
+          "id": "rect-91",
+          "type": "rect",
+          "x": 110,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#a0ab60",
+          "zIndex": 91
+        },
+        {
+          "id": "rect-92",
+          "type": "rect",
+          "x": 120,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#6231eb",
+          "zIndex": 92
+        },
+        {
+          "id": "rect-93",
+          "type": "rect",
+          "x": 130,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#029abf",
+          "zIndex": 93
+        },
+        {
+          "id": "rect-94",
+          "type": "rect",
+          "x": 140,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#e29b08",
+          "zIndex": 94
+        },
+        {
+          "id": "rect-95",
+          "type": "rect",
+          "x": 150,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#dbf6ef",
+          "zIndex": 95
+        },
+        {
+          "id": "rect-96",
+          "type": "rect",
+          "x": 160,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#06475c",
+          "zIndex": 96
+        },
+        {
+          "id": "rect-97",
+          "type": "rect",
+          "x": 170,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#c84ad1",
+          "zIndex": 97
+        },
+        {
+          "id": "rect-98",
+          "type": "rect",
+          "x": 180,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#cfce41",
+          "zIndex": 98
+        },
+        {
+          "id": "rect-99",
+          "type": "rect",
+          "x": 190,
+          "y": 10,
+          "width": 8,
+          "height": 8,
+          "fill": "#3ec7d6",
+          "zIndex": 99
+        }
+      ]
+    }
+  ]
+}

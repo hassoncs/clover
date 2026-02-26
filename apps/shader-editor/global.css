@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--color-theme-background: 248 248 255;
+	--color-theme-surface: 255 255 255;
+	--color-theme-surface-elevated: 243 240 255;
+	--color-theme-border: 220 215 255;
+	--color-theme-text: 15 10 30;
+	--color-theme-text-secondary: 90 80 130;
+	--color-theme-text-tertiary: 140 130 170;
+	--color-theme-text-inverse: 255 255 255;
+	--color-theme-primary: 99 102 241;
+	--color-theme-secondary: 168 85 247;
+	--color-theme-success: 16 185 129;
+	--color-theme-warning: 245 158 11;
+	--color-theme-error: 239 68 68;
+
+	--ed-bg: #ffffff;
+	--ed-surface: #f6f8fa;
+	--ed-surface-hover: #eaeef2;
+	--ed-surface-active: #d0d7de;
+	--ed-border: #d0d7de;
+	--ed-border-strong: #afb8c1;
+	--ed-text: #1f2328;
+	--ed-text-secondary: #656d76;
+	--ed-text-muted: #8b949e;
+	--ed-accent: #6366f1;
+	--ed-accent-hover: #4f46e5;
+	--ed-accent-muted: rgba(99, 102, 241, 0.1);
+	--ed-success: #1a7f37;
+	--ed-warning: #9a6700;
+	--ed-error: #cf222e;
+	--ed-activity-bar-bg: #f6f8fa;
+	--ed-activity-bar-icon: #656d76;
+	--ed-activity-bar-icon-active: #1f2328;
+	--ed-activity-bar-indicator: #6366f1;
+	--ed-titlebar-bg: #f6f8fa;
+	--ed-tab-bg: transparent;
+	--ed-tab-active-bg: #ffffff;
+	--ed-tab-border: #d0d7de;
+	--ed-tab-text: #656d76;
+	--ed-tab-active-text: #1f2328;
+	--ed-panel-bg: #f6f8fa;
+	--ed-panel-header-bg: #f6f8fa;
+	--ed-input-bg: #ffffff;
+	--ed-input-border: #d0d7de;
+	--ed-input-text: #1f2328;
+	--ed-input-placeholder: #8b949e;
+	--ed-scrollbar-thumb: #afb8c1;
+	--ed-scrollbar-track: transparent;
+}
+
+.dark {
+	--color-theme-background: 5 3 15;
+	--color-theme-surface: 13 10 30;
+	--color-theme-surface-elevated: 22 18 45;
+	--color-theme-border: 45 38 80;
+	--color-theme-text: 240 235 255;
+	--color-theme-text-secondary: 160 150 200;
+	--color-theme-text-tertiary: 100 90 140;
+	--color-theme-text-inverse: 5 3 15;
+	--color-theme-primary: 129 140 248;
+	--color-theme-secondary: 196 130 255;
+	--color-theme-success: 52 211 153;
+	--color-theme-warning: 251 191 36;
+	--color-theme-error: 248 113 113;
+
+	--ed-bg: #050310;
+	--ed-surface: #0d0a1e;
+	--ed-surface-hover: #16122d;
+	--ed-surface-active: #1e1840;
+	--ed-border: #2d2650;
+	--ed-border-strong: #3d3468;
+	--ed-text: #f0ebff;
+	--ed-text-secondary: #a096c8;
+	--ed-text-muted: #6460a0;
+	--ed-accent: #818cf8;
+	--ed-accent-hover: #6366f1;
+	--ed-accent-muted: rgba(129, 140, 248, 0.15);
+	--ed-success: #3fb950;
+	--ed-warning: #d29922;
+	--ed-error: #f85149;
+	--ed-activity-bar-bg: #050310;
+	--ed-activity-bar-icon: #a096c8;
+	--ed-activity-bar-icon-active: #f0ebff;
+	--ed-activity-bar-indicator: #818cf8;
+	--ed-titlebar-bg: #050310;
+	--ed-tab-bg: transparent;
+	--ed-tab-active-bg: #0d0a1e;
+	--ed-tab-border: #2d2650;
+	--ed-tab-text: #a096c8;
+	--ed-tab-active-text: #f0ebff;
+	--ed-panel-bg: #0d0a1e;
+	--ed-panel-header-bg: #050310;
+	--ed-input-bg: #050310;
+	--ed-input-border: #2d2650;
+	--ed-input-text: #f0ebff;
+	--ed-input-placeholder: #6460a0;
+	--ed-scrollbar-thumb: #3d3468;
+	--ed-scrollbar-track: transparent;
+}
+
+.no-select {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+canvas,
+iframe {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-user-drag: none;
+	-khtml-user-drag: none;
+	-moz-user-drag: none;
+	-o-user-drag: none;
+	user-drag: none;
+}
+
+html,
+body {
+	overscroll-behavior: none;
+	scroll-behavior: smooth;
+}
+
+*:focus {
+	outline: none;
+}

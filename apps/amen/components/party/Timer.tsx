@@ -1,1 +1,1 @@
-export { Timer } from "@slopcade/ui";
+export * from "@slopcade/party";

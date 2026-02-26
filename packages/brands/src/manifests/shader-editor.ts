@@ -1,0 +1,58 @@
+import type { BrandManifest } from "../types";
+
+export const shaderEditorManifest: BrandManifest = {
+	id: "shader-editor",
+	displayName: "Shader Editor",
+	legalName: "Shader Editor",
+	domain: "shaders.slopcade.com",
+	tagline: "Create shaders with AI",
+	ios: { bundleIdentifier: "com.slopcade.shader-editor" },
+	android: { package: "com.slopcade.shader_editor" },
+	scheme: "shader-editor",
+	auth: {
+		supabaseUrl: "SLOPCADE_SUPABASE_URL",
+		supabaseAnonKey: "SLOPCADE_SUPABASE_ANON_KEY",
+		providers: ["google"],
+	},
+	theme: {
+		colors: {
+			primary: "#8b5cf6",
+			secondary: "#6366f1",
+			accent: "#ec4899",
+			background: "#0a0a0a",
+			surface: "#161616",
+			text: "#f5f5f5",
+			textSecondary: "#a3a3a3",
+			error: "#ef4444",
+			success: "#10b981",
+		},
+		fontFamily: { heading: "Inter", body: "Inter" },
+		borderRadius: "sharp",
+		iconStyle: "outlined",
+	},
+	content: {
+		ageRating: "everyone",
+		toneDirective: "Technical, creative, minimal",
+		requireScriptureRef: false,
+		bannedCategories: [],
+		denominationalPolicy: "none",
+		defaultContentNamespace: "shaders",
+	},
+	termsUrl: "https://slopcade.com/terms",
+	privacyUrl: "https://slopcade.com/privacy",
+	supportEmail: "support@slopcade.com",
+	monetization: {
+		hasIndividualSub: true,
+		hasOrgSub: false,
+		freeGamesPerWeek: 0,
+		trialDays: 7,
+	},
+	features: {
+		hasEditor: true,
+		hasGameBuilder: false,
+		hasShaderEditor: true,
+		hasSocialFeed: true,
+		hasAIChat: true,
+		hasPartyGames: false,
+	},
+};

@@ -1,0 +1,19 @@
+{
+	"extends": "expo/tsconfig.base",
+	"compilerOptions": {
+		"strict": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"],
+			"@slopcade/app-lib": ["../../packages/app-lib/src/index.ts"],
+			"@slopcade/app-lib/*": ["../../packages/app-lib/src/*"],
+			"@slopcade/game-runtime": ["../../packages/game-runtime/src/index.ts"],
+			"@slopcade/game-runtime/*": ["../../packages/game-runtime/src/*"],
+			"@slopcade/godot-bridge": ["../../packages/godot-bridge/src/index.ts"],
+			"@slopcade/godot-bridge/*": ["../../packages/godot-bridge/src/*"]
+		},
+		"types": ["node", "react"]
+	},
+	"include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"],
+	"exclude": ["node_modules"]
+}

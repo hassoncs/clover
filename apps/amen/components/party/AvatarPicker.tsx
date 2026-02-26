@@ -1,1 +1,1 @@
-export { AvatarPicker } from "@slopcade/ui";
+export * from "@slopcade/party";

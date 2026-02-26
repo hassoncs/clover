@@ -3,6 +3,8 @@ packages:
   - 'apps/admin'
   - 'apps/slopcade'
   - 'apps/amen'
+  - 'apps/slopbox'
+  - 'apps/shader-editor'
   - 'apps/landing-slopcade'
   - 'apps/landing-amen'
   - 'shared'

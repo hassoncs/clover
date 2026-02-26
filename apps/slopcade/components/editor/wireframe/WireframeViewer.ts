@@ -1,1 +1,1 @@
-export { WireframeViewer } from "./WireframeViewer.web";
+export * from "@slopcade/editor";

@@ -1,1 +1,1 @@
-export { CodeEditor } from './CodeEditor.web';
+export * from "@slopcade/editor";

@@ -66,4 +66,12 @@ export const slopcadeManifest: BrandManifest = {
 		freeGamesPerWeek: 0,
 		trialDays: 0,
 	},
+	features: {
+		hasEditor: true,
+		hasGameBuilder: true,
+		hasShaderEditor: true,
+		hasSocialFeed: true,
+		hasAIChat: true,
+		hasPartyGames: false,
+	},
 };

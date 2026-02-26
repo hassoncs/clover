@@ -6,6 +6,8 @@
  */
 
 import { amenManifest } from "./manifests/amen";
+import { shaderEditorManifest } from "./manifests/shader-editor";
+import { slopboxManifest } from "./manifests/slopbox";
 import { slopcadeManifest } from "./manifests/slopcade";
 import type { BrandId, BrandManifest } from "./types";
 
@@ -19,6 +21,7 @@ export {
 // Re-export all types
 export type {
 	BrandContentPolicy,
+	BrandFeatures,
 	BrandId,
 	BrandManifest,
 	BrandMonetization,
@@ -28,7 +31,12 @@ export type {
 /**
  * All valid brand IDs
  */
-export const BRAND_IDS: readonly BrandId[] = ["slopcade", "amen"] as const;
+export const BRAND_IDS: readonly BrandId[] = [
+	"slopcade",
+	"amen",
+	"slopbox",
+	"shader-editor",
+] as const;
 
 /**
  * Default brand ID for the platform
@@ -41,6 +49,8 @@ export const DEFAULT_BRAND_ID: BrandId = "slopcade";
 const manifestRegistry: Record<BrandId, BrandManifest> = {
 	slopcade: slopcadeManifest,
 	amen: amenManifest,
+	slopbox: slopboxManifest,
+	"shader-editor": shaderEditorManifest,
 };
 
 /**

@@ -1,2 +1,1 @@
-export * from "./WireframeRenderer";
-export * from "./WireframeViewer";
+export * from "@slopcade/editor";

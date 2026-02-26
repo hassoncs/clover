@@ -1,1 +1,1 @@
-export { GraphEditor } from "./GraphEditor.web";
+export * from "@slopcade/editor";

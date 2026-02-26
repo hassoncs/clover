@@ -1,1 +1,1 @@
-export { HostWaitCard } from "@slopcade/ui";
+export * from "@slopcade/party";
