@@ -40,7 +40,7 @@
 		"react-native-gesture-handler": "^2.30.0",
 		"react-native-reanimated": "^4.1.6",
 		"react-native-sortables": "^1.9.4",
-		"swiper": "^12.1.2",
+		"swiper": "11.2.10",
 		"tailwind-merge": "^3.4.0"
 	},
 	"scripts": {
