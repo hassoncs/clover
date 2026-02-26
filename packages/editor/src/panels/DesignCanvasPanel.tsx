@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { DesignDocument } from "@slopcade/shared";
 import { useTheme } from "@slopcade/theme";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -33,6 +34,8 @@ export function DesignCanvasPanel() {
 	const { camera, zoomToFit, onWheel, onMouseDown, onMouseMove, onMouseUp } =
 		useDesignCamera();
 
+	const [selectedElementIds, setSelectedElementIds] = useState<string[]>([]);
+
 	const {
 		isDragging,
 		isResizing,
@@ -49,6 +52,7 @@ export function DesignCanvasPanel() {
 		camera,
 		selectedFrameId: selectedDesignFrameId,
 		selectedElementId: selectedDesignElementId,
+		selectedElementIds,
 		saveDesignDocument,
 		cameraHandlers: {
 			onMouseDown,
@@ -117,17 +121,147 @@ export function DesignCanvasPanel() {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [handleZoomToFit, goPrevFrame, goNextFrame]);
 
-	const handleElementTap = (frameId: string, elementId: string | null) => {
-		if (elementId) {
-			selectDesignElement(elementId, frameId);
-			setDesignMode("select");
-		} else if (frameId) {
-			selectDesignFrame(frameId);
-			setDesignMode("select");
-		} else {
-			clearDesignSelection();
+	useEffect(() => {
+		setSelectedElementIds([]);
+	}, [selectedDesignFrameId]);
+
+	const handleElementTap = useCallback(
+		(frameId: string, elementId: string | null, shiftKey?: boolean) => {
+			if (elementId && shiftKey) {
+				setSelectedElementIds((prev) => {
+					const next = prev.includes(elementId)
+						? prev.filter((id) => id !== elementId)
+						: [...prev, elementId];
+					if (next.length >= 2) {
+						clearDesignSelection();
+					}
+					return next;
+				});
+				return;
+			}
+			setSelectedElementIds([]);
+			if (elementId) {
+				selectDesignElement(elementId, frameId);
+				setDesignMode("select");
+			} else if (frameId) {
+				selectDesignFrame(frameId);
+				setDesignMode("select");
+			} else {
+				clearDesignSelection();
+			}
+		},
+		[
+			clearDesignSelection,
+			selectDesignElement,
+			selectDesignFrame,
+			setDesignMode,
+		],
+	);
+
+	const handleGroup = useCallback(() => {
+		if (
+			!designDocument ||
+			!selectedDesignFrameId ||
+			selectedElementIds.length < 2
+		)
+			return;
+
+		const newDoc = JSON.parse(JSON.stringify(designDocument)) as DesignDocument;
+		const frame = newDoc.frames.find((f) => f.id === selectedDesignFrameId);
+		if (!frame) return;
+
+		const toGroup = frame.elements.filter((el) =>
+			selectedElementIds.includes(el.id),
+		);
+		if (toGroup.length < 2) return;
+
+		let minX = Infinity,
+			minY = Infinity,
+			maxX = -Infinity,
+			maxY = -Infinity;
+		for (const el of toGroup) {
+			if (el.type === "line") {
+				minX = Math.min(minX, Math.min(el.x1, el.x2));
+				minY = Math.min(minY, Math.min(el.y1, el.y2));
+				maxX = Math.max(maxX, Math.max(el.x1, el.x2));
+				maxY = Math.max(maxY, Math.max(el.y1, el.y2));
+			} else if (el.type === "path") {
+				minX = Math.min(minX, el.x);
+				minY = Math.min(minY, el.y);
+				maxX = Math.max(maxX, el.x + 40);
+				maxY = Math.max(maxY, el.y + 40);
+			} else {
+				minX = Math.min(minX, el.x);
+				minY = Math.min(minY, el.y);
+				maxX = Math.max(maxX, el.x + el.width);
+				maxY = Math.max(maxY, el.y + el.height);
+			}
 		}
-	};
+
+		const maxZIndex = Math.max(...frame.elements.map((e) => e.zIndex), 0);
+		const groupId = `group-${Date.now()}`;
+		const groupEl = {
+			id: groupId,
+			type: "group" as const,
+			x: minX,
+			y: minY,
+			width: maxX - minX,
+			height: maxY - minY,
+			zIndex: maxZIndex + 1,
+			childIds: [...selectedElementIds],
+		};
+
+		frame.elements = frame.elements.filter(
+			(el) => !selectedElementIds.includes(el.id),
+		);
+		frame.elements.push(groupEl);
+		saveDesignDocument(newDoc);
+		setSelectedElementIds([]);
+		selectDesignElement(groupId, selectedDesignFrameId);
+		setDesignMode("select");
+	}, [
+		designDocument,
+		selectedDesignFrameId,
+		selectedElementIds,
+		saveDesignDocument,
+		selectDesignElement,
+		setDesignMode,
+	]);
+
+	const handleUngroup = useCallback(() => {
+		if (!designDocument || !selectedDesignFrameId || !selectedDesignElementId)
+			return;
+
+		const newDoc = JSON.parse(JSON.stringify(designDocument)) as DesignDocument;
+		const frame = newDoc.frames.find((f) => f.id === selectedDesignFrameId);
+		const groupEl = frame?.elements.find(
+			(el) => el.id === selectedDesignElementId,
+		);
+
+		if (!frame || !groupEl || groupEl.type !== "group") return;
+
+		const rectEl = {
+			id: groupEl.id,
+			type: "rect" as const,
+			x: groupEl.x,
+			y: groupEl.y,
+			width: groupEl.width,
+			height: groupEl.height,
+			zIndex: groupEl.zIndex,
+			fill: "#E0E0E0",
+		};
+
+		const idx = frame.elements.findIndex(
+			(el) => el.id === selectedDesignElementId,
+		);
+		if (idx !== -1) frame.elements.splice(idx, 1, rectEl);
+		saveDesignDocument(newDoc);
+	}, [
+		designDocument,
+		selectedDesignFrameId,
+		selectedDesignElementId,
+		saveDesignDocument,
+	]);
 
 	const breadcrumbText = useMemo(() => {
 		if (!selectedFrame) return null;
@@ -215,6 +349,42 @@ export function DesignCanvasPanel() {
 						</View>
 					)}
 
+					{selectedElementIds.length >= 2 && (
+						<Pressable
+							style={[
+								styles.actionButton,
+								{
+									backgroundColor: c.surfaceHover,
+									borderWidth: 1,
+									borderColor: c.border,
+								},
+							]}
+							onPress={handleGroup}
+						>
+							<Text style={[styles.actionButtonText, { color: c.text }]}>
+								Group
+							</Text>
+						</Pressable>
+					)}
+
+					{selectedDesignElementId && selectedElement?.type === "group" && (
+						<Pressable
+							style={[
+								styles.actionButton,
+								{
+									backgroundColor: c.surfaceHover,
+									borderWidth: 1,
+									borderColor: c.border,
+								},
+							]}
+							onPress={handleUngroup}
+						>
+							<Text style={[styles.actionButtonText, { color: c.text }]}>
+								Ungroup
+							</Text>
+						</Pressable>
+					)}
+
 					<View style={[styles.navControls, { backgroundColor: c.surface }]}>
 						<Pressable onPress={handleZoomToFit} style={styles.navButton}>
 							<Ionicons name="expand" size={14} color={c.text} />
@@ -299,9 +469,10 @@ export function DesignCanvasPanel() {
 							camera={camera}
 							selectedFrameId={selectedDesignFrameId}
 							selectedElementId={selectedDesignElementId}
+							selectedElementIds={selectedElementIds}
 							onElementTap={handleElementTap}
 							width={width}
-							height={height - 48} // Subtract header height
+							height={height - 48}
 							snapLines={snapLines}
 							showGrid={showGrid}
 						/>

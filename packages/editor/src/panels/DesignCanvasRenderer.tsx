@@ -86,7 +86,11 @@ export interface DesignCanvasRendererProps {
 	selectedFrameId: string | null;
 	selectedElementId: string | null;
 	selectedElementIds?: string[];
-	onElementTap?: (frameId: string, elementId: string | null) => void;
+	onElementTap?: (
+		frameId: string,
+		elementId: string | null,
+		shiftKey?: boolean,
+	) => void;
 	width: number;
 	height: number;
 	snapLines?: SnapLine[];
@@ -460,8 +464,9 @@ export function DesignCanvasRenderer({
 			const { locationX, locationY } = event.nativeEvent;
 			const { worldX, worldY } = screenToWorld(locationX, locationY, camera);
 			const hit = hitTestDesignCanvas(document.frames, worldX, worldY);
+			const shiftKey = event.nativeEvent.shiftKey ?? false;
 
-			onElementTap(hit.frameId ?? "", hit.elementId);
+			onElementTap(hit.frameId ?? "", hit.elementId, shiftKey);
 		},
 		[document.frames, camera, onElementTap],
 	);

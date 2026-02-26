@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@slopcade/theme";
 import { useEffect, useMemo, useState } from "react";
 import {
 	Pressable,
@@ -13,7 +14,6 @@ import {
 	GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
-import { useTheme } from "@slopcade/theme";
 import { useEditor } from "../EditorProvider";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 import { DesignCanvasRenderer } from "./DesignCanvasRenderer";
@@ -75,7 +75,11 @@ export function DesignCanvasPanel() {
 		}
 	};
 
-	const handleElementTap = (frameId: string, elementId: string | null) => {
+	const handleElementTap = (
+		frameId: string,
+		elementId: string | null,
+		_shiftKey?: boolean,
+	) => {
 		if (elementId) {
 			selectDesignElement(elementId, frameId);
 			setDesignMode("select");
@@ -276,6 +280,7 @@ export function DesignCanvasPanel() {
 									camera={camera}
 									selectedFrameId={selectedDesignFrameId}
 									selectedElementId={selectedDesignElementId}
+									selectedElementIds={[]}
 									onElementTap={handleElementTap}
 									width={width}
 									height={height - 48}

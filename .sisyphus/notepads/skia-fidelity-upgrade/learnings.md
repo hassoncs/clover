@@ -176,3 +176,32 @@
 - Handled React Native Web event propagation by stopping propagation on `onMouseDown` when interacting with an element, while allowing `onPress` to fire for selection.
 - Snapping logic computes targets from frame edges and other elements' bounds, finding the closest match within an 8px threshold (scaled by camera zoom).
 - Rotation uses `Math.atan2` to compute angle from element center to mouse position, with shift-key snapping to 15-degree increments.
+
+## T18: Multi-select and Group Basics (2026-02-26)
+
+### Architecture
+- Multi-select state (`selectedElementIds: string[]`) lives locally in `DesignCanvasPanel.tsx` (NOT in EditorProvider)
+- `useDesignInteractions` accepts optional `selectedElementIds` for multi-drag support
+- `DesignCanvasRenderer` accepts optional `selectedElementIds` for the combined bounding box overlay
+
+### onElementTap Signature
+- Updated to `(frameId: string, elementId: string | null, shiftKey?: boolean)` to support shift-click
+- `shiftKey` comes from `event.nativeEvent.shiftKey` in the renderer's TouchableWithoutFeedback press handler
+- Native panel ignores `shiftKey` (future work)
+
+### DashPathEffect in Skia
+- `DashPathEffect` IS exported from `@shopify/react-native-skia` (via renderer/components/pathEffects)
+- Used as a child of `<Path>` to create dashed strokes: `<Path><DashPathEffect intervals={[dashLen, gapLen]} /></Path>`
+- Intervals should be scaled by `1 / camera.scale` to stay visually consistent at any zoom level
+
+### Group Element Schema
+- `DesignElementGroupSchema` has a required `childIds: string[]` field — always include this when creating group elements
+- Ungroup converts the group to a `rect` element (same bounds), since the schema uses flat structure with no nested children
+
+### interactionState Ref
+- When adding a new interaction type (`multi-drag`), all state assignments to `interactionState.current` must include ALL fields of the union type (TypeScript will error on missing required fields)
+- `initialElements: Record<string, DesignElement>` stores deep-copied initial element states for multi-drag delta computation
+
+### React-hooks Lint Warnings
+- `useEffect(() => { setSelectedElementIds([]); }, [selectedDesignFrameId])` — the dep-array trigger pattern causes a lint warning ("more deps than necessary") but is a valid React pattern and doesn't fail TypeScript checks
+- Pre-existing `hitTestHandles`/`getElementBounds` in `onMouseDown`/`onMouseMove` dep arrays — pre-existing ESLint warnings that don't affect tsc
