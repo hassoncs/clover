@@ -40,7 +40,9 @@ async function computeContentHash(body: string): Promise<string> {
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function extractContentTypeFromFilename(filename: string): ContentType | null {
+export function extractContentTypeFromFilename(
+	filename: string,
+): ContentType | null {
 	const baseName = filename.replace(/\.json$/i, "");
 
 	if (CONTENT_TYPES.includes(baseName as ContentType)) {

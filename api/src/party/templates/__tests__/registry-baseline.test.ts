@@ -1,5 +1,6 @@
+import { CONTENT_TYPES } from "@slopcade/shared/schema/party-content";
 import { describe, expect, it } from "vitest";
-import { DEFINITION_BY_TEMPLATE_ID } from "../registry";
+import { DEFINITION_BY_TEMPLATE_ID } from "../registry-definitions";
 
 describe("Party Template Registry Baseline", () => {
 	const templateIds = Object.keys(DEFINITION_BY_TEMPLATE_ID);
@@ -37,18 +38,16 @@ describe("Party Template Registry Baseline", () => {
 		}
 	});
 
-	it("should not have any template with 'wager' or 'history' in contentPacks (except known baseline drift)", () => {
+	it("should only reference canonical content pack names", () => {
 		for (const [id, definition] of Object.entries(DEFINITION_BY_TEMPLATE_ID)) {
 			const contentPacks = definition.party?.contentPacks ?? [];
 
-			// year-jinx is known to have 'wager' in its baseline, which we want to detect
-			if (id === "year-jinx") {
-				expect(contentPacks).toContain("wager");
-			} else {
-				expect(contentPacks).not.toContain("wager");
-			}
-
-			expect(contentPacks).not.toContain("history");
+			expect(
+				contentPacks.every((contentPack) =>
+					CONTENT_TYPES.includes(contentPack),
+				),
+				`Template ${id} should only use canonical content packs`,
+			).toBe(true);
 		}
 	});
 
