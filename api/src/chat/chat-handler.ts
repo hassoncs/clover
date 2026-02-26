@@ -51,6 +51,11 @@ export interface MessageRow {
 	seq: number;
 }
 
+export interface DesignSelectionContext {
+	selectedFrameId: string | null;
+	selectedElementId: string | null;
+}
+
 export interface ChatHandlerContext {
 	db: D1Database;
 	model: LanguageModel;
@@ -61,6 +66,7 @@ export interface ChatHandlerContext {
 	gitService: GitService;
 	costPer1kTokensMicros?: number;
 	env?: import("@/trpc/context").Env;
+	designContext?: DesignSelectionContext;
 }
 
 export interface PendingAskUser {
@@ -101,6 +107,7 @@ async function insertMessage(
 		inputTokens?: number;
 		outputTokens?: number;
 		errorJson?: string;
+		metadataJson?: string;
 	},
 ): Promise<MessageRow> {
 	const id = nanoid();
@@ -109,8 +116,8 @@ async function insertMessage(
 
 	await db
 		.prepare(
-			`INSERT INTO messages (id, thread_id, role, content_json, tool_call_id, tool_name, model, cost_micros, input_tokens, output_tokens, error_json, created_at, seq)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO messages (id, thread_id, role, content_json, tool_call_id, tool_name, model, cost_micros, input_tokens, output_tokens, error_json, metadata_json, created_at, seq)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.bind(
 			id,
@@ -124,6 +131,7 @@ async function insertMessage(
 			params.inputTokens ?? 0,
 			params.outputTokens ?? 0,
 			params.errorJson ?? null,
+			params.metadataJson ?? null,
 			now,
 			seq,
 		)
@@ -144,7 +152,7 @@ async function insertMessage(
 		input_tokens: params.inputTokens ?? 0,
 		output_tokens: params.outputTokens ?? 0,
 		error_json: params.errorJson ?? null,
-		metadata_json: null,
+		metadata_json: params.metadataJson ?? null,
 		created_at: now,
 		seq,
 	};
@@ -406,10 +414,24 @@ export async function insertUserMessage(
 	db: D1Database,
 	threadId: string,
 	userText: string,
+	designContext?: {
+		selectedFrameId?: string | null;
+		selectedElementId?: string | null;
+	},
 ): Promise<MessageRow> {
+	const metadataJson =
+		designContext?.selectedFrameId !== undefined ||
+		designContext?.selectedElementId !== undefined
+			? JSON.stringify({
+					selectedFrameId: designContext.selectedFrameId ?? null,
+					selectedElementId: designContext.selectedElementId ?? null,
+				})
+			: undefined;
+
 	return insertMessage(db, threadId, {
 		role: "user",
 		contentJson: JSON.stringify([{ type: "text", text: userText }]),
+		metadataJson,
 	});
 }
 

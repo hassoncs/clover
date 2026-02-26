@@ -212,6 +212,8 @@ export const chatThreadsRouter = router({
 				threadId: z.string().uuid().optional(),
 				gameId: z.string().uuid(),
 				text: z.string().min(1).max(10000),
+				selectedDesignFrameId: z.string().nullable().optional(),
+				selectedDesignElementId: z.string().nullable().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -298,7 +300,10 @@ export const chatThreadsRouter = router({
 				});
 			}
 
-			await insertUserMessage(ctx.env.DB, threadId, input.text);
+			await insertUserMessage(ctx.env.DB, threadId, input.text, {
+				selectedFrameId: input.selectedDesignFrameId ?? null,
+				selectedElementId: input.selectedDesignElementId ?? null,
+			});
 
 			const streamUrl = `/api/chat/stream?threadId=${encodeURIComponent(threadId)}&token=${encodeURIComponent(ctx.authToken)}`;
 

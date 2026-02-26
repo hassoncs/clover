@@ -399,6 +399,35 @@ app.get("/api/chat/stream", async (c) => {
 				}) as unknown as ModelMessage,
 		);
 
+	const lastUserRow = [...(history.results ?? [])]
+		.reverse()
+		.find((r) => r.role === "user");
+	let designContext:
+		| { selectedFrameId: string | null; selectedElementId: string | null }
+		| undefined;
+	if (lastUserRow?.metadata_json) {
+		try {
+			const meta = JSON.parse(lastUserRow.metadata_json) as Record<
+				string,
+				unknown
+			>;
+			if ("selectedFrameId" in meta || "selectedElementId" in meta) {
+				designContext = {
+					selectedFrameId:
+						typeof meta.selectedFrameId === "string"
+							? meta.selectedFrameId
+							: null,
+					selectedElementId:
+						typeof meta.selectedElementId === "string"
+							? meta.selectedElementId
+							: null,
+				};
+			}
+		} catch {
+			// ignore malformed metadata
+		}
+	}
+
 	if (modelMessages.length === 1) {
 		const filenames = await gitService
 			.listFiles(thread.game_id)
@@ -443,6 +472,7 @@ app.get("/api/chat/stream", async (c) => {
 			walletService,
 			gitService,
 			env: c.env,
+			designContext,
 		},
 		threadId,
 		modelMessages,

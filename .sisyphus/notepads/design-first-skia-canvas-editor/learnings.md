@@ -188,3 +188,37 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 - Verified `sync-r2.ts --build-only` generates `definition.json` without including design data.
 - Verified `sync-r2.ts` sync manifest does not include `design.json`.
 - Evidence saved to `.sisyphus/evidence/task-17-watcher.log` and `.sisyphus/evidence/task-17-bundle-check.txt`.
+
+## [2026-02-26] T15 - Build Stage Consumes Design Context
+
+### Build prompt design-reference pattern
+- Build stage can safely read `previousArtifacts.design` as optional context and stay backward-compatible by soft-falling back when artifact is missing/unreadable/invalid.
+- Design reference should be summarized per frame (title + total elements + per-type counts for `rect`/`text`/`image`) instead of embedding raw `design.json` in prompt.
+- Keep design usage strictly prompt-only: persisted runtime artifact remains `GameDefinition` output from `GameDefinitionSchema` parse, with no design schema fields leaked.
+
+### Test coverage pattern for optional upstream artifacts
+- In stage unit tests, mock `ASSETS.get` with an object exposing `text()` and verify prompt content for the design-present path.
+- Add a no-design test asserting prompt omits the design section and `ASSETS.get` is not called.
+
+## [2026-02-26] T11 - Cross-Platform Design Canvas Parity
+
+### Font Path Bug (Fixed)
+- `useFont(require("../../../../assets/fonts/Fredoka-Regular.ttf"), 12)` was using 4 levels up from `panels/`, but the correct path is 3 levels (`../../../`).
+- `apps/slopcade/components/editor/panels/` → `apps/slopcade/` = 3 levels up.
+- Skia `useFont` returns `null` gracefully if the font fails to load, so this bug was silent — guarded with `{font && (...)}`.
+
+### Platform Split: DesignCanvasPanel
+- Created `DesignCanvasPanel.native.tsx` with `GestureHandlerRootView` + `GestureDetector` (Simultaneous Pan + Pinch) for native camera control.
+- Metro resolver automatically picks `.native.tsx` on iOS/Android and `.tsx` on web.
+- `GestureDetector` wraps only the canvas area (inside the content View), NOT the whole panel — this ensures tap-to-select via `TouchableWithoutFeedback` in `DesignCanvasRenderer` still works.
+- `runOnJS(handlePanUpdate)(event.translationX, event.translationY)` correctly dispatches pan updates from the gesture worklet thread to the JS thread.
+
+### Web-Only APIs in Platform-Split Files
+- `DesignCanvasPanel.tsx` (web fallback) needs to pass `onWheel`, `onMouseDown`, etc. as props to `View`. TypeScript rejects these since they're not in `ViewProps`.
+- Workaround: spread as `{ onWheel, ... } as object` — TypeScript accepts spreading `object` onto JSX props.
+- Avoid `Platform.OS === "web"` conditionals in a file that already has a `.native.tsx` counterpart — the conditional is always true and adds noise.
+- `window.addEventListener` is safe in `DesignCanvasPanel.tsx` without Platform guard once `.native.tsx` exists, since Metro never loads `.tsx` on native when a `.native.tsx` is present.
+
+### useCallback for useEffect Dependencies
+- Handlers (`handleZoomToFit`, `goPrevFrame`, `goNextFrame`) used in a `useEffect` dep array must be wrapped in `useCallback` to avoid stale deps warning.
+- Without `useCallback`, these inline arrow functions are recreated on every render, causing `useEffect` to re-run on every render.

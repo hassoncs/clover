@@ -7,8 +7,32 @@ import { CHAT_STAGE_PROMPT } from "@/agent/engine/prompts";
 import { assembleSystemPrompt, getSkills, matchSkill } from "@/ai/skills";
 
 import { AgUiMapper } from "./agui-mapper";
-import type { ChatHandlerContext } from "./chat-handler";
+import type {
+	ChatHandlerContext,
+	DesignSelectionContext,
+} from "./chat-handler";
 import { createChatTools } from "./chat-tools";
+
+function buildDesignSelectionBlock(
+	designContext: DesignSelectionContext | undefined,
+): string | null {
+	if (!designContext) return null;
+
+	const frameLabel = designContext.selectedFrameId ?? "none";
+	const elementLabel = designContext.selectedElementId ?? "none";
+
+	return `============================================================
+DESIGN CANVAS SELECTION CONTEXT
+============================================================
+Currently selected frame: ${frameLabel}
+Currently selected element: ${elementLabel}
+
+Design editing rules:
+- When the user asks to edit a design element and one is selected (element not "none"), call updateDesignElement targeting the selected frameId and elementId.
+- When the user's target is ambiguous and NO element is selected (element is "none"), call askUser to clarify which element to edit BEFORE calling updateDesignElement.
+- NEVER mutate elements in frames other than the targeted frame.
+- After updateDesignElement succeeds, summarize the changedFields in your response.`;
+}
 
 type D1Database = import("@cloudflare/workers-types").D1Database;
 
@@ -290,15 +314,21 @@ export async function handleChatStream(
 	}
 
 	const matchedSkill = matchSkill(lastUserText, getSkills());
+	const designSelectionBlock = buildDesignSelectionBlock(ctx.designContext);
 
 	const result = streamText({
 		model: ctx.model,
-		system: assembleSystemPrompt(CHAT_STAGE_PROMPT, matchedSkill),
+		system: assembleSystemPrompt(
+			CHAT_STAGE_PROMPT +
+				(designSelectionBlock ? `\n\n${designSelectionBlock}` : ""),
+			matchedSkill,
+		),
 		messages,
 		tools: createChatTools({
 			gameId: ctx.gameId,
 			gitService: ctx.gitService,
 			env: ctx.env,
+			designContext: ctx.designContext,
 			onFileChanged: async ({ gameId, filename }) => {
 				try {
 					await emit({ type: "FILE_CHANGED", gameId, filename });

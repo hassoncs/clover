@@ -25,6 +25,10 @@ export interface ChatToolContext {
 	onFileChanged?: (payload: { gameId: string; filename: string }) => void;
 	onEditorCommand?: (payload: EditorCommandPayload) => Promise<unknown>;
 	env?: Env;
+	designContext?: {
+		selectedFrameId: string | null;
+		selectedElementId: string | null;
+	};
 }
 
 export function createChatTools(ctx: ChatToolContext) {
@@ -563,7 +567,7 @@ export function createChatTools(ctx: ChatToolContext) {
 
 		updateDesignElement: tool({
 			description:
-				"Update properties of a specific design element in the current design document.",
+				"Update properties of a specific design element. ONLY mutates the element with the given elementId in the given frameId — never touches elements in other frames. Always use the selected element's frameId and elementId when a selection is active. If the target is ambiguous and no element is selected, call askUser before calling this tool.",
 			inputSchema: z.object({
 				frameId: z.string().describe("ID of the frame containing the element"),
 				elementId: z.string().describe("ID of the element to update"),
@@ -661,7 +665,10 @@ export function createChatTools(ctx: ChatToolContext) {
 
 				return {
 					ok: true,
-					diff: { elementId, changes: appliedChanges },
+					elementId,
+					frameId,
+					changedFields: Object.keys(appliedChanges),
+					changes: appliedChanges,
 				} as const;
 			},
 		}),
@@ -723,9 +730,18 @@ export function createChatTools(ctx: ChatToolContext) {
 
 		getDesignSelectionContext: tool({
 			description:
-				"Get the currently selected design element or frame context, for targeted design edits.",
+				"Get the currently selected design frame and element IDs. Use this before calling updateDesignElement to confirm which element is targeted when the user asks to edit 'this' or 'the selected' element.",
 			inputSchema: z.object({}),
 			execute: async () => {
+				// Prefer pre-resolved context stored at message-send time (avoids one-directional SSE roundtrip).
+				if (ctx.designContext !== undefined) {
+					return {
+						selectedFrameId: ctx.designContext.selectedFrameId,
+						selectedElementId: ctx.designContext.selectedElementId,
+					};
+				}
+
+				// Fallback for non-stream contexts (SSE response is fire-and-forget, returns dispatch status only).
 				const result = await ctx.onEditorCommand?.({
 					command: "getDesignSelection",
 					payload: {},
