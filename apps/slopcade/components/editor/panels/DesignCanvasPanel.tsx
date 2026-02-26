@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	Platform,
 	Pressable,
 	StyleSheet,
 	Text,
@@ -22,17 +21,13 @@ export function DesignCanvasPanel() {
 		selectedDesignElementId,
 		selectDesignFrame,
 		selectDesignElement,
+		clearDesignSelection,
+		setDesignMode,
 	} = useEditor();
 	const { designDocument, isLoadingDesign } = useSharedWorkspaceFiles();
 
-	const {
-		camera,
-		zoomToFit,
-		onWheel,
-		onMouseDown,
-		onMouseMove,
-		onMouseUp,
-	} = useDesignCamera();
+	const { camera, zoomToFit, onWheel, onMouseDown, onMouseMove, onMouseUp } =
+		useDesignCamera();
 
 	const [showFrameList, setShowFrameList] = useState(false);
 
@@ -100,10 +95,12 @@ export function DesignCanvasPanel() {
 	const handleElementTap = (frameId: string, elementId: string | null) => {
 		if (elementId) {
 			selectDesignElement(elementId, frameId);
+			setDesignMode("select");
 		} else if (frameId) {
 			selectDesignFrame(frameId);
+			setDesignMode("select");
 		} else {
-			selectDesignFrame(null);
+			clearDesignSelection();
 		}
 	};
 

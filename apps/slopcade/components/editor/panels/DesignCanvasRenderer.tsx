@@ -1,4 +1,3 @@
-import React, { useCallback } from "react";
 import {
 	Canvas,
 	Group,
@@ -6,8 +5,14 @@ import {
 	Text as SkiaText,
 	useFont,
 } from "@shopify/react-native-skia";
-import type { DesignDocument, DesignElement, DesignFrame } from "@slopcade/shared";
+import type {
+	DesignDocument,
+	DesignElement,
+	DesignFrame,
+} from "@slopcade/shared";
+import React, { useCallback } from "react";
 import { TouchableWithoutFeedback, View } from "react-native";
+import { hitTestDesignCanvas, screenToWorld } from "./designCanvasHitTest";
 
 export interface DesignCanvasRendererProps {
 	document: DesignDocument;
@@ -28,51 +33,22 @@ export function DesignCanvasRenderer({
 	width,
 	height,
 }: DesignCanvasRendererProps) {
-	const font = useFont(require("../../../../assets/fonts/Fredoka-Regular.ttf"), 12);
+	const font = useFont(
+		require("../../../assets/fonts/Fredoka-Regular.ttf"),
+		12,
+	);
 
 	const handlePress = useCallback(
 		(event: any) => {
 			if (!onElementTap) return;
 
 			const { locationX, locationY } = event.nativeEvent;
+			const { worldX, worldY } = screenToWorld(locationX, locationY, camera);
+			const hit = hitTestDesignCanvas(document.frames, worldX, worldY);
 
-			const worldX = (locationX - camera.translateX) / camera.scale;
-			const worldY = (locationY - camera.translateY) / camera.scale;
-
-			for (let i = document.frames.length - 1; i >= 0; i--) {
-				const frame = document.frames[i];
-				
-				if (
-					worldX >= frame.position.x &&
-					worldX <= frame.position.x + frame.width &&
-					worldY >= frame.position.y &&
-					worldY <= frame.position.y + frame.height
-				) {
-					const sortedElements = [...frame.elements].sort((a, b) => b.zIndex - a.zIndex);
-					
-					for (const element of sortedElements) {
-						const elX = frame.position.x + element.x;
-						const elY = frame.position.y + element.y;
-						
-						if (
-							worldX >= elX &&
-							worldX <= elX + element.width &&
-							worldY >= elY &&
-							worldY <= elY + element.height
-						) {
-							onElementTap(frame.id, element.id);
-							return;
-						}
-					}
-
-					onElementTap(frame.id, null);
-					return;
-				}
-			}
-
-			onElementTap("", null);
+			onElementTap(hit.frameId ?? "", hit.elementId);
 		},
-		[document, camera, onElementTap]
+		[document.frames, camera, onElementTap],
 	);
 
 	return (
@@ -104,7 +80,7 @@ export function DesignCanvasRenderer({
 									style="stroke"
 									strokeWidth={1}
 								/>
-								
+
 								{font && (
 									<SkiaText
 										x={frame.position.x}
