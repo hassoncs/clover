@@ -1868,6 +1868,8 @@ importers:
         specifier: 0.81.4
         version: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
 
+  packages/react-native-reanimated-mock: {}
+
   packages/shared-ui:
     dependencies:
       react:

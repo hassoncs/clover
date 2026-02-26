@@ -3,49 +3,80 @@ import { act, fireEvent, render } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock react-native
-vi.mock("react-native", async () => {
-	const actual = await vi.importActual("react-native");
-	return {
-		...actual,
-		View: (props: any) => <div {...props} />,
-		Text: (props: any) => <span {...props} />,
-		Pressable: ({ onPress, children, testID, disabled, ...props }: any) => (
-			<button
-				type="button"
-				data-testid={testID}
-				onClick={!disabled ? onPress : undefined}
-				disabled={disabled}
-				{...props}
-			>
+vi.mock("react-native", () => ({
+	View: (props: any) => <div {...props} />,
+	Text: (props: any) => <span {...props} />,
+	Pressable: ({ onPress, children, testID, disabled, ...props }: any) => (
+		<button
+			type="button"
+			data-testid={testID}
+			onClick={!disabled ? onPress : undefined}
+			disabled={disabled}
+			{...props}
+		>
+			{children}
+		</button>
+	),
+	TextInput: ({ onChangeText, value, testID, placeholder, ...props }: any) => (
+		<input
+			data-testid={testID}
+			value={value}
+			onChange={(e: any) => onChangeText(e.target.value)}
+			placeholder={placeholder}
+			{...props}
+		/>
+	),
+	StyleSheet: {
+		create: (styles: any) => styles,
+		flatten: (styles: any) => styles,
+	},
+	Platform: {
+		OS: "web",
+		select: (obj: any) => obj.web ?? obj.default,
+	},
+	ActivityIndicator: () => <div data-testid="activity-indicator" />,
+	Animated: {
+		Value: class {
+			_value: number;
+			constructor(v: number) {
+				this._value = v;
+			}
+			setValue(v: number) {
+				this._value = v;
+			}
+			interpolate(_config: any) {
+				return this._value;
+			}
+			addListener() {}
+			removeListener() {}
+			removeAllListeners() {}
+		},
+		View: ({ children, style, ...props }: any) => (
+			<div style={style} {...props}>
 				{children}
-			</button>
+			</div>
 		),
-		TextInput: ({
-			onChangeText,
-			value,
-			testID,
-			placeholder,
-			...props
-		}: any) => (
-			<input
-				data-testid={testID}
-				value={value}
-				onChange={(e) => onChangeText(e.target.value)}
-				placeholder={placeholder}
-				{...props}
-			/>
+		Text: ({ children, style, ...props }: any) => (
+			<span style={style} {...props}>
+				{children}
+			</span>
 		),
-		StyleSheet: {
-			create: (styles: any) => styles,
-		},
-		Platform: {
-			OS: "web",
-			select: (obj: any) => obj.web,
-		},
-		ActivityIndicator: () => <div data-testid="activity-indicator" />,
-	};
-});
+		timing: () => ({ start: (cb: any) => cb?.({ finished: true }) }),
+		loop: (anim: any) => ({ start: (cb: any) => anim.start(cb) }),
+		sequence: (anims: any[]) => ({
+			start: (cb: any) => {
+				anims.forEach((a) => a.start?.());
+				cb?.({ finished: true });
+			},
+		}),
+		parallel: (anims: any[]) => ({
+			start: (cb: any) => {
+				anims.forEach((a) => a.start?.());
+				cb?.({ finished: true });
+			},
+		}),
+	},
+}));
 
 vi.mock("@expo/vector-icons", () => ({
 	Ionicons: () => <div data-testid="icon" />,

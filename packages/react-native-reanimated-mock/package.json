@@ -1,0 +1,9 @@
+{
+	"name": "react-native-reanimated",
+	"version": "0.0.0-mock",
+	"description": "Vitest-safe mock for react-native-reanimated",
+	"main": "./index.js",
+	"module": "./index.js",
+	"types": "./index.d.ts",
+	"private": true
+}
