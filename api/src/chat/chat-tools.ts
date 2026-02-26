@@ -1,7 +1,11 @@
 import {
 	type DesignDocument,
 	DesignDocumentSchema,
+	type DesignElement,
+	DesignElementSchema,
+	DesignGradientSchema,
 	DesignSchemaError,
+	DesignShadowSchema,
 	parseDesignDocument,
 	type RuntimeIntentMode,
 	VOICE_PRESETS,
@@ -66,6 +70,101 @@ export interface ChatToolContext {
 		selectedElementId: string | null;
 	};
 }
+
+const DesignElementStyleSchema = z.object({
+	id: z.string().optional(),
+	zIndex: z.number().optional(),
+	opacity: z.number().min(0).max(1).optional(),
+	rotation: z.number().optional(),
+	shadow: DesignShadowSchema.optional(),
+	gradient: DesignGradientSchema.optional(),
+});
+
+const AddDesignElementSchema = z.discriminatedUnion("type", [
+	DesignElementStyleSchema.extend({
+		type: z.literal("rect"),
+		x: z.number(),
+		y: z.number(),
+		width: z.number(),
+		height: z.number(),
+		fill: z.string().optional(),
+		stroke: z.string().optional(),
+		strokeWidth: z.number().optional(),
+		cornerRadius: z.number().optional(),
+	}),
+	DesignElementStyleSchema.extend({
+		type: z.literal("text"),
+		x: z.number(),
+		y: z.number(),
+		width: z.number(),
+		height: z.number(),
+		content: z.string(),
+		fontSize: z.number(),
+		fontWeight: z.string().optional(),
+		color: z.string().optional(),
+		align: z.enum(["left", "center", "right"]).optional(),
+	}),
+	DesignElementStyleSchema.extend({
+		type: z.literal("image"),
+		x: z.number(),
+		y: z.number(),
+		width: z.number(),
+		height: z.number(),
+		assetRef: z.string().optional(),
+		imageUrl: z.string().optional(),
+		fit: z.enum(["contain", "cover", "fill"]).optional(),
+	}),
+	DesignElementStyleSchema.extend({
+		type: z.literal("circle"),
+		x: z.number(),
+		y: z.number(),
+		width: z.number(),
+		height: z.number(),
+		fill: z.string().optional(),
+		stroke: z.string().optional(),
+		strokeWidth: z.number().optional(),
+	}),
+	DesignElementStyleSchema.extend({
+		type: z.literal("line"),
+		x1: z.number(),
+		y1: z.number(),
+		x2: z.number(),
+		y2: z.number(),
+		stroke: z.string().optional(),
+		strokeWidth: z.number().optional(),
+	}),
+	DesignElementStyleSchema.extend({
+		type: z.literal("path"),
+		x: z.number(),
+		y: z.number(),
+		data: z.string(),
+		fill: z.string().optional(),
+		stroke: z.string().optional(),
+		strokeWidth: z.number().optional(),
+	}),
+	DesignElementStyleSchema.extend({
+		type: z.literal("group"),
+		x: z.number(),
+		y: z.number(),
+		width: z.number(),
+		height: z.number(),
+		childIds: z.array(z.string()),
+	}),
+]);
+
+const UpdateDesignElementSchema = z.object({
+	fill: z.string().optional(),
+	stroke: z.string().optional(),
+	strokeWidth: z.number().optional(),
+	content: z.string().optional(),
+	fontSize: z.number().optional(),
+	color: z.string().optional(),
+	imageUrl: z.string().optional(),
+	opacity: z.number().min(0).max(1).optional(),
+	rotation: z.number().optional(),
+	shadow: DesignShadowSchema.optional(),
+	gradient: DesignGradientSchema.optional(),
+});
 
 export function createChatTools(ctx: ChatToolContext) {
 	return {
@@ -600,23 +699,110 @@ export function createChatTools(ctx: ChatToolContext) {
 			},
 		}),
 
+		addDesignElement: tool({
+			description:
+				"Add a new element to a specific frame in the design document. Supports rect, text, image, circle, line, path, and group.",
+			inputSchema: z.object({
+				frameId: z.string().describe("ID of the frame to add the element to"),
+				element: AddDesignElementSchema.describe(
+					"Element payload to add. Include geometry fields for the chosen type. id and zIndex are optional.",
+				),
+			}),
+			execute: async ({ frameId, element }) => {
+				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");
+				if (!data) {
+					return { ok: false, error: "not found" } as const;
+				}
+
+				let doc: DesignDocument;
+				try {
+					const raw = new TextDecoder().decode(data);
+					doc = parseDesignDocument(JSON.parse(raw));
+				} catch (err) {
+					return { ok: false, ...shapeDesignError(err) } as const;
+				}
+
+				const frame = doc.frames.find((f) => f.id === frameId);
+				if (!frame) {
+					return {
+						ok: false,
+						error: `frame not found: ${frameId}`,
+					} as const;
+				}
+
+				const nextZIndex =
+					frame.elements.length > 0
+						? Math.max(...frame.elements.map((item) => item.zIndex)) + 1
+						: 0;
+				const normalizedElement: Record<string, unknown> = {
+					...element,
+					id: element.id ?? nanoid(),
+					zIndex: element.zIndex ?? nextZIndex,
+				};
+
+				const elementParseResult =
+					DesignElementSchema.safeParse(normalizedElement);
+				if (!elementParseResult.success) {
+					return {
+						ok: false,
+						...shapeDesignError(
+							new DesignSchemaError(elementParseResult.error.message),
+						),
+					} as const;
+				}
+
+				const updatedDoc: DesignDocument = {
+					...doc,
+					metadata: { ...doc.metadata, updatedAt: Date.now() },
+					frames: doc.frames.map((f) => {
+						if (f.id !== frameId) return f;
+						return {
+							...f,
+							elements: [
+								...f.elements,
+								elementParseResult.data as DesignElement,
+							],
+						};
+					}),
+				};
+
+				const parseResult = DesignDocumentSchema.safeParse(updatedDoc);
+				if (!parseResult.success) {
+					return {
+						ok: false,
+						...shapeDesignError(
+							new DesignSchemaError(parseResult.error.message),
+						),
+					} as const;
+				}
+
+				const updatedJson = JSON.stringify(parseResult.data, null, 2);
+				await ctx.gitService.commitFiles(
+					ctx.gameId,
+					[{ path: "design.json", content: updatedJson }],
+					`AI: Add design element ${elementParseResult.data.id}`,
+					{ name: "AI Assistant", email: "ai@slopcade.app" },
+				);
+				ctx.onFileChanged?.({ gameId: ctx.gameId, filename: "design.json" });
+
+				return {
+					ok: true,
+					elementId: elementParseResult.data.id,
+					elementType: elementParseResult.data.type,
+					frameId,
+				} as const;
+			},
+		}),
+
 		updateDesignElement: tool({
 			description:
 				"Update properties of a specific design element. ONLY mutates the element with the given elementId in the given frameId — never touches elements in other frames. Always use the selected element's frameId and elementId when a selection is active. If the target is ambiguous and no element is selected, call askUser before calling this tool.",
 			inputSchema: z.object({
 				frameId: z.string().describe("ID of the frame containing the element"),
 				elementId: z.string().describe("ID of the element to update"),
-				updates: z
-					.object({
-						fill: z.string().optional(),
-						stroke: z.string().optional(),
-						strokeWidth: z.number().optional(),
-						content: z.string().optional(),
-						fontSize: z.number().optional(),
-						color: z.string().optional(),
-						imageUrl: z.string().optional(),
-					})
-					.describe("Properties to update on the element"),
+				updates: UpdateDesignElementSchema.describe(
+					"Properties to update on the element",
+				),
 			}),
 			execute: async ({ frameId, elementId, updates }) => {
 				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");

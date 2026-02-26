@@ -68,3 +68,16 @@
   - `useImage` is a hook, so it must be called at the component level. We created an `ImageElementRenderer` wrapper component to handle this for each image element.
   - `Shadow` filter is applied via a `<Group>` wrapper containing the `<Shadow>` and the content.
   - `LinearGradient` and `RadialGradient` are applied as children of the shape components (`Rect`, `Circle`, `Path`).
+
+## [2026-02-26] Task T19 Complete
+- chat-tools updated for v1.1 element types (circle/line/path/group)
+- Style fields (opacity/rotation/shadow/gradient) accepted in updateDesignElement
+- Validation-first: all writes go through DesignElementSchema
+
+## [2026-02-26] Task T12 Complete
+- Circle: point-in-ellipse test — `((px-cx)/rx)^2 + ((py-cy)/ry)^2 <= 1` using bounding box center/radii
+- Line: point-to-segment distance with strokeWidth tolerance — `max(strokeWidth/2, 4)` pixels
+- Path: AABB approximation with 40×40 default size (no width/height in schema)
+- Group: AABB using x, y, width, height (same as rect)
+- `hitTestElement` dispatcher extracts per-type logic; rect/text/image/group share AABB fast path
+- `pointToSegmentDistance` handles degenerate (zero-length) segment as point distance

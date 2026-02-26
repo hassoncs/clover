@@ -372,3 +372,175 @@ describe("design document tools — error handling", () => {
 		expect((result as any).error.length).toBeGreaterThan(0);
 	});
 });
+
+describe("design document tools — v1.1 element contracts", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("addDesignElement adds a circle element", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+		vi.mocked(gitService.commitFiles).mockResolvedValue("sha-circle");
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.addDesignElement as any).execute({
+			frameId: "frame-1",
+			element: {
+				type: "circle",
+				x: 24,
+				y: 36,
+				width: 80,
+				height: 80,
+				fill: "#ffcc00",
+			},
+		});
+
+		expect(result.ok).toBe(true);
+		expect((result as any).elementType).toBe("circle");
+		expect(gitService.commitFiles).toHaveBeenCalledTimes(1);
+		const committed = vi.mocked(gitService.commitFiles).mock.calls[0]?.[1]?.[0]
+			?.content;
+		const savedDoc = JSON.parse(committed ?? "{}");
+		const savedElement = savedDoc.frames[0].elements[0];
+		expect(savedElement.type).toBe("circle");
+		expect(savedElement.width).toBe(80);
+		expect(savedElement.height).toBe(80);
+	});
+
+	it("addDesignElement adds a path element", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+		vi.mocked(gitService.commitFiles).mockResolvedValue("sha-path");
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.addDesignElement as any).execute({
+			frameId: "frame-1",
+			element: {
+				type: "path",
+				x: 10,
+				y: 12,
+				data: "M0 0 L10 10 Z",
+				stroke: "#333333",
+				strokeWidth: 2,
+			},
+		});
+
+		expect(result.ok).toBe(true);
+		expect((result as any).elementType).toBe("path");
+		const committed = vi.mocked(gitService.commitFiles).mock.calls[0]?.[1]?.[0]
+			?.content;
+		const savedDoc = JSON.parse(committed ?? "{}");
+		const savedElement = savedDoc.frames[0].elements[0];
+		expect(savedElement.type).toBe("path");
+		expect(savedElement.data).toBe("M0 0 L10 10 Z");
+	});
+
+	it("updateDesignElement applies opacity updates", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [
+				{
+					id: "rect-1",
+					type: "rect",
+					x: 0,
+					y: 0,
+					width: 100,
+					height: 100,
+					zIndex: 0,
+					fill: "#ffffff",
+				},
+			],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+		vi.mocked(gitService.commitFiles).mockResolvedValue("sha-opacity");
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.updateDesignElement as any).execute({
+			frameId: "frame-1",
+			elementId: "rect-1",
+			updates: { opacity: 0.45 },
+		});
+
+		expect(result.ok).toBe(true);
+		expect((result as any).changedFields).toContain("opacity");
+		const committed = vi.mocked(gitService.commitFiles).mock.calls[0]?.[1]?.[0]
+			?.content;
+		const savedDoc = JSON.parse(committed ?? "{}");
+		expect(savedDoc.frames[0].elements[0].opacity).toBe(0.45);
+	});
+
+	it("updateDesignElement returns deterministic error for invalid gradient payload", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [
+				{
+					id: "rect-1",
+					type: "rect",
+					x: 0,
+					y: 0,
+					width: 100,
+					height: 100,
+					zIndex: 0,
+					fill: "#ffffff",
+				},
+			],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.updateDesignElement as any).execute({
+			frameId: "frame-1",
+			elementId: "rect-1",
+			updates: {
+				gradient: {
+					type: "linear",
+					stops: [{ color: "#000000", position: "bad-position" }],
+				},
+			},
+		});
+
+		expect(result.ok).toBe(false);
+		expect((result as any).error).toBeTruthy();
+		expect((result as any).error).not.toContain('"code"');
+		expect((result as any).error).not.toMatch(/^\[/);
+	});
+});
