@@ -1,10 +1,9 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/app-consolidation-remaining.md",
-  "started_at": "2026-02-19T18:32:24.916Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/skia-design-canvas-fidelity-upgrade.md",
+  "started_at": "2026-02-26T06:30:03.277Z",
   "session_ids": [
-    "ses_388d349b7ffeHfhXV4quDzmwx3",
-    "ses_3682ff736ffeXsqVDzvJsE6Tj5"
+    "ses_3675c1d00ffenqIP3r0Cx34NR0"
   ],
-  "plan_name": "app-consolidation-remaining",
+  "plan_name": "skia-design-canvas-fidelity-upgrade",
   "agent": "atlas"
 }

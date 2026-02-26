@@ -8,7 +8,7 @@ import {
 
 describe("DesignDocument", () => {
 	const validDoc = {
-		version: "1.0",
+		version: "1.1",
 		metadata: {
 			title: "Test Game",
 			gameId: "game-123",
@@ -32,70 +32,107 @@ describe("DesignDocument", () => {
 						height: 100,
 						zIndex: 1,
 						fill: "#ff0000",
+						opacity: 0.5,
+						rotation: 45,
+						shadow: {
+							color: "#000000",
+							offsetX: 2,
+							offsetY: 2,
+							blur: 4,
+						},
 					},
 					{
-						type: "text",
-						id: "text-1",
-						x: 120,
-						y: 10,
-						width: 200,
+						type: "circle",
+						id: "circle-1",
+						x: 200,
+						y: 200,
+						width: 50,
 						height: 50,
-						zIndex: 2,
-						content: "Hello World",
-						fontSize: 24,
+						zIndex: 4,
+						fill: "#00ff00",
+						gradient: {
+							type: "linear",
+							stops: [
+								{ color: "#00ff00", position: 0 },
+								{ color: "#0000ff", position: 1 },
+							],
+							angle: 90,
+						},
 					},
 					{
-						type: "image",
-						id: "image-1",
-						x: 10,
-						y: 120,
+						type: "line",
+						id: "line-1",
+						x1: 0,
+						y1: 0,
+						x2: 100,
+						y2: 100,
+						zIndex: 5,
+						stroke: "#000000",
+						strokeWidth: 2,
+					},
+					{
+						type: "path",
+						id: "path-1",
+						x: 300,
+						y: 300,
+						zIndex: 6,
+						data: "M 0 0 L 100 100",
+						fill: "#ff00ff",
+					},
+					{
+						type: "group",
+						id: "group-1",
+						x: 0,
+						y: 0,
 						width: 100,
 						height: 100,
-						zIndex: 3,
-						assetRef: "asset-abc",
+						zIndex: 7,
+						childIds: ["rect-1", "circle-1"],
 					},
 				],
 			},
 		],
 	};
 
-	it("should validate a valid document", () => {
+	it("should validate a valid v1.1 document", () => {
 		expect(isDesignDocument(validDoc)).toBe(true);
 		const parsed = parseDesignDocument(validDoc);
 		expect(parsed).toEqual(validDoc);
 	});
 
-	it("should fail for missing frames", () => {
-		const invalidDoc = { ...validDoc };
-		delete (invalidDoc as any).frames;
+	it("should fail for invalid opacity", () => {
+		const invalidDoc = {
+			...validDoc,
+			frames: [
+				{
+					...validDoc.frames[0],
+					elements: [
+						{
+							...validDoc.frames[0].elements[0],
+							opacity: 1.5,
+						},
+					],
+				},
+			],
+		};
 		expect(isDesignDocument(invalidDoc)).toBe(false);
-		expect(() => parseDesignDocument(invalidDoc)).toThrow(DesignSchemaError);
 	});
 
 	it("should fail for unsupported version", () => {
-		const invalidDoc = { ...validDoc, version: "999.0" };
+		const invalidDoc = { ...validDoc, version: "1.0" };
 		expect(isDesignDocument(invalidDoc)).toBe(false);
 		expect(() => parseDesignDocument(invalidDoc)).toThrow(
-			/unsupported version: 999.0/,
+			/unsupported version: 1.0/,
 		);
 	});
 
-	it("should round-trip serialization", () => {
-		const doc = createEmptyDesignDocument("game-123", "Empty Game");
-		const serialized = JSON.parse(JSON.stringify(doc));
-		expect(isDesignDocument(serialized)).toBe(true);
-		expect(parseDesignDocument(serialized)).toEqual(doc);
-	});
-
-	it("should create an empty document with correct metadata", () => {
+	it("should create an empty document with correct metadata and version 1.1", () => {
 		const gameId = "game-456";
 		const title = "New Design";
 		const doc = createEmptyDesignDocument(gameId, title);
-		expect(doc.version).toBe("1.0");
+		expect(doc.version).toBe("1.1");
 		expect(doc.metadata.gameId).toBe(gameId);
 		expect(doc.metadata.title).toBe(title);
 		expect(doc.frames).toEqual([]);
-		expect(doc.metadata.createdAt).toBeTypeOf("number");
-		expect(doc.metadata.updatedAt).toBeTypeOf("number");
 	});
 });

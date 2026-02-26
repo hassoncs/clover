@@ -1,0 +1,20 @@
+ ✓ src/graph-core/__tests__/integration.test.ts (12 tests) 7ms
+ ✓ src/validation/__tests__/semantic.test.ts (10 tests) 3ms
+ ✓ src/graph-core/__tests__/fixtures/benchmark-graphs.test.ts (6 tests) 5ms
+ ✓ src/effects/__tests__/snapshot.test.ts (23 tests) 7ms
+ ✓ src/expressions/property-watching/__tests__/integration.test.ts (11 tests) 4ms
+ ✓ src/scripting/modules/__tests__/party.test.ts (13 tests) 4ms
+ ✓ src/chat/__tests__/accumulator.test.ts (6 tests) 5ms
+ ✓ src/tags/__tests__/TagRegistry.test.ts (18 tests) 5ms
+ ✓ src/validation/__tests__/semanticValidator.test.ts (2 tests) 5ms
+ ✓ src/scripting/modules/__tests__/content.test.ts (13 tests) 5ms
+ ✓ src/workspace/__tests__/hash.test.ts (10 tests) 3ms
+ ✓ src/expressions/property-watching/__tests__/DependencyAnalyzer.test.ts (3 tests) 2ms
+ ✓ src/expressions/property-watching/__tests__/EntityContextProxy.test.ts (15 tests) 5ms
+ ✓ src/effects/__tests__/compiler.test.ts (125 tests) 32ms
+
+ Test Files  57 passed (57)
+      Tests  1229 passed (1229)
+   Start at  22:40:08
+   Duration  1.81s (transform 2.30s, setup 0ms, collect 5.27s, tests 424ms, environment 10ms, prepare 5.47s)
+

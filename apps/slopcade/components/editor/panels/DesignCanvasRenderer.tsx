@@ -10,7 +10,7 @@ import type {
 	DesignElement,
 	DesignFrame,
 } from "@slopcade/shared";
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import { TouchableWithoutFeedback, View } from "react-native";
 import { hitTestDesignCanvas, screenToWorld } from "./designCanvasHitTest";
 
@@ -22,6 +22,92 @@ export interface DesignCanvasRendererProps {
 	onElementTap?: (frameId: string, elementId: string | null) => void;
 	width: number;
 	height: number;
+}
+
+function renderRectElement(element: any, framePosition: { x: number; y: number }) {
+	const elX = framePosition.x + element.x;
+	const elY = framePosition.y + element.y;
+	return (
+		<Group key={element.id}>
+			<Rect
+				x={elX}
+				y={elY}
+				width={element.width}
+				height={element.height}
+				color={element.fill || "#E0E0E0"}
+			/>
+			{element.stroke && (
+				<Rect
+					x={elX}
+					y={elY}
+					width={element.width}
+					height={element.height}
+					color={element.stroke}
+					style="stroke"
+					strokeWidth={element.strokeWidth || 1}
+				/>
+			)}
+		</Group>
+	);
+}
+
+function renderImageElement(element: any, framePosition: { x: number; y: number }, font: any) {
+	const elX = framePosition.x + element.x;
+	const elY = framePosition.y + element.y;
+	return (
+		<Group key={element.id}>
+			<Rect
+				x={elX}
+				y={elY}
+				width={element.width}
+				height={element.height}
+				color="#C8D8E8"
+			/>
+			<Rect
+				x={elX}
+				y={elY}
+				width={element.width}
+				height={element.height}
+				color="#A0B0C0"
+				style="stroke"
+				strokeWidth={1}
+			/>
+			{font && (
+				<SkiaText
+					x={elX + element.width / 2 - 10}
+					y={elY + element.height / 2 + 4}
+					text="IMG"
+					font={font}
+					color="#607080"
+				/>
+			)}
+		</Group>
+	);
+}
+
+function renderTextElement(element: any, framePosition: { x: number; y: number }, font: any) {
+	const elX = framePosition.x + element.x;
+	const elY = framePosition.y + element.y;
+	return (
+		<Group key={element.id}>
+			<Rect
+				x={elX}
+				y={elY}
+				width={element.width}
+				height={element.height}
+				color="transparent"
+			/>
+			{font && (
+				<SkiaText
+					x={elX}
+					y={elY + element.fontSize}
+					text={element.content}
+					font={font}
+					color={element.color || "#333333"}
+				/>
+			)}
+		</Group>
+	);
 }
 
 export function DesignCanvasRenderer({
@@ -37,6 +123,21 @@ export function DesignCanvasRenderer({
 		require("../../../assets/fonts/Fredoka-Regular.ttf"),
 		12,
 	);
+
+	const renderCount = useRef(0);
+
+	if (__DEV__) {
+		renderCount.current += 1;
+		const startTime = Date.now();
+		let elementCount = 0;
+		document.frames.forEach((f) => {
+			elementCount += f.elements.length;
+		});
+		const duration = Date.now() - startTime;
+		console.log(
+			`[DesignCanvas] Rendered ${elementCount} elements in ${duration}ms (Call #${renderCount.current})`,
+		);
+	}
 
 	const handlePress = useCallback(
 		(event: any) => {
@@ -95,89 +196,21 @@ export function DesignCanvasRenderer({
 									.slice()
 									.sort((a, b) => a.zIndex - b.zIndex)
 									.map((element) => {
-										const elX = frame.position.x + element.x;
-										const elY = frame.position.y + element.y;
-
 										if (element.type === "rect") {
-											return (
-												<Group key={element.id}>
-													<Rect
-														x={elX}
-														y={elY}
-														width={element.width}
-														height={element.height}
-														color={element.fill || "#E0E0E0"}
-													/>
-													{element.stroke && (
-														<Rect
-															x={elX}
-															y={elY}
-															width={element.width}
-															height={element.height}
-															color={element.stroke}
-															style="stroke"
-															strokeWidth={element.strokeWidth || 1}
-														/>
-													)}
-												</Group>
-											);
+											return renderRectElement(element, frame.position);
 										}
 
 										if (element.type === "image") {
-											return (
-												<Group key={element.id}>
-													<Rect
-														x={elX}
-														y={elY}
-														width={element.width}
-														height={element.height}
-														color="#C8D8E8"
-													/>
-													<Rect
-														x={elX}
-														y={elY}
-														width={element.width}
-														height={element.height}
-														color="#A0B0C0"
-														style="stroke"
-														strokeWidth={1}
-													/>
-													{font && (
-														<SkiaText
-															x={elX + element.width / 2 - 10}
-															y={elY + element.height / 2 + 4}
-															text="IMG"
-															font={font}
-															color="#607080"
-														/>
-													)}
-												</Group>
-											);
+											return renderImageElement(element, frame.position, font);
 										}
 
 										if (element.type === "text") {
-											return (
-												<Group key={element.id}>
-													<Rect
-														x={elX}
-														y={elY}
-														width={element.width}
-														height={element.height}
-														color="transparent"
-													/>
-													{font && (
-														<SkiaText
-															x={elX}
-															y={elY + element.fontSize}
-															text={element.content}
-															font={font}
-															color={element.color || "#333333"}
-														/>
-													)}
-												</Group>
-											);
+											return renderTextElement(element, frame.position, font);
 										}
 
+										if (__DEV__) {
+											console.warn(`[DesignCanvas] Unknown element type: ${(element as any).type}`);
+										}
 										return null;
 									})}
 

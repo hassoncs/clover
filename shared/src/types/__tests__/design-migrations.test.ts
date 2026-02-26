@@ -3,8 +3,8 @@ import { DesignSchemaError } from "../design";
 import { migrateDesignDocument } from "../design-migrations";
 
 describe("migrateDesignDocument", () => {
-	const validV1Doc = {
-		version: "1.0",
+	const validV11Doc = {
+		version: "1.1",
 		metadata: {
 			title: "Test Game",
 			gameId: "game-123",
@@ -23,13 +23,50 @@ describe("migrateDesignDocument", () => {
 		],
 	};
 
-	it("should pass through current v1.0 version unchanged", () => {
-		const result = migrateDesignDocument(validV1Doc);
-		expect(result).toEqual(validV1Doc);
-		expect(result.version).toBe("1.0");
+	it("should pass through current v1.1 version unchanged", () => {
+		const result = migrateDesignDocument(validV11Doc);
+		expect(result).toEqual(validV11Doc);
+		expect(result.version).toBe("1.1");
 	});
 
-	it("should migrate legacy v0.x (no version) to v1.0", () => {
+	it("should migrate v1.0 doc to v1.1", () => {
+		const v10Doc = {
+			version: "1.0",
+			metadata: {
+				title: "V1.0 Game",
+				gameId: "game-1.0",
+				createdAt: 1000,
+				updatedAt: 2000,
+			},
+			frames: [
+				{
+					id: "frame-1",
+					title: "Frame 1",
+					width: 100,
+					height: 100,
+					position: { x: 0, y: 0 },
+					elements: [
+						{
+							id: "rect-1",
+							type: "rect",
+							zIndex: 1,
+							x: 10,
+							y: 10,
+							width: 50,
+							height: 50,
+							fill: "red",
+						},
+					],
+				},
+			],
+		};
+
+		const result = migrateDesignDocument(v10Doc);
+		expect(result.version).toBe("1.1");
+		expect(result.frames[0].elements[0].type).toBe("rect");
+	});
+
+	it("should migrate legacy v0.x (no version) to v1.1", () => {
 		const legacyDoc = {
 			metadata: {
 				title: "Legacy Game",
@@ -43,10 +80,10 @@ describe("migrateDesignDocument", () => {
 		const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		const result = migrateDesignDocument(legacyDoc);
 
-		expect(result.version).toBe("1.0");
+		expect(result.version).toBe("1.1");
 		expect(result.metadata.title).toBe("Legacy Game");
 		expect(consoleSpy).toHaveBeenCalledWith(
-			expect.stringContaining("migrated from v0.x to v1.0"),
+			expect.stringContaining("migrated from v0.x to v1.1"),
 		);
 		consoleSpy.mockRestore();
 	});
@@ -57,7 +94,7 @@ describe("migrateDesignDocument", () => {
 		const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		const result = migrateDesignDocument(veryLegacyDoc);
 
-		expect(result.version).toBe("1.0");
+		expect(result.version).toBe("1.1");
 		expect(result.metadata.title).toBe("Migrated Design");
 		expect(result.frames).toEqual([]);
 		consoleSpy.mockRestore();
@@ -65,7 +102,7 @@ describe("migrateDesignDocument", () => {
 
 	it("should throw DesignSchemaError for unknown future versions", () => {
 		const futureDoc = {
-			...validV1Doc,
+			...validV11Doc,
 			version: "2.0",
 		};
 
