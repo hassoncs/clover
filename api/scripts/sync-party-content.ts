@@ -100,25 +100,14 @@ function escSql(s: string): string {
 	return s.replace(/'/g, "''");
 }
 
-function extractContentType(
-	filename: string,
-	brand: Brand,
-): ContentType | null {
+function extractContentType(filename: string): ContentType | null {
 	const base = filename.replace(/\.json$/i, "");
-	if (brand === "amen") {
-		const stripped = base.replace(/^amen-/, "");
-		if ((CONTENT_TYPES as readonly string[]).includes(stripped))
-			return stripped as ContentType;
-	}
 	if ((CONTENT_TYPES as readonly string[]).includes(base))
 		return base as ContentType;
 	return null;
 }
 
-function getFilenameForType(contentType: ContentType, brand: Brand): string {
-	if (brand === "amen") {
-		return `amen-${contentType}.json`;
-	}
+function getFilenameForType(contentType: ContentType): string {
 	return `${contentType}.json`;
 }
 
@@ -145,7 +134,7 @@ async function importFromJson(opts: SyncOptions): Promise<void> {
 
 		for (const filename of files) {
 			if (!filename.endsWith(".json")) continue;
-			const contentType = extractContentType(filename, brand);
+			const contentType = extractContentType(filename);
 			if (!contentType) {
 				console.log(`  skip ${filename} (unknown type)`);
 				continue;
@@ -310,7 +299,7 @@ async function exportFromDb(opts: SyncOptions): Promise<void> {
 
 		await mkdir(brandDir, { recursive: true });
 
-		const filename = getFilenameForType(contentType, brandId);
+		const filename = getFilenameForType(contentType);
 		const filepath = path.join(brandDir, filename);
 
 		const items = rows

@@ -38,16 +38,8 @@ async function computeContentHash(body: string): Promise<string> {
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-const FILENAME_TO_CONTENT_TYPE: Record<string, ContentType> = {
-	wager: "estimation",
-};
-
 function extractContentTypeFromFilename(filename: string): ContentType | null {
 	const baseName = filename.replace(/\.json$/i, "");
-
-	if (FILENAME_TO_CONTENT_TYPE[baseName]) {
-		return FILENAME_TO_CONTENT_TYPE[baseName];
-	}
 
 	if (CONTENT_TYPES.includes(baseName as ContentType)) {
 		return baseName as ContentType;

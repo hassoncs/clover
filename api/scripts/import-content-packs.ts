@@ -19,11 +19,6 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const PUBLISH_AFTER = process.argv.includes("--publish");
 const BATCH_SIZE = 100;
 
-const FILENAME_TO_TYPE: Record<string, string> = {
-	wager: "estimation",
-	"amen-wager": "estimation",
-};
-
 const SKIP_VOICE_TYPES = new Set(["headsup", "wordlist", "FakeWord", "chroma"]);
 
 interface PackSpec {
@@ -39,13 +34,12 @@ function discoverPacks(): PackSpec[] {
 	const brandDirs: Array<{
 		brand: "amen" | "slopcade";
 		dir: string;
-		prefix: string;
 	}> = [
-		{ brand: "amen", dir: join(PACKS_ROOT, "amen"), prefix: "amen-" },
-		{ brand: "slopcade", dir: join(PACKS_ROOT, "slopcade"), prefix: "" },
+		{ brand: "amen", dir: join(PACKS_ROOT, "amen") },
+		{ brand: "slopcade", dir: join(PACKS_ROOT, "slopcade") },
 	];
 
-	for (const { brand, dir, prefix } of brandDirs) {
+	for (const { brand, dir } of brandDirs) {
 		let files: string[];
 		try {
 			files = readdirSync(dir) as string[];
@@ -57,11 +51,7 @@ function discoverPacks(): PackSpec[] {
 		for (const filename of files) {
 			if (!filename.endsWith(".json")) continue;
 
-			const base = filename.replace(/\.json$/, "");
-			let contentType = FILENAME_TO_TYPE[base] ?? base;
-			if (prefix && contentType.startsWith(prefix)) {
-				contentType = contentType.slice(prefix.length);
-			}
+			const contentType = filename.replace(/\.json$/, "");
 
 			specs.push({
 				brand,
