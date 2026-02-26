@@ -3,7 +3,8 @@
   "started_at": "2026-02-26T15:29:14.014Z",
   "session_ids": [
     "ses_3656e7b09ffe1GU2mmoQiKUzSf",
-    "ses_3653a59abffeGjuYfcA8PtpxtM"
+    "ses_3653a59abffeGjuYfcA8PtpxtM",
+    "ses_3675c1d00ffenqIP3r0Cx34NR0"
   ],
   "plan_name": "app-split-plan",
   "agent": "atlas"

@@ -872,7 +872,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-17-snap-off.png
   ```
 
-- [ ] 18. Add multi-select and group basics
+- [x] 18. Add multi-select and group basics
 
   **What to do**:
   - Add multi-select state model and marquee/shift selection.
@@ -1159,7 +1159,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-24-perf-stress.txt
   ```
 
-- [ ] 25. Add fallback UX for invalid assets/fonts/geometry
+- [x] 25. Add fallback UX for invalid assets/fonts/geometry
 
   **What to do**:
   - Introduce graceful fallbacks for image/font/path failures.
