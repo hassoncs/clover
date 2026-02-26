@@ -522,9 +522,9 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 
 ### Wave 3 - Consumer migration
 
-- [ ] 19. Migrate `apps/amen` imports to `@slopcade/party` and shared package paths.
-- [ ] 20. Migrate `apps/slopcade` creator imports to `@slopcade/editor`, `@slopcade/editor-ai`, `@slopcade/social`.
-- [ ] 21. Remove old party code sources from `apps/slopcade/components/party/`, `apps/amen/components/party/`, and stale `packages/ui/src/party/` once migrated.
+- [x] 19. Migrate `apps/amen` imports to `@slopcade/party` and shared package paths.
+- [x] 20. Migrate `apps/slopcade` creator imports to `@slopcade/editor`, `@slopcade/editor-ai`, `@slopcade/social`.
+- [x] 21. Remove old party code sources from `apps/slopcade/components/party/`, `apps/amen/components/party/`, and stale `packages/ui/src/party/` once migrated.
 - [x] 22. Add temporary re-export shims where needed to keep migration incremental and low risk.
 
 ### Wave 4 - New app shells
@@ -556,6 +556,6 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 ### Exit Criteria
 
 - [ ] 40. All checkboxes complete.
-- [ ] 41. No party code ships in creator app dependency graph.
-- [ ] 42. No creator code ships in party app dependency graph.
+- [x] 41. No party code ships in creator app dependency graph.
+- [x] 42. No creator code ships in party app dependency graph.
 - [ ] 43. All four apps boot with correct branding and capability boundaries.
