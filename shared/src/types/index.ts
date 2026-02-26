@@ -16,6 +16,7 @@ export type {
 } from "./container";
 export * from "./debug-ops";
 export * from "./design";
+export * from "./design-migrations";
 export * from "./effects";
 export * from "./entity";
 export * from "./FeatureFlags";

@@ -121,3 +121,11 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 - Used `useFont` with a bundled font (`Fredoka-Regular.ttf`) to render text elements and frame titles.
 - Implemented hit testing by converting screen coordinates to world coordinates using the camera transform, then checking frame and element bounds in reverse z-index order.
 - Used `TouchableWithoutFeedback` to capture tap events and calculate the tapped element.
+
+## Design Document Versioning & Migration (2026-02-25)
+- Implemented a migration pipeline for design documents to handle schema evolution.
+- Current version is "1.0".
+- Legacy documents (v0.x) are identified by the absence of a `version` field and are automatically upgraded to v1.0 with default metadata and empty frames if missing.
+- Migration logic is centralized in `shared/src/types/design-migrations.ts` and integrated into the `useDesignDocument` hook.
+- Migration emits a `console.warn` when upgrading legacy documents for auditability.
+- Unsupported future versions throw a `DesignSchemaError`.

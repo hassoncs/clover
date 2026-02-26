@@ -1,6 +1,7 @@
 import {
 	createEmptyDesignDocument,
 	type DesignDocument,
+	migrateDesignDocument,
 	parseDesignDocument,
 } from "@slopcade/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -68,9 +69,9 @@ export function useDesignDocument(gameId: string | null) {
 
 		if (designFileQuery.data?.content) {
 			try {
-				const doc = parseDesignDocument(
-					JSON.parse(designFileQuery.data.content),
-				);
+				const raw = JSON.parse(designFileQuery.data.content);
+				const migrated = migrateDesignDocument(raw);
+				const doc = parseDesignDocument(migrated);
 				setDesignDocument(doc);
 				setIsDesignDirty(false);
 			} catch (e) {

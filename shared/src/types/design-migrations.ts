@@ -1,0 +1,48 @@
+import {
+	type DesignDocument,
+	DesignDocumentSchema,
+	DesignSchemaError,
+} from "./design";
+
+/**
+ * Migrates a design document from older versions to the current version (1.0).
+ * Handles legacy documents (v0.x) that might be missing a version field.
+ */
+export function migrateDesignDocument(data: unknown): DesignDocument {
+	if (typeof data !== "object" || data === null) {
+		throw new DesignSchemaError("Invalid design document: not an object");
+	}
+
+	const raw = data as Record<string, any>;
+	let current = { ...raw };
+
+	// 1. Handle legacy v0.x (no version field)
+	if (!current.version) {
+		console.warn("[design] migrated from v0.x to v1.0");
+		current = {
+			version: "1.0",
+			metadata: current.metadata || {
+				title: "Migrated Design",
+				gameId: "unknown",
+				createdAt: Date.now(),
+				updatedAt: Date.now(),
+			},
+			frames: current.frames || [],
+		};
+	}
+
+	// 2. Validate current version
+	if (current.version !== "1.0") {
+		throw new DesignSchemaError(`unsupported version: ${current.version}`);
+	}
+
+	// 3. Final validation against schema
+	const result = DesignDocumentSchema.safeParse(current);
+	if (!result.success) {
+		throw new DesignSchemaError(
+			`Invalid design document schema after migration: ${result.error.message}`,
+		);
+	}
+
+	return result.data;
+}
