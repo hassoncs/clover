@@ -8,6 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
 	type AudioProvider,
+	buildContentAudioR2Key,
+	buildContentAudioR2KeyCandidates,
 	createAudioGenerator,
 	SKIP_VOICE_TYPES,
 } from "@/party/content/audio";
@@ -78,14 +80,6 @@ function getAudioTextFields(
 		default:
 			return null;
 	}
-}
-
-function buildAudioR2Key(
-	brand: Brand,
-	contentType: ContentType,
-	contentId: string,
-): string {
-	return `audio/voice/${brand}/content/${contentType}/${contentId}.mp3`;
 }
 
 async function loadPackFiles(brand: Brand): Promise<
@@ -550,7 +544,11 @@ export const partyContentRouter = router({
 						if (!SKIP_VOICE_TYPES.has(contentType)) {
 							const audioFields = getAudioTextFields(item, contentType);
 							if (audioFields) {
-								const r2Key = buildAudioR2Key(brand, contentType, contentId);
+								const r2Key = buildContentAudioR2Key(
+									brand,
+									contentType,
+									contentId,
+								);
 								const assetId = `audio-${contentId}`;
 
 								assetRows.push({
@@ -733,7 +731,7 @@ export const partyContentRouter = router({
 				if (!SKIP_VOICE_TYPES.has(input.contentType)) {
 					const audioFields = getAudioTextFields(item, input.contentType);
 					if (audioFields) {
-						const r2Key = buildAudioR2Key(
+						const r2Key = buildContentAudioR2Key(
 							input.brand,
 							input.contentType,
 							contentId,
@@ -2420,13 +2418,20 @@ export const partyContentRouter = router({
 						continue;
 					}
 
-					const r2Key = buildAudioR2Key(
-						row.brand_id as Brand,
-						row.content_type as ContentType,
+					const keyCandidates = buildContentAudioR2KeyCandidates(
+						row.brand_id,
+						row.content_type,
 						row.id,
 					);
-					const object = await r2.head(r2Key);
-					if (!object) {
+					let r2Key: string | null = null;
+					for (const candidate of keyCandidates) {
+						const object = await r2.head(candidate);
+						if (object) {
+							r2Key = candidate;
+							break;
+						}
+					}
+					if (!r2Key) {
 						notInR2++;
 						continue;
 					}

@@ -1,0 +1,40 @@
+T11 Audio Compatibility Audit — Local R2 Check
+===============================================
+Date: 2026-02-26
+
+AUDIT: Local R2 storage for legacy audio keys
+----------------------------------------------
+Command: find r2/audio -type d
+Result:
+  r2/audio/music/amen/
+  r2/audio/music/shared/
+  r2/audio/sfx/shared/
+  r2/audio/voice/amen/content/personal/
+  r2/audio/voice/amen/content/drawing/
+  r2/audio/voice/amen/content/ranking/
+  r2/audio/voice/amen/content/dilemma/
+  r2/audio/voice/amen/content/trivia/
+  r2/audio/voice/amen/content/fibbage/
+  r2/audio/voice/amen/transitions/
+
+FINDING: No objects found at legacy paths:
+  - r2/audio/voice/*/content/wager/
+  - r2/audio/voice/*/content/history/
+  - r2/audio/voice/*/content/estimation/   (no new audio generated yet)
+
+CONCLUSION: Local R2 has ZERO audio assets under wager or history path segments.
+No migration of existing R2 objects is needed for the local environment.
+
+APPROACH TAKEN: Read-alias fallback (forward-safe)
+--------------------------------------------------
+Added buildContentAudioR2KeyCandidates() to api/src/party/content/audio/r2-keys.ts.
+For contentType='estimation', candidates returned are:
+  1. audio/voice/{brand}/content/estimation/{id}.mp3  (canonical, tried first)
+  2. audio/voice/{brand}/content/wager/{id}.mp3       (legacy fallback)
+  3. audio/voice/{brand}/content/history/{id}.mp3     (legacy fallback)
+
+Applied in party-content.ts linkAudioAssets route: if canonical key is missing
+in R2, legacy keys are tried before marking the item as notInR2.
+
+This ensures production environments where audio was generated under legacy keys
+(wager/history) before T8 backfill will continue to have those assets accessible.
