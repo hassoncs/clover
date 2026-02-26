@@ -170,6 +170,13 @@
 - Skia's `transform` array applies transformations in order. To rotate an element around its center, use `[{ translateX: cx }, { translateY: cy }, { rotate: angle }, { translateX: -cx }, { translateY: -cy }]`.
 - When debouncing saves to a remote document, ensure the local state is updated immediately for smooth interactions, while the remote save happens in the background.
 
+## [2026-02-26] Task T26 Complete — Design→Build Integration Coverage
+- Added rich v1.1 integration coverage in `api/src/ai/agent/__tests__/design-flow.integration.test.ts` using a design artifact containing `circle`, `line`, `path`, and `group` elements.
+- Verified build-stage prompt enrichment path by asserting the design-reference summary segment is non-empty and includes geometric cues (`circle|line|path`) when a v1.1 artifact is present.
+- Added guardrail coverage for validation failure at the design boundary by asserting `parseDesignDocument` throws a descriptive schema error on invalid element types.
+- Added chat-tool contract coverage in the same integration suite for AI-driven design writes: invalid `addDesignElement` payloads return structured errors (no throw) and stale `updateDesignElement` writes return conflict metadata (`currentVersion`, `expectedVersion`) while current-version retry succeeds.
+- Added explicit design→build failure-boundary test proving that a failed `designStage` write path leaves no readable design artifact, and `buildStage` prompt generation omits design-reference context.
+
 ## Design Canvas Interactions
 - Implemented drag, resize, rotate, and snapping in `useDesignInteractions.ts`.
 - Used `useRef` for interaction state to avoid re-renders during drag.
