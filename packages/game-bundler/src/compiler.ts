@@ -38,7 +38,11 @@ function isConstantRef(value: unknown): value is ConstantRef {
 const BUNDLE_SUBDIRS = ["prefabs", "entities"] as const;
 
 const IGNORED_DIRS = new Set(["bundle", "lib", "node_modules", ".bundle"]);
-const IGNORED_FILES = new Set(["definition.json", "metadata.json"]);
+const IGNORED_FILES = new Set([
+	"definition.json",
+	"metadata.json",
+	"design.json",
+]);
 
 interface ResolvedConstant {
 	value: number | string | boolean;

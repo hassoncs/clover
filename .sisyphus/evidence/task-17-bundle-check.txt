@@ -1,0 +1,21 @@
+Inspection of r2/games/slopcade/test-design-file/definition.json:
+{
+	"metadata": {
+		"id": "test-design-file",
+		"title": "Test Design File",
+		"version": "1.0.0"
+	},
+	"world": {
+		"gravity": {
+			"x": 0,
+			"y": 10
+		},
+		"pixelsPerMeter": 50
+	},
+	"prefabs": {},
+	"entities": []
+}
+
+Verified that design.json is NOT in definition.json
+
+Verified that sync-r2.ts walkR2Files skips design.json

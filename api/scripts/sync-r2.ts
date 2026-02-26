@@ -44,7 +44,11 @@ const R2_BUCKET_REMOTE = "slopcade-assets";
 const R2_SYNC_MANIFEST_LOCAL = join(API_ROOT, ".r2-sync-manifest.json");
 const R2_SYNC_MANIFEST_REMOTE = join(API_ROOT, ".r2-sync-manifest-remote.json");
 
-const BUILD_OUTPUTS = new Set(["definition.json", "metadata.json"]);
+const BUILD_OUTPUTS = new Set([
+	"definition.json",
+	"metadata.json",
+	"design.json",
+]);
 
 function buildGames(): void {
 	if (!existsSync(GAMES_DIR)) return;
@@ -168,10 +172,14 @@ function walkR2Files(
 ): Array<{ key: string; filePath: string }> {
 	const files: Array<{ key: string; filePath: string }> = [];
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		if (entry.name === ".DS_Store") continue;
+
 		if (entry.isDirectory()) {
 			const subPrefix = prefix ? `${prefix}/${entry.name}` : entry.name;
 			files.push(...walkR2Files(join(dir, entry.name), subPrefix));
 		} else {
+			if (BUILD_OUTPUTS.has(entry.name)) continue;
+
 			const key = prefix ? `${prefix}/${entry.name}` : entry.name;
 			files.push({ key, filePath: join(dir, entry.name) });
 		}

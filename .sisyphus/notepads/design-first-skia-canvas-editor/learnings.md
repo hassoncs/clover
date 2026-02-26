@@ -172,3 +172,19 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 ### DesignCanvasPanel.tsx State: T7 Already Implemented Camera
 - T7 was already implemented — `useDesignCamera()` is in use, breadcrumbs, zoom controls, and keyboard shortcuts (`[`, `]`, `f`) are present
 - The "Default camera for now" comment had already been replaced — the file was updated since the plan was written
+
+## [2026-02-26] T17 - Watcher/Build/Package Pipeline Validation
+
+### design.json Handling in Build Pipeline
+- **PackageCompiler.ts**: Verified that `design.json` is NOT included in the compiled runtime package. The compiler uses `WORKSPACE_CONVENTIONS` to opt-in to specific files and directories. Since `design.json` is not in the conventions and doesn't match prefab/script/asset patterns, it is naturally excluded from `processedFiles` and tag payloads.
+- **game-bundler**: Added `design.json` to `IGNORED_FILES` in `packages/game-bundler/src/compiler.ts` to explicitly prevent it from being processed by the local bundler.
+- **sync-r2.ts**: 
+  - Added `design.json` to `BUILD_OUTPUTS` to prevent the watcher from triggering rebuilds when design files change (since they don't affect the build output).
+  - Updated `walkR2Files` to explicitly skip files in `BUILD_OUTPUTS`, ensuring `design.json` is not synced to the R2 asset bucket.
+  - Added an explicit skip for `.DS_Store` in `walkR2Files` for cleaner syncs.
+
+### Verification Evidence
+- Created test fixture `r2/games/slopcade/test-design-file/design.json`.
+- Verified `sync-r2.ts --build-only` generates `definition.json` without including design data.
+- Verified `sync-r2.ts` sync manifest does not include `design.json`.
+- Evidence saved to `.sisyphus/evidence/task-17-watcher.log` and `.sisyphus/evidence/task-17-bundle-check.txt`.
