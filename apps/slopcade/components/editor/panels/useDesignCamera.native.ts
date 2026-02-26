@@ -1,11 +1,12 @@
 import { useCallback, useRef } from "react";
+import type { UseDesignCameraResult } from "./useDesignCamera";
 import {
 	MAX_SCALE,
 	MIN_SCALE,
 	useDesignCameraShared,
 } from "./useDesignCamera.shared";
 
-export function useDesignCamera() {
+export function useDesignCamera(): UseDesignCameraResult {
 	const { camera, setCamera, resetCamera, zoomToFit } = useDesignCameraShared();
 	const lastScaleRef = useRef(1);
 	const lastTranslateRef = useRef({ x: 0, y: 0 });

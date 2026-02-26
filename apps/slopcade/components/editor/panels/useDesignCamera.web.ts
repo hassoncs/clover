@@ -1,12 +1,12 @@
-import type { DesignFrame } from "@slopcade/shared";
 import { useCallback, useRef } from "react";
+import type { UseDesignCameraResult } from "./useDesignCamera";
 import {
 	MAX_SCALE,
 	MIN_SCALE,
 	useDesignCameraShared,
 } from "./useDesignCamera.shared";
 
-export function useDesignCamera() {
+export function useDesignCamera(): UseDesignCameraResult {
 	const { camera, setCamera, resetCamera, zoomToFit } = useDesignCameraShared();
 	const isDraggingRef = useRef(false);
 	const lastMousePosRef = useRef({ x: 0, y: 0 });

@@ -24,4 +24,8 @@ export interface UseDesignCameraResult {
 	handlePinchUpdate?: (scale: number, focalX: number, focalY: number) => void;
 }
 
-export { useDesignCamera } from "./useDesignCamera.web";
+export function useDesignCamera(): UseDesignCameraResult {
+	throw new Error(
+		"useDesignCamera should be implemented by platform-specific files",
+	);
+}

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	Pressable,
 	StyleSheet,
@@ -7,6 +7,12 @@ import {
 	useWindowDimensions,
 	View,
 } from "react-native";
+import {
+	Gesture,
+	GestureDetector,
+	GestureHandlerRootView,
+} from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
 import { useTheme } from "@/lib/theme";
 import { useEditor } from "../EditorProvider";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
@@ -26,8 +32,14 @@ export function DesignCanvasPanel() {
 	} = useEditor();
 	const { designDocument, isLoadingDesign } = useSharedWorkspaceFiles();
 
-	const { camera, zoomToFit, onWheel, onMouseDown, onMouseMove, onMouseUp } =
-		useDesignCamera();
+	const {
+		camera,
+		zoomToFit,
+		handlePanStart,
+		handlePanUpdate,
+		handlePinchStart,
+		handlePinchUpdate,
+	} = useDesignCamera();
 
 	const [showFrameList, setShowFrameList] = useState(false);
 
@@ -41,47 +53,25 @@ export function DesignCanvasPanel() {
 		(e) => e.id === selectedDesignElementId,
 	);
 
-	const handleZoomToFit = useCallback(() => {
+	const handleZoomToFit = () => {
 		if (frames.length > 0) {
 			zoomToFit(frames, width, height - 48);
 		}
-	}, [frames, zoomToFit, width, height]);
+	};
 
-	const goPrevFrame = useCallback(() => {
+	const goPrevFrame = () => {
 		if (selectedFrameIndex > 0) {
 			selectDesignFrame(frames[selectedFrameIndex - 1].id);
 		}
-	}, [selectedFrameIndex, frames, selectDesignFrame]);
+	};
 
-	const goNextFrame = useCallback(() => {
+	const goNextFrame = () => {
 		if (selectedFrameIndex >= 0 && selectedFrameIndex < totalFrames - 1) {
 			selectDesignFrame(frames[selectedFrameIndex + 1].id);
 		} else if (selectedFrameIndex === -1 && totalFrames > 0) {
 			selectDesignFrame(frames[0].id);
 		}
-	}, [selectedFrameIndex, totalFrames, frames, selectDesignFrame]);
-
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (
-				document.activeElement?.tagName === "INPUT" ||
-				document.activeElement?.tagName === "TEXTAREA"
-			) {
-				return;
-			}
-
-			if (e.key === "[") {
-				goPrevFrame();
-			} else if (e.key === "]") {
-				goNextFrame();
-			} else if (e.key.toLowerCase() === "f") {
-				handleZoomToFit();
-			}
-		};
-
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [handleZoomToFit, goPrevFrame, goNextFrame]);
+	};
 
 	const handleElementTap = (frameId: string, elementId: string | null) => {
 		if (elementId) {
@@ -102,6 +92,26 @@ export function DesignCanvasPanel() {
 		}
 		return selectedFrame.title;
 	}, [selectedFrame, selectedElement]);
+
+	const panGesture = Gesture.Pan()
+		.onStart(() => {
+			if (handlePanStart) runOnJS(handlePanStart)();
+		})
+		.onUpdate((event) => {
+			if (handlePanUpdate)
+				runOnJS(handlePanUpdate)(event.translationX, event.translationY);
+		});
+
+	const pinchGesture = Gesture.Pinch()
+		.onStart(() => {
+			if (handlePinchStart) runOnJS(handlePinchStart)();
+		})
+		.onUpdate((event) => {
+			if (handlePinchUpdate)
+				runOnJS(handlePinchUpdate)(event.scale, event.focalX, event.focalY);
+		});
+
+	const cameraGesture = Gesture.Simultaneous(panGesture, pinchGesture);
 
 	return (
 		<View
@@ -200,26 +210,21 @@ export function DesignCanvasPanel() {
 						Loading design...
 					</Text>
 				) : designDocument ? (
-					<View
-						style={{ flex: 1, width: "100%" }}
-						{...({
-							onWheel,
-							onMouseDown,
-							onMouseMove,
-							onMouseUp,
-							onMouseLeave: onMouseUp,
-						} as object)}
-					>
-						<DesignCanvasRenderer
-							document={designDocument}
-							camera={camera}
-							selectedFrameId={selectedDesignFrameId}
-							selectedElementId={selectedDesignElementId}
-							onElementTap={handleElementTap}
-							width={width}
-							height={height - 48} // Subtract header height
-						/>
-					</View>
+					<GestureHandlerRootView style={styles.gestureRoot}>
+						<GestureDetector gesture={cameraGesture}>
+							<View style={{ flex: 1, width: "100%" }}>
+								<DesignCanvasRenderer
+									document={designDocument}
+									camera={camera}
+									selectedFrameId={selectedDesignFrameId}
+									selectedElementId={selectedDesignElementId}
+									onElementTap={handleElementTap}
+									width={width}
+									height={height - 48}
+								/>
+							</View>
+						</GestureDetector>
+					</GestureHandlerRootView>
 				) : (
 					<Text style={[styles.message, { color: c.textSecondary }]}>
 						No design document found.
@@ -336,6 +341,10 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		position: "relative",
+	},
+	gestureRoot: {
+		flex: 1,
+		width: "100%",
 	},
 	message: {
 		fontSize: 14,

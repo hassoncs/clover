@@ -1,251 +1,300 @@
-import type { AgentTier } from '@/ai/agent/tier-config';
 import {
-  planningStage,
-  buildStage,
-  refineStage,
-  themeStage,
-  assetStage,
-  chatStage,
-  shaderStage,
-} from '@/ai/agent/stages';
+	assetStage,
+	buildStage,
+	chatStage,
+	designStage,
+	planningStage,
+	refineStage,
+	shaderStage,
+	themeStage,
+} from "@/ai/agent/stages";
+import type { AgentTier } from "@/ai/agent/tier-config";
 
-type D1Database = import('@cloudflare/workers-types').D1Database;
-type R2Bucket = import('@cloudflare/workers-types').R2Bucket;
+type D1Database = import("@cloudflare/workers-types").D1Database;
+type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
 
 export type FailureReason =
-  | 'MISSING_PREREQUISITE'
-  | 'VALIDATION_FAILED'
-  | 'MODEL_ERROR'
-  | 'ASSET_PIPELINE_FAILED'
-  | 'PERSISTENCE_ERROR'
-  | 'UNKNOWN';
+	| "MISSING_PREREQUISITE"
+	| "VALIDATION_FAILED"
+	| "MODEL_ERROR"
+	| "ASSET_PIPELINE_FAILED"
+	| "PERSISTENCE_ERROR"
+	| "UNKNOWN";
 
 export interface AgentExecutionEnv {
-  DB: D1Database;
-  ASSETS: R2Bucket;
-  OPENROUTER_API_KEY?: string;
-  OPENAI_API_KEY?: string;
-  ANTHROPIC_API_KEY?: string;
-  IMAGE_GENERATION_PROVIDER?: 'modal' | 'scenario';
-  MODAL_ENDPOINT?: string;
-  SCENARIO_API_KEY?: string;
-  SCENARIO_SECRET_API_KEY?: string;
-  SCENARIO_API_URL?: string;
-  ASSET_HOST?: string;
-  DEBUG_ASSET_GENERATION?: string;
+	DB: D1Database;
+	ASSETS: R2Bucket;
+	OPENROUTER_API_KEY?: string;
+	OPENAI_API_KEY?: string;
+	ANTHROPIC_API_KEY?: string;
+	IMAGE_GENERATION_PROVIDER?: "modal" | "scenario";
+	MODAL_ENDPOINT?: string;
+	SCENARIO_API_KEY?: string;
+	SCENARIO_SECRET_API_KEY?: string;
+	SCENARIO_API_URL?: string;
+	ASSET_HOST?: string;
+	DEBUG_ASSET_GENERATION?: string;
 }
 
 export interface AgentExecutionRunContext {
-  gameId: string;
-  gameTitle: string;
-  gameDescription: string | null;
-  planningDocJson?: string | null;
+	gameId: string;
+	gameTitle: string;
+	gameDescription: string | null;
+	planningDocJson?: string | null;
 }
 
-export type AgentStage = 'planning' | 'build' | 'shader' | 'refine' | 'theme' | 'asset' | 'chat';
+export type AgentStage =
+	| "planning"
+	| "design"
+	| "build"
+	| "shader"
+	| "refine"
+	| "theme"
+	| "asset"
+	| "chat";
 
 export interface AgentExecutionStageContext {
-  runId: string;
-  stepId: string;
-  stepIndex: number;
-  stage: AgentStage;
-  tier: AgentTier;
-  env: AgentExecutionEnv;
-  previousArtifacts: Partial<Record<AgentStage, string>>;
-  context: AgentExecutionRunContext;
-  planningDoc?: string;
-  gameDefinition?: import('@slopcade/shared/types/GameDefinition').GameDefinition;
-  themePlan?: import('@/ai/pipeline/theme-plan').ThemePlan;
+	runId: string;
+	stepId: string;
+	stepIndex: number;
+	stage: AgentStage;
+	tier: AgentTier;
+	env: AgentExecutionEnv;
+	previousArtifacts: Partial<Record<AgentStage, string>>;
+	context: AgentExecutionRunContext;
+	planningDoc?: string;
+	gameDefinition?: import("@slopcade/shared/types/GameDefinition").GameDefinition;
+	themePlan?: import("@/ai/pipeline/theme-plan").ThemePlan;
 }
 
 export type AgentExecutionStageResult =
-  | {
-      status: 'succeeded';
-      outputArtifactKey: string;
-      costMicros: number;
-      inputTokens: number;
-      outputTokens: number;
-      provider: string;
-      model: string;
-      checkpoint: Record<string, unknown>;
-    }
-  | {
-      status: 'failed';
-      failureReason: FailureReason;
-      errorMessage: string;
-      checkpoint: Record<string, unknown>;
-      costMicros: number;
-      inputTokens: number;
-      outputTokens: number;
-      provider: string;
-      model: string;
-    };
+	| {
+			status: "succeeded";
+			outputArtifactKey: string;
+			costMicros: number;
+			inputTokens: number;
+			outputTokens: number;
+			provider: string;
+			model: string;
+			checkpoint: Record<string, unknown>;
+	  }
+	| {
+			status: "failed";
+			failureReason: FailureReason;
+			errorMessage: string;
+			checkpoint: Record<string, unknown>;
+			costMicros: number;
+			inputTokens: number;
+			outputTokens: number;
+			provider: string;
+			model: string;
+	  };
 
 export type AgentStageRunner = (
-  context: AgentExecutionStageContext
+	context: AgentExecutionStageContext,
 ) => Promise<AgentExecutionStageResult>;
 
 export interface ExecuteAgentStageInput {
-  runId: string;
-  stepId: string;
-  stepIndex: number;
-  stage: AgentStage;
-  tier: AgentTier;
-  env: AgentExecutionEnv;
-  context: AgentExecutionRunContext;
-  previousArtifacts: Partial<Record<AgentStage, string>>;
-  planningDoc?: string;
-  gameDefinition?: import('@slopcade/shared/types/GameDefinition').GameDefinition;
-  themePlan?: import('@/ai/pipeline/theme-plan').ThemePlan;
+	runId: string;
+	stepId: string;
+	stepIndex: number;
+	stage: AgentStage;
+	tier: AgentTier;
+	env: AgentExecutionEnv;
+	context: AgentExecutionRunContext;
+	previousArtifacts: Partial<Record<AgentStage, string>>;
+	planningDoc?: string;
+	gameDefinition?: import("@slopcade/shared/types/GameDefinition").GameDefinition;
+	themePlan?: import("@/ai/pipeline/theme-plan").ThemePlan;
 }
 
 export interface ExecuteAgentStageOptions {
-  stageRunners?: Partial<Record<AgentStage, AgentStageRunner>>;
+	stageRunners?: Partial<Record<AgentStage, AgentStageRunner>>;
 }
 
-export const STAGE_ORDER: AgentStage[] = ['planning', 'build', 'shader', 'refine', 'theme', 'asset'];
+export const STAGE_ORDER: AgentStage[] = [
+	"planning",
+	"design",
+	"build",
+	"shader",
+	"refine",
+	"theme",
+	"asset",
+];
 
 const DEFAULT_STAGE_RUNNERS: Record<AgentStage, AgentStageRunner> = {
-  planning: planningStage,
-  build: buildStage,
-  shader: shaderStage,
-  refine: refineStage,
-  theme: themeStage,
-  asset: assetStage,
-  chat: chatStage,
+	planning: planningStage,
+	design: designStage,
+	build: buildStage,
+	shader: shaderStage,
+	refine: refineStage,
+	theme: themeStage,
+	asset: assetStage,
+	chat: chatStage,
 };
 
 function stageBasePrefix(runId: string, stepIndex: number): string {
-  return `agent-runs/${runId}/steps/${stepIndex}`;
+	return `agent-runs/${runId}/steps/${stepIndex}`;
 }
 
-function checkpointKey(runId: string, stepIndex: number, stage: AgentStage): string {
-  return `${stageBasePrefix(runId, stepIndex)}/${stage}/checkpoint.json`;
+function checkpointKey(
+	runId: string,
+	stepIndex: number,
+	stage: AgentStage,
+): string {
+	return `${stageBasePrefix(runId, stepIndex)}/${stage}/checkpoint.json`;
 }
 
 function deterministicFailure(
-  reason: FailureReason,
-  message: string,
-  checkpoint: Record<string, unknown> = {}
+	reason: FailureReason,
+	message: string,
+	checkpoint: Record<string, unknown> = {},
 ): AgentExecutionStageResult {
-  return {
-    status: 'failed',
-    failureReason: reason,
-    errorMessage: `${reason}: ${message}`,
-    checkpoint,
-    costMicros: 0,
-    inputTokens: 0,
-    outputTokens: 0,
-    provider: 'none',
-    model: 'none',
-  };
+	return {
+		status: "failed",
+		failureReason: reason,
+		errorMessage: `${reason}: ${message}`,
+		checkpoint,
+		costMicros: 0,
+		inputTokens: 0,
+		outputTokens: 0,
+		provider: "none",
+		model: "none",
+	};
 }
 
 async function persistCheckpoint(
-  env: AgentExecutionEnv,
-  runId: string,
-  stepIndex: number,
-  stage: AgentStage,
-  payload: Record<string, unknown>
+	env: AgentExecutionEnv,
+	runId: string,
+	stepIndex: number,
+	stage: AgentStage,
+	payload: Record<string, unknown>,
 ): Promise<void> {
-  const key = checkpointKey(runId, stepIndex, stage);
-  await env.ASSETS.put(key, JSON.stringify(payload), {
-    httpMetadata: { contentType: 'application/json' },
-  });
+	const key = checkpointKey(runId, stepIndex, stage);
+	await env.ASSETS.put(key, JSON.stringify(payload), {
+		httpMetadata: { contentType: "application/json" },
+	});
 }
 
 function validateStagePrerequisites(
-  stage: AgentStage,
-  previousArtifacts: Partial<Record<AgentStage, string>>
+	stage: AgentStage,
+	previousArtifacts: Partial<Record<AgentStage, string>>,
 ): AgentExecutionStageResult | null {
-  if (stage === 'planning') {
-    return null;
-  }
+	if (stage === "planning") {
+		return null;
+	}
 
-  if (!previousArtifacts.planning) {
-    return deterministicFailure('MISSING_PREREQUISITE', 'planning artifact missing', {
-      stage,
-      missing: 'planning',
-    });
-  }
+	if (!previousArtifacts.planning) {
+		return deterministicFailure(
+			"MISSING_PREREQUISITE",
+			"planning artifact missing",
+			{
+				stage,
+				missing: "planning",
+			},
+		);
+	}
 
-  if (stage === 'shader' || stage === 'refine' || stage === 'theme' || stage === 'asset') {
-    if (!previousArtifacts.build) {
-      return deterministicFailure('MISSING_PREREQUISITE', 'build artifact missing', {
-        stage,
-        missing: 'build',
-      });
-    }
-  }
+	if (
+		stage === "shader" ||
+		stage === "refine" ||
+		stage === "theme" ||
+		stage === "asset"
+	) {
+		if (!previousArtifacts.build) {
+			return deterministicFailure(
+				"MISSING_PREREQUISITE",
+				"build artifact missing",
+				{
+					stage,
+					missing: "build",
+				},
+			);
+		}
+	}
 
-  if (stage === 'asset' && !previousArtifacts.theme) {
-    return deterministicFailure('MISSING_PREREQUISITE', 'theme artifact missing', {
-      stage,
-      missing: 'theme',
-    });
-  }
+	if (stage === "asset" && !previousArtifacts.theme) {
+		return deterministicFailure(
+			"MISSING_PREREQUISITE",
+			"theme artifact missing",
+			{
+				stage,
+				missing: "theme",
+			},
+		);
+	}
 
-  return null;
+	return null;
 }
 
 export async function executeAgentStage(
-  input: ExecuteAgentStageInput,
-  options: ExecuteAgentStageOptions = {}
+	input: ExecuteAgentStageInput,
+	options: ExecuteAgentStageOptions = {},
 ): Promise<AgentExecutionStageResult> {
-  const { stage, runId, stepIndex, env } = input;
-  const prerequisiteFailure = validateStagePrerequisites(stage, input.previousArtifacts);
-  if (prerequisiteFailure) {
-    await persistCheckpoint(env, runId, stepIndex, stage, prerequisiteFailure.checkpoint);
-    return prerequisiteFailure;
-  }
+	const { stage, runId, stepIndex, env } = input;
+	const prerequisiteFailure = validateStagePrerequisites(
+		stage,
+		input.previousArtifacts,
+	);
+	if (prerequisiteFailure) {
+		await persistCheckpoint(
+			env,
+			runId,
+			stepIndex,
+			stage,
+			prerequisiteFailure.checkpoint,
+		);
+		return prerequisiteFailure;
+	}
 
-  const stageRunners: Record<AgentStage, AgentStageRunner> = {
-    ...DEFAULT_STAGE_RUNNERS,
-    ...options.stageRunners,
-  };
-  const runner = stageRunners[stage];
+	const stageRunners: Record<AgentStage, AgentStageRunner> = {
+		...DEFAULT_STAGE_RUNNERS,
+		...options.stageRunners,
+	};
+	const runner = stageRunners[stage];
 
-  try {
-    const result = await runner({
-      ...input,
-      stage,
-      planningDoc: input.planningDoc,
-      gameDefinition: input.gameDefinition,
-      themePlan: input.themePlan,
-    });
+	try {
+		const result = await runner({
+			...input,
+			stage,
+			planningDoc: input.planningDoc,
+			gameDefinition: input.gameDefinition,
+			themePlan: input.themePlan,
+		});
 
-    await persistCheckpoint(env, runId, stepIndex, stage, {
-      stage,
-      status: result.status,
-      ...(result.status === 'succeeded'
-        ? {
-            outputArtifactKey: result.outputArtifactKey,
-            costMicros: result.costMicros,
-            inputTokens: result.inputTokens,
-            outputTokens: result.outputTokens,
-            provider: result.provider,
-            model: result.model,
-          }
-        : {
-            failureReason: result.failureReason,
-            errorMessage: result.errorMessage,
-            costMicros: result.costMicros,
-            inputTokens: result.inputTokens,
-            outputTokens: result.outputTokens,
-            provider: result.provider,
-            model: result.model,
-          }),
-      checkpoint: result.checkpoint,
-    });
+		await persistCheckpoint(env, runId, stepIndex, stage, {
+			stage,
+			status: result.status,
+			...(result.status === "succeeded"
+				? {
+						outputArtifactKey: result.outputArtifactKey,
+						costMicros: result.costMicros,
+						inputTokens: result.inputTokens,
+						outputTokens: result.outputTokens,
+						provider: result.provider,
+						model: result.model,
+					}
+				: {
+						failureReason: result.failureReason,
+						errorMessage: result.errorMessage,
+						costMicros: result.costMicros,
+						inputTokens: result.inputTokens,
+						outputTokens: result.outputTokens,
+						provider: result.provider,
+						model: result.model,
+					}),
+			checkpoint: result.checkpoint,
+		});
 
-    return result;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'unknown execution error';
-    const failed = deterministicFailure('UNKNOWN', message, {
-      stage,
-      error: message,
-    });
-    await persistCheckpoint(env, runId, stepIndex, stage, failed.checkpoint);
-    return failed;
-  }
+		return result;
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "unknown execution error";
+		const failed = deterministicFailure("UNKNOWN", message, {
+			stage,
+			error: message,
+		});
+		await persistCheckpoint(env, runId, stepIndex, stage, failed.checkpoint);
+		return failed;
+	}
 }

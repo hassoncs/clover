@@ -1,0 +1,11 @@
+Task: T12 prerequisite failure evidence
+Date: 2026-02-25
+
+Code evidence:
+- api/src/ai/agent/execution-engine.ts validates planning artifact for all non-planning stages (including design).
+- api/src/ai/__tests__/agent-execution-engine.test.ts includes test: "requires planning artifact before design stage can run" expecting MISSING_PREREQUISITE.
+
+Command evidence:
+- Command: pnpm -C api exec vitest run src/ai/__tests__/agent-execution-engine.test.ts -t "requires planning artifact before design stage can run"
+- Result: blocked by pre-existing vitest workers pool issue:
+  "No such module ... @vitest/utils/timers" (no tests executed)

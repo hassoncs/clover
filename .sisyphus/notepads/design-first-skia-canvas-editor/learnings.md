@@ -142,3 +142,33 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 - Migration logic is centralized in `shared/src/types/design-migrations.ts` and integrated into the `useDesignDocument` hook.
 - Migration emits a `console.warn` when upgrading legacy documents for auditability.
 - Unsupported future versions throw a `DesignSchemaError`.
+
+### Design Canvas Navigation Controls
+- **Camera Hook**: `useDesignCamera` provides `zoomToFit` which takes an array of frames and the viewport dimensions. It also provides web-specific event handlers (`onWheel`, `onMouseDown`, `onMouseMove`, `onMouseUp`) that can be spread onto a `View` wrapper for the canvas.
+- **Keyboard Shortcuts**: When adding global keyboard shortcuts (like `[` / `]` for frame navigation), ensure to check `document.activeElement?.tagName` to avoid triggering shortcuts while the user is typing in an input or textarea.
+- **Frame Selection**: The `useEditor` hook provides `selectDesignFrame` and `selectDesignElement` to manage selection state. The selected frame index can be derived from the `designDocument.frames` array.
+- **Dropdown Menus**: A simple absolute-positioned `View` with a high `zIndex` works well for custom dropdown menus (like the frame list selector) in the editor panel header.
+
+## [2026-02-26] T8 - Tap-to-Select and Design Overlay
+
+### Architecture: Pure Hit-Test Function Extraction
+- Extracted `hitTestDesignCanvas()` and `screenToWorld()` into `panels/designCanvasHitTest.ts` for testability
+- `HitTestResult` discriminated type: `{ frameId: string; elementId: string }` | `{ frameId: string; elementId: null }` | `{ frameId: null; elementId: null }`
+- Frames hit-tested in reverse array order (last = topmost); elements sorted by descending zIndex within frame
+- `DesignCanvasRenderer.tsx` now uses the extracted pure functions — `handlePress` is 4 lines instead of 40
+
+### Panel-Side Selection Dispatch Pattern
+- `DesignCanvasPanel.tsx` `handleElementTap` now:
+  - element tap → `selectDesignElement(elementId, frameId)` + `setDesignMode("select")`
+  - frame tap → `selectDesignFrame(frameId)` + `setDesignMode("select")`
+  - empty canvas tap → `clearDesignSelection()` (sets designMode back to "idle" in reducer)
+- Previously `selectDesignFrame(null)` was used for empty tap — this was wrong because it dispatches `SELECT_DESIGN_FRAME` which doesn't reset `designMode` to "idle"
+
+### Testing Pattern for Pure Canvas Logic
+- Pure hit-test functions are easy to test with Vitest (no React/Skia mocking needed)
+- Test matrix: empty canvas, outside all frames, inside frame (no element), element hit, zIndex overlap, frame overlap, position offsets, boundary conditions
+- 13 tests added in `__tests__/DesignCanvasHitTest.test.ts`
+
+### DesignCanvasPanel.tsx State: T7 Already Implemented Camera
+- T7 was already implemented — `useDesignCamera()` is in use, breadcrumbs, zoom controls, and keyboard shortcuts (`[`, `]`, `f`) are present
+- The "Default camera for now" comment had already been replaced — the file was updated since the plan was written
