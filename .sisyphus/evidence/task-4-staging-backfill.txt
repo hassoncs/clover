@@ -1,0 +1,91 @@
+T4 — Migration Staging: Dry-Run Verification
+Generated: 2026-02-26
+Migration file: api/migrations/20260226_normalize_content_types.sql
+
+================================================================================
+SCOPE
+================================================================================
+
+Target table: party_content
+Target column: content_type
+Types being normalized:
+  - 'wager'   -> 'estimation'  (legacy alias: amen-wager)
+  - 'history' -> 'estimation'  (legacy alias: amen-history)
+
+================================================================================
+PRE-MIGRATION VALIDATION QUERY
+================================================================================
+
+  SELECT content_type, COUNT(*) AS count
+  FROM party_content
+  WHERE content_type IN ('wager', 'history')
+  GROUP BY content_type;
+
+Expected output (unknown exact counts until run against live DB):
+  content_type | count
+  -------------|------
+  wager        | N      -- rows from amen-wager content packs
+  history      | N      -- rows from amen-history content packs
+
+  NOTE: If both return 0, the migration is a safe no-op (still updates CHECK constraint).
+
+================================================================================
+FORWARD MIGRATION SQL REVIEW
+================================================================================
+
+The migration uses the SQLite table-recreation pattern (same as 20260219):
+
+  1. CREATE TABLE party_content_migration_20260226 — new CHECK without wager/history
+  2. INSERT OR IGNORE INTO ... SELECT (with CASE to remap types, json_set for rollback metadata)
+  3. DROP TABLE party_content
+  4. ALTER TABLE party_content_migration_20260226 RENAME TO party_content
+  5. CREATE INDEX x7 — same indexes as 20260219
+
+Key transformation in INSERT SELECT:
+  content_type: CASE WHEN content_type IN ('wager', 'history') THEN 'estimation' ELSE content_type END
+  metadata:     CASE WHEN content_type IN ('wager', 'history')
+                     THEN json_set(COALESCE(metadata, '{}'), '$.original_content_type', content_type)
+                     ELSE metadata END
+
+The $.original_content_type metadata field allows the rollback migration to restore exact values.
+
+================================================================================
+COMPATIBILITY NOTES
+================================================================================
+
+- SQLite json_set() is available in D1 (SQLite 3.39+)
+- INSERT OR IGNORE prevents duplicate-key errors if migration temp table already exists
+- Foreign key child tables (party_content_assets, party_content_reviews,
+  party_content_status_transitions) reference party_content(id) with ON DELETE CASCADE.
+  D1 has FK enforcement off by default (SQLite default) — DROP TABLE is safe.
+  Same assumption made in 20260219_add_wager_history_content_types.sql.
+
+================================================================================
+POST-MIGRATION VALIDATION QUERY
+================================================================================
+
+  SELECT content_type, COUNT(*) AS count
+  FROM party_content
+  GROUP BY content_type
+  ORDER BY content_type;
+
+Expected: 'wager' and 'history' do NOT appear in results.
+          'estimation' count = (former estimation count) + (former wager count) + (former history count)
+
+================================================================================
+EXECUTION GATE
+================================================================================
+
+DO NOT run this migration until:
+  [ ] T7 (compatibility window) is deployed to production
+  [ ] T7 ensures all write paths emit 'estimation' instead of 'wager'/'history'
+  [ ] T8 (migration execution task) is scheduled
+
+The migration file is STAGED here (T4). Execution happens in T8.
+
+================================================================================
+FILES CREATED
+================================================================================
+
+  api/migrations/20260226_normalize_content_types.sql          -- forward migration
+  api/migrations/20260226_normalize_content_types_rollback.sql -- rollback

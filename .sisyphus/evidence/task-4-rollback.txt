@@ -1,0 +1,110 @@
+T4 — Rollback Strategy Validation
+Generated: 2026-02-26
+Rollback file: api/migrations/20260226_normalize_content_types_rollback.sql
+
+================================================================================
+ROLLBACK STRATEGY
+================================================================================
+
+The forward migration (20260226_normalize_content_types.sql) stores the original
+content_type in each migrated row's metadata JSON before overwriting it:
+
+  metadata BEFORE: null  OR  {"someKey": "someValue"}
+  metadata AFTER:  {"original_content_type": "wager"}  OR
+                   {"someKey": "someValue", "original_content_type": "history"}
+
+This allows the rollback migration to use json_extract() to restore exact values.
+
+================================================================================
+ROLLBACK MECHANISM
+================================================================================
+
+The rollback migration:
+  1. Creates party_content_rollback_20260226 with 'wager' and 'history' in CHECK
+  2. INSERT OR IGNORE SELECT with:
+       content_type = COALESCE(json_extract(metadata, '$.original_content_type'), content_type)
+       metadata = json_remove(metadata, '$.original_content_type')  -- cleans up sentinel
+  3. DROP TABLE party_content
+  4. RENAME party_content_rollback_20260226 -> party_content
+  5. Recreate all indexes
+
+================================================================================
+PRE-ROLLBACK VALIDATION QUERY
+================================================================================
+
+  SELECT json_extract(metadata, '$.original_content_type') AS original_type,
+         COUNT(*) AS count
+  FROM party_content
+  WHERE json_extract(metadata, '$.original_content_type') IN ('wager', 'history')
+  GROUP BY original_type;
+
+Expected after forward migration has run:
+  original_type | count
+  --------------|------
+  wager         | N     -- same count as pre-migration wager rows
+  history       | N     -- same count as pre-migration history rows
+
+If this returns 0 rows:
+  - The forward migration hasn't been run yet (rollback is a no-op)
+  - OR the metadata sentinel was cleaned up by a subsequent migration
+    (in that case, rollback from database backup is required)
+
+================================================================================
+POST-ROLLBACK VALIDATION QUERY
+================================================================================
+
+  SELECT content_type, COUNT(*) AS count
+  FROM party_content
+  WHERE content_type IN ('wager', 'history', 'estimation')
+  GROUP BY content_type
+  ORDER BY content_type;
+
+Expected after rollback:
+  content_type | count
+  -------------|------
+  estimation   | M     -- rows that were already estimation before migration
+  wager        | N     -- restored from $.original_content_type
+  history      | N     -- restored from $.original_content_type
+
+================================================================================
+LIMITATIONS AND KNOWN CONSTRAINTS
+================================================================================
+
+1. TIMING WINDOW: The rollback is only reliable while $.original_content_type is
+   present in metadata. A future cleanup migration removing that key makes rollback
+   impossible without a full DB restore.
+
+2. ESTIMATION AMBIGUITY: Rows that had content_type = 'estimation' BEFORE the
+   forward migration are indistinguishable from migrated rows (they have no
+   $.original_content_type). This is correct — they should remain 'estimation'.
+
+3. NEW WRITES DURING MIGRATION: If new rows with content_type = 'estimation' were
+   written after the forward migration but before rollback, they will remain as
+   'estimation' after rollback (no $.original_content_type). This is acceptable —
+   new writes use the canonical type.
+
+4. NOT A TRUE INVERSE: The rollback restores the DB schema state (CHECK constraint
+   includes wager/history) and the data values for rows that have $.original_content_type.
+   It does not undo new rows or other writes that occurred between forward and rollback.
+
+================================================================================
+ROLLBACK WINDOW
+================================================================================
+
+Safe rollback window: between T8 (migration execution) and metadata cleanup migration.
+After metadata cleanup: database backup restore required.
+Recommended window: 7 days post-deployment (same as typical feature flag rollback).
+
+================================================================================
+ROLLBACK TRIGGER CONDITIONS
+================================================================================
+
+Consider rolling back if:
+  - App errors spike on content_type validation after T8 execution
+  - Unexpected content queries return wrong results
+  - Downstream systems (audio path, template matching) break on 'estimation'
+    where they expected 'wager'
+
+Do NOT roll back if:
+  - Only cosmetic/display issues (these should be fixed forward)
+  - T7 compatibility guard is in place (writes are safe)

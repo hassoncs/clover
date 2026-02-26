@@ -63,6 +63,60 @@
 - `api/src/party/templates/registry.ts` — 20 "Cannot find module" errors for `definition.json` files
 - These are pre-existing in the worktree (definition.json files are build outputs, not in source)
 
+## 2026-02-26 Task T3: API + DO Contract Matrix
+
+### Contract matrix (File | Route/Context | Field Name | Current Type | Migration Action)
+- M01 | `api/src/trpc/routes/party-content.ts` | importItems.input | `contentType` | `z.enum(CONTENT_TYPES)` | Keep canonical content identifier.
+- M02 | `api/src/trpc/routes/party-content.ts` | list.input | `contentType` | `z.string().optional()` | T14: replace with canonical ContentType validator.
+- M03 | `api/src/trpc/routes/party-content.ts` | list response item | `contentType` | `string` (from `content_type`) | Keep field, enforce canonical values only.
+- M04 | `api/src/trpc/routes/party-content.ts` | reviewAll.input | `contentType` | `z.string().optional()` | T14 validation tightening.
+- M05 | `api/src/trpc/routes/party-content.ts` | getById response | `contentType` | `string` (from `content_type`) | Keep field, block legacy aliases.
+- M06 | `api/src/trpc/routes/party-content.ts` | loadFromSnapshot.input | `contentType` | `z.string()` | T14 validation tightening.
+- M07 | `api/src/trpc/routes/party-content.ts` | generateMissingAudio.input | `contentType` | `z.string().optional()` | T14 validation tightening.
+- M08 | `api/src/trpc/routes/party-content.ts` | backfillAudioAssets.input | `contentType` | `z.string().optional()` | T14 validation tightening.
+- M09 | `api/src/trpc/routes/party-content.ts` | importPacks/importStatus response maps | content-type keys | `Record<string, number>` | Keep shape; enforce canonical keys in producer.
+- M10 | `api/src/trpc/routes/party-content.ts` | generateContent.input | `gameType` | `z.string()` | Migrate semantics to `contentType` with compat alias.
+- M11 | `api/src/trpc/routes/party-content.ts` | generateContent persistence | `input.gameType -> content_type/game_type` | `string` | Align persistence + input naming in staged rollout.
+- M12 | `api/src/trpc/routes/party-content.ts` | getGenerationJob response | `gameType` | `string` | Migrate to `contentType` + temporary alias.
+- M13 | `api/src/trpc/routes/party-content.ts` | listGenerationJobs input/output | `gameType` | `z.string().optional()` / `string` | Migrate to `contentType` with dual read/write.
+- M14 | `api/src/trpc/routes/party-content.ts` | listBrandGameTypes response | `gameType` | `string` | Rename when source config migrates; else document as bridge.
+- M15 | `api/src/trpc/routes/party-content.ts` | `FILENAME_TO_CONTENT_TYPE` | legacy filename aliases | `Record<string, ContentType>` | Keep during migration; remove after canonical packs only.
+
+- M16 | `api/src/trpc/routes/party-templates.ts` | listByBrand/getById response | `id` | `string` | Keep template identifier; add optional TemplateId validation later.
+- M17 | `api/src/trpc/routes/party-templates.ts` | listByBrand/getById response | `contentPack` | `string` | Migrate to `contentType` (or pluralized future shape) with alias period.
+- M18 | `api/src/trpc/routes/party-templates.ts` | listByBrand.input | `brandId` | `z.string()` | Out-of-scope rename; unchanged.
+- M19 | `api/src/trpc/routes/party-templates.ts` | getById.input | `id` | `z.string()` | Candidate for TemplateId validation (currently pass-through).
+
+- M20 | `api/src/party/PartyRoomDO.ts` | `/init` request body | `template` | `string` optional | Migrate wire key to `templateId`, keep alias window.
+- M21 | `api/src/party/PartyRoomDO.ts` | `/init` request body | `contentPack` | `unknown[]` optional | Keep name; payload data, not canonical identifier.
+- M22 | `api/src/party/PartyRoomDO.ts` | internal room state | `templateId` | `string` | Keep canonical internal name.
+- M23 | `api/src/party/PartyRoomDO.ts` | sharedData broadcast | `gameTemplate` | `string` | Migrate shared key to `templateId` with dual-write compat.
+- M24 | `api/src/party/PartyRoomDO.ts` | persisted DO storage | `templateId` / `templateContentPack` | `string` / `unknown[]` | Keep persisted keys unless broader storage migration occurs.
+
+- M25 | `api/src/index.ts` | `/api/party` create request | `template` | `string` | Migrate external REST request to `templateId` with alias.
+- M26 | `api/src/index.ts` | `/api/party` -> DO init payload | `initBody.template` | `string` | Switch producer to `templateId` once DO accepts it.
+
+- M27 | `packages/party/src/components/PartyGameRenderer.tsx` | sharedData consumer | `gameTemplate` | `string` | Client dual-read: `templateId` first, fallback `gameTemplate`.
+- M28 | `packages/party/src/lib/usePartyMusic.ts` | sharedData consumer | `gameTemplate` | `string` | Client dual-read during migration.
+- M29 | `packages/ui/src/browse/types.ts` | `PartyTemplate` model | `contentPack` | `string` | Migrate typing to `contentType` + compat alias.
+- M30 | `packages/party/src/lib/template-types.ts` | `PartyTemplate` model | `contentPack` | `string` | Same migration as M29.
+- M31 | `api/src/trpc/routes/monitoring.ts` | session stats response | `gameType` | `string` | Keep analytics key; optional parallel `contentType` metric.
+- M32 | `api/src/trpc/routes/content-diagnostics.ts` | drift report item | `contentType` | `string` | Keep key; tighten parser assumptions in follow-up.
+
+### Explicit inconsistency to preserve in migration plan
+- Current PartyRoomDO naming chain is `template` (init input) -> `templateId` (internal/persisted) -> `gameTemplate` (sharedData).
+- Current party-content generation naming mismatch is `gameType` (generate routes/jobs) vs `contentType` (CRUD/import/query paths).
+
+### z.string() pass-throughs (T14 hardening targets)
+- `party-content.list.input.contentType`
+- `party-content.reviewAll.input.contentType`
+- `party-content.loadFromSnapshot.input.contentType`
+- `party-content.generateMissingAudio.input.contentType`
+- `party-content.backfillAudioAssets.input.contentType`
+- `party-content.generateContent.input.gameType`
+- `party-content.listGenerationJobs.input.gameType`
+- `party-templates.getById.input.id`
+
 ## 2026-02-26 T2: Audit and Finalize Template-to-Content Mapping Deltas
 
 ### Audit Results (r2/games/party/*/manifest.json)
@@ -102,3 +156,50 @@
 
 ### Usage in Wave 3
 - These tests will be updated in T15/T16 after the coordinated rename to ensure the new state is consistent and legacy names are fully purged.
+
+## 2026-02-26 T1 Canonical Contract
+
+- Added `shared/src/schema/party-naming-contract.ts` as the single shared naming boundary.
+- Exported `TemplateId` from a 20-item `TEMPLATE_IDS` const list to lock allowed template tokens.
+- Added `TEMPLATE_CONTENT_MAP: Record<TemplateId, ContentType[]>` with complete template mapping.
+- Normalized `year-jinx` to canonical `estimation` (legacy manifest uses `wager`).
+- Kept `rival-roster` and `shirt-clash` mapped to `[]` intentionally (no content packs).
+- Added `TEMPLATE_BRAND_TITLES` using brand-agnostic display labels only (no brand-prefixed IDs).
+- Added guards `isTemplateId` and `assertTemplateId` to reject invalid or legacy-prefixed tokens at boundary.
+
+## 2026-02-26 T4: Migration Design — Normalize content_type wager/history → estimation
+
+### Migration Strategy
+- SQLite/D1 can't ALTER CHECK constraints — must recreate the table (same pattern as 20260219)
+- Temp table named with date suffix: `party_content_migration_20260226` to avoid conflicts
+- After rename, temp table name is gone; rollback table named `party_content_rollback_20260226`
+
+### Rollback Approach (key insight)
+- Store `$.original_content_type` in metadata JSON for any row that gets renamed
+- Uses `json_set(COALESCE(metadata, '{}'), '$.original_content_type', content_type)`
+- Rollback migration uses `COALESCE(json_extract(metadata, '$.original_content_type'), content_type)`
+- Then cleans up sentinel with `json_remove(metadata, '$.original_content_type')`
+- This is only reliable while sentinel is present — after metadata cleanup, need DB backup
+
+### CHECK Constraint After Migration
+Final `content_type IN (...)` check in 20260226 migration:
+  'quip', 'trivia', 'drawing', 'dilemma', 'wyr', 'estimation', 'fibbage',
+  'caption', 'wordgame', 'wordlist', 'personal', 'FakeWord', 'ranking', 'headsup', 'chroma'
+Matches CONTENT_TYPES in shared/src/schema/party-content.ts exactly.
+
+### Execution Gate
+- Migration file staged in T4 (this task)
+- T7 (compatibility window) must deploy first — ensures all write paths use 'estimation'
+- T8 executes the migration against live DB
+
+### Files Created
+- `api/migrations/20260226_normalize_content_types.sql`
+- `api/migrations/20260226_normalize_content_types_rollback.sql`
+- `.sisyphus/evidence/task-4-staging-backfill.txt`
+- `.sisyphus/evidence/task-4-rollback.txt`
+
+### D1 / SQLite Compatibility
+- `json_set()`, `json_extract()`, `json_remove()` all available in D1 (SQLite 3.39+)
+- `INSERT OR IGNORE INTO` used to make migration safe if temp table pre-exists
+- FK enforcement is off by default in SQLite/D1 — `DROP TABLE party_content` is safe
+  even with child tables referencing it (consistent with 20260219 pattern)
