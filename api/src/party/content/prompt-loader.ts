@@ -19,25 +19,11 @@ import type {
 	WordGamePrompt,
 	WouldYouRather,
 } from "@slopcade/content-pipeline";
+import type { ContentType } from "@slopcade/shared/schema/party-content";
+
+export type { ContentType };
 
 type D1Database = import("@cloudflare/workers-types").D1Database;
-
-export type ContentType =
-	| "quip"
-	| "trivia"
-	| "drawing"
-	| "dilemma"
-	| "wyr"
-	| "estimation"
-	| "fibbage"
-	| "caption"
-	| "wordgame"
-	| "wordlist"
-	| "personal"
-	| "FakeWord"
-	| "ranking"
-	| "headsup"
-	| "chroma";
 
 export interface ChromeClue {
 	id: string;

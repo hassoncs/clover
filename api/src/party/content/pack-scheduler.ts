@@ -1,4 +1,4 @@
-import type { ContentType } from "./prompt-loader";
+import type { ContentType } from "@slopcade/shared/schema/party-content";
 
 export interface ScheduledPack {
 	packId: string;

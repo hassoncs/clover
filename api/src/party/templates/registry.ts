@@ -1,3 +1,4 @@
+import type { ContentType } from "@slopcade/shared/schema/party-content";
 import aboutYouBluffDefinition from "../../../../r2/games/party/about-you-bluff/definition.json";
 import chainReactionDefinition from "../../../../r2/games/party/chain-reaction/definition.json";
 import chromaCluesDefinition from "../../../../r2/games/party/chroma-clues/definition.json";
@@ -18,10 +19,7 @@ import sketchBluffDefinition from "../../../../r2/games/party/sketch-bluff/defin
 import spectrumGuessDefinition from "../../../../r2/games/party/spectrum-guess/definition.json";
 import truthTrapDefinition from "../../../../r2/games/party/truth-trap/definition.json";
 import yearJinxDefinition from "../../../../r2/games/party/year-jinx/definition.json";
-import {
-	type ContentType,
-	loadContentPackFromDB,
-} from "../content/prompt-loader";
+import { loadContentPackFromDB } from "../content/prompt-loader";
 import {
 	QuickJSServerRunner,
 	type ServerScriptRoom,

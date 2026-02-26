@@ -1,9 +1,9 @@
 import { trpcServer } from "@hono/trpc-server";
+import type { ContentType } from "@slopcade/shared/schema/party-content";
 import { createClient } from "@supabase/supabase-js";
 import type { ModelMessage } from "ai";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-
 import { RealtimeRelayDO } from "@/agent/RealtimeRelayDO";
 import { resolveChatModel } from "@/ai/chat-model-config";
 import { createModel } from "@/ai/model-factory";
@@ -14,7 +14,6 @@ import { USER_COSTS } from "@/economy/pricing";
 import { WalletService } from "@/economy/wallet-service";
 import { autoSeedGamesFromR2 } from "@/lib/auto-seed";
 import { handleMcpRequest } from "@/mcp/server";
-import type { ContentType } from "@/party/content/prompt-loader";
 import { loadContentPackFromDB } from "@/party/content/prompt-loader";
 import { PartyRoomDO } from "@/party/PartyRoomDO";
 import { DEFINITION_BY_TEMPLATE_ID } from "@/party/templates/registry";

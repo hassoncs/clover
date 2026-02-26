@@ -1,6 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-
+import {
+	CONTENT_TYPES,
+	type ContentType,
+} from "@slopcade/shared/schema/party-content";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
@@ -26,25 +29,6 @@ function getContentPacksRoot(): string {
 }
 
 type Brand = "amen" | "slopcade";
-
-const CONTENT_TYPES = [
-	"quip",
-	"trivia",
-	"drawing",
-	"dilemma",
-	"wyr",
-	"estimation",
-	"fibbage",
-	"caption",
-	"wordgame",
-	"wordlist",
-	"personal",
-	"FakeWord",
-	"ranking",
-	"headsup",
-	"chroma",
-] as const;
-type ContentType = (typeof CONTENT_TYPES)[number];
 
 async function computeContentHash(body: string): Promise<string> {
 	const encoder = new TextEncoder();

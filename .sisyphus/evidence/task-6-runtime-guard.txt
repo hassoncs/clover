@@ -1,0 +1,34 @@
+Task T6 — Runtime Guard Evidence
+Generated: 2026-02-26
+
+How invalid content type tokens are rejected after T6:
+
+1. COMPILE-TIME GUARD (primary)
+   - All call-sites that accept ContentType are now typed against the canonical union
+     (typeof CONTENT_TYPES)[number] from shared/src/schema/party-content.ts
+   - TypeScript rejects invalid tokens at compile time via the ContentType union.
+   - Example: passing "wager" as a ContentType would fail tsc with:
+     "Type '"wager"' is not assignable to type 'ContentType'"
+   - This covers: loadContentPackFromDB, ContentTypeMap key access, contentPacks arrays in PartyGameDefinition
+
+2. RUNTIME ARRAY GUARD via CONTENT_TYPES
+   - api/src/trpc/routes/party-content.ts now imports CONTENT_TYPES from shared
+   - Lines 75-81 (extractContentTypeFromFilename) use CONTENT_TYPES.includes(x as ContentType)
+     to validate that a filename-derived string is a canonical type
+   - Since CONTENT_TYPES is the canonical shared array, this guard now rejects any token
+     not in the canonical 15-item list: quip, trivia, drawing, dilemma, wyr, estimation,
+     fibbage, caption, wordgame, wordlist, personal, FakeWord, ranking, headsup, chroma
+   - Legacy aliases "wager" and "history" are NOT in CONTENT_TYPES → rejected at runtime
+
+3. SINGLE SOURCE OF TRUTH
+   - Previously: 2 shadow definitions could diverge from shared (prompt-loader.ts,
+     party-content.ts tRPC route) — if a new type was added to shared but not the shadows,
+     the compile-time type would allow it but the local arrays would reject it (or vice versa)
+   - After T6: only shared/src/schema/party-content.ts:CONTENT_TYPES defines valid tokens
+   - Adding/removing a type in shared AUTOMATICALLY propagates to all dependents
+
+4. ZSTD VALIDATION PATH (T14 note)
+   - Current z.string() inputs in party-content tRPC routes are NOT yet hardened to z.enum()
+   - T14 will add z.enum(CONTENT_TYPES) validators at the API boundary
+   - After T14, invalid tokens sent over the wire are rejected before any DB query
+   - T6 establishes the canonical import that T14 will reference
