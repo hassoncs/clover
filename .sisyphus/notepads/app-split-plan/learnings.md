@@ -249,3 +249,33 @@ Always grep for dynamic imports too, and search `lib/` not just `app/`.
 
 ### tsc result
 Only pre-existing GLSL module errors remain. No new errors introduced.
+
+## [2026-02-26] Tasks 16-18: Foundation consolidation — deferred
+
+### Task 16: Foundation components — DEFERRED
+Non-shim component files are legitimately app-specific:
+- `AnimatedSplashScreen.tsx`: slopcade uses Skia canvas + style cycling; amen uses `AmenSplashSequence` — completely different implementations
+- `AppFrameHeader.tsx`: slopcade has `leftActions` prop; amen has Cinzel font + different title styling
+- `FloatingTabBar.tsx`: slopcade has editor preload progress ring + primary button; amen is simpler
+- `SubscriptionStatus.tsx`: different pricing ($9.99 vs $4.99), different feature lists
+- `AssetLoadingScreen.tsx`: different brand colors (indigo vs gold)
+- `GameHallTile.tsx`: different branding colors throughout
+- `CurrencySheet.tsx`: slopcade has Sparks section; amen is Gems-only
+
+Consolidating these would require brand parametrization — significant work beyond plan scope.
+
+### Task 17: Hooks — DEFERRED (app-local infrastructure coupling)
+The 5 hooks look identical but import from app-local paths:
+- `@/lib/supabase/client` — app-local supabase client
+- `@/lib/trpc/client` and `@/lib/trpc/react` — app-local tRPC clients
+- `@/lib/party/template-types` — app-local party types
+- `@supabase/supabase-js` — not in app-lib deps
+- `@tanstack/react-query` — not in app-lib deps
+
+Moving to `packages/app-lib` would require either adding these as deps (wrong coupling) or dependency injection (significant refactoring). Deferred.
+
+### Task 18: Providers/Sentry — DEFERRED
+Amen and slopbox layouts are nearly identical (1-line diff: brandId). Slopcade differs significantly (editor preload, different fonts, different routes). A `createAppProviders` factory would help amen/slopbox but slopcade is too different. Not worth the abstraction cost for 2 apps.
+
+### Recommendation
+Tasks 16-18 should be tracked as future work items, not blocking the app-split plan completion. The core architectural goals (package boundaries, 4 apps, feature gating) are all achieved.
