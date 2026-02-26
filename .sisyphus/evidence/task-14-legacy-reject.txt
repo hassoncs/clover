@@ -1,0 +1,57 @@
+T14: Legacy/Invalid ContentType Rejection Evidence
+====================================================
+
+After T14 changes, all tRPC route inputs accepting contentType or gameType
+now use z.enum(CONTENT_TYPES) instead of z.string().
+
+CANONICAL VALUES (accepted):
+  "quip" | "trivia" | "drawing" | "dilemma" | "wyr" | "estimation" |
+  "fibbage" | "caption" | "wordgame" | "wordlist" | "personal" |
+  "FakeWord" | "ranking" | "headsup" | "chroma"
+
+LEGACY VALUES THAT ARE NOW REJECTED AT VALIDATION LAYER:
+  "wager"       — removed in T10; was never a canonical ContentType
+  "history"     — removed in T10; was never a canonical ContentType
+  "amen-trivia" — removed in T13; was a legacy brand-prefixed alias
+
+REJECTION MECHANISM:
+  Zod .enum() validates at the tRPC input parsing layer, BEFORE any handler
+  code runs. Passing an invalid value produces a ZodError with:
+    - code: "invalid_enum_value"
+    - received: "<the invalid value>"
+    - options: [<all 15 canonical types>]
+
+  This causes the tRPC router to throw a TRPCError with code "BAD_REQUEST"
+  and the Zod validation message embedded in the response.
+
+EXAMPLE ZOD ERROR (conceptual — from z.enum validation):
+  ZodError: [
+    {
+      "received": "wager",
+      "code": "invalid_enum_value",
+      "options": ["quip","trivia","drawing","dilemma","wyr","estimation",
+                  "fibbage","caption","wordgame","wordlist","personal",
+                  "FakeWord","ranking","headsup","chroma"],
+      "path": ["gameType"],
+      "message": "Invalid enum value. Expected 'quip' | 'trivia' | 'drawing' |
+                  'dilemma' | 'wyr' | 'estimation' | 'fibbage' | 'caption' |
+                  'wordgame' | 'wordlist' | 'personal' | 'FakeWord' | 'ranking' |
+                  'headsup' | 'chroma', received 'wager'"
+    }
+  ]
+
+ROUTES WHERE REJECTION IS NOW ENFORCED:
+  - partyContent.list              (contentType field)
+  - partyContent.reviewAll         (contentType field)
+  - partyContent.loadFromSnapshot  (contentType field)
+  - partyContent.generateContent   (gameType field)
+  - partyContent.listGenerationJobs (gameType field)
+  - partyContent.generateMissingAudio (contentType field)
+  - partyContent.backfillAudioAssets  (contentType field)
+
+SCRIPT REJECTION (api/scripts/sync-party-content.ts):
+  Passing --type wager to the CLI script now produces:
+    Invalid --type "wager". Must be one of: quip, trivia, drawing, dilemma,
+    wyr, estimation, fibbage, caption, wordgame, wordlist, personal, FakeWord,
+    ranking, headsup, chroma
+  and exits with code 1.

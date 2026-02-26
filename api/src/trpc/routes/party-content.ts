@@ -809,7 +809,7 @@ export const partyContentRouter = router({
 				page: z.number().int().min(1).default(1),
 				pageSize: z.number().int().min(1).max(200).default(50),
 				brand: z.enum(["amen", "slopcade"]).optional(),
-				contentType: z.string().optional(),
+				contentType: z.enum(CONTENT_TYPES).optional(),
 				status: z.enum(["draft", "active", "retired"]).optional(),
 				category: z.string().optional(),
 				hasReview: z.boolean().optional(),
@@ -1239,7 +1239,7 @@ export const partyContentRouter = router({
 		.input(
 			z.object({
 				brandId: z.string(),
-				contentType: z.string().optional(),
+				contentType: z.enum(CONTENT_TYPES).optional(),
 				model: z.string().default("google/gemini-2.0-flash-001"),
 				dimensions: z
 					.array(z.enum(["quality", "humor", "difficulty"]))
@@ -1711,7 +1711,7 @@ export const partyContentRouter = router({
 		.input(
 			z.object({
 				brand: z.enum(["amen", "slopcade"]),
-				contentType: z.string(),
+				contentType: z.enum(CONTENT_TYPES),
 				version: z.number().int().min(1).optional(),
 			}),
 		)
@@ -1864,7 +1864,7 @@ export const partyContentRouter = router({
 		.input(
 			z.object({
 				brandId: z.string(),
-				gameType: z.string(),
+				gameType: z.enum(CONTENT_TYPES),
 				count: z.number().int().min(1).max(5000).optional(),
 				model: z.string().optional(),
 				temperature: z.number().min(0).max(2).optional(),
@@ -2141,7 +2141,7 @@ export const partyContentRouter = router({
 		.input(
 			z.object({
 				brandId: z.string().optional(),
-				gameType: z.string().optional(),
+				gameType: z.enum(CONTENT_TYPES).optional(),
 				status: z
 					.enum(["running", "completed", "failed", "cancelled"])
 					.optional(),
@@ -2214,7 +2214,7 @@ export const partyContentRouter = router({
 		.input(
 			z.object({
 				brand: z.enum(["amen", "slopcade"]),
-				contentType: z.string().optional(),
+				contentType: z.enum(CONTENT_TYPES).optional(),
 				provider: z.enum(["scenario", "elevenlabs"]).default("scenario"),
 				batchSize: z.number().int().min(1).max(50).default(10),
 				limit: z.number().int().min(1).max(5000).optional(),
@@ -2349,7 +2349,7 @@ export const partyContentRouter = router({
 		.input(
 			z.object({
 				brand: z.enum(["amen", "slopcade"]).optional(),
-				contentType: z.string().optional(),
+				contentType: z.enum(CONTENT_TYPES).optional(),
 				dryRun: z.boolean().default(false),
 			}),
 		)
