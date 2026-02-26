@@ -15,6 +15,7 @@ export type {
 	StackContainerConfig,
 } from "./container";
 export * from "./debug-ops";
+export * from "./design";
 export * from "./effects";
 export * from "./entity";
 export * from "./FeatureFlags";
