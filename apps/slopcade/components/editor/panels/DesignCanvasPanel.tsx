@@ -1,8 +1,32 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTheme } from "@/lib/theme";
+import { useEditor } from "../EditorProvider";
+import { useSharedWorkspaceFiles } from "../hooks/useSharedWorkspaceFiles";
+import { DesignCanvasRenderer } from "./DesignCanvasRenderer";
 
 export function DesignCanvasPanel() {
 	const { editorColors: c } = useTheme();
+	const { width, height } = useWindowDimensions();
+	const {
+		selectedDesignFrameId,
+		selectedDesignElementId,
+		selectDesignFrame,
+		selectDesignElement,
+	} = useEditor();
+	const { designDocument, isLoadingDesign } = useSharedWorkspaceFiles();
+
+	// Default camera for now (T7 will add real camera controls)
+	const camera = { translateX: 0, translateY: 0, scale: 1 };
+
+	const handleElementTap = (frameId: string, elementId: string | null) => {
+		if (elementId) {
+			selectDesignElement(elementId, frameId);
+		} else if (frameId) {
+			selectDesignFrame(frameId);
+		} else {
+			selectDesignFrame(null);
+		}
+	};
 
 	return (
 		<View
@@ -15,14 +39,25 @@ export function DesignCanvasPanel() {
 			</View>
 
 			<View style={styles.content}>
-				<ActivityIndicator
-					size="large"
-					color={c.accent}
-					style={styles.spinner}
-				/>
-				<Text style={[styles.message, { color: c.textSecondary }]}>
-					Design Canvas — coming soon
-				</Text>
+				{isLoadingDesign ? (
+					<Text style={[styles.message, { color: c.textSecondary }]}>
+						Loading design...
+					</Text>
+				) : designDocument ? (
+					<DesignCanvasRenderer
+						document={designDocument}
+						camera={camera}
+						selectedFrameId={selectedDesignFrameId}
+						selectedElementId={selectedDesignElementId}
+						onElementTap={handleElementTap}
+						width={width}
+						height={height - 48} // Subtract header height
+					/>
+				) : (
+					<Text style={[styles.message, { color: c.textSecondary }]}>
+						No design document found.
+					</Text>
+				)}
 			</View>
 		</View>
 	);

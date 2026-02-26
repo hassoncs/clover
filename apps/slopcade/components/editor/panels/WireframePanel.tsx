@@ -2,22 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/lib/theme";
-import {
-	useWireframeMode,
-	WireframeModeProvider,
-	WireframeViewer,
-} from "../wireframe";
+import { WireframeViewer } from "../wireframe";
 
 function WireframePanelContent() {
 	const { editorColors: c } = useTheme();
-	const {
-		mode,
-		toggleMode,
-		selectedScreenIndex,
-		setSelectedScreenIndex,
-		totalScreens,
-	} = useWireframeMode();
-	const isProductionMode = mode === "production";
+	const mode = "structural";
+	const toggleMode = () => {};
+	const selectedScreenIndex = 0;
+	const setSelectedScreenIndex = (_index: number) => {};
+	const totalScreens = 1;
+	const isProductionMode = false;
 
 	useEffect(() => {
 		if (Platform.OS !== "web") return;
@@ -42,7 +36,7 @@ function WireframePanelContent() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selectedScreenIndex, totalScreens, setSelectedScreenIndex]);
+	}, []);
 
 	const goPrev = () =>
 		setSelectedScreenIndex(Math.max(0, selectedScreenIndex - 1));
@@ -132,11 +126,7 @@ function WireframePanelContent() {
 }
 
 export function WireframePanel() {
-	return (
-		<WireframeModeProvider>
-			<WireframePanelContent />
-		</WireframeModeProvider>
-	);
+	return <WireframePanelContent />;
 }
 
 const styles = StyleSheet.create({

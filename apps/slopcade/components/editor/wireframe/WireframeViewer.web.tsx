@@ -1,12 +1,15 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { useEditor } from "../EditorProvider";
-import { useWireframeMode } from "./WireframeModeProvider";
 import { WireframeRenderer } from "./WireframeRenderer";
 
 export function WireframeViewer() {
 	const { document } = useEditor();
-	const { mode, previewConfig } = useWireframeMode();
+	const mode = "structural";
+	const previewConfig = {
+		orientation: "portrait" as const,
+		aspectRatio: "9:19.5",
+	};
 
 	const [w, h] = previewConfig.aspectRatio.split(":").map(Number);
 	const aspectRatio = w / h;

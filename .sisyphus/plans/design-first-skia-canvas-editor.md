@@ -176,7 +176,7 @@ Max Concurrent: 6
 
 ## TODOs
 
-- [ ] 1. Define design document schema, types, and validators
+- [x] 1. Define design document schema, types, and validators
 
   **What to do**:
   - Add new shared types for `DesignDocument`, `DesignFrame`, and `DesignElement` with versioning.
@@ -239,7 +239,7 @@ Max Concurrent: 6
   - Files: `shared/src/types/*`, `shared/src/**/__tests__/*`
   - Pre-commit: `pnpm test`
 
-- [ ] 2. Add workspace persistence for `design.json`
+- [x] 2. Add workspace persistence for `design.json`
 
   **What to do**:
   - Add file read/write lifecycle for `design.json` in editor workspace hooks.
@@ -303,7 +303,7 @@ Max Concurrent: 6
   - Files: `apps/slopcade/components/editor/useWorkspaceFiles.ts`, related hooks/tests
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 3. Replace wireframe panel entry with Design Canvas panel shell
+- [x] 3. Replace wireframe panel entry with Design Canvas panel shell
 
   **What to do**:
   - Register `design-canvas` panel and route it into existing panel system.
@@ -366,7 +366,7 @@ Max Concurrent: 6
   - Files: `apps/slopcade/components/editor/panels/registry.ts`, `DockviewLayout.web.tsx`, new panel shell
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 4. Add editor design-selection context and mode wiring
+- [x] 4. Add editor design-selection context and mode wiring
 
   **What to do**:
   - Extend editor state to track selected frame/element in design canvas.
@@ -429,7 +429,7 @@ Max Concurrent: 6
   - Files: `apps/slopcade/components/editor/EditorProvider.tsx`, related tests
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 5. Add AI tool contracts for design document operations
+- [x] 5. Add AI tool contracts for design document operations
 
   **What to do**:
   - Define chat tool interfaces for reading/updating design docs and selection context.
