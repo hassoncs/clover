@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [slopcade, amen]
+        app: [slopcade, amen, slopbox, shader-editor]
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +26,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: pnpm --filter './packages/*' run build --if-present
+
       - name: Typecheck ${{ matrix.app }}
         run: pnpm --filter @slopcade/${{ matrix.app }}-app exec tsc --noEmit
 
@@ -34,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [slopcade, amen]
+        app: [slopcade, amen, slopbox, shader-editor]
     steps:
       - uses: actions/checkout@v4
 

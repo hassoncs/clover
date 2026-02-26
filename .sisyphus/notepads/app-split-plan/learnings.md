@@ -129,3 +129,53 @@ All 4 apps fail tsc with exit code 2, but ONLY due to pre-existing errors unrela
 - LSP and tsc both resolve from `dist/` (not `src/`), so the stale build caused phantom type errors.
 - Fix: run `pnpm --filter @slopcade/brands build` before working on anything that consumes this package.
 - **Always rebuild `@slopcade/brands` after source changes before consuming in api/ or app/.**
+
+## [2026-02-26] Task 38: CI/CD updates for 4 app targets
+
+### What was changed
+- `.github/workflows/ci.yml`: Expanded `matrix.app` from `[slopcade, amen]` to `[slopcade, amen, slopbox, shader-editor]` for both `typecheck` and `test` jobs. Added "Build workspace packages" step before typecheck (packages must be built before tsc can resolve their types).
+- `.github/workflows/eas-build.yml`: Added 3 new jobs (`build-amen`, `build-slopbox`, `build-shader-editor`) following the same pattern as `build-slopcade`.
+- `apps/shader-editor/eas.json`: Created from scratch — shader-editor had no eas.json. Omits `EXPO_PUBLIC_EMBED_GAMES` env (not applicable to shader editor).
+
+### Key observations
+- The `@slopcade/${{ matrix.app }}-app` filter pattern works for all 4 apps because package names follow the convention exactly: `@slopcade/slopcade-app`, `@slopcade/amen-app`, `@slopcade/slopbox-app`, `@slopcade/shader-editor-app`.
+- Amen's `eas.json` had no `ascAppId` in its submit config (not yet registered in App Store Connect). shader-editor follows the same pattern.
+- `deploy-web.yml` was NOT modified — it deploys to Cloudflare Pages and adding slopbox/shader-editor deployments is a separate concern from CI build/typecheck.
+- `bridge-contract.yml` was NOT modified — it validates bridge codegen drift, unrelated to app-split concerns.
+- The `deploy-api.yml` was NOT modified — API is a single Cloudflare Worker, unaffected by app count.
+- `--if-present` flag added to `build` in typecheck job to avoid failing when packages don't have a build script (was already in `test-packages` job).
+
+### No ascAppId needed for new apps
+- `slopbox` and `shader-editor` don't have App Store Connect entries yet — leave `ascAppId` out of `eas.json` submit config until they're registered.
+
+## [2026-02-26] Task 36: Dead-code cleanup — shim removal
+
+### Summary of what was deleted
+
+**`apps/slopcade/components/party/` — ENTIRE DIRECTORY DELETED**
+- All 18 component files + `chroma/` subdirectory were pure re-export shims (`export * from "@slopcade/party"`)
+- Zero imports found anywhere in slopcade routes or components
+- Party was removed from slopcade in task 30, making all these shims dead
+
+**`apps/slopcade/lib/party/` — ALL SHIMS DELETED EXCEPT `template-types.ts`**
+- 23 files deleted: `api.ts`, `PartyContext.tsx`, `usePartyConnection.ts`, all phase files (`*Phases.tsx`), etc.
+- All were pure `export * from "@slopcade/party"` shims with no route imports
+- `template-types.ts` kept because it IS still imported by:
+  - `apps/slopcade/components/browse/GameHallTile.tsx`
+  - `apps/slopcade/hooks/useBrowsePartyGames.ts`
+  
+**`apps/slopcade/components/create-game/` — ALL SHIM FILES DELETED**
+- 7 shim files deleted: `ChatConversation.tsx`, `ChatMessage.tsx`, `ChatMessageList.tsx`, `ChatTextArea.tsx`, `SharedDocumentPanel.tsx`, `ThreadList.tsx`, `useThreads.ts`
+- All were `export * from "@slopcade/editor-ai"` shims
+- Zero route imports found
+- `ChatTextArea.test.tsx` was preserved (has real test code) with its import updated from `./ChatTextArea` → `@slopcade/editor-ai`
+
+### What was KEPT (still actively used)
+
+- `apps/slopcade/components/social/*` — 10 shims kept; slopcade routes still use `@/components/social/...`
+- `apps/slopcade/components/editor/*` — all shims kept; slopcade routes still use `@/components/editor/...`
+- `apps/amen/components/party/*` — all shims kept; amen routes extensively use `@/components/party/...`
+- `apps/amen/lib/party/*` — all shims kept; amen routes extensively use `@/lib/party/...`
+
+### knip outcome
+knip failed to run (`tailwind.config` missing for `apps/shader-editor/`). Manual analysis was used instead to identify dead imports. Manual scan is more reliable for this specific pattern (shim files).

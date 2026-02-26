@@ -15,3 +15,17 @@ These errors exist in all apps and are NOT caused by the app-split work. They ne
 2. **react-native-reanimated SharedValue** — `packages/ui/src/GameHallCarousel/GameHallCarousel.tsx` uses `SharedValue` from the `Animated` namespace, but it's not exported there in reanimated 4.x. Should import `SharedValue` directly from `react-native-reanimated`.
 
 3. **GLSL type declarations** — `shared/src/effects/shaders/index.ts` and all `.meta.ts` files import `.glsl` files without type declarations. Need a `*.glsl` module declaration in a global `.d.ts` file accessible to all apps.
+
+## [2026-02-26] Task 36: Remaining issues after shim cleanup
+
+**`apps/slopcade/lib/party/template-types.ts` is a broken shim**
+- File contains: `export * from "@slopcade/party"`
+- `@slopcade/party` is NOT in `apps/slopcade/package.json` (removed in task 30)
+- Still referenced by `apps/slopcade/components/browse/GameHallTile.tsx` and `apps/slopcade/hooks/useBrowsePartyGames.ts`
+- These files use the `PartyTemplate` type from the package
+- Fix needed: Either remove the party-related browse UI (redesign for creator context) or replace the `PartyTemplate` type with a local type definition
+- Left in place per task instructions ("keep shims that are still imported")
+
+**knip cannot run in this monorepo**
+- `apps/shader-editor/metro.config.js` references `tailwind.config` which doesn't exist at repo root
+- This causes knip to error out on load; workaround is to either fix the tailwind config or exclude shader-editor from knip config
