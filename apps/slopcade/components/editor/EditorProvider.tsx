@@ -1,3 +1,4 @@
+import type { EntityManager } from "@slopcade/game-runtime/EntityManager";
 import type {
 	AssetPlacement,
 	EntityPrefab,
@@ -20,7 +21,6 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import type { EntityManager } from "@slopcade/game-runtime/EntityManager";
 import type { Physics2D } from "@/lib/physics2d";
 import { getStorageItem } from "@/lib/utils/storage";
 import { usePackageReadiness } from "./usePackageReadiness";
@@ -32,6 +32,7 @@ export interface ResolvedAssetEntry {
 
 export type EditorMode = "author" | "live";
 export type TimeMode = "paused" | "playing";
+export type DesignMode = "idle" | "select" | "pan";
 export type EditorTab =
 	| "gallery"
 	| "assets"
@@ -77,6 +78,9 @@ interface EditorState {
 	previewContexts: PreviewContext[];
 	activeContextId: string;
 	focusedContextId: string;
+	selectedDesignFrameId: string | null;
+	selectedDesignElementId: string | null;
+	designMode: DesignMode;
 }
 
 type EditorStateAction =
@@ -107,7 +111,11 @@ type EditorStateAction =
 	| { type: "SET_ACTIVE_ASSETS"; entries: Record<string, ResolvedAssetEntry> }
 	| { type: "SET_ACTIVE_CONTEXT"; contextId: string }
 	| { type: "SET_FOCUSED_CONTEXT"; contextId: string }
-	| { type: "UPDATE_PREVIEW_CONTEXTS"; contexts: PreviewContext[] };
+	| { type: "UPDATE_PREVIEW_CONTEXTS"; contexts: PreviewContext[] }
+	| { type: "SELECT_DESIGN_FRAME"; frameId: string | null }
+	| { type: "SELECT_DESIGN_ELEMENT"; elementId: string | null; frameId: string }
+	| { type: "CLEAR_DESIGN_SELECTION" }
+	| { type: "SET_DESIGN_MODE"; mode: DesignMode };
 
 const MAX_HISTORY = 50;
 
@@ -525,6 +533,31 @@ function editorReducer(
 			};
 		}
 
+		case "SELECT_DESIGN_FRAME":
+			return {
+				...state,
+				selectedDesignFrameId: action.frameId,
+				selectedDesignElementId: null,
+			};
+
+		case "SELECT_DESIGN_ELEMENT":
+			return {
+				...state,
+				selectedDesignFrameId: action.frameId,
+				selectedDesignElementId: action.elementId,
+			};
+
+		case "CLEAR_DESIGN_SELECTION":
+			return {
+				...state,
+				selectedDesignFrameId: null,
+				selectedDesignElementId: null,
+				designMode: "idle",
+			};
+
+		case "SET_DESIGN_MODE":
+			return { ...state, designMode: action.mode };
+
 		default:
 			return state;
 	}
@@ -589,6 +622,14 @@ interface EditorContextValue {
 	redo: () => void;
 
 	setCamera: (position?: Vec2, zoom?: number) => void;
+
+	selectedDesignFrameId: string | null;
+	selectedDesignElementId: string | null;
+	designMode: DesignMode;
+	selectDesignFrame: (frameId: string | null) => void;
+	selectDesignElement: (elementId: string | null, frameId: string) => void;
+	clearDesignSelection: () => void;
+	setDesignMode: (mode: DesignMode) => void;
 
 	runtimeRef: React.RefObject<GameRuntimeRef | null>;
 	selectedEntity: GameEntity | null;
@@ -660,6 +701,25 @@ export function EditorProvider({
 		shaderHandlerRef.current?.(shaderId, source);
 	}, []);
 
+	const selectDesignFrame = useCallback((frameId: string | null) => {
+		dispatch({ type: "SELECT_DESIGN_FRAME", frameId });
+	}, []);
+
+	const selectDesignElement = useCallback(
+		(elementId: string | null, frameId: string) => {
+			dispatch({ type: "SELECT_DESIGN_ELEMENT", elementId, frameId });
+		},
+		[],
+	);
+
+	const clearDesignSelection = useCallback(() => {
+		dispatch({ type: "CLEAR_DESIGN_SELECTION" });
+	}, []);
+
+	const setDesignMode = useCallback((mode: DesignMode) => {
+		dispatch({ type: "SET_DESIGN_MODE", mode });
+	}, []);
+
 	const initialState: EditorState = {
 		mode: "author",
 		timeMode: "paused",
@@ -688,6 +748,9 @@ export function EditorProvider({
 		],
 		activeContextId: "host",
 		focusedContextId: "host",
+		selectedDesignFrameId: null,
+		selectedDesignElementId: null,
+		designMode: "idle",
 	};
 
 	const [state, dispatch] = useReducer(editorReducer, initialState);
@@ -845,6 +908,14 @@ export function EditorProvider({
 
 			setCamera,
 
+			selectedDesignFrameId: state.selectedDesignFrameId,
+			selectedDesignElementId: state.selectedDesignElementId,
+			designMode: state.designMode,
+			selectDesignFrame,
+			selectDesignElement,
+			clearDesignSelection,
+			setDesignMode,
+
 			runtimeRef,
 			selectedEntity,
 
@@ -897,6 +968,10 @@ export function EditorProvider({
 			registerShaderHandler,
 			hotSwapShader,
 			readiness,
+			selectDesignFrame,
+			selectDesignElement,
+			clearDesignSelection,
+			setDesignMode,
 		],
 	);
 
