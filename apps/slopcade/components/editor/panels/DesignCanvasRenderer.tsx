@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import {
 	Canvas,
 	Group,
@@ -5,12 +6,7 @@ import {
 	Text as SkiaText,
 	useFont,
 } from "@shopify/react-native-skia";
-import type {
-	DesignDocument,
-	DesignElement,
-	DesignFrame,
-} from "@slopcade/shared";
-import React, { useCallback } from "react";
+import type { DesignDocument, DesignElement, DesignFrame } from "@slopcade/shared";
 import { TouchableWithoutFeedback, View } from "react-native";
 
 export interface DesignCanvasRendererProps {
@@ -32,46 +28,32 @@ export function DesignCanvasRenderer({
 	width,
 	height,
 }: DesignCanvasRendererProps) {
-	// We'll use a default system font if useFont is null, but Skia requires a font object for text.
-	// For now, we can try to load a basic font or just use a fallback.
-	// In React Native Skia, if we don't have a font, we can't render text easily without one.
-	// Let's see if we can use a default font or just skip text if font is null.
-	// Actually, Skia's Text component requires a font prop.
-	// We might need to load a font. Let's assume we can use a standard font or just skip text rendering if font is not loaded.
-	// For simplicity, we'll just render a placeholder rect for text if font is missing.
-	const font = null; // TODO: load a font if needed, or use a bundled one.
+	const font = useFont(require("../../../../assets/fonts/Fredoka-Regular.ttf"), 12);
 
 	const handlePress = useCallback(
 		(event: any) => {
 			if (!onElementTap) return;
 
-			// Get coordinates relative to the canvas
 			const { locationX, locationY } = event.nativeEvent;
 
-			// Convert screen coordinates to world coordinates
 			const worldX = (locationX - camera.translateX) / camera.scale;
 			const worldY = (locationY - camera.translateY) / camera.scale;
 
-			// Find the tapped element (reverse order for z-index/rendering order)
 			for (let i = document.frames.length - 1; i >= 0; i--) {
 				const frame = document.frames[i];
-
-				// Check if tap is within frame bounds
+				
 				if (
 					worldX >= frame.position.x &&
 					worldX <= frame.position.x + frame.width &&
 					worldY >= frame.position.y &&
 					worldY <= frame.position.y + frame.height
 				) {
-					// Check elements in reverse order
-					const sortedElements = [...frame.elements].sort(
-						(a, b) => b.zIndex - a.zIndex,
-					);
-
+					const sortedElements = [...frame.elements].sort((a, b) => b.zIndex - a.zIndex);
+					
 					for (const element of sortedElements) {
 						const elX = frame.position.x + element.x;
 						const elY = frame.position.y + element.y;
-
+						
 						if (
 							worldX >= elX &&
 							worldX <= elX + element.width &&
@@ -83,16 +65,14 @@ export function DesignCanvasRenderer({
 						}
 					}
 
-					// If no element was tapped, select the frame
 					onElementTap(frame.id, null);
 					return;
 				}
 			}
 
-			// Clicked outside any frame
-			onElementTap("", null); // Or maybe don't call it, or call with nulls to clear selection
+			onElementTap("", null);
 		},
-		[document, camera, onElementTap],
+		[document, camera, onElementTap]
 	);
 
 	return (
@@ -108,7 +88,6 @@ export function DesignCanvasRenderer({
 					>
 						{document.frames.map((frame) => (
 							<Group key={frame.id}>
-								{/* Frame Background */}
 								<Rect
 									x={frame.position.x}
 									y={frame.position.y}
@@ -116,7 +95,6 @@ export function DesignCanvasRenderer({
 									height={frame.height}
 									color="#FFFFFF"
 								/>
-								{/* Frame Border */}
 								<Rect
 									x={frame.position.x}
 									y={frame.position.y}
@@ -126,11 +104,17 @@ export function DesignCanvasRenderer({
 									style="stroke"
 									strokeWidth={1}
 								/>
+								
+								{font && (
+									<SkiaText
+										x={frame.position.x}
+										y={frame.position.y - 8}
+										text={frame.title}
+										font={font}
+										color="#666666"
+									/>
+								)}
 
-								{/* Frame Title (Placeholder if no font) */}
-								{/* We would render text here if we had a font */}
-
-								{/* Elements */}
 								{frame.elements
 									.slice()
 									.sort((a, b) => a.zIndex - b.zIndex)
@@ -173,7 +157,6 @@ export function DesignCanvasRenderer({
 														height={element.height}
 														color="#C8D8E8"
 													/>
-													{/* Image placeholder border */}
 													<Rect
 														x={elX}
 														y={elY}
@@ -183,6 +166,15 @@ export function DesignCanvasRenderer({
 														style="stroke"
 														strokeWidth={1}
 													/>
+													{font && (
+														<SkiaText
+															x={elX + element.width / 2 - 10}
+															y={elY + element.height / 2 + 4}
+															text="IMG"
+															font={font}
+															color="#607080"
+														/>
+													)}
 												</Group>
 											);
 										}
@@ -190,7 +182,6 @@ export function DesignCanvasRenderer({
 										if (element.type === "text") {
 											return (
 												<Group key={element.id}>
-													{/* Text placeholder since we might not have a font loaded yet */}
 													<Rect
 														x={elX}
 														y={elY}
@@ -214,7 +205,6 @@ export function DesignCanvasRenderer({
 										return null;
 									})}
 
-								{/* Selection Overlay for Frame */}
 								{selectedFrameId === frame.id && !selectedElementId && (
 									<Rect
 										x={frame.position.x}
@@ -227,7 +217,6 @@ export function DesignCanvasRenderer({
 									/>
 								)}
 
-								{/* Selection Overlay for Element */}
 								{selectedFrameId === frame.id && selectedElementId && (
 									<Group>
 										{frame.elements

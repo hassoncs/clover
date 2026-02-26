@@ -97,3 +97,17 @@
 - Running `git stash && ... && git stash pop` in a bash command during work WILL stash in-progress edits
 - If you need to test pre-change state, use `git diff HEAD` to see what's modified first
 - After a stash pop, always verify your edits are still present via grep
+Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned up WireframePanel and WireframeViewer to use static defaults as they are now legacy components replaced by DesignCanvasPanel.
+
+## Camera Implementation (T7)
+- Implemented a shared camera hook with platform-specific handlers for web and native.
+- Used `.web.ts` and `.native.ts` extensions to handle platform-specific event types (React events vs. Gesture Handler).
+- Shared logic (state, zoomToFit, reset) is extracted into `useDesignCamera.shared.ts`.
+- Zoom-toward-cursor logic implemented for both web (mouse wheel) and native (pinch focal point).
+- Camera state is a simple `{ translateX, translateY, scale }` object, suitable for Skia's `Group` transform.
+
+## T6: Skia Design Canvas Renderer
+- Used `@shopify/react-native-skia` to render the design document.
+- Used `useFont` with a bundled font (`Fredoka-Regular.ttf`) to render text elements and frame titles.
+- Implemented hit testing by converting screen coordinates to world coordinates using the camera transform, then checking frame and element bounds in reverse z-index order.
+- Used `TouchableWithoutFeedback` to capture tap events and calculate the tapped element.

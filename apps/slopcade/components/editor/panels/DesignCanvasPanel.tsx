@@ -1,7 +1,7 @@
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTheme } from "@/lib/theme";
 import { useEditor } from "../EditorProvider";
-import { useSharedWorkspaceFiles } from "../hooks/useSharedWorkspaceFiles";
+import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 import { DesignCanvasRenderer } from "./DesignCanvasRenderer";
 
 export function DesignCanvasPanel() {
