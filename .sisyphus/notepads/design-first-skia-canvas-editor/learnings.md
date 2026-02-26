@@ -289,3 +289,7 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 
 ### typecheck command
 - Correct command in api dir: `pnpm type-check` (with hyphen), not `pnpm typecheck`.
+- Removed redundant validation call in `useDesignDocument.ts` as `migrateDesignDocument` already returns a validated document.
+- Added cleanup for debounce timers in React hooks to prevent state updates after unmount.
+- Replicated design phase button logic from web to native panels for feature parity.
+- Fixed incorrect error messages in chat tools to accurately reflect missing frames vs elements.
