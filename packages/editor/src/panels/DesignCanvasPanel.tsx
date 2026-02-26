@@ -55,9 +55,9 @@ export function DesignCanvasPanel() {
 		selectedElementIds,
 		saveDesignDocument,
 		cameraHandlers: {
-			onMouseDown,
-			onMouseMove,
-			onMouseUp,
+			onMouseDown: onMouseDown ?? (() => {}),
+			onMouseMove: onMouseMove ?? (() => {}),
+			onMouseUp: onMouseUp ?? (() => {}),
 		},
 	});
 

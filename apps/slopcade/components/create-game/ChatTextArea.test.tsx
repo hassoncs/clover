@@ -85,6 +85,14 @@ jest.mock("@gorhom/bottom-sheet", () => ({
 	BottomSheetTextInput: (props: any) => <input {...props} />,
 }));
 
+jest.mock("@slopcade/ui", () => ({
+	MicButton: ({ onPress, isRecording }: any) => (
+		<button type="button" data-testid="mic-button" onClick={onPress}>
+			{isRecording ? "Stop Recording" : "Start Recording"}
+		</button>
+	),
+}));
+
 let capturedSpeechConfig: any = null;
 const mockStartRecording = jest.fn();
 const mockStopRecording = jest.fn();

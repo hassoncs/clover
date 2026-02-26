@@ -26,7 +26,7 @@ baseConfig.resolver.nodeModulesPaths = [
 baseConfig.resolver.sourceExts = [...baseConfig.resolver.sourceExts, "glsl"];
 
 baseConfig.transformer.babelTransformerPath = require.resolve(
-	"./metro-glsl-transformer",
+	"../../scripts/metro-glsl-transformer",
 );
 
 function getPackageCjsPath(packageName, moduleName, root) {

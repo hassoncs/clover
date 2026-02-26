@@ -296,7 +296,7 @@ function TextElementRenderer({
 	const paragraph = useMemo(() => {
 		if (!fontMgr) return null;
 
-		const textAlignMap = {
+		const textAlignMap: Record<string, TextAlign> = {
 			left: TextAlign.Left,
 			center: TextAlign.Center,
 			right: TextAlign.Right,

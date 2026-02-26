@@ -159,8 +159,6 @@ describe("list operations", () => {
 	});
 });
 
-describe("state machine variable integration", () => {});
-
 describe("dialog variable integration", () => {
 	it("activeDialog variable controls dialog visibility", () => {
 		const state = createGameState(
