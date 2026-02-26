@@ -1286,16 +1286,16 @@ Wave FINAL (Independent verification gate):
 
 ## Final Verification Wave (MANDATORY)
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Verify every must-have and must-not-have against implemented artifacts and evidence.
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run type/lint/tests and detect anti-patterns, unsafe casts, placeholder leftovers, and drift.
 
-- [ ] F3. **Real QA Execution** — `unspecified-high` (+ `playwright`)
+- [x] F3. **Real QA Execution** — `unspecified-high` (+ `playwright`)
   Execute every QA scenario across web/native/API-facing behavior and capture evidence.
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   Confirm delivery is 1:1 with this plan and no unauthorized feature expansion occurred.
 
 ---

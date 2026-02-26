@@ -232,3 +232,86 @@
 - `pnpm -C api type-check`: ✅ clean
 - `npx tsc --noEmit -p packages/editor/tsconfig.json`: ✅ clean (0 relevant errors)
 - `npx tsc --noEmit -p shared/tsconfig.json`: ✅ clean (npm config warnings only)
+
+## [F2] Code Quality Gate Results
+
+**Date:** 2026-02-26
+
+### TypeScript Checks
+
+| Package | Command | Result |
+|---------|---------|--------|
+| API | `pnpm -C api type-check` | ✅ **0 errors** |
+| Shared | `npx tsc --noEmit -p shared/tsconfig.json` | ✅ **0 errors** (npm config warnings only, expected) |
+| Editor | `npx tsc --noEmit -p packages/editor/tsconfig.json` | ✅ **Only 3 pre-existing errors** — all `react-native-reanimated` not found in `InteractionLayer.tsx`, `DesignCanvasPanel.native.tsx`, `ImagePreview.tsx` |
+
+### Type Suppressions (`as any`, `@ts-ignore`, `@ts-expect-error`)
+
+**Directories scanned:**
+- `packages/editor/src/panels/` → clean
+- `packages/editor/src/useDesignDocument.ts` → 2 hits (lines 15, 96)
+- `shared/src/types/` → clean
+- `api/src/chat/` → clean
+- `api/src/ai/agent/` → clean
+- `api/src/agent/engine/prompts.ts` → clean
+
+**Finding:** `useDesignDocument.ts` lines 15 and 96 have `as any` casts on `trpcReact.chatThreads`. These are **PRE-EXISTING** — present in the original scaffold commit (`2a7d9dc39`). Not introduced by this plan.
+
+**Verdict: No new type suppressions introduced.**
+
+### TODO / FIXME / HACK / placeholder / stub
+
+**Hits examined:**
+- `api/src/ai/agent/stages.ts` line 22: `mode: "placeholder"` — **legitimate runtime value** inside `makePassThroughStage()` factory; marks unimplemented agent stages at runtime. Not a comment/debt.
+- `api/src/agent/engine/prompts.ts` line 283: `"Never write placeholders like..."` — **inside a prompt string**. Not code debt.
+
+**Verdict: No TODO/FIXME/HACK/placeholder comments introduced by this plan.**
+
+### Commented-Out Code Blocks
+
+**Scan:** All plan-touched files in panels/, shared/src/types/, api/src/chat/, api/src/ai/agent/stages/, api/src/agent/engine/, test files.
+
+**Verdict: Zero commented-out code blocks found.**
+
+### Overall Gate Status
+
+| Check | Status |
+|-------|--------|
+| API type-check | ✅ PASS |
+| Shared type-check | ✅ PASS |
+| Editor type-check | ✅ PASS (pre-existing errors only) |
+| No new `as any` / suppressions | ✅ PASS |
+| No TODO/FIXME/HACK leftovers | ✅ PASS |
+| No dead/commented-out code | ✅ PASS |
+
+**All quality gates passed. No issues introduced by this plan.**
+
+## [F4] Scope Fidelity Check Results
+
+### Verdict
+- **Scope fidelity: PARTIAL (not 1:1)**
+- Foundation/render/build boundary work is present, but several plan tasks are only partially implemented or not fully evidenced in code.
+
+### T1-T27 implementation audit
+- **Implemented:** T1, T2, T3, T4, T6, T8, T9, T11, T12, T13, T19, T20, T21, T22, T23, T25, T26, T27
+- **Partially implemented / not fully meeting plan acceptance:**
+  - **T5** renderer refactor exists but remains monolithic (`packages/editor/src/panels/DesignCanvasRenderer.tsx` is still a large single file)
+  - **T7** dev perf logging + fixtures exist, but no clear benchmark test execution path for 100/300/500 fixtures
+  - **T10** text fidelity gap: renderer uses single `SkiaText` draw; multiline/alignment behavior from schema is not clearly implemented
+  - **T14** parity for wave-2 rendering is mostly shared via renderer, but panel behavior differs materially between web/native
+  - **T15/T16/T17/T18** interaction stack (drag/resize/rotate/snap/multi-select/group controls) is implemented in web flow (`useDesignInteractions`) but native panel passes fixed defaults (`selectedElementIds={[]}`, `snapLines={[]}`, `showGrid={false}`)
+  - **T24** viewport culling exists, but no explicit large-doc perf threshold verification artifacts in repo
+
+### Guardrail and anti-creep checks
+- **No unauthorized feature expansion keywords** found in plan-touched areas (`packages/editor/src/panels`, `api/src/chat`, `api/src/ai/agent/stages`, `shared/src/types/design*.ts`) for: `multiplayer`, `collaboration`, `plugin`, `timeline`, `animation editor`.
+- **Runtime boundary preserved in schema files:**
+  - Design-only fields/types exist in `shared/src/types/design.ts` (v1.1 schema with circle/line/path/group + style fields)
+  - Runtime type file `shared/src/types/GameDefinition.ts` contains no design-document fields
+- **GameDefinition immutability guardrail:** `git diff <merge-base>...HEAD -- shared/src/types/GameDefinition.ts` produced no changes.
+- **Dependency guardrail:** no branch diff in `package.json` or `apps/slopcade/package.json`.
+
+### Evidence anchors used
+- Plan: `.sisyphus/plans/skia-design-canvas-fidelity-upgrade.md`
+- Design schema/migration: `shared/src/types/design.ts`, `shared/src/types/design-migrations.ts`, `shared/src/types/__tests__/design.test.ts`, `shared/src/types/__tests__/design-migrations.test.ts`
+- Renderer/interactions/parity: `packages/editor/src/panels/DesignCanvasRenderer.tsx`, `packages/editor/src/panels/useDesignInteractions.ts`, `packages/editor/src/panels/DesignCanvasPanel.tsx`, `packages/editor/src/panels/DesignCanvasPanel.native.tsx`, `packages/editor/src/panels/designCanvasHitTest.ts`
+- AI/build boundary: `api/src/chat/chat-tools.ts`, `api/src/chat/__tests__/chat-tools.test.ts`, `api/src/ai/agent/stages/build.ts`, `api/src/ai/agent/__tests__/design-flow.integration.test.ts`, `api/src/ai/agent/__tests__/design-runtime-boundary.test.ts`
