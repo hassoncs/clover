@@ -13,7 +13,6 @@ export function getReadableText(
 		case "trivia":
 		case "fibbage":
 		case "estimation":
-		case "wager":
 			return typeof body.question === "string" ? body.question : null;
 		case "drawing":
 			return typeof body.prompt === "string" ? body.prompt : null;

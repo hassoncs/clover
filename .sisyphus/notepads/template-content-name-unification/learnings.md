@@ -256,3 +256,26 @@ Matches CONTENT_TYPES in shared/src/schema/party-content.ts exactly.
 ### Scope constraint
 - Only `estimation` has legacy aliases — no other type was changed
 - Function signature unchanged — callers unaffected
+
+## 2026-02-26 T10: Generation config key convergence
+
+### Changes made
+- `base-configs.ts`: Removed `wager:` (was using local `WagerItemSchema` with `funFact?`) and `history:` (was using `EstimationItemSchema`). Both subsumed by existing `estimation:` key.
+- `WagerItemSchema` local const also removed (had `funFact?` not in canonical `EstimationQuestionSchema`).
+- `brand-content-config.ts`: Renamed `wager:` → `estimation:` (targetCount: 500), removed `history:` (was 350). Target count preserved for main wager volume.
+- `brands.ts`: Merged `history` + `wager` category arrays into single `estimation:` key for both amen and slopcade brands. All unique category strings preserved.
+- `readable-text.ts`: Removed `case "wager":` since same branch as `case "estimation":`.
+
+### Schema difference: WagerItemSchema vs EstimationItemSchema
+- `WagerItemSchema` (local): `{ question, answer: number, unit?, category, funFact? }`
+- `EstimationItemSchema` (from types.ts): `{ id, question, answer: number, unit?, category, acceptableRange? }`
+- Main diff: `funFact?` vs `acceptableRange?`. Canonical `estimation` schema wins.
+
+### LEGACY_BRAND_GAME_TYPES intentionally NOT touched
+- `prompts.ts` still has `"amen-history"` → `gameType: "history"` and `"amen-wager"` → `gameType: "wager"`
+- These will throw at runtime until T12 removes them (that's T12's job)
+- `prompt-loader.ts` `LEGACY_ALIASES` (`estimation: ["wager", "history"]`) left for T16
+
+### Category merging strategy
+Amen estimation categories = amen.wager categories ∪ amen.history categories (15 unique values)
+Slopcade estimation categories = slopcade.wager categories ∪ slopcade.history categories (12 unique values)

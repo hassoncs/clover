@@ -1,0 +1,19 @@
+# T10: tsc --noEmit output (api package)
+# Run: cd api && pnpm tsc --noEmit
+
+## Result: PASS (no errors in edited files)
+
+Only errors present are pre-existing in src/party/templates/registry.ts —
+these are TS2307 "Cannot find module" errors for generated definition.json
+files that are gitignored build outputs, unrelated to this task.
+
+Files changed in T10 — all clean:
+  - api/src/party/content-generation/base-configs.ts   → no errors
+  - api/src/party/content-generation/brand-content-config.ts → no errors
+  - api/src/party/content-generation/brands.ts         → no errors
+  - api/src/party/content/audio/readable-text.ts       → no errors
+
+Pre-existing errors (NOT from T10):
+  src/party/templates/registry.ts(2..21): TS2307 Cannot find module
+  '../../../../r2/games/party/*/definition.json'
+  (21 missing generated JSON files — gitignored build outputs)
