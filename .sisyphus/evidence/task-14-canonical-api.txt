@@ -1,0 +1,61 @@
+T14: Canonical ContentType Validation Enforced at tRPC Route Inputs
+====================================================================
+
+Date: 2026-02-26
+Task: T14 — Enforce Canonical Validation Across tRPC Routes and Scripts
+
+CANONICAL ENUM (from shared/src/schema/party-content.ts):
+  CONTENT_TYPES = ["quip","trivia","drawing","dilemma","wyr","estimation",
+                   "fibbage","caption","wordgame","wordlist","personal",
+                   "FakeWord","ranking","headsup","chroma"]
+
+ROUTES HARDENED (api/src/trpc/routes/party-content.ts):
+  All routes already imported CONTENT_TYPES from @slopcade/shared/schema/party-content.
+
+  1. partyContent.list
+     Field: contentType
+     Before: z.string().optional()
+     After:  z.enum(CONTENT_TYPES).optional()
+
+  2. partyContent.reviewAll
+     Field: contentType
+     Before: z.string().optional()
+     After:  z.enum(CONTENT_TYPES).optional()
+
+  3. partyContent.loadFromSnapshot
+     Field: contentType
+     Before: z.string()
+     After:  z.enum(CONTENT_TYPES)
+
+  4. partyContent.generateContent
+     Field: gameType
+     Before: z.string()
+     After:  z.enum(CONTENT_TYPES)
+
+  5. partyContent.listGenerationJobs
+     Field: gameType
+     Before: z.string().optional()
+     After:  z.enum(CONTENT_TYPES).optional()
+
+  6. partyContent.generateMissingAudio
+     Field: contentType
+     Before: z.string().optional()
+     After:  z.enum(CONTENT_TYPES).optional()
+
+  7. partyContent.backfillAudioAssets
+     Field: contentType
+     Before: z.string().optional()
+     After:  z.enum(CONTENT_TYPES).optional()
+
+SCRIPTS HARDENED (api/scripts/sync-party-content.ts):
+  - Added "chroma" to local CONTENT_TYPES array (was missing; shared now has 15 types)
+  - Added validation check for --type CLI arg:
+      if (!(CONTENT_TYPES as readonly string[]).includes(typeArg)) {
+          console.error(`Invalid --type "${typeArg}". Must be one of: ${CONTENT_TYPES.join(", ")}`);
+          process.exit(1);
+      }
+
+VERIFICATION:
+  pnpm build:types — exits with only pre-existing registry.ts definition.json errors (gitignored build artifacts)
+  LSP diagnostics on party-content.ts — no errors
+  LSP diagnostics on sync-party-content.ts — no errors

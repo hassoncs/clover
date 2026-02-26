@@ -43,6 +43,7 @@ const CONTENT_TYPES = [
 	"FakeWord",
 	"ranking",
 	"headsup",
+	"chroma",
 ] as const;
 type ContentType = (typeof CONTENT_TYPES)[number];
 
@@ -70,9 +71,17 @@ function parseArgs(): SyncOptions {
 			case "--brand":
 				opts.brand = args[++i] as Brand;
 				break;
-			case "--type":
-				opts.type = args[++i] as ContentType;
+			case "--type": {
+				const typeArg = args[++i];
+				if (!(CONTENT_TYPES as readonly string[]).includes(typeArg)) {
+					console.error(
+						`Invalid --type "${typeArg}". Must be one of: ${CONTENT_TYPES.join(", ")}`,
+					);
+					process.exit(1);
+				}
+				opts.type = typeArg as ContentType;
 				break;
+			}
 			case "--dry-run":
 				opts.dryRun = true;
 				break;
