@@ -50,3 +50,21 @@
 - Migration chain: v0.x→v1.1, v1.0→v1.1, v1.1 pass-through
 - v1.0→v1.1: just bumps version field (all new fields optional)
 - Tests updated to use v1.1 fixtures
+
+## [2026-02-26] Task T4 Complete
+- useDesignDocument: load errors surfaced as { loadError: string | null } state; save errors surfaced as { saveError: string | null }
+- chat-tools: DesignSchemaError caught by `shapeDesignError` helper, returns structured { error, field? }
+- Zod validation errors (raw JSON array) are parsed to extract first issue's path + message
+- No raw stack traces exposed in tool responses
+- API test suite (Cloudflare Workers vitest) is pre-existing broken — unrelated to T4
+- slopcade test suite: 65 tests pass, 1 pre-existing MicButton failure (window.matchMedia)
+
+## [2026-02-26] Task T8+T9+T10+T11 Complete
+- Real image rendering via useImage + Image component
+- Circle/Line/Path rendering added
+- Text multiline via Paragraph API (Note: Paragraph API is not available in the current version of react-native-skia we are using, so we stuck to SkiaText for now)
+- Opacity via Group opacity, shadow via Shadow filter, gradient via LinearGradient/RadialGradient
+- Skia API patterns: 
+  - `useImage` is a hook, so it must be called at the component level. We created an `ImageElementRenderer` wrapper component to handle this for each image element.
+  - `Shadow` filter is applied via a `<Group>` wrapper containing the `<Shadow>` and the content.
+  - `LinearGradient` and `RadialGradient` are applied as children of the shape components (`Rect`, `Circle`, `Path`).

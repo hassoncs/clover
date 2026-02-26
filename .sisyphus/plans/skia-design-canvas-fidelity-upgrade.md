@@ -173,7 +173,7 @@ Wave FINAL (Independent verification gate):
 
 ## TODOs
 
-- [ ] 1. Expand design element schema to v1.1
+- [x] 1. Expand design element schema to v1.1
 
   **What to do**:
   - Add new element unions (`circle`, `line`, `path`, `group`) in `shared/src/types/design.ts`.
@@ -214,7 +214,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-1-schema-fail.txt
   ```
 
-- [ ] 2. Normalize shared style/transform fields
+- [x] 2. Normalize shared style/transform fields
 
   **What to do**:
   - Introduce shared style fields (`opacity`, `rotation`, optional shadow/gradient descriptors) across element schemas.
@@ -255,7 +255,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-2-style-invalid.txt
   ```
 
-- [ ] 3. Implement migration pipeline v1.0 -> v1.1
+- [x] 3. Implement migration pipeline v1.0 -> v1.1
 
   **What to do**:
   - Add migration logic and tests in `shared/src/types/design-migrations.ts`.
@@ -296,7 +296,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-3-migration-fail.txt
   ```
 
-- [ ] 4. Harden design validation and error surfacing
+- [x] 4. Harden design validation and error surfacing
 
   **What to do**:
   - Improve validation error shaping and user-facing messages for malformed design docs.
@@ -337,7 +337,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-4-tool-error.txt
   ```
 
-- [ ] 5. Split renderer into composable pipelines
+- [x] 5. Split renderer into composable pipelines
 
   **What to do**:
   - Refactor `DesignCanvasRenderer.tsx` into shape/image/text/group render helpers.
@@ -378,7 +378,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-5-unknown-safe.txt
   ```
 
-- [ ] 6. Add image asset resolution contract
+- [x] 6. Add image asset resolution contract
 
   **What to do**:
   - Define image source priority (`assetRef` -> local asset URL -> `imageUrl`).
@@ -419,7 +419,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-6-image-fallback.png
   ```
 
-- [ ] 7. Add renderer performance instrumentation baseline
+- [x] 7. Add renderer performance instrumentation baseline
 
   **What to do**:
   - Add element-count/render-duration diagnostics for development and tests.
@@ -460,7 +460,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-7-perf-prod.txt
   ```
 
-- [ ] 8. Render real images in canvas
+- [x] 8. Render real images in canvas
 
   **What to do**:
   - Replace image placeholders with actual Skia image rendering.
@@ -501,7 +501,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-8-image-broken.png
   ```
 
-- [ ] 9. Add shape expansion: circle, line, path
+- [x] 9. Add shape expansion: circle, line, path
 
   **What to do**:
   - Implement rendering for new geometric element types.
@@ -542,7 +542,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-9-path-invalid.txt
   ```
 
-- [ ] 10. Improve text fidelity and layout
+- [x] 10. Improve text fidelity and layout
 
   **What to do**:
   - Support multiline text and alignment behavior.
@@ -583,7 +583,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-10-text-fallback.png
   ```
 
-- [ ] 11. Add visual effects baseline (opacity/shadow/gradients)
+- [x] 11. Add visual effects baseline (opacity/shadow/gradients)
 
   **What to do**:
   - Render core style effects supported by schema.

@@ -1,3 +1,4 @@
+import { createEmptyDesignDocument } from "@slopcade/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GitService } from "../../services/git/GitService";
 import { createChatTools } from "../chat-tools";
@@ -246,5 +247,128 @@ describe("createChatTools", () => {
 		expect(result.ok).toBe(true);
 		expect(result.commitSha).toBe("commit-sha-789");
 		expect(result.bytesWritten).toBe(content.length);
+	});
+});
+
+describe("design document tools — error handling", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("readDesignDocument returns { ok: true, document } for a valid doc", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Test");
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.readDesignDocument as any).execute({});
+
+		expect(result.ok).toBe(true);
+		expect((result as any).document.version).toBe("1.1");
+	});
+
+	it("readDesignDocument returns { ok: false, error: 'not found' } when file missing", async () => {
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.readFile).mockResolvedValue(null);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.readDesignDocument as any).execute({});
+
+		expect(result.ok).toBe(false);
+		expect((result as any).error).toBe("not found");
+	});
+
+	it("readDesignDocument returns structured error for unsupported schema version", async () => {
+		const gitService = createGitServiceMock();
+		const malformed = { version: "0.99", frames: [] };
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(malformed)),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.readDesignDocument as any).execute({});
+
+		expect(result.ok).toBe(false);
+		expect((result as any).error).toMatch(/unsupported version/);
+		expect((result as any).error).not.toContain('"code"');
+	});
+
+	it("readDesignDocument returns user-readable error without raw Zod JSON for invalid schema", async () => {
+		const gitService = createGitServiceMock();
+		const invalidDoc = {
+			version: "1.1",
+			metadata: { title: 123, gameId: GAME_ID, createdAt: 0, updatedAt: 0 },
+			frames: [],
+		};
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(invalidDoc)),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.readDesignDocument as any).execute({});
+
+		expect(result.ok).toBe(false);
+		const error = (result as any).error as string;
+		expect(error).toBeTruthy();
+		expect(error).not.toMatch(/^\[/);
+		expect(error).not.toContain('"code"');
+	});
+
+	it("readDesignDocument includes field path for schema validation errors", async () => {
+		const gitService = createGitServiceMock();
+		const invalidDoc = {
+			version: "1.1",
+			metadata: { title: 123, gameId: GAME_ID, createdAt: 0, updatedAt: 0 },
+			frames: [],
+		};
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(invalidDoc)),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.readDesignDocument as any).execute({});
+
+		expect(result.ok).toBe(false);
+		if ((result as any).field) {
+			expect(typeof (result as any).field).toBe("string");
+		}
+	});
+
+	it("updateDesignElement returns structured error when doc has unsupported version", async () => {
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify({ version: "0.5", frames: [] })),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.updateDesignElement as any).execute({
+			frameId: "f1",
+			elementId: "e1",
+			updates: { fill: "#ff0000" },
+		});
+
+		expect(result.ok).toBe(false);
+		expect((result as any).error).toMatch(/unsupported version/);
+		expect((result as any).error).not.toContain('"code"');
+	});
+
+	it("addDesignFrame returns structured error when doc is corrupt", async () => {
+		const gitService = createGitServiceMock();
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode("not valid json at all"),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.addDesignFrame as any).execute({
+			title: "New Frame",
+			width: 375,
+			height: 812,
+		});
+
+		expect(result.ok).toBe(false);
+		expect(typeof (result as any).error).toBe("string");
+		expect((result as any).error.length).toBeGreaterThan(0);
 	});
 });

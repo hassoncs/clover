@@ -1,6 +1,7 @@
 import {
 	createEmptyDesignDocument,
 	type DesignDocument,
+	DesignSchemaError,
 	migrateDesignDocument,
 } from "@slopcade/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +16,8 @@ export function useDesignDocument(gameId: string | null) {
 	);
 	const [isDesignDirty, setIsDesignDirty] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+	const [loadError, setLoadError] = useState<string | null>(null);
+	const [saveError, setSaveError] = useState<string | null>(null);
 
 	const designFileQuery = chatThreads.readWorkspaceFile.useQuery(
 		{ gameId: gameId!, filename: "design.json" },
@@ -47,6 +50,7 @@ export function useDesignDocument(gameId: string | null) {
 						filename: "design.json",
 						content,
 					});
+					setSaveError(null);
 					setIsDesignDirty(false);
 
 					// Update cache
@@ -55,7 +59,10 @@ export function useDesignDocument(gameId: string | null) {
 						{ content },
 					);
 				} catch (e) {
+					const message =
+						e instanceof Error ? e.message : "Failed to save design document";
 					console.error("[useDesignDocument] Failed to save design.json", e);
+					setSaveError(message);
 				}
 			}, 300);
 		},
@@ -71,9 +78,15 @@ export function useDesignDocument(gameId: string | null) {
 				const raw = JSON.parse(designFileQuery.data.content);
 				const doc = migrateDesignDocument(raw);
 				setDesignDocument(doc);
+				setLoadError(null);
 				setIsDesignDirty(false);
 			} catch (e) {
+				const message =
+					e instanceof DesignSchemaError
+						? e.message
+						: "Failed to load design document: unexpected error";
 				console.warn("[useDesignDocument] Failed to parse design.json", e);
+				setLoadError(message);
 				setDesignDocument(null);
 			}
 			setIsLoading(false);
@@ -126,6 +139,8 @@ export function useDesignDocument(gameId: string | null) {
 			saveDesignDocument,
 			isDesignDirty,
 			isLoadingDesign: isLoading || designFileQuery.isLoading,
+			loadError,
+			saveError,
 		}),
 		[
 			designDocument,
@@ -133,6 +148,8 @@ export function useDesignDocument(gameId: string | null) {
 			isDesignDirty,
 			isLoading,
 			designFileQuery.isLoading,
+			loadError,
+			saveError,
 		],
 	);
 }

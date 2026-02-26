@@ -1,6 +1,7 @@
 import {
 	type DesignDocument,
 	DesignDocumentSchema,
+	DesignSchemaError,
 	parseDesignDocument,
 	type RuntimeIntentMode,
 	VOICE_PRESETS,
@@ -13,6 +14,41 @@ import { ElevenLabsService } from "@/ai/providers/elevenlabs";
 import { getSkillById } from "@/ai/skills";
 import type { GitService } from "@/services/git/GitService";
 import type { Env } from "@/trpc/context";
+
+function shapeDesignError(err: unknown): { error: string; field?: string } {
+	if (!(err instanceof DesignSchemaError)) {
+		const message = err instanceof Error ? err.message : String(err);
+		return { error: message };
+	}
+
+	const msg = err.message;
+	const zodIssuesStart = msg.indexOf("[");
+	if (zodIssuesStart !== -1) {
+		try {
+			const issues = JSON.parse(msg.slice(zodIssuesStart)) as Array<{
+				path?: Array<string | number>;
+				message?: string;
+			}>;
+			if (Array.isArray(issues) && issues.length > 0) {
+				const first = issues[0];
+				const field =
+					Array.isArray(first.path) && first.path.length > 0
+						? first.path.join(".")
+						: undefined;
+				const issueMessage = first.message || "Schema validation failed";
+				return {
+					error: field ? `${issueMessage} (at ${field})` : issueMessage,
+					...(field ? { field } : {}),
+				};
+			}
+		} catch {
+			// ignore — fall through
+		}
+		return { error: "Design document schema validation failed" };
+	}
+
+	return { error: msg };
+}
 
 export interface EditorCommandPayload {
 	command: string;
@@ -559,8 +595,7 @@ export function createChatTools(ctx: ChatToolContext) {
 					const document = parseDesignDocument(JSON.parse(raw));
 					return { ok: true, document } as const;
 				} catch (err) {
-					const message = err instanceof Error ? err.message : String(err);
-					return { ok: false, error: message } as const;
+					return { ok: false, ...shapeDesignError(err) } as const;
 				}
 			},
 		}),
@@ -594,11 +629,7 @@ export function createChatTools(ctx: ChatToolContext) {
 					const raw = new TextDecoder().decode(data);
 					doc = parseDesignDocument(JSON.parse(raw));
 				} catch (err) {
-					const message = err instanceof Error ? err.message : String(err);
-					return {
-						ok: false,
-						error: `schema validation failed: ${message}`,
-					} as const;
+					return { ok: false, ...shapeDesignError(err) } as const;
 				}
 
 				const frame = doc.frames.find((f) => f.id === frameId);
@@ -650,7 +681,9 @@ export function createChatTools(ctx: ChatToolContext) {
 				if (!parseResult.success) {
 					return {
 						ok: false,
-						error: `schema validation failed: ${parseResult.error.message}`,
+						...shapeDesignError(
+							new DesignSchemaError(parseResult.error.message),
+						),
 					} as const;
 				}
 
@@ -691,11 +724,7 @@ export function createChatTools(ctx: ChatToolContext) {
 					const raw = new TextDecoder().decode(data);
 					doc = parseDesignDocument(JSON.parse(raw));
 				} catch (err) {
-					const message = err instanceof Error ? err.message : String(err);
-					return {
-						ok: false,
-						error: `schema validation failed: ${message}`,
-					} as const;
+					return { ok: false, ...shapeDesignError(err) } as const;
 				}
 
 				const frameId = nanoid();
