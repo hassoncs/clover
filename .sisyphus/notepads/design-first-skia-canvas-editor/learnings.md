@@ -222,3 +222,46 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 ### useCallback for useEffect Dependencies
 - Handlers (`handleZoomToFit`, `goPrevFrame`, `goNextFrame`) used in a `useEffect` dep array must be wrapped in `useCallback` to avoid stale deps warning.
 - Without `useCallback`, these inline arrow functions are recreated on every render, causing `useEffect` to re-run on every render.
+
+## [2026-02-26] T20 - Design-first flow integration coverage
+
+- Added `api/src/ai/agent/__tests__/design-flow.integration.test.ts` to exercise cross-stage behavior from design artifact generation into build prompt consumption.
+- Integration coverage now includes: happy path artifact persistence + design-informed build prompt, design validation failure retry path (`VALIDATION_FAILED` after 2 attempts), design-present build context, missing-design backward compatibility, and legacy planning-only build flow.
+- In-memory R2 mock using `Map<string, string>` with `ASSETS.get`/`ASSETS.put` is sufficient for stage-level integration without worker pool dependencies.
+- `createEmptyDesignDocument(gameId, title)` works well for fixtures by mutating frames into a valid minimal design payload.
+
+## [2026-02-25] T14 - Design Iteration Chat Loop
+
+### Selection Context Flow Architecture
+- Design selection context travels from frontend → DB → system prompt via this path:
+  1. `sendMessage` tRPC accepts `selectedDesignFrameId?` + `selectedDesignElementId?`
+  2. Stored in user message's `metadata_json` via `insertUserMessage`
+  3. Stream endpoint (`/api/chat/stream`) reads last user message's metadata → `designContext`
+  4. `handleChatStream` uses `designContext` in `ChatHandlerContext`
+  5. `buildDesignSelectionBlock()` generates a DESIGN CANVAS SELECTION CONTEXT system prompt section
+  6. `createChatTools` receives `designContext` in `ChatToolContext`
+
+### getDesignSelectionContext Tool: Dual-Path Pattern
+- Pre-resolved path: reads from `ctx.designContext` when set (no SSE roundtrip needed)
+- Fallback path: calls `onEditorCommand({ command: "getDesignSelection" })` for non-stream contexts
+- SSE is one-directional (server→client), so `onEditorCommand` only dispatches, cannot return selection
+- The pre-resolved path is the correct production path; fallback exists for legacy/test cases
+
+### updateDesignElement Return Shape Changed
+- Old: `{ ok: true, diff: { elementId, changes } }`
+- New: `{ ok: true, elementId, frameId, changedFields: string[], changes }`
+- `changedFields` is explicit array of updated field names for AI to summarize in response
+- Old `diff` key is gone — update any tests expecting it
+
+### Clarification Behavior Pattern
+- Lives in 2 places: (1) tool description on `updateDesignElement`, (2) DESIGN CANVAS ITERATION WORKFLOW section in `CHAT_STAGE_PROMPT`
+- No code logic enforces it — it's purely a prompt instruction; the AI decides based on context
+- Works because both tool description and system prompt consistently say: "if target is ambiguous and no element selected, call askUser first"
+
+### typecheck script
+- `pnpm -C api typecheck` in AGENTS.md is wrong — correct command is `pnpm -C api type-check` (with hyphen)
+- Or `pnpm type-check` from within `api/` directory
+- Added `DesignPhase` state to `EditorProvider` to track the transition from design to implementation.
+- Used `useSharedWorkspaceFiles` to detect when a design document is loaded and automatically transition from `idle` to `designing` phase.
+- Added phase badge and action buttons to `DesignCanvasPanel` header to allow explicit user approval before implementation.
+- Surfaced the current phase in `ChatSidebar` to keep the user informed of the current state.
