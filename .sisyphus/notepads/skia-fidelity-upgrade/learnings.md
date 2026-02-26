@@ -164,3 +164,8 @@
 - TypeScript: all pre-existing errors are unrelated (GLSL modules, native bundle); no new errors in DesignCanvasRenderer.tsx (LSP clean).
 - Tests: 8/8 test files pass. Pre-existing OOM crash from MicButton test persists (unrelated).
 - Bounding box rules: line → min/max of x1,y1,x2,y2; path → x,y + 40×40 fallback; all others → x,y,width,height.
+
+## Design Canvas Interactions
+- When implementing drag/resize/rotate in a Skia canvas, it's better to handle pointer events at the parent `View` level rather than using `TouchableWithoutFeedback` inside the canvas. This allows for continuous tracking (`onPointerMove`) even when the pointer leaves the element's bounds.
+- Skia's `transform` array applies transformations in order. To rotate an element around its center, use `[{ translateX: cx }, { translateY: cy }, { rotate: angle }, { translateX: -cx }, { translateY: -cy }]`.
+- When debouncing saves to a remote document, ensure the local state is updated immediately for smooth interactions, while the remote save happens in the background.

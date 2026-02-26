@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@slopcade/theme";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	Pressable,
@@ -7,11 +8,11 @@ import {
 	useWindowDimensions,
 	View,
 } from "react-native";
-import { useTheme } from "@slopcade/theme";
 import { useEditor } from "../EditorProvider";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 import { DesignCanvasRenderer } from "./DesignCanvasRenderer";
 import { useDesignCamera } from "./useDesignCamera";
+import { useDesignInteractions } from "./useDesignInteractions";
 
 export function DesignCanvasPanel() {
 	const { editorColors: c } = useTheme();
@@ -26,10 +27,34 @@ export function DesignCanvasPanel() {
 		designPhase,
 		setDesignPhase,
 	} = useEditor();
-	const { designDocument, isLoadingDesign } = useSharedWorkspaceFiles();
+	const { designDocument, isLoadingDesign, saveDesignDocument } =
+		useSharedWorkspaceFiles();
 
 	const { camera, zoomToFit, onWheel, onMouseDown, onMouseMove, onMouseUp } =
 		useDesignCamera();
+
+	const {
+		isDragging,
+		isResizing,
+		isRotating,
+		snapLines,
+		showGrid,
+		onMouseDown: handleMouseDown,
+		onMouseMove: handleMouseMove,
+		onMouseUp: handleMouseUp,
+		onMouseLeave: handleMouseLeave,
+	} = useDesignInteractions({
+		document: designDocument,
+		camera,
+		selectedFrameId: selectedDesignFrameId,
+		selectedElementId: selectedDesignElementId,
+		saveDesignDocument,
+		cameraHandlers: {
+			onMouseDown,
+			onMouseMove,
+			onMouseUp,
+		},
+	});
 
 	const [showFrameList, setShowFrameList] = useState(false);
 
@@ -262,10 +287,10 @@ export function DesignCanvasPanel() {
 						style={{ flex: 1, width: "100%" }}
 						{...({
 							onWheel,
-							onMouseDown,
-							onMouseMove,
-							onMouseUp,
-							onMouseLeave: onMouseUp,
+							onMouseDown: handleMouseDown,
+							onMouseMove: handleMouseMove,
+							onMouseUp: handleMouseUp,
+							onMouseLeave: handleMouseLeave,
 						} as object)}
 					>
 						<DesignCanvasRenderer
@@ -276,6 +301,8 @@ export function DesignCanvasPanel() {
 							onElementTap={handleElementTap}
 							width={width}
 							height={height - 48} // Subtract header height
+							snapLines={snapLines}
+							showGrid={showGrid}
 						/>
 					</View>
 				) : (

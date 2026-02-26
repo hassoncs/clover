@@ -77,6 +77,8 @@ function isOutsideViewport(
 	);
 }
 
+import type { SnapLine } from "./useDesignInteractions";
+
 export interface DesignCanvasRendererProps {
 	document: DesignDocument;
 	camera: { translateX: number; translateY: number; scale: number };
@@ -85,6 +87,8 @@ export interface DesignCanvasRendererProps {
 	onElementTap?: (frameId: string, elementId: string | null) => void;
 	width: number;
 	height: number;
+	snapLines?: SnapLine[];
+	showGrid?: boolean;
 }
 
 function applyEffects(element: any, children: React.ReactNode) {
@@ -391,6 +395,8 @@ export function DesignCanvasRenderer({
 	onElementTap,
 	width,
 	height,
+	snapLines = [],
+	showGrid = false,
 }: DesignCanvasRendererProps) {
 	const font = useFont(
 		require("../../../assets/fonts/Fredoka-Regular.ttf"),
@@ -683,6 +689,32 @@ export function DesignCanvasRenderer({
 									)}
 								</Group>
 							);
+						})}
+
+						{snapLines.map((line, i) => {
+							if (line.axis === "x") {
+								return (
+									<Line
+										key={`snap-x-${i}-${line.position}`}
+										p1={vec(line.position, viewportBounds.worldTop)}
+										p2={vec(line.position, viewportBounds.worldBottom)}
+										color="#2563EB"
+										style="stroke"
+										strokeWidth={1 / camera.scale}
+									/>
+								);
+							} else {
+								return (
+									<Line
+										key={`snap-y-${i}-${line.position}`}
+										p1={vec(viewportBounds.worldLeft, line.position)}
+										p2={vec(viewportBounds.worldRight, line.position)}
+										color="#2563EB"
+										style="stroke"
+										strokeWidth={1 / camera.scale}
+									/>
+								);
+							}
 						})}
 					</Group>
 				</Canvas>

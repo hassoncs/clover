@@ -749,7 +749,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-14-native-gestures.txt
   ```
 
-- [ ] 15. Implement drag/move and keyboard nudge interactions
+- [x] 15. Implement drag/move and keyboard nudge interactions
 
   **What to do**:
   - Add pointer/touch drag to reposition selected elements.
@@ -790,7 +790,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-15-pan-fallback.png
   ```
 
-- [ ] 16. Implement resize and rotate interactions
+- [x] 16. Implement resize and rotate interactions
 
   **What to do**:
   - Connect overlay handles to resize/rotate transforms.
@@ -831,7 +831,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-16-rotate-hit.png
   ```
 
-- [ ] 17. Add snapping, guides, and optional grid display
+- [x] 17. Add snapping, guides, and optional grid display
 
   **What to do**:
   - Add edge/center snapping and lightweight visual guide lines.
@@ -1077,7 +1077,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-22-build-schema.txt
   ```
 
-- [ ] 23. Add design-to-runtime guardrail tests
+- [x] 23. Add design-to-runtime guardrail tests
 
   **What to do**:
   - Add tests that enforce strict boundary between design documents and runtime game data.
