@@ -1,4 +1,7 @@
 import {
+	type DesignDocument,
+	DesignDocumentSchema,
+	parseDesignDocument,
 	type RuntimeIntentMode,
 	VOICE_PRESETS,
 	type VoicePresetId,
@@ -535,6 +538,205 @@ export function createChatTools(ctx: ChatToolContext) {
 					return { ok: false, error: "Editor not connected" };
 				}
 				return { ok: true, ...(result as Record<string, unknown>) };
+			},
+		}),
+
+		readDesignDocument: tool({
+			description:
+				"Read the current design document from the workspace. Returns frames and elements.",
+			inputSchema: z.object({}),
+			execute: async () => {
+				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");
+				if (!data) {
+					return { ok: false, error: "not found" } as const;
+				}
+				try {
+					const raw = new TextDecoder().decode(data);
+					const document = parseDesignDocument(JSON.parse(raw));
+					return { ok: true, document } as const;
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					return { ok: false, error: message } as const;
+				}
+			},
+		}),
+
+		updateDesignElement: tool({
+			description:
+				"Update properties of a specific design element in the current design document.",
+			inputSchema: z.object({
+				frameId: z.string().describe("ID of the frame containing the element"),
+				elementId: z.string().describe("ID of the element to update"),
+				updates: z
+					.object({
+						fill: z.string().optional(),
+						stroke: z.string().optional(),
+						strokeWidth: z.number().optional(),
+						content: z.string().optional(),
+						fontSize: z.number().optional(),
+						color: z.string().optional(),
+						imageUrl: z.string().optional(),
+					})
+					.describe("Properties to update on the element"),
+			}),
+			execute: async ({ frameId, elementId, updates }) => {
+				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");
+				if (!data) {
+					return { ok: false, error: "not found" } as const;
+				}
+
+				let doc: DesignDocument;
+				try {
+					const raw = new TextDecoder().decode(data);
+					doc = parseDesignDocument(JSON.parse(raw));
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					return {
+						ok: false,
+						error: `schema validation failed: ${message}`,
+					} as const;
+				}
+
+				const frame = doc.frames.find((f) => f.id === frameId);
+				if (!frame) {
+					return {
+						ok: false,
+						error: `element not found: ${elementId}`,
+					} as const;
+				}
+
+				const elementIndex = frame.elements.findIndex(
+					(e) => e.id === elementId,
+				);
+				if (elementIndex === -1) {
+					return {
+						ok: false,
+						error: `element not found: ${elementId}`,
+					} as const;
+				}
+
+				const updatedElement = {
+					...frame.elements[elementIndex],
+				} as Record<string, unknown>;
+				const appliedChanges: Record<string, unknown> = {};
+				for (const [key, value] of Object.entries(updates)) {
+					if (value !== undefined) {
+						updatedElement[key] = value;
+						appliedChanges[key] = value;
+					}
+				}
+
+				const updatedDoc: DesignDocument = {
+					...doc,
+					metadata: { ...doc.metadata, updatedAt: Date.now() },
+					frames: doc.frames.map((f) => {
+						if (f.id !== frameId) return f;
+						return {
+							...f,
+							elements: f.elements.map((e, i) =>
+								i === elementIndex
+									? (updatedElement as (typeof f.elements)[number])
+									: e,
+							),
+						};
+					}),
+				};
+
+				const parseResult = DesignDocumentSchema.safeParse(updatedDoc);
+				if (!parseResult.success) {
+					return {
+						ok: false,
+						error: `schema validation failed: ${parseResult.error.message}`,
+					} as const;
+				}
+
+				const updatedJson = JSON.stringify(parseResult.data, null, 2);
+				await ctx.gitService.commitFiles(
+					ctx.gameId,
+					[{ path: "design.json", content: updatedJson }],
+					`AI: Update design element ${elementId}`,
+					{ name: "AI Assistant", email: "ai@slopcade.app" },
+				);
+				ctx.onFileChanged?.({ gameId: ctx.gameId, filename: "design.json" });
+
+				return {
+					ok: true,
+					diff: { elementId, changes: appliedChanges },
+				} as const;
+			},
+		}),
+
+		addDesignFrame: tool({
+			description: "Add a new frame to the design document.",
+			inputSchema: z.object({
+				title: z.string().describe("Title for the new frame"),
+				width: z.number().default(375).describe("Frame width in pixels"),
+				height: z.number().default(812).describe("Frame height in pixels"),
+			}),
+			execute: async ({ title, width, height }) => {
+				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");
+				if (!data) {
+					return { ok: false, error: "not found" } as const;
+				}
+
+				let doc: DesignDocument;
+				try {
+					const raw = new TextDecoder().decode(data);
+					doc = parseDesignDocument(JSON.parse(raw));
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					return {
+						ok: false,
+						error: `schema validation failed: ${message}`,
+					} as const;
+				}
+
+				const frameId = nanoid();
+				const updatedDoc: DesignDocument = {
+					...doc,
+					metadata: { ...doc.metadata, updatedAt: Date.now() },
+					frames: [
+						...doc.frames,
+						{
+							id: frameId,
+							title,
+							width,
+							height,
+							position: { x: 0, y: 0 },
+							elements: [],
+						},
+					],
+				};
+
+				const updatedJson = JSON.stringify(updatedDoc, null, 2);
+				await ctx.gitService.commitFiles(
+					ctx.gameId,
+					[{ path: "design.json", content: updatedJson }],
+					`AI: Add design frame ${frameId}`,
+					{ name: "AI Assistant", email: "ai@slopcade.app" },
+				);
+				ctx.onFileChanged?.({ gameId: ctx.gameId, filename: "design.json" });
+
+				return { ok: true, frameId } as const;
+			},
+		}),
+
+		getDesignSelectionContext: tool({
+			description:
+				"Get the currently selected design element or frame context, for targeted design edits.",
+			inputSchema: z.object({}),
+			execute: async () => {
+				const result = await ctx.onEditorCommand?.({
+					command: "getDesignSelection",
+					payload: {},
+				});
+				if (!result) {
+					return { selectedFrameId: null, selectedElementId: null };
+				}
+				return result as {
+					selectedFrameId: string | null;
+					selectedElementId: string | null;
+				};
 			},
 		}),
 
