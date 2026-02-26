@@ -135,7 +135,7 @@ export async function fetchBibleQuizzle(
 
 		return {
 			id: randomUUID(),
-			gameType: options.gameType ?? "amen-trivia",
+			gameType: options.gameType ?? "trivia",
 			text: question.question,
 			category,
 			provenance: {

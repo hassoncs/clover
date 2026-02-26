@@ -1,0 +1,33 @@
+Task: T12 - Remove legacy brand-prefixed game type support
+Date: 2026-02-26
+
+Legacy identifier rejection checks:
+
+1) LEGACY_BRAND_GAME_TYPES
+- Scope: api/
+- Result: no matches
+- Scope: packages/
+- Result: no matches
+- Scope: shared/
+- Result: no matches
+
+2) storageGameType
+- Scope: api/
+- Result: no matches
+- Scope: packages/
+- Result: no matches
+- Scope: shared/
+- Result: no matches
+
+3) amen-prefixed game type IDs in runtime source
+- Pattern: amen-(trivia|quip|fibbage|drawing|history|ranking|dilemma|headsup|wager|estimation|caption|wordgame|wordlist|personal|wyr|chroma)
+- Scope: api/src
+- Result: no matches
+- Scope: packages/content-pipeline/src
+- Result: no matches
+- Scope: shared/src
+- Result: no matches
+
+Notes:
+- Migration comments may still contain legacy strings (expected, exempt).
+- Legacy aliases in prompt-loader.ts were not modified (explicitly out of scope for T12).

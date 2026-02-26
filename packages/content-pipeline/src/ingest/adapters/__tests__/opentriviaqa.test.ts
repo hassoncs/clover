@@ -33,7 +33,7 @@ describe("opentriviaqa adapter", () => {
 			const items = await fetchOpenTriviaQA({
 				count: 10,
 				filePath,
-				gameType: "amen-trivia",
+				gameType: "trivia",
 			});
 
 			expect(items).toHaveLength(1);

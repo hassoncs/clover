@@ -186,7 +186,7 @@ export async function fetchAlpacaTrivia(
 
 		output.push({
 			id: randomUUID(),
-			gameType: options.gameType ?? "amen-trivia",
+			gameType: options.gameType ?? "trivia",
 			text: trivia.question,
 			category: trivia.category,
 			provenance: {

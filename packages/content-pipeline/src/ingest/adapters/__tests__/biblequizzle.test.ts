@@ -34,11 +34,11 @@ describe("biblequizzle adapter", () => {
 			const items = await fetchBibleQuizzle({
 				count: 10,
 				filePath,
-				gameType: "amen-trivia",
+				gameType: "trivia",
 			});
 
 			expect(items).toHaveLength(1);
-			expect(items[0]?.gameType).toBe("amen-trivia");
+			expect(items[0]?.gameType).toBe("trivia");
 			expect(items[0]?.category).toBe("Old Testament");
 			expect(items[0]?.provenance.source).toBe("biblequizzle");
 			expect(items[0]?.text).toContain("Adam and Eve");

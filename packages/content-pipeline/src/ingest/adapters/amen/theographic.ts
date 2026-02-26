@@ -212,7 +212,7 @@ export async function fetchTheographic(
 	const raw = await readFile(options.filePath, "utf-8");
 	const payload = parsePayload(raw);
 	const now = new Date().toISOString();
-	const gameType = options.gameType ?? "amen-trivia";
+	const gameType = options.gameType ?? "trivia";
 	const output: ContentItem[] = [];
 
 	for (const person of payload.people ?? []) {

@@ -174,7 +174,7 @@ export async function fetchTheographicHistory(
 
 		historyItems.push({
 			id: randomUUID(),
-			gameType: options.gameType ?? "amen-history",
+			gameType: options.gameType ?? "estimation",
 			text: `Estimate the year for this biblical event: ${eventName}`,
 			category: "Bible History",
 			provenance: {

@@ -361,7 +361,7 @@ export async function fetchTheographicWager(
 	const now = new Date().toISOString();
 	return facts.slice(0, options.count).map((fact) => ({
 		id: randomUUID(),
-		gameType: options.gameType ?? "amen-wager",
+		gameType: options.gameType ?? "estimation",
 		text: fact.question,
 		category: fact.category,
 		provenance: {
