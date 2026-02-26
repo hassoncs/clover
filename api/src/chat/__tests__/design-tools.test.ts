@@ -141,7 +141,10 @@ describe("updateDesignElement", () => {
 			{ frameId: string; elementId: string; updates: Record<string, unknown> },
 			{
 				ok: boolean;
-				diff?: { elementId: string; changes: Record<string, unknown> };
+				elementId?: string;
+				frameId?: string;
+				changedFields?: string[];
+				changes?: Record<string, unknown>;
 				error?: string;
 			}
 		>;
@@ -153,10 +156,10 @@ describe("updateDesignElement", () => {
 		});
 
 		expect(result.ok).toBe(true);
-		expect(result.diff).toEqual({
-			elementId: "rect-1",
-			changes: { fill: "#ff0000" },
-		});
+		expect(result.elementId).toBe("rect-1");
+		expect(result.frameId).toBe("frame-1");
+		expect(result.changedFields).toEqual(["fill"]);
+		expect(result.changes).toEqual({ fill: "#ff0000" });
 		expect(gitService.commitFiles).toHaveBeenCalledWith(
 			GAME_ID,
 			[
