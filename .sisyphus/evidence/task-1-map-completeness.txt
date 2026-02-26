@@ -1,0 +1,35 @@
+Task: T1 template-content-name-unification
+Verification: canonical template map completeness
+
+TEMPLATE_CONTENT_MAP entries:
+1. about-you-bluff -> [personal]
+2. chain-reaction -> [wordlist]
+3. chroma-clues -> [chroma]
+4. consensus-mine -> [ranking]
+5. drawful-animate -> [drawing]
+6. half-and-half -> [dilemma]
+7. heads-up -> [headsup]
+8. lexicon-ladder -> [FakeWord]
+9. quiplash -> [quip]
+10. percent-panic -> [estimation]
+11. punchline-ferry -> [quip]
+12. quickfire-qa -> [trivia]
+13. rival-roster -> []
+14. role-replay -> [quip]
+15. ruin-and-redeem -> [quip]
+16. shirt-clash -> []
+17. sketch-bluff -> [drawing]
+18. spectrum-guess -> [estimation]
+19. truth-trap -> [fibbage]
+20. year-jinx -> [estimation]
+
+Count verification (command run):
+- Command:
+  pnpm exec tsx --eval "import { TEMPLATE_IDS, TEMPLATE_CONTENT_MAP } from './shared/src/schema/party-naming-contract.ts'; const mapped = Object.keys(TEMPLATE_CONTENT_MAP).length; console.log('expected=' + TEMPLATE_IDS.length); console.log('mapped=' + mapped); console.log('equal=' + String(TEMPLATE_IDS.length === mapped));"
+- Output line 1: expected=20
+- Output line 2: mapped=20
+- Output line 3: equal=true
+
+Expected template IDs from registry: 20
+Mapped template IDs in contract: 20
+Result: 20 == 20 (complete)
