@@ -265,3 +265,27 @@ Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned u
 - Used `useSharedWorkspaceFiles` to detect when a design document is loaded and automatically transition from `idle` to `designing` phase.
 - Added phase badge and action buttons to `DesignCanvasPanel` header to allow explicit user approval before implementation.
 - Surfaced the current phase in `ChatSidebar` to keep the user informed of the current state.
+
+## [2026-02-25] T19 - Design Stage Diagnostics and Telemetry
+
+### Structured logging pattern in design.ts
+- Used `console.log(JSON.stringify({...}))` for structured telemetry — JSON objects, not template strings.
+- Log events: `design.attempt.start`, `design.validation.failed`, `design.model.error`, `design.succeeded`.
+- Schema validation failures use `issue.path.join(".")` for field-name-only logging (avoids leaking raw model output).
+- Success log includes both `frameCount` and `elementCount` (computed from `frames.reduce`).
+- `failureReason` field added to all failure checkpoint objects so callers can classify without parsing `errorMessage`.
+
+### DESIGN_STAGE_FAILED SSE event
+- New `DESIGN_STAGE_FAILED` variant added to `AgUiEvent` union in `shared/src/chat/events.ts`.
+- Three failure reasons: `VALIDATION_FAILED`, `MODEL_ERROR`, `MISSING_PREREQUISITE` with user-friendly messages.
+- `buildDesignStageFailedEvent(failureReason)` exported from `stream-handler.ts` maps reason → message + event shape.
+- `ChatHandlerContext.pendingDesignFailure` field added to `chat-handler.ts` — when set, stream-handler emits the event right after `RUN_STARTED`.
+- The accumulator's `default: return state` case gracefully ignores the new event type (no accumulator changes needed).
+
+### Testing pattern for failure checkpoints
+- Existing checkpoint `toMatchObject` assertions updated to include `failureReason` field.
+- Added `MODEL_ERROR` test: mock `generateObject` with `mockRejectedValue` — verifies single attempt + checkpoint shape.
+- Added `VALIDATION_FAILED` quality-check test: empty elements array passes schema but fails quality gate — verifies `validationIssues` in checkpoint.
+
+### typecheck command
+- Correct command in api dir: `pnpm type-check` (with hyphen), not `pnpm typecheck`.

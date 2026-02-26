@@ -492,7 +492,7 @@ Max Concurrent: 6
   - Files: `api/src/chat/chat-tools.ts`, tests
   - Pre-commit: `pnpm -C api test`
 
-- [ ] 6. Implement Skia Design Canvas renderer for frames and elements
+- [x] 6. Implement Skia Design Canvas renderer for frames and elements
 
   **What to do**:
   - Build Skia-based renderer for frames, shape blocks, text, and image placeholders.
@@ -555,7 +555,7 @@ Max Concurrent: 6
   - Files: new `DesignCanvas*` components
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 7. Implement infinite-canvas pan/zoom camera behavior
+- [x] 7. Implement infinite-canvas pan/zoom camera behavior
 
   **What to do**:
   - Add shared camera transform model (translate + scale) for design canvas.
@@ -618,7 +618,7 @@ Max Concurrent: 6
   - Files: design canvas camera modules
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 8. Implement element hit-testing, tap-to-select, and selection overlay
+- [x] 8. Implement element hit-testing, tap-to-select, and selection overlay
 
   **What to do**:
   - Implement hit-test ordering for nested elements and frame bounds.
@@ -681,7 +681,7 @@ Max Concurrent: 6
   - Files: design canvas interaction modules, provider wiring
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 9. Add design canvas panel UX controls and frame navigator
+- [x] 9. Add design canvas panel UX controls and frame navigator
 
   **What to do**:
   - Add top controls: frame counter, next/prev frame, zoom-to-fit, selection breadcrumb.
@@ -744,7 +744,7 @@ Max Concurrent: 6
   - Files: design panel UI components
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 10. Remove wireframe mode hacks and legacy assumptions
+- [x] 10. Remove wireframe mode hacks and legacy assumptions
 
   **What to do**:
   - Decommission `WireframeModeProvider` assumptions (hardcoded `totalScreens` behavior).
@@ -806,7 +806,7 @@ Max Concurrent: 6
   - Files: wireframe provider/panel cleanup files
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 11. Ensure cross-platform parity for Skia + interaction behavior
+- [x] 11. Ensure cross-platform parity for Skia + interaction behavior
 
   **What to do**:
   - Resolve web/native gesture differences and text/image rendering parity.
@@ -868,7 +868,7 @@ Max Concurrent: 6
   - Files: platform-specific canvas/interaction modules
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 12. Add new `design` stage to execution engine atomically
+- [x] 12. Add new `design` stage to execution engine atomically
 
   **What to do**:
   - Extend stage union/type, stage order, prerequisites, and default runners.
@@ -930,7 +930,7 @@ Max Concurrent: 6
   - Files: `api/src/ai/agent/execution-engine.ts`, stage exports/tests
   - Pre-commit: `pnpm -C api test`
 
-- [ ] 13. Implement design-stage generator for initial `design.json`
+- [x] 13. Implement design-stage generator for initial `design.json`
 
   **What to do**:
   - Implement stage runner that generates initial frames/elements from planning artifact.
@@ -993,7 +993,7 @@ Max Concurrent: 6
   - Files: new `api/src/ai/agent/stages/design.ts`, tests
   - Pre-commit: `pnpm -C api test`
 
-- [ ] 14. Implement design-iteration chat loop with selection context
+- [x] 14. Implement design-iteration chat loop with selection context
 
   **What to do**:
   - Add chat behavior that edits selected frames/elements using design tools.
@@ -1056,7 +1056,7 @@ Max Concurrent: 6
   - Files: chat handlers/tools + editor context bridges
   - Pre-commit: `pnpm -C api test && pnpm -C apps/slopcade test`
 
-- [ ] 15. Add build-stage ingestion of approved design context
+- [x] 15. Add build-stage ingestion of approved design context
 
   **What to do**:
   - Update build-stage prompt/template to consume approved design docs as reference.
@@ -1119,7 +1119,7 @@ Max Concurrent: 6
   - Files: `api/src/ai/agent/stages/build.ts`, prompt templates/tests
   - Pre-commit: `pnpm -C api test`
 
-- [ ] 16. Add explicit UX transition: prompt -> design iteration -> implementation
+- [x] 16. Add explicit UX transition: prompt -> design iteration -> implementation
 
   **What to do**:
   - Add orchestrated UI states for generation phases in chat/editor shell.
@@ -1183,7 +1183,7 @@ Max Concurrent: 6
   - Files: editor/chat UI state integration
   - Pre-commit: `pnpm -C apps/slopcade test`
 
-- [ ] 17. Validate watchers/build/package pipeline with `design.json`
+- [x] 17. Validate watchers/build/package pipeline with `design.json`
 
   **What to do**:
   - Verify game source watchers ignore/handle design files correctly.
@@ -1246,7 +1246,7 @@ Max Concurrent: 6
   - Files: watcher/build config and tests
   - Pre-commit: `pnpm test`
 
-- [ ] 18. Add design-document versioning and migration utilities
+- [x] 18. Add design-document versioning and migration utilities
 
   **What to do**:
   - Add version migration pipeline for future schema changes.
@@ -1309,7 +1309,7 @@ Max Concurrent: 6
   - Files: migration utilities + tests
   - Pre-commit: `pnpm test`
 
-- [ ] 19. Add diagnostics and telemetry for design-stage failures
+- [x] 19. Add diagnostics and telemetry for design-stage failures
 
   **What to do**:
   - Add structured logs/diagnostics for design stage and iteration failures.
@@ -1372,7 +1372,7 @@ Max Concurrent: 6
   - Files: stage runner, stream handler, diagnostics UI
   - Pre-commit: `pnpm test`
 
-- [ ] 20. Add end-to-end design-first flow integration tests
+- [x] 20. Add end-to-end design-first flow integration tests
 
   **What to do**:
   - Add E2E coverage for prompt -> design stage -> iteration -> implementation kickoff.
