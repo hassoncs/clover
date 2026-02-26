@@ -69,6 +69,47 @@
 - The browse screen is entirely party-game-focused (uses `useBrowsePartyGames`, launches party rooms). With party removed, the Play button is now a no-op. This screen will need redesign for the creator-only context in a future task.
 - Re-export shims in `apps/slopcade/lib/party/` and `apps/slopcade/components/party/` were left intact per task instructions — they will break at install time when @slopcade/party is absent (orchestrator handles pnpm install).
 
+## [2026-02-26] Task 33: TypeScript type checks across all packages and apps
+
+### Packages — all 5 pass tsc cleanly ✅
+- `packages/brands` ✅
+- `packages/party` ✅ (after named export fix — see below)
+- `packages/editor` ✅
+- `packages/editor-ai` ✅
+- `packages/social` ✅
+
+### Apps — pre-existing errors only
+All 4 apps fail tsc with exit code 2, but ONLY due to pre-existing errors unrelated to app-split:
+1. `packages/ui/src/amen/animation/index.ts` — missing modules `./AmenGrainOverlay`, `./DrawingIcon`
+2. `packages/ui/src/amen/loading/index.ts` — missing module `./AmenSplashSequence`
+3. `packages/ui/src/GameHallCarousel/GameHallCarousel.tsx` — `SharedValue` not exported from `react-native-reanimated` namespace
+4. `shared/src/effects/shaders/index.ts` + all `.meta.ts` files — ~100+ errors for `.glsl` files lacking type declarations
+
+### App-split specific fixes applied
+
+**DrawingInput named export** (`packages/party/src/components/DrawingInput.tsx`):
+- `export * from "./components/DrawingInput"` does NOT re-export default exports
+- Fixed by changing `export default function DrawingInput` → `export function DrawingInput` + `export default DrawingInput` at end
+
+**LikersBottomSheet missing prop** (`apps/slopcade/app/(tabs)/feed.tsx`):
+- `<LikersBottomSheet ref={likersRef} />` was missing required `currentUserId` prop
+- Fixed by adding `currentUserId={currentUserId}` (variable already existed on line 352)
+
+**PartyGameRenderer missing props** (`apps/amen/app/party/play.tsx`, `apps/slopbox/app/party/play.tsx`):
+- `<PartyGameRenderer />` was missing required props: `musicVolume`, `sfxVolume`, `narrationVolume`, `fontSize`, `captionsEnabled`, `useSpeechToText`
+- Fixed by importing `useAppSettings` + `useSpeechToText` and wiring all settings props
+
+**Duplicate LayoutAdapter test** (`apps/slopcade/components/editor/wireframe/__tests__/LayoutAdapter.test.ts`):
+- Was a duplicate of the test in `packages/editor/src/wireframe/__tests__/`
+- Imported `createEntityLayoutAdapter` from a re-export shim that doesn't export it
+- Deleted the duplicate test file
+
+**shader-editor game-runtime cross-workspace coupling**:
+- `apps/shader-editor/tsconfig.json` had path mappings for `@slopcade/game-runtime/*` pointing to source
+- This caused tsc to compile game-runtime source (which has `@/` imports unresolvable from shader-editor context)
+- Fixed by removing the path mappings and creating `apps/shader-editor/types/shims/game-runtime.d.ts` with ambient module declarations
+- The shim covers all subpaths via `declare module "@slopcade/game-runtime/*"` wildcard
+
 ## [2026-02-26] Tasks 31-32: requireFeature() middleware + brand registration
 
 ### Brand registration (Task 32) — already done

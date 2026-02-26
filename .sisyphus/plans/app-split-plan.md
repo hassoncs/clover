@@ -540,12 +540,12 @@ Party apps consume **pre-built games**. Creator apps **build games and shaders**
 ### Wave 5 - Product boundary enforcement
 
 - [x] 30. Remove party routes/navigation/dependencies from `apps/slopcade` (creator-only state).
-- [ ] 31. Add API `requireFeature()` middleware and replace hardcoded brand gates with feature gates.
-- [ ] 32. Register `slopbox` and `shader-editor` in API brand validation.
+- [x] 31. Add API `requireFeature()` middleware and replace hardcoded brand gates with feature gates.
+- [x] 32. Register `slopbox` and `shader-editor` in API brand validation.
 
 ### Wave 6 - Verification and cleanup
 
-- [ ] 33. Run type checks/build checks for all affected packages and apps.
+- [x] 33. Run type checks/build checks for all affected packages and apps.
 - [ ] 34. Validate party flows end-to-end in `amen` and `slopbox`.
 - [ ] 35. Validate creator flows end-to-end in `slopcade` and `shader-editor`.
 - [ ] 36. Run dead-code cleanup (`knip`) and remove migration shims.
