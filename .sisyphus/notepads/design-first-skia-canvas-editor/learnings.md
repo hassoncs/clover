@@ -97,6 +97,16 @@
 - Running `git stash && ... && git stash pop` in a bash command during work WILL stash in-progress edits
 - If you need to test pre-change state, use `git diff HEAD` to see what's modified first
 - After a stash pop, always verify your edits are still present via grep
+
+## [2026-02-25] T12 - Design Stage Engine Wiring
+
+### Agent execution ordering and prerequisites
+- `AgentStage` now includes `design`, and `STAGE_ORDER` is `planning -> design -> build -> shader -> refine -> theme -> asset`.
+- `design` stage should not short-circuit prerequisites; it requires `previousArtifacts.planning` like other non-planning stages.
+- `build` remains backward-compatible without a `design` artifact (only planning is required).
+
+### Stage export pattern
+- Runtime stage wiring is sourced from `api/src/ai/agent/stages.ts` (barrel), not `api/src/ai/agent/stages/index.ts`.
 Removed legacy WireframeModeProvider and hardcoded totalScreens logic. Cleaned up WireframePanel and WireframeViewer to use static defaults as they are now legacy components replaced by DesignCanvasPanel.
 
 ## Camera Implementation (T7)
