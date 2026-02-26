@@ -1,0 +1,68 @@
+Task: T8 - Execute DB Backfill to Canonical Content Types (local D1 only)
+Date: 2026-02-26
+Worktree: /Users/hassoncs/Workspaces/Personal/slopcade/.worktrees/opencode-fleet-wrk_025d3e83-template-content-name-unificat
+
+Migration files reviewed:
+- api/migrations/20260226_normalize_content_types.sql
+- api/migrations/20260226_normalize_content_types_rollback.sql
+
+Environment prep (local-only):
+- Initial pre-query failed with "no such table: party_content" because local D1 state had schema.sql tables but not party-content migration tables.
+- Created expected pre-normalization party_content schema in local D1 using:
+  1) migrations/20260218_party_content_schema.sql
+  2) migrations/20260219_add_wager_history_content_types.sql
+  3) migrations/20260219_add_chroma_content_type.sql
+
+Pre-migration baseline query (required):
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT content_type, COUNT(*) as cnt FROM party_content GROUP BY content_type ORDER BY content_type"
+Output:
+- success=true
+- results=[]
+
+Additional baseline checks:
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT COUNT(*) AS total_rows FROM party_content"
+Output:
+- total_rows=0
+
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT COUNT(*) AS legacy_rows FROM party_content WHERE content_type IN ('wager','history')"
+Output:
+- legacy_rows=0
+
+Forward migration execution:
+Command:
+npx wrangler d1 execute slopcade-db --local --file "./migrations/20260226_normalize_content_types.sql"
+Output:
+- "11 commands executed successfully"
+
+Post-migration verification:
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT content_type, COUNT(*) as cnt FROM party_content GROUP BY content_type ORDER BY content_type"
+Output:
+- success=true
+- results=[]
+
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT DISTINCT content_type FROM party_content ORDER BY content_type"
+Output:
+- success=true
+- results=[]
+
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT COUNT(*) AS legacy_rows_after FROM party_content WHERE content_type IN ('wager','history')"
+Output:
+- legacy_rows_after=0
+
+Constraint-level verification (canonical types only):
+Command:
+npx wrangler d1 execute slopcade-db --local --command "SELECT sql FROM sqlite_master WHERE type='table' AND name='party_content'"
+Output excerpt:
+- content_type CHECK contains canonical set including 'estimation'
+- content_type CHECK excludes 'wager' and 'history'
+
+Result:
+- Local forward migration applied successfully.
+- Local dataset had zero rows total, so backfill path was a no-op in this environment.
+- Canonicalization is still validated semantically: schema constraint now permits canonical types and disallows legacy aliases.
