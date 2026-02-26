@@ -1,0 +1,35 @@
+Baseline Capture for Task 5: Establish baseline verification harness and snapshots.
+
+Test File: api/src/party/templates/__tests__/registry-baseline.test.ts
+
+Structure:
+- describe("Party Template Registry Baseline")
+  - it("should have exactly 20 templates registered")
+  - it("should contain only canonical template IDs")
+  - it("should not have any template with 'wager' or 'history' in contentPacks (except known baseline drift)")
+  - it("should have valid structure for all definitions")
+
+Baseline Template IDs (20):
+- about-you-bluff
+- chain-reaction
+- chroma-clues
+- consensus-mine
+- drawful-animate
+- half-and-half
+- heads-up
+- lexicon-ladder
+- quiplash
+- percent-panic
+- punchline-ferry
+- quickfire-qa
+- rival-roster
+- role-replay
+- ruin-and-redeem
+- shirt-clash
+- sketch-bluff
+- spectrum-guess
+- truth-trap
+- year-jinx
+
+Known Baseline Drift:
+- year-jinx: contentPacks contains "wager" (to be fixed in T9)
