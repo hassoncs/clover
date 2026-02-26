@@ -1,0 +1,48 @@
+{
+	"task": "T5 - Add AI tool contracts for design document operations",
+	"status": "complete",
+	"timestamp": "2026-02-26",
+	"filesModified": ["api/src/chat/chat-tools.ts"],
+	"filesCreated": ["api/src/chat/__tests__/design-tools.test.ts"],
+	"toolsAdded": [
+		"readDesignDocument",
+		"updateDesignElement",
+		"addDesignFrame",
+		"getDesignSelectionContext"
+	],
+	"testResults": {
+		"runner": "vitest (simple config, bypassing broken cloudflare pool)",
+		"designToolTests": {
+			"total": 8,
+			"passed": 8,
+			"failed": 0,
+			"tests": [
+				"readDesignDocument > returns the parsed document when design.json exists",
+				"readDesignDocument > returns not found error when design.json does not exist",
+				"updateDesignElement > updates fill property on a rect element successfully",
+				"updateDesignElement > returns structured error when elementId is not found",
+				"updateDesignElement > returns structured error when frameId is not found",
+				"updateDesignElement > returns not found when design.json does not exist",
+				"addDesignFrame > adds a new frame with a generated ID",
+				"addDesignFrame > returns not found when design.json does not exist"
+			]
+		},
+		"existingChatToolTests": {
+			"total": 7,
+			"passed": 7,
+			"failed": 0,
+			"note": "All pre-existing chat-tools tests continue to pass"
+		}
+	},
+	"schemaValidation": {
+		"implemented": true,
+		"approach": "DesignDocumentSchema.safeParse() from @slopcade/shared before every write",
+		"rejectsInvalidPayloads": true
+	},
+	"diffFriendlyOutputs": {
+		"updateDesignElement": "returns { ok: true, diff: { elementId, changes: { ...updatedFields } } }",
+		"addDesignFrame": "returns { ok: true, frameId: '<nanoid>' }",
+		"readDesignDocument": "returns { ok: true, document: <DesignDocument> }",
+		"getDesignSelectionContext": "returns { selectedFrameId, selectedElementId }"
+	}
+}

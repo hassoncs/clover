@@ -1,0 +1,14 @@
+
+> @slopcade/shared@1.0.0 test /Users/hassoncs/Workspaces/Personal/slopcade/shared
+> vitest run "src/types/__tests__/design.test.ts"
+
+
+ RUN  v3.2.4 /Users/hassoncs/Workspaces/Personal/slopcade/shared
+
+ ✓ src/types/__tests__/design.test.ts (5 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  18:42:02
+   Duration  310ms (transform 27ms, setup 0ms, collect 35ms, tests 5ms, environment 0ms, prepare 44ms)
+

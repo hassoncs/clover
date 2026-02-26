@@ -1,7 +1,10 @@
 {
-	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/app-consolidation-remaining.md",
-	"started_at": "2026-02-19T18:32:24.916Z",
-	"session_ids": ["ses_388d349b7ffeHfhXV4quDzmwx3"],
-	"plan_name": "app-consolidation-remaining",
-	"agent": "atlas"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/app-consolidation-remaining.md",
+  "started_at": "2026-02-19T18:32:24.916Z",
+  "session_ids": [
+    "ses_388d349b7ffeHfhXV4quDzmwx3",
+    "ses_3682ff736ffeXsqVDzvJsE6Tj5"
+  ],
+  "plan_name": "app-consolidation-remaining",
+  "agent": "atlas"
 }
