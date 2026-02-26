@@ -203,3 +203,34 @@ Matches CONTENT_TYPES in shared/src/schema/party-content.ts exactly.
 - `INSERT OR IGNORE INTO` used to make migration safe if temp table pre-exists
 - FK enforcement is off by default in SQLite/D1 — `DROP TABLE party_content` is safe
   even with child tables referencing it (consistent with 20260219 pattern)
+
+## 2026-02-26 T6: Centralize canonical ContentType definitions
+
+### Changes Made
+1. `api/src/party/content/prompt-loader.ts` — removed shadow `ContentType` union (lines 25-40), added `import type { ContentType } from "@slopcade/shared/schema/party-content"` and `export type { ContentType }` passthrough
+2. `api/src/party/content/pack-scheduler.ts` — switched import from `./prompt-loader` → `@slopcade/shared/schema/party-content`
+3. `api/src/party/templates/registry.ts` — split import: `ContentType` from shared, `loadContentPackFromDB` stays from prompt-loader
+4. `api/src/index.ts` — `ContentType` now from shared, `loadContentPackFromDB` stays from prompt-loader
+5. `api/src/trpc/routes/party-content.ts` — removed local `const CONTENT_TYPES = [...] as const` and `type ContentType` (shadow), now imports both from shared
+
+### Two shadow locations found (not just one)
+- `prompt-loader.ts` shadow was mentioned in task brief
+- `party-content.ts` tRPC route had an identical shadow — also removed in T6
+
+### Import path convention for shared schema in api/src
+- Pattern: `@slopcade/shared/schema/party-content` (package alias, not relative path)
+- Example: `import { CONTENT_TYPES, type ContentType } from "@slopcade/shared/schema/party-content"`
+
+### Runtime guard mechanism
+- `CONTENT_TYPES.includes(x as ContentType)` in party-content.ts's `extractContentTypeFromFilename`
+  now uses the canonical 15-item array from shared
+- TypeScript union type rejects invalid tokens at compile time in all typed call-sites
+- T14 will add `z.enum(CONTENT_TYPES)` to harden API boundary validation
+
+### Pre-existing errors not blocking
+- `registry.ts` 20x "Cannot find module definition.json" are build-output-dependent, pre-existing
+
+## T9: Template Content Pack Alignment
+- Updated `year-jinx/manifest.json` contentPacks from `["wager"]` to `["estimation"]` to match canonical tokens.
+- Verified all other party templates use canonical tokens (quip, trivia, drawing, dilemma, estimation, fibbage, personal, FakeWord, ranking, headsup, chroma, wordlist).
+- Documented `headsUp` folder/slug vs `heads-up` registry ID drift in `.sisyphus/evidence/task-9-id-drift.txt`.

@@ -20,7 +20,7 @@
 		"maxPlayers": 8,
 		"minPlayers": 1,
 		"serverScript": "server",
-		"contentPacks": ["wager"],
+		"contentPacks": ["estimation"],
 		"phases": [
 			"lobby",
 			"round_start",
