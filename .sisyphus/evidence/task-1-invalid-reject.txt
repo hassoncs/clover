@@ -1,0 +1,14 @@
+Task: T1 template-content-name-unification
+Verification: invalid template token rejection
+
+Contract API:
+- isTemplateId(value: string): value is TemplateId
+- assertTemplateId(value: string): TemplateId
+
+Observed behavior for invalid token (command run):
+- Command:
+  pnpm exec tsx --eval "import { isTemplateId, assertTemplateId } from './shared/src/schema/party-naming-contract.ts'; console.log(String(isTemplateId('amen-trivia'))); try { assertTemplateId('amen-trivia'); } catch (error) { console.log((error as Error).message); }"
+- Output line 1: false
+- Output line 2: Invalid templateId: amen-trivia
+
+This confirms brand-prefixed legacy tokens are rejected by the canonical templateId boundary.

@@ -1,0 +1,59 @@
+Task T3 Evidence: Unmapped Field Detection
+Plan: template-content-name-unification
+Date: 2026-02-26
+
+Goal
+- Prove every identifier occurrence in scoped contracts is represented in task-3-contract-matrix.txt.
+
+Required grep command outputs (executed)
+
+1) Routes scan
+Command:
+grep -rn "gameType\|contentType\|gameTemplate\|templateId\|content_type" api/src/trpc/routes/ --include="*.ts"
+
+Relevant contract hits extracted from output:
+- api/src/trpc/routes/party-content.ts:702 contentType: z.enum(CONTENT_TYPES)
+- api/src/trpc/routes/party-content.ts:850 contentType: z.string().optional()
+- api/src/trpc/routes/party-content.ts:1280 contentType: z.string().optional()
+- api/src/trpc/routes/party-content.ts:1752 contentType: z.string()
+- api/src/trpc/routes/party-content.ts:2255 contentType: z.string().optional()
+- api/src/trpc/routes/party-content.ts:2390 contentType: z.string().optional()
+- api/src/trpc/routes/party-content.ts:1905 gameType: z.string()
+- api/src/trpc/routes/party-content.ts:2159 gameType: job.game_type as string
+- api/src/trpc/routes/party-content.ts:2182 gameType: z.string().optional()
+- api/src/trpc/routes/party-content.ts:2223 gameType: row.game_type as string
+- api/src/trpc/routes/party-templates.ts:49 contentPack: row.content_pack
+- api/src/trpc/routes/monitoring.ts:106 END as gameType
+- api/src/trpc/routes/content-diagnostics.ts:224 contentType: parsed.contentType
+
+2) Party DO scan
+Command:
+grep -rn "gameType\|contentType\|gameTemplate\|templateId" api/src/party/ --include="*.ts"
+
+Relevant contract hits extracted from output:
+- api/src/party/PartyRoomDO.ts:67 private templateId: string | null = null;
+- api/src/party/PartyRoomDO.ts:198 this.templateId = body.template;
+- api/src/party/PartyRoomDO.ts:790 await this.updateSharedData({ gameTemplate: this.templateId });
+- api/src/party/PartyRoomDO.ts:809 await this.updateSharedData({ gameTemplate: this.templateId });
+- api/src/party/PartyRoomDO.ts:950 templateId: this.templateId,
+
+Mapping proof
+
+Detected token -> Matrix row IDs
+- contentType -> M01 M02 M03 M04 M05 M06 M07 M08 M09 M15 M17 M29 M30 M32
+- gameType -> M10 M11 M12 M13 M14 M31
+- content_type (DB/wire backing for contentType) -> M03 M05 M09 M11
+- game_type (DB/wire backing for gameType) -> M11 M12 M13
+- contentPack -> M17 M21 M29 M30
+- template -> M20 M25 M26
+- templateId -> M22 M24
+- gameTemplate -> M23 M27 M28
+
+Out-of-scope exclusions (intentional)
+- httpMetadata.contentType in unrelated routes/services (MIME type, not identifier contract)
+- tests and non-party domains (AI game classifier, artifact MIME metadata, etc.)
+- internal generation/config files under api/src/party/content-generation/* unless they surface through scoped API contracts
+
+Result
+- Unmapped scoped identifier fields: 0
+- 100% of scoped occurrences mapped to migration actions in task-3-contract-matrix.txt.
