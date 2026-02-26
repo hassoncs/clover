@@ -23,6 +23,8 @@ import { registerSpectrumGuessPhases } from "@/lib/party/spectrumGuessPhases";
 import { registerTruthTrapPhases } from "@/lib/party/truthTrapPhases";
 import { usePartyMusic } from "@/lib/party/usePartyMusic";
 import { registerYearJinxPhases } from "@/lib/party/yearJinxPhases";
+import { useAppSettings } from "@/lib/settings/useAppSettings";
+import { useSpeechToText } from "@/lib/speech/useSpeechToText";
 
 registerDefaultPhases();
 registerChromaCluesPhases();
@@ -47,6 +49,7 @@ function GameContent() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { roomState, connectionStatus } = useParty();
+	const { settings } = useAppSettings();
 
 	usePartyMusic(roomState);
 
@@ -94,7 +97,14 @@ function GameContent() {
 				</View>
 			</View>
 
-			<PartyGameRenderer />
+			<PartyGameRenderer
+				musicVolume={settings.musicVolume}
+				sfxVolume={settings.sfxVolume}
+				narrationVolume={settings.narrationVolume}
+				fontSize={settings.fontSize}
+				captionsEnabled={settings.captionsEnabled}
+				useSpeechToText={useSpeechToText}
+			/>
 		</View>
 	);
 }

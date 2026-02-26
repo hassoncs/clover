@@ -68,3 +68,23 @@
 - `apps/slopcade/app/(tabs)/browse.tsx` imported `createPartyRoom` from `@/lib/party/api` and navigated to `/party/host` — this was fixed by removing the import and stubbing `handlePlay` as a no-op console.warn
 - The browse screen is entirely party-game-focused (uses `useBrowsePartyGames`, launches party rooms). With party removed, the Play button is now a no-op. This screen will need redesign for the creator-only context in a future task.
 - Re-export shims in `apps/slopcade/lib/party/` and `apps/slopcade/components/party/` were left intact per task instructions — they will break at install time when @slopcade/party is absent (orchestrator handles pnpm install).
+
+## [2026-02-26] Tasks 31-32: requireFeature() middleware + brand registration
+
+### Brand registration (Task 32) — already done
+- `context.ts` already used `isValidBrandId()` from `@slopcade/brands` for x-brand-id validation.
+- `@slopcade/brands` BRAND_IDS already included all 4 brands (slopcade, amen, slopbox, shader-editor).
+- No API code changes needed for brand registration — it was already correct at the source level.
+
+### requireFeature() middleware (Task 31)
+- Added `requireFeature(feature: keyof BrandFeatures)` to `api/src/trpc/index.ts`.
+- Returns a `t.middleware()` that calls `getBrandManifest(ctx.brandId)` and throws FORBIDDEN if feature flag is false.
+- Usage: `publicProcedure.use(requireFeature("hasPartyGames"))` or composable on protectedProcedure.
+- Replaced hardcoded `brandId === "amen"` in `free-tier-guard.ts::getSessionWindow()` with `brand.features.hasPartyGames` — slopbox now correctly gets weekly session windows too.
+
+### Key gotcha: stale dist/ in packages/brands/
+- `packages/brands/dist/types.d.ts` was the OLD version with `gameEditor`, `partyGamesOnly`, etc.
+- Source had already been updated (by a prior agent task) but the package was never rebuilt.
+- LSP and tsc both resolve from `dist/` (not `src/`), so the stale build caused phantom type errors.
+- Fix: run `pnpm --filter @slopcade/brands build` before working on anything that consumes this package.
+- **Always rebuild `@slopcade/brands` after source changes before consuming in api/ or app/.**

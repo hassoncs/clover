@@ -40,7 +40,7 @@ function getPoint(e: GestureResponderEvent): Point {
 	return { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
 }
 
-export default function DrawingInput({
+export function DrawingInput({
 	onSubmit,
 	colors = DEFAULT_COLORS,
 	strokeWidth = 4,
@@ -148,7 +148,6 @@ export default function DrawingInput({
 					)}
 				</Canvas>
 			</View>
-
 			{/* Controls */}
 			<View className="p-4 bg-white border-t border-gray-100 gap-4">
 				{/* Color Palette */}
@@ -201,3 +200,5 @@ export default function DrawingInput({
 		</View>
 	);
 }
+
+export default DrawingInput;

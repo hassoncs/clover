@@ -1,3 +1,5 @@
+import type { BrandFeatures } from "@slopcade/brands";
+import { getBrandManifest } from "@slopcade/brands";
 import { createClient } from "@supabase/supabase-js";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { AuthenticatedContext, Context, Env, User } from "./context";
@@ -121,3 +123,16 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
 		ctx: { ...ctx, user } as AuthenticatedContext,
 	});
 });
+
+export function requireFeature(feature: keyof BrandFeatures) {
+	return t.middleware(({ ctx, next }) => {
+		const manifest = getBrandManifest(ctx.brandId);
+		if (!manifest.features[feature]) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: `Feature '${feature}' is not available for this app.`,
+			});
+		}
+		return next({ ctx });
+	});
+}

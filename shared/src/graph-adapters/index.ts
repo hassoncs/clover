@@ -13,3 +13,4 @@ export type {
 	InspectorSection,
 	NodeCatalogEntry,
 } from "./types";
+export { EffectsGraphAdapter } from "./effects/effects-adapter";

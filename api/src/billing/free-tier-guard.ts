@@ -69,8 +69,8 @@ export class FreeTierGuard {
 }
 
 function getSessionWindow(brandId: string, nowMs: number): SessionWindow {
-	if (brandId === "amen") {
-		const brand = getBrandManifest(brandId);
+	const brand = getBrandManifest(brandId);
+	if (brand.features.hasPartyGames) {
 		const { windowStart, resetsAt } = getUtcWeekWindow(nowMs);
 		return {
 			label: "week",

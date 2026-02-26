@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EditorConfigProvider, EditorProvider, StageArea, GraphEditor } from "@slopcade/editor";
-import { EffectsGraphAdapter } from "@slopcade/shared/graph-adapters/effects/effects-adapter";
+import { EffectsGraphAdapter } from "@slopcade/shared/graph-adapters";
 import { useMemo } from "react";
 
 const dummyConfig = {

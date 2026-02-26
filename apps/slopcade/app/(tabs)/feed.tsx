@@ -490,7 +490,7 @@ export default function FeedScreen() {
 				/>
 
 				<CommentsBottomSheet ref={commentsRef} currentUserId={currentUserId} />
-				<LikersBottomSheet ref={likersRef} />
+				<LikersBottomSheet ref={likersRef} currentUserId={currentUserId} />
 				<ReportModal
 					visible={!!reportTarget}
 					targetType="game"
