@@ -141,7 +141,7 @@ async function run(): Promise<void> {
 	}
 
 	const db = new Database(dbPath);
-	const publicBase = "http://localhost:8789";
+	const publicBase = "http://api.slopcade.localhost:1355";
 
 	const uploadedUrls: Record<string, string> = {};
 

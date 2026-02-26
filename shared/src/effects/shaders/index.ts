@@ -1,3 +1,8 @@
+import {
+	rewriteGodotToSkSL,
+	SKSL_COMPATIBLE_GENERATORS,
+	type SkSLRewriteResult,
+} from "../skslRewrite";
 import type { EffectParamSchema, EffectType } from "../types";
 
 import asciiGlsl from "./post/ascii.glsl";
@@ -461,4 +466,15 @@ export function getAllShaderCategories(): ShaderCategory[] {
 
 export function getShaderCount(): number {
 	return Object.keys(SHADER_REGISTRY).length;
+}
+
+export function getShaderSkSL(effectType: string): SkSLRewriteResult | null {
+	const glsl = SHADER_LIBRARY[effectType];
+	if (!glsl) return null;
+	if (!SKSL_COMPATIBLE_GENERATORS.includes(effectType)) return null;
+	return rewriteGodotToSkSL(glsl);
+}
+
+export function getSkSLCompatibleShaderKeys(): string[] {
+	return SKSL_COMPATIBLE_GENERATORS.filter((id) => id in SHADER_LIBRARY);
 }

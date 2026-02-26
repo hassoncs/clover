@@ -54,6 +54,27 @@ function shapeDesignError(err: unknown): { error: string; field?: string } {
 	return { error: msg };
 }
 
+function resolveDesignDocumentVersion(doc: DesignDocument): number {
+	return doc.metadata.updatedAt;
+}
+
+function buildStaleDocumentVersionError(
+	expectedVersion: number,
+	currentVersion: number,
+): {
+	ok: false;
+	error: string;
+	currentVersion: number;
+	expectedVersion: number;
+} {
+	return {
+		ok: false,
+		error: "Stale document version",
+		currentVersion,
+		expectedVersion,
+	};
+}
+
 export interface EditorCommandPayload {
 	command: string;
 	payload: Record<string, unknown>;
@@ -704,11 +725,17 @@ export function createChatTools(ctx: ChatToolContext) {
 				"Add a new element to a specific frame in the design document. Supports rect, text, image, circle, line, path, and group.",
 			inputSchema: z.object({
 				frameId: z.string().describe("ID of the frame to add the element to"),
+				expectedVersion: z
+					.number()
+					.optional()
+					.describe(
+						"Optional optimistic concurrency version. If provided and stale, write is rejected.",
+					),
 				element: AddDesignElementSchema.describe(
 					"Element payload to add. Include geometry fields for the chosen type. id and zIndex are optional.",
 				),
 			}),
-			execute: async ({ frameId, element }) => {
+			execute: async ({ frameId, element, expectedVersion }) => {
 				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");
 				if (!data) {
 					return { ok: false, error: "not found" } as const;
@@ -720,6 +747,17 @@ export function createChatTools(ctx: ChatToolContext) {
 					doc = parseDesignDocument(JSON.parse(raw));
 				} catch (err) {
 					return { ok: false, ...shapeDesignError(err) } as const;
+				}
+
+				const currentVersion = resolveDesignDocumentVersion(doc);
+				if (
+					typeof expectedVersion === "number" &&
+					expectedVersion !== currentVersion
+				) {
+					return buildStaleDocumentVersionError(
+						expectedVersion,
+						currentVersion,
+					);
 				}
 
 				const frame = doc.frames.find((f) => f.id === frameId);
@@ -753,7 +791,10 @@ export function createChatTools(ctx: ChatToolContext) {
 
 				const updatedDoc: DesignDocument = {
 					...doc,
-					metadata: { ...doc.metadata, updatedAt: Date.now() },
+					metadata: {
+						...doc.metadata,
+						updatedAt: Math.max(Date.now(), currentVersion + 1),
+					},
 					frames: doc.frames.map((f) => {
 						if (f.id !== frameId) return f;
 						return {
@@ -790,6 +831,7 @@ export function createChatTools(ctx: ChatToolContext) {
 					elementId: elementParseResult.data.id,
 					elementType: elementParseResult.data.type,
 					frameId,
+					version: parseResult.data.metadata.updatedAt,
 				} as const;
 			},
 		}),
@@ -800,11 +842,17 @@ export function createChatTools(ctx: ChatToolContext) {
 			inputSchema: z.object({
 				frameId: z.string().describe("ID of the frame containing the element"),
 				elementId: z.string().describe("ID of the element to update"),
+				expectedVersion: z
+					.number()
+					.optional()
+					.describe(
+						"Optional optimistic concurrency version. If provided and stale, write is rejected.",
+					),
 				updates: UpdateDesignElementSchema.describe(
 					"Properties to update on the element",
 				),
 			}),
-			execute: async ({ frameId, elementId, updates }) => {
+			execute: async ({ frameId, elementId, expectedVersion, updates }) => {
 				const data = await ctx.gitService.readFile(ctx.gameId, "design.json");
 				if (!data) {
 					return { ok: false, error: "not found" } as const;
@@ -816,6 +864,17 @@ export function createChatTools(ctx: ChatToolContext) {
 					doc = parseDesignDocument(JSON.parse(raw));
 				} catch (err) {
 					return { ok: false, ...shapeDesignError(err) } as const;
+				}
+
+				const currentVersion = resolveDesignDocumentVersion(doc);
+				if (
+					typeof expectedVersion === "number" &&
+					expectedVersion !== currentVersion
+				) {
+					return buildStaleDocumentVersionError(
+						expectedVersion,
+						currentVersion,
+					);
 				}
 
 				const frame = doc.frames.find((f) => f.id === frameId);
@@ -849,7 +908,10 @@ export function createChatTools(ctx: ChatToolContext) {
 
 				const updatedDoc: DesignDocument = {
 					...doc,
-					metadata: { ...doc.metadata, updatedAt: Date.now() },
+					metadata: {
+						...doc.metadata,
+						updatedAt: Math.max(Date.now(), currentVersion + 1),
+					},
 					frames: doc.frames.map((f) => {
 						if (f.id !== frameId) return f;
 						return {
@@ -886,6 +948,7 @@ export function createChatTools(ctx: ChatToolContext) {
 					ok: true,
 					elementId,
 					frameId,
+					version: parseResult.data.metadata.updatedAt,
 					changedFields: Object.keys(appliedChanges),
 					changes: appliedChanges,
 				} as const;

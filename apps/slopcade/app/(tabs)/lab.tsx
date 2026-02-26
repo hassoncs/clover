@@ -49,6 +49,11 @@ const EXAMPLES: { id: string; title: string; description: string }[] = [
 		description: "Game driven by script modules",
 	},
 	{
+		id: "skia_shader",
+		title: "Skia Shaders",
+		description: "Live SkSL shader rendering via Skia RuntimeEffect",
+	},
+	{
 		id: "text_effects_lab",
 		title: "Text Effects Lab",
 		description: "Animated text effect experiments",

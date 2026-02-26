@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKS_ROOT = join(__dirname, "../src/party/content/packs");
-const API_URL = "http://localhost:8789";
+const API_URL = "http://api.slopcade.localhost:1355";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const PUBLISH_AFTER = process.argv.includes("--publish");

@@ -1,6 +1,6 @@
 import { expect, test } from "playwright/test";
 
-const API_BASE = "http://localhost:8789";
+const API_BASE = "http://api.slopcade.localhost:1355";
 
 interface CreateRoomResponse {
 	code: string;
@@ -61,7 +61,7 @@ function connectWebSocket(
 ): Promise<{ ws: WebSocket; messages: PartyMessage[]; close: () => void }> {
 	return new Promise((resolve, reject) => {
 		const searchParams = new URLSearchParams(params);
-		const wsUrl = `ws://localhost:8789/api/party/${code}/ws?${searchParams.toString()}`;
+		const wsUrl = `ws://api.slopcade.localhost:1355/api/party/${code}/ws?${searchParams.toString()}`;
 		const ws = new WebSocket(wsUrl);
 		const messages: PartyMessage[] = [];
 

@@ -13,7 +13,7 @@ import { createModelForTier, resolveTierConfig } from "@/ai/agent/tier-config";
 type DesignStageCheckpoint = Record<string, unknown> & {
 	stage: "design";
 	artifact: string;
-	designVersion: "1.0";
+	designVersion: "1.1";
 	designFrameCount: number;
 };
 
@@ -70,8 +70,17 @@ export async function designStage(
 					`Game title: ${context.context.gameTitle}`,
 					`Game description: ${context.context.gameDescription ?? "none"}`,
 					`Planning artifact:\n${planningDoc}`,
-					"Return a DesignDocument JSON with version 1.0, metadata matching the provided game id/title, and frames representing key screens or scenes.",
-					"Each frame must include positioned elements using only rect, text, or image types with plausible dimensions and zIndex values.",
+					"Return a DesignDocument JSON with version 1.1, metadata matching the provided game id/title, and frames representing key screens or scenes.",
+					"Each frame must include positioned elements using these types:",
+					"- rect: for rectangular shapes (x, y, width, height)",
+					"- text: for labels and content (x, y, width, height, content, fontSize)",
+					"- image: for visual assets (x, y, width, height, assetRef or imageUrl)",
+					"- circle: for circular/elliptical shapes (x, y, width, height)",
+					"- line: for straight lines/dividers (x1, y1, x2, y2)",
+					"- path: for complex vector shapes (x, y, data as SVG path string)",
+					"- group: for grouping related elements (x, y, width, height, childIds)",
+					"Elements support optional style fields: opacity (0-1), rotation (degrees), shadow ({color, blur, offsetX, offsetY}), and gradient ({type: 'linear'|'radial', stops: [{color, position}], angle?}).",
+					"Ambiguity handling: If the planning doc is unclear about a specific UI detail, make a reasonable assumption that fits the game's theme rather than asking for clarification, unless the entire screen's purpose is unknown.",
 					"The output must include at least one frame and at least one element.",
 				].join("\n\n"),
 				temperature: 0.3,

@@ -221,7 +221,7 @@ async function main(): Promise<void> {
 	const adapterOptions: Parameters<typeof createNodeAdapters>[0] = {
 		r2Bucket: "slopcade-assets-dev",
 		wranglerCwd: process.cwd(),
-		publicUrlBase: "http://localhost:8787/assets",
+		publicUrlBase: "http://api.slopcade.localhost:1355/assets",
 	};
 
 	const controls = values.all ? ALL_CONTROLS : validateControls(positionals);

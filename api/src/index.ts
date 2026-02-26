@@ -29,11 +29,8 @@ import { appRouter } from "@/trpc/router";
 const app = new Hono<{ Bindings: Env }>();
 
 const ALLOWED_ORIGINS = [
-	"http://localhost:8081",
 	"http://localhost:8085",
 	"http://localhost:8086",
-	"http://localhost:8787",
-	"http://localhost:19006",
 	"https://slopcade.app",
 	"https://www.slopcade.app",
 	"https://slopcade.com",

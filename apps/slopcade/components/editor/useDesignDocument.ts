@@ -7,6 +7,9 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trpcReact } from "@/lib/trpc/react";
 
+const STALE_DOCUMENT_ERROR =
+	"Document was modified by another source. Please refresh and retry.";
+
 export function useDesignDocument(gameId: string | null) {
 	const chatThreads = trpcReact.chatThreads as any;
 	const utils = trpcReact.useUtils();
@@ -30,6 +33,7 @@ export function useDesignDocument(gameId: string | null) {
 	const writeMutation = chatThreads.writeWorkspaceFile.useMutation();
 
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const loadedUpdatedAtRef = useRef<number | null>(null);
 
 	const saveDesignDocument = useCallback(
 		async (doc: DesignDocument) => {
@@ -44,12 +48,46 @@ export function useDesignDocument(gameId: string | null) {
 
 			debounceTimerRef.current = setTimeout(async () => {
 				try {
-					const content = JSON.stringify(doc, null, 2);
+					const latest = await designFileQuery.refetch();
+					let currentVersion = loadedUpdatedAtRef.current;
+
+					if (latest.data?.content) {
+						const remoteDoc = migrateDesignDocument(
+							JSON.parse(latest.data.content),
+						);
+						currentVersion = remoteDoc.metadata.updatedAt;
+					}
+
+					const expectedVersion = loadedUpdatedAtRef.current;
+					if (
+						expectedVersion !== null &&
+						currentVersion !== null &&
+						expectedVersion !== currentVersion
+					) {
+						setSaveError(STALE_DOCUMENT_ERROR);
+						setIsDesignDirty(true);
+						return;
+					}
+
+					const baseVersion =
+						currentVersion ?? expectedVersion ?? doc.metadata.updatedAt;
+					const nextVersion = Math.max(Date.now(), baseVersion + 1);
+					const docToSave: DesignDocument = {
+						...doc,
+						metadata: {
+							...doc.metadata,
+							updatedAt: nextVersion,
+						},
+					};
+
+					const content = JSON.stringify(docToSave, null, 2);
 					await writeMutation.mutateAsync({
 						gameId,
 						filename: "design.json",
 						content,
 					});
+					loadedUpdatedAtRef.current = nextVersion;
+					setDesignDocument(docToSave);
 					setSaveError(null);
 					setIsDesignDirty(false);
 
@@ -66,7 +104,7 @@ export function useDesignDocument(gameId: string | null) {
 				}
 			}, 300);
 		},
-		[gameId, writeMutation, utils],
+		[gameId, writeMutation, utils, designFileQuery],
 	);
 
 	// Load design document
@@ -78,6 +116,7 @@ export function useDesignDocument(gameId: string | null) {
 				const raw = JSON.parse(designFileQuery.data.content);
 				const doc = migrateDesignDocument(raw);
 				setDesignDocument(doc);
+				loadedUpdatedAtRef.current = doc.metadata.updatedAt;
 				setLoadError(null);
 				setIsDesignDirty(false);
 			} catch (e) {
@@ -88,6 +127,7 @@ export function useDesignDocument(gameId: string | null) {
 				console.warn("[useDesignDocument] Failed to parse design.json", e);
 				setLoadError(message);
 				setDesignDocument(null);
+				loadedUpdatedAtRef.current = null;
 			}
 			setIsLoading(false);
 		} else if (
@@ -110,6 +150,7 @@ export function useDesignDocument(gameId: string | null) {
 				];
 				setDesignDocument(newDoc);
 				setIsDesignDirty(true);
+				loadedUpdatedAtRef.current = newDoc.metadata.updatedAt;
 
 				// Auto-save scaffold
 				saveDesignDocument(newDoc);

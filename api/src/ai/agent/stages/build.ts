@@ -1,6 +1,7 @@
 import {
 	type DesignDocument,
 	DesignDocumentSchema,
+	type DesignElement,
 } from "@slopcade/shared/types/design";
 import type { GameDefinition } from "@slopcade/shared/types/GameDefinition";
 import { generateObject } from "ai";
@@ -15,21 +16,29 @@ function stagePrefix(runId: string, stepIndex: number): string {
 	return `agent-runs/${runId}/steps/${stepIndex}/build`;
 }
 
+const DESIGN_ELEMENT_TYPES: DesignElement["type"][] = [
+	"rect",
+	"text",
+	"image",
+	"circle",
+	"line",
+	"path",
+	"group",
+];
+
 function summarizeFrameElementTypes(
 	frame: DesignDocument["frames"][number],
 ): string {
 	const counts = frame.elements.reduce<
-		Record<"rect" | "text" | "image", number>
-	>(
-		(acc, element) => {
-			acc[element.type] += 1;
-			return acc;
-		},
-		{ rect: 0, text: 0, image: 0 },
-	);
+		Partial<Record<DesignElement["type"], number>>
+	>((acc, element) => {
+		acc[element.type] = (acc[element.type] || 0) + 1;
+		return acc;
+	}, {});
 
-	const typeSummary = (["rect", "text", "image"] as const)
-		.filter((type) => counts[type] > 0)
+	const typeSummary = DESIGN_ELEMENT_TYPES.filter(
+		(type) => (counts[type] ?? 0) > 0,
+	)
 		.map((type) => `${counts[type]} ${type}`)
 		.join(", ");
 
@@ -38,13 +47,73 @@ function summarizeFrameElementTypes(
 	}.`;
 }
 
+function summarizeFrameVisualIntent(
+	frame: DesignDocument["frames"][number],
+): string {
+	const opacityCount = frame.elements.filter(
+		(element) => typeof element.opacity === "number" && element.opacity < 1,
+	).length;
+	const shadowCount = frame.elements.filter((element) => element.shadow).length;
+	const gradientCount = frame.elements.filter(
+		(element) => element.gradient,
+	).length;
+
+	const cues: string[] = [];
+	if (opacityCount > 0) {
+		cues.push(
+			`${opacityCount} element${opacityCount === 1 ? "" : "s"} use opacity to signal layering/depth`,
+		);
+	}
+	if (shadowCount > 0) {
+		cues.push(
+			`${shadowCount} element${shadowCount === 1 ? "" : "s"} use shadows to emphasize hierarchy`,
+		);
+	}
+	if (gradientCount > 0) {
+		cues.push(
+			`${gradientCount} element${gradientCount === 1 ? "" : "s"} use gradients for mood and focal contrast`,
+		);
+	}
+
+	const hasCircle = frame.elements.some((element) => element.type === "circle");
+	const hasLine = frame.elements.some((element) => element.type === "line");
+	const hasPath = frame.elements.some((element) => element.type === "path");
+	const hasGroup = frame.elements.some((element) => element.type === "group");
+
+	if (hasCircle) {
+		cues.push("circle elements suggest rounded focal motifs");
+	}
+	if (hasLine) {
+		cues.push(
+			"line elements indicate separators, trajectories, or directional cues",
+		);
+	}
+	if (hasPath) {
+		cues.push(
+			"path elements indicate custom vector silhouettes or decorative forms",
+		);
+	}
+	if (hasGroup) {
+		cues.push(
+			"group elements indicate composite clusters that should read as one unit",
+		);
+	}
+
+	return cues.length > 0
+		? `Visual intent: ${cues.join("; ")}.`
+		: "Visual intent: rely on structure and spacing from the frame layout.";
+}
+
 function summarizeDesignDocument(designDocument: DesignDocument): string {
 	if (designDocument.frames.length === 0) {
 		return "No frames available.";
 	}
 
 	return designDocument.frames
-		.map((frame) => summarizeFrameElementTypes(frame))
+		.map(
+			(frame) =>
+				`${summarizeFrameElementTypes(frame)} ${summarizeFrameVisualIntent(frame)}`,
+		)
 		.join(" ");
 }
 

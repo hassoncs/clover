@@ -77,7 +77,7 @@ AI agents interact with the project through MCP (Model Context Protocol) servers
 
 | Server | Transport | Description |
 |--------|-----------|-------------|
-| `slopcade-api` | HTTP → stdio bridge at `localhost:8789/mcp` | All tRPC routes as MCP tools (auto-discovered) |
+| `slopcade-api` | HTTP → stdio bridge at `api.slopcade.localhost:1355/mcp` | All tRPC routes as MCP tools (auto-discovered) |
 | `game-inspector` | stdio | 46 game debugging operations |
 | `codesearch` | stdio | Semantic code search (LMDB-backed) |
 | `scenario-image-gen` | stdio | AI image generation via Scenario.com |

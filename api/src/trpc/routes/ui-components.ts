@@ -62,7 +62,8 @@ export const uiComponentsRouter = router({
 			const adapters = await createNodeAdapters({
 				r2Bucket: "slopcade-assets-dev",
 				wranglerCwd: process.cwd(),
-				publicUrlBase: ctx.env.ASSET_HOST || "http://localhost:8787/assets",
+				publicUrlBase:
+					ctx.env.ASSET_HOST || "http://api.slopcade.localhost:1355/assets",
 			});
 
 			const outputDir = input.outputDir || `/tmp/ui-theme-${Date.now()}`;

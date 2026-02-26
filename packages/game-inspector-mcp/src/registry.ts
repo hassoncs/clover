@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const DEFAULT_API_URL = "http://localhost:8789";
+const DEFAULT_API_URL = "http://api.slopcade.localhost:1355";
 
 function findProjectRoot(): string {
 	let dir = __dirname;

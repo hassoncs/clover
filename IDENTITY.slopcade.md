@@ -117,8 +117,8 @@ Slopcade talks like **a friend who's really into game dev and wants to show you 
 | iOS | `com.slopcade.app` (bundle ID) | — |
 | Android | `com.slopcade.app` (package) | — |
 | Landing | [slopcade.com](https://slopcade.com) | — |
-| Admin | localhost:8787 (dev) | 8787 |
-| Storybook | localhost:6007 (dev) | 6007 |
+| Admin | admin.slopcade.localhost:1355 (dev) | dynamic |
+| Storybook | storybook.slopcade.localhost:1355 (dev) | dynamic |
 
 **Metro port**: 8085 (can run simultaneously with Amen on 8086).
 

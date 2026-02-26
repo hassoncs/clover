@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-const BASE_URL = "http://localhost:8789";
+const BASE_URL = "http://api.slopcade.localhost:1355";
 const AUTH_HEADER = { Authorization: "Bearer dev-token" };
 
 interface TrpcResult<T> {

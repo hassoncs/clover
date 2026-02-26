@@ -101,6 +101,7 @@ export interface UniformDeclaration {
 
 export type ShaderSource = {
 	glsl: string;
+	sksl?: string;
 };
 
 export type PersistenceMode = "none" | "pingPong";

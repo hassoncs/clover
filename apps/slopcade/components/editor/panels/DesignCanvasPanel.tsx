@@ -174,20 +174,6 @@ export function DesignCanvasPanel() {
 						</Pressable>
 					)}
 
-					{designPhase === "approved" && (
-						<Pressable
-							style={[
-								styles.actionButton,
-								{ backgroundColor: c.success || "#10b981" },
-							]}
-							onPress={() => setDesignPhase("implementing")}
-						>
-							<Text style={[styles.actionButtonText, { color: "#fff" }]}>
-								🚀 Start Implementation
-							</Text>
-						</Pressable>
-					)}
-
 					{designPhase === "implementing" && (
 						<View
 							style={[

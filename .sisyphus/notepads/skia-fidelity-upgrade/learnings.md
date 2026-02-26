@@ -81,3 +81,86 @@
 - Group: AABB using x, y, width, height (same as rect)
 - `hitTestElement` dispatcher extracts per-type logic; rect/text/image/group share AABB fast path
 - `pointToSegmentDistance` handles degenerate (zero-length) segment as point distance
+
+## [2026-02-26] Task T21 Complete
+- Optimistic concurrency for design writes now uses `metadata.updatedAt` as the document version token.
+- `useDesignDocument` compares the locally loaded version against latest `design.json` before save and returns: "Document was modified by another source. Please refresh and retry." on mismatch.
+- AI design tools `addDesignElement` and `updateDesignElement` now accept optional `expectedVersion`; stale writes return structured conflict details: `{ error: "Stale document version", currentVersion, expectedVersion }`.
+- Successful AI design writes now monotonically advance `metadata.updatedAt` with `Math.max(Date.now(), currentVersion + 1)` to avoid same-timestamp collisions.
+
+## T13: Selection Overlay v2 with Transform Handles
+- **Skia Primitives for UI**: Used `Rect`, `Circle`, and `Line` from `@shopify/react-native-skia` to draw the selection overlay and transform handles. This ensures the handles are rendered in the same canvas context as the design elements, avoiding HTML/CSS overlays which can be tricky to align with the canvas camera (zoom/pan).
+- **Bounding Box Calculation**: Reused the bounding box logic from hit testing. For `line` elements, the bounding box is derived from `Math.min(x1, x2)` and `Math.abs(x2 - x1)`. For `path` elements, a fixed 40x40 fallback is used since the schema doesn't store width/height for paths.
+- **Handle Rendering**: Rendered 8 resize handles (corners and edge midpoints) and 1 rotation handle (above top-center). Used a contrasting fill (white) and stroke (blue) to make them visible against any background.
+- **React Keys in Skia**: When mapping over arrays to render Skia elements (like the 8 handles), it's important to use unique string IDs for keys rather than array indices to avoid React warnings and potential rendering issues during updates.
+
+## [2026-02-26] Task T20 Complete
+- Updated `api/src/ai/agent/stages/design.ts` to target v1.1 schema and include new element types/styles.
+- Updated `api/src/agent/engine/prompts.ts` with a new `DESIGN SCHEMA (v1.1)` section detailing supported types and style fields.
+- Fixed regression in `api/src/ai/agent/stages/build.ts` where `summarizeFrameElementTypes` was hardcoded to v1.0 types.
+- Ambiguity handling guidance added to both design stage and chat prompts: make reasonable assumptions rather than asking for clarification.
+- Type check passed for `api` package.
+
+## [2026-02-26] Task T22 Complete
+- `api/src/ai/agent/stages/build.ts` now summarizes design intent with stable v1.1 element ordering (`rect`, `text`, `image`, `circle`, `line`, `path`, `group`) so newer element types are always represented in prompt context.
+- Added style-intent cues to build prompt context by scanning frame elements for `opacity`, `shadow`, and `gradient` usage and translating them into human-readable guidance (layering/depth, hierarchy, mood/contrast).
+- Added geometric/composition cues for `circle`, `line`, `path`, and `group` to preserve visual direction without leaking design schema fields into runtime `GameDefinition` output.
+- Verified `pnpm -C api type-check` passes after the build-stage summary changes.
+
+## [2026-02-25] Task T14 Complete — Wave 2 Cross-Platform Parity Pass
+
+### Feature Parity Matrix
+
+| Feature | Web | Native | Notes |
+|---------|-----|--------|-------|
+| Rect element rendering | ✅ | ✅ | Skia `Rect` — both platforms |
+| Circle element rendering | ✅ | ✅ | Skia `Circle` — both platforms |
+| Line element rendering | ✅ | ✅ | Skia `Line` + `vec()` — both platforms |
+| Path element rendering | ✅ | ✅ | Skia `Path` — both platforms |
+| Text element rendering | ✅ | ✅ | Skia `Text` (no Paragraph needed) — both platforms |
+| Image element rendering | ✅ | ✅ | `useImage` hook + `Image` component — both platforms |
+| Image async resolution | ✅ | ✅ | `useDesignImageResolver` — both platforms |
+| Image placeholder fallback | ✅ | ✅ | Grey rect + "IMG" label — both platforms |
+| Linear gradient | ✅ | ✅ | Skia `LinearGradient` as child — both platforms |
+| Radial gradient | ✅ | ✅ | Skia `RadialGradient` as child — both platforms |
+| Shadow effect | ✅ | ✅ | Skia `Shadow` in `Group` wrapper — both platforms |
+| Opacity | ✅ | ✅ | `Group opacity` prop — both platforms |
+| Frame selection overlay | ✅ | ✅ | Blue stroke `Rect` — both platforms |
+| Element selection overlay | ✅ | ✅ | Blue stroke `Rect` + 8 handles + rotation handle — both platforms |
+| Frame label text | ✅ | ✅ | Skia `Text` above frame — both platforms |
+| Hit testing (rect/text/image) | ✅ | ✅ | AABB in `hitTestDesignCanvas` — both platforms |
+| Hit testing (circle) | ✅ | ✅ | Point-in-ellipse test — both platforms |
+| Hit testing (line) | ✅ | ✅ | Point-to-segment distance — both platforms |
+| Hit testing (path) | ✅ | ✅ | AABB 40×40 fallback — both platforms |
+| Pan/scroll camera | ✅ | ✅ | Mouse drag (web) / GestureDetector Pan (native) |
+| Pinch-to-zoom camera | ✅ | ✅ | Mouse wheel (web) / GestureDetector Pinch (native) |
+| Zoom-to-fit | ✅ | ✅ | `useDesignCameraShared.zoomToFit` — shared logic |
+| Keyboard shortcuts `[`, `]`, `f` | ✅ | N/A | Web-only (no keyboard hardware assumption on native) |
+| Phase badge + action buttons | ✅ | ✅ | Identical UI in both panels |
+
+### Platform Differences (Expected/Correct)
+- **Input handling**: Web uses `onWheel`/`onMouseDown`/`onMouseMove`/`onMouseUp` (DOM events). Native uses `GestureDetector` with `Gesture.Pan()` + `Gesture.Pinch()` from `react-native-gesture-handler`.
+- **Keyboard shortcuts**: Web only — `window.addEventListener('keydown')` for `[`, `]`, `f`. Native has no equivalent (correct).
+- **GestureHandlerRootView**: Native panel wraps renderer in `GestureHandlerRootView`. Web panel wraps in a plain `View` with DOM event handlers spread on it.
+
+### Bug Fixed
+- **Web panel had duplicate "Start Implementation" button**: Two consecutive `{designPhase === "approved" && ...}` blocks — one using `backgroundColor: "#10b981"`, another using `backgroundColor: c.success || "#10b981"`. Removed the duplicate. Now matches native panel (single button).
+
+### Pre-existing Hints (not errors, not blocking)
+- `DesignCanvasRenderer.tsx`: `DesignElement` and `DesignFrame` imports are declared but never used (types are referenced only in function signatures via `any`). File owned by concurrent task — not touched.
+- `DesignCanvasPanel.native.tsx`: `runOnJS` from `react-native-reanimated` shows as deprecated hint. Pre-existing, working, not blocking.
+
+### TypeScript Check
+- `npx tsc --noEmit -p apps/slopcade/tsconfig.json` → 0 errors in `panels/` directory. All remaining errors are pre-existing in unrelated files (shaders `.glsl`, amen animation, GameHallCarousel reanimated types, CodeEditor native bundle).
+
+## [2026-02-26] Task T24 Complete — Rendering Optimization
+- Added `WorldBounds` interface and two pure helpers: `getElementWorldBounds` (all 6 element types) and `isOutsideViewport` (AABB rejection test).
+- `viewportBounds` useMemo: recomputes only when camera.translateX/Y, scale, width, height change. Formula: `worldLeft = -translateX/scale`, `worldRight = worldLeft + width/scale`.
+- `sortedElementsByFrameId` useMemo: Map<frameId, DesignElement[]> pre-sorted by zIndex — eliminates inline `.slice().sort()` on every render.
+- Frame-level culling: entire `<Group>` returned as `null` if frame bounding box is outside viewport.
+- Element-level culling: `return null` before entering the type-switch for off-screen elements.
+- `allElements` memo kept using `document.frames` (not culled) so images preload before scroll-into-view.
+- `__DEV__` logging updated: logs `Render #N: X visible / Y total (Z culled)` using the new memos.
+- TypeScript: all pre-existing errors are unrelated (GLSL modules, native bundle); no new errors in DesignCanvasRenderer.tsx (LSP clean).
+- Tests: 8/8 test files pass. Pre-existing OOM crash from MicButton test persists (unrelated).
+- Bounding box rules: line → min/max of x1,y1,x2,y2; path → x,y + 40×40 fallback; all others → x,y,width,height.

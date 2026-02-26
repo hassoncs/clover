@@ -254,7 +254,7 @@ Only one script remains as a CLI — it requires direct local filesystem access:
 
 ### MCP configuration
 
-The MCP server is configured in both `.mcp.json` (Claude Code) and `.opencode/opencode.json` (OpenCode) as `slopcade-api`. It uses `mcp-remote` to bridge the HTTP MCP endpoint at `http://localhost:8789/mcp` to stdio. The API must be running (via `pnpm dev`) for the MCP server to work.
+The MCP server is configured in both `.mcp.json` (Claude Code) and `.opencode/opencode.json` (OpenCode) as `slopcade-api`. It uses `mcp-remote` to bridge the HTTP MCP endpoint at `http://api.slopcade.localhost:1355/mcp` to stdio. The API must be running (via `pnpm dev`) for the MCP server to work.
 
 ### How to call tRPC routes from agents
 
@@ -268,12 +268,12 @@ The tRPC server does NOT use superjson. Pass raw JSON — no `{"json": ...}` wra
 
 ```bash
 # Query (GET) — use --data-urlencode for the input param
-curl -sG 'http://localhost:8789/trpc/<router>.<procedure>' \
+curl -sG 'http://api.slopcade.localhost:1355/trpc/<router>.<procedure>' \
   -H 'Authorization: Bearer dev-token' \
   --data-urlencode 'input={"param1":"value1","param2":42}'
 
 # Mutation (POST) — raw JSON body, no wrapper
-curl -s 'http://localhost:8789/trpc/<router>.<procedure>' \
+curl -s 'http://api.slopcade.localhost:1355/trpc/<router>.<procedure>' \
   -X POST \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer dev-token' \

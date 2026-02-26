@@ -25,6 +25,58 @@ import { TouchableWithoutFeedback, View } from "react-native";
 import { hitTestDesignCanvas, screenToWorld } from "./designCanvasHitTest";
 import { useDesignImageResolver } from "./useDesignImageResolver";
 
+interface WorldBounds {
+	left: number;
+	top: number;
+	right: number;
+	bottom: number;
+}
+
+function getElementWorldBounds(
+	element: DesignElement,
+	framePosition: { x: number; y: number },
+): WorldBounds {
+	if (element.type === "line") {
+		return {
+			left: framePosition.x + Math.min(element.x1, element.x2),
+			top: framePosition.y + Math.min(element.y1, element.y2),
+			right: framePosition.x + Math.max(element.x1, element.x2),
+			bottom: framePosition.y + Math.max(element.y1, element.y2),
+		};
+	}
+	if (element.type === "path") {
+		return {
+			left: framePosition.x + element.x,
+			top: framePosition.y + element.y,
+			right: framePosition.x + element.x + 40,
+			bottom: framePosition.y + element.y + 40,
+		};
+	}
+	return {
+		left: framePosition.x + element.x,
+		top: framePosition.y + element.y,
+		right: framePosition.x + element.x + element.width,
+		bottom: framePosition.y + element.y + element.height,
+	};
+}
+
+function isOutsideViewport(
+	bounds: WorldBounds,
+	viewport: {
+		worldLeft: number;
+		worldTop: number;
+		worldRight: number;
+		worldBottom: number;
+	},
+): boolean {
+	return (
+		bounds.right < viewport.worldLeft ||
+		bounds.left > viewport.worldRight ||
+		bounds.bottom < viewport.worldTop ||
+		bounds.top > viewport.worldBottom
+	);
+}
+
 export interface DesignCanvasRendererProps {
 	document: DesignDocument;
 	camera: { translateX: number; translateY: number; scale: number };
@@ -347,16 +399,48 @@ export function DesignCanvasRenderer({
 
 	const renderCount = useRef(0);
 
+	const viewportBounds = useMemo(() => {
+		const worldLeft = -camera.translateX / camera.scale;
+		const worldTop = -camera.translateY / camera.scale;
+		return {
+			worldLeft,
+			worldTop,
+			worldRight: worldLeft + width / camera.scale,
+			worldBottom: worldTop + height / camera.scale,
+		};
+	}, [camera.translateX, camera.translateY, camera.scale, width, height]);
+
+	const sortedElementsByFrameId = useMemo(() => {
+		const map = new Map<string, DesignElement[]>();
+		for (const frame of document.frames) {
+			map.set(
+				frame.id,
+				frame.elements.slice().sort((a, b) => a.zIndex - b.zIndex),
+			);
+		}
+		return map;
+	}, [document.frames]);
+
 	if (__DEV__) {
 		renderCount.current += 1;
-		const startTime = Date.now();
-		let elementCount = 0;
-		document.frames.forEach((f) => {
-			elementCount += f.elements.length;
-		});
-		const duration = Date.now() - startTime;
+		let totalCount = 0;
+		let culledCount = 0;
+		for (const frame of document.frames) {
+			const elements = sortedElementsByFrameId.get(frame.id) ?? [];
+			for (const el of elements) {
+				totalCount++;
+				if (
+					isOutsideViewport(
+						getElementWorldBounds(el, frame.position),
+						viewportBounds,
+					)
+				) {
+					culledCount++;
+				}
+			}
+		}
 		console.log(
-			`[DesignCanvas] Rendered ${elementCount} elements in ${duration}ms (Call #${renderCount.current})`,
+			`[DesignCanvas] Render #${renderCount.current}: ${totalCount - culledCount} visible / ${totalCount} total (${culledCount} culled)`,
 		);
 	}
 
@@ -373,7 +457,6 @@ export function DesignCanvasRenderer({
 		[document.frames, camera, onElementTap],
 	);
 
-	// Collect all elements for image resolution
 	const allElements = useMemo(() => {
 		return document.frames.flatMap((f) => f.elements);
 	}, [document.frames]);
@@ -391,39 +474,57 @@ export function DesignCanvasRenderer({
 							{ scale: camera.scale },
 						]}
 					>
-						{document.frames.map((frame) => (
-							<Group key={frame.id}>
-								<Rect
-									x={frame.position.x}
-									y={frame.position.y}
-									width={frame.width}
-									height={frame.height}
-									color="#FFFFFF"
-								/>
-								<Rect
-									x={frame.position.x}
-									y={frame.position.y}
-									width={frame.width}
-									height={frame.height}
-									color="#CCCCCC"
-									style="stroke"
-									strokeWidth={1}
-								/>
+						{document.frames.map((frame) => {
+							const frameBounds: WorldBounds = {
+								left: frame.position.x,
+								top: frame.position.y,
+								right: frame.position.x + frame.width,
+								bottom: frame.position.y + frame.height,
+							};
+							if (isOutsideViewport(frameBounds, viewportBounds)) return null;
 
-								{font && (
-									<SkiaText
+							const sortedElements =
+								sortedElementsByFrameId.get(frame.id) ?? [];
+
+							return (
+								<Group key={frame.id}>
+									<Rect
 										x={frame.position.x}
-										y={frame.position.y - 8}
-										text={frame.title}
-										font={font}
-										color="#666666"
+										y={frame.position.y}
+										width={frame.width}
+										height={frame.height}
+										color="#FFFFFF"
 									/>
-								)}
+									<Rect
+										x={frame.position.x}
+										y={frame.position.y}
+										width={frame.width}
+										height={frame.height}
+										color="#CCCCCC"
+										style="stroke"
+										strokeWidth={1}
+									/>
 
-								{frame.elements
-									.slice()
-									.sort((a, b) => a.zIndex - b.zIndex)
-									.map((element) => {
+									{font && (
+										<SkiaText
+											x={frame.position.x}
+											y={frame.position.y - 8}
+											text={frame.title}
+											font={font}
+											color="#666666"
+										/>
+									)}
+
+									{sortedElements.map((element) => {
+										if (
+											isOutsideViewport(
+												getElementWorldBounds(element, frame.position),
+												viewportBounds,
+											)
+										) {
+											return null;
+										}
+
 										if (element.type === "rect") {
 											return renderRectElement(element, frame.position);
 										}
@@ -454,7 +555,6 @@ export function DesignCanvasRenderer({
 										}
 
 										if (element.type === "group") {
-											// Render group as a transparent container for now
 											return (
 												<Group key={element.id} opacity={element.opacity ?? 1}>
 													{/* Children are rendered as part of the flat list in this schema version */}
@@ -470,62 +570,120 @@ export function DesignCanvasRenderer({
 										return null;
 									})}
 
-								{selectedFrameId === frame.id && !selectedElementId && (
-									<Rect
-										x={frame.position.x}
-										y={frame.position.y}
-										width={frame.width}
-										height={frame.height}
-										color="#2563EB"
-										style="stroke"
-										strokeWidth={2}
-									/>
-								)}
+									{selectedFrameId === frame.id && !selectedElementId && (
+										<Rect
+											x={frame.position.x}
+											y={frame.position.y}
+											width={frame.width}
+											height={frame.height}
+											color="#2563EB"
+											style="stroke"
+											strokeWidth={2}
+										/>
+									)}
 
-								{selectedFrameId === frame.id && selectedElementId && (
-									<Group>
-										{frame.elements
-											.filter((e) => e.id === selectedElementId)
-											.map((element) => {
-												let selX: number,
-													selY: number,
-													selW: number,
-													selH: number;
-												if (element.type === "line") {
-													selX =
-														frame.position.x + Math.min(element.x1, element.x2);
-													selY =
-														frame.position.y + Math.min(element.y1, element.y2);
-													selW = Math.abs(element.x2 - element.x1);
-													selH = Math.abs(element.y2 - element.y1);
-												} else if (element.type === "path") {
-													selX = frame.position.x + element.x;
-													selY = frame.position.y + element.y;
-													selW = 40;
-													selH = 40;
-												} else {
-													selX = frame.position.x + element.x;
-													selY = frame.position.y + element.y;
-													selW = element.width;
-													selH = element.height;
-												}
-												return (
-													<Rect
-														key={`sel-${element.id}`}
-														x={selX}
-														y={selY}
-														width={selW}
-														height={selH}
-														color="#2563EB"
-														style="stroke"
-														strokeWidth={2}
-													/>
-												);
-											})}
-									</Group>
-								)}
-							</Group>
-						))}
+									{selectedFrameId === frame.id && selectedElementId && (
+										<Group>
+											{frame.elements
+												.filter((e) => e.id === selectedElementId)
+												.map((element) => {
+													let selX: number,
+														selY: number,
+														selW: number,
+														selH: number;
+													if (element.type === "line") {
+														selX =
+															frame.position.x +
+															Math.min(element.x1, element.x2);
+														selY =
+															frame.position.y +
+															Math.min(element.y1, element.y2);
+														selW = Math.abs(element.x2 - element.x1);
+														selH = Math.abs(element.y2 - element.y1);
+													} else if (element.type === "path") {
+														selX = frame.position.x + element.x;
+														selY = frame.position.y + element.y;
+														selW = 40;
+														selH = 40;
+													} else {
+														selX = frame.position.x + element.x;
+														selY = frame.position.y + element.y;
+														selW = element.width;
+														selH = element.height;
+													}
+													const HANDLE_SIZE = 12;
+													const HANDLE_OFFSET = HANDLE_SIZE / 2;
+													const handles = [
+														{ id: "tl", x: selX, y: selY },
+														{ id: "tc", x: selX + selW / 2, y: selY },
+														{ id: "tr", x: selX + selW, y: selY },
+														{ id: "rc", x: selX + selW, y: selY + selH / 2 },
+														{ id: "br", x: selX + selW, y: selY + selH },
+														{ id: "bc", x: selX + selW / 2, y: selY + selH },
+														{ id: "bl", x: selX, y: selY + selH },
+														{ id: "lc", x: selX, y: selY + selH / 2 },
+													];
+
+													return (
+														<Group key={`sel-group-${element.id}`}>
+															<Rect
+																x={selX}
+																y={selY}
+																width={selW}
+																height={selH}
+																color="#2563EB"
+																style="stroke"
+																strokeWidth={2}
+															/>
+															<Line
+																p1={vec(selX + selW / 2, selY)}
+																p2={vec(selX + selW / 2, selY - 24)}
+																color="#2563EB"
+																style="stroke"
+																strokeWidth={2}
+															/>
+															<Circle
+																cx={selX + selW / 2}
+																cy={selY - 24}
+																r={6}
+																color="#FFFFFF"
+															/>
+															<Circle
+																cx={selX + selW / 2}
+																cy={selY - 24}
+																r={6}
+																color="#2563EB"
+																style="stroke"
+																strokeWidth={2}
+															/>
+															{handles.map((h) => (
+																<Group key={`handle-${h.id}`}>
+																	<Rect
+																		x={h.x - HANDLE_OFFSET}
+																		y={h.y - HANDLE_OFFSET}
+																		width={HANDLE_SIZE}
+																		height={HANDLE_SIZE}
+																		color="#FFFFFF"
+																	/>
+																	<Rect
+																		x={h.x - HANDLE_OFFSET}
+																		y={h.y - HANDLE_OFFSET}
+																		width={HANDLE_SIZE}
+																		height={HANDLE_SIZE}
+																		color="#2563EB"
+																		style="stroke"
+																		strokeWidth={2}
+																	/>
+																</Group>
+															))}
+														</Group>
+													);
+												})}
+										</Group>
+									)}
+								</Group>
+							);
+						})}
 					</Group>
 				</Canvas>
 			</View>

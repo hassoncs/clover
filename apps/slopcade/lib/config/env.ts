@@ -1,16 +1,20 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
+const DEV_API_URL = "http://api.slopcade.localhost:1355";
+
 function getApiUrl(): string {
 	if (process.env.EXPO_PUBLIC_API_URL) {
 		return process.env.EXPO_PUBLIC_API_URL;
 	}
 
-	if (Platform.OS === "web") {
-		return "http://localhost:8789";
-	}
-
 	if (__DEV__) {
+		if (Platform.OS === "web") {
+			return DEV_API_URL;
+		}
+
+		// Native: .localhost resolves on iOS simulator but not on physical devices.
+		// For physical devices, derive the host IP from Expo's debuggerHost.
 		const debuggerHost =
 			Constants?.expoConfig?.hostUri ||
 			(Constants?.manifest as any)?.debuggerHost ||
@@ -18,11 +22,17 @@ function getApiUrl(): string {
 
 		if (debuggerHost) {
 			const host = debuggerHost.split(":")[0];
-			return `http://${host}:8789`;
+			// If running on the local machine (simulator), use named proxy
+			if (host === "127.0.0.1" || host === "localhost") {
+				return DEV_API_URL;
+			}
+			// Physical device: proxy hostname won't resolve, use IP + proxy port
+			return `http://${host}:1355`;
 		}
+
+		return DEV_API_URL;
 	}
 
-	// Production fallback for real device builds
 	return "https://api.slopcade.com";
 }
 

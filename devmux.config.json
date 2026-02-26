@@ -33,7 +33,7 @@
 		"api": {
 			"cwd": ".",
 			"command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
-			"health": { "type": "port", "port": 8789 },
+			"port": 8789,
 			"dashboard": false,
 			"dependsOn": ["games-watcher", "r2-pull-watcher"]
 		},
@@ -93,29 +93,29 @@
 		},
 		"backlog": {
 			"cwd": ".",
-			"command": "backlog browser --no-open",
-			"health": { "type": "port", "port": 6420 },
+			"command": "backlog browser --no-open --port 6420",
+			"port": 6420,
 			"dashboard": false
 		},
 		"admin": {
 			"cwd": "apps/admin",
 			"comment": "Admin web app. Supabase creds injected via hush -t app.",
 			"command": "npx hush run -t app -- pnpm dev",
-			"health": { "type": "port", "port": 8787 },
+			"port": 5173,
 			"dashboard": true,
 			"dependsOn": ["api"]
 		},
 		"storybook": {
 			"cwd": "apps/storybook",
 			"command": "npx hush run -t app -- pnpm storybook",
-			"health": { "type": "port", "port": 6007 },
+			"port": 6007,
 			"dashboard": true
 		},
 		"beads-ui": {
 			"cwd": ".",
-			"comment": "Beads issue tracker web UI. Visit http://localhost:8030",
+			"comment": "Beads issue tracker web UI.",
 			"command": "BEADS_DOLT_DATABASE=beads_sl BEADS_DB=/Users/hassoncs/gt/slopcade/.beads/dolt bdui start --port 8030",
-			"health": { "type": "port", "port": 8030 },
+			"port": 8030,
 			"dashboard": false
 		}
 	}

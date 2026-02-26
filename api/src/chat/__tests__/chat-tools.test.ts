@@ -543,4 +543,137 @@ describe("design document tools — v1.1 element contracts", () => {
 		expect((result as any).error).not.toContain('"code"');
 		expect((result as any).error).not.toMatch(/^\[/);
 	});
+
+	it("rejects stale expectedVersion for AI writes with structured retry metadata", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.metadata.updatedAt = 200;
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.addDesignElement as any).execute({
+			frameId: "frame-1",
+			expectedVersion: 199,
+			element: {
+				type: "rect",
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 40,
+				fill: "#ffffff",
+			},
+		});
+
+		expect(result).toEqual({
+			ok: false,
+			error: "Stale document version",
+			currentVersion: 200,
+			expectedVersion: 199,
+		});
+		expect(gitService.commitFiles).not.toHaveBeenCalled();
+	});
+
+	it("allows retry after refetch when caller uses currentVersion", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.metadata.updatedAt = 300;
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [
+				{
+					id: "rect-1",
+					type: "rect",
+					x: 10,
+					y: 10,
+					width: 100,
+					height: 50,
+					zIndex: 0,
+					fill: "#111111",
+				},
+			],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+		vi.mocked(gitService.commitFiles).mockResolvedValue("sha-retry");
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const staleResult = await (tools.updateDesignElement as any).execute({
+			frameId: "frame-1",
+			elementId: "rect-1",
+			expectedVersion: 299,
+			updates: { fill: "#22aa22" },
+		});
+
+		expect(staleResult).toEqual({
+			ok: false,
+			error: "Stale document version",
+			currentVersion: 300,
+			expectedVersion: 299,
+		});
+		expect(gitService.commitFiles).not.toHaveBeenCalled();
+
+		const retryResult = await (tools.updateDesignElement as any).execute({
+			frameId: "frame-1",
+			elementId: "rect-1",
+			expectedVersion: (staleResult as any).currentVersion,
+			updates: { fill: "#22aa22" },
+		});
+
+		expect(retryResult.ok).toBe(true);
+		expect(gitService.commitFiles).toHaveBeenCalledTimes(1);
+		const committed = vi.mocked(gitService.commitFiles).mock.calls[0]?.[1]?.[0]
+			?.content;
+		const savedDoc = JSON.parse(committed ?? "{}");
+		expect(savedDoc.frames[0].elements[0].fill).toBe("#22aa22");
+		expect(savedDoc.metadata.updatedAt).toBeGreaterThan(300);
+	});
+
+	it("preserves backward compatibility when expectedVersion is omitted", async () => {
+		const gitService = createGitServiceMock();
+		const doc = createEmptyDesignDocument(GAME_ID, "Design");
+		doc.metadata.updatedAt = 400;
+		doc.frames.push({
+			id: "frame-1",
+			title: "Frame 1",
+			width: 375,
+			height: 812,
+			position: { x: 0, y: 0 },
+			elements: [],
+		});
+		vi.mocked(gitService.readFile).mockResolvedValue(
+			new TextEncoder().encode(JSON.stringify(doc)),
+		);
+		vi.mocked(gitService.commitFiles).mockResolvedValue("sha-backward");
+
+		const tools = createChatTools({ gameId: GAME_ID, gitService });
+		const result = await (tools.addDesignElement as any).execute({
+			frameId: "frame-1",
+			element: {
+				type: "circle",
+				x: 40,
+				y: 40,
+				width: 32,
+				height: 32,
+				fill: "#8888ff",
+			},
+		});
+
+		expect(result.ok).toBe(true);
+		expect(gitService.commitFiles).toHaveBeenCalledTimes(1);
+	});
 });

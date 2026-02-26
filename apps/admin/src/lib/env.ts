@@ -1,13 +1,10 @@
 function resolveApiUrl(): string {
 	if (import.meta.env.VITE_API_URL)
 		return import.meta.env.VITE_API_URL as string;
-	if (typeof window !== "undefined") {
-		const { hostname, port } = window.location;
-		if (hostname.endsWith(".slopcade.localhost")) {
-			return `http://api.slopcade.localhost${port ? `:${port}` : ""}`;
-		}
+	if (import.meta.env.DEV) {
+		return "http://api.slopcade.localhost:1355";
 	}
-	return "http://localhost:8789";
+	return "https://api.slopcade.com";
 }
 
 export const env = {

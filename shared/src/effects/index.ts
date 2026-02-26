@@ -102,7 +102,11 @@ export {
 	needsScreenTextureRewrite,
 	rewriteScreenShaderForSubViewport,
 } from "./shaderRewrite";
-export { getShaderGlsl } from "./shaders/index";
+export {
+	getShaderGlsl,
+	getShaderSkSL,
+	getSkSLCompatibleShaderKeys,
+} from "./shaders/index";
 export type {
 	EffectsSnapshot,
 	FeedbackSnapshotState,

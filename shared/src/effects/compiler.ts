@@ -1,5 +1,6 @@
 import type { ResourceGraph, ResourceNode } from "./resources";
 import { buildResourceGraph } from "./resources";
+import { rewriteGodotToSkSL } from "./skslRewrite";
 import type {
 	CompiledPass,
 	CompiledPlan,
@@ -214,7 +215,11 @@ function resolveShaderSource(
 			? node.params.shaderSource
 			: null;
 	const glsl = customGlsl || shaderLookup?.(node.type) || "";
-	return { glsl };
+	const { sksl, warnings } = rewriteGodotToSkSL(glsl);
+	if (warnings.length > 0) {
+		return { glsl };
+	}
+	return { glsl, sksl };
 }
 
 // ---------------------------------------------------------------------------

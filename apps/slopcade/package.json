@@ -6,7 +6,7 @@
 		"start": "expo start --port 8085",
 		"dev": "expo start --port 8085",
 		"dev:web": "expo start --web --port 8085",
-		"preflight": "node ../../scripts/preflight-check.mjs",
+		"preflight": "node scripts/preflight-check.mjs",
 		"prebuild": "npx expo prebuild --no-install --platform ios",
 		"preios": "pnpm run preflight",
 		"ios": "RCT_METRO_PORT=8085 expo run:ios --no-bundler",

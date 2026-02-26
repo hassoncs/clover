@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 
-const ASSET_BASE = "http://localhost:8789/assets/generated/ui-cli";
+const ASSET_BASE = "http://api.slopcade.localhost:1355/assets/generated/ui-cli";
 
 const UI_CONTROLS = [
 	{

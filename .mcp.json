@@ -10,7 +10,7 @@
 		},
 		"slopcade-api": {
 			"command": "npx",
-			"args": ["mcp-remote", "http://localhost:8789/mcp"]
+			"args": ["mcp-remote", "http://api.slopcade.localhost:1355/mcp"]
 		}
 	}
 }

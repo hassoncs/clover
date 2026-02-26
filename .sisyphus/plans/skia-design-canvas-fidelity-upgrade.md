@@ -624,7 +624,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-11-effects-invalid.txt
   ```
 
-- [ ] 12. Extend hit-testing for advanced geometry
+- [x] 12. Extend hit-testing for advanced geometry
 
   **What to do**:
   - Update hit-test engine to support circle/line/path bounds + rotation-aware checks.
@@ -665,7 +665,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-12-hit-rotated.txt
   ```
 
-- [ ] 13. Build selection overlay v2 with transform handles
+- [x] 13. Build selection overlay v2 with transform handles
 
   **What to do**:
   - Add resize/rotate handle visuals and clear affordances.
@@ -706,7 +706,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-13-small-handle.png
   ```
 
-- [ ] 14. Complete cross-platform parity pass for fidelity features
+- [x] 14. Complete cross-platform parity pass for fidelity features
 
   **What to do**:
   - Validate and patch web/native differences for Waves 2 features.
@@ -913,7 +913,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-18-ungroup.png
   ```
 
-- [ ] 19. Update AI tool contracts for richer schema edits
+- [x] 19. Update AI tool contracts for richer schema edits
 
   **What to do**:
   - Extend chat tool input schemas for new element types/style fields.
@@ -954,7 +954,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-19-tool-invalid.txt
   ```
 
-- [ ] 20. Update design-stage and chat prompts for fidelity-aware generation
+- [x] 20. Update design-stage and chat prompts for fidelity-aware generation
 
   **What to do**:
   - Update planning/design prompt contracts to target richer schema output.
@@ -995,7 +995,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-20-clarify.txt
   ```
 
-- [ ] 21. Add conflict-safe document update semantics
+- [x] 21. Add conflict-safe document update semantics
 
   **What to do**:
   - Introduce optimistic concurrency/version checks for design writes.
@@ -1036,7 +1036,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-21-retry.txt
   ```
 
-- [ ] 22. Expand build-stage ingestion of richer design intent
+- [x] 22. Expand build-stage ingestion of richer design intent
 
   **What to do**:
   - Update build-stage prompt context summaries to include richer visual descriptors.
@@ -1118,7 +1118,7 @@ Wave FINAL (Independent verification gate):
     Evidence: .sisyphus/evidence/skia-fidelity-upgrade/task-23-flow-pass.txt
   ```
 
-- [ ] 24. Tune large-document performance
+- [x] 24. Tune large-document performance
 
   **What to do**:
   - Optimize rendering for 100-500 element documents.
