@@ -1,30 +1,19 @@
-import { EditorProvider, useEditor } from "@slopcade/editor";
+import {
+	EditorConfigProvider,
+	EditorProvider,
+	useEditor,
+} from "@slopcade/editor";
 import type { GameDefinition } from "@slopcade/shared";
 import { act, renderHook } from "@testing-library/react";
 import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@slopcade/editor", async (importOriginal) => {
-	const actual = await importOriginal();
-	return {
-		...actual,
-		usePackageReadiness: () => ({
-			ready: false,
-			errors: [],
-			warnings: [],
-			isChecking: false,
-			isCompiling: false,
-			checkNow: vi.fn(),
-			triggerCompile: vi.fn(),
-			lastChecked: undefined,
-			buildId: undefined,
-		}),
-	};
-});
-
-vi.mock("@/lib/utils/storage", () => ({
-	getStorageItem: vi.fn().mockResolvedValue(false),
+jest.mock("@/lib/utils/storage", () => ({
+	getStorageItem: jest.fn().mockResolvedValue(false),
 }));
+
+jest.mock("@/lib/trpc/client", () => ({ trpc: {} }));
+jest.mock("@/lib/supabase/client", () => ({ supabase: null }));
+jest.mock("@/lib/auth/token", () => ({ getAuthToken: jest.fn() }));
 
 const minimalDefinition: GameDefinition = {
 	metadata: { id: "test", title: "Test", version: "1.0.0" },
@@ -38,13 +27,70 @@ const minimalDefinition: GameDefinition = {
 	variables: {},
 } as unknown as GameDefinition;
 
+function makeMockTrpc() {
+	return {
+		packageReadiness: {
+			get: {
+				useQuery: jest.fn(() => ({
+					data: undefined,
+					isFetching: false,
+					refetch: jest.fn(),
+				})),
+			},
+		},
+		packageCompiler: {
+			compile: {
+				useMutation: jest.fn(() => ({
+					mutate: jest.fn(),
+					isPending: false,
+				})),
+			},
+		},
+		chatThreads: {
+			readWorkspaceFile: {
+				useQuery: jest.fn(() => ({
+					data: undefined,
+					isLoading: false,
+					isError: false,
+					isSuccess: false,
+					refetch: jest.fn(),
+				})),
+			},
+			writeWorkspaceFile: {
+				useMutation: jest.fn(() => ({ mutateAsync: jest.fn() })),
+			},
+		},
+		useUtils: jest.fn(() => ({
+			chatThreads: {
+				readWorkspaceFile: { setData: jest.fn() },
+			},
+		})),
+	} as any;
+}
+
+function makeMockEditorConfig() {
+	return {
+		trpc: makeMockTrpc(),
+		chat: {
+			useChatEventSubscription: jest.fn(),
+		} as any,
+		getStorageItem: jest.fn().mockResolvedValue(null),
+		setStorageItem: jest.fn().mockResolvedValue(undefined),
+	};
+}
+
 function makeWrapper(gameId = "game-1") {
+	const config = makeMockEditorConfig();
 	return ({ children }: { children: React.ReactNode }) =>
-		React.createElement(EditorProvider, {
-			gameId,
-			initialDefinition: minimalDefinition,
-			children,
-		});
+		React.createElement(
+			EditorConfigProvider,
+			{ config },
+			React.createElement(EditorProvider, {
+				gameId,
+				initialDefinition: minimalDefinition,
+				children,
+			}),
+		);
 }
 
 describe("EditorProvider — design selection state", () => {

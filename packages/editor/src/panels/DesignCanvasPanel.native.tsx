@@ -9,15 +9,14 @@ import {
 	View,
 } from "react-native";
 import {
-	Gesture,
 	GestureDetector,
 	GestureHandlerRootView,
 } from "react-native-gesture-handler";
-import { runOnJS } from "react-native-reanimated";
 import { useEditor } from "../EditorProvider";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 import { DesignCanvasRenderer } from "./DesignCanvasRenderer";
 import { useDesignCamera } from "./useDesignCamera";
+import { useDesignInteractionsNative } from "./useDesignInteractionsNative";
 
 export function DesignCanvasPanel() {
 	const { editorColors: c } = useTheme();
@@ -32,7 +31,8 @@ export function DesignCanvasPanel() {
 		designPhase,
 		setDesignPhase,
 	} = useEditor();
-	const { designDocument, isLoadingDesign } = useSharedWorkspaceFiles();
+	const { designDocument, isLoadingDesign, saveDesignDocument } =
+		useSharedWorkspaceFiles();
 
 	const {
 		camera,
@@ -43,6 +43,7 @@ export function DesignCanvasPanel() {
 		handlePinchUpdate,
 	} = useDesignCamera();
 
+	const [selectedElementIds, setSelectedElementIds] = useState<string[]>([]);
 	const [showFrameList, setShowFrameList] = useState(false);
 
 	const frames = designDocument?.frames || [];
@@ -75,21 +76,25 @@ export function DesignCanvasPanel() {
 		}
 	};
 
-	const handleElementTap = (
-		frameId: string,
-		elementId: string | null,
-		_shiftKey?: boolean,
-	) => {
-		if (elementId) {
-			selectDesignElement(elementId, frameId);
-			setDesignMode("select");
-		} else if (frameId) {
-			selectDesignFrame(frameId);
-			setDesignMode("select");
-		} else {
-			clearDesignSelection();
-		}
-	};
+	const { gesture, snapLines, liveDocument } = useDesignInteractionsNative({
+		document: designDocument ?? null,
+		camera,
+		selectedFrameId: selectedDesignFrameId,
+		selectedElementId: selectedDesignElementId,
+		selectedElementIds,
+		setSelectedElementIds,
+		saveDesignDocument,
+		selectDesignElement,
+		selectDesignFrame,
+		clearDesignSelection,
+		setDesignMode,
+		cameraHandlers: {
+			handlePanStart,
+			handlePanUpdate,
+			handlePinchStart,
+			handlePinchUpdate,
+		},
+	});
 
 	const breadcrumbText = useMemo(() => {
 		if (!selectedFrame) return null;
@@ -104,26 +109,6 @@ export function DesignCanvasPanel() {
 			setDesignPhase("designing");
 		}
 	}, [designDocument, designPhase, setDesignPhase]);
-
-	const panGesture = Gesture.Pan()
-		.onStart(() => {
-			if (handlePanStart) runOnJS(handlePanStart)();
-		})
-		.onUpdate((event) => {
-			if (handlePanUpdate)
-				runOnJS(handlePanUpdate)(event.translationX, event.translationY);
-		});
-
-	const pinchGesture = Gesture.Pinch()
-		.onStart(() => {
-			if (handlePinchStart) runOnJS(handlePinchStart)();
-		})
-		.onUpdate((event) => {
-			if (handlePinchUpdate)
-				runOnJS(handlePinchUpdate)(event.scale, event.focalX, event.focalY);
-		});
-
-	const cameraGesture = Gesture.Simultaneous(panGesture, pinchGesture);
 
 	return (
 		<View
@@ -273,18 +258,17 @@ export function DesignCanvasPanel() {
 					</Text>
 				) : designDocument ? (
 					<GestureHandlerRootView style={styles.gestureRoot}>
-						<GestureDetector gesture={cameraGesture}>
+						<GestureDetector gesture={gesture}>
 							<View style={{ flex: 1, width: "100%" }}>
 								<DesignCanvasRenderer
-									document={designDocument}
+									document={liveDocument || designDocument}
 									camera={camera}
 									selectedFrameId={selectedDesignFrameId}
 									selectedElementId={selectedDesignElementId}
-									selectedElementIds={[]}
-									onElementTap={handleElementTap}
+									selectedElementIds={selectedElementIds}
 									width={width}
 									height={height - 48}
-									snapLines={[]}
+									snapLines={snapLines}
 									showGrid={false}
 								/>
 							</View>

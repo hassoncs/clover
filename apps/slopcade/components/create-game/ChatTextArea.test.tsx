@@ -1,9 +1,8 @@
 import { ChatTextArea } from "@slopcade/editor-ai";
 import { act, fireEvent, render } from "@testing-library/react";
 import React from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("react-native", () => ({
+jest.mock("react-native", () => ({
 	View: (props: any) => <div {...props} />,
 	Text: (props: any) => <span {...props} />,
 	Pressable: ({ onPress, children, testID, disabled, ...props }: any) => (
@@ -78,24 +77,24 @@ vi.mock("react-native", () => ({
 	},
 }));
 
-vi.mock("@expo/vector-icons", () => ({
+jest.mock("@expo/vector-icons", () => ({
 	Ionicons: () => <div data-testid="icon" />,
 }));
 
-vi.mock("@gorhom/bottom-sheet", () => ({
+jest.mock("@gorhom/bottom-sheet", () => ({
 	BottomSheetTextInput: (props: any) => <input {...props} />,
 }));
 
 let capturedSpeechConfig: any = null;
-const mockStartRecording = vi.fn();
-const mockStopRecording = vi.fn();
-const mockUseSpeechToText = vi.fn();
+const mockStartRecording = jest.fn();
+const mockStopRecording = jest.fn();
+const mockUseSpeechToText = jest.fn();
 
 describe("ChatTextArea Speech-to-Text Integration", () => {
-	const mockOnSend = vi.fn();
+	const mockOnSend = jest.fn();
 
 	beforeEach(() => {
-		vi.clearAllMocks();
+		jest.clearAllMocks();
 		capturedSpeechConfig = null;
 		mockUseSpeechToText.mockImplementation((config: any) => {
 			capturedSpeechConfig = config;

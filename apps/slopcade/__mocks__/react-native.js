@@ -1,5 +1,15 @@
 import React from "react";
 
+function flattenStyle(style) {
+	if (!style) return undefined;
+	if (typeof style === "function")
+		return flattenStyle(style({ pressed: false }));
+	if (Array.isArray(style)) {
+		return Object.assign({}, ...style.map(flattenStyle).filter(Boolean));
+	}
+	return style;
+}
+
 const Animated = {
 	Value: class {
 		constructor(v) {
@@ -16,12 +26,26 @@ const Animated = {
 		removeAllListeners() {}
 	},
 	View: ({ children, style, ...props }) =>
-		React.createElement("div", { style, ...props }, children),
+		React.createElement(
+			"div",
+			{ style: flattenStyle(style), ...props },
+			children,
+		),
 	Text: ({ children, style, ...props }) =>
-		React.createElement("span", { style, ...props }, children),
+		React.createElement(
+			"span",
+			{ style: flattenStyle(style), ...props },
+			children,
+		),
 	ScrollView: ({ children, style, ...props }) =>
-		React.createElement("div", { style, ...props }, children),
-	Image: (props) => React.createElement("img", props),
+		React.createElement(
+			"div",
+			{ style: flattenStyle(style), ...props },
+			children,
+		),
+	Image: ({ style, ...props }) =>
+		React.createElement("img", { style: flattenStyle(style), ...props }),
+	createAnimatedComponent: (Component) => Component,
 	timing: (value, config) => ({
 		start: (cb) => {
 			if (config?.toValue !== undefined) value._value = config.toValue;
@@ -61,10 +85,18 @@ export const Platform = {
 };
 
 export const View = ({ children, style, ...props }) =>
-	React.createElement("div", { style, ...props }, children);
+	React.createElement(
+		"div",
+		{ style: flattenStyle(style), ...props },
+		children,
+	);
 
 export const Text = ({ children, style, ...props }) =>
-	React.createElement("span", { style, ...props }, children);
+	React.createElement(
+		"span",
+		{ style: flattenStyle(style), ...props },
+		children,
+	);
 
 export const Pressable = ({
 	children,
@@ -87,10 +119,10 @@ export const Pressable = ({
 			onClick: onPress,
 			onMouseDown: onPressIn,
 			onMouseUp: onPressOut,
-			style,
+			style: flattenStyle(style),
 			...props,
 		},
-		children,
+		typeof children === "function" ? children({ pressed: false }) : children,
 	);
 
 export const TextInput = ({
@@ -106,15 +138,23 @@ export const TextInput = ({
 		value,
 		onChange: (e) => onChangeText?.(e.target.value),
 		placeholder,
-		style,
+		style: flattenStyle(style),
 		...props,
 	});
 
 export const ActivityIndicator = ({ testID, style, ...props }) =>
-	React.createElement("div", { "data-testid": testID, style, ...props });
+	React.createElement("div", {
+		"data-testid": testID,
+		style: flattenStyle(style),
+		...props,
+	});
 
 export const ScrollView = ({ children, style, ...props }) =>
-	React.createElement("div", { style, ...props }, children);
+	React.createElement(
+		"div",
+		{ style: flattenStyle(style), ...props },
+		children,
+	);
 
 export const TouchableOpacity = ({
 	children,
@@ -125,16 +165,25 @@ export const TouchableOpacity = ({
 }) =>
 	React.createElement(
 		"button",
-		{ "data-testid": testID, onClick: onPress, style, ...props },
+		{
+			"data-testid": testID,
+			onClick: onPress,
+			style: flattenStyle(style),
+			...props,
+		},
 		children,
 	);
 
 export const Image = ({ testID, style, ...props }) =>
-	React.createElement("img", { "data-testid": testID, style, ...props });
+	React.createElement("img", {
+		"data-testid": testID,
+		style: flattenStyle(style),
+		...props,
+	});
 
 export const StyleSheet = {
 	create: (styles) => styles,
-	flatten: (styles) => styles,
+	flatten: flattenStyle,
 };
 
 export const useColorScheme = () => "light";
@@ -162,9 +211,38 @@ export const LayoutAnimation = {
 export const FlatList = ({ data, renderItem, keyExtractor, style, ...props }) =>
 	React.createElement(
 		"div",
-		{ style, ...props },
-		data?.map((item, index) => renderItem({ item, index })),
+		{ style: flattenStyle(style), ...props },
+		data?.map((item, index) =>
+			renderItem({
+				item,
+				index,
+				separators: {
+					highlight: () => {},
+					unhighlight: () => {},
+					updateProps: () => {},
+				},
+			}),
+		),
 	);
+
+export const SafeAreaView = ({ children, style, ...props }) =>
+	React.createElement(
+		"div",
+		{ style: flattenStyle(style), ...props },
+		children,
+	);
+
+export const Modal = ({ children, visible, ...props }) =>
+	visible ? React.createElement("div", props, children) : null;
+
+export const Switch = ({ value, onValueChange, testID, ...props }) =>
+	React.createElement("input", {
+		type: "checkbox",
+		checked: value,
+		onChange: (e) => onValueChange?.(e.target.checked),
+		"data-testid": testID,
+		...props,
+	});
 
 export default {
 	Animated,
@@ -185,4 +263,7 @@ export default {
 	Keyboard,
 	LayoutAnimation,
 	FlatList,
+	SafeAreaView,
+	Modal,
+	Switch,
 };

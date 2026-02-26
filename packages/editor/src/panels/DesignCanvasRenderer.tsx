@@ -6,12 +6,16 @@ import {
 	Image,
 	Line,
 	LinearGradient,
+	Paragraph,
 	Path,
 	RadialGradient,
 	Rect,
 	Shadow,
+	Skia,
 	Text as SkiaText,
+	TextAlign,
 	useFont,
+	useFonts,
 	useImage,
 	vec,
 } from "@shopify/react-native-skia";
@@ -277,22 +281,57 @@ function ImageElementRenderer({
 	);
 }
 
-function renderTextElement(
-	element: any,
-	framePosition: { x: number; y: number },
-	font: any,
-) {
+function TextElementRenderer({
+	element,
+	framePosition,
+	fontMgr,
+}: {
+	element: any;
+	framePosition: { x: number; y: number };
+	fontMgr: any | null;
+}) {
 	const elX = framePosition.x + element.x;
 	const elY = framePosition.y + element.y;
 
-	// Paragraph API is not available in the current version of react-native-skia we are using,
-	// or it requires a different setup. Let's stick to SkiaText for now, but we can try to use Paragraph if it's exported.
-	// Wait, Paragraph is exported from @shopify/react-native-skia.
+	const paragraph = useMemo(() => {
+		if (!fontMgr) return null;
 
-	if (!font) {
+		const textAlignMap = {
+			left: TextAlign.Left,
+			center: TextAlign.Center,
+			right: TextAlign.Right,
+		};
+		const textAlign = textAlignMap[element.align ?? "left"] ?? TextAlign.Left;
+		const builder = Skia.ParagraphBuilder.Make({ textAlign }, fontMgr);
+
+		const fontStyle: { weight?: number } = {};
+		if (element.fontWeight === "bold" || element.fontWeight === "700") {
+			fontStyle.weight = 700;
+		}
+
+		builder.pushStyle({
+			color: Skia.Color(element.color || "#333333"),
+			fontSize: element.fontSize,
+			fontFamilies: ["Fredoka"],
+			fontStyle,
+		});
+		builder.addText(element.content);
+		builder.pop();
+
+		return builder.build();
+	}, [
+		fontMgr,
+		element.content,
+		element.color,
+		element.fontSize,
+		element.fontWeight,
+		element.align,
+	]);
+
+	if (!fontMgr) {
 		return applyEffects(
 			element,
-			<Group key={element.id}>
+			<Group>
 				<Rect
 					x={elX}
 					y={elY}
@@ -315,7 +354,7 @@ function renderTextElement(
 
 	return applyEffects(
 		element,
-		<Group key={element.id}>
+		<Group>
 			<Rect
 				x={elX}
 				y={elY}
@@ -323,13 +362,14 @@ function renderTextElement(
 				height={element.height}
 				color="transparent"
 			/>
-			<SkiaText
-				x={elX}
-				y={elY + element.fontSize}
-				text={element.content}
-				font={font}
-				color={element.color || "#333333"}
-			/>
+			{paragraph && (
+				<Paragraph
+					paragraph={paragraph}
+					x={elX}
+					y={elY}
+					width={element.width}
+				/>
+			)}
 		</Group>,
 	);
 }
@@ -459,6 +499,9 @@ export function DesignCanvasRenderer({
 		require("../../../assets/fonts/Fredoka-Regular.ttf"),
 		12,
 	);
+	const fontMgr = useFonts({
+		Fredoka: [require("../../../assets/fonts/Fredoka-Regular.ttf")],
+	});
 
 	const renderCount = useRef(0);
 
@@ -527,296 +570,308 @@ export function DesignCanvasRenderer({
 
 	const resolvedImages = useDesignImageResolver(allElements);
 
-	return (
-		<TouchableWithoutFeedback onPress={handlePress}>
-			<View style={{ width, height }}>
-				<Canvas style={{ width, height }}>
-					<Group
-						transform={[
-							{ translateX: camera.translateX },
-							{ translateY: camera.translateY },
-							{ scale: camera.scale },
-						]}
-					>
-						{document.frames.map((frame) => {
-							const frameBounds: WorldBounds = {
-								left: frame.position.x,
-								top: frame.position.y,
-								right: frame.position.x + frame.width,
-								bottom: frame.position.y + frame.height,
-							};
-							if (isOutsideViewport(frameBounds, viewportBounds)) return null;
+	const canvasContent = (
+		<View style={{ width, height }}>
+			<Canvas style={{ width, height }}>
+				<Group
+					transform={[
+						{ translateX: camera.translateX },
+						{ translateY: camera.translateY },
+						{ scale: camera.scale },
+					]}
+				>
+					{document.frames.map((frame) => {
+						const frameBounds: WorldBounds = {
+							left: frame.position.x,
+							top: frame.position.y,
+							right: frame.position.x + frame.width,
+							bottom: frame.position.y + frame.height,
+						};
+						if (isOutsideViewport(frameBounds, viewportBounds)) return null;
 
-							const sortedElements =
-								sortedElementsByFrameId.get(frame.id) ?? [];
+						const sortedElements = sortedElementsByFrameId.get(frame.id) ?? [];
 
-							return (
-								<Group key={frame.id}>
-									<Rect
+						return (
+							<Group key={frame.id}>
+								<Rect
+									x={frame.position.x}
+									y={frame.position.y}
+									width={frame.width}
+									height={frame.height}
+									color="#FFFFFF"
+								/>
+								<Rect
+									x={frame.position.x}
+									y={frame.position.y}
+									width={frame.width}
+									height={frame.height}
+									color="#CCCCCC"
+									style="stroke"
+									strokeWidth={1}
+								/>
+
+								{font && (
+									<SkiaText
 										x={frame.position.x}
-										y={frame.position.y}
-										width={frame.width}
-										height={frame.height}
-										color="#FFFFFF"
+										y={frame.position.y - 8}
+										text={frame.title}
+										font={font}
+										color="#666666"
 									/>
-									<Rect
-										x={frame.position.x}
-										y={frame.position.y}
-										width={frame.width}
-										height={frame.height}
-										color="#CCCCCC"
-										style="stroke"
-										strokeWidth={1}
-									/>
+								)}
 
-									{font && (
-										<SkiaText
-											x={frame.position.x}
-											y={frame.position.y - 8}
-											text={frame.title}
-											font={font}
-											color="#666666"
-										/>
-									)}
-
-									{sortedElements.map((element) => {
-										if (
-											isOutsideViewport(
-												getElementWorldBounds(element, frame.position),
-												viewportBounds,
-											)
-										) {
-											return null;
-										}
-
-										if (element.type === "rect") {
-											return renderRectElement(element, frame.position);
-										}
-
-										if (element.type === "image") {
-											return renderImageElement(
-												element,
-												frame.position,
-												font,
-												resolvedImages.get(element.id) ?? null,
-											);
-										}
-
-										if (element.type === "text") {
-											return renderTextElement(element, frame.position, font);
-										}
-
-										if (element.type === "circle") {
-											return renderCircleElement(element, frame.position);
-										}
-
-										if (element.type === "line") {
-											return renderLineElement(element, frame.position);
-										}
-
-										if (element.type === "path") {
-											return renderPathElement(element, frame.position, font);
-										}
-
-										if (element.type === "group") {
-											return (
-												<Group key={element.id} opacity={element.opacity ?? 1}>
-													{/* Children are rendered as part of the flat list in this schema version */}
-												</Group>
-											);
-										}
-
-										if (__DEV__) {
-											console.warn(
-												`[DesignCanvas] Unknown element type: ${(element as any).type}`,
-											);
-										}
+								{sortedElements.map((element) => {
+									if (
+										isOutsideViewport(
+											getElementWorldBounds(element, frame.position),
+											viewportBounds,
+										)
+									) {
 										return null;
-									})}
-
-									{selectedFrameId === frame.id && !selectedElementId && (
-										<Rect
-											x={frame.position.x}
-											y={frame.position.y}
-											width={frame.width}
-											height={frame.height}
-											color="#2563EB"
-											style="stroke"
-											strokeWidth={2}
-										/>
-									)}
-
-									{selectedFrameId === frame.id && selectedElementId && (
-										<Group>
-											{frame.elements
-												.filter((e) => e.id === selectedElementId)
-												.map((element) => {
-													let selX: number,
-														selY: number,
-														selW: number,
-														selH: number;
-													if (element.type === "line") {
-														selX =
-															frame.position.x +
-															Math.min(element.x1, element.x2);
-														selY =
-															frame.position.y +
-															Math.min(element.y1, element.y2);
-														selW = Math.abs(element.x2 - element.x1);
-														selH = Math.abs(element.y2 - element.y1);
-													} else if (element.type === "path") {
-														selX = frame.position.x + element.x;
-														selY = frame.position.y + element.y;
-														selW = 40;
-														selH = 40;
-													} else {
-														selX = frame.position.x + element.x;
-														selY = frame.position.y + element.y;
-														selW = element.width;
-														selH = element.height;
-													}
-													const HANDLE_SIZE = 12;
-													const HANDLE_OFFSET = HANDLE_SIZE / 2;
-													const handles = [
-														{ id: "tl", x: selX, y: selY },
-														{ id: "tc", x: selX + selW / 2, y: selY },
-														{ id: "tr", x: selX + selW, y: selY },
-														{ id: "rc", x: selX + selW, y: selY + selH / 2 },
-														{ id: "br", x: selX + selW, y: selY + selH },
-														{ id: "bc", x: selX + selW / 2, y: selY + selH },
-														{ id: "bl", x: selX, y: selY + selH },
-														{ id: "lc", x: selX, y: selY + selH / 2 },
-													];
-
-													return (
-														<Group key={`sel-group-${element.id}`}>
-															<Rect
-																x={selX}
-																y={selY}
-																width={selW}
-																height={selH}
-																color="#2563EB"
-																style="stroke"
-																strokeWidth={2}
-															/>
-															<Line
-																p1={vec(selX + selW / 2, selY)}
-																p2={vec(selX + selW / 2, selY - 24)}
-																color="#2563EB"
-																style="stroke"
-																strokeWidth={2}
-															/>
-															<Circle
-																cx={selX + selW / 2}
-																cy={selY - 24}
-																r={6}
-																color="#FFFFFF"
-															/>
-															<Circle
-																cx={selX + selW / 2}
-																cy={selY - 24}
-																r={6}
-																color="#2563EB"
-																style="stroke"
-																strokeWidth={2}
-															/>
-															{handles.map((h) => (
-																<Group key={`handle-${h.id}`}>
-																	<Rect
-																		x={h.x - HANDLE_OFFSET}
-																		y={h.y - HANDLE_OFFSET}
-																		width={HANDLE_SIZE}
-																		height={HANDLE_SIZE}
-																		color="#FFFFFF"
-																	/>
-																	<Rect
-																		x={h.x - HANDLE_OFFSET}
-																		y={h.y - HANDLE_OFFSET}
-																		width={HANDLE_SIZE}
-																		height={HANDLE_SIZE}
-																		color="#2563EB"
-																		style="stroke"
-																		strokeWidth={2}
-																	/>
-																</Group>
-															))}
-														</Group>
-													);
-												})}
-										</Group>
-									)}
-								</Group>
-							);
-						})}
-
-						{snapLines.map((line, i) => {
-							if (line.axis === "x") {
-								return (
-									<Line
-										key={`snap-x-${i}-${line.position}`}
-										p1={vec(line.position, viewportBounds.worldTop)}
-										p2={vec(line.position, viewportBounds.worldBottom)}
-										color="#2563EB"
-										style="stroke"
-										strokeWidth={1 / camera.scale}
-									/>
-								);
-							} else {
-								return (
-									<Line
-										key={`snap-y-${i}-${line.position}`}
-										p1={vec(viewportBounds.worldLeft, line.position)}
-										p2={vec(viewportBounds.worldRight, line.position)}
-										color="#2563EB"
-										style="stroke"
-										strokeWidth={1 / camera.scale}
-									/>
-								);
-							}
-						})}
-
-						{selectedElementIds &&
-							selectedElementIds.length >= 2 &&
-							(() => {
-								let minX = Infinity,
-									minY = Infinity,
-									maxX = -Infinity,
-									maxY = -Infinity;
-								for (const frame of document.frames) {
-									for (const el of frame.elements) {
-										if (!selectedElementIds.includes(el.id)) continue;
-										const bounds = getElementWorldBounds(el, frame.position);
-										minX = Math.min(minX, bounds.left);
-										minY = Math.min(minY, bounds.top);
-										maxX = Math.max(maxX, bounds.right);
-										maxY = Math.max(maxY, bounds.bottom);
 									}
-								}
-								if (minX === Infinity) return null;
-								const pad = 4 / camera.scale;
-								const bx = minX - pad;
-								const by = minY - pad;
-								const bw = maxX - minX + pad * 2;
-								const bh = maxY - minY + pad * 2;
-								const sw = 2 / camera.scale;
-								const dashLen = 6 / camera.scale;
-								const gapLen = 3 / camera.scale;
-								const pathStr = `M ${bx} ${by} L ${bx + bw} ${by} L ${bx + bw} ${by + bh} L ${bx} ${by + bh} Z`;
-								return (
-									<Path
-										key="multi-select-bbox"
-										path={pathStr}
+
+									if (element.type === "rect") {
+										return renderRectElement(element, frame.position);
+									}
+
+									if (element.type === "image") {
+										return renderImageElement(
+											element,
+											frame.position,
+											font,
+											resolvedImages.get(element.id) ?? null,
+										);
+									}
+
+									if (element.type === "text") {
+										return (
+											<TextElementRenderer
+												key={element.id}
+												element={element}
+												framePosition={frame.position}
+												fontMgr={fontMgr}
+											/>
+										);
+									}
+
+									if (element.type === "circle") {
+										return renderCircleElement(element, frame.position);
+									}
+
+									if (element.type === "line") {
+										return renderLineElement(element, frame.position);
+									}
+
+									if (element.type === "path") {
+										return renderPathElement(element, frame.position, font);
+									}
+
+									if (element.type === "group") {
+										return (
+											<Group key={element.id} opacity={element.opacity ?? 1}>
+												{/* Children are rendered as part of the flat list in this schema version */}
+											</Group>
+										);
+									}
+
+									if (__DEV__) {
+										console.warn(
+											`[DesignCanvas] Unknown element type: ${(element as any).type}`,
+										);
+									}
+									return null;
+								})}
+
+								{selectedFrameId === frame.id && !selectedElementId && (
+									<Rect
+										x={frame.position.x}
+										y={frame.position.y}
+										width={frame.width}
+										height={frame.height}
 										color="#2563EB"
 										style="stroke"
-										strokeWidth={sw}
-									>
-										<DashPathEffect intervals={[dashLen, gapLen]} />
-									</Path>
-								);
-							})()}
-					</Group>
-				</Canvas>
-			</View>
-		</TouchableWithoutFeedback>
+										strokeWidth={2}
+									/>
+								)}
+
+								{selectedFrameId === frame.id && selectedElementId && (
+									<Group>
+										{frame.elements
+											.filter((e) => e.id === selectedElementId)
+											.map((element) => {
+												let selX: number,
+													selY: number,
+													selW: number,
+													selH: number;
+												if (element.type === "line") {
+													selX =
+														frame.position.x + Math.min(element.x1, element.x2);
+													selY =
+														frame.position.y + Math.min(element.y1, element.y2);
+													selW = Math.abs(element.x2 - element.x1);
+													selH = Math.abs(element.y2 - element.y1);
+												} else if (element.type === "path") {
+													selX = frame.position.x + element.x;
+													selY = frame.position.y + element.y;
+													selW = 40;
+													selH = 40;
+												} else {
+													selX = frame.position.x + element.x;
+													selY = frame.position.y + element.y;
+													selW = element.width;
+													selH = element.height;
+												}
+												const HANDLE_SIZE = 12;
+												const HANDLE_OFFSET = HANDLE_SIZE / 2;
+												const handles = [
+													{ id: "tl", x: selX, y: selY },
+													{ id: "tc", x: selX + selW / 2, y: selY },
+													{ id: "tr", x: selX + selW, y: selY },
+													{ id: "rc", x: selX + selW, y: selY + selH / 2 },
+													{ id: "br", x: selX + selW, y: selY + selH },
+													{ id: "bc", x: selX + selW / 2, y: selY + selH },
+													{ id: "bl", x: selX, y: selY + selH },
+													{ id: "lc", x: selX, y: selY + selH / 2 },
+												];
+
+												return (
+													<Group key={`sel-group-${element.id}`}>
+														<Rect
+															x={selX}
+															y={selY}
+															width={selW}
+															height={selH}
+															color="#2563EB"
+															style="stroke"
+															strokeWidth={2}
+														/>
+														<Line
+															p1={vec(selX + selW / 2, selY)}
+															p2={vec(selX + selW / 2, selY - 24)}
+															color="#2563EB"
+															style="stroke"
+															strokeWidth={2}
+														/>
+														<Circle
+															cx={selX + selW / 2}
+															cy={selY - 24}
+															r={6}
+															color="#FFFFFF"
+														/>
+														<Circle
+															cx={selX + selW / 2}
+															cy={selY - 24}
+															r={6}
+															color="#2563EB"
+															style="stroke"
+															strokeWidth={2}
+														/>
+														{handles.map((h) => (
+															<Group key={`handle-${h.id}`}>
+																<Rect
+																	x={h.x - HANDLE_OFFSET}
+																	y={h.y - HANDLE_OFFSET}
+																	width={HANDLE_SIZE}
+																	height={HANDLE_SIZE}
+																	color="#FFFFFF"
+																/>
+																<Rect
+																	x={h.x - HANDLE_OFFSET}
+																	y={h.y - HANDLE_OFFSET}
+																	width={HANDLE_SIZE}
+																	height={HANDLE_SIZE}
+																	color="#2563EB"
+																	style="stroke"
+																	strokeWidth={2}
+																/>
+															</Group>
+														))}
+													</Group>
+												);
+											})}
+									</Group>
+								)}
+							</Group>
+						);
+					})}
+
+					{snapLines.map((line, i) => {
+						if (line.axis === "x") {
+							return (
+								<Line
+									key={`snap-x-${i}-${line.position}`}
+									p1={vec(line.position, viewportBounds.worldTop)}
+									p2={vec(line.position, viewportBounds.worldBottom)}
+									color="#2563EB"
+									style="stroke"
+									strokeWidth={1 / camera.scale}
+								/>
+							);
+						} else {
+							return (
+								<Line
+									key={`snap-y-${i}-${line.position}`}
+									p1={vec(viewportBounds.worldLeft, line.position)}
+									p2={vec(viewportBounds.worldRight, line.position)}
+									color="#2563EB"
+									style="stroke"
+									strokeWidth={1 / camera.scale}
+								/>
+							);
+						}
+					})}
+
+					{selectedElementIds &&
+						selectedElementIds.length >= 2 &&
+						(() => {
+							let minX = Infinity,
+								minY = Infinity,
+								maxX = -Infinity,
+								maxY = -Infinity;
+							for (const frame of document.frames) {
+								for (const el of frame.elements) {
+									if (!selectedElementIds.includes(el.id)) continue;
+									const bounds = getElementWorldBounds(el, frame.position);
+									minX = Math.min(minX, bounds.left);
+									minY = Math.min(minY, bounds.top);
+									maxX = Math.max(maxX, bounds.right);
+									maxY = Math.max(maxY, bounds.bottom);
+								}
+							}
+							if (minX === Infinity) return null;
+							const pad = 4 / camera.scale;
+							const bx = minX - pad;
+							const by = minY - pad;
+							const bw = maxX - minX + pad * 2;
+							const bh = maxY - minY + pad * 2;
+							const sw = 2 / camera.scale;
+							const dashLen = 6 / camera.scale;
+							const gapLen = 3 / camera.scale;
+							const pathStr = `M ${bx} ${by} L ${bx + bw} ${by} L ${bx + bw} ${by + bh} L ${bx} ${by + bh} Z`;
+							return (
+								<Path
+									key="multi-select-bbox"
+									path={pathStr}
+									color="#2563EB"
+									style="stroke"
+									strokeWidth={sw}
+								>
+									<DashPathEffect intervals={[dashLen, gapLen]} />
+								</Path>
+							);
+						})()}
+				</Group>
+			</Canvas>
+		</View>
 	);
+
+	if (onElementTap) {
+		return (
+			<TouchableWithoutFeedback onPress={handlePress}>
+				{canvasContent}
+			</TouchableWithoutFeedback>
+		);
+	}
+
+	return canvasContent;
 }

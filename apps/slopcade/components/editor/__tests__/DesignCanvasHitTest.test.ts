@@ -1,6 +1,5 @@
 import { hitTestDesignCanvas, screenToWorld } from "@slopcade/editor";
 import type { DesignDocument } from "@slopcade/shared";
-import { describe, expect, it } from "vitest";
 
 type Frames = DesignDocument["frames"];
 

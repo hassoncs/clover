@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	DEFAULT_FEATURE_FLAGS,
 	getFeatureFlags,
@@ -8,33 +7,33 @@ import {
 } from "../featureFlags";
 import { storage } from "../storage";
 
-vi.mock("../storage", () => ({
+jest.mock("../storage", () => ({
 	storage: {
-		getItem: vi.fn(),
-		setItem: vi.fn(),
-		removeItem: vi.fn(),
-		clear: vi.fn(),
+		getItem: jest.fn(),
+		setItem: jest.fn(),
+		removeItem: jest.fn(),
+		clear: jest.fn(),
 	},
-	getStorageItem: vi.fn(),
-	setStorageItem: vi.fn(),
+	getStorageItem: jest.fn(),
+	setStorageItem: jest.fn(),
 }));
 
 import { getStorageItem, setStorageItem } from "../storage";
 
 describe("featureFlags", () => {
 	beforeEach(() => {
-		vi.clearAllMocks();
+		jest.clearAllMocks();
 	});
 
 	it("should return default flags when none are stored", async () => {
-		vi.mocked(getStorageItem).mockResolvedValue(DEFAULT_FEATURE_FLAGS);
+		jest.mocked(getStorageItem).mockResolvedValue(DEFAULT_FEATURE_FLAGS);
 
 		const flags = await getFeatureFlags();
 		expect(flags).toEqual(DEFAULT_FEATURE_FLAGS);
 	});
 
 	it("should check if a feature is enabled", async () => {
-		vi.mocked(getStorageItem).mockResolvedValue({
+		jest.mocked(getStorageItem).mockResolvedValue({
 			...DEFAULT_FEATURE_FLAGS,
 			useRemixDefault: true,
 		});
@@ -44,7 +43,7 @@ describe("featureFlags", () => {
 	});
 
 	it("should set feature flags", async () => {
-		vi.mocked(getStorageItem).mockResolvedValue(DEFAULT_FEATURE_FLAGS);
+		jest.mocked(getStorageItem).mockResolvedValue(DEFAULT_FEATURE_FLAGS);
 
 		await setFeatureFlags({ useRemixDefault: true });
 
