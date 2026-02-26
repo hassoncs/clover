@@ -39,6 +39,7 @@ export function DesignCanvasPanel() {
 		isRotating,
 		snapLines,
 		showGrid,
+		liveDocument,
 		onMouseDown: handleMouseDown,
 		onMouseMove: handleMouseMove,
 		onMouseUp: handleMouseUp,
@@ -294,7 +295,7 @@ export function DesignCanvasPanel() {
 						} as object)}
 					>
 						<DesignCanvasRenderer
-							document={designDocument}
+							document={liveDocument || designDocument}
 							camera={camera}
 							selectedFrameId={selectedDesignFrameId}
 							selectedElementId={selectedDesignElementId}

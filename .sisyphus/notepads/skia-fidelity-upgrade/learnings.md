@@ -169,3 +169,10 @@
 - When implementing drag/resize/rotate in a Skia canvas, it's better to handle pointer events at the parent `View` level rather than using `TouchableWithoutFeedback` inside the canvas. This allows for continuous tracking (`onPointerMove`) even when the pointer leaves the element's bounds.
 - Skia's `transform` array applies transformations in order. To rotate an element around its center, use `[{ translateX: cx }, { translateY: cy }, { rotate: angle }, { translateX: -cx }, { translateY: -cy }]`.
 - When debouncing saves to a remote document, ensure the local state is updated immediately for smooth interactions, while the remote save happens in the background.
+
+## Design Canvas Interactions
+- Implemented drag, resize, rotate, and snapping in `useDesignInteractions.ts`.
+- Used `useRef` for interaction state to avoid re-renders during drag.
+- Handled React Native Web event propagation by stopping propagation on `onMouseDown` when interacting with an element, while allowing `onPress` to fire for selection.
+- Snapping logic computes targets from frame edges and other elements' bounds, finding the closest match within an 8px threshold (scaled by camera zoom).
+- Rotation uses `Math.atan2` to compute angle from element center to mouse position, with shift-key snapping to 15-degree increments.

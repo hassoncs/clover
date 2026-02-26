@@ -1,6 +1,7 @@
 import {
 	Canvas,
 	Circle,
+	DashPathEffect,
 	Group,
 	Image,
 	Line,
@@ -84,6 +85,7 @@ export interface DesignCanvasRendererProps {
 	camera: { translateX: number; translateY: number; scale: number };
 	selectedFrameId: string | null;
 	selectedElementId: string | null;
+	selectedElementIds?: string[];
 	onElementTap?: (frameId: string, elementId: string | null) => void;
 	width: number;
 	height: number;
@@ -392,6 +394,7 @@ export function DesignCanvasRenderer({
 	camera,
 	selectedFrameId,
 	selectedElementId,
+	selectedElementIds,
 	onElementTap,
 	width,
 	height,
@@ -716,6 +719,46 @@ export function DesignCanvasRenderer({
 								);
 							}
 						})}
+
+						{selectedElementIds &&
+							selectedElementIds.length >= 2 &&
+							(() => {
+								let minX = Infinity,
+									minY = Infinity,
+									maxX = -Infinity,
+									maxY = -Infinity;
+								for (const frame of document.frames) {
+									for (const el of frame.elements) {
+										if (!selectedElementIds.includes(el.id)) continue;
+										const bounds = getElementWorldBounds(el, frame.position);
+										minX = Math.min(minX, bounds.left);
+										minY = Math.min(minY, bounds.top);
+										maxX = Math.max(maxX, bounds.right);
+										maxY = Math.max(maxY, bounds.bottom);
+									}
+								}
+								if (minX === Infinity) return null;
+								const pad = 4 / camera.scale;
+								const bx = minX - pad;
+								const by = minY - pad;
+								const bw = maxX - minX + pad * 2;
+								const bh = maxY - minY + pad * 2;
+								const sw = 2 / camera.scale;
+								const dashLen = 6 / camera.scale;
+								const gapLen = 3 / camera.scale;
+								const pathStr = `M ${bx} ${by} L ${bx + bw} ${by} L ${bx + bw} ${by + bh} L ${bx} ${by + bh} Z`;
+								return (
+									<Path
+										key="multi-select-bbox"
+										path={pathStr}
+										color="#2563EB"
+										style="stroke"
+										strokeWidth={sw}
+									>
+										<DashPathEffect intervals={[dashLen, gapLen]} />
+									</Path>
+								);
+							})()}
 					</Group>
 				</Canvas>
 			</View>

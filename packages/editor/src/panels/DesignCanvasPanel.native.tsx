@@ -279,6 +279,8 @@ export function DesignCanvasPanel() {
 									onElementTap={handleElementTap}
 									width={width}
 									height={height - 48}
+									snapLines={[]}
+									showGrid={false}
 								/>
 							</View>
 						</GestureDetector>

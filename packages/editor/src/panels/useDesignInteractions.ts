@@ -13,6 +13,7 @@ export interface InteractionState {
   isRotating: boolean;
   snapLines: SnapLine[];
   showGrid: boolean;
+  liveDocument: DesignDocument | null;
   onMouseDown: (e: any) => void;
   onMouseMove: (e: any) => void;
   onMouseUp: (e: any) => void;
@@ -38,6 +39,7 @@ export function useDesignInteractions(params: {
   const [isRotating, setIsRotating] = useState(false);
   const [snapLines, setSnapLines] = useState<SnapLine[]>([]);
   const [showGrid, setShowGrid] = useState(false);
+  const [liveDocument, setLiveDocument] = useState<DesignDocument | null>(null);
 
   const interactionState = useRef<{
     type: "idle" | "drag" | "resize" | "rotate";
@@ -355,8 +357,8 @@ export function useDesignInteractions(params: {
     }
 
     setSnapLines(newSnapLines);
-    saveDesignDocument(newDoc);
-  }, [document, camera, saveDesignDocument, cameraHandlers]);
+    setLiveDocument(newDoc);
+  }, [document, camera, cameraHandlers]);
 
   const onMouseUp = useCallback((e: any) => {
     const state = interactionState.current;
@@ -365,12 +367,19 @@ export function useDesignInteractions(params: {
       return;
     }
 
+    setLiveDocument(prev => {
+      if (prev) {
+        saveDesignDocument(prev);
+      }
+      return null;
+    });
+
     setIsDragging(false);
     setIsResizing(false);
     setIsRotating(false);
     setSnapLines([]);
     interactionState.current.type = "idle";
-  }, [cameraHandlers]);
+  }, [cameraHandlers, saveDesignDocument]);
 
   return {
     isDragging,
@@ -378,6 +387,7 @@ export function useDesignInteractions(params: {
     isRotating,
     snapLines,
     showGrid,
+    liveDocument,
     onMouseDown,
     onMouseMove,
     onMouseUp,
