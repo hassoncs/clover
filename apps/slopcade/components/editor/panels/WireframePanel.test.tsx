@@ -8,7 +8,7 @@ vi.mock("@expo/vector-icons", () => ({
 }));
 
 vi.mock("@slopcade/editor", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@slopcade/editor")>();
+	const actual = await importOriginal();
 	return {
 		...actual,
 		useEditor: () => ({

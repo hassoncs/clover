@@ -16,14 +16,8 @@ describe("biblequizzle adapter", () => {
 					{
 						question:
 							"What was the name of the garden where Adam and Eve lived?",
-						correct_answer: "Garden of Eden",
-						incorrect_answers: [
-							"Garden of Gethsemane",
-							"Garden of Paradise",
-							"Garden of Babylon",
-						],
-						category: "Old Testament",
-						difficulty: "easy",
+						answer: "Garden of Eden",
+						categories: ["Old Testament"],
 						reference: "Genesis 2:8",
 					},
 				],

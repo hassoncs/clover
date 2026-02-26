@@ -29,3 +29,17 @@ These errors exist in all apps and are NOT caused by the app-split work. They ne
 **knip cannot run in this monorepo**
 - `apps/shader-editor/metro.config.js` references `tailwind.config` which doesn't exist at repo root
 - This causes knip to error out on load; workaround is to either fix the tailwind config or exclude shader-editor from knip config
+
+## [2026-02-26] Task fixed: biblequizzle test + UI platform stubs + SharedValue
+
+**biblequizzle.test.ts** had two stale field names in the fixture:
+- `category` (string) → should be `categories` (string array) — matches `BibleQuizzleRawQuestion` interface
+- `correct_answer` → should be `answer` — matches interface field name used by implementation
+- Additionally removed unused `incorrect_answers` and `difficulty` fields (not in interface, ignored at runtime)
+
+**packages/ui platform stub pattern**: TypeScript tsc cannot resolve Metro platform-specific files (.web.tsx/.native.tsx) without a base .tsx stub. Fix: create `ComponentName.tsx` that re-exports from `ComponentName.web.tsx`. Created stubs for:
+- `packages/ui/src/amen/animation/AmenGrainOverlay.tsx`
+- `packages/ui/src/amen/animation/DrawingIcon.tsx`
+- `packages/ui/src/amen/loading/AmenSplashSequence.tsx`
+
+**react-native-reanimated v4 SharedValue**: Not in `Animated` namespace. Import directly: `import type { SharedValue } from 'react-native-reanimated'`.

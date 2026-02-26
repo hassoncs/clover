@@ -5,7 +5,7 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@slopcade/editor", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@slopcade/editor")>();
+	const actual = await importOriginal();
 	return {
 		...actual,
 		usePackageReadiness: () => ({

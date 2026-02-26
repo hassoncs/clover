@@ -55,44 +55,28 @@ vi.mock("@gorhom/bottom-sheet", () => ({
 	BottomSheetTextInput: (props: any) => <input {...props} />,
 }));
 
-vi.mock("@/components/ui/MicButton", () => ({
-	MicButton: ({ onPress, isRecording }: any) => (
-		<button type="button" data-testid="mic-button" onClick={onPress}>
-			{isRecording ? "Stop Recording" : "Start Recording"}
-		</button>
-	),
-}));
-
+let capturedSpeechConfig: any = null;
 const mockStartRecording = vi.fn();
 const mockStopRecording = vi.fn();
-const mockUseSpeechToText = vi.fn(() => ({
-	transcript: "",
-	isRecording: false,
-	isConnecting: false,
-	error: null,
-	startRecording: mockStartRecording,
-	stopRecording: mockStopRecording,
-}));
-
-vi.mock("@/lib/speech/useSpeechToText", () => ({
-	useSpeechToText: (config: any) => {
-		(global as any).mockSpeechConfig = config;
-		return mockUseSpeechToText();
-	},
-}));
+const mockUseSpeechToText = vi.fn();
 
 describe("ChatTextArea Speech-to-Text Integration", () => {
 	const mockOnSend = vi.fn();
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockUseSpeechToText.mockReturnValue({
-			transcript: "",
-			isRecording: false,
-			isConnecting: false,
-			error: null,
-			startRecording: mockStartRecording,
-			stopRecording: mockStopRecording,
+		capturedSpeechConfig = null;
+		mockUseSpeechToText.mockImplementation((config: any) => {
+			capturedSpeechConfig = config;
+			return {
+				transcript: "",
+				volumeLevel: 0,
+				isRecording: false,
+				isConnecting: false,
+				error: null,
+				startRecording: mockStartRecording,
+				stopRecording: mockStopRecording,
+			};
 		});
 	});
 
@@ -109,6 +93,7 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 				onSend={mockOnSend}
 				isSubmitting={false}
 				enableSpeechToText={true}
+				useSpeechToText={mockUseSpeechToText}
 			/>,
 		);
 		expect(getByTestId("mic-button")).toBeTruthy();
@@ -120,6 +105,7 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 				onSend={mockOnSend}
 				isSubmitting={false}
 				enableSpeechToText={true}
+				useSpeechToText={mockUseSpeechToText}
 			/>,
 		);
 
@@ -128,13 +114,17 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 	});
 
 	it("displays transcript in input while recording", () => {
-		mockUseSpeechToText.mockReturnValue({
-			transcript: "Hello world",
-			isRecording: true,
-			isConnecting: false,
-			error: null,
-			startRecording: mockStartRecording,
-			stopRecording: mockStopRecording,
+		mockUseSpeechToText.mockImplementation((config: any) => {
+			capturedSpeechConfig = config;
+			return {
+				transcript: "Hello world",
+				volumeLevel: 0,
+				isRecording: true,
+				isConnecting: false,
+				error: null,
+				startRecording: mockStartRecording,
+				stopRecording: mockStopRecording,
+			};
 		});
 
 		const { getByTestId } = render(
@@ -142,6 +132,7 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 				onSend={mockOnSend}
 				isSubmitting={false}
 				enableSpeechToText={true}
+				useSpeechToText={mockUseSpeechToText}
 			/>,
 		);
 
@@ -155,19 +146,24 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 				onSend={mockOnSend}
 				isSubmitting={false}
 				enableSpeechToText={true}
+				useSpeechToText={mockUseSpeechToText}
 			/>,
 		);
 
 		const input = getByTestId("composer-input");
 		fireEvent.change(input, { target: { value: "Initial text " } });
 
-		mockUseSpeechToText.mockReturnValue({
-			transcript: "added speech",
-			isRecording: true,
-			isConnecting: false,
-			error: null,
-			startRecording: mockStartRecording,
-			stopRecording: mockStopRecording,
+		mockUseSpeechToText.mockImplementation((config: any) => {
+			capturedSpeechConfig = config;
+			return {
+				transcript: "added speech",
+				volumeLevel: 0,
+				isRecording: true,
+				isConnecting: false,
+				error: null,
+				startRecording: mockStartRecording,
+				stopRecording: mockStopRecording,
+			};
 		});
 
 		rerender(
@@ -175,6 +171,7 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 				onSend={mockOnSend}
 				isSubmitting={false}
 				enableSpeechToText={true}
+				useSpeechToText={mockUseSpeechToText}
 			/>,
 		);
 	});
@@ -185,6 +182,7 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 				onSend={mockOnSend}
 				isSubmitting={false}
 				enableSpeechToText={true}
+				useSpeechToText={mockUseSpeechToText}
 			/>,
 		);
 
@@ -192,7 +190,7 @@ describe("ChatTextArea Speech-to-Text Integration", () => {
 		fireEvent.change(input, { target: { value: "Start " } });
 
 		act(() => {
-			(global as any).mockSpeechConfig.onTranscriptComplete("finished speech");
+			capturedSpeechConfig.onTranscriptComplete("finished speech");
 		});
 
 		expect(input.value).toBe("Start finished speech");

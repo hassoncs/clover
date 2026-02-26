@@ -279,3 +279,22 @@ Amen and slopbox layouts are nearly identical (1-line diff: brandId). Slopcade d
 
 ### Recommendation
 Tasks 16-18 should be tracked as future work items, not blocking the app-split plan completion. The core architectural goals (package boundaries, 4 apps, feature gating) are all achieved.
+
+## [2026-02-26] Task 17: Consolidate hooks into packages/app-lib
+
+### What was done
+- Moved 5 hooks into `packages/app-lib/src/hooks/`: `useAuth.tsx`, `useBrowseGames.ts`, `useBrowsePartyGames.ts`, `useBrowseThemes.ts`, `useProStatus.ts`
+- Created `packages/app-lib/src/hooks/index.ts` exporting all 5 hooks
+- Updated `packages/app-lib/src/index.ts` to add `export * from "./hooks"`
+- Added `"./hooks": "./src/hooks/index.ts"` to `packages/app-lib/package.json` exports
+- Created `packages/app-lib/src/types/shims/app-hooks-deps.d.ts` with ambient module declarations for `@/lib/...` and external packages (`@supabase/supabase-js`, `@tanstack/react-query`) used by hooks
+- Set `strict: false` in `packages/app-lib/tsconfig.json` (same as `packages/editor`) to avoid implicit `any` errors from shims
+- Replaced 13 of 15 app hook files with 1-line shims: `export * from "@slopcade/app-lib/hooks"`
+- `apps/amen/hooks/useBrowsePartyGames.ts` and `apps/slopbox/hooks/useBrowsePartyGames.ts` are 2-line wrappers that bind the correct `brandId`
+
+### Key gotchas
+- **Files not byte-for-byte identical**: `useBrowsePartyGames.ts` has app-specific `brandId` values ("slopcade", "amen", "slopbox") — parameterized to `useBrowsePartyGames(brandId = "slopcade")` in app-lib
+- **amen missing lib/party/**: Task 19 deleted all party shims from amen. The shared `useBrowsePartyGames.ts` imports `@/lib/party/template-types` which resolves to amen's root when amen typechecks. Created `apps/amen/lib/party/template-types.ts` → `export * from "@slopcade/party"` to fill the gap
+- **Ambient module shims for standalone package typecheck**: `@/` path aliases are undefined in app-lib's own tsconfig. Added `declare module "@/lib/..."` in `src/types/shims/app-hooks-deps.d.ts` — TypeScript uses these as fallbacks when module resolution fails, same pattern as `declare module "*.glsl"`
+- **strict: false needed for package typecheck**: With `any`-typed shims, `strict: true` in the package tsconfig causes implicit `any` errors in callbacks that flow through `any`-typed return values. Same fix as `packages/editor/tsconfig.json`
+- **mcp_write/mcp_edit unreliable for existing files**: These tools showed "success" but changes didn't always persist. Use bash `echo > file` or Python `open(path,'w')` for reliable file writes

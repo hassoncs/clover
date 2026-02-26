@@ -5,8 +5,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native";
+import {
+	Pressable,
+	StyleSheet,
+	useWindowDimensions,
+	View,
+	type ViewStyle,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import type { SharedValue } from "react-native-reanimated";
 import Animated, {
 	Extrapolation,
 	interpolate,
@@ -25,7 +32,11 @@ export interface GameHallCarouselProps<T extends CarouselItem> {
 	items: T[];
 	selectedId: string | null;
 	onSelect: (id: string) => void;
-	renderTile: (item: T, selected: boolean, onPress: () => void) => React.ReactNode;
+	renderTile: (
+		item: T,
+		selected: boolean,
+		onPress: () => void,
+	) => React.ReactNode;
 	getImageUrl?: (item: T) => string | null | undefined;
 	tileWidth?: number;
 	tileHeight?: number;
@@ -52,13 +63,17 @@ function CarouselItemView<T extends CarouselItem>({
 }: {
 	displayIndex: number;
 	item: T;
-	progress: Animated.SharedValue<number>;
+	progress: SharedValue<number>;
 	total: number;
 	tileWidth: number;
 	tileHeight: number;
 	selectedId: string | null;
 	onSelect: (id: string) => void;
-	renderTile: (item: T, selected: boolean, onPress: () => void) => React.ReactNode;
+	renderTile: (
+		item: T,
+		selected: boolean,
+		onPress: () => void,
+	) => React.ReactNode;
 	scrollToIndex: (idx: number) => void;
 	reflectionColor: string;
 }) {
@@ -75,7 +90,12 @@ function CarouselItemView<T extends CarouselItem>({
 		const translateX = interpolate(
 			absDiff,
 			[0, 1, 2, 3],
-			[0, tileWidth * 0.75 * sign, tileWidth * 1.1 * sign, tileWidth * 1.4 * sign],
+			[
+				0,
+				tileWidth * 0.75 * sign,
+				tileWidth * 1.1 * sign,
+				tileWidth * 1.4 * sign,
+			],
 			Extrapolation.CLAMP,
 		);
 
@@ -126,7 +146,9 @@ function CarouselItemView<T extends CarouselItem>({
 
 	return (
 		<Animated.View style={animatedStyle}>
-			<View style={{ flex: 1 }}>{renderTile(item, isSelected, handlePress)}</View>
+			<View style={{ flex: 1 }}>
+				{renderTile(item, isSelected, handlePress)}
+			</View>
 
 			{/* Reflection */}
 			<View

@@ -5,6 +5,8 @@ import glsl from "vite-plugin-glsl";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
 	define: {
 		__DEV__: true,
@@ -19,8 +21,18 @@ export default defineConfig({
 	test: {
 		server: {
 			deps: {
-				inline: ["react-native-web", "@testing-library/react-native"],
+				inline: [
+					"react-native-web",
+					"@testing-library/react-native",
+					/@slopcade\/.*/,
+				],
 			},
+		},
+		alias: {
+			"react-native-reanimated": path.resolve(
+				__dirname,
+				"__mocks__/react-native-reanimated.js",
+			),
 		},
 		include: [
 			"lib/**/*.test.ts",
