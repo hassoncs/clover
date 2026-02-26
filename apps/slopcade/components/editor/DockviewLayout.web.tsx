@@ -158,7 +158,10 @@ export function DockviewLayout() {
 			const saved = localStorage.getItem(STORAGE_KEY);
 			if (saved) {
 				try {
-					api.fromJSON(JSON.parse(saved));
+					const migrated = saved
+						.replace(/"wireframe"/g, '"design-canvas"')
+						.replace(/"Wireframe"/g, '"Design"');
+					api.fromJSON(JSON.parse(migrated));
 				} catch {
 					api.clear();
 					buildDefaultLayout(api);

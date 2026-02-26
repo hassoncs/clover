@@ -41,6 +41,9 @@ const AssetGalleryPanel = React.lazy(() =>
 const ChatSidebar = React.lazy(() =>
 	import("../ChatSidebar").then((m) => ({ default: m.ChatSidebar })),
 );
+const DesignCanvasPanel = React.lazy(() =>
+	import("./DesignCanvasPanel").then((m) => ({ default: m.DesignCanvasPanel })),
+);
 const WireframePanel = React.lazy(() =>
 	import("./WireframePanel").then((m) => ({ default: m.WireframePanel })),
 );
@@ -107,9 +110,9 @@ export const PANEL_REGISTRY: PanelDefinition[] = [
 		defaultPlacement: "right",
 	},
 	{
-		id: "wireframe",
-		title: "Wireframe",
-		component: WireframePanel,
+		id: "design-canvas",
+		title: "Design",
+		component: DesignCanvasPanel,
 		defaultPlacement: "right",
 	},
 ];
