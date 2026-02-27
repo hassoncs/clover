@@ -18,12 +18,6 @@ import {
 import type { PreviewContext } from "@slopcade/shared/types/preview";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, View } from "react-native";
-import { hasTunables, TuningPanel } from "@/components/game";
-import { DevToolbar } from "@/components/game/DevToolbar";
-import { GameDialog } from "@/components/game/GameDialog";
-import { getAuthToken } from "@/lib/auth/token";
-import { env } from "@/lib/config/env";
-import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import { TweenSystem } from "./animation/TweenSystem";
 import type { GameState, InputState } from "./BehaviorContext";
 import { CameraSystem } from "./CameraSystem";
@@ -31,6 +25,7 @@ import {
 	DevToolsProvider,
 	useDevToolsOptional,
 } from "./contexts/DevToolsContext";
+import { useGameRuntimeConfig } from "./contexts/GameRuntimeConfig";
 import { DebugOpsImpl } from "./DebugOpsImpl";
 import {
 	type GameStateValue,
@@ -155,6 +150,17 @@ export function GameRuntimeGodot({
 	previewContext,
 	runtimeRef,
 }: GameRuntimeGodotProps) {
+	const runtimeConfig = useGameRuntimeConfig();
+	const {
+		apiUrl,
+		getAuthToken,
+		getStorageItem,
+		setStorageItem,
+		DevToolbar,
+		GameDialog,
+		TuningPanel,
+		hasTunables,
+	} = runtimeConfig;
 	const stablePreloadTextureUrls = preloadTextureUrls ?? EMPTY_TEXTURE_URLS;
 	const progressHook = useGameProgressFromDefinition(definition);
 	const progressHookRef = useRef(progressHook);
@@ -944,7 +950,7 @@ export function GameRuntimeGodot({
 							gameId: initialDefinition.metadata.id,
 							constants: initialDefinition.constants,
 							voiceAdapter: new FetchVoiceGenerationAdapter({
-								apiUrl: env.apiUrl,
+								apiUrl,
 								getAuthToken,
 							}),
 						}),
@@ -1957,60 +1963,67 @@ export function GameRuntimeGodot({
 				/>
 			)}
 
-			{(() => {
-				const dialog = resolveActiveDialog();
-				if (!dialog) return null;
-				const vars = gameRef.current?.gameState.vars ?? {};
-				return (
-					<GameDialog
-						visible={true}
-						title={dialog.title}
-						message={dialog.message}
-						stats={dialog.stats?.map((s) => {
-							if (s.binding) {
-								const ctx = buildBindingContext(
-									gameState,
-									(tag: string) =>
-										gameRef.current?.entityManager.getEntitiesByTag(tag)
-											.length ?? 0,
-								);
-								const result = evaluateExpression(s.binding, ctx);
-								return { label: s.label, value: String(result ?? "") };
+			{GameDialog &&
+				(() => {
+					const dialog = resolveActiveDialog();
+					if (!dialog) return null;
+					const vars = gameRef.current?.gameState.vars ?? {};
+					return (
+						<GameDialog
+							visible={true}
+							title={dialog.title}
+							message={dialog.message}
+							stats={dialog.stats?.map((s) => {
+								if (s.binding) {
+									const ctx = buildBindingContext(
+										gameState,
+										(tag: string) =>
+											gameRef.current?.entityManager.getEntitiesByTag(tag)
+												.length ?? 0,
+									);
+									const result = evaluateExpression(s.binding, ctx);
+									return { label: s.label, value: String(result ?? "") };
+								}
+								return {
+									label: s.label,
+									value: s.format
+										? s.format.replace(
+												"{value}",
+												String(vars[s.variable] ?? ""),
+											)
+										: String(vars[s.variable] ?? ""),
+								};
+							})}
+							buttons={dialog.buttons.map((b) => ({
+								label: b.label,
+								variant: b.variant,
+								onPress: () => handleDialogButtonPress(b.eventName, b.data),
+							}))}
+							onClose={
+								dialog.dismissible
+									? () => handleDialogDismiss(dialog.dismissEventName)
+									: undefined
 							}
-							return {
-								label: s.label,
-								value: s.format
-									? s.format.replace("{value}", String(vars[s.variable] ?? ""))
-									: String(vars[s.variable] ?? ""),
-							};
-						})}
-						buttons={dialog.buttons.map((b) => ({
-							label: b.label,
-							variant: b.variant,
-							onPress: () => handleDialogButtonPress(b.eventName, b.data),
-						}))}
-						onClose={
-							dialog.dismissible
-								? () => handleDialogDismiss(dialog.dismissEventName)
-								: undefined
-						}
+						/>
+					);
+				})()}
+
+			{__DEV__ &&
+				hasTunables &&
+				TuningPanel &&
+				hasTunables(definition.variables as any) && (
+					<TuningPanel
+						variables={(definition.variables as any) || {}}
+						currentValues={gameState.variables}
+						onVariableChange={handleVariableChange}
+						onReset={handleReset}
+						onExport={handleExport}
+						onSave={handleSave}
+						hasUnsavedChanges={hasUnsavedChanges}
 					/>
-				);
-			})()}
+				)}
 
-			{__DEV__ && hasTunables(definition.variables as any) && (
-				<TuningPanel
-					variables={(definition.variables as any) || {}}
-					currentValues={gameState.variables}
-					onVariableChange={handleVariableChange}
-					onReset={handleReset}
-					onExport={handleExport}
-					onSave={handleSave}
-					hasUnsavedChanges={hasUnsavedChanges}
-				/>
-			)}
-
-			{__DEV__ && <DevToolbar />}
+			{__DEV__ && DevToolbar && <DevToolbar />}
 		</View>
 	);
 }

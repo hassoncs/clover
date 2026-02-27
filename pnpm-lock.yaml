@@ -53,8 +53,8 @@ importers:
         version: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
     devDependencies:
       '@chriscode/devmux':
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.7.1
+        version: 1.7.1
       '@chriscode/hush':
         specifier: ^5.0.6
         version: 5.0.6
@@ -1796,6 +1796,9 @@ importers:
       '@jitl/quickjs-singlefile-browser-release-sync':
         specifier: 0.31.0
         version: 0.31.0
+      '@slopcade/app-lib':
+        specifier: workspace:*
+        version: link:../app-lib
       '@slopcade/godot-bridge':
         specifier: workspace:*
         version: link:../godot-bridge
@@ -2853,8 +2856,8 @@ packages:
   '@cf-wasm/quickjs@0.2.4':
     resolution: {integrity: sha512-HHlBjfloy/egMwOA8gOQUoncjCjNgK4LzVWWT7pJQoYC9ddb+zHlaCtZmNdQD4ZhPXxwo0WxxYYiV0fCBHITvg==}
 
-  '@chriscode/devmux@1.6.0':
-    resolution: {integrity: sha512-Fm0dmF+gViRDoIxKq/ca+FJK/A//teWTpfwzIyzQETQPj5BFfWx9aP+N1uIqWimVTFqpehbf0pvPKEVU+a0VKA==}
+  '@chriscode/devmux@1.7.1':
+    resolution: {integrity: sha512-9pVi21KXDD5UTeUKM0phIXW4bPwipQkJOOshsI+FQIWqaLN6baICVOmf4w4C0tB6WX4vJxK+3BTlqNO0/P80Og==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -13464,7 +13467,7 @@ snapshots:
       '@jitl/quickjs-wasmfile-release-sync': 0.31.0
       quickjs-emscripten-core: 0.31.0
 
-  '@chriscode/devmux@1.6.0':
+  '@chriscode/devmux@1.7.1':
     dependencies:
       citty: 0.1.6
       execa: 9.6.1

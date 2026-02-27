@@ -1,11 +1,10 @@
+import type { GodotBridge } from "@slopcade/godot-bridge";
 import type {
 	WorkspaceSnapshot,
 	WorkspaceSnapshotFile,
 	WorkspaceTag,
 } from "@slopcade/shared";
 import { inferTagHints, TAG_GROUPS } from "@slopcade/shared";
-import type { GodotBridge } from "@slopcade/godot-bridge";
-import { trpc } from "@/lib/trpc/client";
 import { HotReloadOrchestrator } from "./HotReloadOrchestrator";
 import { TagPayloadResolver } from "./TagPayloadResolver";
 import type { HotReloadContext } from "./tag-handlers/types";
@@ -38,7 +37,7 @@ type WorkspaceSnapshotResult =
 	| { changed: false }
 	| { changed: true; snapshot: WorkspaceSnapshot };
 
-type WorkspaceSnapshotQueryClient = {
+export type WorkspaceSnapshotQueryClient = {
 	chatThreads: {
 		getWorkspaceSnapshot: {
 			query: (input: {
@@ -126,6 +125,12 @@ function changedPaths(
 
 export class LivePreviewController {
 	private static instance: LivePreviewController | null = null;
+
+	private static queryClient: WorkspaceSnapshotQueryClient | null = null;
+
+	static configure(queryClient: WorkspaceSnapshotQueryClient): void {
+		LivePreviewController.queryClient = queryClient;
+	}
 
 	private readonly fileStore = new WorkspaceFileStore();
 
@@ -314,12 +319,19 @@ export class LivePreviewController {
 			return;
 		}
 
-		const snapshotQueryClient = trpc as unknown as WorkspaceSnapshotQueryClient;
+		if (!LivePreviewController.queryClient) {
+			throw new Error(
+				"LivePreviewController.configure() must be called before use",
+			);
+		}
+
 		const result =
-			await snapshotQueryClient.chatThreads.getWorkspaceSnapshot.query({
-				gameId: this.gameId,
-				sinceRevision,
-			});
+			await LivePreviewController.queryClient.chatThreads.getWorkspaceSnapshot.query(
+				{
+					gameId: this.gameId,
+					sinceRevision,
+				},
+			);
 
 		if (!result.changed) {
 			return;

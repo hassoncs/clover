@@ -495,12 +495,9 @@ export function DesignCanvasRenderer({
 	snapLines = [],
 	showGrid = false,
 }: DesignCanvasRendererProps) {
-	const font = useFont(
-		require("../../../assets/fonts/Fredoka-Regular.ttf"),
-		12,
-	);
+	const font = useFont(require("../../assets/fonts/Fredoka-Regular.ttf"), 12);
 	const fontMgr = useFonts({
-		Fredoka: [require("../../../assets/fonts/Fredoka-Regular.ttf")],
+		Fredoka: [require("../../assets/fonts/Fredoka-Regular.ttf")],
 	});
 
 	const renderCount = useRef(0);

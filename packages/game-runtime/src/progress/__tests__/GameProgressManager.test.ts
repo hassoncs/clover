@@ -19,9 +19,11 @@ const { mockGetStorageItem, mockSetStorageItem } = vi.hoisted(() => ({
 	mockSetStorageItem: vi.fn(),
 }));
 
-vi.mock("@/lib/utils/storage", () => ({
-	getStorageItem: mockGetStorageItem,
-	setStorageItem: mockSetStorageItem,
+vi.mock("../../contexts/GameRuntimeConfig", () => ({
+	getGameRuntimeConfig: () => ({
+		getStorageItem: mockGetStorageItem,
+		setStorageItem: mockSetStorageItem,
+	}),
 }));
 
 import { GameProgressManager } from "../GameProgressManager";

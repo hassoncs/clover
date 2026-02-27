@@ -1,4 +1,5 @@
 import "react-native-get-random-values";
+import "../lib/game-runtime-config";
 import { Stack } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect } from "react";

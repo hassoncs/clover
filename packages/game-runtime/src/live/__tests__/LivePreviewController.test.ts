@@ -1,22 +1,20 @@
+import type { GodotBridge } from "@slopcade/godot-bridge";
 import type { WorkspaceSnapshot } from "@slopcade/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GodotBridge } from "@slopcade/godot-bridge";
 import {
 	LivePreviewController,
 	type PreviewMode,
 } from "../LivePreviewController";
 
-const getWorkspaceSnapshotQueryMock = vi.hoisted(() => vi.fn());
+const getWorkspaceSnapshotQueryMock = vi.fn();
 
-vi.mock("@/lib/trpc/client", () => ({
-	trpc: {
-		chatThreads: {
-			getWorkspaceSnapshot: {
-				query: getWorkspaceSnapshotQueryMock,
-			},
+const mockQueryClient = {
+	chatThreads: {
+		getWorkspaceSnapshot: {
+			query: getWorkspaceSnapshotQueryMock,
 		},
 	},
-}));
+};
 
 function createSnapshot(
 	revision: string,
@@ -79,6 +77,7 @@ describe("LivePreviewController", () => {
 		vi.useFakeTimers();
 		vi.clearAllMocks();
 		LivePreviewController.destroy();
+		LivePreviewController.configure(mockQueryClient);
 	});
 
 	afterEach(() => {

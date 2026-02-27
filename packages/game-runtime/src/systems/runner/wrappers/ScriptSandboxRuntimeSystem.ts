@@ -1,3 +1,4 @@
+import * as Haptics from "@slopcade/app-lib/haptics";
 import { SystemPhase } from "@slopcade/shared";
 import type { AsyncWorldOps } from "@slopcade/shared/types/async-world-ops";
 import type { Vec2, Vec3 } from "@slopcade/shared/types/common";
@@ -17,12 +18,13 @@ import type {
 	WorldOps,
 	WorldRaycastHit,
 } from "@slopcade/shared/types/world-ops";
-import * as Haptics from "@/lib/haptics";
+import type { EffectDispatcher } from "../../../EffectDispatcher";
+import { SequenceManager } from "../../../SequenceManager";
 import {
 	createScriptSandbox,
 	type IScriptSandbox,
 	type ScriptHookName,
-} from "@/lib/scripting";
+} from "../../../scripting";
 import type {
 	DragSnapshot,
 	InputSnapshot,
@@ -33,9 +35,7 @@ import type {
 	ScriptErrorReport,
 	ScriptInputEvent,
 	ScriptSandboxConfig,
-} from "@/lib/scripting/types";
-import type { EffectDispatcher } from "../../../EffectDispatcher";
-import { SequenceManager } from "../../../SequenceManager";
+} from "../../../scripting/types";
 import {
 	type VoiceGenerationAdapter,
 	VoicePrepareService,

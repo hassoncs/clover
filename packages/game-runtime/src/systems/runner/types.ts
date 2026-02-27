@@ -12,9 +12,9 @@
  * - Systems are STATELESS between frames - all state must be in TState
  */
 
-import type { EventBus, SystemPhase } from "@slopcade/shared";
+import type { Physics2D } from "@slopcade/app-lib/physics2d";
 import type { GodotBridge } from "@slopcade/godot-bridge";
-import type { Physics2D } from "@/lib/physics2d/Physics2D";
+import type { EventBus, SystemPhase } from "@slopcade/shared";
 import type {
 	CollisionInfo,
 	GameState,

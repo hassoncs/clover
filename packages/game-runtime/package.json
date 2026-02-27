@@ -13,7 +13,12 @@
 		".": "./src/index.ts",
 		"./types": "./src/types.ts",
 		"./runtime": "./src/runtime/index.ts",
-		"./live": "./src/live/index.ts"
+		"./live": "./src/live/index.ts",
+		"./live/LivePreviewController": "./src/live/LivePreviewController.ts",
+		"./live/HotReloadOrchestrator": "./src/live/HotReloadOrchestrator.ts",
+		"./live/TagPayloadResolver": "./src/live/TagPayloadResolver.ts",
+		"./live/WorkspaceFileStore": "./src/live/WorkspaceFileStore.ts",
+		"./GameRuntime.godot": "./src/GameRuntime.godot.tsx"
 	},
 	"peerDependencies": {
 		"react": "*",
@@ -22,6 +27,7 @@
 		"@slopcade/shared": "workspace:*"
 	},
 	"dependencies": {
+		"@slopcade/app-lib": "workspace:*",
 		"@slopcade/godot-bridge": "workspace:*",
 		"@slopcade/shared": "workspace:*",
 		"expr-eval": "^2.0.2",

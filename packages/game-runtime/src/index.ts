@@ -5,6 +5,8 @@ export type {
 	ViewportSize,
 } from "./CameraSystem";
 export { CameraSystem } from "./CameraSystem";
+export type { GameRuntimeConfig } from "./contexts/GameRuntimeConfig";
+export { configureGameRuntime } from "./contexts/GameRuntimeConfig";
 export { EntityManager } from "./EntityManager";
 export type { GameLoaderOptions, LoadedGame } from "./GameLoader";
 export {

@@ -5,7 +5,10 @@ import {
 	useEditorCommandHandler,
 	WorkspaceFilesProvider,
 } from "@slopcade/editor";
-import { LivePreviewController } from "@slopcade/game-runtime/live/LivePreviewController";
+import {
+	LivePreviewController,
+	type WorkspaceSnapshotQueryClient,
+} from "@slopcade/game-runtime/live/LivePreviewController";
 import type { GameDefinition } from "@slopcade/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -29,6 +32,10 @@ function EditorCommandListener() {
 	useEditorCommandHandler();
 	return null;
 }
+
+LivePreviewController.configure(
+	trpc as unknown as WorkspaceSnapshotQueryClient,
+);
 
 export default function EditorScreen() {
 	const router = useRouter();

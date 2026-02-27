@@ -1,4 +1,5 @@
 import "react-native-get-random-values";
+import "@/lib/game-runtime-config";
 import "@/lib/notifications/setup";
 import * as Sentry from "@sentry/react-native";
 import { getBrandConfig } from "@slopcade/shared";

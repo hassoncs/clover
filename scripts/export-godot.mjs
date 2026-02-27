@@ -307,6 +307,10 @@ async function main() {
 	}
 
 	if (onceMode) {
+		if (outputTime > 0 && sourceTime <= outputTime) {
+			log("Export is current, skipping");
+			process.exit(0);
+		}
 		const success = exportGodot(godotPath, { web: true, native: false });
 		process.exit(success ? 0 : 1);
 	}

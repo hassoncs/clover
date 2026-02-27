@@ -102,7 +102,7 @@
 		"ios-shader": {
 			"cwd": "apps/shader-editor",
 			"comment": "Build + install shader-editor on iOS simulator (bundle: com.slopcade.shader-editor).",
-			"command": "RCT_METRO_PORT=8088 npx hush run -t app -- RCT_METRO_PORT=8088 npx expo run:ios --no-bundler",
+			"command": "RCT_METRO_PORT=8088 npx hush run -t app -- npx expo run:ios --no-bundler",
 			"dashboard": false,
 			"dependsOn": ["metro-shader"]
 		},

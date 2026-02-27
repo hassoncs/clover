@@ -1,8 +1,8 @@
 import type { FontPreset } from "@slopcade/shared";
-import Bangers from "@/assets/fonts/Bangers-Regular.ttf";
-import FredokaBold from "@/assets/fonts/Fredoka-Bold.ttf";
-import FredokaRegular from "@/assets/fonts/Fredoka-Regular.ttf";
-import PressStart2P from "@/assets/fonts/PressStart2P-Regular.ttf";
+import Bangers from "../../../assets/fonts/Bangers-Regular.ttf";
+import FredokaBold from "../../../assets/fonts/Fredoka-Bold.ttf";
+import FredokaRegular from "../../../assets/fonts/Fredoka-Regular.ttf";
+import PressStart2P from "../../../assets/fonts/PressStart2P-Regular.ttf";
 
 export const BUNDLED_FONTS: Record<string, { normal: any; bold?: any }> = {
 	PressStart2P: { normal: PressStart2P },

@@ -36,9 +36,21 @@ declare module "@slopcade/game-runtime/*" {
 		state?: unknown;
 	}
 
+	export type WorkspaceSnapshotQueryClient = {
+		chatThreads: {
+			getWorkspaceSnapshot: {
+				query: (input: {
+					gameId: string;
+					sinceRevision?: string;
+				}) => Promise<unknown>;
+			};
+		};
+	};
+
 	export class LivePreviewController {
 		static getInstance(): LivePreviewController;
 		static destroy(): void;
+		static configure(queryClient: WorkspaceSnapshotQueryClient): void;
 		initialize(gameId: string, bridge: unknown): Promise<void>;
 		isInitialized(): boolean;
 		getGameId(): string | null;
@@ -60,4 +72,13 @@ declare module "@slopcade/game-runtime/*" {
 	}
 
 	export const GameRuntimeGodot: ComponentType<Record<string, unknown>>;
+
+	export interface GameRuntimeConfig {
+		apiUrl: string;
+		getAuthToken: () => Promise<string | null>;
+		getStorageItem: <T>(key: string, defaultValue: T) => Promise<T>;
+		setStorageItem: <T>(key: string, value: T) => Promise<void>;
+	}
+
+	export function configureGameRuntime(config: GameRuntimeConfig): void;
 }
