@@ -430,6 +430,31 @@ function DrawingFrame2Phase(props: PhaseRendererProps) {
 	return <DrawingPhase {...props} frameNumber={2} />;
 }
 
+function ErrorPhase({ sharedData, role }: PhaseRendererProps) {
+	const isHost = role === "host";
+	const errorMessage =
+		toStringOrEmpty((sharedData as any).errorMessage) ||
+		"An unknown error occurred.";
+
+	return (
+		<PhaseShell
+			title="Drawful Animate"
+			subtitle="A disturbance in the animation"
+			accentColor="#ef4444"
+			isHost={isHost}
+		>
+			<View className="w-full p-6 bg-red-500/10 border border-red-500/30 rounded-2xl items-center">
+				<Text className="font-lora text-red-400 text-xl font-bold mb-2">
+					Error
+				</Text>
+				<Text className="font-inter text-amen-cream text-center">
+					{errorMessage}
+				</Text>
+			</View>
+		</PhaseShell>
+	);
+}
+
 export function registerDrawfulAnimatePhases() {
 	registerGamePhases("drawful-animate", {
 		drawing_f1: DrawingFrame1Phase,
@@ -439,5 +464,6 @@ export function registerDrawfulAnimatePhases() {
 		reveal: RevealPhase,
 		scores: ScoresPhase,
 		winner: WinnerPhase,
+		error: ErrorPhase,
 	});
 }

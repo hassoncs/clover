@@ -792,7 +792,11 @@ export class PartyRoomDO {
 					const message = err instanceof Error ? err.message : String(err);
 					console.error("[PartyRoomDO] Template runner failed:", err);
 					ws.send(encodeMessage(errorMessage("SCRIPT_ERROR", message)));
-					await this.updateSharedData({ scriptError: message });
+					await this.updateSharedData({
+						phase: "error",
+						scriptError: message,
+						errorMessage: `Game encountered an error: ${message}`,
+					});
 					await this.setPhase("ended");
 				});
 				return;
@@ -816,7 +820,11 @@ export class PartyRoomDO {
 						error instanceof Error ? error.message : String(error);
 					console.error("[PartyRoomDO] Server script failed:", error);
 					ws.send(encodeMessage(errorMessage("SCRIPT_ERROR", message)));
-					await this.updateSharedData({ scriptError: message });
+					await this.updateSharedData({
+						phase: "error",
+						scriptError: message,
+						errorMessage: `Game encountered an error: ${message}`,
+					});
 					await this.setPhase("ended");
 				});
 			return;

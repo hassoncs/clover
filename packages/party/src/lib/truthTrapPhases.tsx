@@ -9,8 +9,8 @@ import { AnswerRevealSequence } from "../components/results/AnswerRevealSequence
 import { FinalPodium } from "../components/results/FinalPodium";
 import { RoundScoreBoard } from "../components/results/RoundScoreBoard";
 import { VoteList } from "../components/VoteList";
-import { usePartyNarration } from "./usePartyNarration";
 import { type PhaseRendererProps, registerGamePhases } from "./phaseRegistry";
+import { usePartyNarration } from "./usePartyNarration";
 
 const TRUTH_ACCENT = "#10b981";
 const WINNER_NARRATION = "Well done, good and faithful servant!";
@@ -302,6 +302,32 @@ function WinnerPhase({ sharedData, roomState }: PhaseRendererProps) {
 	);
 }
 
+function ErrorPhase({ sharedData, role }: PhaseRendererProps) {
+	const isHost = role === "host";
+	const errorMessage = asString(
+		sharedData.errorMessage,
+		"An unknown error occurred.",
+	);
+
+	return (
+		<PhaseShell
+			title="Scrolls of Truth"
+			subtitle="A disturbance in the scrolls"
+			accentColor="#ef4444"
+			isHost={isHost}
+		>
+			<View className="w-full p-6 bg-red-500/10 border border-red-500/30 rounded-2xl items-center">
+				<Text className="font-lora text-red-400 text-xl font-bold mb-2">
+					Error
+				</Text>
+				<Text className="font-inter text-amen-cream text-center">
+					{errorMessage}
+				</Text>
+			</View>
+		</PhaseShell>
+	);
+}
+
 export function registerTruthTrapPhases() {
 	registerGamePhases("truth-trap", {
 		writing_lies: WritingLiesPhase,
@@ -309,5 +335,6 @@ export function registerTruthTrapPhases() {
 		reveal: RevealPhase,
 		scores: ScoresPhase,
 		winner: WinnerPhase,
+		error: ErrorPhase,
 	});
 }
