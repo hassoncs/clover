@@ -4,10 +4,10 @@ import {
 	AMEN_GAME_IDS,
 } from "./amen-game-art-prompts";
 import {
-	SLOPCADE_AVATAR_ICON_PROMPTS,
-	SLOPCADE_GAME_ASSET_PROMPTS,
-	SLOPCADE_GAME_IDS,
-} from "./slopcade-game-art-prompts";
+	SLOPBOX_AVATAR_ICON_PROMPTS,
+	SLOPBOX_GAME_ASSET_PROMPTS,
+	SLOPBOX_GAME_IDS,
+} from "./slopbox-game-art-prompts";
 
 export type AssetType =
 	| "tiles"
@@ -58,18 +58,18 @@ const BRAND_ART_CONFIGS: Record<string, BrandArtConfig> = {
 		defaultAssetHost: "https://assets.amen.games",
 		supportsVoiceovers: true,
 	},
-	slopcade: {
-		brandId: "slopcade",
-		gameIds: SLOPCADE_GAME_IDS,
-		gamePrompts: SLOPCADE_GAME_ASSET_PROMPTS as unknown as Record<
+	slopbox: {
+		brandId: "slopbox",
+		gameIds: SLOPBOX_GAME_IDS,
+		gamePrompts: SLOPBOX_GAME_ASSET_PROMPTS as unknown as Record<
 			string,
 			GameAssetPrompt
 		>,
-		avatarPrompts: SLOPCADE_AVATAR_ICON_PROMPTS as unknown as Record<
+		avatarPrompts: SLOPBOX_AVATAR_ICON_PROMPTS as unknown as Record<
 			string,
 			string
 		>,
-		defaultAssetHost: "https://assets.slopcade.dev",
+		defaultAssetHost: "https://assets.slopbox.tv",
 		supportsVoiceovers: false,
 	},
 };

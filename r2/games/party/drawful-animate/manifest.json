@@ -32,7 +32,21 @@
 			"winner"
 		],
 		"inputTypes": ["drawing", "text", "choice"],
-		"roundCount": 2
+		"roundCount": 2,
+		"assets": {
+			"sfx": [
+				"swoosh",
+				"submit",
+				"reveal",
+				"drumroll",
+				"vote-cast",
+				"correct",
+				"score-up",
+				"winner-fanfare",
+				"tick",
+				"crowd-cheer"
+			]
+		}
 	},
 	"brands": ["amen", "slopcade"],
 	"brandTitles": {

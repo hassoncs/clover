@@ -1,6 +1,16 @@
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 
+let createAudioPlayer: any = null;
+if (Platform.OS !== "web") {
+	try {
+		const ExpoAudio = require("expo-audio");
+		createAudioPlayer = ExpoAudio.createAudioPlayer;
+	} catch (e) {
+		console.warn("[AudioManager] expo-audio not available on native");
+	}
+}
+
 export type SoundType = "sfx" | "music";
 
 export interface SoundConfig {
@@ -32,6 +42,11 @@ interface WebAudioElement {
 	type: SoundType;
 }
 
+interface NativeAudioElement {
+	player: any;
+	type: SoundType;
+}
+
 const DEFAULT_MAX_CACHE_SIZE = 50;
 const CROSSFADE_DURATION_MS = 500;
 const CROSSFADE_STEP_MS = 16;
@@ -48,10 +63,12 @@ function hashUrl(url: string): string {
 class AudioManagerClass {
 	private cache = new Map<string, CachedSound>();
 	private webAudioElements = new Map<string, WebAudioElement>();
+	private nativeAudioElements = new Map<string, NativeAudioElement>();
 	private currentMusic: string | null = null;
 	private config: Required<AudioManagerConfig>;
 	private muted = false;
 	private fadeTimer: ReturnType<typeof setInterval> | null = null;
+	private fadeTimerNative: any = null;
 
 	constructor(config: AudioManagerConfig = {}) {
 		this.config = {
@@ -73,7 +90,7 @@ class AudioManagerClass {
 
 			if (Platform.OS !== "web") {
 				const filename = `audio_${hashUrl(config.url)}.cache`;
-				localPath = `${FileSystem.cacheDirectory}${filename}`;
+				localPath = `${FileSystem.documentDirectory}${filename}`;
 
 				const info = await FileSystem.getInfoAsync(localPath);
 				if (!info.exists) {
@@ -85,6 +102,7 @@ class AudioManagerClass {
 						return false;
 					}
 				}
+				await this.preloadNativeAudio(soundId, config, localPath);
 			} else {
 				await this.preloadWebAudio(soundId, config);
 			}
@@ -103,6 +121,30 @@ class AudioManagerClass {
 		} catch (error) {
 			console.warn(`[AudioManager] Preload failed for ${soundId}:`, error);
 			return false;
+		}
+	}
+
+	private async preloadNativeAudio(
+		soundId: string,
+		config: SoundConfig,
+		localPath: string,
+	): Promise<void> {
+		if (!createAudioPlayer) return;
+
+		try {
+			const player = createAudioPlayer(localPath, { updateInterval: 500 });
+			player.loop = config.loop ?? false;
+			player.volume = this.getEffectiveVolume(
+				config.type,
+				config.defaultVolume ?? 1.0,
+			);
+
+			this.nativeAudioElements.set(soundId, { player, type: config.type });
+		} catch (error) {
+			console.warn(
+				`[AudioManager] Failed to load native audio: ${localPath}`,
+				error,
+			);
 		}
 	}
 
@@ -176,6 +218,29 @@ class AudioManagerClass {
 				clone.volume = effectiveVolume;
 				clone.play().catch(() => {});
 			}
+		} else {
+			const nativeAudio = this.nativeAudioElements.get(soundId);
+			if (nativeAudio && nativeAudio.player) {
+				// To allow overlapping SFX, we ideally want to clone the player,
+				// but expo-audio doesn't have a direct clone method.
+				// We can re-instantiate or just seek to 0 if it's currently playing.
+				if (nativeAudio.player.playing) {
+					// We could create a temporary fire-and-forget player for overlap
+					if (createAudioPlayer && cached.localPath) {
+						const tempPlayer = createAudioPlayer(cached.localPath);
+						tempPlayer.volume = effectiveVolume;
+						tempPlayer.play();
+						// It will be cleaned up by garbage collection eventually
+					} else {
+						nativeAudio.player.seekTo(0);
+						nativeAudio.player.volume = effectiveVolume;
+					}
+				} else {
+					nativeAudio.player.volume = effectiveVolume;
+					nativeAudio.player.seekTo(0);
+					nativeAudio.player.play();
+				}
+			}
 		}
 	}
 
@@ -204,6 +269,14 @@ class AudioManagerClass {
 				webAudio.audio.loop = cached.loop;
 				webAudio.audio.currentTime = 0;
 				webAudio.audio.play().catch(() => {});
+			}
+		} else {
+			const nativeAudio = this.nativeAudioElements.get(soundId);
+			if (nativeAudio && nativeAudio.player) {
+				nativeAudio.player.volume = effectiveVolume;
+				nativeAudio.player.loop = cached.loop;
+				nativeAudio.player.seekTo(0);
+				nativeAudio.player.play();
 			}
 		}
 	}
@@ -268,8 +341,50 @@ class AudioManagerClass {
 				}
 			}, CROSSFADE_STEP_MS);
 		} else {
-			await this.stopMusic();
-			await this.playMusic(soundId, volume);
+			const outgoing = this.currentMusic
+				? this.nativeAudioElements.get(this.currentMusic)
+				: null;
+			const incoming = this.nativeAudioElements.get(soundId);
+
+			if (!incoming || !incoming.player) {
+				console.warn(`[AudioManager] No native audio element for: ${soundId}`);
+				return;
+			}
+
+			const outgoingStartVolume = outgoing?.player.volume ?? 0;
+			incoming.player.volume = 0;
+			incoming.player.loop = cached.loop;
+			incoming.player.seekTo(0);
+			incoming.player.play();
+
+			const previousMusic = this.currentMusic;
+			this.currentMusic = soundId;
+
+			const steps = Math.max(
+				1,
+				Math.round(CROSSFADE_DURATION_MS / CROSSFADE_STEP_MS),
+			);
+			let step = 0;
+
+			this.fadeTimerNative = setInterval(() => {
+				step++;
+				const progress = Math.min(1, step / steps);
+
+				if (outgoing && outgoing.player) {
+					outgoing.player.volume = outgoingStartVolume * (1 - progress);
+				}
+				if (incoming.player) {
+					incoming.player.volume = targetVolume * progress;
+				}
+
+				if (progress >= 1) {
+					this.clearFadeTimer();
+					if (outgoing && outgoing.player && previousMusic) {
+						outgoing.player.pause();
+						outgoing.player.seekTo(0);
+					}
+				}
+			}, CROSSFADE_STEP_MS);
 		}
 	}
 
@@ -307,7 +422,38 @@ class AudioManagerClass {
 				}, CROSSFADE_STEP_MS);
 			});
 		} else {
-			await this.stopMusic();
+			const nativeAudio = this.nativeAudioElements.get(this.currentMusic);
+			if (!nativeAudio || !nativeAudio.player) {
+				this.currentMusic = null;
+				return;
+			}
+
+			const startVolume = nativeAudio.player.volume;
+			const musicId = this.currentMusic;
+			const steps = Math.max(1, Math.round(durationMs / CROSSFADE_STEP_MS));
+			let step = 0;
+
+			return new Promise((resolve) => {
+				this.fadeTimerNative = setInterval(() => {
+					step++;
+					const progress = Math.min(1, step / steps);
+					if (nativeAudio.player) {
+						nativeAudio.player.volume = startVolume * (1 - progress);
+					}
+
+					if (progress >= 1) {
+						this.clearFadeTimer();
+						if (nativeAudio.player) {
+							nativeAudio.player.pause();
+							nativeAudio.player.seekTo(0);
+						}
+						if (this.currentMusic === musicId) {
+							this.currentMusic = null;
+						}
+						resolve();
+					}
+				}, CROSSFADE_STEP_MS);
+			});
 		}
 	}
 
@@ -321,6 +467,12 @@ class AudioManagerClass {
 				webAudio.audio.pause();
 				webAudio.audio.currentTime = 0;
 			}
+		} else {
+			const nativeAudio = this.nativeAudioElements.get(this.currentMusic);
+			if (nativeAudio && nativeAudio.player) {
+				nativeAudio.player.pause();
+				nativeAudio.player.seekTo(0);
+			}
 		}
 
 		this.currentMusic = null;
@@ -330,6 +482,10 @@ class AudioManagerClass {
 		if (this.fadeTimer) {
 			clearInterval(this.fadeTimer);
 			this.fadeTimer = null;
+		}
+		if (this.fadeTimerNative) {
+			clearInterval(this.fadeTimerNative);
+			this.fadeTimerNative = null;
 		}
 	}
 
@@ -410,6 +566,11 @@ class AudioManagerClass {
 			if (webAudio) {
 				webAudio.audio.volume = effectiveVolume;
 			}
+		} else {
+			const nativeAudio = this.nativeAudioElements.get(this.currentMusic);
+			if (nativeAudio && nativeAudio.player) {
+				nativeAudio.player.volume = effectiveVolume;
+			}
 		}
 	}
 
@@ -424,10 +585,19 @@ class AudioManagerClass {
 			0,
 			this.cache.size - this.config.maxCacheSize,
 		);
-		for (const [soundId] of toRemove) {
+		for (const [soundId, entry] of toRemove) {
 			if (soundId !== this.currentMusic) {
+				if (Platform.OS !== "web") {
+					const nativeAudio = this.nativeAudioElements.get(soundId);
+					if (nativeAudio && nativeAudio.player) {
+						try {
+							nativeAudio.player.remove();
+						} catch (e) {}
+					}
+				}
 				this.cache.delete(soundId);
 				this.webAudioElements.delete(soundId);
+				this.nativeAudioElements.delete(soundId);
 			}
 		}
 	}
@@ -436,14 +606,33 @@ class AudioManagerClass {
 		if (soundId === this.currentMusic) {
 			this.stopMusic();
 		}
+		if (Platform.OS !== "web") {
+			const nativeAudio = this.nativeAudioElements.get(soundId);
+			if (nativeAudio && nativeAudio.player) {
+				try {
+					nativeAudio.player.remove();
+				} catch (e) {}
+			}
+		}
 		this.cache.delete(soundId);
 		this.webAudioElements.delete(soundId);
+		this.nativeAudioElements.delete(soundId);
 	}
 
 	unloadAll(): void {
 		this.stopMusic();
+		if (Platform.OS !== "web") {
+			for (const nativeAudio of Array.from(this.nativeAudioElements.values())) {
+				if (nativeAudio && nativeAudio.player) {
+					try {
+						nativeAudio.player.remove();
+					} catch (e) {}
+				}
+			}
+		}
 		this.cache.clear();
 		this.webAudioElements.clear();
+		this.nativeAudioElements.clear();
 	}
 
 	isPreloaded(soundId: string): boolean {

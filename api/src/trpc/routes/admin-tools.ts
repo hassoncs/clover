@@ -522,17 +522,28 @@ export const adminToolsRouter = router({
 				SCENARIO_API_URL: ctx.env.SCENARIO_API_URL,
 			});
 			const imageClient = new ScenarioImageClient(scenarioBase);
-			const elevenLabs = new ElevenLabsService(
-				assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY),
-			);
+
+			let elevenLabs: ElevenLabsService | null = null;
 			const brandVoice = BRAND_VOICES[input.brandId];
-			if (!brandVoice) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `No voice config for brand ${input.brandId}`,
-				});
+			const rulesVoice = brandVoice?.rules;
+
+			if (input.assetTypes.includes("voiceovers")) {
+				if (!brandConfig.supportsVoiceovers) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Voiceovers not enabled for brand ${input.brandId}`,
+					});
+				}
+				if (!brandVoice) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `No voice config for brand ${input.brandId}`,
+					});
+				}
+				elevenLabs = new ElevenLabsService(
+					assertElevenLabsApiKey(ctx.env.ELEVENLABS_API_KEY),
+				);
 			}
-			const rulesVoice = brandVoice.rules;
 
 			const storeGeneratedImage = async (options: {
 				prompt: string;
@@ -578,16 +589,6 @@ export const adminToolsRouter = router({
 					isNew: stored.isNew,
 				};
 			};
-
-			if (
-				input.assetTypes.includes("voiceovers") &&
-				!brandConfig.supportsVoiceovers
-			) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Voiceovers not enabled for brand ${input.brandId}`,
-				});
-			}
 
 			for (const gameId of selectedGameIds) {
 				const game = brandConfig.gamePrompts[gameId];
@@ -670,7 +671,11 @@ export const adminToolsRouter = router({
 					}
 				}
 
-				if (input.assetTypes.includes("voiceovers")) {
+				if (
+					input.assetTypes.includes("voiceovers") &&
+					elevenLabs &&
+					rulesVoice
+				) {
 					const audio = await elevenLabs.generateVoice({
 						text: game.voiceoverScript,
 						voiceId: rulesVoice.voiceId,

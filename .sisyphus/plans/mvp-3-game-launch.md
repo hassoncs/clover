@@ -12,7 +12,7 @@ Launch both apps with **Quiplash**, **Fibbage (Truth Trap)**, and **Drawful (Dra
 - **Slopbox app** queries `brandId: "slopbox"` (`apps/slopbox/hooks/useBrowsePartyGames.ts:6`)
 - **D1 templates** are stored as `brand_id: "slopcade"` (`api/migrations/20260219_slopcade_game_templates.sql`)
 - **Content loader** queries `brand_id` from `party_content` table
-- **Result**: Slopbox browse screen shows ZERO games
+- **Result**: Slopbox br````owse screen shows ZERO games
 - **Fix**: Either update Slopbox app to query `"slopcade"`, OR migrate DB templates/content to use `"slopbox"`. Need to decide which is canonical.
 
 ### B2. Slopbox Content Existence Unknown

@@ -7,6 +7,7 @@ export const AMEN_GAME_IDS = [
 	"chain-reaction",
 	"quickfire-qa",
 	"truth-trap",
+	"drawful-animate",
 ] as const;
 
 export type AmenGameId = (typeof AMEN_GAME_IDS)[number];
@@ -146,6 +147,21 @@ export const AMEN_GAME_ASSET_PROMPTS: Record<AmenGameId, AmenGameAssetPrompt> =
 			],
 			voiceoverScript:
 				"Welcome to Scrolls of Truth! You'll see a surprising fact with one real answer hiding among many bluffs. Write a believable fake answer to fool your friends. Then all options are revealed, and everyone votes for the one they think is true. Score points for spotting truth and for every player your bluff deceives!",
+		},
+		"drawful-animate": {
+			gameId: "drawful-animate",
+			displayName: "Illustrated Scripture",
+			artDirection: "Quill sketches, moving parchment, illuminated animation",
+			tilePrompt: `Square game tile illustration for "Illustrated Scripture". A quill pen animating a living sketch on glowing parchment. ${BASE_STYLE}`,
+			heroPrompt: `Wide cinematic banner for "Illustrated Scripture". Scribes gather around a large moving scroll, laughing at the funny animations. ${BASE_STYLE}`,
+			panelPrompts: [
+				`Tutorial panel 1 for "Illustrated Scripture": draw two frames of an action to make an animation. ${BASE_STYLE}`,
+				`Tutorial panel 2 for "Illustrated Scripture": write a fake title to trick the other players. ${BASE_STYLE}`,
+				`Tutorial panel 3 for "Illustrated Scripture": everyone votes on what they think the real title is. ${BASE_STYLE}`,
+				`Tutorial panel 4 for "Illustrated Scripture": earn points when people guess the right title, or when they fall for your bluff! ${BASE_STYLE}`,
+			],
+			voiceoverScript:
+				"Welcome to Illustrated Scripture! You'll receive a prompt and must draw two frames to create a looping animation. Then, everyone watches the masterpiece and writes a fake title to trick the room. Vote for the real title to score points, and earn bonuses when players fall for your clever bluffs!",
 		},
 	};
 

@@ -22,6 +22,7 @@ import {
 	registerYearJinxPhases,
 	useParty,
 	usePartyMusic,
+	usePartySfx,
 } from "@slopcade/party";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
@@ -55,6 +56,7 @@ function GameContent() {
 	const { settings } = useAppSettings();
 
 	usePartyMusic(roomState);
+	usePartySfx(roomState);
 
 	if (!roomState) {
 		return (

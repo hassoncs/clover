@@ -158,3 +158,7 @@ export function getSoundFileUrl(soundId: string, brand: string): string {
 	}
 	return sharedPath;
 }
+
+export function getSfxFileUrl(soundId: string): string {
+	return `audio/sfx/shared/${soundId}.mp3`;
+}

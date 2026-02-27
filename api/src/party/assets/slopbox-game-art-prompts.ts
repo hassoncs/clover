@@ -1,4 +1,4 @@
-export const SLOPCADE_GAME_IDS = [
+export const SLOPBOX_GAME_IDS = [
 	"s-quiplash",
 	"s-half-and-half",
 	"s-about-you-bluff",
@@ -14,10 +14,10 @@ export const SLOPCADE_GAME_IDS = [
 	"s-heads-up",
 ] as const;
 
-export type SlopcadeGameId = (typeof SLOPCADE_GAME_IDS)[number];
+export type SlopboxGameId = (typeof SLOPBOX_GAME_IDS)[number];
 
-export interface SlopcadeGameAssetPrompt {
-	gameId: SlopcadeGameId;
+export interface SlopboxGameAssetPrompt {
+	gameId: SlopboxGameId;
 	displayName: string;
 	artDirection: string;
 	tilePrompt: string;
@@ -29,9 +29,9 @@ export interface SlopcadeGameAssetPrompt {
 const BASE_STYLE =
 	"neon arcade party aesthetic, slime green and hot pink and electric blue glow, dark background, CRT scanline texture, pixel-art accents, sticker-bomb energy, chaotic but readable composition, high contrast, no text, no letters, no watermark";
 
-export const SLOPCADE_GAME_ASSET_PROMPTS: Record<
-	SlopcadeGameId,
-	SlopcadeGameAssetPrompt
+export const SLOPBOX_GAME_ASSET_PROMPTS: Record<
+	SlopboxGameId,
+	SlopboxGameAssetPrompt
 > = {
 	"s-quiplash": {
 		gameId: "s-quiplash",
@@ -243,7 +243,7 @@ export const SLOPCADE_GAME_ASSET_PROMPTS: Record<
 	},
 };
 
-export const SLOPCADE_AVATAR_ICON_PROMPTS = {
+export const SLOPBOX_AVATAR_ICON_PROMPTS = {
 	controller: `Simple icon avatar of a game controller in neon arcade style, electric blue glow, pixel-art accents, centered, transparent-friendly edges, no text, no watermark.`,
 	pixelHeart: `Simple icon avatar of a pixel-art heart in neon arcade style, hot pink glow, chunky 8-bit pixels, centered, transparent-friendly edges, no text, no watermark.`,
 	skull: `Simple icon avatar of a skull in neon arcade style, slime green glow, pixel-art details, punk energy, centered, transparent-friendly edges, no text, no watermark.`,
@@ -254,4 +254,4 @@ export const SLOPCADE_AVATAR_ICON_PROMPTS = {
 	diamond: `Simple icon avatar of a gem diamond in neon arcade style, electric blue and hot pink facets glowing, pixel-art crystal cuts, centered, transparent-friendly edges, no text, no watermark.`,
 } as const;
 
-export type SlopcadeAvatarType = keyof typeof SLOPCADE_AVATAR_ICON_PROMPTS;
+export type SlopboxAvatarType = keyof typeof SLOPBOX_AVATAR_ICON_PROMPTS;

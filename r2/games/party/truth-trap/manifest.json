@@ -20,27 +20,27 @@
 		"maxPlayers": 8,
 		"minPlayers": 3,
 		"serverScript": "server",
-		"contentPacks": [
-			"fibbage"
-		],
-		"phases": [
-			"lobby",
-			"writing_lies",
-			"voting",
-			"reveal",
-			"scores",
-			"winner"
-		],
-		"inputTypes": [
-			"text",
-			"choice"
-		],
-		"roundCount": 3
+		"contentPacks": ["fibbage"],
+		"phases": ["lobby", "writing_lies", "voting", "reveal", "scores", "winner"],
+		"inputTypes": ["text", "choice"],
+		"roundCount": 3,
+		"assets": {
+			"sfx": [
+				"swoosh",
+				"submit",
+				"reveal",
+				"drumroll",
+				"vote-cast",
+				"correct",
+				"wrong",
+				"score-up",
+				"winner-fanfare",
+				"tick",
+				"crowd-gasp"
+			]
+		}
 	},
-	"brands": [
-		"amen",
-		"slopcade"
-	],
+	"brands": ["amen", "slopcade"],
 	"brandTitles": {
 		"amen": {
 			"title": "Scrolls of Truth",

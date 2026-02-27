@@ -65,4 +65,5 @@ export * from "./lib/types";
 export * from "./lib/usePartyConnection";
 export * from "./lib/usePartyMusic";
 export * from "./lib/usePartyNarration";
+export * from "./lib/usePartySfx";
 export * from "./lib/yearJinxPhases";

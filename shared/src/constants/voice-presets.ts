@@ -97,12 +97,12 @@ export const BRAND_VOICES: Record<string, BrandVoices> = {
 			},
 		},
 	},
-	slopcade: {
+	slopbox: {
 		announcer: {
 			voiceId: "m7ylp1ry3hFqafo4tS3s",
-			name: "Slopcade Host",
+			name: "Slopbox Host",
 			description:
-				"Energetic game host for slopcade (using amen voice as placeholder — swap later)",
+				"Energetic game host for slopbox (using amen voice as placeholder — swap later)",
 			model: "eleven_multilingual_v2",
 			settings: {
 				stability: 0.5,
@@ -112,9 +112,9 @@ export const BRAND_VOICES: Record<string, BrandVoices> = {
 		},
 		rules: {
 			voiceId: "m7ylp1ry3hFqafo4tS3s",
-			name: "Slopcade Host",
+			name: "Slopbox Host",
 			description:
-				"Rules voice for slopcade (using amen voice as placeholder — swap later)",
+				"Rules voice for slopbox (using amen voice as placeholder — swap later)",
 			model: "eleven_multilingual_v2",
 			settings: {
 				stability: 0.7,

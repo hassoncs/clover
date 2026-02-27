@@ -31,7 +31,21 @@
 			"winner"
 		],
 		"inputTypes": ["text", "choice", "buzzer"],
-		"roundCount": 2
+		"roundCount": 2,
+		"assets": {
+			"sfx": [
+				"swoosh",
+				"submit",
+				"reveal",
+				"drumroll",
+				"vote-cast",
+				"correct",
+				"score-up",
+				"winner-fanfare",
+				"tick",
+				"crowd-laugh"
+			]
+		}
 	},
 	"tags": ["party", "multiplayer"],
 	"requiresPartyMode": true,

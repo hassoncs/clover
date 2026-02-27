@@ -22,6 +22,7 @@ import { registerSketchBluffPhases } from "@/lib/party/sketchBluffPhases";
 import { registerSpectrumGuessPhases } from "@/lib/party/spectrumGuessPhases";
 import { registerTruthTrapPhases } from "@/lib/party/truthTrapPhases";
 import { usePartyMusic } from "@/lib/party/usePartyMusic";
+import { usePartySfx } from "@/lib/party/usePartySfx";
 import { registerYearJinxPhases } from "@/lib/party/yearJinxPhases";
 import { useAppSettings } from "@/lib/settings/useAppSettings";
 import { useSpeechToText } from "@/lib/speech/useSpeechToText";
@@ -52,6 +53,7 @@ function GameContent() {
 	const { settings } = useAppSettings();
 
 	usePartyMusic(roomState);
+	usePartySfx(roomState);
 
 	if (!roomState) {
 		return (

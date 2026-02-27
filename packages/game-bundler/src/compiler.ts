@@ -872,14 +872,21 @@ export function compileBundle(
 			"persistence",
 			"hoverHighlight",
 			"dialogs",
-			"party",
 		];
+
 		for (const key of MANIFEST_PASSTHROUGH_KEYS) {
 			const systems = manifest.systems as Record<string, unknown> | undefined;
 			const value = manifest[key] ?? systems?.[key];
 			if (value != null && gameDefinition[key] == null) {
 				(gameDefinition as any)[key] = value;
 			}
+		}
+
+		if (manifest.party) {
+			gameDefinition.party = {
+				...((gameDefinition.party as object) || {}),
+				...(manifest.party as object),
+			} as GameDefinition["party"];
 		}
 		if (manifest.instructions && gameDefinition.metadata) {
 			gameDefinition.metadata.instructions = manifest.instructions as string;
