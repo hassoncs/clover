@@ -1,0 +1,3 @@
+UPDATE party_game_templates SET
+  how_to_play_steps = '[{"step":1,"title":"Draw two frames","body":"You get a secret prompt. Draw frame 1, then frame 2 — they loop as a two-frame animation.","panelImageUrl":null},{"step":2,"title":"Write fake titles","body":"See someone else''s animation. Write a convincing fake title to trick others.","panelImageUrl":null},{"step":3,"title":"Spot the real title","body":"All titles revealed — including the real one. Vote for what you think is correct.","panelImageUrl":null},{"step":4,"title":"Points for deception","body":"Score for guessing correctly AND for every player your fake title fools.","panelImageUrl":null}]'
+WHERE id = 'drawful-animate';
