@@ -172,7 +172,7 @@ export default function JoinOrgScreen() {
 						marginBottom: 32,
 					}}
 				>
-					You've been invited to join this organization on Amen.
+					You've been invited to join this organization on Slopbox.
 				</Text>
 
 				{org.memberRole ? (

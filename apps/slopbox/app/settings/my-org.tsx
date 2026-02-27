@@ -145,7 +145,7 @@ function OrgDetail({ org }: { org: Org }) {
 		if (!org.joinCode) return;
 		try {
 			await Share.share({
-				message: `Join my organization "${org.name}" on Amen using code: ${org.joinCode}`,
+				message: `Join my organization "${org.name}" on Slopbox using code: ${org.joinCode}`,
 			});
 		} catch (error) {}
 	};

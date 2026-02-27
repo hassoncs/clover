@@ -61,7 +61,7 @@ export default function JoinScreen() {
 				<SafeAreaView className="flex-1 items-center justify-center p-6">
 					<View className="items-center mb-12">
 						<Text className="text-[#C9A84C] font-bold text-3xl tracking-widest uppercase mb-1">
-							Amen Games
+							Slopbox Games
 						</Text>
 						<Text className="text-white/60 text-base">
 							Scripture. Fellowship. Fun.

@@ -48,7 +48,7 @@ export default function JoinOrgScreen() {
 					<Ionicons name="arrow-back" size={24} color="#E4E4E7" />
 				</Pressable>
 				<Text className="text-white font-semibold text-lg">
-					Join Amen Organization
+					Join Slopbox Organization
 				</Text>
 			</View>
 

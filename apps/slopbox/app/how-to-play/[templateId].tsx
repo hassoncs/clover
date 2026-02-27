@@ -27,18 +27,18 @@ export default function HowToPlayScreen() {
 		template.howToPlaySteps.length === 0
 	) {
 		return (
-			<SafeAreaView className="flex-1 bg-amen-navy">
+			<SafeAreaView className="flex-1 bg-zinc-900">
 				<Stack.Screen options={{ headerShown: false }} />
 				<View className="flex-1 items-center justify-center p-8 gap-6">
 					<AmenIcon name="scroll" size={64} color="#C9A84C" />
-					<Text className="font-lora text-2xl text-amen-cream text-center">
+					<Text className="font-lora text-2xl text-white text-center">
 						No tutorial available for this game yet.
 					</Text>
 					<Pressable
 						onPress={() => router.back()}
-						className="bg-amen-gold/10 px-6 py-3 rounded-full border border-amen-gold/30 active:bg-amen-gold/20"
+						className="bg-primary/10 px-6 py-3 rounded-full border border-primary/30 active:bg-primary/20"
 					>
-						<Text className="font-inter font-bold text-amen-gold uppercase tracking-wider">
+						<Text className="font-inter font-bold text-primary uppercase tracking-wider">
 							Go Back
 						</Text>
 					</Pressable>
@@ -48,7 +48,7 @@ export default function HowToPlayScreen() {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 bg-amen-navy">
+		<SafeAreaView className="flex-1 bg-zinc-900">
 			<Stack.Screen options={{ headerShown: false }} />
 			<TutorialPager
 				steps={template.howToPlaySteps}

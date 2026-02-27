@@ -113,7 +113,7 @@ export default function SubscriptionScreen() {
 				{checkoutSuccess && (
 					<View className="bg-green-900/30 p-4 rounded-xl border border-green-700 mb-4">
 						<Text className="text-green-400 text-center font-medium">
-							Welcome to Amen+!
+							Welcome to Slopbox+!
 						</Text>
 					</View>
 				)}
@@ -147,7 +147,7 @@ export default function SubscriptionScreen() {
 				{!isPro && isWeb && (
 					<View className="mt-6">
 						<Text className="text-white font-semibold text-lg mb-4">
-							Upgrade to Amen+
+							Upgrade to Slopbox+
 						</Text>
 
 						<View className="flex-row mb-4 bg-gray-800 p-1 rounded-lg">

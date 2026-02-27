@@ -65,7 +65,7 @@ export default function LandingPage() {
 							className="text-[#C9A84C] font-bold text-lg md:text-xl tracking-[0.2em] mb-6 uppercase text-center"
 							accessibilityRole="header"
 						>
-							Amen Games
+							Slopbox Games
 						</Text>
 						<Text
 							className="text-white text-5xl md:text-7xl font-bold text-center mb-8 leading-tight"
@@ -232,7 +232,7 @@ export default function LandingPage() {
 								title="Free"
 								price="$0"
 								period="/forever"
-								description="Perfect for trying out Amen Games."
+								description="Perfect for trying out Slopbox Games."
 								features={[
 									"2 Free games per week",
 									"Up to 8 players",
@@ -242,7 +242,7 @@ export default function LandingPage() {
 								variant="light"
 							/>
 							<PricingCard
-								title="Amen+"
+								title="Slopbox+"
 								price="$4.99"
 								period="/month"
 								description="For families and small groups."
@@ -339,7 +339,7 @@ export default function LandingPage() {
 					<View className="max-w-6xl w-full mx-auto flex-col md:flex-row justify-between items-center md:items-start gap-8">
 						<View className="items-center md:items-start">
 							<Text className="text-[#C9A84C] font-bold text-2xl tracking-widest uppercase mb-4">
-								Amen Games
+								Slopbox Games
 							</Text>
 							<Text className="text-gray-400 text-sm max-w-xs text-center md:text-left">
 								Building the future of Christian fellowship through play.
@@ -357,7 +357,7 @@ export default function LandingPage() {
 					</View>
 					<View className="max-w-6xl w-full mx-auto mt-12 pt-8 border-t border-[#1B3A6B]/50 text-center">
 						<Text className="text-gray-500 text-sm text-center">
-							© 2026 Amen Games. All rights reserved.
+							© 2026 Slopbox Games. All rights reserved.
 						</Text>
 					</View>
 				</View>

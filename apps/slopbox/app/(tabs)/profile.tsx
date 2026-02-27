@@ -67,7 +67,7 @@ function LoginScreen() {
 
 		if (inviteStatus?.invited === false) {
 			setLoginError(
-				`This email hasn't been invited to Amen yet. Invited users can sign in.`,
+				`This email hasn't been invited to Slopbox yet. Invited users can sign in.`,
 			);
 			return;
 		}
@@ -277,7 +277,7 @@ export default function ProfileScreen() {
 	}, [utils]);
 
 	const displayName = useMemo(() => {
-		const emailName = user?.email?.split("@")[0] ?? "Amen User";
+		const emailName = user?.email?.split("@")[0] ?? "Slopbox User";
 		return emailName;
 	}, [user?.email]);
 
@@ -429,7 +429,7 @@ export default function ProfileScreen() {
 						</View>
 
 						<Text className="text-theme-text-secondary mb-4">
-							Invite someone to join Amen by email. They will be able to sign in
+							Invite someone to join Slopbox by email. They will be able to sign in
 							once invited.
 						</Text>
 
