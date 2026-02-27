@@ -66,6 +66,7 @@
 		"lint:gdscript": "npx tsx scripts/lint-gdscript.ts",
 		"check:colors": "./scripts/check-hardcoded-colors.sh",
 		"test:bridge": "vitest run --config tests/e2e/bridge/vitest.config.ts",
+		"test:party": "vitest run --config tests/e2e/party/vitest.config.ts",
 		"build:types": "tsc -b",
 		"knip": "knip"
 	},
