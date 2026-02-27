@@ -29,7 +29,7 @@ export type PartyGameDefinition = {
 	modules?: Record<string, string>;
 };
 
-export const DEFINITION_BY_TEMPLATE_ID: Record<string, PartyGameDefinition> = {
+const BASE_DEFINITIONS: Record<string, PartyGameDefinition> = {
 	"about-you-bluff": aboutYouBluffDefinition as PartyGameDefinition,
 	"chain-reaction": chainReactionDefinition as PartyGameDefinition,
 	"chroma-clues": chromaCluesDefinition as PartyGameDefinition,
@@ -51,3 +51,10 @@ export const DEFINITION_BY_TEMPLATE_ID: Record<string, PartyGameDefinition> = {
 	"truth-trap": truthTrapDefinition as PartyGameDefinition,
 	"year-jinx": yearJinxDefinition as PartyGameDefinition,
 };
+
+export const DEFINITION_BY_TEMPLATE_ID: Record<string, PartyGameDefinition> =
+	new Proxy(BASE_DEFINITIONS, {
+		get(target, prop: string) {
+			return target[prop] ?? target[prop.replace(/^s-/, "")];
+		},
+	});

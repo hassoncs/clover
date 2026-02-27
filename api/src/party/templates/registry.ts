@@ -91,13 +91,18 @@ const TEMPLATE_NAMES: Record<string, string> = {
 	"year-jinx": "Year Jinx",
 };
 
+function resolveTemplateId(templateId: string): string {
+	return templateId.replace(/^s-/, "");
+}
+
 export function buildRunnerFromPreloadedContent(
 	templateId: string,
 	contentPack: unknown[],
 ): PartyTemplateRunner | null {
-	const definition = DEFINITION_BY_TEMPLATE_ID[templateId];
+	const baseId = resolveTemplateId(templateId);
+	const definition = DEFINITION_BY_TEMPLATE_ID[baseId];
 	if (!definition) return null;
-	const templateName = TEMPLATE_NAMES[templateId] ?? templateId;
+	const templateName = TEMPLATE_NAMES[baseId] ?? templateId;
 
 	return async (room) => {
 		const serverScriptName = definition.party?.serverScript ?? "server";

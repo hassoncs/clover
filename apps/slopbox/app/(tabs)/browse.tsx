@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
 import { GameHallTile } from "@/components/browse/GameHallTile";
 import { useBrowsePartyGames } from "@/hooks/useBrowsePartyGames";
+import { env } from "@/lib/config/env";
 import { createPartyRoom } from "@/lib/party/api";
 
 export default function BrowseScreen() {
@@ -38,10 +39,12 @@ export default function BrowseScreen() {
 		try {
 			setLaunching(selectedTemplate.title);
 			setLaunchError(null);
-			const { code, hostToken } = await createPartyRoom(
-				selectedTemplate.id,
-				selectedTemplate.minPlayers,
-			);
+			const { code, hostToken } = await createPartyRoom({
+				template: selectedTemplate.id,
+				minPlayers: selectedTemplate.minPlayers,
+				brandId: "slopbox",
+				apiUrl: env.apiUrl,
+			});
 			router.push({
 				pathname: "/party/host",
 				params: {

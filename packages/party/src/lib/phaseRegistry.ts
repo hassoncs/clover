@@ -30,7 +30,9 @@ export function getPhaseRenderer(
 	gameTemplate: string,
 	phase: string,
 ): PhaseRenderer | null {
-	const gameRegistry = registry[gameTemplate] || registry["default"];
+	const baseTemplate = gameTemplate.replace(/^s-/, "");
+	const gameRegistry =
+		registry[gameTemplate] || registry[baseTemplate] || registry["default"];
 	if (!gameRegistry) return null;
 	return gameRegistry[phase] || null;
 }

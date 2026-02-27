@@ -1,20 +1,25 @@
-import { getPartyRuntimeConfig } from "../config";
-
 interface CreateRoomResponse {
 	code: string;
 	hostToken: string;
 	hostId: string;
 }
 
+export interface CreatePartyRoomOptions {
+	template: string;
+	minPlayers?: number;
+	brandId: string;
+	apiUrl: string;
+}
+
 export async function createPartyRoom(
-	template: string,
-	minPlayers = 3,
+	opts: CreatePartyRoomOptions,
 ): Promise<CreateRoomResponse> {
-	const response = await fetch(`${getPartyRuntimeConfig().apiUrl}/api/party/create`, {
+	const { template, minPlayers = 3, brandId, apiUrl } = opts;
+	const response = await fetch(`${apiUrl}/api/party/create`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			"x-brand-id": "amen",
+			"x-brand-id": brandId,
 		},
 		body: JSON.stringify({ template, minPlayers }),
 	});

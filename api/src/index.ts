@@ -193,7 +193,7 @@ app.post("/api/party/create", async (c) => {
 					contentPackIds.map((packId) =>
 						loadContentPackFromDB(
 							packId as ContentType,
-							c.req.header("x-brand-id") ?? "slopcade",
+							c.req.header("x-brand-id") ?? "slopbox",
 							c.env.DB,
 						),
 					),
