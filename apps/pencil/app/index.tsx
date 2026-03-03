@@ -1,7 +1,14 @@
-import { PenCanvasPanel } from "@slopcade/design-canvas";
-import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
-import { parsePenDocument } from "@slopcade/shared/types/pen";
-import { useCallback, useRef, useState } from "react";
+import {
+	PenCanvasPanel,
+	PenRuntimeProvider,
+	usePenRuntime,
+} from "@slopcade/design-canvas";
+import {
+	PenToolFacade,
+	type SceneGraph,
+	sceneGraphToPenDocument,
+} from "@slopcade/design-canvas/pen/runtime";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -13,56 +20,68 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { loadPenFile, savePenFile } from "../lib/file-io";
 import { trpc } from "../lib/trpc/client";
 import { usePencilBridge } from "../lib/usePencilBridge";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const SAMPLE_PEN = require("../assets/sample.json");
 
-function loadSampleDocument(): PenDocument {
+function loadSampleGraph(): SceneGraph {
 	try {
-		return parsePenDocument(SAMPLE_PEN);
+		return loadPenFile(JSON.stringify(SAMPLE_PEN));
 	} catch {
-		return { version: 1, children: [] };
+		return loadPenFile(JSON.stringify({ version: 1, children: [] }));
 	}
 }
 
+/**
+ * Inner canvas component — must live inside PenRuntimeProvider so it can
+ * subscribe to revision bumps and re-derive the PenDocument from the SceneGraph.
+ */
+function PenCanvasPanelConnector() {
+	const { graph, revision } = usePenRuntime();
+	const document = useMemo(
+		() => sceneGraphToPenDocument(graph),
+		// revision is the signal that the graph was mutated
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[graph, revision],
+	);
+	return <PenCanvasPanel document={document} />;
+}
+
 export default function PencilScreen() {
-	const [document, setDocument] = useState<PenDocument>(loadSampleDocument);
-	const [selectedNodePath] = useState<string[] | null>(null);
+	// SceneGraph is mutable — initialized once, mutated in-place by PenToolFacade
+	const graph = useMemo(loadSampleGraph, []);
+	const facade = useMemo(() => new PenToolFacade(graph), [graph]);
 	const [chatOpen, setChatOpen] = useState(true);
 
-	usePencilBridge(document, setDocument);
-
-	const handleAddNode = useCallback((node: PenNode) => {
-		setDocument((prev) => ({ ...prev, children: [...prev.children, node] }));
-	}, []);
+	// Bridge exposes the live graph state to MCP tools via window.__PENCIL_BRIDGE__
+	usePencilBridge(graph);
 
 	return (
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
 			<View style={styles.container}>
-				<View style={styles.canvas}>
-					<PenCanvasPanel document={document} onAddNode={handleAddNode} onChange={setDocument} />
-				</View>
-
-				{chatOpen && (
-					<View style={styles.sidebar}>
-						<ChatSidebar
-							onClose={() => setChatOpen(false)}
-							selectedNodePath={selectedNodePath}
-							document={document}
-						/>
+				<PenRuntimeProvider graph={graph} facade={facade}>
+					<View style={styles.canvas}>
+						<PenCanvasPanelConnector />
 					</View>
-				)}
 
-				{!chatOpen && (
-					<Pressable
-						style={styles.openChatButton}
-						onPress={() => setChatOpen(true)}
-					>
-						<Text style={styles.openChatButtonText}>✦ Chat</Text>
-					</Pressable>
-				)}
+					{chatOpen && (
+						<View style={styles.sidebar}>
+							<ChatSidebar onClose={() => setChatOpen(false)} />
+						</View>
+					)}
+
+					{!chatOpen && (
+						<Pressable
+							style={styles.openChatButton}
+							onPress={() => setChatOpen(true)}
+						>
+							<Text style={styles.openChatButtonText}>✦ Chat</Text>
+						</Pressable>
+					)}
+				</PenRuntimeProvider>
 			</View>
 		</SafeAreaView>
 	);
@@ -76,15 +95,10 @@ interface ChatMessage {
 
 interface ChatSidebarProps {
 	onClose: () => void;
-	selectedNodePath: string[] | null;
-	document: PenDocument;
 }
 
-function ChatSidebar({
-	onClose,
-	selectedNodePath,
-	document,
-}: ChatSidebarProps) {
+function ChatSidebar({ onClose }: ChatSidebarProps) {
+	const { graph, selectedId } = usePenRuntime();
 	const [messages, setMessages] = useState<ChatMessage[]>([
 		{
 			id: "welcome",
@@ -98,8 +112,8 @@ function ChatSidebar({
 	const isSending = sendMessageMutation.isPending;
 	const scrollRef = useRef<ScrollView>(null);
 
-	const contextHint = selectedNodePath?.length
-		? `Node ${selectedNodePath[selectedNodePath.length - 1].slice(0, 8)} selected`
+	const contextHint = selectedId
+		? `Node ${selectedId.slice(0, 8)} selected`
 		: null;
 
 	const send = useCallback(async () => {
@@ -117,9 +131,9 @@ function ChatSidebar({
 		try {
 			const result = await sendMessageMutation.mutateAsync({
 				message: text,
-				documentJson: JSON.stringify(document),
-				selectedFrameId: selectedNodePath?.[0] ?? undefined,
-				selectedElementId: selectedNodePath?.[1] ?? undefined,
+				documentJson: savePenFile(graph),
+				selectedFrameId: selectedId ?? undefined,
+				selectedElementId: undefined,
 			});
 
 			const reply: ChatMessage = {
@@ -140,7 +154,7 @@ function ChatSidebar({
 		} finally {
 			scrollRef.current?.scrollToEnd({ animated: true });
 		}
-	}, [document, input, isSending, sendMessageMutation, selectedNodePath]);
+	}, [graph, input, isSending, sendMessageMutation, selectedId]);
 
 	return (
 		<KeyboardAvoidingView

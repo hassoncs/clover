@@ -75,3 +75,15 @@
 - **pencil_get_selection server path**: Returns `{ success: false, error: "Selection state is not available in headless mode" }` since selection is a browser UI concept with no facade equivalent.
 - **window.__PENCIL_BRIDGE__ preserved**: Not removed. Removal deferred to T13.
 - **Test count**: 29 tests in `server-bridge.test.ts`, 118 total in `tools/__tests__/` (no regressions in pencil-v2 or pencil-v2-full tests).
+
+## [2026-03-03T10:11:00Z] T8: Runtime Renderer + File I/O Cutover Complete
+- Files updated: `apps/pencil/app/index.tsx`, `apps/pencil/lib/usePencilBridge.ts`
+- New file: `apps/pencil/lib/file-io.ts` (loadPenFile, savePenFile, loadFigFile, saveFigFile, loadCorruptFile)
+- New file: `apps/pencil/lib/__tests__/file-io.test.ts` (8 tests)
+- New file: `apps/pencil/vitest.config.ts`
+- Design-canvas changes: added `./pen/fig` export to package.json; exported `PenRuntimeProvider` + `usePenRuntime` from `src/index.ts`; updated `PenRuntimeProvider` to accept pre-built `SceneGraph` via discriminated union prop
+- Legacy paths removed from: `apps/pencil/app/index.tsx` (no more `useState<PenDocument>`, no more `handleAddNode`, no direct `PenDocument` state); `apps/pencil/lib/usePencilBridge.ts` (no more `PenDocument` parameter)
+- File I/O functions: `loadPenFile(json: string): SceneGraph` → parses + validates via `parsePenDocument` + `penDocumentToSceneGraph`; `savePenFile(graph: SceneGraph): string` → `sceneGraphToPenDocument` + JSON.stringify; `loadFigFile(buffer: ArrayBuffer): SceneGraph` → `importFig(buffer).graph`; `saveFigFile(graph: SceneGraph): ArrayBuffer` → `exportFig(graph).buffer`; `loadCorruptFile(data: unknown): never` → always throws FileIOError
+- Architecture: `PenCanvasPanelConnector` inner component subscribes to `usePenRuntime().revision` and re-derives PenDocument on each mutation — clean data flow with SceneGraph as single source of truth
+- Edge cases: `PenRuntimeProviderProps` is now a discriminated union — either `{ document }` (legacy, auto-converts) or `{ graph, facade? }` (new path, no conversion needed)
+- Test command: `npx vitest run apps/pencil/` from repo root (vitest.config.ts in apps/pencil/)

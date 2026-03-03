@@ -29,23 +29,33 @@ export function usePenRuntime() {
 	return ctx;
 }
 
-export interface PenRuntimeProviderProps {
-	document: PenDocument;
+export type PenRuntimeProviderProps = {
 	onChange?: (doc: PenDocument) => void;
 	children: React.ReactNode;
-}
+} & (
+	| { document: PenDocument; graph?: never; facade?: never }
+	| { graph: SceneGraph; facade?: PenToolFacade; document?: never }
+);
 
 export function PenRuntimeProvider({
 	document,
+	graph: graphProp,
+	facade: facadeProp,
 	onChange,
 	children,
 }: PenRuntimeProviderProps) {
-	// Initialize graph once from document
+	// Initialize graph and facade once. If graph prop provided, use it directly.
+	// If document prop provided, convert to SceneGraph on first render.
+	// eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally initialized once
 	const { graph, facade } = useMemo(() => {
-		const g = penDocumentToSceneGraph(document);
+		if (graphProp !== undefined) {
+			const f = facadeProp ?? new PenToolFacade(graphProp);
+			return { graph: graphProp, facade: f };
+		}
+		const g = penDocumentToSceneGraph(document ?? { version: 1, children: [] });
 		const f = new PenToolFacade(g);
 		return { graph: g, facade: f };
-	}, []); // We only initialize once. If document prop changes completely, we might need to handle it, but for now we assume graph is the source of truth.
+	}, []);  // We only initialize once — graph is the mutable source of truth
 
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [activeTool, setActiveTool] = useState<string>("pointer");
