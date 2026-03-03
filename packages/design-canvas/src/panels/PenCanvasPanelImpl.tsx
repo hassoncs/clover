@@ -4,6 +4,7 @@ import { useTheme } from "@slopcade/theme";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	Pressable,
+	ScrollView,
 	StyleSheet,
 	Text,
 	useWindowDimensions,
@@ -79,6 +80,155 @@ function getNodeName(node: PenNode): string {
 	return node.id;
 }
 
+type NodeTypeIconName =
+	| "albums-outline"
+	| "layers-outline"
+	| "text-outline"
+	| "square-outline"
+	| "ellipse-outline"
+	| "star-outline"
+	| "remove-outline"
+	| "shapes-outline"
+	| "git-network-outline"
+	| "document-text-outline"
+	| "apps-outline";
+
+function getTypeIcon(type: PenNode["type"]): NodeTypeIconName {
+	switch (type) {
+		case "frame": return "albums-outline";
+		case "group": return "layers-outline";
+		case "text": return "text-outline";
+		case "rectangle": return "square-outline";
+		case "ellipse": return "ellipse-outline";
+		case "icon_font": return "star-outline";
+		case "line": return "remove-outline";
+		case "polygon": return "shapes-outline";
+		case "path": return "git-network-outline";
+		case "note": return "document-text-outline";
+		default: return "apps-outline";
+	}
+}
+
+interface LayersPanelProps {
+	nodes: PenNode[];
+	selectedNodePath: string[] | null;
+	onSelectNode: (path: string[]) => void;
+}
+
+function LayersPanel({ nodes, selectedNodePath, onSelectNode }: LayersPanelProps) {
+	const { editorColors: c } = useTheme();
+	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+	const selectedId = selectedNodePath?.[0] ?? null;
+
+	const toggleExpanded = (id: string) => {
+		setExpandedIds((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
+			return next;
+		});
+	};
+
+	const getChildren = (node: PenNode): PenNode[] => {
+		if ("children" in node && Array.isArray(node.children)) {
+			return node.children as PenNode[];
+		}
+		return [];
+	};
+
+	return (
+		<ScrollView
+			style={[styles.layersPanel, { borderRightColor: c.border }]}
+			contentContainerStyle={styles.layersPanelContent}
+		>
+			{nodes.map((node) => {
+				const children = getChildren(node);
+				const hasChildren = children.length > 0;
+				const isExpanded = expandedIds.has(node.id);
+				const isSelected = selectedId === node.id;
+
+				return (
+					<View key={node.id}>
+						<Pressable
+							onPress={() => onSelectNode([node.id])}
+							style={[
+								styles.layerRow,
+								isSelected && { backgroundColor: c.surfaceHover },
+							]}
+						>
+							<Pressable
+								onPress={() => hasChildren && toggleExpanded(node.id)}
+								style={styles.layerChevron}
+								hitSlop={4}
+							>
+								{hasChildren ? (
+									<Ionicons
+										name={isExpanded ? "chevron-down" : "chevron-forward"}
+										size={10}
+										color={c.textSecondary}
+									/>
+								) : (
+									<View style={{ width: 10 }} />
+								)}
+							</Pressable>
+							<Ionicons
+								name={getTypeIcon(node.type)}
+								size={12}
+								color={isSelected ? c.text : c.textSecondary}
+								style={styles.layerTypeIcon}
+							/>
+							<Text
+								style={[
+									styles.layerName,
+									{ color: isSelected ? c.text : c.textSecondary },
+								]}
+								numberOfLines={1}
+							>
+								{getNodeName(node)}
+							</Text>
+						</Pressable>
+
+						{hasChildren && isExpanded && children.map((child) => {
+							const childSelected = selectedId === child.id;
+							return (
+								<Pressable
+									key={child.id}
+									onPress={() => onSelectNode([child.id])}
+									style={[
+										styles.layerRow,
+										styles.layerRowChild,
+										childSelected && { backgroundColor: c.surfaceHover },
+									]}
+								>
+									<Ionicons
+										name={getTypeIcon(child.type)}
+										size={12}
+										color={childSelected ? c.text : c.textSecondary}
+										style={styles.layerTypeIcon}
+									/>
+									<Text
+										style={[
+											styles.layerName,
+											{ color: childSelected ? c.text : c.textSecondary },
+										]}
+										numberOfLines={1}
+									>
+										{getNodeName(child)}
+									</Text>
+								</Pressable>
+							);
+						})}
+					</View>
+				);
+			})}
+		</ScrollView>
+	);
+}
+
 export function PenCanvasPanel({
 	document: penDocument,
 	isLoading,
@@ -90,6 +240,8 @@ export function PenCanvasPanel({
 
 	const [showFrameList, setShowFrameList] = useState(false);
 	const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
+	const [showLayers, setShowLayers] = useState(false);
+	const [selectedNodePath, setSelectedNodePath] = useState<string[] | null>(null);
 
 	const topLevelFrames = useMemo(
 		() =>
@@ -105,6 +257,10 @@ export function PenCanvasPanel({
 	const handleZoomToFit = useCallback(() => {
 		setCamera(computeZoomToFit(penDocument, width, canvasHeight));
 	}, [penDocument, width, canvasHeight, setCamera]);
+
+	const handleNodeTap = useCallback((nodePath: string[]) => {
+		setSelectedNodePath(nodePath);
+	}, []);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -129,6 +285,18 @@ export function PenCanvasPanel({
 			<View style={[styles.header, { borderBottomColor: c.border }]}>
 				<Text style={[styles.title, { color: c.text }]}>CANVAS</Text>
 				<View style={styles.headerRight}>
+					<View style={[styles.navControls, { backgroundColor: c.surface }]}>
+						<Pressable
+							onPress={() => setShowLayers((v) => !v)}
+							style={[
+								styles.navButton,
+								showLayers && { backgroundColor: c.surfaceHover },
+							]}
+						>
+							<Ionicons name="layers-outline" size={14} color={c.text} />
+						</Pressable>
+					</View>
+
 					<View style={[styles.navControls, { backgroundColor: c.surface }]}>
 						<Pressable onPress={handleZoomToFit} style={styles.navButton}>
 							<Ionicons name="expand" size={14} color={c.text} />
@@ -210,22 +378,33 @@ export function PenCanvasPanel({
 						Loading design...
 					</Text>
 				) : (
-					<View
-						style={{ flex: 1, width: "100%" }}
-						{...({
-							onWheel,
-							onMouseDown,
-							onMouseMove,
-							onMouseUp,
-							onMouseLeave: () => {},
-						} as object)}
-					>
-						<PenRenderer
-							document={penDocument}
-							camera={camera}
-							width={width}
-							height={canvasHeight}
-						/>
+					<View style={styles.canvasArea}>
+						{showLayers && (
+							<LayersPanel
+								nodes={penDocument.children}
+								selectedNodePath={selectedNodePath}
+								onSelectNode={setSelectedNodePath}
+							/>
+						)}
+						<View
+							style={{ flex: 1 }}
+							{...({
+								onWheel,
+								onMouseDown,
+								onMouseMove,
+								onMouseUp,
+								onMouseLeave: () => {},
+							} as object)}
+						>
+							<PenRenderer
+								document={penDocument}
+								camera={camera}
+								width={showLayers ? width - 180 : width}
+								height={canvasHeight}
+								selectedNodePath={selectedNodePath ?? undefined}
+								onNodeTap={handleNodeTap}
+							/>
+						</View>
 					</View>
 				)}
 
@@ -319,6 +498,40 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		position: "relative",
+	},
+	canvasArea: {
+		flex: 1,
+		width: "100%",
+		flexDirection: "row",
+	},
+	layersPanel: {
+		width: 180,
+		borderRightWidth: 1,
+	},
+	layersPanelContent: {
+		paddingVertical: 4,
+	},
+	layerRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		gap: 4,
+	},
+	layerRowChild: {
+		paddingLeft: 24,
+	},
+	layerChevron: {
+		width: 14,
+		alignItems: "center",
+	},
+	layerTypeIcon: {
+		marginRight: 2,
+	},
+	layerName: {
+		fontSize: 11,
+		fontWeight: "500",
+		flex: 1,
 	},
 	message: { fontSize: 14, fontWeight: "500", textAlign: "center" },
 	frameListDropdown: {

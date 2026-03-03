@@ -1,8 +1,10 @@
-import { Group, Paragraph, Skia, TextAlign, useFonts } from "@shopify/react-native-skia";
+import { Group, Paragraph, Skia, TextAlign } from "@shopify/react-native-skia";
 import type { PenFill, PenText } from "@slopcade/shared/types/pen";
 import type React from "react";
 import { useMemo } from "react";
 import type { LayoutNode } from "../../layout";
+import { usePenFontMgr } from "../FontContext";
+import { buildNodeTransform } from "../nodeTransform";
 
 interface NodeRendererProps {
 	layoutNode: LayoutNode;
@@ -25,12 +27,10 @@ const TEXT_ALIGN_MAP: Record<string, TextAlign> = {
 
 export function TextNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 	const node = layoutNode.node as PenText;
-	const { x, y, width } = layoutNode.rect;
+	const { x, y, width, height } = layoutNode.rect;
 	const opacity = node.opacity ?? 1;
 
-	const fontMgr = useFonts({
-		Fredoka: [],
-	});
+	const fontMgr = usePenFontMgr();
 
 	const paragraph = useMemo(() => {
 		if (!fontMgr) return null;
@@ -80,7 +80,7 @@ export function TextNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 	]);
 
 	return (
-		<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			{paragraph && <Paragraph paragraph={paragraph} x={0} y={0} width={width} />}
 		</Group>
 	);

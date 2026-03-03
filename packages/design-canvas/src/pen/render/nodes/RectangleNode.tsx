@@ -4,6 +4,7 @@ import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
 import { PenFillRenderer } from "../fills";
+import { buildNodeTransform } from "../nodeTransform";
 import { PenStrokeRenderer } from "../strokes";
 
 interface NodeRendererProps {
@@ -53,7 +54,7 @@ export function RectangleNode({ layoutNode }: NodeRendererProps): React.ReactNod
 	}
 
 	return (
-		<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			{shape}
 		</Group>
 	);

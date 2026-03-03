@@ -4,6 +4,7 @@ import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
 import { PenFillRenderer } from "../fills";
+import { buildNodeTransform } from "../nodeTransform";
 import { PenStrokeRenderer } from "../strokes";
 
 interface NodeRendererProps {
@@ -40,7 +41,7 @@ export function PolygonNode({ layoutNode }: NodeRendererProps): React.ReactNode 
 	const pathData = buildPolygonPath(width / 2, height / 2, width / 2, height / 2, sides);
 
 	return (
-		<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			<Path path={pathData} color="transparent">
 				<PenFillRenderer fill={node.fill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />

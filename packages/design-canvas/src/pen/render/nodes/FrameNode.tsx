@@ -4,6 +4,7 @@ import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
 import { PenFillRenderer } from "../fills";
+import { buildNodeTransform } from "../nodeTransform";
 import { PenStrokeRenderer } from "../strokes";
 
 interface NodeRendererProps {
@@ -56,7 +57,7 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 
 	if (layoutNode.clip) {
 		return (
-			<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+			<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 				{shape}
 				<Group clip={{ x: 0, y: 0, width, height }}>
 					{children}
@@ -66,7 +67,7 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 	}
 
 	return (
-		<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			{shape}
 			{children}
 		</Group>

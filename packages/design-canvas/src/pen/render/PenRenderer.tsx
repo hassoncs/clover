@@ -1,7 +1,8 @@
-import { Canvas, Group } from "@shopify/react-native-skia";
+import { Canvas, Group, Paint, Rect, useFonts } from "@shopify/react-native-skia";
 import type { PenDocument } from "@slopcade/shared/types/pen";
 import type React from "react";
 import { Fragment, useMemo } from "react";
+import { FontContext } from "./FontContext";
 import { buildComponentRegistry, resolveAllRefs } from "../components";
 import type { LayoutNode } from "../layout";
 import { layoutTree } from "../layout";
@@ -79,11 +80,56 @@ function renderLayoutNode(layoutNode: LayoutNode): React.ReactNode {
 	}
 }
 
+function findLayoutNode(nodes: LayoutNode[], id: string): LayoutNode | null {
+	for (const ln of nodes) {
+		if (ln.node.id === id) return ln;
+		const found = findLayoutNode(ln.children, id);
+		if (found) return found;
+	}
+	return null;
+}
+
+const SELECTION_COLOR = "#4F86FF";
+const HANDLE_SIZE = 6;
+const HANDLE_HALF = HANDLE_SIZE / 2;
+
+function SelectionChrome({ layoutNode }: { layoutNode: LayoutNode }): React.ReactNode {
+	const { x, y, width, height } = layoutNode.rect;
+
+	const corners = [
+		{ cx: x, cy: y },
+		{ cx: x + width, cy: y },
+		{ cx: x, cy: y + height },
+		{ cx: x + width, cy: y + height },
+	];
+
+	return (
+		<>
+			<Rect x={x} y={y} width={width} height={height} color="transparent">
+				<Paint color={SELECTION_COLOR} style="stroke" strokeWidth={1.5} />
+			</Rect>
+			{corners.map((corner, i) => (
+				<Rect
+					key={i}
+					x={corner.cx - HANDLE_HALF}
+					y={corner.cy - HANDLE_HALF}
+					width={HANDLE_SIZE}
+					height={HANDLE_SIZE}
+					color="white"
+				>
+					<Paint color={SELECTION_COLOR} style="stroke" strokeWidth={1} />
+				</Rect>
+			))}
+		</>
+	);
+}
+
 export function PenRenderer({
 	document,
 	camera,
 	width,
 	height,
+	selectedNodePath,
 }: PenRendererProps): React.ReactNode {
 	const layoutNodes = useMemo(() => {
 		const registry = buildComponentRegistry(document.children);
@@ -92,22 +138,35 @@ export function PenRenderer({
 		return layoutTree(withVariables, estimateTextSize);
 	}, [document]);
 
+	const selectedLayoutNode = useMemo(() => {
+		if (!selectedNodePath || selectedNodePath.length === 0) return null;
+		const id = selectedNodePath[selectedNodePath.length - 1];
+		return findLayoutNode(layoutNodes, id);
+	}, [layoutNodes, selectedNodePath]);
+
+	const fontMgr = useFonts({});
+
 	return (
-		<Canvas style={{ width, height }}>
-			<Group
-				transform={[
-					{ translateX: camera.translateX },
-					{ translateY: camera.translateY },
-					{ scale: camera.scale },
-				]}
-			>
-				{layoutNodes.map((ln) => (
-					<Fragment key={ln.node.id}>
-						<FrameTitle layoutNode={ln} />
-						{renderLayoutNode(ln)}
-					</Fragment>
-				))}
-			</Group>
-		</Canvas>
+		<FontContext.Provider value={fontMgr}>
+			<Canvas style={{ width, height }}>
+				<Group
+					transform={[
+						{ translateX: camera.translateX },
+						{ translateY: camera.translateY },
+						{ scale: camera.scale },
+					]}
+				>
+					{layoutNodes.map((ln) => (
+						<Fragment key={ln.node.id}>
+							<FrameTitle layoutNode={ln} />
+							{renderLayoutNode(ln)}
+						</Fragment>
+					))}
+					{selectedLayoutNode && (
+						<SelectionChrome layoutNode={selectedLayoutNode} />
+					)}
+				</Group>
+			</Canvas>
+		</FontContext.Provider>
 	);
 }

@@ -4,6 +4,7 @@ import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
 import { PenFillRenderer } from "../fills";
+import { buildNodeTransform } from "../nodeTransform";
 import { PenStrokeRenderer } from "../strokes";
 
 interface NodeRendererProps {
@@ -16,7 +17,7 @@ export function PathNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 	const opacity = node.opacity ?? 1;
 
 	return (
-		<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			<Path path={node.geometry} color="transparent">
 				<PenFillRenderer fill={node.fill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />

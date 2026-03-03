@@ -4,6 +4,7 @@ import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
 import { PenFillRenderer } from "../fills";
+import { buildNodeTransform } from "../nodeTransform";
 import { PenStrokeRenderer } from "../strokes";
 
 interface NodeRendererProps {
@@ -19,7 +20,7 @@ export function EllipseNode({ layoutNode }: NodeRendererProps): React.ReactNode 
 	// using Skia.Path with addOval and boolean operations when needed.
 	// For now, render a full ellipse.
 	return (
-		<Group transform={[{ translateX: x }, { translateY: y }]} opacity={opacity}>
+		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			<Oval rect={{ x: 0, y: 0, width, height }} color="transparent">
 				<PenFillRenderer fill={node.fill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
