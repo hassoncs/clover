@@ -36,11 +36,11 @@ export function ToolbarShell() {
 							isActive && { backgroundColor: c.surfaceHover },
 						]}
 					>
-						<Ionicons
-							name={tool.icon as any}
-							size={16}
-							color={isActive ? "#818cf8" : c.textSecondary}
-						/>
+					<Ionicons
+						name={tool.icon}
+						size={16}
+						color={isActive ? "#818cf8" : c.textSecondary}
+					/>
 					</Pressable>
 				);
 			})}

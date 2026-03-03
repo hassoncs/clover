@@ -208,13 +208,10 @@ export function pencil_set_blend_mode(
 		return fail(`Node "${parsed.data.id}" not found`);
 	}
 
-	// blendMode is stored as a theme property since RuntimeNode doesn't have
-	// a dedicated blendMode field — we store it via the generic theme map
 	try {
-		const existingTheme = node.theme ?? {};
 		facade.updateNode(parsed.data.id, {
-			theme: { ...existingTheme, blendMode: parsed.data.blendMode },
-		} as RuntimeNodeUpdatePatch);
+			blendMode: parsed.data.blendMode,
+		});
 
 		const updated = facade.getNode(parsed.data.id);
 		if (!updated) {

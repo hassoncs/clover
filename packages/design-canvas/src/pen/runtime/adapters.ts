@@ -538,7 +538,7 @@ function buildPenPolygon(node: RuntimeNode): PenPolygon {
 	if (node.fill !== undefined) polygon.fill = node.fill;
 	if (node.stroke !== undefined) polygon.stroke = node.stroke;
 	if (node.cornerRadius !== undefined)
-		polygon.cornerRadius = polygon.cornerRadius;
+		polygon.cornerRadius = node.cornerRadius;
 	if (node.effects !== undefined) polygon.effects = node.effects;
 	if (node.polygonCount !== undefined) polygon.polygonCount = node.polygonCount;
 	return polygon;

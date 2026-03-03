@@ -26,7 +26,7 @@ export function InspectorPanel() {
 		);
 	}
 
-	const updateField = (field: string, value: any) => {
+	const updateField = (field: string, value: string | number | boolean | object) => {
 		if (!selectedId) return;
 		facade.updateNode(selectedId, { [field]: value });
 		commitMutation();

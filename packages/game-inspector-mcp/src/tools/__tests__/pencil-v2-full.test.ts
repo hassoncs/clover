@@ -147,7 +147,7 @@ describe("pencil-v2-components", () => {
 	});
 
 	describe("pencil_detach_instance", () => {
-		it("clears ref and descendants from a ref node", () => {
+		it("changes node type to frame and clears ref fields", () => {
 			const facade = createFacade();
 			const frame = createFrameNode(facade, "Card");
 			pencil_create_component(facade, { id: frame.id });
@@ -161,6 +161,7 @@ describe("pencil-v2-components", () => {
 			});
 			expect(result.success).toBe(true);
 			if (!result.success) return;
+			expect(result.data.node.type).toBe("frame");
 			expect(result.data.node.ref).toBeUndefined();
 			expect(result.data.node.descendants).toBeUndefined();
 		});
@@ -648,7 +649,7 @@ describe("pencil-v2-effects", () => {
 	});
 
 	describe("pencil_set_blend_mode", () => {
-		it("stores blend mode in theme map", () => {
+		it("stores blend mode in blendMode field", () => {
 			const facade = createFacade();
 			const frame = createFrameNode(facade);
 
@@ -659,9 +660,8 @@ describe("pencil-v2-effects", () => {
 			expect(result.success).toBe(true);
 			if (!result.success) return;
 			expect(result.data.value).toBe("MULTIPLY");
-			expect(result.data.node.theme).toEqual({
-				blendMode: "MULTIPLY",
-			});
+			expect(result.data.node.blendMode).toBe("MULTIPLY");
+			expect(result.data.node.theme?.blendMode).toBeUndefined();
 		});
 
 		it("returns failure for non-existent node", () => {

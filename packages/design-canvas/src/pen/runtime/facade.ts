@@ -1,3 +1,4 @@
+import type { PenVariable } from "@slopcade/shared/types/pen";
 import {
 	type PenNodeType,
 	RuntimeGraphError,
@@ -259,5 +260,27 @@ export class PenToolFacade {
 
 		visit(nodeId);
 		return snapshot;
+	}
+
+	createVariable(name: string, variable: PenVariable): void {
+		if (this.graph.variables.has(name)) {
+			throw new RuntimeGraphError(`Variable "${name}" already exists`);
+		}
+		this.graph.variables.set(name, variable);
+	}
+
+	deleteVariable(name: string): void {
+		if (!this.graph.variables.has(name)) {
+			throw new RuntimeGraphError(`Variable "${name}" not found`);
+		}
+		this.graph.variables.delete(name);
+	}
+
+	updateVariable(name: string, value: PenVariable["value"]): void {
+		const existing = this.graph.variables.get(name);
+		if (!existing) {
+			throw new RuntimeGraphError(`Variable "${name}" not found`);
+		}
+		this.graph.variables.set(name, { ...existing, value });
 	}
 }

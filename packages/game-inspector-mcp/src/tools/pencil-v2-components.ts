@@ -152,23 +152,28 @@ export function pencil_detach_instance(
 	}
 
 	try {
-		const undo = facade.updateNode(parsed.data.id, {
-			ref: undefined,
-			descendants: undefined,
-		} as RuntimeNodeUpdatePatch);
-
-		// Change the node type to frame by re-creating it
-		// Since we can't change type via updateNode, we convert in-place
-		// by clearing ref fields — the node remains a "ref" type structurally
-		// but without ref/descendants it acts as a detached copy
-		const updated = facade.getNode(parsed.data.id);
-		if (!updated) {
-			return fail(`Node "${parsed.data.id}" not found after detach`);
+		const parentId = node.parentId;
+		if (!parentId) {
+			return fail(`Node "${parsed.data.id}" has no parent`);
 		}
-		return ok({ node: updated, undoType: undo.type });
+
+		const preservedProps = {
+			id: node.id,
+			name: node.name,
+			x: node.x,
+			y: node.y,
+			width: node.width,
+			height: node.height,
+		};
+
+		facade.deleteNode(parsed.data.id);
+		const { node: newNode, undo } = facade.createNode("frame", parentId, preservedProps);
+
+		return ok({ node: newNode, undoType: undo.type });
 	} catch (error) {
 		return fail(mutationErrorToMessage(error));
 	}
+		return fail(mutationErrorToMessage(error));
 }
 
 export function pencil_set_instance_override(

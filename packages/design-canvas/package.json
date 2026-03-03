@@ -16,7 +16,7 @@
 		"nanoid": "^5.0.7",
 		"typeflex": "^0.1.0",
 		"y-protocols": "^1.0.6",
-		"yjs": "^13.6.27",
+		"yjs": "13.6.29",
 		"yoga-layout": "^3.2.1",
 		"fflate": "^0.8.0"
 	},

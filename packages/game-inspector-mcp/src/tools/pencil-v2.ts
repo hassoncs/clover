@@ -11,12 +11,18 @@ import {
 } from "@slopcade/design-canvas/pen/runtime";
 import { z } from "zod";
 import type { GameInspectorState } from "../types.js";
+import { ServerBridge } from "../server-bridge.js";
 
 type ToolSuccess<T> = { success: true; data: T };
 type ToolFailure = { success: false; error: string };
 type ToolResult<T> = ToolSuccess<T> | ToolFailure;
 
-const sharedFacade = new PenToolFacade(new SceneGraph());
+const _fallbackFacade = new PenToolFacade(new SceneGraph());
+
+function getFacade(): PenToolFacade {
+	const bridge = ServerBridge.getInstance();
+	return bridge ?? _fallbackFacade;
+}
 
 const NodeIdInput = z.object({ id: z.string().min(1) });
 const GetChildrenInput = z.object({ id: z.string().min(1) });
@@ -384,15 +390,14 @@ export function registerPencilV2Tools(
 		"Get a node by id from the pen scene graph.",
 		{ id: z.string() },
 		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_get_node(sharedFacade, args)),
+			toMcpText(pencil_get_node(getFacade(), args)),
 	);
-
 	server.tool(
 		"pencil_get_children",
 		"Get direct children of a node.",
 		{ id: z.string() },
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_get_children(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_get_children(getFacade(), args)),
 	);
 
 	server.tool(
@@ -403,8 +408,8 @@ export function registerPencilV2Tools(
 			namePattern: z.string().optional(),
 			caseSensitive: z.boolean().optional(),
 		},
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_find_nodes(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_find_nodes(getFacade(), args)),
 	);
 
 	server.tool(
@@ -415,48 +420,48 @@ export function registerPencilV2Tools(
 			parentId: z.string().optional(),
 			props: z.record(z.unknown()).optional(),
 		},
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_create_node(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_create_node(getFacade(), args)),
 	);
 
 	server.tool(
 		"pencil_update_node",
 		"Update mutable node properties by patch.",
 		{ id: z.string(), patch: z.record(z.unknown()) },
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_update_node(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_update_node(getFacade(), args)),
 	);
 
 	server.tool(
 		"pencil_delete_node",
 		"Delete a node and its subtree.",
 		{ id: z.string() },
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_delete_node(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_delete_node(getFacade(), args)),
 	);
 
 	server.tool(
 		"pencil_reparent_node",
 		"Move a node to a new parent.",
 		{ id: z.string(), newParentId: z.string() },
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_reparent_node(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_reparent_node(getFacade(), args)),
 	);
 
 	server.tool(
 		"pencil_set_fill",
 		"Set fill on a node.",
 		{ id: z.string(), fill: z.record(z.unknown()) },
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_set_fill(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_set_fill(getFacade(), args)),
 	);
 
 	server.tool(
 		"pencil_set_stroke",
 		"Set stroke on a node.",
 		{ id: z.string(), stroke: z.record(z.unknown()) },
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_set_stroke(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_set_stroke(getFacade(), args)),
 	);
 
 	server.tool(
@@ -480,7 +485,7 @@ export function registerPencilV2Tools(
 			alignItems: z.enum(["start", "center", "end", "stretch"]).optional(),
 			clip: z.boolean().optional(),
 		},
-		async (args: Record<string, unknown>) =>
-			toMcpText(pencil_set_layout(sharedFacade, args)),
+			async (args: Record<string, unknown>) =>
+				toMcpText(pencil_set_layout(getFacade(), args)),
 	);
 }

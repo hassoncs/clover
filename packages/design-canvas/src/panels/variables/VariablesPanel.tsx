@@ -13,7 +13,7 @@ import { usePenRuntime } from "../PenRuntimeContext";
 
 export function VariablesPanel() {
 	const { editorColors: c } = useTheme();
-	const { graph, selectedId, commitMutation, revision } = usePenRuntime();
+	const { graph, facade, selectedId, commitMutation, revision } = usePenRuntime();
 
 	const [newVarName, setNewVarName] = useState("");
 	const [newVarValue, setNewVarValue] = useState("");
@@ -26,27 +26,25 @@ export function VariablesPanel() {
 		if (graph.variables.has(newVarName)) return;
 
 		const variable: PenVariable = {
-			type: "string", // Defaulting to string for simplicity, could be inferred
+			type: "string",
 			value: newVarValue,
 		};
 
-		graph.variables.set(newVarName, variable);
+		facade.createVariable(newVarName, variable);
 		setNewVarName("");
 		setNewVarValue("");
 		commitMutation();
 	};
 
 	const handleDeleteVariable = (name: string) => {
-		graph.variables.delete(name);
+		facade.deleteVariable(name);
 		commitMutation();
 	};
 
 	const handleUpdateVariable = (name: string, value: string) => {
-		const existing = graph.variables.get(name);
-		if (existing) {
-			graph.variables.set(name, { ...existing, value });
-			commitMutation();
-		}
+		if (!graph.variables.has(name)) return;
+		facade.updateVariable(name, value);
+		commitMutation();
 	};
 
 	const variablesList = Array.from(graph.variables.entries());

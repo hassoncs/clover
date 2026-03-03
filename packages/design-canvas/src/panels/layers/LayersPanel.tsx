@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { RuntimeNode } from "../../pen/runtime/scene-graph";
 import { usePenRuntime } from "../PenRuntimeContext";
 
-function getTypeIcon(type: string): any {
+function getTypeIcon(type: string): React.ComponentProps<typeof Ionicons>["name"] {
 	switch (type) {
 		case "frame":
 			return "albums-outline";
