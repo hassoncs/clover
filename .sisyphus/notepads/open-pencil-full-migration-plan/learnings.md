@@ -19,6 +19,12 @@
 - **UndoEntry shape chosen**: `{ type, nodeId, inverse }` with serializable inverse variants (`delete`, `update`, `restore_subtree`, `reparent`) so tool layers can store/replay undo data without capturing runtime closures.
 - **Design decisions made**: (1) facade returns structured clones for reads to avoid leaking mutable SceneGraph internals, (2) create/reparent enforce container parent types, (3) `reparentNode` throws `CycleError` when target parent is a descendant, (4) delete undo captures full subtree snapshots for precise restore metadata.
 
+## [2026-03-03T17:51:48Z] T6: Priority MCP Tools Complete
+- Tools implemented: `pencil_get_node`, `pencil_get_children`, `pencil_find_nodes`, `pencil_create_node`, `pencil_update_node`, `pencil_delete_node`, `pencil_reparent_node`, `pencil_set_fill`, `pencil_set_stroke`, `pencil_set_layout`.
+- Validation library used: `zod`.
+- pencil_apply_ops status: deprecated with notice (`// DEPRECATED: use pencil_create_node, pencil_update_node, etc. instead`).
+- Any design decisions: (1) tools are pure facade-backed functions returning `{ success, data|error }`, (2) MCP registration wraps the same functions into JSON text responses, (3) introduced `@slopcade/design-canvas/pen/runtime` export via a runtime-focused `mcp.ts` shim to avoid browser bridge dependencies, (4) layout padding object input is normalized to Pen tuple padding before facade patch application.
+
 ## [2026-03-03T09:49:00Z] T3: Yoga Layout Adapter Complete
 - Yoga package used: `yoga-layout@^3.2.1`
 - PenSizing mapping: fixed numbers map to Yoga width/height; `fill_container` maps to `flexGrow=1` (or `flexGrow=N` for `fill_container(N)`) on the parent flex axis; cross-axis `fill_container` maps to `alignSelf: stretch`; no-flex fallback uses numeric fallback (`N` or default `200`)

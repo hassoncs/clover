@@ -1,0 +1,12 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+
+ RUN  v3.2.4 /private/tmp/slopcade-open-pencil-migration
+
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/pencil-v2.test.ts (20 tests) 38ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  09:51:26
+   Duration  3.13s (transform 363ms, setup 0ms, collect 504ms, tests 38ms, environment 0ms, prepare 944ms)
+

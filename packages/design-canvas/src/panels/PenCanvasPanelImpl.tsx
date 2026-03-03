@@ -23,11 +23,13 @@ import {
 	screenToDoc,
 } from "../tools/penToolState";
 import { resolveTreeVariables } from "../pen/variables";
+import { usePenRuntime } from "./PenRuntimeContext";
 
 export interface PenCanvasPanelProps {
 	document: PenDocument;
 	isLoading?: boolean;
 	onAddNode?: (node: PenNode) => void;
+	onChange?: (doc: PenDocument) => void;
 }
 
 const MIN_SCALE = 0.05;
@@ -119,220 +121,220 @@ function getTypeIcon(type: PenNode["type"]): NodeTypeIconName {
 	}
 }
 
-interface LayersPanelProps {
-	nodes: PenNode[];
-	selectedNodePath: string[] | null;
-	onSelectNode: (path: string[]) => void;
-}
 
-function LayersPanel({ nodes, selectedNodePath, onSelectNode }: LayersPanelProps) {
-	const { editorColors: c } = useTheme();
-	const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-	const selectedId = selectedNodePath?.[0] ?? null;
 
-	const toggleExpanded = (id: string) => {
-		setExpandedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) {
-				next.delete(id);
-			} else {
-				next.add(id);
-			}
-			return next;
-		});
-	};
 
-	const getChildren = (node: PenNode): PenNode[] => {
-		if ("children" in node && Array.isArray(node.children)) {
-			return node.children as PenNode[];
-		}
-		return [];
-	};
 
-	return (
-		<ScrollView
-			style={[styles.layersPanel, { borderRightColor: c.border }]}
-			contentContainerStyle={styles.layersPanelContent}
-		>
-			{nodes.map((node) => {
-				const children = getChildren(node);
-				const hasChildren = children.length > 0;
-				const isExpanded = expandedIds.has(node.id);
-				const isSelected = selectedId === node.id;
 
-				return (
-					<View key={node.id}>
-						<Pressable
-							onPress={() => onSelectNode([node.id])}
-							style={[
-								styles.layerRow,
-								isSelected && { backgroundColor: c.surfaceHover },
-							]}
-						>
-							<Pressable
-								onPress={() => hasChildren && toggleExpanded(node.id)}
-								style={styles.layerChevron}
-								hitSlop={4}
-							>
-								{hasChildren ? (
-									<Ionicons
-										name={isExpanded ? "chevron-down" : "chevron-forward"}
-										size={10}
-										color={c.textSecondary}
-									/>
-								) : (
-									<View style={{ width: 10 }} />
-								)}
-							</Pressable>
-							<Ionicons
-								name={getTypeIcon(node.type)}
-								size={12}
-								color={isSelected ? c.text : c.textSecondary}
-								style={styles.layerTypeIcon}
-							/>
-							<Text
-								style={[
-									styles.layerName,
-									{ color: isSelected ? c.text : c.textSecondary },
-								]}
-								numberOfLines={1}
-							>
-								{getNodeName(node)}
-							</Text>
-						</Pressable>
 
-						{hasChildren && isExpanded && children.map((child) => {
-							const childSelected = selectedId === child.id;
-							return (
-								<Pressable
-									key={child.id}
-									onPress={() => onSelectNode([child.id])}
-									style={[
-										styles.layerRow,
-										styles.layerRowChild,
-										childSelected && { backgroundColor: c.surfaceHover },
-									]}
-								>
-									<Ionicons
-										name={getTypeIcon(child.type)}
-										size={12}
-										color={childSelected ? c.text : c.textSecondary}
-										style={styles.layerTypeIcon}
-									/>
-									<Text
-										style={[
-											styles.layerName,
-											{ color: childSelected ? c.text : c.textSecondary },
-										]}
-										numberOfLines={1}
-									>
-										{getNodeName(child)}
-									</Text>
-								</Pressable>
-							);
-						})}
-					</View>
-				);
-			})}
-		</ScrollView>
-	);
-}
 
-// ── Tool Palette ─────────────────────────────────────────────────────────────
 
-interface ToolPaletteProps {
-	activeTool: "pointer" | "pen";
-	onSelectTool: (tool: "pointer" | "pen") => void;
-}
 
-function ToolPalette({ activeTool, onSelectTool }: ToolPaletteProps) {
-	return (
-		<View style={toolStyles.container}>
-			<Pressable
-				onPress={() => onSelectTool("pointer")}
-				style={[
-					toolStyles.toolButton,
-					activeTool === "pointer" && toolStyles.toolButtonActive,
-				]}
-			>
-				<Ionicons
-					name="navigate-outline"
-					size={16}
-					color={activeTool === "pointer" ? "#818cf8" : "#6460a0"}
-				/>
-			</Pressable>
-			<Pressable
-				onPress={() => onSelectTool("pen")}
-				style={[
-					toolStyles.toolButton,
-					activeTool === "pen" && toolStyles.toolButtonActive,
-				]}
-			>
-				<Ionicons
-					name="pencil-outline"
-					size={16}
-					color={activeTool === "pen" ? "#818cf8" : "#6460a0"}
-				/>
-			</Pressable>
-			{activeTool === "pen" && (
-				<View style={toolStyles.hint}>
-					<Text style={toolStyles.hintText}>
-						Click to add points · Drag for curves · Double-click to finish · Esc to cancel
-					</Text>
-				</View>
-			)}
-		</View>
-	);
-}
 
-const toolStyles = StyleSheet.create({
-	container: {
-		position: "absolute",
-		left: 12,
-		top: "50%",
-		transform: [{ translateY: -44 }],
-		backgroundColor: "#0d0a1e",
-		borderWidth: 1,
-		borderColor: "#2d2650",
-		borderRadius: 10,
-		padding: 4,
-		gap: 2,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.3,
-		shadowRadius: 8,
-		elevation: 8,
-		zIndex: 50,
-	},
-	toolButton: {
-		width: 32,
-		height: 32,
-		borderRadius: 6,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	toolButtonActive: {
-		backgroundColor: "#1e1a35",
-	},
-	hint: {
-		position: "absolute",
-		left: 44,
-		top: 0,
-		backgroundColor: "#0d0a1e",
-		borderWidth: 1,
-		borderColor: "#2d2650",
-		borderRadius: 6,
-		paddingHorizontal: 10,
-		paddingVertical: 6,
-		width: 260,
-	},
-	hintText: {
-		color: "#a096c8",
-		fontSize: 11,
-		lineHeight: 16,
-	},
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -354,15 +356,16 @@ export function PenCanvasPanel({
 
 	const [showFrameList, setShowFrameList] = useState(false);
 	const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
-	const [showLayers, setShowLayers] = useState(false);
-	const [selectedNodePath, setSelectedNodePath] = useState<string[] | null>(null);
+
+	const { selectedId, setSelectedId, activeTool, setActiveTool } = usePenRuntime();
 
 	// ── Pen tool state ────────────────────────────────────────────────────────
-	const [activeTool, setActiveToolState] = useState<"pointer" | "pen">("pointer");
+
 	const [penState, setPenState] = useState<PenDrawingState>(EMPTY_PEN_STATE);
 
 	// Refs so event handlers never go stale
-	const activeToolRef = useRef<"pointer" | "pen">("pointer");
+	const activeToolRef = useRef<string>(activeTool);
+	activeToolRef.current = activeTool;
 	const penStateRef = useRef<PenDrawingState>(EMPTY_PEN_STATE);
 	const cameraRef = useRef<DesignCamera>(camera);
 	const isDraggingHandleRef = useRef(false);
@@ -370,17 +373,27 @@ export function PenCanvasPanel({
 	penStateRef.current = penState;
 
 	const switchTool = useCallback(
-		(tool: "pointer" | "pen") => {
-			activeToolRef.current = tool;
-			setActiveToolState(tool);
+		(tool: string) => {
+			setActiveTool(tool);
 			if (tool === "pointer") {
 				isDraggingHandleRef.current = false;
 				penStateRef.current = EMPTY_PEN_STATE;
 				setPenState(EMPTY_PEN_STATE);
 			}
 		},
-		[],
+		[setActiveTool],
 	);
+
+
+
+
+
+
+
+
+
+
+
 
 	const commitPenPath = useCallback(
 		(closed: boolean) => {
@@ -389,10 +402,10 @@ export function PenCanvasPanel({
 			isDraggingHandleRef.current = false;
 			penStateRef.current = EMPTY_PEN_STATE;
 			setPenState(EMPTY_PEN_STATE);
-			activeToolRef.current = "pointer";
-			setActiveToolState("pointer");
+			setActiveTool("pointer");
+
 		},
-		[onAddNode],
+		[onAddNode, setActiveTool],
 	);
 
 	const penMouseDown = useCallback(
@@ -512,8 +525,10 @@ export function PenCanvasPanel({
 	}, [penDocument, width, canvasHeight, setCamera]);
 
 	const handleNodeTap = useCallback((nodePath: string[]) => {
-		setSelectedNodePath(nodePath);
-	}, []);
+		setSelectedId(nodePath[0] ?? null);
+	}, [setSelectedId]);
+
+
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -526,8 +541,8 @@ export function PenCanvasPanel({
 					isDraggingHandleRef.current = false;
 					penStateRef.current = EMPTY_PEN_STATE;
 					setPenState(EMPTY_PEN_STATE);
-					activeToolRef.current = "pointer";
-					setActiveToolState("pointer");
+					setActiveTool("pointer");
+
 					return;
 				}
 				if (e.key === "Enter") {
@@ -564,17 +579,17 @@ export function PenCanvasPanel({
 			<View style={[styles.header, { borderBottomColor: c.border }]}>
 				<Text style={[styles.title, { color: c.text }]}>CANVAS</Text>
 				<View style={styles.headerRight}>
-					<View style={[styles.navControls, { backgroundColor: c.surface }]}>
-						<Pressable
-							onPress={() => setShowLayers((v) => !v)}
-							style={[
-								styles.navButton,
-								showLayers && { backgroundColor: c.surfaceHover },
-							]}
-						>
-							<Ionicons name="layers-outline" size={14} color={c.text} />
-						</Pressable>
-					</View>
+
+
+
+
+
+
+
+
+
+
+
 
 					<View style={[styles.navControls, { backgroundColor: c.surface }]}>
 						<Pressable onPress={handleZoomToFit} style={styles.navButton}>
@@ -658,13 +673,13 @@ export function PenCanvasPanel({
 					</Text>
 				) : (
 					<View style={styles.canvasArea}>
-						{showLayers && (
-							<LayersPanel
-								nodes={penDocument.children}
-								selectedNodePath={selectedNodePath}
-								onSelectNode={setSelectedNodePath}
-							/>
-						)}
+
+
+
+
+
+
+
 						<View
 							style={{ flex: 1, position: "relative" }}
 							{...({
@@ -682,15 +697,15 @@ export function PenCanvasPanel({
 							<PenRenderer
 								document={penDocument}
 								camera={camera}
-								width={showLayers ? width - 180 : width}
+								width={width}
 								height={canvasHeight}
-								selectedNodePath={selectedNodePath ?? undefined}
+								selectedNodePath={selectedId ? [selectedId] : undefined}
 								onNodeTap={handleNodeTap}
 								penDrawingState={activeTool === "pen" ? penState : undefined}
 							/>
-							{onAddNode && (
-								<ToolPalette activeTool={activeTool} onSelectTool={switchTool} />
-							)}
+
+
+
 						</View>
 					</View>
 				)}

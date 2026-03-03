@@ -170,6 +170,7 @@ export function registerPencilTools(
 
 	server.tool(
 		"pencil_apply_ops",
+		// DEPRECATED: use pencil_create_node, pencil_update_node, etc. instead
 		`Apply canvas operations to the live Pencil design document.
 Supported op types:
   { type: "addFrame", id?, title?, width?, height?, x?, y? }

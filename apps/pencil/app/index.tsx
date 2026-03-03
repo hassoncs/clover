@@ -42,7 +42,7 @@ export default function PencilScreen() {
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
 			<View style={styles.container}>
 				<View style={styles.canvas}>
-					<PenCanvasPanel document={document} onAddNode={handleAddNode} />
+					<PenCanvasPanel document={document} onAddNode={handleAddNode} onChange={setDocument} />
 				</View>
 
 				{chatOpen && (
