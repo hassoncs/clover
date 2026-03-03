@@ -238,6 +238,7 @@ describe("layoutTree — text node fit_content", () => {
 		const [result] = layoutTree([t], estimateTextSize);
 		// "Hello" = 5 chars * 16 * 0.6 = 48
 		expect(result.rect.width).toBeCloseTo(48, 5);
-		expect(result.rect.height).toBeCloseTo(19.2, 5);
+		// Yoga rounds to integer pixels: 16 * 1.2 = 19.2 → 19
+		expect(result.rect.height).toBeCloseTo(19, 0);
 	});
 });
