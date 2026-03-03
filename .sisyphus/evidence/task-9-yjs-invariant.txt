@@ -1,0 +1,51 @@
+Legend: production dependency, optional only, dev only
+
+@slopcade/pencil-app@1.0.0 /private/tmp/slopcade-open-pencil-migration/apps/pencil
+
+dependencies:
+@slopcade/design-canvas link:../../packages/design-canvas
+├─┬ y-protocols 1.0.7
+│ └── yjs 13.6.29 peer
+└── yjs 13.6.29
+
+@slopcade/shader-editor-app@1.0.0 /private/tmp/slopcade-open-pencil-migration/apps/shader-editor
+
+dependencies:
+@slopcade/editor link:../../packages/editor
+└─┬ @slopcade/design-canvas link:../../packages/design-canvas
+  ├─┬ y-protocols 1.0.7
+  │ └── yjs 13.6.29 peer
+  └── yjs 13.6.29
+
+@slopcade/slopcade-app@1.0.0 /private/tmp/slopcade-open-pencil-migration/apps/slopcade
+
+dependencies:
+@slopcade/editor link:../../packages/editor
+└─┬ @slopcade/design-canvas link:../../packages/design-canvas
+  ├─┬ y-protocols 1.0.7
+  │ └── yjs 13.6.29 peer
+  └── yjs 13.6.29
+
+@slopcade/design-canvas@1.0.0 /private/tmp/slopcade-open-pencil-migration/packages/design-canvas
+
+dependencies:
+y-protocols 1.0.7
+└── yjs 13.6.29 peer
+yjs 13.6.29
+
+@slopcade/editor@1.0.0 /private/tmp/slopcade-open-pencil-migration/packages/editor
+
+dependencies:
+@slopcade/design-canvas link:../design-canvas
+├─┬ y-protocols 1.0.7
+│ └── yjs 13.6.29 peer
+└── yjs 13.6.29
+
+@slopcade/game-inspector-mcp@1.0.0 /private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp
+
+dependencies:
+@slopcade/design-canvas link:../design-canvas
+├─┬ y-protocols 1.0.7
+│ └── yjs 13.6.29 peer
+└── yjs 13.6.29
+12
