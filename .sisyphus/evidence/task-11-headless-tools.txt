@@ -1,0 +1,46 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+
+ RUN  v3.2.4 /private/tmp/slopcade-open-pencil-migration
+
+stderr | packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetDocument > returns error when no facade and no page (headless fallback path)
+DEPRECATED: __PENCIL_BRIDGE__ bridge in use. Register a ServerBridge facade for headless operation.
+
+stderr | packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeApplyOps > returns error when no facade and no page
+DEPRECATED: __PENCIL_BRIDGE__ bridge in use. Register a ServerBridge facade for headless operation.
+
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > ServerBridge > isAvailable returns false when no facade registered 1ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > ServerBridge > isAvailable returns true after register 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > ServerBridge > getInstance returns the exact registered facade 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > ServerBridge > clear resets to null 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > ServerBridge > register replaces a previously registered facade 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > getDocumentViaFacade > returns all nodes (including virtual root) 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > getDocumentViaFacade > includes newly created nodes 1ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > getDocumentViaFacade > does not include deleted nodes 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies addFrame op and increments opCount 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies multiple ops in sequence 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies updateFrame op 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies deleteFrame op 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies addElement op under a frame 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies updateElement op 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > applies deleteElement op 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > returns error for invalid JSON 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > returns error when ops is not an array 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > returns error for unknown op type 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > applyOpsViaFacade > returns error and stops on facade error mid-ops 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetDocument > uses facade when ServerBridge is registered (no browser needed) 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetDocument > includes nodes created before registration 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetDocument > emits deprecation warning when no facade registered 1ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetDocument > returns error when no facade and no page (headless fallback path) 1ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetDocument > does NOT emit deprecation warning when facade is registered 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetSelection > returns headless-not-available message when facade registered 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeGetSelection > emits deprecation warning when no facade registered 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeApplyOps > applies ops via facade when ServerBridge registered (no browser needed) 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeApplyOps > emits deprecation warning when no facade registered 0ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts > executeApplyOps > returns error when no facade and no page 0ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  10:07:56
+   Duration  642ms (transform 86ms, setup 0ms, collect 315ms, tests 7ms, environment 0ms, prepare 58ms)
+
