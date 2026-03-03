@@ -64,3 +64,14 @@
 - Total tools implemented: 30 (10 from T6 + 20 from T10)
 - Parity matrix: 62 total entries — 30 implemented, 31 planned, 1 not-applicable (eval escape hatch)
 - Design decisions: (1) `sceneGraphToPenDocument` needed to be added to `mcp.ts` barrel export for vitest resolution, (2) blendMode stored in theme map since RuntimeNode lacks dedicated field, (3) variable binding uses theme map as the property→variable indirection layer, (4) pencil_get_selection accepts selectedIds from context rather than maintaining internal selection state, (5) instance overrides stored in descendants Record<string, unknown> matching PenRef schema
+
+## [2026-03-03T10:08:00Z] T11: Bridge Topology Migration Complete
+- **ServerBridge pattern**: Module-level singleton in `packages/game-inspector-mcp/src/server-bridge.ts`. API: `register(facade)`, `getInstance(): PenToolFacade | null`, `isAvailable(): boolean`, `clear()` (for tests). Uses `import type` for PenToolFacade so no runtime dependency on design-canvas in the bridge module itself.
+- **Tools updated to server-first**: `pencil_get_document`, `pencil_get_selection`, `pencil_apply_ops`. Each checks `ServerBridge.isAvailable()` first; on true uses facade path; on false emits deprecation warning then takes the existing browser path.
+- **Deprecation warning (exact message)**: `DEPRECATED: __PENCIL_BRIDGE__ bridge in use. Register a ServerBridge facade for headless operation.`
+- **Server-path pure functions exported from pencil.ts**: `getDocumentViaFacade(facade)` returns `{ success: true, data: { nodes: RuntimeNode[] } }`; `applyOpsViaFacade(facade, opsJson)` translates CanvasOp JSON array to facade calls, returns `{ success: true, data: { opCount } }`.
+- **Handler functions exported for testability**: `executeGetDocument`, `executeGetSelection`, `executeApplyOps`. Each encapsulates the server-first/browser-fallback dispatch. MCP `server.tool()` registrations delegate to these, keeping them independently testable.
+- **CanvasOp translation in applyOpsViaFacade**: `addFrame` maps to `createNode("frame", rootId, props)`; `updateFrame/deleteFrame` map to `updateNode/deleteNode`; `addElement` maps to `createNode(elementType, frameId, propsWithoutTypeAndId)`; `updateElement/deleteElement` likewise.
+- **pencil_get_selection server path**: Returns `{ success: false, error: "Selection state is not available in headless mode" }` since selection is a browser UI concept with no facade equivalent.
+- **window.__PENCIL_BRIDGE__ preserved**: Not removed. Removal deferred to T13.
+- **Test count**: 29 tests in `server-bridge.test.ts`, 118 total in `tools/__tests__/` (no regressions in pencil-v2 or pencil-v2-full tests).
