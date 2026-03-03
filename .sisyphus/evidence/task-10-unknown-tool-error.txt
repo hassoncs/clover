@@ -1,0 +1,43 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+=== Parity Matrix Summary ===
+Total tools: 62
+Implemented: 30
+Planned: 31
+Not applicable: 1
+
+=== Implemented Tools ===
+  [read] pencil_get_node → get_node
+  [read] pencil_get_children → node_children
+  [read] pencil_find_nodes → find_nodes
+  [create] pencil_create_node → create_shape
+  [modify] pencil_update_node → update_node
+  [structure] pencil_delete_node → delete_node
+  [structure] pencil_reparent_node → reparent_node
+  [styling] pencil_set_fill → set_fill
+  [styling] pencil_set_stroke → set_stroke
+  [layout] pencil_set_layout → set_layout
+  [component] pencil_create_component → create_component
+  [component] pencil_create_instance → create_instance
+  [component] pencil_detach_instance
+  [component] pencil_set_instance_override
+  [component] pencil_reset_instance_override
+  [variable] pencil_create_variable → create_variable
+  [variable] pencil_update_variable → set_variable
+  [variable] pencil_delete_variable → delete_variable
+  [variable] pencil_bind_variable → bind_variable
+  [variable] pencil_get_variables → list_variables
+  [effects] pencil_set_effects → set_effects
+  [effects] pencil_set_corner_radius → set_radius
+  [effects] pencil_set_opacity → set_opacity
+  [effects] pencil_set_blend_mode → set_blend
+  [effects] pencil_set_text_style → set_font
+  [query] pencil_get_document → get_page_tree
+  [query] pencil_get_ancestors → node_ancestors
+  [query] pencil_get_descendants → node_tree
+  [query] pencil_search_nodes → find_nodes
+  [query] pencil_get_selection → get_selection
+
+=== Unknown Tool Test ===
+Tool 'pencil_nonexistent_tool' exists: false
+Unknown tool correctly not in implemented set: PASS

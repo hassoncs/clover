@@ -14,3 +14,7 @@ export {
 	resetIdCounter,
 	SceneGraph,
 } from "./scene-graph";
+export {
+	penDocumentToSceneGraph,
+	sceneGraphToPenDocument,
+} from "./adapters";

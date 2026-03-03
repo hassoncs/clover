@@ -58,3 +58,9 @@
 - **clipsContent not in Kiwi schema**: The `clipsContent` field exists in Figma's REST API but not in the Kiwi wire format. Cannot roundtrip through .fig codec.
 - **fflate dependency**: Added `fflate@^0.8.0` to `packages/design-canvas/package.json` for ZIP/deflate operations.
 - **Test count**: 22 tests covering codec roundtrip, import (8 tests), unsupported features (3 tests), export→import roundtrip (7 tests), fill edge cases (2 tests).
+
+## [2026-03-03T10:07:00Z] T10: Full MCP Tool Parity Complete
+- Tool categories added: components (5), variables (5), effects/styling (5), query/export (5)
+- Total tools implemented: 30 (10 from T6 + 20 from T10)
+- Parity matrix: 62 total entries — 30 implemented, 31 planned, 1 not-applicable (eval escape hatch)
+- Design decisions: (1) `sceneGraphToPenDocument` needed to be added to `mcp.ts` barrel export for vitest resolution, (2) blendMode stored in theme map since RuntimeNode lacks dedicated field, (3) variable binding uses theme map as the property→variable indirection layer, (4) pencil_get_selection accepts selectedIds from context rather than maintaining internal selection state, (5) instance overrides stored in descendants Record<string, unknown> matching PenRef schema
