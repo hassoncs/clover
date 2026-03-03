@@ -1,0 +1,10 @@
+
+ RUN  v3.2.4 /private/tmp/slopcade-open-pencil-migration/packages/design-canvas
+
+ ✓ src/pen/runtime/__tests__/facade.test.ts (4 tests | 3 skipped) 3ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 3 skipped (4)
+   Start at  09:37:47
+   Duration  2.15s (transform 147ms, setup 0ms, collect 129ms, tests 3ms, environment 0ms, prepare 580ms)
+
