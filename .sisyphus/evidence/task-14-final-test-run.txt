@@ -1,0 +1,28 @@
+npx vitest run packages/design-canvas/src/pen/ packages/game-inspector-mcp/src/tools/ apps/pencil/lib/ 2>&1
+
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+
+ RUN  v3.2.4 /private/tmp/slopcade-open-pencil-migration
+
+ ✓ packages/design-canvas/src/pen/runtime/__tests__/orphan.test.ts (12 tests) 8ms
+stderr | packages/design-canvas/src/pen/__tests__/components.test.ts > resolveAllRefs > detects circular refs and does not infinite loop
+Circular ref detected: a — skipping resolution
+
+ ✓ packages/design-canvas/src/pen/__tests__/components.test.ts (10 tests) 8ms
+ ✓ packages/design-canvas/src/pen/runtime/__tests__/facade.test.ts (4 tests) 11ms
+ ✓ packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts (24 tests) 53ms
+ ✓ packages/design-canvas/src/pen/__tests__/variables.test.ts (11 tests) 5ms
+ ✓ packages/design-canvas/src/pen/runtime/__tests__/yoga-layout.test.ts (7 tests) 23ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/pencil-v2.test.ts (20 tests) 16ms
+ ✓ packages/design-canvas/src/pen/__tests__/layout.test.ts (23 tests) 51ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/pencil-v2-full.test.ts (69 tests) 33ms
+ ✓ packages/design-canvas/src/pen/collab/__tests__/convergence.test.ts (2 tests) 21ms
+ ✓ apps/pencil/lib/__tests__/file-io.test.ts (8 tests) 9ms
+ ✓ packages/design-canvas/src/pen/fig/__tests__/fig-roundtrip.test.ts (22 tests) 463ms
+ ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts (27 tests) 32ms
+
+ Test Files  13 passed (13)
+      Tests  239 passed (239)
+   Start at  10:40:14
+   Duration  4.59s (transform 4.47s, setup 0ms, collect 12.16s, tests 732ms, environment 4ms, prepare 9.51s)
