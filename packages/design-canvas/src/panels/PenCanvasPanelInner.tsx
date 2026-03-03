@@ -1,7 +1,9 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { ComponentsPanel } from "./components/ComponentsPanel";
 import { InspectorPanel } from "./inspector/InspectorPanel";
 import { LayersPanel } from "./layers/LayersPanel";
+import { VariablesPanel } from "./variables/VariablesPanel";
 import {
 	PenCanvasPanel as CanvasImpl,
 	type PenCanvasPanelProps,
@@ -29,6 +31,8 @@ export default function PenCanvasPanelInner(props: PenCanvasPanelProps) {
 					<ToolbarShell />
 					<CanvasImpl {...props} />
 				</View>
+				<VariablesPanel />
+				<ComponentsPanel />
 				<InspectorPanel />
 			</View>
 		</PenRuntimeProvider>

@@ -163,6 +163,195 @@ export function InspectorPanel() {
 					placeholderTextColor={c.textSecondary}
 				/>
 			</View>
+			<View style={styles.section}>
+				<Text style={[styles.sectionTitle, { color: c.textSecondary }]}>
+					Appearance
+				</Text>
+				<View style={styles.row}>
+					<View style={styles.field}>
+						<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Opacity</Text>
+						<TextInput
+							style={[
+								styles.input,
+								{
+									color: c.text,
+									borderColor: c.border,
+									backgroundColor: c.surface,
+								},
+							]}
+							value={((node.opacity ?? 1) * 100).toString()}
+							onChangeText={(v) => {
+								const num = parseFloat(v);
+								if (!isNaN(num)) updateField("opacity", num / 100);
+							}}
+							keyboardType="numeric"
+						/>
+						<Text style={{ color: c.textSecondary, fontSize: 12 }}>%</Text>
+					</View>
+				</View>
+				<View style={styles.row}>
+					<View style={styles.field}>
+						<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Blend</Text>
+						<TextInput
+							style={[
+								styles.input,
+								{
+									color: c.text,
+									borderColor: c.border,
+									backgroundColor: c.surface,
+								},
+							]}
+							value={node.blendMode ?? "normal"}
+							onChangeText={(v) => updateField("blendMode", v)}
+							placeholder="normal, multiply..."
+							placeholderTextColor={c.textSecondary}
+						/>
+					</View>
+				</View>
+				{(node.type === "frame" || node.type === "rectangle") && (
+					<View style={styles.row}>
+						<View style={styles.field}>
+							<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Radius</Text>
+							<TextInput
+								style={[
+									styles.input,
+									{
+										color: c.text,
+										borderColor: c.border,
+										backgroundColor: c.surface,
+									},
+								]}
+								value={node.cornerRadius?.toString() ?? "0"}
+								onChangeText={(v) => updateNumberField("cornerRadius", v)}
+								keyboardType="numeric"
+							/>
+						</View>
+					</View>
+				)}
+			</View>
+
+			{node.type === "text" && (
+				<View style={styles.section}>
+					<Text style={[styles.sectionTitle, { color: c.textSecondary }]}>
+						Text Style
+					</Text>
+					<View style={styles.row}>
+						<View style={styles.field}>
+							<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Size</Text>
+							<TextInput
+								style={[
+									styles.input,
+									{
+										color: c.text,
+										borderColor: c.border,
+										backgroundColor: c.surface,
+									},
+								]}
+								value={node.fontSize?.toString() ?? "16"}
+								onChangeText={(v) => updateNumberField("fontSize", v)}
+								keyboardType="numeric"
+							/>
+						</View>
+					</View>
+					<View style={styles.row}>
+						<View style={styles.field}>
+							<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Family</Text>
+							<TextInput
+								style={[
+									styles.input,
+									{
+										color: c.text,
+										borderColor: c.border,
+										backgroundColor: c.surface,
+									},
+								]}
+								value={node.fontFamily ?? ""}
+								onChangeText={(v) => updateField("fontFamily", v)}
+								placeholder="Inter"
+								placeholderTextColor={c.textSecondary}
+							/>
+						</View>
+					</View>
+					<View style={styles.row}>
+						<View style={styles.field}>
+							<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Weight</Text>
+							<TextInput
+								style={[
+									styles.input,
+									{
+										color: c.text,
+										borderColor: c.border,
+										backgroundColor: c.surface,
+									},
+								]}
+								value={node.fontWeight ?? ""}
+								onChangeText={(v) => updateField("fontWeight", v)}
+								placeholder="400, bold..."
+								placeholderTextColor={c.textSecondary}
+							/>
+						</View>
+					</View>
+					<View style={styles.row}>
+						<View style={styles.field}>
+							<Text style={[styles.label, { color: c.textSecondary, width: 60 }]}>Align</Text>
+							<TextInput
+								style={[
+									styles.input,
+									{
+										color: c.text,
+										borderColor: c.border,
+										backgroundColor: c.surface,
+									},
+								]}
+								value={node.textAlign ?? "left"}
+								onChangeText={(v) => updateField("textAlign", v)}
+								placeholder="left, center, right"
+								placeholderTextColor={c.textSecondary}
+							/>
+						</View>
+					</View>
+				</View>
+			)}
+
+			<View style={styles.section}>
+				<Text style={[styles.sectionTitle, { color: c.textSecondary }]}>
+					Effects
+				</Text>
+				{node.effects && node.effects.length > 0 ? (
+					node.effects.map((effect, i) => (
+						<View key={i} style={styles.row}>
+							<Text style={{ color: c.text, fontSize: 12 }}>
+								{effect.shadow ? "Shadow" : effect.blur ? "Blur" : effect.background_blur ? "Background Blur" : "Effect"}
+							</Text>
+						</View>
+					))
+				) : (
+					<Text style={{ color: c.textSecondary, fontSize: 12, fontStyle: "italic", marginBottom: 8 }}>
+						No effects
+					</Text>
+				)}
+				<View style={styles.row}>
+					<Text
+						style={{ color: c.text, fontSize: 12, fontWeight: "500" }}
+						onPress={() => {
+							const newEffects = [...(node.effects ?? []), { shadow: { color: "#00000040", offsetX: 0, offsetY: 4, blur: 4 } }];
+							updateField("effects", newEffects);
+						}}
+					>
+						+ Add Shadow
+					</Text>
+					<Text
+						style={{ color: c.text, fontSize: 12, fontWeight: "500", marginLeft: 16 }}
+						onPress={() => {
+							const newEffects = [...(node.effects ?? []), { blur: 4 }];
+							updateField("effects", newEffects);
+						}}
+					>
+						+ Add Blur
+					</Text>
+				</View>
+			</View>
+
 		</ScrollView>
 	);
 }

@@ -44,6 +44,7 @@ export interface RuntimeNode {
 	height?: PenSizing;
 	rotation?: number;
 	opacity?: number;
+	blendMode?: string;
 	flipX?: boolean;
 	flipY?: boolean;
 	enabled?: boolean;
