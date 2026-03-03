@@ -1,0 +1,12 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+
+ RUN  v3.2.4 /private/tmp/slopcade-open-pencil-migration
+
+ ✓ packages/design-canvas/src/pen/fig/__tests__/fig-roundtrip.test.ts (22 tests) 120ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  09:54:35
+   Duration  516ms (transform 105ms, setup 0ms, collect 135ms, tests 120ms, environment 0ms, prepare 49ms)
+

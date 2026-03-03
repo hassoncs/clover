@@ -47,3 +47,14 @@
 - Awareness fields tracked: `userId`, `selectedNodeId`, `cursorPosition`
 - Single version invariant: PASS (`pnpm why yjs --recursive` resolves only `yjs@13.6.29`)
 - Any design decisions: Y.Doc is authoritative; PenToolFacade mutations are bridged into Yjs transactions and SceneGraph is reconciled from Yjs after each transaction; awareness sync is protocol-based (`y-protocols/awareness`) and transport-agnostic
+
+
+## [2026-03-03T09:55:00Z] T5: .fig Codec Integration Complete
+- **Kiwi codec vendored**: Copied 7 files from OpenPencil's `kiwi-schema/` (bb.ts, binary.ts, js.ts, parser.ts, schema.ts, util.ts, index.ts) plus `kiwi/schema.ts` (Figma schema text) and `kiwi/protocol.ts`.
+- **`as any` elimination**: All `as any` casts in vendored code replaced with `as unknown as T` or proper interface extensions.
+- **FontName is a struct**: Kiwi schema defines `FontName` as a struct (not message), so `postscript` field is required. Export generates it as `{family}-{style}` with spaces removed.
+- **EffectType enum**: Kiwi schema uses `FOREGROUND_BLUR` (not `LAYER_BLUR`). Import handles both for compatibility with older files.
+- **Float precision**: Kiwi uses float32 encoding, so values like `0.8` become `0.800000011920929` after roundtrip. Tests use `toBeCloseTo` for float comparisons.
+- **clipsContent not in Kiwi schema**: The `clipsContent` field exists in Figma's REST API but not in the Kiwi wire format. Cannot roundtrip through .fig codec.
+- **fflate dependency**: Added `fflate@^0.8.0` to `packages/design-canvas/package.json` for ZIP/deflate operations.
+- **Test count**: 22 tests covering codec roundtrip, import (8 tests), unsupported features (3 tests), export→import roundtrip (7 tests), fill edge cases (2 tests).

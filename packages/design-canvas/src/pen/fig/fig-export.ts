@@ -222,9 +222,12 @@ function exportNode(
 	// Text-specific
 	if (node.type === "text") {
 		nc.fontSize = node.fontSize ?? 14;
+		const family = node.fontFamily ?? "Inter";
+		const style = weightToFontStyle(node.fontWeight);
 		nc.fontName = {
-			family: node.fontFamily ?? "Inter",
-			style: weightToFontStyle(node.fontWeight),
+			family,
+			style,
+			postscript: `${family.replace(/\s+/g, "")}-${style}`,
 		};
 		nc.textData = {
 			characters: typeof node.content === "string" ? node.content : "",

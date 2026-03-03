@@ -1,0 +1,29 @@
+Task 5 — Unsupported Feature Warning Evidence
+================================================
+
+Test: "unsupported features > emits warning for unsupported node types without crashing"
+Result: PASS
+
+When a .fig file contains an unsupported node type (e.g., BOOLEAN_OPERATION),
+the importer:
+  1. Does NOT crash or throw
+  2. Emits a structured warning: { type: "unsupported", feature: "Unsupported node type: BOOLEAN_OPERATION", nodeId: "1:10" }
+  3. Continues importing all other valid nodes
+
+Test: "unsupported features > emits warning for image fills without crashing"
+Result: PASS
+
+When a node has an IMAGE fill type:
+  1. Does NOT crash or throw
+  2. Emits a structured warning: { type: "unsupported", feature: "Image fills", nodeId: "1:10" }
+  3. The node is still imported (without the image fill)
+
+Test: "unsupported features > support matrix covers all declared types"
+Result: PASS
+
+All UNSUPPORTED_NODE_TYPES are confirmed to NOT be in SUPPORTED_NODE_TYPES.
+
+Verified from test run:
+  Test Files  1 passed (1)
+  Tests  22 passed (22)
+  Duration  516ms
