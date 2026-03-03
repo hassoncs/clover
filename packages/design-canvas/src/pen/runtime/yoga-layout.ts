@@ -1,15 +1,17 @@
 import type { PenSizing } from "@slopcade/shared/types/pen";
-import Yoga, {
+import type Yoga from "yoga-layout";
+import {
 	Align,
 	Direction,
 	Edge,
 	FlexDirection,
 	Gutter,
 	Justify,
+	loadYoga,
 	PositionType,
 	Wrap,
 	type Node as YogaNode,
-} from "yoga-layout";
+} from "yoga-layout/load";
 import { type LayoutRect, parsePadding, parseSizing } from "../layout-core";
 import type { RuntimeNode, SceneGraph } from "./scene-graph";
 
@@ -17,6 +19,12 @@ export type { LayoutRect };
 
 type YogaRuntime = typeof Yoga;
 type LayoutMode = "none" | "horizontal" | "vertical" | "wrap";
+
+const yogaReadyListeners = new Set<() => void>();
+
+let yogaRuntime: YogaRuntime | null = null;
+let yogaRuntimeLoadError: Error | null = null;
+let yogaRuntimeLoading = false;
 
 class YogaTreeNode {
 	readonly id: string;
@@ -36,13 +44,18 @@ export class LayoutInitError extends Error {
 	}
 }
 
-let yogaFactory: (() => YogaRuntime) | null = () => Yoga;
+let yogaFactory: (() => YogaRuntime) | null | undefined;
+
+void ensureYogaRuntimeLoaded();
 
 export function computeLayout(
 	graph: SceneGraph,
 	rootId: string,
 ): Map<string, LayoutRect> {
 	const runtime = resolveYogaRuntime();
+	if (!runtime) {
+		return new Map<string, LayoutRect>();
+	}
 	const root = graph.getNode(rootId);
 	if (!root) {
 		return new Map<string, LayoutRect>();
@@ -60,27 +73,81 @@ export function computeLayout(
 }
 
 export function __setYogaFactoryForTests(
-	factory: (() => YogaRuntime) | null,
+	factory: (() => YogaRuntime) | null | undefined,
 ): void {
 	yogaFactory = factory;
 }
 
-function resolveYogaRuntime(): YogaRuntime {
+export function isYogaRuntimeReady(): boolean {
+	return yogaRuntime !== null;
+}
+
+export function subscribeYogaRuntimeReady(listener: () => void): () => void {
+	yogaReadyListeners.add(listener);
+	return () => {
+		yogaReadyListeners.delete(listener);
+	};
+}
+
+function resolveYogaRuntime(): YogaRuntime | null {
 	if (yogaFactory === null) {
 		throw new LayoutInitError(
 			"Failed to initialize Yoga WASM: Yoga factory is not configured",
 		);
 	}
 
+	if (yogaFactory !== undefined) {
+		try {
+			const runtime = yogaFactory();
+			if (!runtime?.Node?.create) {
+				throw new Error("Yoga.Node.create is unavailable");
+			}
+			return runtime;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			throw new LayoutInitError(`Failed to initialize Yoga WASM: ${message}`);
+		}
+	}
+
+	if (yogaRuntime) {
+		return yogaRuntime;
+	}
+
+	if (yogaRuntimeLoadError) {
+		throw new LayoutInitError(
+			`Failed to initialize Yoga WASM: ${yogaRuntimeLoadError.message}`,
+		);
+	}
+
+	void ensureYogaRuntimeLoaded();
+	return null;
+}
+
+async function ensureYogaRuntimeLoaded(): Promise<void> {
+	if (yogaRuntime || yogaRuntimeLoadError || yogaRuntimeLoading) {
+		return;
+	}
+
+	yogaRuntimeLoading = true;
+
 	try {
-		const runtime = yogaFactory();
+		const runtime = (await loadYoga()) as YogaRuntime;
 		if (!runtime?.Node?.create) {
 			throw new Error("Yoga.Node.create is unavailable");
 		}
-		return runtime;
+		yogaRuntime = runtime;
 	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
-		throw new LayoutInitError(`Failed to initialize Yoga WASM: ${message}`);
+		yogaRuntimeLoadError =
+			error instanceof Error ? error : new Error(String(error));
+	} finally {
+		yogaRuntimeLoading = false;
+		notifyYogaRuntimeListeners();
+	}
+}
+
+function notifyYogaRuntimeListeners(): void {
+	for (const listener of yogaReadyListeners) {
+		listener();
 	}
 }
 

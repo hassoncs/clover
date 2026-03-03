@@ -63,6 +63,21 @@ export function buildComponentRegistry(nodes: PenNode[]): Map<string, PenNode> {
 	return registry;
 }
 
+/**
+ * Remap all descendant IDs of a cloned component instance to be scoped to the
+ * instance ID, preventing collisions when the same component is used multiple times.
+ * Each child ID becomes "<originalId>/<instanceId>".
+ * Applied recursively so nested components are also scoped.
+ */
+function remapDescendantIds(node: PenNode, instanceId: string): void {
+	const children = getChildren(node);
+	if (!children) return;
+	for (const child of children) {
+		child.id = `${child.id}/${instanceId}`;
+		remapDescendantIds(child, instanceId);
+	}
+}
+
 export function resolveRef(refNode: PenRef, registry: Map<string, PenNode>): PenNode | null {
 	const componentDef = registry.get(refNode.ref);
 	if (!componentDef) return null;
@@ -77,6 +92,7 @@ export function resolveRef(refNode: PenRef, registry: Map<string, PenNode>): Pen
 		}
 	}
 
+	// Apply descendants patches BEFORE remapping IDs so paths still use original component IDs.
 	if (refNode.descendants) {
 		for (const [slashPath, patch] of Object.entries(refNode.descendants)) {
 			const pathParts = slashPath.split("/");
@@ -90,6 +106,10 @@ export function resolveRef(refNode: PenRef, registry: Map<string, PenNode>): Pen
 			}
 		}
 	}
+
+	// Remap all descendant IDs to be instance-scoped AFTER patches are applied.
+	// This prevents duplicate IDs when the same component is used multiple times.
+	remapDescendantIds(cloned, refNode.id);
 
 	return cloned;
 }

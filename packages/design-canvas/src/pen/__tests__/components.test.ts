@@ -116,7 +116,7 @@ describe("resolveAllRefs", () => {
 		expect(resolvedCard.type).toBe("frame");
 		expect(resolvedCard.children).toHaveLength(1);
 		expect(resolvedCard.children![0].type).toBe("frame");
-		expect(resolvedCard.children![0].id).toBe("iconInstance");
+		expect(resolvedCard.children![0].id).toBe("iconInstance/cardInstance");
 	});
 
 	it("detects circular refs and does not infinite loop", () => {

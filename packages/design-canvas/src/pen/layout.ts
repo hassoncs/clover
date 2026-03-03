@@ -3,15 +3,23 @@ import type { LayoutNode, LayoutRect, SizingSpec } from "./layout-core";
 import { parsePadding, parseSizing } from "./layout-core";
 import { penDocumentToSceneGraph } from "./runtime/adapters";
 import type { RuntimeNode, SceneGraph } from "./runtime/scene-graph";
-import { computeLayout } from "./runtime/yoga-layout";
+import {
+	computeLayout,
+	isYogaRuntimeReady,
+	subscribeYogaRuntimeReady,
+} from "./runtime/yoga-layout";
 import type { TextMeasureFn } from "./text-measure";
 
 export type { LayoutNode, LayoutRect, SizingSpec } from "./layout-core";
 export { parsePadding, parseSizing } from "./layout-core";
 
 export function subscribeLayoutReady(fn: () => void): () => void {
-	fn();
-	return () => {};
+	if (isYogaRuntimeReady()) {
+		fn();
+		return () => {};
+	}
+
+	return subscribeYogaRuntimeReady(fn);
 }
 
 export function layoutTree(

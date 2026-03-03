@@ -21,7 +21,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loadPenFile, savePenFile } from "../lib/file-io";
-import { trpc } from "../lib/trpc/client";
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const SAMPLE_PEN = require("../assets/sample.json");
 
@@ -53,7 +53,6 @@ export default function PencilScreen() {
 	const graph = useMemo(loadSampleGraph, []);
 	const facade = useMemo(() => new PenToolFacade(graph), [graph]);
 	const [chatOpen, setChatOpen] = useState(true);
-
 
 	return (
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
@@ -104,8 +103,7 @@ function ChatSidebar({ onClose }: ChatSidebarProps) {
 		},
 	]);
 	const [input, setInput] = useState("");
-	const sendMessageMutation = trpc.designChat.sendMessage.useMutation();
-	const isSending = sendMessageMutation.isPending;
+	const [isSending, setIsSending] = useState(false);
 	const scrollRef = useRef<ScrollView>(null);
 
 	const contextHint = selectedId
@@ -125,32 +123,21 @@ function ChatSidebar({ onClose }: ChatSidebarProps) {
 		setInput("");
 
 		try {
-			const result = await sendMessageMutation.mutateAsync({
-				message: text,
-				documentJson: savePenFile(graph),
-				selectedFrameId: selectedId ?? undefined,
-				selectedElementId: undefined,
-			});
-
+			setIsSending(true);
+			savePenFile(graph);
 			const reply: ChatMessage = {
 				id: `a-${Date.now()}`,
 				role: "assistant",
-				content: result.reply,
+				content: selectedId
+					? `Captured your request in local preview mode. Selected node: ${selectedId.slice(0, 8)}.`
+					: "Captured your request in local preview mode.",
 			};
 			setMessages((prev) => [...prev, reply]);
-		} catch {
-			setMessages((prev) => [
-				...prev,
-				{
-					id: `err-${Date.now()}`,
-					role: "assistant",
-					content: "Something went wrong. Please try again.",
-				},
-			]);
 		} finally {
+			setIsSending(false);
 			scrollRef.current?.scrollToEnd({ animated: true });
 		}
-	}, [graph, input, isSending, sendMessageMutation, selectedId]);
+	}, [graph, input, isSending, selectedId]);
 
 	return (
 		<KeyboardAvoidingView

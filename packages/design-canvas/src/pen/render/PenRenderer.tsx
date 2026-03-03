@@ -1,13 +1,13 @@
-import { Canvas, Group, Paint, Rect, Skia } from "@shopify/react-native-skia";
 import type { SkTypefaceFontProvider } from "@shopify/react-native-skia";
+import { Canvas, Group, Paint, Rect, Skia } from "@shopify/react-native-skia";
 import type { PenDocument } from "@slopcade/shared/types/pen";
 import type React from "react";
 import { Fragment, useEffect, useMemo, useState } from "react";
+import type { PenDrawingState } from "../../tools/penToolState";
 import { buildComponentRegistry, resolveAllRefs } from "../components";
 import type { LayoutNode } from "../layout";
-import { layoutTree } from "../layout";
+import { layoutTree, subscribeLayoutReady } from "../layout";
 import { estimateTextSize } from "../text-measure";
-import type { PenDrawingState } from "../../tools/penToolState";
 import { resolveTreeVariables } from "../variables";
 import { FrameTitle } from "./FrameTitle";
 import { EllipseNode } from "./nodes/EllipseNode";
@@ -72,7 +72,9 @@ function renderLayoutNode(
 		case "ellipse":
 			return <EllipseNode key={node.id} layoutNode={layoutNode} />;
 		case "text":
-			return <TextNode key={node.id} layoutNode={layoutNode} fontMgr={fontMgr} />;
+			return (
+				<TextNode key={node.id} layoutNode={layoutNode} fontMgr={fontMgr} />
+			);
 		case "path":
 			return <PathNode key={node.id} layoutNode={layoutNode} />;
 		case "line":
@@ -107,7 +109,11 @@ const SELECTION_COLOR = "#4F86FF";
 const HANDLE_SIZE = 6;
 const HANDLE_HALF = HANDLE_SIZE / 2;
 
-function SelectionChrome({ layoutNode }: { layoutNode: LayoutNode }): React.ReactNode {
+function SelectionChrome({
+	layoutNode,
+}: {
+	layoutNode: LayoutNode;
+}): React.ReactNode {
 	const { x, y, width, height } = layoutNode.rect;
 
 	const corners = [
@@ -122,9 +128,9 @@ function SelectionChrome({ layoutNode }: { layoutNode: LayoutNode }): React.Reac
 			<Rect x={x} y={y} width={width} height={height} color="transparent">
 				<Paint color={SELECTION_COLOR} style="stroke" strokeWidth={1.5} />
 			</Rect>
-			{corners.map((corner, i) => (
+			{corners.map((corner) => (
 				<Rect
-					key={i}
+					key={`${corner.cx}-${corner.cy}`}
 					x={corner.cx - HANDLE_HALF}
 					y={corner.cy - HANDLE_HALF}
 					width={HANDLE_SIZE}
@@ -146,12 +152,24 @@ export function PenRenderer({
 	selectedNodePath,
 	penDrawingState,
 }: PenRendererProps): React.ReactNode {
+	const [layoutReadyRevision, setLayoutReadyRevision] = useState(0);
+	useEffect(() => {
+		return subscribeLayoutReady(() => {
+			setLayoutReadyRevision((value) => value + 1);
+		});
+	}, []);
+
 	const layoutNodes = useMemo(() => {
+		void layoutReadyRevision;
 		const registry = buildComponentRegistry(document.children);
 		const resolved = resolveAllRefs(document.children, registry);
-		const withVariables = resolveTreeVariables(resolved, document.variables, document.themes);
+		const withVariables = resolveTreeVariables(
+			resolved,
+			document.variables,
+			document.themes,
+		);
 		return layoutTree(withVariables, estimateTextSize);
-	}, [document]);
+	}, [document, layoutReadyRevision]);
 
 	const selectedLayoutNode = useMemo(() => {
 		if (!selectedNodePath || selectedNodePath.length === 0) return null;

@@ -14,6 +14,7 @@ import { useDesignCamera } from "../camera/useDesignCamera";
 import type { DesignCamera } from "../camera/useDesignCamera.shared";
 import { buildComponentRegistry, resolveAllRefs } from "../pen/components";
 import { layoutTree } from "../pen/layout";
+import type { LayoutNode } from "../pen/layout";
 import { PenRenderer } from "../pen/render/PenRenderer";
 import { estimateTextSize } from "../pen/text-measure";
 import type { PenDrawingState } from "../tools/penToolState";
@@ -52,19 +53,21 @@ function computeZoomToFit(
 	);
 	const nodes = layoutTree(withVars, estimateTextSize);
 
-	let minX = Infinity,
-		minY = Infinity,
-		maxX = -Infinity,
-		maxY = -Infinity;
-	for (const ln of nodes) {
-		// Skip reusable component definitions and hidden nodes from fit calculation
-		if ((ln.node as { reusable?: boolean }).reusable) continue;
-		if (ln.node.enabled === false || ln.node.visible === false) continue;
-		minX = Math.min(minX, ln.rect.x);
-		minY = Math.min(minY, ln.rect.y);
-		maxX = Math.max(maxX, ln.rect.x + ln.rect.width);
-		maxY = Math.max(maxY, ln.rect.y + ln.rect.height);
+	function accumulateBounds(layoutNodes: LayoutNode[]): void {
+		for (const ln of layoutNodes) {
+			if ((ln.node as { reusable?: boolean }).reusable) continue;
+			if (ln.node.enabled === false || ln.node.visible === false) continue;
+			if (ln.rect.width > 0 && ln.rect.height > 0) {
+				minX = Math.min(minX, ln.rect.x);
+				minY = Math.min(minY, ln.rect.y);
+				maxX = Math.max(maxX, ln.rect.x + ln.rect.width);
+				maxY = Math.max(maxY, ln.rect.y + ln.rect.height);
+			}
+			if (ln.children.length > 0) accumulateBounds(ln.children);
+		}
 	}
+	let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+	accumulateBounds(nodes);
 
 	const contentWidth = maxX - minX;
 	const contentHeight = maxY - minY;
@@ -522,6 +525,16 @@ export function PenCanvasPanel({
 
 	const handleZoomToFit = useCallback(() => {
 		setCamera(computeZoomToFit(penDocument, width, canvasHeight));
+	}, [penDocument, width, canvasHeight, setCamera]);
+	// Auto zoom-to-fit on mount and on document change.
+	// Retries after short delays to handle Yoga WASM async init.
+	useEffect(() => {
+		let cancelled = false;
+		const run = () => { if (!cancelled) setCamera(computeZoomToFit(penDocument, width, canvasHeight)); };
+		run();
+		const t1 = setTimeout(run, 500);
+		const t2 = setTimeout(run, 2000);
+		return () => { cancelled = true; clearTimeout(t1); clearTimeout(t2); };
 	}, [penDocument, width, canvasHeight, setCamera]);
 
 	const handleNodeTap = useCallback((nodePath: string[]) => {
