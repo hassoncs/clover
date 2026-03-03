@@ -8,7 +8,7 @@ interface SubscriptionStatusProps {
 	onManage: () => void;
 }
 
-const AMEN_PRO_FEATURES = [
+const SLOPBOX_PRO_FEATURES = [
 	"Unlimited games",
 	"No ads",
 	"All game types",
@@ -34,7 +34,9 @@ export default function SubscriptionStatus({
 			<View className="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6">
 				<View className="flex-row items-center justify-between mb-4">
 					<View>
-						<Text className="text-white text-lg font-semibold mb-1">Amen+</Text>
+						<Text className="text-white text-lg font-semibold mb-1">
+							Slopbox+
+						</Text>
 						<View className="flex-row items-center">
 							<View className="bg-indigo-600/20 border border-indigo-500 px-2 py-0.5 rounded text-xs mr-2">
 								<Text className="text-indigo-400 text-xs font-medium">
@@ -82,7 +84,7 @@ export default function SubscriptionStatus({
 			</View>
 
 			<View className="mb-6 space-y-3">
-				{AMEN_PRO_FEATURES.map((feature) => (
+				{SLOPBOX_PRO_FEATURES.map((feature) => (
 					<View key={feature} className="flex-row items-center mb-2">
 						<Ionicons
 							name="checkmark-circle"

@@ -162,7 +162,7 @@ function OrgDetail({ org }: { org: Org }) {
 					<Text className="text-gray-400 text-sm">
 						{org.city && org.state
 							? `${org.city}, ${org.state}`
-							: org.denomination || "Organization"}
+							: "Organization"}
 					</Text>
 				</View>
 				<View className="bg-gray-700 px-3 py-1 rounded-full">

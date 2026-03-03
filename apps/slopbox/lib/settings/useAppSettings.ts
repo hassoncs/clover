@@ -8,7 +8,7 @@ export interface AppSettings {
 	narrationVolume: number;
 	captionsEnabled: boolean;
 	fontSize: "small" | "medium" | "large";
-	denominationMode: "all" | "protestant" | "catholic" | "orthodox";
+	contentTone: "all" | "casual" | "chaotic" | "competitive";
 	defaultRounds: 3 | 5 | 7;
 	audienceMode: boolean;
 }
@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 	narrationVolume: 1.0,
 	captionsEnabled: false,
 	fontSize: "medium",
-	denominationMode: "all",
+	contentTone: "all",
 	defaultRounds: 5,
 	audienceMode: false,
 };

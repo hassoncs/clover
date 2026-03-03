@@ -22,9 +22,9 @@ export function VolumeSlider({ label, value, onChange }: VolumeSliderProps) {
 				maximumValue={1}
 				value={value}
 				onSlidingComplete={onChange}
-				minimumTrackTintColor="#C9A84C"
-				maximumTrackTintColor="#1B3A6B"
-				thumbTintColor="#C9A84C"
+				minimumTrackTintColor="#f97316"
+				maximumTrackTintColor="#1a1a1a"
+				thumbTintColor="#f97316"
 			/>
 		</View>
 	);

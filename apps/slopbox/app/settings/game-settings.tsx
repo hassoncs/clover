@@ -1,13 +1,11 @@
-import { SectionOrnament } from "@slopcade/ui/amen";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DenominationPicker } from "@/components/settings/DenominationPicker";
+import { ContentTonePicker } from "@/components/settings/ContentTonePicker";
 import { VolumeSlider } from "@/components/settings/VolumeSlider";
 import { useAppSettings } from "@/lib/settings/useAppSettings";
 
 export default function GameSettingsScreen() {
-	const router = useRouter();
 	const { settings, updateSetting, resetSettings } = useAppSettings();
 
 	return (
@@ -15,7 +13,7 @@ export default function GameSettingsScreen() {
 			<Stack.Screen
 				options={{
 					title: "Settings",
-					headerStyle: { backgroundColor: "#1B3A6B" },
+					headerStyle: { backgroundColor: "#0f0f0f" },
 					headerTintColor: "#FFFDF7",
 					headerTitleStyle: { fontFamily: "Lora-Bold" },
 					headerBackTitle: "",
@@ -25,7 +23,6 @@ export default function GameSettingsScreen() {
 			<ScrollView className="flex-1 px-6 py-4">
 				<View className="mb-8">
 					<View className="items-center mb-4">
-						<SectionOrnament variant="wheat" size="md" color="#C9A84C" />
 						<Text className="text-theme-text font-serif text-xl mt-2 font-bold">
 							Audio
 						</Text>
@@ -50,7 +47,6 @@ export default function GameSettingsScreen() {
 
 				<View className="mb-8">
 					<View className="items-center mb-4">
-						<SectionOrnament variant="olive" size="md" color="#C9A84C" />
 						<Text className="text-theme-text font-serif text-xl mt-2 font-bold">
 							Accessibility
 						</Text>
@@ -63,7 +59,7 @@ export default function GameSettingsScreen() {
 						<Switch
 							value={settings.captionsEnabled}
 							onValueChange={(v) => updateSetting("captionsEnabled", v)}
-							trackColor={{ false: "#1B3A6B", true: "#C9A84C" }}
+							trackColor={{ false: "#1a1a1a", true: "#f97316" }}
 							thumbColor="#FFFDF7"
 						/>
 					</View>
@@ -100,7 +96,6 @@ export default function GameSettingsScreen() {
 
 				<View className="mb-8">
 					<View className="items-center mb-4">
-						<SectionOrnament variant="dots" size="md" color="#C9A84C" />
 						<Text className="text-theme-text font-serif text-xl mt-2 font-bold">
 							Content
 						</Text>
@@ -108,21 +103,20 @@ export default function GameSettingsScreen() {
 
 					<View className="mb-4">
 						<Text className="text-theme-text font-medium text-base mb-3">
-							Tradition Focus
+							Content Tone
 						</Text>
-						<DenominationPicker
-							value={settings.denominationMode}
-							onChange={(v) => updateSetting("denominationMode", v)}
+						<ContentTonePicker
+							value={settings.contentTone}
+							onChange={(v) => updateSetting("contentTone", v)}
 						/>
 						<Text className="text-theme-text-secondary text-sm mt-2 italic">
-							Adjusts questions and content to match your tradition.
+							Adjusts prompts and pacing to fit your group vibe.
 						</Text>
 					</View>
 				</View>
 
 				<View className="mb-8">
 					<View className="items-center mb-4">
-						<SectionOrnament variant="stars" size="md" color="#C9A84C" />
 						<Text className="text-theme-text font-serif text-xl mt-2 font-bold">
 							Gameplay
 						</Text>
@@ -169,7 +163,7 @@ export default function GameSettingsScreen() {
 						<Switch
 							value={settings.audienceMode}
 							onValueChange={(v) => updateSetting("audienceMode", v)}
-							trackColor={{ false: "#1B3A6B", true: "#C9A84C" }}
+							trackColor={{ false: "#1a1a1a", true: "#f97316" }}
 							thumbColor="#FFFDF7"
 						/>
 					</View>

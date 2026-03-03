@@ -30,6 +30,9 @@ const app = new Hono<{ Bindings: Env }>();
 const ALLOWED_ORIGINS = [
 	"http://localhost:8085",
 	"http://localhost:8086",
+	"http://localhost:8087",
+	"http://localhost:8088",
+	"http://localhost:8089",
 	"https://slopcade.app",
 	"https://www.slopcade.app",
 	"https://slopcade.com",

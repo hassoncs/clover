@@ -56,16 +56,14 @@ export default function JoinScreen() {
 			<Stack.Screen options={{ headerShown: false }} />
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				className="flex-1 bg-[#1B3A6B]"
+				className="flex-1 bg-[#0f0f0f]"
 			>
 				<SafeAreaView className="flex-1 items-center justify-center p-6">
 					<View className="items-center mb-12">
-						<Text className="text-[#C9A84C] font-bold text-3xl tracking-widest uppercase mb-1">
+						<Text className="text-[#f97316] font-bold text-3xl tracking-widest uppercase mb-1">
 							Slopbox Games
 						</Text>
-						<Text className="text-white/60 text-base">
-							Scripture. Fellowship. Fun.
-						</Text>
+						<Text className="text-white/60 text-base">Fast. Fun. Chaotic.</Text>
 					</View>
 
 					<View className="w-full max-w-sm bg-white/10 rounded-3xl p-8 border border-white/20">
@@ -136,9 +134,9 @@ export default function JoinScreen() {
 						<Pressable
 							onPress={handleJoin}
 							disabled={!isValid}
-							className={`w-full bg-[#C9A84C] py-5 rounded-2xl items-center active:opacity-80 ${!isValid ? "opacity-40" : ""}`}
+							className={`w-full bg-[#f97316] py-5 rounded-2xl items-center active:opacity-80 ${!isValid ? "opacity-40" : ""}`}
 						>
-							<Text className="text-[#1B3A6B] text-xl font-black tracking-wide">
+							<Text className="text-[#0f0f0f] text-xl font-black tracking-wide">
 								Join Party
 							</Text>
 						</Pressable>

@@ -117,9 +117,6 @@ function RootLayout() {
 		"Lora-SemiBold": require("../assets/fonts/Lora-SemiBold.ttf"),
 		"Lora-Bold": require("../assets/fonts/Lora-Bold.ttf"),
 		"Lora-Italic": require("../assets/fonts/Lora-Italic.ttf"),
-		Cinzel_400Regular: require("../assets/fonts/Cinzel_400Regular.ttf"),
-		Cinzel_700Bold: require("../assets/fonts/Cinzel_700Bold.ttf"),
-		Cinzel_900Black: require("../assets/fonts/Cinzel_900Black.ttf"),
 	});
 
 	const { setColorScheme } = useColorScheme();

@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
 		color: tokens.colors.text.primary,
 		fontSize: 20,
 		lineHeight: 26,
-		fontFamily: "Cinzel_700Bold",
+		fontWeight: "700",
 		letterSpacing: 2,
 		textAlign: "center",
 		pointerEvents: "none" as const,

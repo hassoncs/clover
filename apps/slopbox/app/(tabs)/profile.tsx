@@ -386,7 +386,7 @@ export default function ProfileScreen() {
 							onPress={() => router.push("/settings/my-org")}
 						>
 							<Text className="text-theme-text text-base font-semibold">
-								My Church
+								My Organization
 							</Text>
 						</Pressable>
 						<View className="flex-row gap-3">
@@ -429,8 +429,8 @@ export default function ProfileScreen() {
 						</View>
 
 						<Text className="text-theme-text-secondary mb-4">
-							Invite someone to join Slopbox by email. They will be able to sign in
-							once invited.
+							Invite someone to join Slopbox by email. They will be able to sign
+							in once invited.
 						</Text>
 
 						<TextInput

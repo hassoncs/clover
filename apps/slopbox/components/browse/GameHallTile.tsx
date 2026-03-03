@@ -1,10 +1,7 @@
 import { GameHallTile as SharedTile } from "@slopcade/ui";
 import React from "react";
 import { Image, Text, View } from "react-native";
-import Animated, {
-	useAnimatedStyle,
-	withTiming,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import type { PartyTemplate } from "@/lib/party/template-types";
 
 interface GameHallTileProps {
@@ -22,7 +19,7 @@ export function GameHallTile({
 	onPress,
 }: GameHallTileProps) {
 	const animatedStyle = useAnimatedStyle(() => ({
-		borderColor: selected ? "#C9A84C" : "rgba(255, 255, 255, 0.1)",
+		borderColor: selected ? "#f97316" : "rgba(255, 255, 255, 0.1)",
 		borderWidth: selected ? 3 : 1,
 	}));
 
@@ -35,10 +32,10 @@ export function GameHallTile({
 			height={TILE_HEIGHT}
 		>
 			<Animated.View
-				className="bg-[#0F2347] rounded-2xl overflow-hidden shadow-lg flex-1"
+				className="bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-lg flex-1"
 				style={[animatedStyle]}
 			>
-				<View className="h-[60%] w-full bg-[#0A1833] items-center justify-center overflow-hidden relative">
+				<View className="h-[60%] w-full bg-[#0f0f0f] items-center justify-center overflow-hidden relative">
 					{template.thumbnailUrl ? (
 						<Image
 							source={{ uri: template.thumbnailUrl }}
@@ -52,7 +49,7 @@ export function GameHallTile({
 					<View className="absolute inset-0 bg-black/10" />
 				</View>
 
-				<View className="h-[40%] w-full p-4 items-center justify-between bg-[#0F2347]">
+				<View className="h-[40%] w-full p-4 items-center justify-between bg-[#1a1a1a]">
 					<View className="items-center justify-center flex-1">
 						<Text
 							className="text-[#FFFDF7] text-xl text-center font-serif leading-tight"
@@ -64,8 +61,8 @@ export function GameHallTile({
 					</View>
 
 					{template.formatTag && (
-						<View className="bg-[#C9A84C]/10 px-3 py-1 rounded-full border border-[#C9A84C]/30">
-							<Text className="text-[#C9A84C] text-xs font-bold uppercase tracking-wider">
+						<View className="bg-[#f97316]/10 px-3 py-1 rounded-full border border-[#f97316]/30">
+							<Text className="text-[#f97316] text-xs font-bold uppercase tracking-wider">
 								{template.formatTag}
 							</Text>
 						</View>

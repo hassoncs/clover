@@ -52,7 +52,7 @@ export function AssetLoadingScreen({
 	}, [progress.percent, progressAnim]);
 
 	const backgroundColor = config?.backgroundColor ?? "#0D1C33";
-	const progressBarColor = config?.progressBarColor ?? "#C9A84C";
+	const progressBarColor = config?.progressBarColor ?? "#f97316";
 	const textColor = config?.textColor ?? "#FFFFFF";
 	const canSkip = onSkip && progress.percent >= allowSkipAfterPercent;
 
@@ -311,12 +311,12 @@ const styles = StyleSheet.create({
 		marginBottom: 24,
 		paddingVertical: 18,
 		paddingHorizontal: 56,
-		backgroundColor: "#C9A84C",
+		backgroundColor: "#f97316",
 		borderRadius: 14,
 		borderWidth: 0,
 	},
 	skipButtonText: {
-		color: "#1B3A6B",
+		color: "#0f0f0f",
 		fontSize: 18,
 		fontWeight: "600",
 	},

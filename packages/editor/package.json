@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@slopcade/api": "workspace:*",
+		"@slopcade/design-canvas": "workspace:*",
 		"@slopcade/app-lib": "workspace:*",
 		"@slopcade/editor-ai": "workspace:*",
 		"@slopcade/game-runtime": "workspace:*",

@@ -1,7 +1,8 @@
-import { AmenIcon, AmenLoadingScreen } from "@slopcade/ui/amen";
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, SafeAreaView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TutorialPager } from "@/components/browse/TutorialPager";
 import type { PartyTemplate } from "@/lib/party/template-types";
 import { trpcReact } from "@/lib/trpc/react";
@@ -12,13 +13,19 @@ export default function HowToPlayScreen() {
 
 	const { data, isLoading } = trpcReact.partyTemplates.getById.useQuery(
 		{ id: templateId! },
-		{ enabled: !!templateId }
+		{ enabled: !!templateId },
 	);
 
 	const template = data as unknown as PartyTemplate;
 
 	if (isLoading) {
-		return <AmenLoadingScreen />;
+		return (
+			<SafeAreaView className="flex-1 bg-[#0D1117]">
+				<View className="flex-1 items-center justify-center">
+					<ActivityIndicator size="large" color="#22c55e" />
+				</View>
+			</SafeAreaView>
+		);
 	}
 
 	if (
@@ -30,7 +37,7 @@ export default function HowToPlayScreen() {
 			<SafeAreaView className="flex-1 bg-zinc-900">
 				<Stack.Screen options={{ headerShown: false }} />
 				<View className="flex-1 items-center justify-center p-8 gap-6">
-					<AmenIcon name="scroll" size={64} color="#C9A84C" />
+					<Ionicons name="document-text-outline" size={64} color="#22c55e" />
 					<Text className="font-lora text-2xl text-white text-center">
 						No tutorial available for this game yet.
 					</Text>

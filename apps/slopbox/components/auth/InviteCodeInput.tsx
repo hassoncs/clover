@@ -74,7 +74,7 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
 				🎫 Have an Invite Code?
 			</Text>
 			<Text className="text-gray-400 text-center text-sm mb-3">
-				Amen is invite-only during beta
+				Slopbox is invite-only during beta
 			</Text>
 
 			<View className="mb-2">

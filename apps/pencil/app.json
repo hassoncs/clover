@@ -1,0 +1,36 @@
+{
+	"expo": {
+		"scheme": "pencil",
+		"icon": "./assets/icon.png",
+		"splash": {
+			"image": "./assets/splash.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#050310"
+		},
+		"web": {
+			"output": "static",
+			"favicon": "./assets/favicon.png"
+		},
+		"plugins": ["expo-router", "./plugins/withMetroPort"],
+		"userInterfaceStyle": "dark",
+		"name": "Pencil",
+		"slug": "pencil",
+		"description": "AI-powered infinite canvas design tool",
+		"runtimeVersion": "1.0.0",
+		"ios": {
+			"bundleIdentifier": "com.slopcade.pencil",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		},
+		"android": {
+			"package": "com.slopcade.pencil"
+		},
+		"assetBundlePatterns": ["**/*"],
+		"extra": {
+			"brandId": "pencil",
+			"router": {},
+			"eas": {}
+		}
+	}
+}

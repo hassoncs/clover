@@ -6,6 +6,7 @@ import { assetSystemRouter } from "./routes/asset-system";
 import { billingRouter } from "./routes/billing";
 import { blobAssetsRouter } from "./routes/blob-assets";
 import { chatThreadsRouter } from "./routes/chat-threads";
+import { designChatRouter } from "./routes/design-chat";
 import { contentDiagnosticsRouter } from "./routes/content-diagnostics";
 import { economyRouter } from "./routes/economy";
 import { economyGraphRouter } from "./routes/economy-graph";
@@ -33,6 +34,7 @@ export const appRouter = router({
 	billing: billingRouter,
 	blobAssets: blobAssetsRouter,
 	chatThreads: chatThreadsRouter,
+	designChat: designChatRouter,
 	contentDiagnostics: contentDiagnosticsRouter,
 	economy: economyRouter,
 	economyGraph: economyGraphRouter,

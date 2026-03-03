@@ -78,6 +78,24 @@
 			"dashboard": false,
 			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
 		},
+		"metro-pencil": {
+			"cwd": "apps/pencil",
+			"comment": "Pencil design canvas Metro (port 8089). AI-powered Figma-like canvas app.",
+			"command": "RCT_METRO_PORT=8089 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8089 npx hush run -t app -- npx expo start --dev-client --port 8089",
+			"health": { "type": "port", "port": 8089 },
+			"proxy": false,
+			"dashboard": false,
+			"dependsOn": ["api"]
+		},
+		"web-pencil": {
+			"cwd": "apps/pencil",
+			"comment": "Pencil design canvas web (port 8089).",
+			"command": "RCT_METRO_PORT=8089 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8089 npx hush run -t app -- npx expo start --web --port 8089",
+			"health": { "type": "port", "port": 8089 },
+			"proxy": false,
+			"dashboard": true,
+			"dependsOn": ["api"]
+		},
 		"ios": {
 			"cwd": "apps/slopcade",
 			"comment": "Build + install slopcade on iOS simulator. One-shot: exits when done. Starts metro if not running.",

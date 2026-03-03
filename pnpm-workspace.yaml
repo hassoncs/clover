@@ -5,6 +5,7 @@ packages:
   - 'apps/amen'
   - 'apps/slopbox'
   - 'apps/shader-editor'
+  - 'apps/pencil'
   - 'apps/landing-slopcade'
   - 'apps/landing-amen'
   - 'shared'

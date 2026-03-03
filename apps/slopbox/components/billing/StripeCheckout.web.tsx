@@ -85,7 +85,7 @@ function CheckoutForm({
 				className={`py-4 rounded-xl items-center ${
 					!stripe || isProcessing
 						? "bg-gray-700"
-						: "bg-[#1B3A6B] active:bg-[#152C52]"
+						: "bg-[#f97316] active:bg-[#ea580c]"
 				}`}
 			>
 				{isProcessing ? (

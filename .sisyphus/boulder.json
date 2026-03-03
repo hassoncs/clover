@@ -1,11 +1,7 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/app-split-plan.md",
-  "started_at": "2026-02-26T15:29:14.014Z",
-  "session_ids": [
-    "ses_3656e7b09ffe1GU2mmoQiKUzSf",
-    "ses_3653a59abffeGjuYfcA8PtpxtM",
-    "ses_3675c1d00ffenqIP3r0Cx34NR0"
-  ],
-  "plan_name": "app-split-plan",
-  "agent": "atlas"
+	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/pen-renderer-clean-break.md",
+	"started_at": "2026-03-03T01:11:18.977Z",
+	"session_ids": ["ses_34ec0216affe6oIrCIOX4oK1fR"],
+	"plan_name": "pen-renderer-clean-break",
+	"worktree_path": "/private/tmp/slopcade-pen-renderer-clean-break"
 }

@@ -1,16 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { GameHallCarousel } from "@slopcade/ui";
-import { AmenGrainOverlay, PatternBackground } from "@slopcade/ui/amen";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-	ActivityIndicator,
-	Modal,
-	Pressable,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native";
+import { ActivityIndicator, Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GameDetailPanel } from "@/components/browse/GameDetailPanel";
 import { GameHallTile } from "@/components/browse/GameHallTile";
@@ -73,14 +65,7 @@ export default function BrowseScreen() {
 	};
 
 	return (
-		<View className="flex-1 bg-[#1B3A6B]">
-			<PatternBackground
-				pattern="dots"
-				color="rgba(255, 255, 255, 0.05)"
-				style={StyleSheet.absoluteFill}
-			/>
-			<AmenGrainOverlay />
-
+		<View className="flex-1 bg-[#0D1117]">
 			<SafeAreaView className="flex-1" edges={["top", "bottom"]}>
 				<Modal transparent animationType="fade" visible={!!launching}>
 					<View className="flex-1 bg-black/60 items-center justify-center">
@@ -102,13 +87,13 @@ export default function BrowseScreen() {
 				<View className="px-6 py-1 flex-row justify-between items-center z-10">
 					<View>
 						<Text
-							className="text-[#C9A84C] text-3xl tracking-widest text-center"
-							style={{ fontFamily: "Cinzel_900Black", letterSpacing: 6 }}
+							className="text-[#22c55e] text-3xl tracking-widest text-center font-inter font-black"
+							style={{ letterSpacing: 6 }}
 						>
-							AMEN
+							SLOPBOX
 						</Text>
-						<Text className="text-[#FFFDF7]/60 text-xs uppercase tracking-[0.2em] text-center -mt-1">
-							The Hall
+						<Text className="text-zinc-400 text-xs uppercase tracking-[0.2em] text-center -mt-1">
+							Game Hall
 						</Text>
 					</View>
 					<View className="flex-row items-center gap-1">
@@ -120,7 +105,7 @@ export default function BrowseScreen() {
 							<Ionicons
 								name="person-circle-outline"
 								size={28}
-								color="#C9A84C"
+								color="#22c55e"
 							/>
 						</Pressable>
 						<Pressable
@@ -128,7 +113,7 @@ export default function BrowseScreen() {
 							className="p-2 -mr-2"
 							accessibilityLabel="Settings"
 						>
-							<Ionicons name="settings-outline" size={24} color="#C9A84C" />
+							<Ionicons name="settings-outline" size={24} color="#22c55e" />
 						</Pressable>
 					</View>
 				</View>
@@ -136,7 +121,7 @@ export default function BrowseScreen() {
 				<View className="flex-1">
 					{isLoading ? (
 						<View className="flex-1 items-center justify-center">
-							<ActivityIndicator size="large" color="#C9A84C" />
+							<ActivityIndicator size="large" color="#22c55e" />
 						</View>
 					) : (
 						<GameHallCarousel
@@ -146,7 +131,7 @@ export default function BrowseScreen() {
 							getImageUrl={(t) => t.thumbnailUrl}
 							tileWidth={320}
 							tileHeight={256}
-							reflectionColor="#1B3A6B"
+							reflectionColor="#0D1117"
 							renderTile={(template, selected, onPress) => (
 								<GameHallTile
 									template={template}

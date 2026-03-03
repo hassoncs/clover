@@ -1,22 +1,19 @@
 import { Pressable, Text, View } from "react-native";
 import type { AppSettings } from "@/lib/settings/useAppSettings";
 
-interface DenominationPickerProps {
-	value: AppSettings["denominationMode"];
-	onChange: (value: AppSettings["denominationMode"]) => void;
+interface ContentTonePickerProps {
+	value: AppSettings["contentTone"];
+	onChange: (value: AppSettings["contentTone"]) => void;
 }
 
-const OPTIONS: { label: string; value: AppSettings["denominationMode"] }[] = [
-	{ label: "All Traditions", value: "all" },
-	{ label: "Protestant", value: "protestant" },
-	{ label: "Catholic", value: "catholic" },
-	{ label: "Orthodox", value: "orthodox" },
+const OPTIONS: { label: string; value: AppSettings["contentTone"] }[] = [
+	{ label: "All Styles", value: "all" },
+	{ label: "Casual", value: "casual" },
+	{ label: "Chaotic", value: "chaotic" },
+	{ label: "Competitive", value: "competitive" },
 ];
 
-export function DenominationPicker({
-	value,
-	onChange,
-}: DenominationPickerProps) {
+export function ContentTonePicker({ value, onChange }: ContentTonePickerProps) {
 	return (
 		<View className="flex-row flex-wrap gap-2">
 			{OPTIONS.map((option) => {

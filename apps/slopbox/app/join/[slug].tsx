@@ -1,20 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-	ActivityIndicator,
-	Pressable,
-	Text,
-	useWindowDimensions,
-	View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { trpcReact } from "@/lib/trpc/react";
 
 export default function JoinOrgScreen() {
 	const { slug } = useLocalSearchParams<{ slug: string }>();
 	const router = useRouter();
-	const insets = useSafeAreaInsets();
-	const { width } = useWindowDimensions();
 
 	const {
 		data: org,
@@ -46,7 +37,7 @@ export default function JoinOrgScreen() {
 					justifyContent: "center",
 				}}
 			>
-				<ActivityIndicator size="large" color="#1B3A6B" />
+				<ActivityIndicator size="large" color="#f97316" />
 			</View>
 		);
 	}
@@ -135,7 +126,7 @@ export default function JoinOrgScreen() {
 						width: 80,
 						height: 80,
 						borderRadius: 20,
-						backgroundColor: "#1B3A6B",
+						backgroundColor: "#f97316",
 						alignItems: "center",
 						justifyContent: "center",
 						marginBottom: 24,
@@ -207,7 +198,7 @@ export default function JoinOrgScreen() {
 						<Pressable
 							onPress={() => router.replace("/(tabs)/profile")}
 							style={{
-								backgroundColor: "#1B3A6B",
+								backgroundColor: "#f97316",
 								paddingVertical: 16,
 								paddingHorizontal: 32,
 								borderRadius: 100,
@@ -233,7 +224,7 @@ export default function JoinOrgScreen() {
 						onPress={handleJoin}
 						disabled={joinMutation.isPending}
 						style={{
-							backgroundColor: "#1B3A6B",
+							backgroundColor: "#f97316",
 							paddingVertical: 16,
 							paddingHorizontal: 32,
 							borderRadius: 100,
