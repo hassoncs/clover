@@ -55,12 +55,18 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 		);
 	}
 
+	// The outer Group translates to (x, y). Children have absolute coords from the layout,
+	// so we need a counter-translate to bring the origin back before rendering them.
+	const counterTranslate = [{ translateX: -x }, { translateY: -y }];
+
 	if (layoutNode.clip) {
 		return (
 			<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 				{shape}
 				<Group clip={{ x: 0, y: 0, width, height }}>
-					{children}
+					<Group transform={counterTranslate}>
+						{children}
+					</Group>
 				</Group>
 			</Group>
 		);
@@ -69,7 +75,9 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 	return (
 		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
 			{shape}
-			{children}
+			<Group transform={counterTranslate}>
+				{children}
+			</Group>
 		</Group>
 	);
 }

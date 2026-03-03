@@ -1,8 +1,8 @@
-import { Canvas, Group, Paint, Rect, useFonts } from "@shopify/react-native-skia";
+import { Canvas, Group, Paint, Rect, Skia } from "@shopify/react-native-skia";
+import type { SkTypefaceFontProvider } from "@shopify/react-native-skia";
 import type { PenDocument } from "@slopcade/shared/types/pen";
 import type React from "react";
-import { Fragment, useMemo } from "react";
-import { FontContext } from "./FontContext";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { buildComponentRegistry, resolveAllRefs } from "../components";
 import type { LayoutNode } from "../layout";
 import { layoutTree } from "../layout";
@@ -29,12 +29,15 @@ export interface PenRendererProps {
 	onNodeTap?: (nodePath: string[]) => void;
 }
 
-function renderLayoutNode(layoutNode: LayoutNode): React.ReactNode {
+function renderLayoutNode(
+	layoutNode: LayoutNode,
+	fontMgr: SkTypefaceFontProvider | null,
+): React.ReactNode {
 	const { node } = layoutNode;
 	if (node.enabled === false || node.visible === false) return null;
 
 	const renderChildren = (children: LayoutNode[]) =>
-		children.map((child) => renderLayoutNode(child));
+		children.map((child) => renderLayoutNode(child, fontMgr));
 
 	switch (node.type) {
 		case "frame":
@@ -58,7 +61,7 @@ function renderLayoutNode(layoutNode: LayoutNode): React.ReactNode {
 		case "ellipse":
 			return <EllipseNode key={node.id} layoutNode={layoutNode} />;
 		case "text":
-			return <TextNode key={node.id} layoutNode={layoutNode} />;
+			return <TextNode key={node.id} layoutNode={layoutNode} fontMgr={fontMgr} />;
 		case "path":
 			return <PathNode key={node.id} layoutNode={layoutNode} />;
 		case "line":
@@ -144,29 +147,41 @@ export function PenRenderer({
 		return findLayoutNode(layoutNodes, id);
 	}, [layoutNodes, selectedNodePath]);
 
-	const fontMgr = useFonts({});
+	const [fontMgr, setFontMgr] = useState<SkTypefaceFontProvider | null>(null);
+	useEffect(() => {
+		Skia.Data.fromURI("/fonts/Fredoka-Regular.ttf")
+			.then((data) => {
+				const tf = Skia.Typeface.MakeFreeTypeFaceFromData(data);
+				if (!tf) {
+					console.error("[PenRenderer] Failed to create typeface from font data");
+					return;
+				}
+				const mgr = Skia.TypefaceFontProvider.Make();
+				mgr.registerFont(tf, "Fredoka");
+				setFontMgr(mgr);
+			})
+			.catch((e) => console.error("[PenRenderer] Font load failed:", e));
+	}, []);
 
 	return (
-		<FontContext.Provider value={fontMgr}>
-			<Canvas style={{ width, height }}>
-				<Group
-					transform={[
-						{ translateX: camera.translateX },
-						{ translateY: camera.translateY },
-						{ scale: camera.scale },
-					]}
-				>
-					{layoutNodes.map((ln) => (
-						<Fragment key={ln.node.id}>
-							<FrameTitle layoutNode={ln} />
-							{renderLayoutNode(ln)}
-						</Fragment>
-					))}
-					{selectedLayoutNode && (
-						<SelectionChrome layoutNode={selectedLayoutNode} />
-					)}
-				</Group>
-			</Canvas>
-		</FontContext.Provider>
+		<Canvas style={{ width, height }}>
+			<Group
+				transform={[
+					{ translateX: camera.translateX },
+					{ translateY: camera.translateY },
+					{ scale: camera.scale },
+				]}
+			>
+				{layoutNodes.map((ln) => (
+					<Fragment key={ln.node.id}>
+						<FrameTitle layoutNode={ln} />
+						{renderLayoutNode(ln, fontMgr)}
+					</Fragment>
+				))}
+				{selectedLayoutNode && (
+					<SelectionChrome layoutNode={selectedLayoutNode} />
+				)}
+			</Group>
+		</Canvas>
 	);
 }

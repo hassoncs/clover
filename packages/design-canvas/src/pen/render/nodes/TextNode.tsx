@@ -1,13 +1,14 @@
 import { Group, Paragraph, Skia, TextAlign } from "@shopify/react-native-skia";
+import type { SkTypefaceFontProvider } from "@shopify/react-native-skia";
 import type { PenFill, PenText } from "@slopcade/shared/types/pen";
 import type React from "react";
 import { useMemo } from "react";
 import type { LayoutNode } from "../../layout";
-import { usePenFontMgr } from "../FontContext";
 import { buildNodeTransform } from "../nodeTransform";
 
 interface NodeRendererProps {
 	layoutNode: LayoutNode;
+	fontMgr: SkTypefaceFontProvider | null;
 }
 
 function resolveTextColor(fill: PenFill | undefined): string {
@@ -25,12 +26,10 @@ const TEXT_ALIGN_MAP: Record<string, TextAlign> = {
 	justify: TextAlign.Justify,
 };
 
-export function TextNode({ layoutNode }: NodeRendererProps): React.ReactNode {
+export function TextNode({ layoutNode, fontMgr }: NodeRendererProps): React.ReactNode {
 	const node = layoutNode.node as PenText;
 	const { x, y, width, height } = layoutNode.rect;
 	const opacity = node.opacity ?? 1;
-
-	const fontMgr = usePenFontMgr();
 
 	const paragraph = useMemo(() => {
 		if (!fontMgr) return null;
@@ -40,11 +39,13 @@ export function TextNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 
 		const fontWeight = node.fontWeight === "bold" || node.fontWeight === "700" ? 700 : 400;
 
+		const defaultFamily = node.fontFamily || "Fredoka";
+
 		if (typeof node.content === "string") {
 			builder.pushStyle({
 				color: Skia.Color(resolveTextColor(node.fill)),
 				fontSize: node.fontSize ?? 16,
-				fontFamilies: node.fontFamily ? [node.fontFamily] : [],
+				fontFamilies: [defaultFamily],
 				fontStyle: { weight: fontWeight },
 			});
 			builder.addText(node.content);
@@ -56,11 +57,7 @@ export function TextNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 				builder.pushStyle({
 					color: Skia.Color(resolveTextColor(span.fill ?? node.fill)),
 					fontSize: span.fontSize ?? node.fontSize ?? 16,
-					fontFamilies: span.fontFamily
-						? [span.fontFamily]
-						: node.fontFamily
-							? [node.fontFamily]
-							: [],
+					fontFamilies: [span.fontFamily || defaultFamily],
 					fontStyle: { weight: spanWeight },
 				});
 				builder.addText(span.content);

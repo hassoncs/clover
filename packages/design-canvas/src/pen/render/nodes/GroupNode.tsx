@@ -14,9 +14,13 @@ export function GroupNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 	const { x, y, width, height } = layoutNode.rect;
 	const opacity = node.opacity ?? 1;
 
+	// The outer Group translates to (x, y). Children have absolute coords from the layout,
+	// so we need a counter-translate to bring the origin back before rendering them.
 	return (
 		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
-			{renderChildren?.(layoutNode.children)}
+			<Group transform={[{ translateX: -x }, { translateY: -y }]}>
+				{renderChildren?.(layoutNode.children)}
+			</Group>
 		</Group>
 	);
 }
