@@ -1,52 +1,16 @@
-import type { PenFrame, PenGroup, PenNode, PenPadding, PenSizing, PenText } from "@slopcade/shared/types/pen";
+import type { PenFrame, PenGroup, PenNode, PenSizing, PenText } from "@slopcade/shared/types/pen";
 import type { TextMeasureFn } from "./text-measure";
+import type { SizingSpec } from "./layout-core";
+import { parsePadding, parseSizing } from "./layout-core";
 
-export interface LayoutRect {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-}
+export type { LayoutRect, LayoutNode, SizingSpec } from "./layout-core";
+export { parsePadding, parseSizing } from "./layout-core";
 
-export interface LayoutNode {
-	node: PenNode;
-	rect: LayoutRect;
-	children: LayoutNode[];
-	clip: boolean;
-}
-
-export type SizingSpec =
-	| { kind: "fixed"; value: number }
-	| { kind: "fill_container"; fallback: number | null }
-	| { kind: "fit_content"; fallback: number | null }
-	| { kind: "auto" };
-
-export function parseSizing(s: PenSizing | undefined): SizingSpec {
-	if (s === undefined) return { kind: "auto" };
-	if (typeof s === "number") return { kind: "fixed", value: s };
-
-	if (s === "fill_container") return { kind: "fill_container", fallback: null };
-	if (s === "fit_content") return { kind: "fit_content", fallback: null };
-
-	const fillMatch = s.match(/^fill_container\((\d+(?:\.\d+)?)\)$/);
-	if (fillMatch) {
-		return { kind: "fill_container", fallback: parseFloat(fillMatch[1]) };
-	}
-
-	const fitMatch = s.match(/^fit_content\((\d+(?:\.\d+)?)\)$/);
-	if (fitMatch) {
-		return { kind: "fit_content", fallback: parseFloat(fitMatch[1]) };
-	}
-
-	return { kind: "auto" };
-}
-
-export function parsePadding(p: PenPadding | undefined): [number, number, number, number] {
-	if (p === undefined) return [0, 0, 0, 0];
-	if (typeof p === "number") return [p, p, p, p];
-	if (p.length === 2) return [p[0], p[1], p[0], p[1]];
-	const q = p as [number, number, number, number];
-	return [q[0], q[1], q[2], q[3]];
+// On native, layout is always synchronously available (no WASM loading needed).
+// This no-op implementation keeps parity with layout.web.ts's subscribeLayoutReady.
+export function subscribeLayoutReady(fn: () => void): () => void {
+	fn();
+	return () => {};
 }
 
 type ContainerNode = PenFrame | PenGroup;
@@ -175,7 +139,6 @@ function computeMainAxisOffsets(
 ): { startOffset: number; spaceBetween: number } {
 	const freeSpace = containerSize - totalContentSize;
 
-	// TODO: expand this with full justifyContent distribution logic
 	switch (justifyContent) {
 		case "center":
 			return { startOffset: freeSpace / 2, spaceBetween: gap };
@@ -214,6 +177,8 @@ function computeCrossAxisOffset(
 	}
 }
 
+import type { LayoutNode, LayoutRect } from "./layout-core";
+
 function layoutChildren(
 	container: ContainerNode,
 	containerRect: LayoutRect,
@@ -250,7 +215,6 @@ function layoutChildren(
 	const justifyContent = (container as PenFrame).justifyContent;
 	const alignItems = (container as PenFrame).alignItems;
 
-	// First pass: compute sizes for non-fill children
 	type ChildInfo = {
 		child: PenNode;
 		wSpec: SizingSpec;
@@ -285,7 +249,6 @@ function layoutChildren(
 		return { child, wSpec, hSpec, width, height, isFillMain: mainIsFill };
 	});
 
-	// Calculate remaining space for fill_container children
 	const fillCount = childInfos.filter((c) => c.isFillMain).length;
 	const fixedMainTotal = childInfos
 		.filter((c) => !c.isFillMain)
@@ -294,7 +257,6 @@ function layoutChildren(
 	const remainingMain = (isHorizontal ? availableWidth : availableHeight) - fixedMainTotal - totalGap;
 	const fillMainSize = fillCount > 0 ? Math.max(0, remainingMain / fillCount) : 0;
 
-	// Assign sizes to fill children
 	for (const info of childInfos) {
 		if (info.isFillMain) {
 			if (isHorizontal) {
@@ -317,7 +279,6 @@ function layoutChildren(
 		}
 	}
 
-	// Compute main axis offsets with justifyContent
 	const totalContentMain = childInfos.reduce(
 		(sum, c) => sum + (isHorizontal ? c.width : c.height),
 		0,
@@ -331,7 +292,6 @@ function layoutChildren(
 		gap,
 	);
 
-	// Position children
 	let mainCursor = (isHorizontal ? contentOriginX : contentOriginY) + startOffset;
 	const crossOrigin = isHorizontal ? contentOriginY : contentOriginX;
 	const containerCross = isHorizontal ? availableHeight : availableWidth;

@@ -1,5 +1,5 @@
 import { PenCanvasPanel } from "@slopcade/design-canvas";
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { parsePenDocument } from "@slopcade/shared/types/pen";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -17,7 +17,7 @@ import { trpc } from "../lib/trpc/client";
 import { usePencilBridge } from "../lib/usePencilBridge";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const SAMPLE_PEN = require("../assets/sample.pen");
+const SAMPLE_PEN = require("../assets/sample.json");
 
 function loadSampleDocument(): PenDocument {
 	try {
@@ -34,11 +34,15 @@ export default function PencilScreen() {
 
 	usePencilBridge(document, setDocument);
 
+	const handleAddNode = useCallback((node: PenNode) => {
+		setDocument((prev) => ({ ...prev, children: [...prev.children, node] }));
+	}, []);
+
 	return (
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
 			<View style={styles.container}>
 				<View style={styles.canvas}>
-					<PenCanvasPanel document={document} />
+					<PenCanvasPanel document={document} onAddNode={handleAddNode} />
 				</View>
 
 				{chatOpen && (

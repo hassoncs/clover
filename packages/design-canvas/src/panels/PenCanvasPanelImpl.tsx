@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { useTheme } from "@slopcade/theme";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Pressable,
 	ScrollView,
@@ -16,11 +16,18 @@ import { buildComponentRegistry, resolveAllRefs } from "../pen/components";
 import { layoutTree } from "../pen/layout";
 import { PenRenderer } from "../pen/render/PenRenderer";
 import { estimateTextSize } from "../pen/text-measure";
+import type { PenDrawingState } from "../tools/penToolState";
+import {
+	EMPTY_PEN_STATE,
+	buildPathNode,
+	screenToDoc,
+} from "../tools/penToolState";
 import { resolveTreeVariables } from "../pen/variables";
 
 export interface PenCanvasPanelProps {
 	document: PenDocument;
 	isLoading?: boolean;
+	onAddNode?: (node: PenNode) => void;
 }
 
 const MIN_SCALE = 0.05;
@@ -48,6 +55,9 @@ function computeZoomToFit(
 		maxX = -Infinity,
 		maxY = -Infinity;
 	for (const ln of nodes) {
+		// Skip reusable component definitions and hidden nodes from fit calculation
+		if ((ln.node as { reusable?: boolean }).reusable) continue;
+		if (ln.node.enabled === false || ln.node.visible === false) continue;
 		minX = Math.min(minX, ln.rect.x);
 		minY = Math.min(minY, ln.rect.y);
 		maxX = Math.max(maxX, ln.rect.x + ln.rect.width);
@@ -229,19 +239,262 @@ function LayersPanel({ nodes, selectedNodePath, onSelectNode }: LayersPanelProps
 	);
 }
 
+// ── Tool Palette ─────────────────────────────────────────────────────────────
+
+interface ToolPaletteProps {
+	activeTool: "pointer" | "pen";
+	onSelectTool: (tool: "pointer" | "pen") => void;
+}
+
+function ToolPalette({ activeTool, onSelectTool }: ToolPaletteProps) {
+	return (
+		<View style={toolStyles.container}>
+			<Pressable
+				onPress={() => onSelectTool("pointer")}
+				style={[
+					toolStyles.toolButton,
+					activeTool === "pointer" && toolStyles.toolButtonActive,
+				]}
+			>
+				<Ionicons
+					name="navigate-outline"
+					size={16}
+					color={activeTool === "pointer" ? "#818cf8" : "#6460a0"}
+				/>
+			</Pressable>
+			<Pressable
+				onPress={() => onSelectTool("pen")}
+				style={[
+					toolStyles.toolButton,
+					activeTool === "pen" && toolStyles.toolButtonActive,
+				]}
+			>
+				<Ionicons
+					name="pencil-outline"
+					size={16}
+					color={activeTool === "pen" ? "#818cf8" : "#6460a0"}
+				/>
+			</Pressable>
+			{activeTool === "pen" && (
+				<View style={toolStyles.hint}>
+					<Text style={toolStyles.hintText}>
+						Click to add points · Drag for curves · Double-click to finish · Esc to cancel
+					</Text>
+				</View>
+			)}
+		</View>
+	);
+}
+
+const toolStyles = StyleSheet.create({
+	container: {
+		position: "absolute",
+		left: 12,
+		top: "50%",
+		transform: [{ translateY: -44 }],
+		backgroundColor: "#0d0a1e",
+		borderWidth: 1,
+		borderColor: "#2d2650",
+		borderRadius: 10,
+		padding: 4,
+		gap: 2,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 8,
+		zIndex: 50,
+	},
+	toolButton: {
+		width: 32,
+		height: 32,
+		borderRadius: 6,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	toolButtonActive: {
+		backgroundColor: "#1e1a35",
+	},
+	hint: {
+		position: "absolute",
+		left: 44,
+		top: 0,
+		backgroundColor: "#0d0a1e",
+		borderWidth: 1,
+		borderColor: "#2d2650",
+		borderRadius: 6,
+		paddingHorizontal: 10,
+		paddingVertical: 6,
+		width: 260,
+	},
+	hintText: {
+		color: "#a096c8",
+		fontSize: 11,
+		lineHeight: 16,
+	},
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function PenCanvasPanel({
 	document: penDocument,
 	isLoading,
+	onAddNode,
 }: PenCanvasPanelProps) {
 	const { editorColors: c } = useTheme();
 	const { width, height } = useWindowDimensions();
-	const { camera, setCamera, onWheel, onMouseDown, onMouseMove, onMouseUp } =
-		useDesignCamera();
+	const {
+		camera,
+		setCamera,
+		onWheel,
+		onMouseDown: cameraMouseDown,
+		onMouseMove: cameraMouseMove,
+		onMouseUp: cameraMouseUp,
+	} = useDesignCamera();
 
 	const [showFrameList, setShowFrameList] = useState(false);
 	const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
 	const [showLayers, setShowLayers] = useState(false);
 	const [selectedNodePath, setSelectedNodePath] = useState<string[] | null>(null);
+
+	// ── Pen tool state ────────────────────────────────────────────────────────
+	const [activeTool, setActiveToolState] = useState<"pointer" | "pen">("pointer");
+	const [penState, setPenState] = useState<PenDrawingState>(EMPTY_PEN_STATE);
+
+	// Refs so event handlers never go stale
+	const activeToolRef = useRef<"pointer" | "pen">("pointer");
+	const penStateRef = useRef<PenDrawingState>(EMPTY_PEN_STATE);
+	const cameraRef = useRef<DesignCamera>(camera);
+	const isDraggingHandleRef = useRef(false);
+	cameraRef.current = camera;
+	penStateRef.current = penState;
+
+	const switchTool = useCallback(
+		(tool: "pointer" | "pen") => {
+			activeToolRef.current = tool;
+			setActiveToolState(tool);
+			if (tool === "pointer") {
+				isDraggingHandleRef.current = false;
+				penStateRef.current = EMPTY_PEN_STATE;
+				setPenState(EMPTY_PEN_STATE);
+			}
+		},
+		[],
+	);
+
+	const commitPenPath = useCallback(
+		(closed: boolean) => {
+			const node = buildPathNode(penStateRef.current.anchors, closed);
+			if (node) onAddNode?.(node);
+			isDraggingHandleRef.current = false;
+			penStateRef.current = EMPTY_PEN_STATE;
+			setPenState(EMPTY_PEN_STATE);
+			activeToolRef.current = "pointer";
+			setActiveToolState("pointer");
+		},
+		[onAddNode],
+	);
+
+	const penMouseDown = useCallback(
+		(e: React.MouseEvent) => {
+			const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+			const sx = e.clientX - rect.left;
+			const sy = e.clientY - rect.top;
+			const [docX, docY] = screenToDoc(sx, sy, cameraRef.current);
+
+			if (e.detail >= 2) {
+				commitPenPath(false);
+				return;
+			}
+
+			const prev = penStateRef.current;
+			const newAnchor = {
+				docX,
+				docY,
+				handleInDocX: docX,
+				handleInDocY: docY,
+				handleOutDocX: docX,
+				handleOutDocY: docY,
+			};
+
+			const next: PenDrawingState = {
+				...prev,
+				anchors: [...prev.anchors, newAnchor],
+				cursorDocX: docX,
+				cursorDocY: docY,
+				isDraggingHandle: true,
+			};
+			penStateRef.current = next;
+			setPenState(next);
+			isDraggingHandleRef.current = true;
+		},
+		[commitPenPath],
+	);
+
+	const penMouseMove = useCallback((e: React.MouseEvent) => {
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const sx = e.clientX - rect.left;
+		const sy = e.clientY - rect.top;
+		const [docX, docY] = screenToDoc(sx, sy, cameraRef.current);
+
+		const prev = penStateRef.current;
+
+		if (isDraggingHandleRef.current && prev.anchors.length > 0) {
+			const lastIdx = prev.anchors.length - 1;
+			const anchor = prev.anchors[lastIdx];
+			const updatedAnchors = [...prev.anchors];
+			updatedAnchors[lastIdx] = {
+				...anchor,
+				handleOutDocX: docX,
+				handleOutDocY: docY,
+				handleInDocX: 2 * anchor.docX - docX,
+				handleInDocY: 2 * anchor.docY - docY,
+			};
+			const next: PenDrawingState = {
+				...prev,
+				anchors: updatedAnchors,
+				cursorDocX: docX,
+				cursorDocY: docY,
+			};
+			penStateRef.current = next;
+			setPenState(next);
+		} else {
+			const next: PenDrawingState = { ...prev, cursorDocX: docX, cursorDocY: docY };
+			penStateRef.current = next;
+			setPenState(next);
+		}
+	}, []);
+
+	const penMouseUp = useCallback(() => {
+		isDraggingHandleRef.current = false;
+		const next = { ...penStateRef.current, isDraggingHandle: false };
+		penStateRef.current = next;
+		setPenState(next);
+	}, []);
+
+	const onMouseDown = useCallback(
+		(e: React.MouseEvent) => {
+			if (activeToolRef.current === "pen") penMouseDown(e);
+			else cameraMouseDown?.(e);
+		},
+		[penMouseDown, cameraMouseDown],
+	);
+
+	const onMouseMove = useCallback(
+		(e: React.MouseEvent) => {
+			if (activeToolRef.current === "pen") penMouseMove(e);
+			else cameraMouseMove?.(e);
+		},
+		[penMouseMove, cameraMouseMove],
+	);
+
+	const onMouseUp = useCallback(
+		(e: React.MouseEvent) => {
+			if (activeToolRef.current === "pen") penMouseUp();
+			else cameraMouseUp?.(e);
+		},
+		[penMouseUp, cameraMouseUp],
+	);
 
 	const topLevelFrames = useMemo(
 		() =>
@@ -266,6 +519,32 @@ export function PenCanvasPanel({
 		const handleKeyDown = (e: KeyboardEvent) => {
 			const tag = (e.target as HTMLElement)?.tagName;
 			if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+			// Pen tool shortcuts
+			if (activeToolRef.current === "pen") {
+				if (e.key === "Escape") {
+					isDraggingHandleRef.current = false;
+					penStateRef.current = EMPTY_PEN_STATE;
+					setPenState(EMPTY_PEN_STATE);
+					activeToolRef.current = "pointer";
+					setActiveToolState("pointer");
+					return;
+				}
+				if (e.key === "Enter") {
+					commitPenPath(false);
+					return;
+				}
+			}
+
+			if (e.key === "p" || e.key === "P") {
+				if (onAddNode) switchTool("pen");
+				return;
+			}
+			if (e.key === "v" || e.key === "V") {
+				switchTool("pointer");
+				return;
+			}
+
 			if (e.key === "f" || e.key === "F") handleZoomToFit();
 			if (e.key === "[")
 				setSelectedFrameIndex((i) => Math.max(0, i - 1));
@@ -274,7 +553,7 @@ export function PenCanvasPanel({
 		};
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [handleZoomToFit, totalFrames]);
+	}, [handleZoomToFit, totalFrames, commitPenPath, switchTool, onAddNode]);
 
 	return (
 		<View
@@ -387,13 +666,17 @@ export function PenCanvasPanel({
 							/>
 						)}
 						<View
-							style={{ flex: 1 }}
+							style={{ flex: 1, position: "relative" }}
 							{...({
 								onWheel,
 								onMouseDown,
 								onMouseMove,
 								onMouseUp,
-								onMouseLeave: () => {},
+								onMouseLeave: () => {
+									if (activeToolRef.current === "pen") {
+										setPenState((prev) => ({ ...prev, cursorDocX: null, cursorDocY: null }));
+									}
+								},
 							} as object)}
 						>
 							<PenRenderer
@@ -403,7 +686,11 @@ export function PenCanvasPanel({
 								height={canvasHeight}
 								selectedNodePath={selectedNodePath ?? undefined}
 								onNodeTap={handleNodeTap}
+								penDrawingState={activeTool === "pen" ? penState : undefined}
 							/>
+							{onAddNode && (
+								<ToolPalette activeTool={activeTool} onSelectTool={switchTool} />
+							)}
 						</View>
 					</View>
 				)}

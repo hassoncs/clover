@@ -1,6 +1,7 @@
-import { Group, Rect, RoundedRect } from "@shopify/react-native-skia";
+import { DashPathEffect, Group, Paint, Rect, RoundedRect } from "@shopify/react-native-skia";
 import type { PenFrame } from "@slopcade/shared/types/pen";
 import type React from "react";
+import { useEffect, useState } from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
 import { PenFillRenderer } from "../fills";
@@ -10,6 +11,35 @@ import { PenStrokeRenderer } from "../strokes";
 interface NodeRendererProps {
 	layoutNode: LayoutNode;
 	renderChildren?: (children: LayoutNode[]) => React.ReactNode;
+}
+
+const AI_BORDER_COLOR = "#818cf8";
+const AI_BORDER_WIDTH = 2;
+const AI_DASH_TOTAL = 20;
+
+function AiGeneratingBorder({ width, height }: { width: number; height: number }): React.ReactNode {
+	const [phase, setPhase] = useState(0);
+
+	useEffect(() => {
+		let raf: ReturnType<typeof requestAnimationFrame>;
+		let start: number | null = null;
+		const animate = (time: number) => {
+			if (start === null) start = time;
+			const elapsed = time - start;
+			setPhase(((elapsed / 400) * AI_DASH_TOTAL) % AI_DASH_TOTAL);
+			raf = requestAnimationFrame(animate);
+		};
+		raf = requestAnimationFrame(animate);
+		return () => cancelAnimationFrame(raf);
+	}, []);
+
+	return (
+		<Rect x={-1} y={-1} width={width + 2} height={height + 2} color="transparent">
+			<Paint style="stroke" strokeWidth={AI_BORDER_WIDTH} color={AI_BORDER_COLOR}>
+				<DashPathEffect intervals={[6, 4]} phase={phase} />
+			</Paint>
+		</Rect>
+	);
 }
 
 export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): React.ReactNode {
@@ -68,6 +98,7 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 						{children}
 					</Group>
 				</Group>
+				{node.aiGenerating && <AiGeneratingBorder width={width} height={height} />}
 			</Group>
 		);
 	}
@@ -78,6 +109,7 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 			<Group transform={counterTranslate}>
 				{children}
 			</Group>
+			{node.aiGenerating && <AiGeneratingBorder width={width} height={height} />}
 		</Group>
 	);
 }

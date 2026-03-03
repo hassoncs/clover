@@ -11,11 +11,13 @@
 	"dependencies": {
 		"@slopcade/shared": "workspace:*",
 		"@slopcade/theme": "workspace:*",
-		"nanoid": "^5.0.7"
+		"nanoid": "^5.0.7",
+		"typeflex": "^0.1.0",
+		"yoga-layout": "^3.2.1"
 	},
 	"peerDependencies": {
+		"@shopify/react-native-skia": "*",
 		"react": "*",
-		"react-native": "*",
-		"@shopify/react-native-skia": "*"
+		"react-native": "*"
 	}
 }

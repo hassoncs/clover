@@ -7,18 +7,21 @@ import { buildComponentRegistry, resolveAllRefs } from "../components";
 import type { LayoutNode } from "../layout";
 import { layoutTree } from "../layout";
 import { estimateTextSize } from "../text-measure";
+import type { PenDrawingState } from "../../tools/penToolState";
 import { resolveTreeVariables } from "../variables";
 import { FrameTitle } from "./FrameTitle";
 import { EllipseNode } from "./nodes/EllipseNode";
 import { FrameNode } from "./nodes/FrameNode";
 import { GroupNode } from "./nodes/GroupNode";
 import { IconFontNode } from "./nodes/IconFontNode";
+import { ImageNode } from "./nodes/ImageNode";
 import { LineNode } from "./nodes/LineNode";
 import { NoteNode } from "./nodes/NoteNode";
 import { PathNode } from "./nodes/PathNode";
 import { PolygonNode } from "./nodes/PolygonNode";
 import { RectangleNode } from "./nodes/RectangleNode";
 import { TextNode } from "./nodes/TextNode";
+import { PenToolOverlay } from "./PenToolOverlay";
 
 export interface PenRendererProps {
 	document: PenDocument;
@@ -27,7 +30,15 @@ export interface PenRendererProps {
 	height: number;
 	selectedNodePath?: string[];
 	onNodeTap?: (nodePath: string[]) => void;
+	penDrawingState?: PenDrawingState;
 }
+
+const FONT_DEFS: Array<{ path: string; family: string }> = [
+	{ path: "/fonts/Fredoka-Regular.ttf", family: "Fredoka" },
+	{ path: "/fonts/Inter-Regular.ttf", family: "Inter" },
+	{ path: "/fonts/Inter-Bold.ttf", family: "Inter" },
+	{ path: "/fonts/Inter-Medium.ttf", family: "Inter" },
+];
 
 function renderLayoutNode(
 	layoutNode: LayoutNode,
@@ -72,9 +83,9 @@ function renderLayoutNode(
 			return <IconFontNode key={node.id} layoutNode={layoutNode} />;
 		case "note":
 			return <NoteNode key={node.id} layoutNode={layoutNode} />;
-		case "ref":
-			return null;
 		case "image":
+			return <ImageNode key={node.id} layoutNode={layoutNode} />;
+		case "ref":
 			return null;
 		case "connection":
 			return null;
@@ -133,6 +144,7 @@ export function PenRenderer({
 	width,
 	height,
 	selectedNodePath,
+	penDrawingState,
 }: PenRendererProps): React.ReactNode {
 	const layoutNodes = useMemo(() => {
 		const registry = buildComponentRegistry(document.children);
@@ -149,18 +161,20 @@ export function PenRenderer({
 
 	const [fontMgr, setFontMgr] = useState<SkTypefaceFontProvider | null>(null);
 	useEffect(() => {
-		Skia.Data.fromURI("/fonts/Fredoka-Regular.ttf")
-			.then((data) => {
-				const tf = Skia.Typeface.MakeFreeTypeFaceFromData(data);
-				if (!tf) {
-					console.error("[PenRenderer] Failed to create typeface from font data");
-					return;
-				}
-				const mgr = Skia.TypefaceFontProvider.Make();
-				mgr.registerFont(tf, "Fredoka");
-				setFontMgr(mgr);
-			})
-			.catch((e) => console.error("[PenRenderer] Font load failed:", e));
+		const mgr = Skia.TypefaceFontProvider.Make();
+		const pending = FONT_DEFS.map(({ path, family }) =>
+			fetch(path)
+				.then((res) => res.arrayBuffer())
+				.then((buf) => {
+					const data = Skia.Data.fromBytes(new Uint8Array(buf));
+					const tf = Skia.Typeface.MakeFreeTypeFaceFromData(data);
+					if (tf) mgr.registerFont(tf, family);
+				})
+				.catch(() => {
+					// Font not available — skip silently
+				}),
+		);
+		Promise.allSettled(pending).then(() => setFontMgr(mgr));
 	}, []);
 
 	return (
@@ -181,6 +195,7 @@ export function PenRenderer({
 				{selectedLayoutNode && (
 					<SelectionChrome layoutNode={selectedLayoutNode} />
 				)}
+				{penDrawingState && <PenToolOverlay drawingState={penDrawingState} />}
 			</Group>
 		</Canvas>
 	);

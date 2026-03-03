@@ -312,6 +312,7 @@ export interface PenFrame {
 	reusable?: boolean;
 	slot?: boolean;
 	placeholder?: boolean;
+	aiGenerating?: boolean;
 }
 
 export interface PenGroup {
@@ -373,6 +374,7 @@ export const PenFrameSchema = z.lazy(() =>
 		reusable: z.boolean().optional(),
 		slot: z.boolean().optional(),
 		placeholder: z.boolean().optional(),
+		aiGenerating: z.boolean().optional(),
 	}),
 ) as z.ZodType<PenFrame, z.ZodTypeDef, unknown>;
 
