@@ -51,7 +51,7 @@ export interface RuntimeNode {
 	visible?: boolean;
 
 	// --- Frame-specific ---
-	layout?: PenFrame["layout"];
+	layout?: PenFrame["layout"] | "wrap";
 	gap?: number;
 	padding?: PenPadding;
 	justifyContent?: PenFrame["justifyContent"];

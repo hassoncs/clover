@@ -18,3 +18,10 @@
 - **PenToolFacade API surface**: `createNode`, `updateNode`, `deleteNode`, `reparentNode`, `getNode`, `getChildren`, `findNodes`, `getDescendants`, `getAncestors`.
 - **UndoEntry shape chosen**: `{ type, nodeId, inverse }` with serializable inverse variants (`delete`, `update`, `restore_subtree`, `reparent`) so tool layers can store/replay undo data without capturing runtime closures.
 - **Design decisions made**: (1) facade returns structured clones for reads to avoid leaking mutable SceneGraph internals, (2) create/reparent enforce container parent types, (3) `reparentNode` throws `CycleError` when target parent is a descendant, (4) delete undo captures full subtree snapshots for precise restore metadata.
+
+## [2026-03-03T09:49:00Z] T3: Yoga Layout Adapter Complete
+- Yoga package used: `yoga-layout@^3.2.1`
+- PenSizing mapping: fixed numbers map to Yoga width/height; `fill_container` maps to `flexGrow=1` (or `flexGrow=N` for `fill_container(N)`) on the parent flex axis; cross-axis `fill_container` maps to `alignSelf: stretch`; no-flex fallback uses numeric fallback (`N` or default `200`)
+- Layout modes supported: `none`, `horizontal`, `vertical`, `wrap` (runtime extension)
+- Memory management: Yoga nodes are always freed with recursive `node.free()` traversal after `calculateLayout`
+- Any edge cases: absolute positioning is applied only when parent layout is `none` and node has explicit `x`/`y`; fit-content sizing is pre-resolved before Yoga (`text` nodes measured, non-text fallback `100`); WASM/runtime init errors throw `LayoutInitError` with explicit message
