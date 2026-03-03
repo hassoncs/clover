@@ -1,0 +1,35 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/private/tmp/slopcade-open-pencil-migration[39m
+
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mpenDocumentToSceneGraph[2m > [22mflattens a nested document into a flat map[32m 2[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mpenDocumentToSceneGraph[2m > [22mpreserves variables and themes[32m 1[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mpenDocumentToSceneGraph[2m > [22mhandles ref nodes with descendants[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mpenDocumentToSceneGraph[2m > [22mhandles connection nodes[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22msceneGraphToPenDocument[2m > [22mreconstructs nested tree from flat graph[32m 1[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22msceneGraphToPenDocument[2m > [22mpreserves variables and themes in output[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22msceneGraphToPenDocument[2m > [22mreconstructs ref nodes with descendants[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22msceneGraphToPenDocument[2m > [22mreconstructs connection nodes[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mroundtrip: PenDocument → SceneGraph → PenDocument[2m > [22msimple frame document roundtrips to structurally equal output[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mroundtrip: PenDocument → SceneGraph → PenDocument[2m > [22mref with descendants document roundtrips to structurally equal output[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mroundtrip: PenDocument → SceneGraph → PenDocument[2m > [22mconnection document roundtrips to structurally equal output[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mgetChildren returns ordered children[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22misDescendant correctly identifies ancestry[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mgetAbsolutePosition accumulates parent positions[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mcreateNode adds a new node to the graph[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mdeleteNode removes node and its children recursively[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mreparentNode moves node to new parent preserving absolute position[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mreorderChild changes child position within parent[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph mutation APIs[2m > [22mupdateNode modifies node fields[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph edge cases[2m > [22mdocument with no variables or themes roundtrips cleanly[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph edge cases[2m > [22mempty document roundtrips[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph edge cases[2m > [22mhandles all leaf node types in roundtrip[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph edge cases[2m > [22mdeeply nested frames roundtrip[32m 0[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts[2m > [22mSceneGraph edge cases[2m > [22mgroup nodes with children roundtrip[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m24 passed[39m[22m[90m (24)[39m
+[2m   Start at [22m 09:34:29
+[2m   Duration [22m 216ms[2m (transform 64ms, setup 0ms, import 80ms, tests 10ms, environment 0ms)[22m
+
