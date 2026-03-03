@@ -8,8 +8,6 @@ import {
 	useState,
 } from "react";
 import { useEditorChat, useEditorTRPC } from "./editor-context";
-import { useDesignDocument } from "./useDesignDocument";
-
 export interface FileTreeNode {
 	id: string;
 	name: string;
@@ -139,8 +137,6 @@ export function useWorkspaceFiles(gameId: string | null) {
 		});
 	};
 
-	const design = useDesignDocument(gameId);
-
 	return {
 		files: filesQuery.data?.files ?? [],
 		tree: filesQuery.data?.tree ?? {},
@@ -155,7 +151,6 @@ export function useWorkspaceFiles(gameId: string | null) {
 		setActiveFile,
 		saveFile,
 		isSaving: writeMutation.isPending,
-		...design,
 	};
 }
 

@@ -22,7 +22,7 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
 		panels: ["stage"],
 	},
 	right: {
-		panels: ["design-canvas", "chat"],
+		panels: ["chat"],
 		width: 400,
 	},
 };

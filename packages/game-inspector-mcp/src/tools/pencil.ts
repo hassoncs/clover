@@ -271,17 +271,4 @@ export function registerPencilTools(
 		{},
 		async () => executeGetSelection(state),
 	);
-
-	server.tool(
-		"pencil_apply_ops",
-		"REMOVED. Use pencil_create_node, pencil_update_node, pencil_delete_node instead.",
-		{
-			ops: z.string().describe("(ignored — this tool has been removed)"),
-		},
-		async () => {
-			throw new Error(
-				"pencil_apply_ops removed. Use pencil_create_node, pencil_update_node, pencil_delete_node instead.",
-			);
-		},
-	);
 }
