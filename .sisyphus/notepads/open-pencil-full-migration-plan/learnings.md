@@ -31,3 +31,19 @@
 - Layout modes supported: `none`, `horizontal`, `vertical`, `wrap` (runtime extension)
 - Memory management: Yoga nodes are always freed with recursive `node.free()` traversal after `calculateLayout`
 - Any edge cases: absolute positioning is applied only when parent layout is `none` and node has explicit `x`/`y`; fit-content sizing is pre-resolved before Yoga (`text` nodes measured, non-text fallback `100`); WASM/runtime init errors throw `LayoutInitError` with explicit message
+
+## [2026-03-03] T7: Panel Parity Early Track Complete
+- Components created: `InspectorPanel.tsx`, `LayersPanel.tsx`, `ToolbarShell.tsx`, `PenRuntimeContext.tsx`
+- PenRuntimeContext shape: Provides `graph` (SceneGraph), `facade` (PenToolFacade), `selectedId`, `activeTool`, `revision` (for re-renders), and `commitMutation`
+- Inspector fields: Position (X, Y), Size (W, H), Fill, Stroke
+- Layer tree features: Recursive rendering, click-to-select, visibility toggle, basic up/down reordering via `graph.reorderChild`
+- Toolbar tools: pointer, frame, rectangle, ellipse, text, line, pen
+- Any design decisions: Replaced the built-in layers and tool palette in `PenCanvasPanelImpl` with the new context-driven panels. `PenCanvasPanelInner` now acts as the layout shell and context provider.
+
+## [2026-03-03T09:54:00Z] T9: Yjs Collaboration Foundation Complete
+- Yjs version: `13.6.29`
+- Transport used for tests: `InMemoryP2PTransport` (room-scoped in-memory bus with full-state sync on connect)
+- Convergence test approach: two peers sync a shared parent, disconnect, each applies a concurrent create under the same parent, reconnect, and assert `sceneGraphToPenDocument()` output is identical across peers
+- Awareness fields tracked: `userId`, `selectedNodeId`, `cursorPosition`
+- Single version invariant: PASS (`pnpm why yjs --recursive` resolves only `yjs@13.6.29`)
+- Any design decisions: Y.Doc is authoritative; PenToolFacade mutations are bridged into Yjs transactions and SceneGraph is reconciled from Yjs after each transaction; awareness sync is protocol-based (`y-protocols/awareness`) and transport-agnostic
