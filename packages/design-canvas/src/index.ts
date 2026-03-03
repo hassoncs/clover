@@ -1,5 +1,10 @@
 // Host adapter contract
-export type { DesignCanvasHost, DesignPhase, DesignMode } from "./host/types";
+export type {
+	DesignCanvasHost,
+	PenCanvasHost,
+	DesignPhase,
+	DesignMode,
+} from "./host/types";
 
 // Core hit-test utilities (safe to import — no Skia at module level)
 // DesignCanvasRenderer is intentionally NOT exported here: it imports Skia
@@ -36,3 +41,10 @@ export type {
 // Canvas ops (for programmatic document mutations via MCP / AI)
 export { applyCanvasOps } from "./ops/canvasOps";
 export type { CanvasOp } from "./ops/canvasOps";
+
+// Pen renderer (new .pen-native renderer)
+export { PenRenderer } from "./pen/render/PenRenderer";
+export type { PenRendererProps } from "./pen/render/PenRenderer";
+export { PenCanvasPanel } from "./panels/PenCanvasPanel";
+export type { PenCanvasPanelProps } from "./panels/PenCanvasPanel";
+export { hitTestLayoutTree, screenToWorldPen } from "./pen/hitTest";

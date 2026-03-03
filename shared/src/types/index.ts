@@ -27,6 +27,7 @@ export * from "./haptics";
 export * from "./LevelDefinition";
 export * from "./LevelPack";
 export * from "./overlay";
+export * from "./pen";
 export type { WorkspaceManifest } from "./PackageManifest";
 export { TAG_GROUPS } from "./PackageManifest";
 export * from "./PackageRuntime";

@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "children": [
+    {
+      "type": "frame",
+      "id": "frame-login",
+      "name": "Login Screen",
+      "x": 0,
+      "y": 0,
+      "width": 375,
+      "height": 812,
+      "fill": "#ffffff",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [80, 24, 24, 24],
+      "children": [
+        {
+          "type": "text",
+          "id": "login-title",
+          "name": "Title",
+          "content": "Welcome Back",
+          "fontSize": 32,
+          "fontWeight": "700",
+          "fill": "#1a1a2e"
+        },
+        {
+          "type": "text",
+          "id": "login-subtitle",
+          "name": "Subtitle",
+          "content": "Sign in to continue",
+          "fontSize": 16,
+          "fill": "#6b7280"
+        },
+        {
+          "type": "rectangle",
+          "id": "input-email",
+          "name": "Email Input",
+          "width": "fill_container",
+          "height": 48,
+          "cornerRadius": 8,
+          "fill": "#f9fafb",
+          "stroke": { "fill": "#e5e7eb", "thickness": 1, "align": "inside" }
+        },
+        {
+          "type": "rectangle",
+          "id": "input-password",
+          "name": "Password Input",
+          "width": "fill_container",
+          "height": 48,
+          "cornerRadius": 8,
+          "fill": "#f9fafb",
+          "stroke": { "fill": "#e5e7eb", "thickness": 1, "align": "inside" }
+        },
+        {
+          "type": "rectangle",
+          "id": "btn-signin",
+          "name": "Sign In Button",
+          "width": "fill_container",
+          "height": 48,
+          "cornerRadius": 8,
+          "fill": "#6366f1"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "frame-dashboard",
+      "name": "Dashboard",
+      "x": 415,
+      "y": 0,
+      "width": 375,
+      "height": 812,
+      "fill": "#f8fafc",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "topbar",
+          "name": "Top Bar",
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 64,
+          "fill": "#ffffff"
+        },
+        {
+          "type": "ellipse",
+          "id": "avatar",
+          "name": "Avatar",
+          "x": 16,
+          "y": 12,
+          "width": 40,
+          "height": 40,
+          "fill": "#6366f1"
+        },
+        {
+          "type": "text",
+          "id": "dash-title",
+          "name": "Dashboard Title",
+          "x": 68,
+          "y": 22,
+          "content": "Dashboard",
+          "fontSize": 18,
+          "fontWeight": "600",
+          "fill": "#1a1a2e"
+        },
+        {
+          "type": "rectangle",
+          "id": "card1",
+          "name": "Card 1",
+          "x": 16,
+          "y": 84,
+          "width": 160,
+          "height": 100,
+          "cornerRadius": 12,
+          "fill": "#ffffff",
+          "effects": [
+            {
+              "shadow": {
+                "color": "#00000014",
+                "offsetX": 0,
+                "offsetY": 4,
+                "blur": 12,
+                "spread": 0
+              }
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "card2",
+          "name": "Card 2",
+          "x": 196,
+          "y": 84,
+          "width": 163,
+          "height": 100,
+          "cornerRadius": 12,
+          "fill": "#6366f1"
+        },
+        {
+          "type": "text",
+          "id": "card2-label",
+          "name": "Card 2 Label",
+          "x": 212,
+          "y": 112,
+          "content": "Revenue",
+          "fontSize": 12,
+          "fill": "#e0e7ff"
+        },
+        {
+          "type": "text",
+          "id": "card2-value",
+          "name": "Card 2 Value",
+          "x": 212,
+          "y": 132,
+          "content": "$12,450",
+          "fontSize": 22,
+          "fontWeight": "700",
+          "fill": "#ffffff"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "frame-profile",
+      "name": "Profile",
+      "x": 830,
+      "y": 0,
+      "width": 375,
+      "height": 812,
+      "fill": "#ffffff",
+      "layout": "vertical",
+      "gap": 0,
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "profile-hero",
+          "name": "Hero Banner",
+          "width": "fill_container",
+          "height": 200,
+          "fill": { "type": "gradient", "gradientType": "linear", "stops": [{ "color": "#6366f1", "position": 0 }, { "color": "#8b5cf6", "position": 1 }], "angle": 135 }
+        },
+        {
+          "type": "rectangle",
+          "id": "profile-body",
+          "name": "Profile Body",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "#f8fafc"
+        }
+      ]
+    }
+  ]
+}

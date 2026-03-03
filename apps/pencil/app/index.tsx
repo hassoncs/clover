@@ -1,14 +1,7 @@
-import {
-	type DesignCanvasHost,
-	DesignCanvasPanel,
-	type DesignMode,
-	type DesignPhase,
-	applyCanvasOps,
-	type CanvasOp,
-} from "@slopcade/design-canvas";
-import type { DesignDocument } from "@slopcade/shared";
-import { createEmptyDesignDocument } from "@slopcade/shared";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { PenCanvasPanel } from "@slopcade/design-canvas";
+import type { PenDocument } from "@slopcade/shared/types/pen";
+import { parsePenDocument } from "@slopcade/shared/types/pen";
+import { useCallback, useRef, useState } from "react";
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -22,83 +15,42 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "../lib/trpc/client";
 import { usePencilBridge } from "../lib/usePencilBridge";
-const INITIAL_DOC = createEmptyDesignDocument(
-	"pencil-default",
-	"Untitled Design",
-);
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const SAMPLE_PEN = require("../assets/sample.pen");
+
+function loadSampleDocument(): PenDocument {
+	try {
+		return parsePenDocument(SAMPLE_PEN);
+	} catch {
+		return { version: 1, children: [] };
+	}
+}
 
 export default function PencilScreen() {
-	const [document, setDocument] = useState<DesignDocument>(INITIAL_DOC);
-	const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null);
-	const [selectedElementId, setSelectedElementId] = useState<string | null>(
-		null,
-	);
-	const [designMode, setDesignMode] = useState<DesignMode>("select");
-	const [designPhase, setDesignPhase] = useState<DesignPhase>("idle");
+	const [document, setDocument] = useState<PenDocument>(loadSampleDocument);
+	const [selectedNodePath] = useState<string[] | null>(null);
 	const [chatOpen, setChatOpen] = useState(true);
 
-	const saveDocument = useCallback((doc: DesignDocument) => {
-		setDocument(doc);
-	}, []);
-
-	const host: DesignCanvasHost = useMemo(
-		() => ({
-			document,
-			isLoadingDocument: false,
-			saveDocument,
-			selectedFrameId,
-			selectedElementId,
-			selectedElementIds: [],
-			selectFrame: setSelectedFrameId,
-			selectElement: (elementId, frameId) => {
-				setSelectedElementId(elementId);
-				setSelectedFrameId(frameId);
-			},
-			clearSelection: () => {
-				setSelectedFrameId(null);
-				setSelectedElementId(null);
-			},
-			designMode,
-			setDesignMode,
-			designPhase,
-			setDesignPhase,
-		}),
-		[
-			document,
-			saveDocument,
-			selectedFrameId,
-			selectedElementId,
-			designMode,
-			designPhase,
-		],
-	);
-	usePencilBridge(host);
+	usePencilBridge(document, setDocument);
 
 	return (
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
 			<View style={styles.container}>
-				{/* Canvas — fills remaining space */}
 				<View style={styles.canvas}>
-					<DesignCanvasPanel host={host} />
+					<PenCanvasPanel document={document} />
 				</View>
 
-				{/* Chat sidebar */}
 				{chatOpen && (
 					<View style={styles.sidebar}>
-					<ChatSidebar
-						onClose={() => setChatOpen(false)}
-						selectedFrameId={selectedFrameId}
-						selectedElementId={selectedElementId}
-						document={document}
-						onApplyOps={(ops) => {
-							const next = applyCanvasOps(document, ops);
-							saveDocument(next);
-						}}
-					/>
+						<ChatSidebar
+							onClose={() => setChatOpen(false)}
+							selectedNodePath={selectedNodePath}
+							document={document}
+						/>
 					</View>
 				)}
 
-				{/* Toggle button when sidebar is closed */}
 				{!chatOpen && (
 					<Pressable
 						style={styles.openChatButton}
@@ -120,25 +72,21 @@ interface ChatMessage {
 
 interface ChatSidebarProps {
 	onClose: () => void;
-	selectedFrameId: string | null;
-	selectedElementId: string | null;
-	document: DesignDocument;
-	onApplyOps: (ops: CanvasOp[]) => void;
+	selectedNodePath: string[] | null;
+	document: PenDocument;
 }
 
 function ChatSidebar({
 	onClose,
-	selectedFrameId,
-	selectedElementId,
+	selectedNodePath,
 	document,
-	onApplyOps,
 }: ChatSidebarProps) {
 	const [messages, setMessages] = useState<ChatMessage[]>([
 		{
 			id: "welcome",
 			role: "assistant",
 			content:
-				"Hi! I'm your AI design assistant. Describe what you'd like to create, or select an element and ask me to modify it.",
+				"Hi! I'm your AI design assistant. Describe what you'd like to create or explore.",
 		},
 	]);
 	const [input, setInput] = useState("");
@@ -146,11 +94,9 @@ function ChatSidebar({
 	const isSending = sendMessageMutation.isPending;
 	const scrollRef = useRef<ScrollView>(null);
 
-	const contextHint = selectedElementId
-		? `Element ${selectedElementId.slice(0, 6)} selected`
-		: selectedFrameId
-			? `Frame ${selectedFrameId.slice(0, 6)} selected`
-			: null;
+	const contextHint = selectedNodePath?.length
+		? `Node ${selectedNodePath[selectedNodePath.length - 1].slice(0, 8)} selected`
+		: null;
 
 	const send = useCallback(async () => {
 		const text = input.trim();
@@ -168,33 +114,29 @@ function ChatSidebar({
 			const result = await sendMessageMutation.mutateAsync({
 				message: text,
 				documentJson: JSON.stringify(document),
-				selectedFrameId: selectedFrameId ?? undefined,
-				selectedElementId: selectedElementId ?? undefined,
+				selectedFrameId: selectedNodePath?.[0] ?? undefined,
+				selectedElementId: selectedNodePath?.[1] ?? undefined,
 			});
 
-			// Apply canvas ops if the AI returned any
-			if (result.ops && result.ops.length > 0) {
-				onApplyOps(result.ops as CanvasOp[]);
-			}
-
-			const opsHint = result.ops?.length > 0 ? ` (drew ${result.ops.length} op${result.ops.length > 1 ? "s" : ""})` : "";
 			const reply: ChatMessage = {
 				id: `a-${Date.now()}`,
 				role: "assistant",
-				content: result.reply + opsHint,
+				content: result.reply,
 			};
 			setMessages((prev) => [...prev, reply]);
-		} catch (err) {
-			const errMsg: ChatMessage = {
-				id: `err-${Date.now()}`,
-				role: "assistant",
-				content: "Something went wrong. Please try again.",
-			};
-			setMessages((prev) => [...prev, errMsg]);
+		} catch {
+			setMessages((prev) => [
+				...prev,
+				{
+					id: `err-${Date.now()}`,
+					role: "assistant",
+					content: "Something went wrong. Please try again.",
+				},
+			]);
 		} finally {
 			scrollRef.current?.scrollToEnd({ animated: true });
 		}
-	}, [document, input, isSending, onApplyOps, sendMessageMutation, selectedFrameId, selectedElementId]);
+	}, [document, input, isSending, sendMessageMutation, selectedNodePath]);
 
 	return (
 		<KeyboardAvoidingView
@@ -202,7 +144,6 @@ function ChatSidebar({
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 			keyboardVerticalOffset={0}
 		>
-			{/* Header */}
 			<View style={styles.chatHeader}>
 				<Text style={styles.chatTitle}>✦ AI Chat</Text>
 				{contextHint && (
@@ -215,7 +156,6 @@ function ChatSidebar({
 				</Pressable>
 			</View>
 
-			{/* Messages */}
 			<ScrollView
 				ref={scrollRef}
 				style={styles.messageList}
@@ -249,7 +189,6 @@ function ChatSidebar({
 				)}
 			</ScrollView>
 
-			{/* Input */}
 			<View style={styles.inputRow}>
 				<TextInput
 					style={styles.textInput}
