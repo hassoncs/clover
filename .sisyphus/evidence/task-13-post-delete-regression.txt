@@ -1,27 +1,27 @@
 npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
 npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
 
- RUN  v3.2.4 /private/tmp/slopcade-open-pencil-migration
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90m/private/tmp/slopcade-open-pencil-migration[39m
 
-stderr | packages/design-canvas/src/pen/__tests__/components.test.ts > resolveAllRefs > detects circular refs and does not infinite loop
-Circular ref detected: a — skipping resolution
+[90mstderr[2m | packages/design-canvas/src/pen/__tests__/components.test.ts[2m > [22m[2mresolveAllRefs[2m > [22m[2mdetects circular refs and does not infinite loop
+[22m[39mCircular ref detected: a — skipping resolution
 
- ✓ packages/design-canvas/src/pen/__tests__/components.test.ts (10 tests) 5ms
- ✓ packages/design-canvas/src/pen/runtime/__tests__/orphan.test.ts (12 tests) 7ms
- ✓ packages/design-canvas/src/pen/runtime/__tests__/facade.test.ts (4 tests) 5ms
- ✓ packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts (24 tests) 9ms
- ✓ packages/design-canvas/src/pen/__tests__/variables.test.ts (11 tests) 3ms
- ✓ packages/design-canvas/src/pen/runtime/__tests__/yoga-layout.test.ts (7 tests) 8ms
- ✓ packages/game-inspector-mcp/src/tools/__tests__/pencil-v2.test.ts (20 tests) 8ms
- ✓ packages/design-canvas/src/pen/__tests__/layout.test.ts (23 tests) 12ms
- ✓ packages/game-inspector-mcp/src/tools/__tests__/pencil-v2-full.test.ts (69 tests) 31ms
- ✓ packages/design-canvas/src/pen/collab/__tests__/convergence.test.ts (2 tests) 30ms
- ✓ apps/pencil/lib/__tests__/file-io.test.ts (8 tests) 9ms
- ✓ packages/design-canvas/src/pen/fig/__tests__/fig-roundtrip.test.ts (22 tests) 159ms
- ✓ packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts (27 tests) 7ms
+ [32m✓[39m packages/design-canvas/src/pen/__tests__/components.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/orphan.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/facade.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/__tests__/variables.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/runtime/__tests__/yoga-layout.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/__tests__/layout.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/game-inspector-mcp/src/tools/__tests__/pencil-v2.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/collab/__tests__/convergence.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m packages/game-inspector-mcp/src/tools/__tests__/pencil-v2-full.test.ts [2m([22m[2m69 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m apps/pencil/lib/__tests__/file-io.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m packages/design-canvas/src/pen/fig/__tests__/fig-roundtrip.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 166[2mms[22m[39m
+ [32m✓[39m packages/game-inspector-mcp/src/tools/__tests__/server-bridge.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 8[2mms[22m[39m
 
- Test Files  13 passed (13)
-      Tests  239 passed (239)
-   Start at  10:37:20
-   Duration  1.05s (transform 1.26s, setup 0ms, collect 3.30s, tests 292ms, environment 2ms, prepare 1.10s)
+[2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m239 passed[39m[22m[90m (239)[39m
+[2m   Start at [22m 10:37:50
+[2m   Duration [22m 839ms[2m (transform 933ms, setup 0ms, collect 2.51s, tests 279ms, environment 5ms, prepare 1.47s)[22m
 
