@@ -43,7 +43,8 @@ export { applyCanvasOps } from "./ops/canvasOps";
 export type { CanvasOp } from "./ops/canvasOps";
 
 // Pen renderer (new .pen-native renderer)
-export { PenRenderer } from "./pen/render/PenRenderer";
+// PenRenderer is intentionally NOT exported here — it imports Skia directly and
+// must only be bundled inside the WithSkiaWeb lazy chunk on web.
 export type { PenRendererProps } from "./pen/render/PenRenderer";
 export { PenCanvasPanel } from "./panels/PenCanvasPanel";
 export type { PenCanvasPanelProps } from "./panels/PenCanvasPanel";
