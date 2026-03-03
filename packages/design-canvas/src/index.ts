@@ -37,11 +37,6 @@ export type {
 	UseDesignDocumentResult,
 } from "./document/useDesignDocument";
 
-
-// Canvas ops (for programmatic document mutations via MCP / AI)
-export { applyCanvasOps } from "./ops/canvasOps";
-export type { CanvasOp } from "./ops/canvasOps";
-
 // Pen renderer (new .pen-native renderer)
 // PenRenderer is intentionally NOT exported here — it imports Skia directly and
 // must only be bundled inside the WithSkiaWeb lazy chunk on web.

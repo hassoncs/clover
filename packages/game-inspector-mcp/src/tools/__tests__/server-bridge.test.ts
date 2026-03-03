@@ -8,7 +8,6 @@ import {
 	executeGetDocument,
 	executeGetSelection,
 	getDocumentViaFacade,
-	LEGACY_BRIDGE_DEPRECATION_WARNING,
 } from "../pencil.js";
 
 function makeFacade(): PenToolFacade {
@@ -287,17 +286,10 @@ describe("executeGetDocument", () => {
 		expect(names).toContain("RegistrationFrame");
 	});
 
-	it("emits deprecation warning when no facade registered", async () => {
-		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-		await executeGetDocument(headlessState);
-		expect(warnSpy).toHaveBeenCalledWith(LEGACY_BRIDGE_DEPRECATION_WARNING);
-		warnSpy.mockRestore();
-	});
-
-	it("returns error when no facade and no page (headless fallback path)", async () => {
-		const result = await executeGetDocument(headlessState);
-		const parsed = JSON.parse(result.content[0].text) as { error?: string };
-		expect(parsed.error).toBeDefined();
+	it("throws when no facade registered", async () => {
+		await expect(executeGetDocument(headlessState)).rejects.toThrow(
+			"Legacy __PENCIL_BRIDGE__ removed",
+		);
 	});
 
 	it("does NOT emit deprecation warning when facade is registered", async () => {
@@ -307,6 +299,7 @@ describe("executeGetDocument", () => {
 		expect(warnSpy).not.toHaveBeenCalled();
 		warnSpy.mockRestore();
 	});
+
 });
 
 // ---------------------------------------------------------------------------
@@ -329,11 +322,10 @@ describe("executeGetSelection", () => {
 		expect(parsed.error).toContain("headless");
 	});
 
-	it("emits deprecation warning when no facade registered", async () => {
-		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-		await executeGetSelection(headlessState);
-		expect(warnSpy).toHaveBeenCalledWith(LEGACY_BRIDGE_DEPRECATION_WARNING);
-		warnSpy.mockRestore();
+	it("throws when no facade registered", async () => {
+		await expect(executeGetSelection(headlessState)).rejects.toThrow(
+			"Legacy __PENCIL_BRIDGE__ removed",
+		);
 	});
 });
 
@@ -358,16 +350,9 @@ describe("executeApplyOps", () => {
 		expect(parsed.data.opCount).toBe(1);
 	});
 
-	it("emits deprecation warning when no facade registered", async () => {
-		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-		await executeApplyOps(headlessState, "[]");
-		expect(warnSpy).toHaveBeenCalledWith(LEGACY_BRIDGE_DEPRECATION_WARNING);
-		warnSpy.mockRestore();
-	});
-
-	it("returns error when no facade and no page", async () => {
-		const result = await executeApplyOps(headlessState, "[]");
-		const parsed = JSON.parse(result.content[0].text) as { error?: string };
-		expect(parsed.error).toBeDefined();
+	it("throws when no facade registered", async () => {
+		await expect(executeApplyOps(headlessState, "[]")).rejects.toThrow(
+			"Legacy __PENCIL_BRIDGE__ removed",
+		);
 	});
 });

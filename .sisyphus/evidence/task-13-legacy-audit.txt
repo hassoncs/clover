@@ -1,0 +1,196 @@
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:	"DEPRECATED: __PENCIL_BRIDGE__ bridge in use. Register a ServerBridge facade for headless operation.";
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:				__PENCIL_BRIDGE__?: { getDocument: () => string };
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:		).__PENCIL_BRIDGE__;
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:					"__PENCIL_BRIDGE__ not registered. Is the Pencil web app running at port 8089?",
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:				__PENCIL_BRIDGE__?: { getSelection: () => string };
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:		).__PENCIL_BRIDGE__;
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:		if (!bridge) return { error: "__PENCIL_BRIDGE__ not registered" };
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:				__PENCIL_BRIDGE__?: {
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:		).__PENCIL_BRIDGE__;
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:			return { ok: false, error: "__PENCIL_BRIDGE__ not registered" };
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:						!!(window as unknown as { __PENCIL_BRIDGE__?: unknown })
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:							.__PENCIL_BRIDGE__,
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:		"Get the current DesignDocument JSON from the Pencil canvas. Returns frames and elements.",
+/private/tmp/slopcade-open-pencil-migration/packages/game-inspector-mcp/src/tools/pencil.ts:		"pencil_apply_ops",
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:	DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:	liveDocument: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:	document: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:	saveDesignDocument: (doc: DesignDocument) => void;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:	const [liveDocument, setLiveDocument] = useState<DesignDocument | null>(null);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:			const newDoc = JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:				saveDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:	}, [document, selectedFrameId, selectedElementId, saveDesignDocument]);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:				const newDoc = JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:			const newDoc = JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:					saveDesignDocument(prev);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractions.ts:		[cameraHandlers, saveDesignDocument],
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:function cloneDesignDocument(document: DesignDocument): DesignDocument {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	return JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	document: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	saveDesignDocument: (doc: DesignDocument) => void;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	liveDocument: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	const [liveDocument, setLiveDocument] = useState<DesignDocument | null>(null);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:				const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:			const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:					saveDesignDocument(currentLiveDocument);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	}, [resetInteractionFlags, saveDesignDocument]);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:			const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:			const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:					saveDesignDocument(currentLiveDocument);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/interactions/useDesignInteractionsNative.ts:	}, [saveDesignDocument]);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/types/shims/shared.d.ts:	export interface DesignDocument {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/types/shims/shared.d.ts:	export function migrateDesignDocument(input: unknown): DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/types/shims/shared.d.ts:	export function createEmptyDesignDocument(
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/types/shims/shared.d.ts:	): DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/core/designCanvasHitTest.ts:import type { DesignDocument, DesignElement } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/core/designCanvasHitTest.ts:	frames: DesignDocument["frames"],
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/core/DesignCanvasRenderer.tsx:	DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/core/DesignCanvasRenderer.tsx:	document: DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/host/types.ts:import type { DesignDocument } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/host/types.ts:	document: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/host/types.ts:	saveDocument: (doc: DesignDocument) => void;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanel.native.tsx:		saveDocument: saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanel.native.tsx:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:import type { DesignDocument } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		saveDocument: saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		const newDoc = JSON.parse(JSON.stringify(designDocument)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		saveDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		const newDoc = JSON.parse(JSON.stringify(designDocument)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		saveDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/panels/DesignCanvasPanelImpl.tsx:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	createEmptyDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	type DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	migrateDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:export interface UseDesignDocumentIO {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:export interface UseDesignDocumentOptions {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	/** Stable ID for the document (used to seed createEmptyDesignDocument). */
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	io: UseDesignDocumentIO;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:export interface UseDesignDocumentResult {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	designDocument: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	saveDesignDocument: (doc: DesignDocument) => void;
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:export function useDesignDocument({
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:}: UseDesignDocumentOptions): UseDesignDocumentResult {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	const [designDocument, setDesignDocument] = useState<DesignDocument | null>(
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:	const saveDesignDocument = useCallback((doc: DesignDocument) => {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:		setDesignDocument(doc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:					const remoteDoc = migrateDesignDocument(JSON.parse(rawLatest));
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:				const docToSave: DesignDocument = {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:				setDesignDocument(docToSave);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:				console.error("[useDesignDocument] save failed", e);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:					const doc = migrateDesignDocument(JSON.parse(raw));
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:					setDesignDocument(doc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:					const newDoc = createEmptyDesignDocument(documentId, initialTitle);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:					setDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:					saveDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:				console.warn("[useDesignDocument] load failed", e);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:				setDesignDocument(null);
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:			saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/document/useDesignDocument.ts:			saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/ops/canvasOps.ts:import type { DesignDocument, DesignElement } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/ops/canvasOps.ts: * Apply a batch of canvas operations to a DesignDocument.
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/ops/canvasOps.ts:export function applyCanvasOps(
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/ops/canvasOps.ts:	doc: DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/ops/canvasOps.ts:): DesignDocument {
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:export { useDesignDocument } from "./document/useDesignDocument";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:	UseDesignDocumentIO,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:	UseDesignDocumentOptions,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:	UseDesignDocumentResult,
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:} from "./document/useDesignDocument";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:export { applyCanvasOps } from "./ops/canvasOps";
+/private/tmp/slopcade-open-pencil-migration/packages/design-canvas/src/index.ts:export type { CanvasOp } from "./ops/canvasOps";
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/types/shims/shared.d.ts:	export interface DesignDocument {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/types/shims/shared.d.ts:	export function migrateDesignDocument(input: unknown): DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/types/shims/shared.d.ts:	export function createEmptyDesignDocument(
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/types/shims/shared.d.ts:	): DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:	createEmptyDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:	type DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:	migrateDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:export function useDesignDocument(gameId: string | null) {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:	const [designDocument, setDesignDocument] = useState<DesignDocument | null>(
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:	const saveDesignDocument = useCallback(
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:		async (doc: DesignDocument) => {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:			setDesignDocument(doc);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:						const remoteDoc = migrateDesignDocument(
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:					const docToSave: DesignDocument = {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:					setDesignDocument(docToSave);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:					console.error("[useDesignDocument] Failed to save design.json", e);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				const doc = migrateDesignDocument(raw);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				setDesignDocument(doc);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				console.warn("[useDesignDocument] Failed to parse design.json", e);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				setDesignDocument(null);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				const newDoc = createEmptyDesignDocument(gameId, "New Design");
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				setDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:				saveDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:			saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useDesignDocument.ts:			saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:	DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:	liveDocument: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:	document: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:	saveDesignDocument: (doc: DesignDocument) => void;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:	const [liveDocument, setLiveDocument] = useState<DesignDocument | null>(null);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:			const newDoc = JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:				saveDesignDocument(newDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:	}, [document, selectedFrameId, selectedElementId, saveDesignDocument]);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:				const newDoc = JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:			const newDoc = JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:					saveDesignDocument(prev);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractions.ts:		[cameraHandlers, saveDesignDocument],
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/DesignCanvasPanel.tsx:	const { designDocument, isLoadingDesign, saveDesignDocument } =
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/DesignCanvasPanel.tsx:		saveDocument: saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/DesignCanvasPanel.native.tsx:	const { designDocument, isLoadingDesign, saveDesignDocument } =
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/DesignCanvasPanel.native.tsx:		saveDocument: saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:function cloneDesignDocument(document: DesignDocument): DesignDocument {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	return JSON.parse(JSON.stringify(document)) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	document: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	saveDesignDocument: (doc: DesignDocument) => void;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	liveDocument: DesignDocument | null;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:		saveDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	const [liveDocument, setLiveDocument] = useState<DesignDocument | null>(null);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:				const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:			const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:					saveDesignDocument(currentLiveDocument);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	}, [resetInteractionFlags, saveDesignDocument]);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:			const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:			const newDoc = cloneDesignDocument(document);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:					saveDesignDocument(currentLiveDocument);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/useDesignInteractionsNative.ts:	}, [saveDesignDocument]);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/designCanvasHitTest.ts:import type { DesignDocument, DesignElement } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/designCanvasHitTest.ts:	frames: DesignDocument["frames"],
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/DesignCanvasRenderer.tsx:	DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/panels/DesignCanvasRenderer.tsx:	document: DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:	createEmptyDesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:	type DesignDocument,
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:import { useDesignDocument } from "../useDesignDocument";
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:let serverDocument: DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:function buildServerDocument(updatedAt: number): DesignDocument {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:	const doc = createEmptyDesignDocument("game-1", "Design");
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:describe("useDesignDocument optimistic concurrency", () => {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:		const { result } = renderHook(() => useDesignDocument("game-1"));
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:			await result.current.saveDesignDocument({
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:		const { result } = renderHook(() => useDesignDocument("game-1"));
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:			await result.current.saveDesignDocument({
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:		const savedDocument = JSON.parse(mutationInput.content) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:		const docWithNewElements: DesignDocument = {
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:		const { result } = renderHook(() => useDesignDocument("game-1"));
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:			await result.current.saveDesignDocument(loadedDoc);
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/useDesignDocument.test.ts:		const savedDoc = JSON.parse(mutationInput.content) as DesignDocument;
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/DesignCanvasHitTest.test.ts:import type { DesignDocument } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/__tests__/DesignCanvasHitTest.test.ts:type Frames = DesignDocument["frames"];
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/index.ts:export * from "./useDesignDocument";
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useWorkspaceFiles.ts:import { useDesignDocument } from "./useDesignDocument";
+/private/tmp/slopcade-open-pencil-migration/packages/editor/src/useWorkspaceFiles.ts:	const design = useDesignDocument(gameId);
+/private/tmp/slopcade-open-pencil-migration/apps/slopcade/components/editor/__tests__/DesignCanvasHitTest.test.ts:import type { DesignDocument } from "@slopcade/shared";
+/private/tmp/slopcade-open-pencil-migration/apps/slopcade/components/editor/__tests__/DesignCanvasHitTest.test.ts:type Frames = DesignDocument["frames"];
+/private/tmp/slopcade-open-pencil-migration/apps/pencil/app/index.tsx:	// Bridge exposes the live graph state to MCP tools via window.__PENCIL_BRIDGE__
+/private/tmp/slopcade-open-pencil-migration/apps/pencil/lib/usePencilBridge.ts:		__PENCIL_BRIDGE__?: PencilBridge;
+/private/tmp/slopcade-open-pencil-migration/apps/pencil/lib/usePencilBridge.ts: * Registers window.__PENCIL_BRIDGE__ on web so the game-inspector MCP
+/private/tmp/slopcade-open-pencil-migration/apps/pencil/lib/usePencilBridge.ts:		window.__PENCIL_BRIDGE__ = {
+/private/tmp/slopcade-open-pencil-migration/apps/pencil/lib/usePencilBridge.ts:			delete window.__PENCIL_BRIDGE__;

@@ -87,3 +87,19 @@
 - Architecture: `PenCanvasPanelConnector` inner component subscribes to `usePenRuntime().revision` and re-derives PenDocument on each mutation — clean data flow with SceneGraph as single source of truth
 - Edge cases: `PenRuntimeProviderProps` is now a discriminated union — either `{ document }` (legacy, auto-converts) or `{ graph, facade? }` (new path, no conversion needed)
 - Test command: `npx vitest run apps/pencil/` from repo root (vitest.config.ts in apps/pencil/)
+## [2026-03-03] T12: Panel Parity Expansion Complete
+- Components created: `VariablesPanel.tsx`, `ComponentsPanel.tsx`
+- Variables panel features: List all variables, create new variable, edit variable value, delete variable, show bound variables
+- Components panel features: Show component/instance status, make component, create instance, reset overrides, show overrides
+- Inspector additions: Opacity, blend mode, corner radius, text style (size, family, weight, align), effects (shadow, blur)
+- Any design decisions: Added `blendMode` to `RuntimeNode` in `scene-graph.ts` since it was missing but required by the instructions. Used `facade.updateNode` and `commitMutation` for all mutations.
+
+## [2026-03-03] T13: Legacy Path Deletion Complete
+- Files deleted: `packages/design-canvas/src/ops/canvasOps.ts`, `apps/pencil/lib/usePencilBridge.ts`
+- Symbols removed: `applyCanvasOps`, `CanvasOp` (from design-canvas index), `window.__PENCIL_BRIDGE__` (registration + all consumers), `LEGACY_BRIDGE_DEPRECATION_WARNING`
+- `pencil_apply_ops` MCP tool now throws: `pencil_apply_ops removed. Use pencil_create_node, pencil_update_node, pencil_delete_node instead.`
+- `executeGetDocument`, `executeGetSelection`, `executeApplyOps` now throw when no ServerBridge registered (no legacy browser fallback)
+- `pencil_open` tool stripped of the `waitForFunction` that polled for `__PENCIL_BRIDGE__`
+- `apps/pencil/app/index.tsx` no longer calls `usePencilBridge`
+- Remaining DesignDocument references: `packages/design-canvas` and `packages/editor` still use DesignDocument as their primary document type — these have NOT migrated to PenDocument/RuntimeNode and are actively used; scope is only the MCP/bridge layer
+- Test count after deletion: 239 passed (13 test files)

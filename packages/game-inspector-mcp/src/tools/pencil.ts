@@ -48,9 +48,6 @@ type CanvasOp =
 	  }
 	| { type: "deleteElement"; frameId: string; elementId: string };
 
-export const LEGACY_BRIDGE_DEPRECATION_WARNING =
-	"DEPRECATED: __PENCIL_BRIDGE__ bridge in use. Register a ServerBridge facade for headless operation.";
-
 function toMcpText(result: ToolResult<unknown>): McpTextContent {
 	return {
 		content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
@@ -144,49 +141,20 @@ export function applyOpsViaFacade(
 // --- Exported tool handlers (testable without MCP server) ---
 
 export async function executeGetDocument(
-	state: GameInspectorState,
+	_state: GameInspectorState,
 ): Promise<McpTextContent> {
 	const facade = ServerBridge.getInstance();
 	if (facade) {
 		return toMcpText(getDocumentViaFacade(facade));
 	}
 
-	console.warn(LEGACY_BRIDGE_DEPRECATION_WARNING);
-
-	if (!state.page) {
-		return {
-			content: [
-				{
-					type: "text",
-					text: JSON.stringify({
-						error: "No browser open. Call pencil_open first.",
-					}),
-				},
-			],
-		};
-	}
-
-	const result = await state.page.evaluate(() => {
-		const bridge = (
-			window as unknown as {
-				__PENCIL_BRIDGE__?: { getDocument: () => string };
-			}
-		).__PENCIL_BRIDGE__;
-		if (!bridge)
-			return {
-				error:
-					"__PENCIL_BRIDGE__ not registered. Is the Pencil web app running at port 8089?",
-			};
-		return { document: JSON.parse(bridge.getDocument()) };
-	});
-
-	return {
-		content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-	};
+	throw new Error(
+		"Legacy __PENCIL_BRIDGE__ removed. Use ServerBridge.register(facade) for headless operation.",
+	);
 }
 
 export async function executeGetSelection(
-	state: GameInspectorState,
+	_state: GameInspectorState,
 ): Promise<McpTextContent> {
 	const facade = ServerBridge.getInstance();
 	if (facade) {
@@ -196,38 +164,13 @@ export async function executeGetSelection(
 		});
 	}
 
-	console.warn(LEGACY_BRIDGE_DEPRECATION_WARNING);
-
-	if (!state.page) {
-		return {
-			content: [
-				{
-					type: "text",
-					text: JSON.stringify({
-						error: "No browser open. Call pencil_open first.",
-					}),
-				},
-			],
-		};
-	}
-
-	const result = await state.page.evaluate(() => {
-		const bridge = (
-			window as unknown as {
-				__PENCIL_BRIDGE__?: { getSelection: () => string };
-			}
-		).__PENCIL_BRIDGE__;
-		if (!bridge) return { error: "__PENCIL_BRIDGE__ not registered" };
-		return JSON.parse(bridge.getSelection());
-	});
-
-	return {
-		content: [{ type: "text", text: JSON.stringify(result) }],
-	};
+	throw new Error(
+		"Legacy __PENCIL_BRIDGE__ removed. Use ServerBridge.register(facade) for headless operation.",
+	);
 }
 
 export async function executeApplyOps(
-	state: GameInspectorState,
+	_state: GameInspectorState,
 	opsJson: string,
 ): Promise<McpTextContent> {
 	const facade = ServerBridge.getInstance();
@@ -235,38 +178,9 @@ export async function executeApplyOps(
 		return toMcpText(applyOpsViaFacade(facade, opsJson));
 	}
 
-	console.warn(LEGACY_BRIDGE_DEPRECATION_WARNING);
-
-	if (!state.page) {
-		return {
-			content: [
-				{
-					type: "text",
-					text: JSON.stringify({
-						error: "No browser open. Call pencil_open first.",
-					}),
-				},
-			],
-		};
-	}
-
-	const result = await state.page.evaluate((json: string) => {
-		const bridge = (
-			window as unknown as {
-				__PENCIL_BRIDGE__?: {
-					applyOps: (ops: string) => PencilBridgeResult;
-				};
-			}
-		).__PENCIL_BRIDGE__;
-		if (!bridge) {
-			return { ok: false, error: "__PENCIL_BRIDGE__ not registered" };
-		}
-		return bridge.applyOps(json);
-	}, opsJson);
-
-	return {
-		content: [{ type: "text", text: JSON.stringify(result) }],
-	};
+	throw new Error(
+		"Legacy __PENCIL_BRIDGE__ removed. Use ServerBridge.register(facade) for headless operation.",
+	);
 }
 
 // --- MCP tool registration ---
@@ -282,18 +196,6 @@ export function registerPencilTools(
 		async () => {
 			const page = await ensurePage(state);
 			await page.goto(PENCIL_URL, { waitUntil: "networkidle" });
-
-			// Wait for the bridge to register (Pencil app mounts the bridge on useEffect)
-			try {
-				await page.waitForFunction(
-					() =>
-						!!(window as unknown as { __PENCIL_BRIDGE__?: unknown })
-							.__PENCIL_BRIDGE__,
-					{ timeout: 10000 },
-				);
-			} catch {
-				// Bridge may not be available if API isn't running — continue anyway
-			}
 
 			return {
 				content: [
@@ -358,7 +260,7 @@ export function registerPencilTools(
 
 	server.tool(
 		"pencil_get_document",
-		"Get the current DesignDocument JSON from the Pencil canvas. Returns frames and elements.",
+		"Get the current pen document nodes from the Pencil canvas (ServerBridge path). Returns RuntimeNode[].",
 		{},
 		async () => executeGetDocument(state),
 	);
@@ -372,22 +274,14 @@ export function registerPencilTools(
 
 	server.tool(
 		"pencil_apply_ops",
-		// DEPRECATED: use pencil_create_node, pencil_update_node, etc. instead
-		`Apply canvas operations to the live Pencil design document.
-Supported op types:
-  { type: "addFrame", id?, title?, width?, height?, x?, y? }
-  { type: "updateFrame", id, patch }
-  { type: "deleteFrame", id }
-  { type: "addElement", frameId, element: { id?, type?, label?, ...props } }
-  { type: "updateElement", frameId, elementId, patch }
-  { type: "deleteElement", frameId, elementId }`,
+		"REMOVED. Use pencil_create_node, pencil_update_node, pencil_delete_node instead.",
 		{
-			ops: z
-				.string()
-				.describe(
-					"JSON array of CanvasOp objects to apply to the design document",
-				),
+			ops: z.string().describe("(ignored — this tool has been removed)"),
 		},
-		async (args) => executeApplyOps(state, args.ops as string),
+		async () => {
+			throw new Error(
+				"pencil_apply_ops removed. Use pencil_create_node, pencil_update_node, pencil_delete_node instead.",
+			);
+		},
 	);
 }

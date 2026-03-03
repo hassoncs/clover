@@ -22,8 +22,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loadPenFile, savePenFile } from "../lib/file-io";
 import { trpc } from "../lib/trpc/client";
-import { usePencilBridge } from "../lib/usePencilBridge";
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const SAMPLE_PEN = require("../assets/sample.json");
 
@@ -56,8 +54,6 @@ export default function PencilScreen() {
 	const facade = useMemo(() => new PenToolFacade(graph), [graph]);
 	const [chatOpen, setChatOpen] = useState(true);
 
-	// Bridge exposes the live graph state to MCP tools via window.__PENCIL_BRIDGE__
-	usePencilBridge(graph);
 
 	return (
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
