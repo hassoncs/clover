@@ -1,7 +1,9 @@
 {
-	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/pen-renderer-clean-break.md",
-	"started_at": "2026-03-03T01:11:18.977Z",
-	"session_ids": ["ses_34ec0216affe6oIrCIOX4oK1fR"],
-	"plan_name": "pen-renderer-clean-break",
-	"worktree_path": "/Users/hassoncs/Workspaces/Personal/slopcade"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/open-pencil-full-migration-plan.md",
+  "started_at": "2026-03-03T16:44:25.403Z",
+  "session_ids": [
+    "ses_34b69d84effeFUOoDS4L5jrjc5"
+  ],
+  "plan_name": "open-pencil-full-migration-plan",
+  "agent": "atlas"
 }
