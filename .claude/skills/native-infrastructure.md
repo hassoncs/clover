@@ -156,3 +156,46 @@ npx expo start              # Wrong port!
 
 - [godot-engine](godot-engine.md) — WASM/PCK export process
 - [testing-patterns](testing-patterns.md) — Pre-commit hooks and CI
+
+## CI/CD & EAS Configuration
+
+### GitHub Actions Build Reliability
+Use `pnpm install --frozen-lockfile --ignore-scripts` in CI to avoid postinstall race failures from native modules.
+
+### EAS CI for Branded Apps
+EAS CI should be path-scoped per app (`apps/slopcade`, `apps/amen`, etc.) and use non-interactive-friendly profile (`preview`) on push builds when production credentials are not guaranteed.
+
+### Dynamic Expo Config Gotcha
+For apps with `app.config.ts`, EAS cannot auto-write projectId. Set `extra.eas.projectId` in dynamic config manually:
+
+```typescript
+// In apps/amen/app.config.ts
+extra: {
+  eas: {
+    projectId: "c628a2f5-88db-4d6e-9646-25473e70f35e",
+  },
+}
+```
+
+### Valid EAS Project IDs
+- Amen: `c628a2f5-88db-4d6e-9646-25473e70f35e`
+- Slopbox: `0986ef4c-3af5-431b-9479-b311f95e154d`  
+- Shader Editor: `6ecf901e-23a0-4963-91c2-60e62f70be2a`
+- Slopcade: Already linked in `apps/slopcade/app.json`
+
+### Landing Deploy Path-Scoping and Naming
+Brand/domain remains `slopbox` (`slopbox.tv`), but Cloudflare Pages project is `slotbox-landing`. Keep this mapping explicit:
+- GitHub workflow: `--project-name=slotbox-landing`
+- Wrangler config: `name = "slotbox-landing"`
+- Bootstrap step may be needed for first deploy: `wrangler pages project create slotbox-landing --production-branch main || true`
+
+### Related Files
+| File | Purpose |
+|------|---------|
+| `.github/workflows/eas-build.yml` | Path-scoped EAS builds per app |
+| `.github/workflows/deploy-landing.yml` | Cloudflare Pages landing deployment |
+| `apps/amen/app.config.ts` | Amen EAS project ID |
+| `apps/slopbox/app.config.ts` | Slopbox EAS project ID |
+| `apps/shader-editor/app.json` | Shader Editor EAS project ID |
+| `apps/landing-slopbox/wrangler.toml` | Cloudflare Pages config |
+
