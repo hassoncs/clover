@@ -77,8 +77,8 @@ jobs:
       - name: Build workspace packages
         run: pnpm --filter './packages/*' run build
 
-      - name: Build iOS (production)
-        run: eas build --platform ios --profile production --non-interactive --no-wait
+      - name: Build iOS (preview)
+        run: eas build --platform ios --profile preview --non-interactive --no-wait
         working-directory: apps/slopcade
 
   build-amen:
@@ -108,8 +108,8 @@ jobs:
       - name: Build workspace packages
         run: pnpm --filter './packages/*' run build
 
-      - name: Build iOS (production)
-        run: eas build --platform ios --profile production --non-interactive --no-wait
+      - name: Build iOS (preview)
+        run: eas build --platform ios --profile preview --non-interactive --no-wait
         working-directory: apps/amen
 
   build-slopbox:
@@ -139,8 +139,8 @@ jobs:
       - name: Build workspace packages
         run: pnpm --filter './packages/*' run build
 
-      - name: Build iOS (production)
-        run: eas build --platform ios --profile production --non-interactive --no-wait
+      - name: Build iOS (preview)
+        run: eas build --platform ios --profile preview --non-interactive --no-wait
         working-directory: apps/slopbox
 
   build-shader-editor:
@@ -170,6 +170,6 @@ jobs:
       - name: Build workspace packages
         run: pnpm --filter './packages/*' run build
 
-      - name: Build iOS (production)
-        run: eas build --platform ios --profile production --non-interactive --no-wait
+      - name: Build iOS (preview)
+        run: eas build --platform ios --profile preview --non-interactive --no-wait
         working-directory: apps/shader-editor
