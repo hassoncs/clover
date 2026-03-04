@@ -1,0 +1,42 @@
+=== Task 10: Legacy DesignDocument Cutover Audit ===
+
+## Remaining Legacy Imports in Pencil Runtime
+
+### packages/design-canvas/src/camera/useDesignCamera.ts
+  - Imports: DesignFrame from @slopcade/shared/types/design
+  - Usage: Camera positioning for design frames
+  - Status: QUARANTINE — camera module is shared between Pencil and game editor
+  - Removal plan: Replace DesignFrame with PenFrame or generic Rect type
+  - Owner: design-canvas team
+
+### packages/design-canvas/src/assets/useDesignImageResolver.ts
+  - Imports: DesignElement from @slopcade/shared/types/design
+  - Usage: Image resolution for design elements
+  - Status: QUARANTINE — used by game editor, not Pencil
+  - Removal plan: Keep for game editor; Pencil uses PenImage type instead
+  - Owner: design-canvas team
+
+## Non-Pencil Legacy Usage (out of scope)
+
+### packages/editor/ — uses DesignFrame/DesignElement extensively
+  - Status: OUT OF SCOPE — editor package is for game editor, not Pencil
+  - No action needed for Pencil parity
+
+## Pencil Runtime Status
+  - apps/pencil/ — CLEAN: no DesignDocument/DesignFrame/DesignElement imports
+  - packages/design-canvas/src/pen/ — CLEAN: no legacy design type imports
+  - packages/game-inspector-mcp/src/ — CLEAN: no legacy design type imports
+
+## Zero New Legacy Imports Check
+PASS: No legacy imports in Pencil runtime paths
+
+=== TypeScript verification ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+design-canvas: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+pencil-app: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+game-inspector-mcp: PASS

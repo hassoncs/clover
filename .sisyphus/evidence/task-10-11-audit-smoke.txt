@@ -1,0 +1,62 @@
+=== Task 10: Legacy DesignDocument Cutover Audit ===
+PASS: No DesignDocument references in Pencil runtime paths
+Quarantined: useDesignCamera.ts (shared with game editor)
+Quarantined: useDesignImageResolver.ts (game editor only)
+
+=== Task 11: Comprehensive Automation Smoke Script ===
+Script: .sisyphus/scripts/pencil-smoke.ts
+Steps: new_document → create_node (3x) → get_document → get_selection → update_node → get_node → get_children → save_document → load_document → delete_node → new_document
+
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+
+[Step 1] New Document
+  ✓ pencil_new_document succeeds
+  ✓ document is empty
+
+[Step 2] Create Nodes
+  ✓ pencil_create_node (frame)
+  ✓ pencil_create_node (rectangle inside frame)
+  ✓ pencil_create_node (text inside frame)
+
+[Step 3] Get Document
+  ✓ pencil_get_document succeeds
+  ✓ document has nodes
+
+[Step 4] Selection
+  ✓ pencil_get_selection succeeds
+  ✓ selection contains frame
+
+[Step 5] Inspector Edit
+  ✓ pencil_update_node (fill + size)
+  ✓ pencil_get_node after update
+  ✓ fill updated to #ef4444
+  ✓ width updated to 150
+
+[Step 6] Get Children
+  ✓ pencil_get_children of frame
+  ✓ frame has 2 children (rect + text)
+
+[Step 7] Save Document
+  ✓ pencil_save_document succeeds
+  ✓ saved JSON is non-empty
+  ✓ saved nodeCount > 0
+
+[Step 8] Load Document (roundtrip)
+  ✓ pencil_load_document succeeds
+  ✓ pencil_get_document after reload
+  ✓ reloaded document has nodes
+
+[Step 9] Delete Node
+  ✓ pencil_delete_node (text)
+  ✓ pencil_get_children after delete
+  ✓ frame has 1 child after delete
+
+[Step 10] New Document (cleanup)
+  ✓ pencil_new_document (cleanup)
+  ✓ document is empty after cleanup
+
+──────────────────────────────────────────────────
+Smoke test complete: 26 passed, 0 failed
+
+✅ SMOKE TEST PASSED (26 assertions)
