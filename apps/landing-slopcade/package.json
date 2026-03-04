@@ -12,15 +12,27 @@
 	"dependencies": {
 		"@astrojs/react": "^3.0.0",
 		"@astrojs/tailwind": "^5.0.0",
+		"@react-three/drei": "^10.7.7",
+		"@react-three/fiber": "^9.5.0",
+		"@react-three/postprocessing": "^3.0.4",
 		"@slopcade/theme": "workspace:*",
 		"@slopcade/ui": "workspace:*",
 		"@types/react": "^18.0.0",
 		"@types/react-dom": "^18.0.0",
 		"astro": "^4.0.0",
+		"embla-carousel": "^8.6.0",
+		"embla-carousel-autoplay": "^8.6.0",
+		"embla-carousel-react": "^8.6.0",
+		"gsap": "^3.14.2",
+		"lenis": "1.3.18-dev.1",
+		"motion": "^12.34.5",
+		"postprocessing": "^6.38.3",
 		"react": "^18.0.0",
 		"react-dom": "^18.0.0",
 		"react-native-web": "~0.19.0",
-		"tailwindcss": "^3.0.0"
+		"split-type": "^0.3.4",
+		"tailwindcss": "^3.0.0",
+		"three": "^0.183.2"
 	},
 	"devDependencies": {
 		"typescript": "^5.0.0"
