@@ -1,10 +1,12 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { type LenisRef, ReactLenis } from "lenis/react";
+import { type LenisRef, ReactLenis as _ReactLenis } from "lenis/react";
 import { useEffect, useRef } from "react";
 
-gsap.registerPlugin(ScrollTrigger);
+// Cast to any to work around React 19 type mismatch (works at runtime)
+const ReactLenis = _ReactLenis as React.ComponentType<any>;
 
+gsap.registerPlugin(ScrollTrigger);
 /**
  * ScrollDirector - Lenis smooth scroll with GSAP ScrollTrigger integration
  *
