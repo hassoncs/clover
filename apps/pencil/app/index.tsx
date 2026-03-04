@@ -20,7 +20,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { loadPenFile, savePenFile } from "../lib/file-io";
+import { FileIOError, loadPenFile, savePenFile } from "../lib/file-io";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const SAMPLE_PEN = require("../assets/sample.json");
@@ -48,16 +48,139 @@ function PenCanvasPanelConnector() {
 	return <PenCanvasPanel document={document} />;
 }
 
+// DocumentToolbar provides New/Save/Load lifecycle controls
+function DocumentToolbar({
+	graph,
+	onNew,
+	onError,
+}: {
+	graph: SceneGraph;
+	onNew: () => void;
+	onError: (msg: string) => void;
+}) {
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+	const handleSave = useCallback(() => {
+		try {
+			const json = savePenFile(graph);
+			const blob = new Blob([json], { type: "application/json" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = "design.pen";
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch (err) {
+			onError(err instanceof Error ? err.message : "Save failed");
+		}
+	}, [graph, onError]);
+
+	const handleLoad = useCallback(() => {
+		if (fileInputRef.current) fileInputRef.current.click();
+	}, []);
+
+	const handleFileChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+			const reader = new FileReader();
+			reader.onload = (ev) => {
+				try {
+					const json = ev.target?.result as string;
+					loadPenFile(json); // Validate — throws FileIOError on bad input
+					// TODO: replace graph contents with loaded document
+					// For now, show success message
+				} catch (err) {
+					const msg = err instanceof FileIOError ? err.message : "Failed to load file";
+					onError(msg);
+				}
+			};
+			reader.readAsText(file);
+			// Reset input so same file can be re-selected
+			e.target.value = "";
+		},
+		[onError],
+	);
+
+	return (
+		<View style={toolbarStyles.bar}>
+			<Pressable style={toolbarStyles.btn} onPress={onNew}>
+				<Text style={toolbarStyles.btnText}>New</Text>
+			</Pressable>
+			<Pressable style={toolbarStyles.btn} onPress={handleSave}>
+				<Text style={toolbarStyles.btnText}>Save</Text>
+			</Pressable>
+			<Pressable style={toolbarStyles.btn} onPress={handleLoad}>
+				<Text style={toolbarStyles.btnText}>Load</Text>
+			</Pressable>
+		{/* Hidden file input for web */}
+			<input
+				ref={fileInputRef}
+				type="file"
+				accept=".pen,.json"
+				style={{ display: "none" }}
+				onChange={handleFileChange}
+			/>
+		</View>
+	);
+}
+
+const toolbarStyles = StyleSheet.create({
+	bar: {
+		flexDirection: "row",
+		gap: 8,
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderBottomWidth: 1,
+		borderBottomColor: "rgba(0,0,0,0.1)",
+		backgroundColor: "#1a1a1a",
+	},
+	btn: {
+		paddingHorizontal: 12,
+		paddingVertical: 4,
+		borderRadius: 4,
+		backgroundColor: "rgba(255,255,255,0.1)",
+	},
+	btnText: {
+		color: "#fff",
+		fontSize: 12,
+		fontWeight: "500",
+	},
+});
+
 export default function PencilScreen() {
 	// SceneGraph is mutable — initialized once, mutated in-place by PenToolFacade
 	const graph = useMemo(loadSampleGraph, []);
 	const facade = useMemo(() => new PenToolFacade(graph), [graph]);
 	const [chatOpen, setChatOpen] = useState(true);
+	const [docError, setDocError] = useState<string | null>(null);
 
 	return (
-		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
-			<View style={styles.container}>
-				<PenRuntimeProvider graph={graph} facade={facade}>
+	<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
+		<PenRuntimeProvider graph={graph} facade={facade}>
+			<View style={styles.appShell}>
+				<DocumentToolbar
+					graph={graph}
+					onNew={() => {
+						const root = graph.getNode("__root__");
+						if (root) {
+							for (const id of [...root.childIds]) {
+								try { facade.deleteNode(id); } catch { /* ignore */ }
+							}
+						}
+						setDocError(null);
+					}}
+					onError={setDocError}
+				/>
+				{docError && (
+					<Pressable
+						style={styles.errorBanner}
+						onPress={() => setDocError(null)}
+					>
+						<Text style={styles.errorText}>⚠️ {docError} (tap to dismiss)</Text>
+					</Pressable>
+				)}
+				<View style={styles.container}>
 					<View style={styles.canvas}>
 						<PenCanvasPanelConnector />
 					</View>
@@ -73,12 +196,13 @@ export default function PencilScreen() {
 							style={styles.openChatButton}
 							onPress={() => setChatOpen(true)}
 						>
-							<Text style={styles.openChatButtonText}>✦ Chat</Text>
+							<Text style={styles.openChatButtonText}>✶ Chat</Text>
 						</Pressable>
 					)}
-				</PenRuntimeProvider>
+				</View>
 			</View>
-		</SafeAreaView>
+		</PenRuntimeProvider>
+	</SafeAreaView>
 	);
 }
 
@@ -223,12 +347,26 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "#050310",
 	},
+	appShell: {
+		flex: 1,
+		flexDirection: "column",
+	},
 	container: {
 		flex: 1,
 		flexDirection: "row",
 	},
 	canvas: {
 		flex: 1,
+		flexDirection: "column",
+	},
+	errorBanner: {
+		backgroundColor: "#7f1d1d",
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
+	errorText: {
+		color: "#fca5a5",
+		fontSize: 12,
 	},
 	sidebar: {
 		width: 320,

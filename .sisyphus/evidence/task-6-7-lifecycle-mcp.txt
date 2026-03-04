@@ -1,0 +1,22 @@
+=== Task 6: Document Lifecycle Full Pass ===
+Added: DocumentToolbar component with New/Save/Load buttons
+Added: Error banner for malformed imports (FileIOError)
+Added: Dirty state tracking via docError state
+File: apps/pencil/app/index.tsx
+
+=== Task 7: MCP Tool Parity and Schema Hardening ===
+Added: pencil_new_document — clears canvas, returns nodeCount
+Added: pencil_save_document — serializes to JSON, returns json+nodeCount
+Added: pencil_load_document — loads from JSON string
+File: packages/game-inspector-mcp/src/tools/pencil-v2-lifecycle.ts
+
+=== TypeScript verification ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+design-canvas: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+pencil-app: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+game-inspector-mcp: PASS
