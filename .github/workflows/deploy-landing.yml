@@ -5,14 +5,41 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/deploy-landing.yml'
       - 'apps/landing-slopcade/**'
       - 'apps/landing-amen/**'
       - 'packages/theme/**'
       - 'packages/ui/**'
 
 jobs:
+  detect-changes:
+    name: Detect Landing Changes
+    runs-on: ubuntu-latest
+    outputs:
+      slopcade: ${{ steps.filter.outputs.slopcade }}
+      amen: ${{ steps.filter.outputs.amen }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            slopcade:
+              - 'apps/landing-slopcade/**'
+              - 'packages/theme/**'
+              - 'packages/ui/**'
+              - '.github/workflows/deploy-landing.yml'
+            amen:
+              - 'apps/landing-amen/**'
+              - 'packages/theme/**'
+              - 'packages/ui/**'
+              - '.github/workflows/deploy-landing.yml'
+
   deploy-slopcade-landing:
     name: Deploy Slopcade Landing
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.slopcade == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +53,7 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
         run: pnpm build
@@ -42,6 +69,8 @@ jobs:
 
   deploy-amen-landing:
     name: Deploy Amen Landing
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.amen == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,7 +84,7 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
         run: pnpm build
