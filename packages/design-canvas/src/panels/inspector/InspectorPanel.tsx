@@ -5,11 +5,12 @@ import { usePenRuntime } from "../PenRuntimeContext";
 
 export function InspectorPanel() {
 	const { editorColors: c } = useTheme();
-	const { graph, facade, selectedId, commitMutation, revision } =
+	const { graph, facade, selectedId, selectedIds, commitMutation, revision } =
 		usePenRuntime();
 
 	// We depend on revision to re-render when graph mutates
 	const node = selectedId ? graph.getNode(selectedId) : null;
+	const isMultiSelect = selectedIds.size > 1;
 
 	if (!node) {
 		return (
@@ -27,8 +28,14 @@ export function InspectorPanel() {
 	}
 
 	const updateField = (field: string, value: string | number | boolean | object) => {
-		if (!selectedId) return;
-		facade.updateNode(selectedId, { [field]: value });
+		if (isMultiSelect) {
+			// Batch edit: apply to all selected nodes
+			for (const id of selectedIds) {
+				facade.updateNode(id, { [field]: value });
+			}
+		} else if (selectedId) {
+			facade.updateNode(selectedId, { [field]: value });
+		}
 		commitMutation();
 	};
 
@@ -48,6 +55,11 @@ export function InspectorPanel() {
 		>
 			<View style={[styles.header, { borderBottomColor: c.border }]}>
 				<Text style={[styles.title, { color: c.text }]}>INSPECTOR</Text>
+				{isMultiSelect && (
+					<Text style={[styles.multiSelectBadge, { color: c.textSecondary }]}>
+						{selectedIds.size} selected
+					</Text>
+				)}
 			</View>
 
 			<View style={styles.section}>
@@ -370,7 +382,13 @@ const styles = StyleSheet.create({
 		padding: 12,
 		borderBottomWidth: 1,
 		height: 48,
-		justifyContent: "center",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	multiSelectBadge: {
+		fontSize: 11,
+		fontWeight: "500",
 	},
 	title: {
 		fontSize: 12,

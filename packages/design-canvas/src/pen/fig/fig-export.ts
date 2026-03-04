@@ -484,11 +484,18 @@ function normalizePadding(
 		| number
 		| [number, number]
 		| [number, number, number, number]
+		| [number, number, ...unknown[]]
+		| [number, number, number, number, ...unknown[]]
 		| undefined,
 ): [number, number, number, number] | null {
 	if (padding === undefined) return null;
 	if (typeof padding === "number") return [padding, padding, padding, padding];
 	if (padding.length === 2)
 		return [padding[0], padding[1], padding[0], padding[1]];
-	return padding;
+	return [
+		padding[0],
+		padding[1],
+		typeof padding[2] === "number" ? padding[2] : padding[0],
+		typeof padding[3] === "number" ? padding[3] : padding[1],
+	];
 }

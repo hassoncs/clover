@@ -34,11 +34,11 @@ function getTypeIcon(type: string): React.ComponentProps<typeof Ionicons>["name"
 
 function LayerItem({ node, depth = 0 }: { node: RuntimeNode; depth?: number }) {
 	const { editorColors: c } = useTheme();
-	const { graph, facade, selectedId, setSelectedId, commitMutation, revision } =
+	const { graph, facade, selectedId, selectedIds, toggleSelectedId, setSelectedId, commitMutation, revision } =
 		usePenRuntime();
 	const [expanded, setExpanded] = useState(true);
 
-	const isSelected = selectedId === node.id;
+	const isSelected = selectedIds.has(node.id) || selectedId === node.id;
 	const hasChildren = node.childIds.length > 0;
 	const children = node.childIds
 		.map((id) => graph.getNode(id))
@@ -75,7 +75,10 @@ function LayerItem({ node, depth = 0 }: { node: RuntimeNode; depth?: number }) {
 	return (
 		<View>
 			<Pressable
-				onPress={() => setSelectedId(node.id)}
+				onPress={(e) => {
+					const isAdditive = (e as unknown as { shiftKey?: boolean }).shiftKey ?? false;
+					toggleSelectedId(node.id, isAdditive);
+				}}
 				style={[
 					styles.layerRow,
 					{ paddingLeft: 8 + depth * 16 },

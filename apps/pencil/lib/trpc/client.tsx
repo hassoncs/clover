@@ -5,7 +5,16 @@ import { createTRPCReact } from "@trpc/react-query";
 import { type ReactNode, useState } from "react";
 import { env } from "../env";
 
-export const trpc = createTRPCReact<AppRouter>();
+type TrpcReactClient = {
+	createClient: (options: unknown) => unknown;
+	Provider: (props: {
+		client: unknown;
+		queryClient: QueryClient;
+		children: ReactNode;
+	}) => ReactNode;
+};
+
+export const trpc = createTRPCReact<AppRouter>() as unknown as TrpcReactClient;
 
 export function TRPCProvider({ children }: { children: ReactNode }) {
 	const [queryClient] = useState(

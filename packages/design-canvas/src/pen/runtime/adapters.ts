@@ -382,11 +382,23 @@ function buildPenFrame(node: RuntimeNode, graph: SceneGraph): PenFrame {
 	if (node.layout !== undefined) frame.layout = node.layout;
 	if (node.gap !== undefined) frame.gap = node.gap;
 	if (node.padding !== undefined) frame.padding = node.padding;
-	if (node.justifyContent !== undefined) frame.justifyContent = node.justifyContent;
+	if (node.justifyContent !== undefined)
+		frame.justifyContent = node.justifyContent;
 	if (node.alignItems !== undefined) frame.alignItems = node.alignItems;
 	if (node.fill !== undefined) frame.fill = node.fill;
 	if (node.stroke !== undefined) frame.stroke = node.stroke;
-	if (node.cornerRadius !== undefined) frame.cornerRadius = node.cornerRadius;
+	if (node.cornerRadius !== undefined) {
+		if (typeof node.cornerRadius === "number") {
+			frame.cornerRadius = node.cornerRadius;
+		} else {
+			frame.cornerRadius = [
+				node.cornerRadius[0],
+				node.cornerRadius[1],
+				node.cornerRadius[2],
+				node.cornerRadius[3],
+			];
+		}
+	}
 	if (node.clip !== undefined) frame.clip = node.clip;
 	if (node.effects !== undefined) frame.effects = node.effects;
 	if (node.reusable !== undefined) frame.reusable = node.reusable;
@@ -396,7 +408,9 @@ function buildPenFrame(node: RuntimeNode, graph: SceneGraph): PenFrame {
 
 	// Recursively nest children
 	if (node.childIds.length > 0) {
-		frame.children = node.childIds.map((childId) => runtimeNodeToPenNode(childId, graph));
+		frame.children = node.childIds.map((childId) =>
+			runtimeNodeToPenNode(childId, graph),
+		);
 	}
 
 	return frame;
@@ -429,7 +443,9 @@ function buildPenGroup(node: RuntimeNode, graph: SceneGraph): PenGroup {
 
 	// Recursively nest children
 	if (node.childIds.length > 0) {
-		group.children = node.childIds.map((childId) => runtimeNodeToPenNode(childId, graph));
+		group.children = node.childIds.map((childId) =>
+			runtimeNodeToPenNode(childId, graph),
+		);
 	}
 
 	return group;
@@ -537,7 +553,7 @@ function buildPenPolygon(node: RuntimeNode): PenPolygon {
 	]);
 	if (node.fill !== undefined) polygon.fill = node.fill;
 	if (node.stroke !== undefined) polygon.stroke = node.stroke;
-	if (node.cornerRadius !== undefined)
+	if (typeof node.cornerRadius === "number")
 		polygon.cornerRadius = node.cornerRadius;
 	if (node.effects !== undefined) polygon.effects = node.effects;
 	if (node.polygonCount !== undefined) polygon.polygonCount = node.polygonCount;

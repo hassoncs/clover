@@ -1,6 +1,12 @@
 import type { PenDocument } from "@slopcade/shared/types/pen";
 import type React from "react";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useMemo,
+	useState,
+} from "react";
 import {
 	penDocumentToSceneGraph,
 	sceneGraphToPenDocument,
@@ -13,8 +19,13 @@ type RightPanel = "inspector" | "variables" | "components";
 interface PenRuntimeContextValue {
 	graph: SceneGraph;
 	facade: PenToolFacade;
+	// Single selection (primary selected node)
 	selectedId: string | null;
 	setSelectedId: (id: string | null) => void;
+	// Multi-selection set
+	selectedIds: ReadonlySet<string>;
+	setSelectedIds: (ids: Set<string>) => void;
+	toggleSelectedId: (id: string, additive: boolean) => void;
 	activeTool: string;
 	setActiveTool: (tool: string) => void;
 	// A way to trigger re-renders when the graph mutates
@@ -59,19 +70,54 @@ export function PenRuntimeProvider({
 		const g = penDocumentToSceneGraph(document ?? { version: 1, children: [] });
 		const f = new PenToolFacade(g);
 		return { graph: g, facade: f };
-	}, []);  // We only initialize once — graph is the mutable source of truth
+	}, []); // We only initialize once — graph is the mutable source of truth
 
-	const [selectedId, setSelectedId] = useState<string | null>(null);
+	const [selectedId, setSelectedIdRaw] = useState<string | null>(null);
+	const [selectedIds, setSelectedIdsRaw] = useState<ReadonlySet<string>>(
+		new Set(),
+	);
 	const [activeTool, setActiveTool] = useState<string>("pointer");
 	const [revision, setRevision] = useState(0);
-	const [activeRightPanel, setActiveRightPanel] = useState<RightPanel>("inspector");
+	const [activeRightPanel, setActiveRightPanel] =
+		useState<RightPanel>("inspector");
 
-	const commitMutation = () => {
+	const setSelectedId = useCallback((id: string | null) => {
+		setSelectedIdRaw(id);
+		setSelectedIdsRaw(id ? new Set([id]) : new Set());
+	}, []);
+
+	const setSelectedIds = useCallback((ids: Set<string>) => {
+		setSelectedIdsRaw(ids);
+		// Primary selection is the last added (or first in set)
+		const first = ids.values().next().value ?? null;
+		setSelectedIdRaw(first);
+	}, []);
+
+	const toggleSelectedId = useCallback((id: string, additive: boolean) => {
+		if (additive) {
+			setSelectedIdsRaw((prev) => {
+				const next = new Set(prev);
+				if (next.has(id)) {
+					next.delete(id);
+				} else {
+					next.add(id);
+				}
+				const first = next.values().next().value ?? null;
+				setSelectedIdRaw(first);
+				return next;
+			});
+		} else {
+			setSelectedIdRaw(id);
+			setSelectedIdsRaw(new Set([id]));
+		}
+	}, []);
+
+	const commitMutation = useCallback(() => {
 		setRevision((r) => r + 1);
 		if (onChange) {
 			onChange(sceneGraphToPenDocument(graph));
 		}
-	};
+	}, [graph, onChange]);
 
 	const value = useMemo(
 		() => ({
@@ -79,6 +125,9 @@ export function PenRuntimeProvider({
 			facade,
 			selectedId,
 			setSelectedId,
+			selectedIds,
+			setSelectedIds,
+			toggleSelectedId,
 			activeTool,
 			setActiveTool,
 			revision,
@@ -86,7 +135,19 @@ export function PenRuntimeProvider({
 			activeRightPanel,
 			setActiveRightPanel,
 		}),
-		[graph, facade, selectedId, activeTool, revision, activeRightPanel],
+		[
+			graph,
+			facade,
+			selectedId,
+			setSelectedId,
+			selectedIds,
+			setSelectedIds,
+			toggleSelectedId,
+			activeTool,
+			revision,
+			commitMutation,
+			activeRightPanel,
+		],
 	);
 
 	return (

@@ -1,0 +1,7 @@
+e02f7bc45 fix(pencil): fix layout — canvas was crushed by always-visible right panels
+b806f56d1 fix(pencil): fix top-level await, duplicate IDs, and camera zoom-to-fit for waypoint rendering
+6e6b9cc5d fix(pencil): repair syntax errors from verification agent edits
+e9013471e docs(pencil): finalize migration closure and zero-debt audit
+6bafadc38 refactor(pencil): finish legacy symbol removal
+---
+No staged/modified files — all Pencil work already committed

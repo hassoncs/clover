@@ -167,13 +167,16 @@ export function pencil_detach_instance(
 		};
 
 		facade.deleteNode(parsed.data.id);
-		const { node: newNode, undo } = facade.createNode("frame", parentId, preservedProps);
+		const { node: newNode, undo } = facade.createNode(
+			"frame",
+			parentId,
+			preservedProps,
+		);
 
 		return ok({ node: newNode, undoType: undo.type });
 	} catch (error) {
 		return fail(mutationErrorToMessage(error));
 	}
-		return fail(mutationErrorToMessage(error));
 }
 
 export function pencil_set_instance_override(

@@ -17,7 +17,12 @@ export type PenThemedValue = z.infer<typeof PenThemedValueSchema>;
 
 export const PenVariableSchema = z.object({
 	type: z.enum(["color", "number", "string", "boolean"]),
-	value: z.union([z.string(), z.number(), z.boolean(), z.array(PenThemedValueSchema)]),
+	value: z.union([
+		z.string(),
+		z.number(),
+		z.boolean(),
+		z.array(PenThemedValueSchema),
+	]),
 });
 
 export type PenVariable = z.infer<typeof PenVariableSchema>;
@@ -48,7 +53,13 @@ type PenFillPrimitive =
 			centerY?: number;
 			enabled?: boolean;
 	  }
-	| { type: "image"; url: string; fit?: "cover" | "contain" | "fill" | "tile"; opacity?: number; enabled?: boolean };
+	| {
+			type: "image";
+			url: string;
+			fit?: "cover" | "contain" | "fill" | "tile";
+			opacity?: number;
+			enabled?: boolean;
+	  };
 
 export type PenFill = PenFillPrimitive | PenFill[];
 
@@ -77,7 +88,9 @@ export const PenFillSchema = z.lazy(() =>
 			opacity: z.number().optional(),
 			enabled: z.boolean().optional(),
 		}),
-		z.array(z.lazy(() => PenFillSchema as z.ZodType<PenFill, z.ZodTypeDef, unknown>)),
+		z.array(
+			z.lazy(() => PenFillSchema as z.ZodType<PenFill, z.ZodTypeDef, unknown>),
+		),
 	]),
 ) as z.ZodType<PenFill, z.ZodTypeDef, unknown>;
 
@@ -87,7 +100,12 @@ export const PenStrokeSchema = z.object({
 	thickness: z
 		.union([
 			z.number(),
-			z.object({ top: z.number(), right: z.number(), bottom: z.number(), left: z.number() }),
+			z.object({
+				top: z.number(),
+				right: z.number(),
+				bottom: z.number(),
+				left: z.number(),
+			}),
 		])
 		.optional(),
 	join: z.enum(["miter", "round", "bevel"]).optional(),
@@ -125,12 +143,17 @@ export const PenPaddingSchema = z.union([
 	z.tuple([z.number(), z.number(), z.number(), z.number()]),
 ]);
 
-export type PenPadding = z.infer<typeof PenPaddingSchema>;
+export type PenPadding =
+	| number
+	| [number, number]
+	| [number, number, number, number];
 
 const PenCornerRadiusSchema = z.union([
 	z.number(),
 	z.tuple([z.number(), z.number(), z.number(), z.number()]),
-]);
+]) as z.ZodType<PenCornerRadius, z.ZodTypeDef, unknown>;
+
+export type PenCornerRadius = number | [number, number, number, number];
 
 const PenEntityBaseShape = {
 	id: z.string(),
@@ -227,7 +250,9 @@ export const PenTextSchema = z.object({
 	letterSpacing: z.number().optional(),
 	textAlign: z.enum(["left", "center", "right", "justify"]).optional(),
 	textAlignVertical: z.enum(["top", "center", "bottom"]).optional(),
-	textGrowth: z.enum(["fixed", "fit_width", "fit_height", "fit_both"]).optional(),
+	textGrowth: z
+		.enum(["fixed", "fit_width", "fit_height", "fit_both"])
+		.optional(),
 	fill: PenFillSchema.optional(),
 });
 
@@ -298,15 +323,21 @@ export interface PenFrame {
 	enabled?: boolean;
 	theme?: Record<string, string>;
 	visible?: boolean;
-	layout?: "none" | "horizontal" | "vertical";
+	layout?: "none" | "horizontal" | "vertical" | "wrap";
 	children?: PenNode[];
 	gap?: number;
 	padding?: PenPadding;
-	justifyContent?: "start" | "center" | "end" | "space-between" | "space-around" | "space-evenly";
+	justifyContent?:
+		| "start"
+		| "center"
+		| "end"
+		| "space-between"
+		| "space-around"
+		| "space-evenly";
 	alignItems?: "start" | "center" | "end" | "stretch";
 	fill?: PenFill;
 	stroke?: PenStroke;
-	cornerRadius?: number | [number, number, number, number];
+	cornerRadius?: PenCornerRadius;
 	clip?: boolean;
 	effects?: PenEffect[];
 	reusable?: boolean;
@@ -331,7 +362,7 @@ export interface PenGroup {
 	theme?: Record<string, string>;
 	visible?: boolean;
 	children?: PenNode[];
-	layout?: "none" | "horizontal" | "vertical";
+	layout?: "none" | "horizontal" | "vertical" | "wrap";
 	gap?: number;
 	padding?: PenPadding;
 }
@@ -358,12 +389,21 @@ export const PenFrameSchema = z.lazy(() =>
 	z.object({
 		type: z.literal("frame"),
 		...PenEntityBaseShape,
-		layout: z.enum(["none", "horizontal", "vertical"]).optional(),
-		children: z.array(PenNodeSchema as z.ZodType<PenNode, z.ZodTypeDef, unknown>).optional(),
+		layout: z.enum(["none", "horizontal", "vertical", "wrap"]).optional(),
+		children: z
+			.array(PenNodeSchema as z.ZodType<PenNode, z.ZodTypeDef, unknown>)
+			.optional(),
 		gap: z.number().optional(),
 		padding: PenPaddingSchema.optional(),
 		justifyContent: z
-			.enum(["start", "center", "end", "space-between", "space-around", "space-evenly"])
+			.enum([
+				"start",
+				"center",
+				"end",
+				"space-between",
+				"space-around",
+				"space-evenly",
+			])
 			.optional(),
 		alignItems: z.enum(["start", "center", "end", "stretch"]).optional(),
 		fill: PenFillSchema.optional(),
@@ -382,8 +422,10 @@ export const PenGroupSchema = z.lazy(() =>
 	z.object({
 		type: z.literal("group"),
 		...PenEntityBaseShape,
-		children: z.array(PenNodeSchema as z.ZodType<PenNode, z.ZodTypeDef, unknown>).optional(),
-		layout: z.enum(["none", "horizontal", "vertical"]).optional(),
+		children: z
+			.array(PenNodeSchema as z.ZodType<PenNode, z.ZodTypeDef, unknown>)
+			.optional(),
+		layout: z.enum(["none", "horizontal", "vertical", "wrap"]).optional(),
 		gap: z.number().optional(),
 		padding: PenPaddingSchema.optional(),
 	}),

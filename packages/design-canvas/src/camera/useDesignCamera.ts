@@ -1,4 +1,4 @@
-import type { DesignFrame } from "@slopcade/shared";
+import type { DesignFrame } from "@slopcade/shared/types/design";
 import type { DesignCamera } from "./useDesignCamera.shared";
 
 export interface UseDesignCameraResult {

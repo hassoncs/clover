@@ -1,4 +1,4 @@
-import type { DesignFrame } from "@slopcade/shared";
+import type { DesignFrame } from "@slopcade/shared/types/design";
 import { useCallback, useState } from "react";
 
 export interface DesignCamera {

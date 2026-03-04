@@ -26,6 +26,29 @@ import {
 import { resolveTreeVariables } from "../pen/variables";
 import { usePenRuntime } from "./PenRuntimeContext";
 
+// Hit-test a point (in document coordinates) against a layout tree.
+// Returns the deepest non-reusable node that contains the point.
+function hitTestLayoutNodes(
+	nodes: LayoutNode[],
+	docX: number,
+	docY: number,
+): string | null {
+	// Traverse in reverse order (top-most rendered last = highest z-order)
+	for (let i = nodes.length - 1; i >= 0; i--) {
+		const ln = nodes[i];
+		if (ln.node.enabled === false || ln.node.visible === false) continue;
+		if ((ln.node as { reusable?: boolean }).reusable) continue;
+		const { x, y, width, height } = ln.rect;
+		if (docX >= x && docX <= x + width && docY >= y && docY <= y + height) {
+			// Check children first (deeper hit)
+			const childHit = hitTestLayoutNodes(ln.children, docX, docY);
+			if (childHit) return childHit;
+			return ln.node.id;
+		}
+	}
+	return null;
+}
+
 export interface PenCanvasPanelProps {
 	document: PenDocument;
 	isLoading?: boolean;
@@ -360,7 +383,7 @@ export function PenCanvasPanel({
 	const [showFrameList, setShowFrameList] = useState(false);
 	const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
 
-	const { selectedId, setSelectedId, activeTool, setActiveTool } = usePenRuntime();
+	const { selectedId, setSelectedId, selectedIds, toggleSelectedId, facade, commitMutation, activeTool, setActiveTool } = usePenRuntime();
 
 	// ── Pen tool state ────────────────────────────────────────────────────────
 
@@ -372,6 +395,11 @@ export function PenCanvasPanel({
 	const penStateRef = useRef<PenDrawingState>(EMPTY_PEN_STATE);
 	const cameraRef = useRef<DesignCamera>(camera);
 	const isDraggingHandleRef = useRef(false);
+	// Drag-to-move state
+	const isDraggingNodeRef = useRef(false);
+	const dragStartDocRef = useRef<{ x: number; y: number } | null>(null);
+	const dragNodeStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+	const layoutNodesRef = useRef<LayoutNode[]>([]);
 	cameraRef.current = camera;
 	penStateRef.current = penState;
 
@@ -488,29 +516,16 @@ export function PenCanvasPanel({
 		setPenState(next);
 	}, []);
 
-	const onMouseDown = useCallback(
-		(e: React.MouseEvent) => {
-			if (activeToolRef.current === "pen") penMouseDown(e);
-			else cameraMouseDown?.(e);
-		},
-		[penMouseDown, cameraMouseDown],
-	);
 
-	const onMouseMove = useCallback(
-		(e: React.MouseEvent) => {
-			if (activeToolRef.current === "pen") penMouseMove(e);
-			else cameraMouseMove?.(e);
-		},
-		[penMouseMove, cameraMouseMove],
-	);
 
-	const onMouseUp = useCallback(
-		(e: React.MouseEvent) => {
-			if (activeToolRef.current === "pen") penMouseUp();
-			else cameraMouseUp?.(e);
-		},
-		[penMouseUp, cameraMouseUp],
-	);
+	// Compute layout nodes for hit testing (also used by PenRenderer)
+	const layoutNodes = useMemo(() => {
+		const registry = buildComponentRegistry(penDocument.children);
+		const resolved = resolveAllRefs(penDocument.children, registry);
+		const withVars = resolveTreeVariables(resolved, penDocument.variables, penDocument.themes);
+		return layoutTree(withVars, estimateTextSize);
+	}, [penDocument]);
+	layoutNodesRef.current = layoutNodes;
 
 	const topLevelFrames = useMemo(
 		() =>
@@ -541,6 +556,101 @@ export function PenCanvasPanel({
 		setSelectedId(nodePath[0] ?? null);
 	}, [setSelectedId]);
 
+	// ── Pointer tool: hit test + drag-to-move ─────────────────────────────────
+
+	const pointerMouseDown = useCallback(
+		(e: React.MouseEvent) => {
+			const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+			const sx = e.clientX - rect.left;
+			const sy = e.clientY - rect.top;
+			const [docX, docY] = screenToDoc(sx, sy, cameraRef.current);
+
+			const hitId = hitTestLayoutNodes(layoutNodesRef.current, docX, docY);
+			const isAdditive = e.shiftKey || e.metaKey || e.ctrlKey;
+
+			if (hitId) {
+				toggleSelectedId(hitId, isAdditive);
+				// Start drag-to-move
+				isDraggingNodeRef.current = true;
+				dragStartDocRef.current = { x: docX, y: docY };
+				// Capture start positions for all selected nodes
+				const positions = new Map<string, { x: number; y: number }>();
+				const idsToMove = isAdditive
+					? new Set([...selectedIds, hitId])
+					: new Set([hitId]);
+				for (const id of idsToMove) {
+					const node = facade.getNode(id);
+					if (node) positions.set(id, { x: node.x ?? 0, y: node.y ?? 0 });
+				}
+				dragNodeStartPositionsRef.current = positions;
+			} else {
+				// Click on empty space — deselect
+				if (!isAdditive) setSelectedId(null);
+				isDraggingNodeRef.current = false;
+				// Fall through to camera pan
+				cameraMouseDown?.(e);
+			}
+		},
+		[toggleSelectedId, selectedIds, facade, setSelectedId, cameraMouseDown],
+	);
+
+	const pointerMouseMove = useCallback(
+		(e: React.MouseEvent) => {
+			if (!isDraggingNodeRef.current || !dragStartDocRef.current) {
+				cameraMouseMove?.(e);
+				return;
+			}
+			const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+			const sx = e.clientX - rect.left;
+			const sy = e.clientY - rect.top;
+			const [docX, docY] = screenToDoc(sx, sy, cameraRef.current);
+			const dx = docX - dragStartDocRef.current.x;
+			const dy = docY - dragStartDocRef.current.y;
+
+			for (const [id, start] of dragNodeStartPositionsRef.current) {
+				facade.updateNode(id, { x: start.x + dx, y: start.y + dy });
+			}
+			commitMutation();
+		},
+		[facade, commitMutation, cameraMouseMove],
+	);
+
+	const pointerMouseUp = useCallback(
+		(e: React.MouseEvent) => {
+			if (isDraggingNodeRef.current) {
+				isDraggingNodeRef.current = false;
+				dragStartDocRef.current = null;
+				dragNodeStartPositionsRef.current = new Map();
+			} else {
+				cameraMouseUp?.(e);
+			}
+		},
+		[cameraMouseUp],
+	);
+
+	const onMouseDown = useCallback(
+		(e: React.MouseEvent) => {
+			if (activeToolRef.current === "pen") penMouseDown(e);
+			else pointerMouseDown(e);
+		},
+		[penMouseDown, pointerMouseDown],
+	);
+
+	const onMouseMove = useCallback(
+		(e: React.MouseEvent) => {
+			if (activeToolRef.current === "pen") penMouseMove(e);
+			else pointerMouseMove(e);
+		},
+		[penMouseMove, pointerMouseMove],
+	);
+
+	const onMouseUp = useCallback(
+		(e: React.MouseEvent) => {
+			if (activeToolRef.current === "pen") penMouseUp();
+			else pointerMouseUp(e);
+		},
+		[penMouseUp, pointerMouseUp],
+	);
 
 
 	useEffect(() => {
@@ -712,7 +822,7 @@ export function PenCanvasPanel({
 								camera={camera}
 								width={width}
 								height={canvasHeight}
-								selectedNodePath={selectedId ? [selectedId] : undefined}
+						selectedNodePath={selectedId ? [selectedId] : undefined}
 								onNodeTap={handleNodeTap}
 								penDrawingState={activeTool === "pen" ? penState : undefined}
 							/>

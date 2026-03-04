@@ -42,7 +42,7 @@ let compiledSchema: CompiledFigSchema | null = null;
 
 function getCompiledSchema(): CompiledFigSchema {
 	if (!compiledSchema) {
-		compiledSchema = compileSchema(figmaSchema) as CompiledFigSchema;
+		compiledSchema = compileSchema(figmaSchema) as unknown as CompiledFigSchema;
 	}
 	return compiledSchema;
 }
@@ -97,7 +97,7 @@ export function decodeFigBuffer(buffer: ArrayBuffer): FigMessage {
 	// Decode schema and message
 	const schemaBytes = inflateSync(payload.schemaDeflated);
 	const schema = decodeBinarySchema(new ByteBuffer(schemaBytes));
-	const compiled = compileSchema(schema) as CompiledFigSchema;
+	const compiled = compileSchema(schema) as unknown as CompiledFigSchema;
 	const message = compiled.decodeMessage(payload.dataRaw) as FigMessage;
 
 	return message;
@@ -126,7 +126,7 @@ export function encodeFigBuffer(message: FigMessage): ArrayBuffer {
 		"meta.json": new TextEncoder().encode(metaJson),
 	});
 
-	return result.buffer;
+	return result.buffer as ArrayBuffer;
 }
 
 // ---------------------------------------------------------------------------

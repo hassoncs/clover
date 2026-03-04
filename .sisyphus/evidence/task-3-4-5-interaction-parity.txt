@@ -1,0 +1,25 @@
+=== Task 3: Pointer Transform Interaction Set ===
+Added: hitTestLayoutNodes() for canvas hit testing
+Added: drag-to-move for selected nodes (pointerMouseDown/Move/Up)
+Added: shift/meta/ctrl for additive selection
+
+=== Task 4: Inspector Editing Parity ===
+Added: multi-select batch edit support (updateField applies to all selectedIds)
+Added: multi-select badge showing count in inspector header
+
+=== Task 5: Layers + Selection Coherence ===
+Added: selectedIds (Set) to PenRuntimeContext
+Added: toggleSelectedId() for additive selection
+Added: LayersPanel uses selectedIds.has() for highlight
+Added: LayersPanel supports shift-click for multi-select
+
+=== TypeScript verification ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+design-canvas: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+pencil-app: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+game-inspector-mcp: PASS

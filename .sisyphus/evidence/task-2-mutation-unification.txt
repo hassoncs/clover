@@ -1,0 +1,14 @@
+=== design-canvas tsc ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+PASS
+=== pencil-app tsc ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+PASS
+=== game-inspector-mcp tsc ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+PASS
+=== Legacy mutation audit ===
+No DesignDocument references in Pencil runtime
