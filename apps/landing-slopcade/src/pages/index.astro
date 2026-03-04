@@ -1,5 +1,6 @@
 ---
 import { Button } from '@slopcade/ui/Button';
+import { HeroShaderScene, ScrollDirector, ScrollReveal, SplitHeadline } from '../components/effects';
 ---
 
 <html lang="en">
@@ -21,8 +22,47 @@ import { Button } from '@slopcade/ui/Button';
     <meta property="og:url" content="https://slopcade.com" />
     <!-- <meta property="og:image" content="/og-image.jpg" /> -->
 
+    <!-- Global Reduced Motion CSS -->
+    <style is:global>
+        /* Respect user's motion preferences - disable all animations */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            
+            /* Ensure split headline text is visible without animation */
+            .split-headline {
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .split-headline .char,
+            .split-headline .word,
+            .split-headline .line {
+                opacity: 1 !important;
+                transform: none !important;
+                visibility: visible !important;
+            }
+        }
+
+        /* Mobile performance optimizations */
+        @media (max-width: 768px) {
+            .split-headline .char,
+            .split-headline .word {
+                will-change: auto !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-background text-text-primary font-sans">
+    <!-- Smooth scroll provider -->
+    <ScrollDirector client:visible />
+    
     <div class="w-full max-w-5xl mx-auto px-6 md:px-8">
 
         <!-- Header -->
@@ -31,22 +71,35 @@ import { Button } from '@slopcade/ui/Button';
             <Button client:only="react" variant="outline" label="Get Early Access" />
         </header>
 
-        <!-- Hero Section -->
-        <main class="py-16 md:py-24 text-center">
-            <h2 class="text-4xl md:text-6xl font-extrabold text-text-primary mb-4 leading-tight">
-                Dream a Game.
-                <br />
-                <span class="text-primary">Make it in Seconds.</span>
-            </h2>
-            <p class="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
-                With Slopcade, your child can create playable 2D physics games just by describing them. No code, just pure imagination.
-            </p>
-            <Button client:only="react" size="lg" label="Start Creating for Free" />
+        <!-- Hero Section with Shader Background -->
+        <main class="relative py-16 md:py-24 text-center overflow-hidden rounded-xl mb-8">
+            <!-- WebGL Shader Background - client:load for above-fold content -->
+            <HeroShaderScene client:load />
+            
+            <!-- Hero Content - positioned above shader -->
+            <div class="relative z-10">
+                <SplitHeadline 
+                    client:visible 
+                    splitBy="words" 
+                    animation="fadeUp" 
+                    as="h2"
+                    className="text-4xl md:text-6xl font-extrabold text-text-primary mb-4 leading-tight"
+                    aria-label="Dream a Game. Make it in Seconds."
+                >
+                    Dream a Game.
+                    <br />
+                    <span class="text-primary">Make it in Seconds.</span>
+                </SplitHeadline>
+                <p class="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
+                    With Slopcade, your child can create playable 2D physics games just by describing them. No code, just pure imagination.
+                </p>
+                <Button client:only="react" size="lg" label="Start Creating for Free" />
+            </div>
         </main>
 
         <!-- Features Section -->
         <section class="py-16 md:py-24">
-            <div class="grid md:grid-cols-3 gap-8 text-center">
+            <ScrollReveal client:visible stagger={0.15} className="grid md:grid-cols-3 gap-8 text-center">
                 <div class="bg-surface p-8 rounded-lg border border-border">
                     <span class="text-4xl mb-4">🤖</span>
                     <h3 class="text-xl font-bold mb-2">AI-Powered Creation</h3>
@@ -62,13 +115,22 @@ import { Button } from '@slopcade/ui/Button';
                     <h3 class="text-xl font-bold mb-2">Instantly Play & Share</h3>
                     <p class="text-text-secondary">Play your creations right away and share them with friends and family for endless fun.</p>
                 </div>
-            </div>
+            </ScrollReveal>
         </section>
 
         <!-- How It Works Section -->
         <section class="py-16 md:py-24">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">How It Works in 3 Steps</h2>
-            <div class="grid md:grid-cols-3 gap-8 md:gap-12 relative">
+            <SplitHeadline 
+                client:visible 
+                splitBy="words" 
+                animation="fadeUp"
+                as="h2"
+                className="text-3xl md:text-4xl font-bold text-center mb-12"
+                aria-label="How It Works in 3 Steps"
+            >
+                How It Works in 3 Steps
+            </SplitHeadline>
+            <ScrollReveal client:visible stagger={0.2} className="grid md:grid-cols-3 gap-8 md:gap-12 relative">
                 <!-- Step 1 -->
                 <div class="text-center">
                     <div class="relative mb-4">
@@ -93,16 +155,42 @@ import { Button } from '@slopcade/ui/Button';
                     <h3 class="text-xl font-bold mb-2">Play and Tweak</h3>
                     <p class="text-text-secondary">Jump right into your new game! Change the prompt to tweak it and make it perfect.</p>
                 </div>
+            </ScrollReveal>
+        </section>
+
+        <!-- Feature Carousel Section (Placeholder) -->
+        <section class="py-16 md:py-24">
+            <SplitHeadline 
+                client:visible 
+                splitBy="words" 
+                animation="fadeUp"
+                as="h2"
+                className="text-3xl md:text-4xl font-bold text-center mb-12"
+                aria-label="Games Created by Kids Like You"
+            >
+                Games Created by Kids Like You
+            </SplitHeadline>
+            <!-- TODO: Replace with FeatureCarousel component when ready -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="aspect-video bg-surface rounded-lg border border-border flex items-center justify-center">
+                    <span class="text-text-secondary">Game Preview 1</span>
+                </div>
+                <div class="aspect-video bg-surface rounded-lg border border-border flex items-center justify-center">
+                    <span class="text-text-secondary">Game Preview 2</span>
+                </div>
+                <div class="aspect-video bg-surface rounded-lg border border-border flex items-center justify-center">
+                    <span class="text-text-secondary">Game Preview 3</span>
+                </div>
             </div>
         </section>
 
         <!-- CTA Section -->
         <section class="bg-surface border border-border rounded-lg my-16 md:my-24">
-            <div class="py-12 px-8 text-center">
+            <ScrollReveal client:visible y={40} className="py-12 px-8 text-center">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Create?</h2>
                 <p class="text-text-secondary mb-8 max-w-xl mx-auto">Join our early access list and be the first to build worlds with the magic of AI.</p>
                 <Button client:only="react" variant="default" size="lg" label="Get Started Now" />
-            </div>
+            </ScrollReveal>
         </section>
 
         <!-- Footer -->
