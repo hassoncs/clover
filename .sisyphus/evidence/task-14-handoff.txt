@@ -1,0 +1,63 @@
+=== Task 14: Final Integration Commit + Release Notes ===
+
+## OpenPencil Parity Migration — Complete
+
+### Summary
+This migration delivers full OpenPencil-equivalent authoring and automation workflows
+in Slopcade Pencil, converging on a single PenDocument runtime path.
+
+### Wave-by-Wave Commit History
+1. feat(pencil): add pointer transform, multi-select, inspector batch edit, and fix TypeScript errors
+   - Wave 1+2: TypeScript fixes, single mutation path enforcement
+   - Wave 2: Pointer hit testing, drag-to-move, shift-click multi-select
+   - Wave 2: Inspector batch edit for multi-select
+   - Wave 2: Layers panel multi-select coherence
+
+2. feat(pencil): add document lifecycle toolbar and MCP new/save/load tools
+   - Wave 3: DocumentToolbar (New/Save/Load) with error handling
+   - Wave 4: pencil_new_document, pencil_save_document, pencil_load_document MCP tools
+
+3. feat(pencil): add chat op timeline, edge case fixture tests
+   - Wave 4: Chat op timeline with queued/applied/failed status
+   - Wave 5: 10 edge case fixture tests (large docs, refs, variables, connections, etc.)
+
+4. feat(pencil): add smoke script (26 assertions pass), legacy audit complete
+   - Wave 5: Legacy DesignDocument audit — Pencil runtime is clean
+   - Wave 5: Smoke script with 26 assertions covering full workflow
+
+5. chore(pencil): add CI gate verification and legacy deletion audit evidence
+   - Wave 6: All TypeScript checks pass (3 packages)
+   - Wave 6: All tests pass (181 total: 57 + 116 + 8)
+   - Wave 6: Legacy quarantine documented
+
+### Definition of Done — Verified
+✅ pnpm --filter @slopcade/design-canvas exec tsc --noEmit → PASS
+✅ pnpm --filter @slopcade/pencil-app exec tsc --noEmit → PASS
+✅ pnpm --filter @slopcade/game-inspector-mcp exec tsc --noEmit → PASS
+✅ MCP flow: pencil_new_document, pencil_get_document, pencil_get_selection, pencil_apply_ops (deprecated), pencil_save_document → PASS
+✅ Smoke script: 26 assertions, 0 failures → PASS
+✅ Test suite: 181 tests, 0 failures → PASS
+
+### Evidence Index
+- task-1-commit-scope.txt — Wave 1 commit verification
+- task-2-mutation-unification.txt — TypeScript + mutation path audit
+- task-3-4-5-interaction-parity.txt — Pointer/inspector/layers parity
+- task-6-7-lifecycle-mcp.txt — Document lifecycle + MCP tools
+- task-8-9-timeline-fixtures.txt — Chat timeline + fixture tests
+- task-10-legacy-audit.txt — Legacy DesignDocument audit
+- task-10-11-audit-smoke.txt — Smoke script results
+- task-12-verification.txt — CI gate verification
+- task-13-deletion-smoke.txt — Post-deletion smoke
+
+### Architecture State
+- Single mutation path: PenToolFacade → SceneGraph → PenDocument (derived)
+- No dual runtime: DesignDocument is quarantined, not used by Pencil
+- MCP tools: 30+ tools implemented (pencil-v2.ts, pencil-v2-*.ts)
+- Bridge: ServerBridge pattern for headless MCP access
+- Tests: 181 passing across 3 packages
+
+### Remaining Work (out of scope for this migration)
+- Replace DesignFrame in useDesignCamera.ts with generic Rect type
+- Replace DesignElement in useDesignImageResolver.ts with PenImage
+- Connect chat sidebar to real AI backend (currently local preview mode)
+- Add resize handles to SelectionChrome (drag corners to resize)
