@@ -553,3 +553,224 @@ describe("SceneGraph edge cases", () => {
 		expect(result).toEqual(doc);
 	});
 });
+
+describe("edge case fixture suite (Task 9)", () => {
+	// Edge case 1: Malformed data — missing required fields
+	it("handles document with nodes missing optional fields", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{ type: "frame", id: "f1" }, // no children, no layout
+				{ type: "rectangle", id: "r1" }, // no position or size
+				{ type: "text", id: "t1", content: "" }, // empty content
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		expect(result.children).toHaveLength(3);
+		expect(result.children[0].type).toBe("frame");
+		expect(result.children[1].type).toBe("rectangle");
+		expect(result.children[2].type).toBe("text");
+	});
+
+	// Edge case 2: Large document (100 nodes)
+	it("handles large document with 100 nodes", () => {
+		const children: PenNode[] = Array.from({ length: 100 }, (_, i) => ({
+			type: "rectangle" as const,
+			id: `rect-${i}`,
+			x: i * 10,
+			y: 0,
+			width: 8,
+			height: 8,
+		}));
+		const doc: PenDocument = { version: 1, children };
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		expect(result.children).toHaveLength(100);
+		expect(result.children[99]).toEqual(children[99]);
+	});
+
+	// Edge case 3: Ref with nested descendants override
+	it("ref with nested descendants roundtrips", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{
+					type: "frame",
+					id: "comp",
+					reusable: true,
+					children: [{ type: "text", id: "label", content: "Default" }],
+				},
+				{
+					type: "ref",
+					id: "inst1",
+					ref: "comp",
+					descendants: { label: { content: "Override" } as Record<string, unknown> },
+				},
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		const ref = result.children.find((n) => n.type === "ref") as PenRef;
+		expect(ref).toBeDefined();
+		expect(ref.ref).toBe("comp");
+		// descendants is Record<string, unknown> — access via type assertion
+		const descendants = ref.descendants as Record<string, Record<string, unknown>> | undefined;
+		expect(descendants?.label?.content).toBe("Override");
+	});
+
+	// Edge case 4: Variables with theme bindings
+	it("variables and themes roundtrip", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [],
+			variables: {
+				primary: { type: "color" as const, value: "#3b82f6" },
+				secondary: { type: "color" as const, value: "#10b981" },
+			},
+			themes: [{ name: "light", values: [] }, { name: "dark", values: [] }],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		expect(result.variables?.primary?.value).toBe("#3b82f6");
+		expect(result.variables?.secondary?.value).toBe("#10b981");
+		expect(result.themes).toHaveLength(2);
+	});
+
+	// Edge case 5: Multiple connections between nodes
+	it("multiple connections roundtrip", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{ type: "rectangle", id: "a" },
+				{ type: "rectangle", id: "b" },
+				{ type: "rectangle", id: "c" },
+				{ type: "connection", id: "conn1", fromId: "a", toId: "b" },
+				{ type: "connection", id: "conn2", fromId: "b", toId: "c" },
+				{ type: "connection", id: "conn3", fromId: "a", toId: "c" },
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		const connections = result.children.filter((n) => n.type === "connection");
+		expect(connections).toHaveLength(3);
+	});
+
+	// Edge case 6: Frame with all layout modes
+	it("frames with all layout modes roundtrip", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{ type: "frame", id: "none", layout: "none" },
+				{ type: "frame", id: "horiz", layout: "horizontal", gap: 8 },
+				{ type: "frame", id: "vert", layout: "vertical", gap: 16 },
+				{ type: "frame", id: "wrap", layout: "wrap", gap: 4 },
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		const frames = result.children as PenFrame[];
+		expect(frames[0].layout).toBe("none");
+		expect(frames[1].layout).toBe("horizontal");
+		expect(frames[2].layout).toBe("vertical");
+		expect(frames[3].layout).toBe("wrap");
+	});
+
+	// Edge case 7: Deeply nested 10-level tree
+	it("10-level deep nesting roundtrips without structural drift", () => {
+		function makeNested(depth: number): PenFrame {
+			if (depth === 0) return { type: "frame", id: `leaf` };
+			return {
+				type: "frame",
+				id: `level-${depth}`,
+				children: [makeNested(depth - 1)],
+			};
+		}
+		const doc: PenDocument = { version: 1, children: [makeNested(10)] };
+		const graph = penDocumentToSceneGraph(doc);
+		expect(graph.isDescendant("leaf", "level-10")).toBe(true);
+		const result = sceneGraphToPenDocument(graph);
+		expect(result).toEqual(doc);
+	});
+
+	// Edge case 8: Node with all visual properties
+	it("node with all visual properties roundtrips", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{
+					type: "frame",
+					id: "rich",
+					x: 10, y: 20, width: 200, height: 100,
+					opacity: 0.8,
+					rotation: 45,
+					fill: { type: "color" as const, color: "#ff0000" },
+					stroke: { fill: "#000000" },
+					cornerRadius: 8,
+					clip: true,
+					effects: [{ shadow: { color: "#00000040", offsetX: 0, offsetY: 4, blur: 4 } }],
+				},
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		const frame = result.children[0] as PenFrame;
+		expect(frame.x).toBe(10);
+		expect(frame.opacity).toBe(0.8);
+		expect(frame.cornerRadius).toBe(8);
+		expect(frame.clip).toBe(true);
+		expect(frame.effects).toHaveLength(1);
+	});
+
+	// Edge case 9: Mixed node types in same document
+	it("document with all node types roundtrips", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{ type: "frame", id: "f1" },
+				{ type: "group", id: "g1" },
+				{ type: "rectangle", id: "r1" },
+				{ type: "ellipse", id: "e1" },
+				{ type: "text", id: "t1", content: "Hello" },
+				{ type: "line", id: "l1" },
+				{ type: "polygon", id: "p1" },
+				{ type: "note", id: "n1", content: "A note" },
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		const result = sceneGraphToPenDocument(graph);
+		expect(result.children).toHaveLength(8);
+		const types = result.children.map((n) => n.type);
+		expect(types).toContain("frame");
+		expect(types).toContain("group");
+		expect(types).toContain("rectangle");
+		expect(types).toContain("ellipse");
+		expect(types).toContain("text");
+		expect(types).toContain("line");
+		expect(types).toContain("polygon");
+		expect(types).toContain("note");
+	});
+
+	// Edge case 10: Mutation after roundtrip preserves integrity
+	it("mutation after roundtrip does not corrupt graph", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{
+					type: "frame",
+					id: "parent",
+					children: [{ type: "rectangle", id: "child", x: 0, y: 0 }],
+				},
+			],
+		};
+		const graph = penDocumentToSceneGraph(doc);
+		// Mutate after roundtrip
+		graph.updateNode("child", { x: 50, y: 50 });
+		const result = sceneGraphToPenDocument(graph);
+		const parent = result.children[0] as PenFrame;
+		const child = parent.children?.[0] as PenRectangle;
+		expect(child.x).toBe(50);
+		expect(child.y).toBe(50);
+	});
+});
+

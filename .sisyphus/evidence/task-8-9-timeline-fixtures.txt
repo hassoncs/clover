@@ -1,0 +1,32 @@
+=== Task 8: Chat Tool-Call Playback + Debug Timeline ===
+Added: OpEntry type with status (queued/applied/failed)
+Added: applyOpsWithTimeline() function for batch op execution
+Added: ops timeline rendering in ChatSidebar messages
+Added: status indicators (✓/✗/○) with color coding
+Added: error display for failed ops
+File: apps/pencil/app/index.tsx
+
+=== Task 9: Roundtrip + Edge Fixture Test Pack ===
+Added: 10 edge case fixture tests in roundtrip.test.ts
+  1. Nodes missing optional fields
+  2. Large document (100 nodes)
+  3. Ref with nested descendants override
+  4. Variables with theme bindings
+  5. Multiple connections
+  6. All layout modes
+  7. 10-level deep nesting
+  8. Node with all visual properties
+  9. All node types
+  10. Mutation after roundtrip
+File: packages/design-canvas/src/pen/runtime/__tests__/roundtrip.test.ts
+
+=== TypeScript verification ===
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+design-canvas: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+pencil-app: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+game-inspector-mcp: PASS

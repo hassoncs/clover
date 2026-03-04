@@ -206,10 +206,20 @@ export default function PencilScreen() {
 	);
 }
 
+type OpStatus = "queued" | "applied" | "failed";
+
+interface OpEntry {
+	id: string;
+	description: string;
+	status: OpStatus;
+	error?: string;
+}
+
 interface ChatMessage {
 	id: string;
 	role: "user" | "assistant";
 	content: string;
+	ops?: OpEntry[];
 }
 
 interface ChatSidebarProps {
@@ -217,7 +227,7 @@ interface ChatSidebarProps {
 }
 
 function ChatSidebar({ onClose }: ChatSidebarProps) {
-	const { graph, selectedId } = usePenRuntime();
+	const { graph, facade, selectedId, commitMutation } = usePenRuntime();
 	const [messages, setMessages] = useState<ChatMessage[]>([
 		{
 			id: "welcome",
@@ -234,6 +244,26 @@ function ChatSidebar({ onClose }: ChatSidebarProps) {
 		? `Node ${selectedId.slice(0, 8)} selected`
 		: null;
 
+	// Simulate applying ops from an AI response with timeline tracking
+	const applyOpsWithTimeline = useCallback(
+		(ops: Array<{ description: string; apply: () => void }>): OpEntry[] => {
+			return ops.map((op) => {
+				try {
+					op.apply();
+					return { id: `op-${Date.now()}-${Math.random()}`, description: op.description, status: "applied" as const };
+				} catch (err) {
+					return {
+						id: `op-${Date.now()}-${Math.random()}`,
+						description: op.description,
+						status: "failed" as const,
+						error: err instanceof Error ? err.message : "Unknown error",
+					};
+				}
+			});
+		},
+		[],
+	);
+
 	const send = useCallback(async () => {
 		const text = input.trim();
 		if (!text || isSending) return;
@@ -249,19 +279,41 @@ function ChatSidebar({ onClose }: ChatSidebarProps) {
 		try {
 			setIsSending(true);
 			savePenFile(graph);
+
+			// Simulate a demo op batch for local preview mode
+			const demoOps = text.toLowerCase().includes("add")
+				? [
+						{
+							description: "Create frame node",
+							apply: () => facade.createNode("frame", "__root__", { x: 100, y: 100, width: 200, height: 100 }),
+						},
+					]
+				: [];
+
+			const appliedOps = demoOps.length > 0
+				? applyOpsWithTimeline(demoOps)
+				: [];
+
+			if (appliedOps.some((op) => op.status === "applied")) {
+				commitMutation();
+			}
+
 			const reply: ChatMessage = {
 				id: `a-${Date.now()}`,
 				role: "assistant",
-				content: selectedId
-					? `Captured your request in local preview mode. Selected node: ${selectedId.slice(0, 8)}.`
-					: "Captured your request in local preview mode.",
+				content: appliedOps.length > 0
+					? `Applied ${appliedOps.filter((o) => o.status === "applied").length} operation(s).`
+					: selectedId
+						? `Captured your request. Selected node: ${selectedId.slice(0, 8)}.`
+						: "Captured your request in local preview mode.",
+				ops: appliedOps.length > 0 ? appliedOps : undefined,
 			};
 			setMessages((prev) => [...prev, reply]);
 		} finally {
 			setIsSending(false);
 			scrollRef.current?.scrollToEnd({ animated: true });
 		}
-	}, [graph, input, isSending, selectedId]);
+	}, [graph, facade, input, isSending, selectedId, applyOpsWithTimeline, commitMutation]);
 
 	return (
 		<KeyboardAvoidingView
@@ -290,21 +342,43 @@ function ChatSidebar({ onClose }: ChatSidebarProps) {
 				}
 			>
 				{messages.map((msg) => (
-					<View
-						key={msg.id}
-						style={[
-							styles.messageBubble,
-							msg.role === "user" ? styles.userBubble : styles.aiBubble,
-						]}
-					>
-						<Text
+					<View key={msg.id}>
+						<View
 							style={[
-								styles.messageText,
-								msg.role === "user" ? styles.userText : styles.aiText,
+								styles.messageBubble,
+								msg.role === "user" ? styles.userBubble : styles.aiBubble,
 							]}
 						>
-							{msg.content}
-						</Text>
+							<Text
+								style={[
+									styles.messageText,
+									msg.role === "user" ? styles.userText : styles.aiText,
+								]}
+							>
+								{msg.content}
+							</Text>
+						</View>
+						{/* Op timeline */}
+						{msg.ops && msg.ops.length > 0 && (
+							<View style={styles.opsTimeline}>
+								{msg.ops.map((op) => (
+									<View key={op.id} style={styles.opEntry}>
+										<Text style={[
+											styles.opStatus,
+											op.status === "applied" ? styles.opApplied
+												: op.status === "failed" ? styles.opFailed
+												: styles.opQueued,
+										]}>
+											{op.status === "applied" ? "✓" : op.status === "failed" ? "✗" : "○"}
+										</Text>
+										<View style={{ flex: 1 }}>
+											<Text style={styles.opDescription}>{op.description}</Text>
+											{op.error && <Text style={styles.opError}>{op.error}</Text>}
+										</View>
+									</View>
+								))}
+							</View>
+						)}
 					</View>
 				))}
 				{isSending && (
@@ -467,6 +541,42 @@ const styles = StyleSheet.create({
 	},
 	aiText: {
 		color: "#e8e3ff",
+	},
+	opsTimeline: {
+		marginTop: 4,
+		marginLeft: 8,
+		paddingLeft: 8,
+		borderLeftWidth: 2,
+		borderLeftColor: "#2d2650",
+	},
+	opEntry: {
+		flexDirection: "row",
+		alignItems: "flex-start",
+		gap: 6,
+		paddingVertical: 2,
+	},
+	opStatus: {
+		fontSize: 12,
+		fontWeight: "600",
+		width: 14,
+	},
+	opApplied: {
+		color: "#34d399",
+	},
+	opFailed: {
+		color: "#f87171",
+	},
+	opQueued: {
+		color: "#94a3b8",
+	},
+	opDescription: {
+		color: "#c4b5fd",
+		fontSize: 11,
+	},
+	opError: {
+		color: "#f87171",
+		fontSize: 11,
+		fontStyle: "italic",
 	},
 	inputRow: {
 		flexDirection: "row",
