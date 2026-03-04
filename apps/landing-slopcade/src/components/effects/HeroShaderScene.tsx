@@ -5,10 +5,10 @@ import * as THREE from "three";
 
 // Brand colors from Slopcade identity
 const COLORS = {
-	primary: "#4F46E5",
-	primaryDark: "#3730A3",
-	background: "#0F172A",
-	accent: "#818CF8",
+	primary: "#C4F82A",
+	primaryDark: "#27272A",
+	background: "#0A0A0A",
+	accent: "#7C3AED",
 };
 
 // Parse hex color to RGB array
@@ -141,16 +141,6 @@ const GradientShaderMaterial = shaderMaterial(
 	vertexShader,
 	fragmentShader,
 );
-
-// Type for the shader material instance
-type GradientShaderMaterialType = THREE.ShaderMaterial & {
-	uTime: number;
-	uMouse: THREE.Vector2;
-	uColorPrimary: THREE.Color;
-	uColorSecondary: THREE.Color;
-	uColorAccent: THREE.Color;
-	uAnimationSpeed: number;
-};
 
 // Extend for JSX usage
 extend({ GradientShaderMaterial });

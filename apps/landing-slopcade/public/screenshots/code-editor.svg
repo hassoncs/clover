@@ -1,0 +1,21 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#0B0B0D"/>
+<rect x="28" y="28" width="1144" height="744" rx="24" fill="#131318" stroke="#27272A" stroke-width="2"/>
+<rect x="28" y="28" width="1144" height="64" rx="24" fill="#18181B"/>
+<text x="72" y="70" fill="#C4F82A" font-family="monospace" font-size="20">CODE VIEW</text>
+<rect x="72" y="122" width="390" height="612" rx="14" fill="#16161C"/>
+<text x="102" y="164" fill="#A1A1AA" font-family="sans-serif" font-size="17">Entity List</text>
+<rect x="102" y="188" width="330" height="10" rx="5" fill="#3F3F46"/>
+<rect x="102" y="212" width="304" height="10" rx="5" fill="#3F3F46"/>
+<rect x="102" y="236" width="330" height="10" rx="5" fill="#3F3F46"/>
+<rect x="488" y="122" width="640" height="612" rx="14" fill="#0F1014" stroke="#27272A"/>
+<text x="518" y="164" fill="#A1A1AA" font-family="monospace" font-size="16">function updateBall(dt) {'{'}</text>
+<text x="548" y="198" fill="#A1A1AA" font-family="monospace" font-size="16">ball.vx += gravity.x * dt;</text>
+<text x="548" y="232" fill="#A1A1AA" font-family="monospace" font-size="16">ball.vy += gravity.y * dt;</text>
+<text x="548" y="266" fill="#A1A1AA" font-family="monospace" font-size="16">if (portal.hit(ball)) teleport(ball);</text>
+<text x="518" y="300" fill="#A1A1AA" font-family="monospace" font-size="16">}</text>
+<rect x="518" y="338" width="560" height="2" fill="#27272A"/>
+<rect x="518" y="370" width="160" height="44" rx="10" fill="#C4F82A"/>
+<text x="560" y="399" fill="#0A0A0A" font-family="sans-serif" font-size="18" font-weight="700">RUN</text>
+<circle cx="1030" cy="392" r="36" fill="#7C3AED" fill-opacity="0.32"/>
+</svg>

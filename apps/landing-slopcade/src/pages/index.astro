@@ -1,206 +1,622 @@
 ---
-import { Button } from '@slopcade/ui/Button';
-import { HeroShaderScene, ScrollDirector, ScrollReveal, SplitHeadline } from '../components/effects';
+import { HeroShaderScene, ScrollDirector, ScrollReveal, SplitHeadline } from "../components/effects";
+
+const howItWorks = [
+	{
+		number: "1",
+		icon: "Z",
+		title: "Describe Your Game",
+		description:
+			'Type a prompt like "a platformer with gravity flips" and let AI handle the rest.',
+	},
+	{
+		number: "2",
+		icon: "S",
+		title: "AI Builds It",
+		description:
+			"Watch as your game materializes - sprites, physics, logic, and mechanics generated in seconds.",
+	},
+	{
+		number: "3",
+		icon: "R",
+		title: "Make It Yours",
+		description:
+			"Tweak the rules, swap assets, change themes. Fork anyone's game and make it your own.",
+	},
+	{
+		number: "4",
+		icon: "P",
+		title: "Play With Friends",
+		description:
+			"Share a link and start playing together. Real-time multiplayer, no downloads required.",
+	},
+];
+
+const moreFeatures = [
+	{
+		title: "Multiplayer Party Mode",
+		iconTone: "bg-[rgb(196_248_42_/_0.12)] text-[var(--accent-lime)]",
+		description:
+			"Share a link and play together in real-time. Up to 8 players, zero friction. Built-in voice chat and emoji reactions.",
+	},
+	{
+		title: "Cross-Platform",
+		iconTone: "bg-[rgb(124_58_237_/_0.12)] text-[var(--accent-purple)]",
+		description:
+			"Games run everywhere - desktop, tablet, phone. One build, every screen. Progressive web app tech with native-feeling performance.",
+	},
+	{
+		title: "Swappable Themes",
+		iconTone: "bg-[rgb(250_84_28_/_0.12)] text-[#FA541C]",
+		description:
+			"Change the entire look of a game with one click. Pixel art, vector, hand-drawn, retro - swap visual styles without touching logic.",
+	},
+	{
+		title: "Composable Prefabs",
+		iconTone: "bg-[rgb(20_184_166_/_0.12)] text-[#14B8A6]",
+		description:
+			"Drag in pre-built game components - enemies, power-ups, UI widgets, particle effects. Mix and match like building blocks.",
+	},
+];
+
+const investorCards = [
+	{
+		title: "Content Scalability",
+		iconTone: "bg-[rgb(196_248_42_/_0.12)] text-[var(--accent-lime)]",
+		description:
+			"AI-assisted generation plus remix behavior expands the playable catalog without linear content headcount growth.",
+	},
+	{
+		title: "Multi-Layer Revenue",
+		iconTone: "bg-[rgb(124_58_237_/_0.12)] text-[var(--accent-purple)]",
+		description:
+			"Subscription + credits + creator revenue split enables diversified monetization architecture with multiple expansion levers.",
+	},
+	{
+		title: "Defensibility Moat",
+		iconTone: "bg-[rgb(250_84_28_/_0.12)] text-[#FA541C]",
+		description:
+			"Tooling depth, user-generated remix graph, real-time multiplayer infra, and cross-platform runtime create compounding barriers.",
+	},
+	{
+		title: "Technical Foundation",
+		iconTone: "bg-[rgb(20_184_166_/_0.12)] text-[#14B8A6]",
+		description:
+			"Godot + React Native + QuickJS engine. Cloudflare Workers, Durable Objects, D1, R2. Built for scale from day one.",
+	},
+];
+
+const freeFeatures = [
+	"Play unlimited games",
+	"Create up to 3 games",
+	"Basic AI generation (limited Sparks)",
+	"Fork and remix public games",
+	"Multiplayer party hosting",
+];
+
+const proFeatures = [
+	"Everything in Free",
+	"Unlimited game creation",
+	"500 Sparks / month for AI generation",
+	"Creator revenue sharing",
+	"Priority multiplayer hosting",
+	"Custom themes and asset packs",
+];
+
+const footerColumns = [
+	{
+		heading: "Product",
+		links: ["Game Engine", "Create", "Play Games", "Remix", "Multiplayer"],
+	},
+	{ heading: "Company", links: ["About", "Blog", "Careers", "Press Kit"] },
+	{ heading: "Resources", links: ["Documentation", "API Reference", "Community", "Support"] },
+	{ heading: "Legal", links: ["Privacy Policy", "Terms of Service", "Cookie Policy"] },
+];
 ---
 
 <html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Slopcade | AI-Powered 2D Game Maker</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Turn your ideas into playable games in seconds with Slopcade, the AI-powered game maker for kids. No coding required. Fun, easy, and creative!" />
-    <meta name="keywords" content="ai game maker, kids coding, game creation, educational games, stem, creative toys" />
-    
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Slopcade | AI-Powered 2D Game Maker" />
-    <meta property="og:description" content="AI-powered game creation for kids ages 6-14. Describe a game, and our AI builds it in under 30 seconds. No code, just fun!" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://slopcade.com" />
-    <!-- <meta property="og:image" content="/og-image.jpg" /> -->
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Slopcade | Coming Soon</title>
+		<meta
+			name="description"
+			content="Slopcade is the AI game creation platform where anyone can describe a game idea, watch it come to life instantly, remix other creators' games, and play with friends."
+		/>
+		<meta property="og:title" content="Slopcade | Coming Soon" />
+		<meta
+			property="og:description"
+			content="Type an idea, get a playable game, remix anything, and play with friends in real time."
+		/>
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://slopcade.com" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&family=Space+Mono:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
+		<style is:global>
+			:root {
+				--bg-primary: #0a0a0a;
+				--bg-card: #18181b;
+				--bg-elevated: #27272a;
+				--accent-lime: #c4f82a;
+				--accent-purple: #7c3aed;
+				--text-primary: #ffffff;
+				--text-secondary: #a1a1aa;
+				--text-tertiary: #71717a;
+				--text-muted: #52525b;
+				--border-subtle: #27272a;
+				--border-muted: #3f3f46;
+			}
 
-    <!-- Global Reduced Motion CSS -->
-    <style is:global>
-        /* Respect user's motion preferences - disable all animations */
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-                scroll-behavior: auto !important;
-            }
-            
-            /* Ensure split headline text is visible without animation */
-            .split-headline {
-                visibility: visible !important;
-                opacity: 1 !important;
-            }
-            
-            .split-headline .char,
-            .split-headline .word,
-            .split-headline .line {
-                opacity: 1 !important;
-                transform: none !important;
-                visibility: visible !important;
-            }
-        }
+			body {
+				margin: 0;
+				background: var(--bg-primary);
+				color: var(--text-primary);
+				font-family: "Manrope", sans-serif;
+			}
 
-        /* Mobile performance optimizations */
-        @media (max-width: 768px) {
-            .split-headline .char,
-            .split-headline .word {
-                will-change: auto !important;
-            }
-        }
-    </style>
-</head>
-<body class="bg-background text-text-primary font-sans">
-    <!-- Smooth scroll provider -->
-    <ScrollDirector client:visible />
-    
-    <div class="w-full max-w-5xl mx-auto px-6 md:px-8">
+			.font-space-grotesk {
+				font-family: "Space Grotesk", sans-serif;
+			}
 
-        <!-- Header -->
-        <header class="flex justify-between items-center py-6">
-            <h1 class="text-2xl font-bold text-primary">Slopcade</h1>
-            <Button client:only="react" variant="outline" label="Get Early Access" />
-        </header>
+			.font-space-mono {
+				font-family: "Space Mono", monospace;
+			}
 
-        <!-- Hero Section with Shader Background -->
-        <main class="relative py-16 md:py-24 text-center overflow-hidden rounded-xl mb-8">
-            <!-- WebGL Shader Background - client:load for above-fold content -->
-            <HeroShaderScene client:load />
-            
-            <!-- Hero Content - positioned above shader -->
-            <div class="relative z-10">
-                <SplitHeadline 
-                    client:visible 
-                    splitBy="words" 
-                    animation="fadeUp" 
-                    as="h2"
-                    className="text-4xl md:text-6xl font-extrabold text-text-primary mb-4 leading-tight"
-                    aria-label="Dream a Game. Make it in Seconds."
-                >
-                    Dream a Game.
-                    <br />
-                    <span class="text-primary">Make it in Seconds.</span>
-                </SplitHeadline>
-                <p class="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
-                    With Slopcade, your child can create playable 2D physics games just by describing them. No code, just pure imagination.
-                </p>
-                <Button client:only="react" size="lg" label="Start Creating for Free" />
-            </div>
-        </main>
+			.section-wrap {
+				padding-left: clamp(1.5rem, 6vw, 7.5rem);
+				padding-right: clamp(1.5rem, 6vw, 7.5rem);
+			}
 
-        <!-- Features Section -->
-        <section class="py-16 md:py-24">
-            <ScrollReveal client:visible stagger={0.15} className="grid md:grid-cols-3 gap-8 text-center">
-                <div class="bg-surface p-8 rounded-lg border border-border">
-                    <span class="text-4xl mb-4">🤖</span>
-                    <h3 class="text-xl font-bold mb-2">AI-Powered Creation</h3>
-                    <p class="text-text-secondary">Just tell Slopcade what you want! "A bouncy castle game with falling stars" becomes a reality in under 30 seconds.</p>
-                </div>
-                <div class="bg-surface p-8 rounded-lg border border-border">
-                    <span class="text-4xl mb-4">✨</span>
-                    <h3 class="text-xl font-bold mb-2">Zero Coding Needed</h3>
-                    <p class="text-text-secondary">Perfect for kids ages 6-14. We handle the code so they can focus on creativity and fun.</p>
-                </div>
-                <div class="bg-surface p-8 rounded-lg border border-border">
-                    <span class="text-4xl mb-4">🎮</span>
-                    <h3 class="text-xl font-bold mb-2">Instantly Play & Share</h3>
-                    <p class="text-text-secondary">Play your creations right away and share them with friends and family for endless fun.</p>
-                </div>
-            </ScrollReveal>
-        </section>
+			.design-card {
+				background: var(--bg-card);
+				border: 1px solid var(--border-subtle);
+				border-radius: 1.25rem;
+			}
 
-        <!-- How It Works Section -->
-        <section class="py-16 md:py-24">
-            <SplitHeadline 
-                client:visible 
-                splitBy="words" 
-                animation="fadeUp"
-                as="h2"
-                className="text-3xl md:text-4xl font-bold text-center mb-12"
-                aria-label="How It Works in 3 Steps"
-            >
-                How It Works in 3 Steps
-            </SplitHeadline>
-            <ScrollReveal client:visible stagger={0.2} className="grid md:grid-cols-3 gap-8 md:gap-12 relative">
-                <!-- Step 1 -->
-                <div class="text-center">
-                    <div class="relative mb-4">
-                        <div class="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto">1</div>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Describe Your Game</h3>
-                    <p class="text-text-secondary">Type out your wackiest game idea. The more creative, the better!</p>
-                </div>
-                <!-- Step 2 -->
-                <div class="text-center">
-                    <div class="relative mb-4">
-                        <div class="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto">2</div>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Watch the AI Build</h3>
-                    <p class="text-text-secondary">Our AI brings your words to life, generating art, physics, and gameplay.</p>
-                </div>
-                <!-- Step 3 -->
-                <div class="text-center">
-                    <div class="relative mb-4">
-                        <div class="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto">3</div>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Play and Tweak</h3>
-                    <p class="text-text-secondary">Jump right into your new game! Change the prompt to tweak it and make it perfect.</p>
-                </div>
-            </ScrollReveal>
-        </section>
+			.design-chip {
+				display: inline-block;
+				border-radius: 9999px;
+				padding: 0.375rem 1rem;
+				background: rgb(196 248 42 / 0.12);
+				color: var(--accent-lime);
+				border: 1px solid rgb(196 248 42 / 0.35);
+				font-family: "Space Mono", monospace;
+				font-size: 0.6875rem;
+				letter-spacing: 0.08em;
+				font-weight: 500;
+			}
 
-        <!-- Feature Carousel Section (Placeholder) -->
-        <section class="py-16 md:py-24">
-            <SplitHeadline 
-                client:visible 
-                splitBy="words" 
-                animation="fadeUp"
-                as="h2"
-                className="text-3xl md:text-4xl font-bold text-center mb-12"
-                aria-label="Games Created by Kids Like You"
-            >
-                Games Created by Kids Like You
-            </SplitHeadline>
-            <!-- TODO: Replace with FeatureCarousel component when ready -->
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="aspect-video bg-surface rounded-lg border border-border flex items-center justify-center">
-                    <span class="text-text-secondary">Game Preview 1</span>
-                </div>
-                <div class="aspect-video bg-surface rounded-lg border border-border flex items-center justify-center">
-                    <span class="text-text-secondary">Game Preview 2</span>
-                </div>
-                <div class="aspect-video bg-surface rounded-lg border border-border flex items-center justify-center">
-                    <span class="text-text-secondary">Game Preview 3</span>
-                </div>
-            </div>
-        </section>
+			.gooey-nav {
+				position: relative;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				padding: 0.375rem;
+				border-radius: 9999px;
+				background: rgb(24 24 27 / 0.88);
+				border: 1px solid var(--border-subtle);
+				filter: url(#gooeyFilter);
+			}
 
-        <!-- CTA Section -->
-        <section class="bg-surface border border-border rounded-lg my-16 md:my-24">
-            <ScrollReveal client:visible y={40} className="py-12 px-8 text-center">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Create?</h2>
-                <p class="text-text-secondary mb-8 max-w-xl mx-auto">Join our early access list and be the first to build worlds with the magic of AI.</p>
-                <Button client:only="react" variant="default" size="lg" label="Get Started Now" />
-            </ScrollReveal>
-        </section>
+			.gooey-link {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0.5rem 0.95rem;
+				border-radius: 9999px;
+				background: rgb(63 63 70 / 0.26);
+				color: #fff;
+				font-size: 0.875rem;
+				font-weight: 600;
+				text-decoration: none;
+				transition: transform 180ms ease, background 180ms ease;
+			}
 
-        <!-- Footer -->
-        <footer class="text-center py-12">
-            <div class="flex justify-center gap-4 mb-8">
-                <div class="bg-secondary text-text-inverse h-12 w-36 rounded-lg flex items-center justify-center text-sm font-medium">Coming to App Store</div>
-                <div class="bg-secondary text-text-inverse h-12 w-36 rounded-lg flex items-center justify-center text-sm font-medium">Coming to Google Play</div>
-            </div>
-            <p class="text-text-secondary text-sm">&copy; {new Date().getFullYear()} Slopcade. All rights reserved.</p>
-        </footer>
-    </div>
-</body>
+			.gooey-link:hover {
+				transform: translateY(-1px);
+				background: rgb(196 248 42 / 0.9);
+				color: #0a0a0a;
+			}
+
+			.meta-wrap {
+				position: absolute;
+				inset: 0;
+				overflow: hidden;
+				pointer-events: none;
+			}
+
+			.meta-field {
+				position: absolute;
+				right: -120px;
+				top: -100px;
+				width: 560px;
+				height: 420px;
+				filter: blur(20px) contrast(26);
+				opacity: 0.35;
+			}
+
+			.meta-ball {
+				position: absolute;
+				border-radius: 9999px;
+				background: radial-gradient(circle at 30% 30%, #fff, var(--accent-lime));
+				mix-blend-mode: screen;
+				animation: drift 12s ease-in-out infinite;
+			}
+
+			.meta-ball.b1 {
+				width: 160px;
+				height: 160px;
+				left: 40px;
+				top: 30px;
+			}
+
+			.meta-ball.b2 {
+				width: 120px;
+				height: 120px;
+				left: 220px;
+				top: 110px;
+				animation-delay: -3s;
+				background: radial-gradient(circle at 30% 30%, #fff, #7c3aed);
+			}
+
+			.meta-ball.b3 {
+				width: 190px;
+				height: 190px;
+				left: 290px;
+				top: 14px;
+				animation-delay: -6s;
+			}
+
+			@keyframes drift {
+				0%,
+				100% {
+					transform: translate3d(0, 0, 0) scale(1);
+				}
+				50% {
+					transform: translate3d(-40px, 26px, 0) scale(1.12);
+				}
+			}
+
+			.screenshot-shell {
+				position: relative;
+				overflow: hidden;
+			}
+
+			.screenshot-shell::before {
+				content: "";
+				position: absolute;
+				inset: -30% -10% auto -10%;
+				height: 70%;
+				background: radial-gradient(circle, rgb(196 248 42 / 0.22) 0%, transparent 65%);
+				filter: blur(32px);
+				pointer-events: none;
+				animation: floatGlow 8s ease-in-out infinite;
+				z-index: 1;
+			}
+
+			.screenshot-shell::after {
+				content: "";
+				position: absolute;
+				inset: 0;
+				background: linear-gradient(130deg, transparent 0%, rgb(255 255 255 / 0.08) 45%, transparent 60%);
+				transform: translateX(-120%);
+				animation: sweep 7s linear infinite;
+				pointer-events: none;
+				z-index: 2;
+			}
+
+			.screenshot-shell img {
+				position: relative;
+				z-index: 0;
+				display: block;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+			}
+
+			@keyframes floatGlow {
+				0%,
+				100% {
+					transform: translate3d(0, 0, 0);
+				}
+				50% {
+					transform: translate3d(0, 24px, 0);
+				}
+			}
+
+			@keyframes sweep {
+				0% {
+					transform: translateX(-120%);
+				}
+				100% {
+					transform: translateX(120%);
+				}
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				*,
+				*::before,
+				*::after {
+					animation-duration: 0.01ms !important;
+					animation-iteration-count: 1 !important;
+					transition-duration: 0.01ms !important;
+					scroll-behavior: auto !important;
+				}
+
+				.meta-field {
+					filter: blur(28px) contrast(16);
+					opacity: 0.2;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<ScrollDirector client:visible />
+
+		<div class="min-h-screen bg-[var(--bg-primary)]">
+			<svg width="0" height="0" aria-hidden="true" focusable="false" class="absolute">
+				<filter id="gooeyFilter">
+					<feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+					<feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo" />
+					<feComposite in="SourceGraphic" in2="goo" operator="atop" />
+				</filter>
+			</svg>
+			<header class="section-wrap flex items-center justify-between py-5 md:py-6">
+				<div class="font-space-grotesk text-[1.5rem] font-bold tracking-[0.04em] text-[var(--accent-lime)]">SLOPCADE</div>
+				<nav class="hidden items-center md:flex">
+					<div class="gooey-nav">
+						<a href="#" class="gooey-link">Games</a>
+						<a href="#" class="gooey-link">Create</a>
+						<a href="#pricing" class="gooey-link">Pricing</a>
+						<a href="#" class="gooey-link">Docs</a>
+					</div>
+				</nav>
+				<a
+					href="#"
+					class="rounded-[10px] bg-[var(--accent-lime)] px-6 py-2.5 text-sm font-semibold text-black"
+				>Login</a>
+			</header>
+
+			<main class="section-wrap relative overflow-hidden px-0 py-16 text-center md:py-24">
+				<div class="meta-wrap" aria-hidden="true">
+					<div class="meta-field">
+						<span class="meta-ball b1"></span>
+						<span class="meta-ball b2"></span>
+						<span class="meta-ball b3"></span>
+					</div>
+				</div>
+				<div class="absolute inset-0 -z-10 rounded-2xl opacity-30">
+					<HeroShaderScene client:load />
+				</div>
+				<div class="mx-auto max-w-5xl">
+					<div class="design-chip mb-4">COMING SOON</div>
+					<div class="mb-6 text-xs font-medium tracking-[0.16em] text-[var(--accent-lime)] font-space-mono">AI-POWERED GAME ENGINE</div>
+					<SplitHeadline
+						client:visible
+						splitBy="words"
+						animation="fadeUp"
+						as="h1"
+						className="font-space-grotesk mx-auto mb-6 max-w-[900px] text-4xl font-extrabold leading-[1.1] text-white md:text-6xl"
+						aria-label="Make Games. Break Games. Play Games."
+					>
+						Make Games. Break Games.
+						<br />
+						Play Games.
+					</SplitHeadline>
+					<p class="mx-auto mb-8 max-w-[700px] text-base leading-relaxed text-[var(--text-secondary)] md:text-lg">
+						Slopcade is the AI game creation platform where anyone can describe a game idea,
+						watch it come to life instantly, remix other creators' games, and play with friends.
+					</p>
+					<div class="mb-8 flex flex-col justify-center gap-4 sm:flex-row">
+						<a href="#" class="inline-flex items-center justify-center rounded-xl bg-[var(--accent-lime)] px-8 py-3.5 text-base font-semibold text-black">Login</a>
+						<span class="inline-flex items-center justify-center rounded-xl border border-[var(--border-muted)] px-8 py-3.5 text-base font-semibold text-white">Coming Soon</span>
+					</div>
+					<div class="mb-10 flex flex-wrap items-center justify-center gap-6 text-sm font-medium text-[var(--text-tertiary)] md:gap-8">
+						<span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[var(--accent-lime)]"></span>Prompt-to-Play</span>
+						<span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[var(--accent-lime)]"></span>Remix Any Game</span>
+						<span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[var(--accent-lime)]"></span>Real-Time Multiplayer</span>
+						<span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[var(--accent-lime)]"></span>Cross-Platform</span>
+					</div>
+					<div class="design-card screenshot-shell h-72 md:h-[560px]">
+						<img src="/screenshots/hero-editor.svg" alt="Slopcade game editor preview" loading="lazy" />
+					</div>
+				</div>
+			</main>
+
+			<section class="section-wrap bg-[var(--bg-card)] py-16 md:py-20">
+				<div class="mx-auto max-w-6xl text-center">
+					<p class="font-space-mono mb-3 text-xs font-medium tracking-[0.16em] text-[var(--accent-lime)]">HOW IT WORKS</p>
+					<h2 class="font-space-grotesk mb-12 text-3xl font-bold text-white md:text-4xl">From Idea to Playable Game in Minutes</h2>
+					<ScrollReveal client:visible stagger={0.08} className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+						{howItWorks.map((item) => (
+							<article class="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-7 text-center">
+								<div class="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-lime)] font-space-grotesk text-lg font-bold text-black">{item.number}</div>
+								<div class="mx-auto mb-4 flex h-7 w-7 items-center justify-center rounded-md bg-[rgb(196_248_42_/_0.12)] font-space-mono text-xs font-bold text-[var(--accent-lime)]">{item.icon}</div>
+								<h3 class="font-space-grotesk mb-3 text-base font-bold text-white">{item.title}</h3>
+								<p class="text-sm leading-relaxed text-[var(--text-secondary)]">{item.description}</p>
+							</article>
+						))}
+					</ScrollReveal>
+				</div>
+			</section>
+
+			<section class="section-wrap py-16 md:py-20">
+				<div class="mx-auto max-w-6xl">
+					<div class="mb-12 text-center">
+						<p class="font-space-mono mb-3 text-xs font-medium tracking-[0.16em] text-[var(--accent-lime)]">CORE FEATURES</p>
+						<h2 class="font-space-grotesk text-3xl font-bold text-white md:text-4xl">Built for Creators Who Mean It</h2>
+					</div>
+
+					<div class="space-y-12">
+						<div class="grid items-center gap-10 lg:grid-cols-2">
+							<div>
+								<span class="font-space-mono mb-4 inline-block rounded-md bg-[rgb(196_248_42_/_0.12)] px-3 py-1 text-[11px] font-medium tracking-[0.08em] text-[var(--accent-lime)]">PROMPT-TO-GAME</span>
+								<h3 class="font-space-grotesk mb-4 text-3xl font-bold leading-tight text-white">Type an Idea.<br />Get a Playable Game.</h3>
+								<p class="text-base leading-relaxed text-[var(--text-secondary)]">Describe your game concept in plain English - "a tower defense game with cute animals" - and Slopcade's AI engine generates a fully playable game with sprites, physics, and game logic. No coding experience needed.</p>
+							</div>
+							<div class="design-card screenshot-shell h-72 md:h-96"><img src="/screenshots/prompt-game.svg" alt="Prompt to game preview" loading="lazy" /></div>
+						</div>
+
+						<div class="grid items-center gap-10 lg:grid-cols-2">
+							<div class="order-2 design-card screenshot-shell h-72 md:h-96 lg:order-1"><img src="/screenshots/remix-editor.svg" alt="Remix editor preview" loading="lazy" /></div>
+							<div class="order-1 lg:order-2">
+								<span class="font-space-mono mb-4 inline-block rounded-md bg-[rgb(196_248_42_/_0.12)] px-3 py-1 text-[11px] font-medium tracking-[0.08em] text-[var(--accent-lime)]">REMIXABILITY</span>
+								<h3 class="font-space-grotesk mb-4 text-3xl font-bold leading-tight text-white">Fork Any Game.<br />Make It Yours.</h3>
+								<p class="text-base leading-relaxed text-[var(--text-secondary)]">Every game on Slopcade is remixable. Fork a friend's game, swap out the theme, change the physics, add new mechanics. The remix tree tracks every fork so creators get credit.</p>
+							</div>
+						</div>
+
+						<div class="grid items-center gap-10 lg:grid-cols-2">
+							<div>
+								<span class="font-space-mono mb-4 inline-block rounded-md bg-[rgb(196_248_42_/_0.12)] px-3 py-1 text-[11px] font-medium tracking-[0.08em] text-[var(--accent-lime)]">SCRIPTING</span>
+								<h3 class="font-space-grotesk mb-4 text-3xl font-bold leading-tight text-white">Real Scripting Power.<br />Not a Toy.</h3>
+								<p class="text-base leading-relaxed text-[var(--text-secondary)]">Under the hood, every game runs on a real JavaScript engine with a physics system, particle effects, and an entity-component architecture. Drop into code view anytime to tweak, extend, or go fully custom.</p>
+							</div>
+							<div class="design-card screenshot-shell h-72 md:h-96"><img src="/screenshots/code-editor.svg" alt="Code editor preview" loading="lazy" /></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="section-wrap bg-[var(--bg-card)] py-16 md:py-20">
+				<div class="mx-auto max-w-6xl">
+					<div class="mb-12 text-center">
+						<p class="font-space-mono mb-3 text-xs font-medium tracking-[0.16em] text-[var(--accent-lime)]">MORE FEATURES</p>
+						<h2 class="font-space-grotesk text-3xl font-bold text-white md:text-4xl">Everything You Need to Ship Games</h2>
+					</div>
+					<div class="grid gap-6 md:grid-cols-2">
+						{moreFeatures.map((feature) => (
+							<article class="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-8">
+								<div class={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold ${feature.iconTone}`}>+</div>
+								<h3 class="font-space-grotesk mb-3 text-xl font-bold text-white">{feature.title}</h3>
+								<p class="text-sm leading-relaxed text-[var(--text-secondary)]">{feature.description}</p>
+							</article>
+						))}
+					</div>
+				</div>
+			</section>
+
+			<section class="section-wrap py-16 md:py-20">
+				<div class="mx-auto max-w-6xl text-center">
+					<div class="mb-6 inline-block rounded-full bg-[rgb(124_58_237_/_0.12)] px-4 py-1.5">
+						<p class="font-space-mono text-xs font-medium tracking-[0.16em] text-[var(--accent-purple)]">INVESTOR DECK</p>
+					</div>
+					<h2 class="font-space-grotesk mx-auto mb-4 max-w-[900px] text-4xl font-extrabold text-white md:text-5xl">Platform, Not a Single Title</h2>
+					<p class="mx-auto mb-12 max-w-[800px] text-base leading-relaxed text-[var(--text-secondary)] md:text-lg">Slopcade is a game creation platform with multiple product surfaces, AI-assisted content scaling, and multi-layer monetization &mdash; not one bet on one game.</p>
+					<div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+						{investorCards.map((card) => (
+							<article class="design-card p-7 text-left">
+								<div class={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold ${card.iconTone}`}>■</div>
+								<h3 class="font-space-grotesk mb-3 text-xl font-bold text-white">{card.title}</h3>
+								<p class="text-sm leading-relaxed text-[var(--text-secondary)]">{card.description}</p>
+							</article>
+						))}
+					</div>
+					<div class="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-[var(--text-tertiary)] md:gap-8">
+						<span class="font-space-mono">Godot</span>
+						<span class="font-space-mono">React Native</span>
+						<span class="font-space-mono">Cloudflare Workers</span>
+						<span class="font-space-mono">Durable Objects</span>
+						<span class="font-space-mono">Supabase</span>
+					</div>
+				</div>
+			</section>
+
+			<section id="pricing" class="section-wrap bg-[var(--bg-card)] py-16 md:py-20">
+				<div class="mx-auto max-w-6xl">
+					<div class="mb-12 text-center">
+						<p class="font-space-mono mb-3 text-xs font-medium tracking-[0.16em] text-[var(--accent-lime)]">CREATOR ECONOMY</p>
+						<h2 class="font-space-grotesk mb-3 text-4xl font-extrabold text-white md:text-5xl">Play. Create. Earn.</h2>
+						<p class="mx-auto max-w-[700px] text-base text-[var(--text-secondary)] md:text-lg">A clear path from player to creator to entrepreneur. Choose your tier and start building.</p>
+					</div>
+					<div class="grid gap-8 lg:grid-cols-2">
+						<article class="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-primary)] p-9">
+							<p class="font-space-mono mb-4 text-xs tracking-[0.16em] text-[var(--text-tertiary)]">FREE</p>
+							<div class="mb-4 flex items-end gap-1">
+								<span class="font-space-grotesk text-5xl font-extrabold text-white">$0</span>
+								<span class="text-base text-[var(--text-tertiary)]">/ forever</span>
+							</div>
+							<p class="mb-6 text-[15px] text-[var(--text-secondary)]">Start playing and creating games for free. Perfect for exploring the platform.</p>
+							<hr class="mb-6 border-[var(--border-subtle)]" />
+							<ul class="mb-7 space-y-3 text-sm text-[var(--text-secondary)]">
+								{freeFeatures.map((item) => <li class="inline-flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-[var(--accent-lime)]"></span>{item}</li>)}
+							</ul>
+							<a href="#" class="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-muted)] px-6 py-3.5 text-base font-semibold text-white">Login</a>
+						</article>
+						<article class="rounded-2xl border-2 border-[var(--accent-lime)] bg-[var(--bg-primary)] p-9">
+							<div class="mb-4 flex items-center justify-between">
+								<p class="font-space-mono text-xs tracking-[0.16em] text-[var(--accent-lime)]">PRO</p>
+								<span class="font-space-mono rounded-full bg-[rgb(196_248_42_/_0.12)] px-2.5 py-1 text-[10px] tracking-[0.08em] text-[var(--accent-lime)]">POPULAR</span>
+							</div>
+							<div class="mb-4 flex items-end gap-1">
+								<span class="font-space-grotesk text-5xl font-extrabold text-[var(--accent-lime)]">$9.99</span>
+								<span class="text-base text-[var(--text-tertiary)]">/ month</span>
+							</div>
+							<p class="mb-6 text-[15px] text-[var(--text-secondary)]">Unlimited creation power. More Sparks, revenue sharing, and priority access to new features.</p>
+							<hr class="mb-6 border-[var(--border-subtle)]" />
+							<ul class="mb-7 space-y-3 text-sm text-[var(--text-secondary)]">
+								{proFeatures.map((item) => <li class="inline-flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-[var(--accent-lime)]"></span>{item}</li>)}
+							</ul>
+							<a href="#" class="inline-flex w-full items-center justify-center rounded-xl bg-[var(--accent-lime)] px-6 py-3.5 text-base font-semibold text-black">Login</a>
+						</article>
+					</div>
+					<div class="mt-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-primary)] px-6 py-5 text-center">
+						<p class="text-sm leading-relaxed text-[var(--text-secondary)]">Sparks are the credit system powering AI generation. Free users get a daily allowance. Pro users get 500/month with rollover. Need more? Buy additional Spark packs anytime.</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="section-wrap py-20 md:py-24">
+				<div class="mx-auto max-w-6xl">
+					<div class="rounded-3xl bg-[radial-gradient(circle_at_top,_rgb(196_248_42_/_0.12),_transparent_70%)] px-6 py-16 text-center md:px-12">
+						<h2 class="font-space-grotesk mx-auto mb-4 max-w-[800px] text-4xl font-extrabold leading-tight text-white md:text-6xl">We're Coming Soon</h2>
+						<p class="mx-auto mb-8 max-w-[600px] text-lg text-[var(--text-secondary)]">Type a game idea. Play it today. Share it with the world.</p>
+						<div class="mb-5 flex flex-col justify-center gap-4 sm:flex-row">
+							<a href="#" class="inline-flex items-center justify-center rounded-xl bg-[var(--accent-lime)] px-9 py-4 text-lg font-bold text-black">Login</a>
+							<span class="inline-flex items-center justify-center rounded-xl border border-[var(--border-muted)] px-9 py-4 text-lg font-semibold text-white">Coming Soon</span>
+						</div>
+						<p class="text-sm text-[var(--text-tertiary)]">Free to start &middot; No credit card required &middot; Web, iOS, and Android</p>
+					</div>
+				</div>
+			</section>
+
+			<footer class="section-wrap bg-[var(--bg-card)] py-14 md:py-16">
+				<div class="mx-auto max-w-6xl">
+					<div class="mb-10 grid gap-10 lg:grid-cols-[300px_1fr] lg:justify-between">
+						<div>
+							<p class="font-space-grotesk mb-3 text-2xl font-extrabold tracking-[0.08em] text-[var(--accent-lime)]">SLOPCADE</p>
+							<p class="max-w-[280px] text-sm leading-relaxed text-[var(--text-tertiary)]">AI-powered game engine where anyone can create, remix, and play infinite games.</p>
+						</div>
+						<div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+							{footerColumns.map((column) => (
+								<div>
+									<h3 class="font-space-grotesk mb-3 text-sm font-bold text-white">{column.heading}</h3>
+									<ul class="space-y-2.5">
+										{column.links.map((link) => (
+											<li class="text-sm text-[var(--text-tertiary)]">{link}</li>
+										))}
+									</ul>
+								</div>
+							))}
+						</div>
+					</div>
+					<div class="mb-6 border-t border-[var(--border-subtle)]"></div>
+					<div class="flex flex-col items-center justify-between gap-3 text-center text-[13px] text-[var(--text-muted)] sm:flex-row sm:text-left">
+						<p>&copy; 2026 Slopcade. All rights reserved.</p>
+						<div class="flex items-center gap-6">
+							<span>Status</span>
+							<span>Changelog</span>
+							<span>Sitemap</span>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</body>
 </html>
