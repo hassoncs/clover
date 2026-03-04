@@ -69,6 +69,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
 		extra: {
 			...baseConfig.extra,
+			eas: {
+				projectId: "c628a2f5-88db-4d6e-9646-25473e70f35e",
+			},
 			brandId: "amen",
 			brandDisplayName: "Amen",
 			brandDomain: "amen.games",

@@ -63,6 +63,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
 		extra: {
 			...baseConfig.extra,
+			eas: {
+				projectId: "0986ef4c-3af5-431b-9479-b311f95e154d",
+			},
 			brandId: "slopbox",
 			brandDisplayName: "Slopbox",
 			brandDomain: "slopbox.tv",

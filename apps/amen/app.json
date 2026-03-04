@@ -1,55 +1,55 @@
 {
-	"expo": {
-		"scheme": "amen",
-		"icon": "./assets/icon.png",
-		"splash": {
-			"image": "./assets/splash.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#0D1C33"
-		},
-		"web": {
-			"output": "static",
-			"favicon": "./assets/favicon.png"
-		},
-		"plugins": [
-			"expo-router",
-			"./plugins/withGodotAssets",
-			"./plugins/withMetroPort",
-			"./plugins/withCameraFrameProcessor",
-			[
-				"react-native-vision-camera",
-				{
-					"cameraPermissionText": "Amen uses your camera for game features"
-				}
-			],
-			[
-				"expo-notifications",
-				{
-					"icon": "./assets/icon.png",
-					"color": "#C8A44E"
-				}
-			]
-		],
-		"userInterfaceStyle": "dark",
-		"name": "Amen",
-		"slug": "amen",
-		"description": "Christian party games — Scripture. Fellowship. Fun.",
-		"runtimeVersion": "1.0.0",
-		"ios": {
-			"bundleIdentifier": "games.amen.app",
-			"infoPlist": {
-				"ITSAppUsesNonExemptEncryption": false
-			}
-		},
-		"android": {
-			"package": "games.amen.app"
-		},
-		"assetBundlePatterns": ["**/*"],
-		"extra": {
-			"router": {},
-			"eas": {
-				"projectId": "TODO_AMEN_EAS_PROJECT_ID"
-			}
-		}
-	}
+  "expo": {
+    "scheme": "amen",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1C33"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "./plugins/withGodotAssets",
+      "./plugins/withMetroPort",
+      "./plugins/withCameraFrameProcessor",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Amen uses your camera for game features"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#C8A44E"
+        }
+      ]
+    ],
+    "userInterfaceStyle": "dark",
+    "name": "Amen",
+    "slug": "amen",
+    "description": "Christian party games — Scripture. Fellowship. Fun.",
+    "runtimeVersion": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "games.amen.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "games.amen.app"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {}
+    }
+  }
 }
