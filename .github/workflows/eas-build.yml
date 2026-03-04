@@ -5,13 +5,55 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/**'
+      - '.github/workflows/eas-build.yml'
+      - 'apps/slopcade/**'
+      - 'apps/amen/**'
+      - 'apps/slopbox/**'
+      - 'apps/shader-editor/**'
       - 'packages/**'
       - 'godot_project/**'
 
 jobs:
+  detect-changes:
+    name: Detect App Changes
+    runs-on: ubuntu-latest
+    outputs:
+      slopcade: ${{ steps.filter.outputs.slopcade }}
+      amen: ${{ steps.filter.outputs.amen }}
+      slopbox: ${{ steps.filter.outputs.slopbox }}
+      shader_editor: ${{ steps.filter.outputs.shader_editor }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            slopcade:
+              - '.github/workflows/eas-build.yml'
+              - 'apps/slopcade/**'
+              - 'packages/**'
+              - 'godot_project/**'
+            amen:
+              - '.github/workflows/eas-build.yml'
+              - 'apps/amen/**'
+              - 'packages/**'
+              - 'godot_project/**'
+            slopbox:
+              - '.github/workflows/eas-build.yml'
+              - 'apps/slopbox/**'
+              - 'packages/**'
+              - 'godot_project/**'
+            shader_editor:
+              - '.github/workflows/eas-build.yml'
+              - 'apps/shader-editor/**'
+              - 'packages/**'
+              - 'godot_project/**'
+
   build-slopcade:
     name: EAS Build (Slopcade)
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.slopcade == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +83,8 @@ jobs:
 
   build-amen:
     name: EAS Build (Amen)
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.amen == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +114,8 @@ jobs:
 
   build-slopbox:
     name: EAS Build (Slopbox)
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.slopbox == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -99,6 +145,8 @@ jobs:
 
   build-shader-editor:
     name: EAS Build (Shader Editor)
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.shader_editor == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -125,5 +173,3 @@ jobs:
       - name: Build iOS (production)
         run: eas build --platform ios --profile production --non-interactive --no-wait
         working-directory: apps/shader-editor
-
-

@@ -8,6 +8,7 @@ on:
       - '.github/workflows/deploy-landing.yml'
       - 'apps/landing-slopcade/**'
       - 'apps/landing-amen/**'
+      - 'apps/landing-slopbox/**'
       - 'packages/theme/**'
       - 'packages/ui/**'
 
@@ -18,6 +19,7 @@ jobs:
     outputs:
       slopcade: ${{ steps.filter.outputs.slopcade }}
       amen: ${{ steps.filter.outputs.amen }}
+      slopbox: ${{ steps.filter.outputs.slopbox }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +34,11 @@ jobs:
               - '.github/workflows/deploy-landing.yml'
             amen:
               - 'apps/landing-amen/**'
+              - 'packages/theme/**'
+              - 'packages/ui/**'
+              - '.github/workflows/deploy-landing.yml'
+            slopbox:
+              - 'apps/landing-slopbox/**'
               - 'packages/theme/**'
               - 'packages/ui/**'
               - '.github/workflows/deploy-landing.yml'
@@ -97,3 +104,34 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/ --project-name=amen-landing --commit-dirty=true
           workingDirectory: apps/landing-amen
+
+  deploy-slopbox-landing:
+    name: Deploy Slopbox Landing
+    needs: detect-changes
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.slopbox == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Build
+        run: pnpm build
+        working-directory: apps/landing-slopbox
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/ --project-name=slopbox-landing --commit-dirty=true
+          workingDirectory: apps/landing-slopbox
