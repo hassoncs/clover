@@ -128,10 +128,16 @@ jobs:
         run: pnpm build
         working-directory: apps/landing-slopbox
 
+      - name: Ensure Cloudflare Pages project exists
+        run: npx wrangler pages project create slotbox-landing --production-branch main || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist/ --project-name=slopbox-landing --commit-dirty=true
+          command: pages deploy dist/ --project-name=slotbox-landing --commit-dirty=true
           workingDirectory: apps/landing-slopbox
