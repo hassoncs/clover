@@ -1,0 +1,31 @@
+=== Task 12: Package Verification + CI Gates ===
+
+--- TypeScript checks ---
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+design-canvas: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+pencil-app: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+game-inspector-mcp: PASS
+
+--- Smoke script ---
+Smoke test complete: 26 passed, 0 failed
+
+✅ SMOKE TEST PASSED (26 assertions)
+
+--- Vitest (design-canvas) ---
+ Test Files  4 passed (4)
+      Tests  57 passed (57)
+
+--- Vitest (game-inspector-mcp) ---
+ Test Files  3 passed (3)
+      Tests  116 passed (116)
+
+--- Vitest (pencil-app) ---
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+
+=== ALL GATES PASSED ===

@@ -1,0 +1,36 @@
+=== Task 13: Legacy Deletion Execution ===
+
+## Decision: Quarantine, Not Delete
+
+The following legacy files are QUARANTINED (not deleted) because they are
+used by non-Pencil domains (game editor) and cannot be safely removed without
+validated replacements:
+
+  - packages/design-canvas/src/camera/useDesignCamera.ts
+    Reason: Used by game editor for camera positioning
+    Action: Quarantine — replace DesignFrame with generic Rect in future
+
+  - packages/design-canvas/src/assets/useDesignImageResolver.ts
+    Reason: Used by game editor for image resolution
+    Action: Quarantine — Pencil uses PenImage type instead
+
+## Pencil Runtime: CLEAN
+
+All Pencil runtime paths (apps/pencil/, packages/design-canvas/src/pen/,
+packages/game-inspector-mcp/src/) are free of legacy DesignDocument imports.
+
+## Post-Deletion Runtime Smoke
+Smoke test complete: 26 passed, 0 failed
+
+✅ SMOKE TEST PASSED (26 assertions)
+
+## Dangling Import Detection
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+design-canvas: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+pencil-app: PASS
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm.
+npm warn Unknown project config "dedupe-peer-dependents". This will stop working in the next major version of npm.
+game-inspector-mcp: PASS
