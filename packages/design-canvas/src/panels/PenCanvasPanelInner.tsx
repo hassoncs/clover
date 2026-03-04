@@ -8,7 +8,7 @@ import {
 	PenCanvasPanel as CanvasImpl,
 	type PenCanvasPanelProps,
 } from "./PenCanvasPanelImpl";
-import { PenRuntimeProvider } from "./PenRuntimeContext";
+import { PenRuntimeProvider, usePenRuntime } from "./PenRuntimeContext";
 import { ToolbarShell } from "./toolbar/ToolbarShell";
 
 export default function PenCanvasPanelInner(props: PenCanvasPanelProps) {
@@ -16,26 +16,25 @@ export default function PenCanvasPanelInner(props: PenCanvasPanelProps) {
 		<PenRuntimeProvider
 			document={props.document}
 			onChange={props.onChange}
-
-
-
-
-
-
-
-
 		>
-			<View style={styles.container}>
-				<LayersPanel />
-				<View style={styles.canvasArea}>
-					<ToolbarShell />
-					<CanvasImpl {...props} />
-				</View>
-				<VariablesPanel />
-				<ComponentsPanel />
-				<InspectorPanel />
-			</View>
+			<PenCanvasPanelInnerContent {...props} />
 		</PenRuntimeProvider>
+	);
+}
+
+function PenCanvasPanelInnerContent(props: PenCanvasPanelProps) {
+	const { activeRightPanel } = usePenRuntime();
+	return (
+		<View style={styles.container}>
+			<LayersPanel />
+			<View style={styles.canvasArea}>
+				<ToolbarShell />
+				<CanvasImpl {...props} />
+			</View>
+			{activeRightPanel === "variables" && <VariablesPanel />}
+			{activeRightPanel === "components" && <ComponentsPanel />}
+			{activeRightPanel === "inspector" && <InspectorPanel />}
+		</View>
 	);
 }
 

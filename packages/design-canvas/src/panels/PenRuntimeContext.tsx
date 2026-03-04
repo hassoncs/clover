@@ -8,6 +8,8 @@ import {
 import { PenToolFacade } from "../pen/runtime/facade";
 import type { SceneGraph } from "../pen/runtime/scene-graph";
 
+type RightPanel = "inspector" | "variables" | "components";
+
 interface PenRuntimeContextValue {
 	graph: SceneGraph;
 	facade: PenToolFacade;
@@ -18,6 +20,8 @@ interface PenRuntimeContextValue {
 	// A way to trigger re-renders when the graph mutates
 	revision: number;
 	commitMutation: () => void;
+	activeRightPanel: RightPanel;
+	setActiveRightPanel: (panel: RightPanel) => void;
 }
 
 const PenRuntimeContext = createContext<PenRuntimeContextValue | null>(null);
@@ -60,6 +64,7 @@ export function PenRuntimeProvider({
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [activeTool, setActiveTool] = useState<string>("pointer");
 	const [revision, setRevision] = useState(0);
+	const [activeRightPanel, setActiveRightPanel] = useState<RightPanel>("inspector");
 
 	const commitMutation = () => {
 		setRevision((r) => r + 1);
@@ -78,8 +83,10 @@ export function PenRuntimeProvider({
 			setActiveTool,
 			revision,
 			commitMutation,
+			activeRightPanel,
+			setActiveRightPanel,
 		}),
-		[graph, facade, selectedId, activeTool, revision],
+		[graph, facade, selectedId, activeTool, revision, activeRightPanel],
 	);
 
 	return (

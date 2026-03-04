@@ -14,46 +14,90 @@ const TOOLS = [
 	{ id: "pen", icon: "pencil-outline" },
 ] as const;
 
+const RIGHT_PANELS = [
+	{ id: "inspector", icon: "options-outline" },
+	{ id: "variables", icon: "code-slash-outline" },
+	{ id: "components", icon: "copy-outline" },
+] as const;
+
 export function ToolbarShell() {
 	const { editorColors: c } = useTheme();
-	const { activeTool, setActiveTool } = usePenRuntime();
+	const { activeTool, setActiveTool, activeRightPanel, setActiveRightPanel } = usePenRuntime();
 
 	return (
-		<View
-			style={[
-				styles.container,
-				{ backgroundColor: c.surface, borderColor: c.border },
-			]}
-		>
-			{TOOLS.map((tool) => {
-				const isActive = activeTool === tool.id;
-				return (
-					<Pressable
-						key={tool.id}
-						onPress={() => setActiveTool(tool.id)}
-						style={[
-							styles.toolButton,
-							isActive && { backgroundColor: c.surfaceHover },
-						]}
-					>
-					<Ionicons
-						name={tool.icon}
-						size={16}
-						color={isActive ? "#818cf8" : c.textSecondary}
-					/>
-					</Pressable>
-				);
-			})}
+		<View style={styles.wrapper}>
+			{/* Left: drawing tools */}
+			<View
+				style={[
+					styles.container,
+					{ backgroundColor: c.surface, borderColor: c.border },
+				]}
+			>
+				{TOOLS.map((tool) => {
+					const isActive = activeTool === tool.id;
+					return (
+						<Pressable
+							key={tool.id}
+							onPress={() => setActiveTool(tool.id)}
+							style={[
+								styles.toolButton,
+								isActive && { backgroundColor: c.surfaceHover },
+							]}
+						>
+							<Ionicons
+								name={tool.icon}
+								size={16}
+								color={isActive ? "#818cf8" : c.textSecondary}
+							/>
+						</Pressable>
+					);
+				})}
+			</View>
+
+			{/* Right: panel toggles */}
+			<View
+				style={[
+					styles.container,
+					{ backgroundColor: c.surface, borderColor: c.border },
+				]}
+			>
+				{RIGHT_PANELS.map((panel) => {
+					const isActive = activeRightPanel === panel.id;
+					return (
+						<Pressable
+							key={panel.id}
+							onPress={() => setActiveRightPanel(panel.id as "inspector" | "variables" | "components")}
+							style={[
+								styles.toolButton,
+								isActive && { backgroundColor: c.surfaceHover },
+							]}
+						>
+							<Ionicons
+								name={panel.icon}
+								size={16}
+								color={isActive ? "#818cf8" : c.textSecondary}
+							/>
+						</Pressable>
+					);
+				})}
+			</View>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
+	wrapper: {
 		position: "absolute",
 		top: 16,
-		left: "50%",
-		transform: [{ translateX: -140 }], // approx half width
+		left: 0,
+		right: 0,
+		flexDirection: "row",
+		justifyContent: "space-between",
+		paddingHorizontal: 16,
+		zIndex: 100,
+		pointerEvents: "box-none",
+	},
+	container: {
 		flexDirection: "row",
 		padding: 4,
 		borderRadius: 8,
@@ -64,7 +108,6 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.2,
 		shadowRadius: 8,
 		elevation: 5,
-		zIndex: 100,
 	},
 	toolButton: {
 		width: 32,
