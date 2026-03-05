@@ -44,7 +44,8 @@ export const designChatRouter = router({
 				message: z.string().min(1).max(10000),
 				documentJson: z.string().optional(),
 				selectedFrameId: z.string().nullable().optional(),
-				selectedElementId: z.string().nullable().optional(),
+selectedElementId: z.string().nullable().optional(),
+				selectedElementJson: z.string().optional(),
 			}),
 		)
 		.output(
@@ -63,7 +64,23 @@ export const designChatRouter = router({
 			const model = openrouter("anthropic/claude-3-5-sonnet");
 
 			const contextLines: string[] = [];
-			if (input.selectedElementId) contextLines.push(`Selected element: ${input.selectedElementId}`);
+			if (input.selectedElementJson) {
+				try {
+					const el = JSON.parse(input.selectedElementJson);
+					const props = [];
+					if (el.type) props.push(`type=${el.type}`);
+					if (el.width) props.push(`w=${el.width}`);
+					if (el.height) props.push(`h=${el.height}`);
+					if (el.fill) props.push(`fill=${el.fill}`);
+					if (el.color) props.push(`color=${el.color}`);
+					if (el.content) props.push(`content="${String(el.content).slice(0, 50)}"`);
+					if (el.fontSize) props.push(`fontSize=${el.fontSize}`);
+					if (el.x !== undefined) props.push(`x=${el.x}`);
+					if (el.y !== undefined) props.push(`y=${el.y}`);
+					contextLines.push(`Selected element properties: ${props.join(", ")}`);
+				} catch { /* ignore */ }
+			}
+			else if (input.selectedElementId) contextLines.push(`Selected element: ${input.selectedElementId}`);
 			else if (input.selectedFrameId) contextLines.push(`Selected frame: ${input.selectedFrameId}`);
 
 			if (input.documentJson) {
