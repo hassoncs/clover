@@ -37,7 +37,6 @@ export type {
 	UseDesignDocumentResult,
 } from "./document/useDesignDocument";
 
-
 // Canvas ops (for programmatic document mutations via MCP / AI)
 export { applyCanvasOps } from "./ops/canvasOps";
 export type { CanvasOp } from "./ops/canvasOps";
@@ -49,3 +48,5 @@ export type { PenRendererProps } from "./pen/render/PenRenderer";
 export { PenCanvasPanel } from "./panels/PenCanvasPanel";
 export type { PenCanvasPanelProps } from "./panels/PenCanvasPanel";
 export { hitTestLayoutTree, screenToWorldPen } from "./pen/hitTest";
+
+
