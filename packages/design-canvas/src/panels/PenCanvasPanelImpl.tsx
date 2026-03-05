@@ -34,6 +34,11 @@ export interface PenCanvasPanelProps {
   onSelectionChange?: (paths: string[][]) => void;
   agentCursors?: import("./MultiplayerOverlay").AgentCursor[];
   onInteractionEnd?: () => void;
+  // UI suppression props for external shell integration
+  hidePalette?: boolean;
+  externalActiveTool?: "pointer" | "pen";
+  hideHeader?: boolean;
+  hideLayers?: boolean;
 }
 
 const MIN_SCALE = 0.05;
@@ -407,6 +412,10 @@ export function PenCanvasPanel({
   selectedNodePaths: selectedNodePathsProp,
   onSelectionChange,
   agentCursors,
+  hidePalette,
+  externalActiveTool,
+  hideHeader,
+  hideLayers,
 }: PenCanvasPanelProps) {
   const { editorColors: c } = useTheme();
   const { width, height } = useWindowDimensions();
@@ -436,6 +445,13 @@ export function PenCanvasPanel({
   const [activeTool, setActiveToolState] = useState<"pointer" | "pen">(
     "pointer"
   );
+  // Sync the sidebar-controlled tool state with the internal pointer/pen state.
+  useEffect(() => {
+    if (externalActiveTool !== undefined && externalActiveTool !== activeTool) {
+      activeToolRef.current = externalActiveTool;
+      setActiveToolState(externalActiveTool);
+    }
+  }, [externalActiveTool, activeTool]);
   const [penState, setPenState] = useState<PenDrawingState>(EMPTY_PEN_STATE);
   const primarySelectedNodePath = selectedNodePaths[0] ?? null;
 
@@ -891,7 +907,8 @@ export function PenCanvasPanel({
       accessibilityLabel="Pen Canvas Panel"
       testID="pen-canvas-panel"
     >
-      <View style={[styles.header, { borderBottomColor: c.border }]}>
+      {!hideHeader && (
+        <View style={[styles.header, { borderBottomColor: c.border }]}>
         <Text style={[styles.title, { color: c.text }]}>CANVAS</Text>
         <View style={styles.headerRight}>
           <View style={[styles.navControls, { backgroundColor: c.surface }]}>
@@ -974,6 +991,7 @@ export function PenCanvasPanel({
           )}
         </View>
       </View>
+      )}
 
       <View style={styles.content}>
         {isLoading ? (
@@ -982,7 +1000,7 @@ export function PenCanvasPanel({
           </Text>
         ) : (
           <View style={styles.canvasArea}>
-            {showLayers && (
+            {!hideLayers && showLayers && (
               <LayersPanel
                 nodes={penDocument.children}
                 selectedNodePath={primarySelectedNodePath}
@@ -1026,7 +1044,7 @@ export function PenCanvasPanel({
                 document={penDocument}
                 camera={camera}
               />
-              {onAddNode && (
+              {!hidePalette && onAddNode && (
                 <ToolPalette
                   activeTool={activeTool}
                   onSelectTool={switchTool}
