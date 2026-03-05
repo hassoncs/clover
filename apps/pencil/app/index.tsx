@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { PenCanvasPanel } from "@slopcade/design-canvas";
 import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { parsePenDocument } from "@slopcade/shared/types/pen";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -19,23 +19,54 @@ import { trpc } from "../lib/trpc/trpc";
 import { usePencilBridge } from "../lib/usePencilBridge";
 import { usePencilServer } from "../lib/usePencilServer";
 
-const C = {
-	bg: "#0d0d0d",
-	sidebar: "#111111",
-	border: "#242424",
-	text: "#e8e8e8",
-	accent: "#818cf8",
-	textMuted: "#a1a1aa",
-	iconMuted: "#555555",
-	rowHover: "#2a2a2a",
-	rowSelected: "#1e1e2a",
-	bubbleAi: "#1a1a1a",
-	bubbleUser: "#818cf8",
-	surface: "#141414",
-	trafficLightClose: "#ff5f57",
-	trafficLightMinimize: "#febc2e",
-	trafficLightMaximize: "#28c840",
+const THEMES = {
+	dark: {
+		bg: "#0d0d0d",
+		sidebar: "#111111",
+		border: "#242424",
+		text: "#e8e8e8",
+		accent: "#818cf8",
+		textMuted: "#a1a1aa",
+		iconMuted: "#555555",
+		rowHover: "#2a2a2a",
+		rowSelected: "#1e1e2a",
+		bubbleAi: "#1a1a1a",
+		bubbleUser: "#818cf8",
+		surface: "#141414",
+		trafficLightClose: "#ff5f57",
+		trafficLightMinimize: "#febc2e",
+		trafficLightMaximize: "#28c840",
+	},
+	light: {
+		bg: "#ffffff",
+		sidebar: "#f5f5f5",
+		border: "#e0e0e0",
+		text: "#1a1a1a",
+		accent: "#6366f1",
+		textMuted: "#71717a",
+		iconMuted: "#a1a1aa",
+		rowHover: "#e4e4e7",
+		rowSelected: "#d4d4d8",
+		bubbleAi: "#f4f4f5",
+		bubbleUser: "#6366f1",
+		surface: "#fafafa",
+		trafficLightClose: "#ff5f57",
+		trafficLightMinimize: "#febc2e",
+		trafficLightMaximize: "#28c840",
+	}
 } as const;
+
+type Theme = "dark" | "light";
+type ThemeColors = Record<keyof typeof THEMES.dark, string>;
+
+const ThemeContext = React.createContext<{ theme: Theme; colors: ThemeColors }>({
+	theme: "dark",
+	colors: THEMES.dark,
+});
+
+function useTheme() {
+	return React.useContext(ThemeContext);
+}
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 type ToolId = "pointer" | "frame" | "text" | "image" | "hand" | "note" | "pen";
@@ -168,6 +199,8 @@ interface TitleBarProps {
 	showLayers: boolean;
 	onToggleLayers: () => void;
 	isConnected: boolean;
+	theme: Theme;
+	onToggleTheme: () => void;
 }
 
 function TitleBar({
@@ -181,7 +214,11 @@ function TitleBar({
 	showLayers,
 	onToggleLayers,
 	isConnected,
+	theme,
+	onToggleTheme,
 }: TitleBarProps) {
+	const { colors: C } = useTheme();
+	const titleBarStyles = STYLES[theme].titleBarStyles;
 	return (
 		<View style={titleBarStyles.container}>
 			<View style={titleBarStyles.leftRail}>
@@ -264,7 +301,7 @@ function TitleBar({
 					<Text style={titleBarStyles.agentsButtonText}>Agents & MCP</Text>
 				</Pressable>
 				<View style={titleBarStyles.divider} />
-				<IconButton icon="sunny-outline" accessibilityLabel="Theme" />
+				<IconButton icon={theme === "dark" ? "sunny-outline" : "moon-outline"} onPress={onToggleTheme} accessibilityLabel="Toggle Theme" />
 				<IconButton icon="expand-outline" accessibilityLabel="Expand" />
 			</View>
 		</View>
@@ -284,6 +321,8 @@ function ToolSidebar({
 	showLayers,
 	onToggleLayers,
 }: ToolSidebarProps) {
+	const { theme, colors: C } = useTheme();
+	const toolSidebarStyles = STYLES[theme].toolSidebarStyles;
 	return (
 		<View style={toolSidebarStyles.container}>
 			<IconButton
@@ -345,6 +384,8 @@ function LayersPanel({
 	selectedNodePaths,
 	onSelectNode,
 }: LayersPanelProps) {
+	const { theme, colors: C } = useTheme();
+	const layersPanelStyles = STYLES[theme].layersPanelStyles;
 	const [collapsedIds, setCollapsedIds] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -471,6 +512,8 @@ function ChatSidebar({
 	document,
 	onApplyOps,
 }: ChatSidebarProps) {
+	const { theme, colors: C } = useTheme();
+	const chatSidebarStyles = STYLES[theme].chatSidebarStyles;
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [input, setInput] = useState("");
 	const sendMessageMutation = trpc.designChat.sendMessage.useMutation();
@@ -710,6 +753,8 @@ interface ChatCollapsedStripProps {
 }
 
 function ChatCollapsedStrip({ onOpen }: ChatCollapsedStripProps) {
+	const { theme, colors: C } = useTheme();
+	const chatCollapsedStripStyles = STYLES[theme].chatCollapsedStripStyles;
 	return (
 		<Pressable style={chatCollapsedStripStyles.container} onPress={onOpen}>
 			<View style={chatCollapsedStripStyles.contentWrap}>
@@ -735,6 +780,8 @@ function IconButton({
 	disabled = false,
 	accessibilityLabel,
 }: IconButtonProps) {
+	const { theme, colors: C } = useTheme();
+	const sharedStyles = STYLES[theme].sharedStyles;
 	return (
 		<Pressable
 			onPress={onPress}
@@ -759,6 +806,8 @@ interface ActionButtonProps {
 }
 
 function ActionButton({ icon, label, onPress }: ActionButtonProps) {
+	const { theme, colors: C } = useTheme();
+	const sharedStyles = STYLES[theme].sharedStyles;
 	return (
 		<Pressable style={sharedStyles.actionButton} onPress={onPress}>
 			<Ionicons name={icon} size={13} color={C.textMuted} />
@@ -768,6 +817,9 @@ function ActionButton({ icon, label, onPress }: ActionButtonProps) {
 }
 
 export default function PencilScreen() {
+	const [theme, setTheme] = useState<Theme>("dark");
+	const colors = THEMES[theme];
+	const styles = STYLES[theme].main;
 	const { document, setDocument, commitHistory, undo, redo, canUndo, canRedo } =
 		useDocumentHistory(loadSampleDocument());
 	const [selectedNodePaths, setSelectedNodePaths] = useState<string[][]>([]);
@@ -900,6 +952,7 @@ export default function PencilScreen() {
 	const showChatSidebar = chatOpen && !chatCollapsed;
 
 	return (
+		<ThemeContext.Provider value={{ theme, colors }}>
 		<SafeAreaView style={styles.root}>
 			<TitleBar
 				canUndo={canUndo}
@@ -912,6 +965,8 @@ export default function PencilScreen() {
 				showLayers={showLayers}
 				onToggleLayers={() => setShowLayers((prev) => !prev)}
 				isConnected={isConnected}
+				theme={theme}
+				onToggleTheme={() => setTheme(t => t === "dark" ? "light" : "dark")}
 			/>
 
 			<View style={styles.mainRow}>
@@ -955,10 +1010,11 @@ export default function PencilScreen() {
 				)}
 			</View>
 		</SafeAreaView>
+		</ThemeContext.Provider>
 	);
 }
 
-const sharedStyles = StyleSheet.create({
+const getSharedStyles = (C: ThemeColors) => StyleSheet.create({
 	iconButton: {
 		width: 28,
 		height: 28,
@@ -993,7 +1049,7 @@ const sharedStyles = StyleSheet.create({
 	},
 });
 
-const titleBarStyles = StyleSheet.create({
+const getTitleBarStyles = (C: ThemeColors) => StyleSheet.create({
 	container: {
 		height: 44,
 		borderBottomWidth: 1,
@@ -1078,7 +1134,7 @@ const titleBarStyles = StyleSheet.create({
 	},
 });
 
-const toolSidebarStyles = StyleSheet.create({
+const getToolSidebarStyles = (C: ThemeColors) => StyleSheet.create({
 	container: {
 		width: 48,
 		borderRightWidth: 1,
@@ -1113,7 +1169,7 @@ const toolSidebarStyles = StyleSheet.create({
 	},
 });
 
-const layersPanelStyles = StyleSheet.create({
+const getLayersPanelStyles = (C: ThemeColors) => StyleSheet.create({
 	container: {
 		width: 200,
 		borderRightWidth: 1,
@@ -1168,7 +1224,7 @@ const layersPanelStyles = StyleSheet.create({
 	},
 });
 
-const chatSidebarStyles = StyleSheet.create({
+const getChatSidebarStyles = (C: ThemeColors) => StyleSheet.create({
 	container: {
 		width: 340,
 		borderLeftWidth: 1,
@@ -1378,7 +1434,7 @@ const chatSidebarStyles = StyleSheet.create({
 	},
 });
 
-const chatCollapsedStripStyles = StyleSheet.create({
+const getChatCollapsedStripStyles = (C: ThemeColors) => StyleSheet.create({
 	container: {
 		width: 40,
 		borderLeftWidth: 1,
@@ -1400,7 +1456,7 @@ const chatCollapsedStripStyles = StyleSheet.create({
 	},
 });
 
-const styles = StyleSheet.create({
+const getStyles = (C: ThemeColors) => StyleSheet.create({
 	root: {
 		flex: 1,
 		backgroundColor: C.bg,
@@ -1415,3 +1471,24 @@ const styles = StyleSheet.create({
 		backgroundColor: C.bg,
 	},
 });
+
+const STYLES = {
+	dark: {
+		sharedStyles: getSharedStyles(THEMES.dark),
+		titleBarStyles: getTitleBarStyles(THEMES.dark),
+		toolSidebarStyles: getToolSidebarStyles(THEMES.dark),
+		layersPanelStyles: getLayersPanelStyles(THEMES.dark),
+		chatSidebarStyles: getChatSidebarStyles(THEMES.dark),
+		chatCollapsedStripStyles: getChatCollapsedStripStyles(THEMES.dark),
+		main: getStyles(THEMES.dark),
+	},
+	light: {
+		sharedStyles: getSharedStyles(THEMES.light),
+		titleBarStyles: getTitleBarStyles(THEMES.light),
+		toolSidebarStyles: getToolSidebarStyles(THEMES.light),
+		layersPanelStyles: getLayersPanelStyles(THEMES.light),
+		chatSidebarStyles: getChatSidebarStyles(THEMES.light),
+		chatCollapsedStripStyles: getChatCollapsedStripStyles(THEMES.light),
+		main: getStyles(THEMES.light),
+	}
+};
