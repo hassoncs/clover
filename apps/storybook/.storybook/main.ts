@@ -13,7 +13,10 @@ const packagesPath = path.resolve(__dirname, "../../../packages");
 const sharedPath = path.resolve(__dirname, "../../../shared");
 
 const config: StorybookConfig = {
-	stories: ["../../../packages/ui/**/*.stories.@(js|jsx|ts|tsx)"],
+	stories: [
+		"../../../packages/ui/**/*.stories.@(js|jsx|ts|tsx)",
+		"../../../packages/design-canvas/**/*.stories.@(js|jsx|ts|tsx)",
+	],
 
 	addons: ["@storybook/addon-essentials", "@storybook/addon-interactions"],
 
@@ -143,6 +146,8 @@ const config: StorybookConfig = {
 			...config.resolve.alias,
 			"react-native$": "react-native-web",
 			"@slopcade/ui": path.resolve(__dirname, "../../../packages/ui/src"),
+			"@slopcade/design-canvas": path.resolve(__dirname, "../../../packages/design-canvas/src"),
+			"@slopcade/theme": path.resolve(__dirname, "../../../packages/theme/src"),
 			"@slopcade/theme": path.resolve(__dirname, "../../../packages/theme/src"),
 			"@slopcade/physics": path.resolve(
 				__dirname,
