@@ -1,3 +1,4 @@
+import { ResizableSplit } from "@slopcade/design-canvas";
 import { PenCanvasPanel } from "@slopcade/design-canvas";
 import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { parsePenDocument } from "@slopcade/shared/types/pen";
@@ -15,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { applyDesignChatOpsToDocument } from "../lib/designChatOps";
 import { usePencilBridge } from "../lib/usePencilBridge";
+import { trpc } from "../lib/trpc/trpc";
 import { usePencilServer } from "../lib/usePencilServer";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -42,8 +44,70 @@ function loadSampleDocument(): PenDocument {
   }
 }
 
+function useDocumentHistory(initialDoc: PenDocument) {
+  const [state, setState] = useState({ history: [initialDoc], index: 0 });
+  const isDebouncingRef = useRef(false);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const document = state.history[state.index];
+
+  const setDocument = useCallback(
+    (nextOrUpdater: PenDocument | ((prev: PenDocument) => PenDocument)) => {
+      setState((prevState) => {
+        const { history, index } = prevState;
+        const prevDoc = history[index];
+        const nextDoc =
+          typeof nextOrUpdater === "function"
+            ? nextOrUpdater(prevDoc)
+            : nextOrUpdater;
+        if (prevDoc === nextDoc) return prevState;
+
+        const newHistory = history.slice(0, index + 1);
+
+        if (isDebouncingRef.current) {
+          // Active continuous interaction (like dragging), overwrite top frame
+          newHistory[newHistory.length - 1] = nextDoc;
+        } else {
+          // New discrete interaction, push new frame
+          newHistory.push(nextDoc);
+          if (newHistory.length > 50) newHistory.shift();
+          isDebouncingRef.current = true;
+        }
+
+        // Fallback: if no interaction ends it cleanly, auto-commit after 1 second of inactivity
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => {
+          isDebouncingRef.current = false;
+        }, 1000);
+
+        return { history: newHistory, index: newHistory.length - 1 };
+      });
+  }, []);
+
+  const commitHistory = useCallback(() => {
+    isDebouncingRef.current = false;
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+  }, []);
+
+  const undo = useCallback(() => {
+    commitHistory();
+    setState((prev) => ({ ...prev, index: Math.max(0, prev.index - 1) }));
+  }, [commitHistory]);
+
+  const redo = useCallback(() => {
+    commitHistory();
+    setState((prev) => ({ ...prev, index: Math.min(prev.history.length - 1, prev.index + 1) }));
+  }, [commitHistory]);
+
+  const canUndo = state.index > 0;
+  const canRedo = state.index < state.history.length - 1;
+
+  return { document, setDocument, commitHistory, undo, redo, canUndo, canRedo };
+}
+
 export default function PencilScreen() {
-  const [document, setDocument] = useState<PenDocument>(loadSampleDocument);
+  const { document, setDocument, commitHistory, undo, redo, canUndo, canRedo } =
+    useDocumentHistory(loadSampleDocument());
   const [selectedNodePaths, setSelectedNodePaths] = useState<string[][]>([]);
   const [chatOpen, setChatOpen] = useState(true);
   const selectedNodePath = selectedNodePaths[0] ?? null;
@@ -62,13 +126,31 @@ export default function PencilScreen() {
   usePencilBridge(document, setDocument, selectedNodePaths, bridgeOptions);
 
   // Connect to Pencil Server
-  const { isConnected, agentCursors } = usePencilServer({
+  const { isConnected, agentCursors, sendDelta } = usePencilServer({
     document,
     setDocument,
     onDocumentChange: (doc) => {
       persistDocument(doc);
     },
   });
+
+  // Global undo/redo shortcuts
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        if (window.document.activeElement?.tagName === "INPUT" || window.document.activeElement?.tagName === "TEXTAREA") return;
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [undo, redo]);
 
   useEffect(() => {
     persistDocument(document);
@@ -132,45 +214,59 @@ export default function PencilScreen() {
         </Text>
       </View>
       <View style={styles.container}>
-        <View style={styles.canvas}>
-          <PenCanvasPanel
-            document={document}
-            onAddNode={handleAddNode}
-            onDocumentChange={setDocument}
-            selectedNodePaths={selectedNodePaths}
-            onSelectionChange={setSelectedNodePaths}
-            agentCursors={agentCursors}
+        {chatOpen ? (
+          <ResizableSplit
+            direction="horizontal"
+            storageKey="pencil:canvas-chat"
+            defaultFirstSize={72}
+            minFirstSize={40}
+            maxFirstSize={90}
+            minSecondSize={15}
+            first={
+              <PenCanvasPanel
+                document={document}
+                onAddNode={handleAddNode}
+                onDocumentChange={setDocument}
+                selectedNodePaths={selectedNodePaths}
+                onSelectionChange={setSelectedNodePaths}
+                agentCursors={agentCursors}
+                onInteractionEnd={commitHistory}
+              />
+            }
+            second={
+              <ChatSidebar
+                onClose={() => setChatOpen(false)}
+                selectedNodePath={selectedNodePath}
+                document={document}
+                onApplyOps={(ops) => {
+                  const result = applyDesignChatOpsToDocument(document, ops);
+                  setDocument(result.nextDocument);
+                  if (isConnected) {
+                    sendDelta(ops);
+                  }
+                  return { appliedOps: result.appliedOps, errors: result.errors };
+                }}
+              />
+            }
           />
-        </View>
-
-        {chatOpen && (
-          <View style={styles.sidebar}>
-            <ChatSidebar
-              onClose={() => setChatOpen(false)}
-              selectedNodePath={selectedNodePath}
+        ) : (
+          <>
+            <PenCanvasPanel
               document={document}
-              onApplyOps={(ops) => {
-                let appliedOps = 0;
-                let errors: string[] = [];
-                setDocument((prev) => {
-                  const result = applyDesignChatOpsToDocument(prev, ops);
-                  appliedOps = result.appliedOps;
-                  errors = result.errors;
-                  return result.nextDocument;
-                });
-                return { appliedOps, errors };
-              }}
+              onAddNode={handleAddNode}
+              onDocumentChange={setDocument}
+              selectedNodePaths={selectedNodePaths}
+              onSelectionChange={setSelectedNodePaths}
+              agentCursors={agentCursors}
+              onInteractionEnd={commitHistory}
             />
-          </View>
-        )}
-
-        {!chatOpen && (
-          <Pressable
-            style={styles.openChatButton}
-            onPress={() => setChatOpen(true)}
-          >
-            <Text style={styles.openChatButtonText}>✦ Chat</Text>
-          </Pressable>
+            <Pressable
+              style={styles.openChatButton}
+              onPress={() => setChatOpen(true)}
+            >
+              <Text style={styles.openChatButtonText}>✦ Chat</Text>
+            </Pressable>
+          </>
         )}
       </View>
     </SafeAreaView>
@@ -250,13 +346,14 @@ function ChatSidebar({
         opErrors: errors,
       };
       setMessages((prev) => [...prev, reply]);
-    } catch {
+    } catch (e: any) {
+      console.error("Chat error:", e);
       setMessages((prev) => [
         ...prev,
         {
           id: `err-${Date.now()}`,
           role: "assistant",
-          content: "Something went wrong. Please try again.",
+          content: `Something went wrong: ${e?.message ?? "unknown"}`,
         },
       ]);
     } finally {
@@ -350,7 +447,12 @@ function ChatSidebar({
           placeholderTextColor="#6460a0"
           multiline
           maxLength={2000}
-          onSubmitEditing={send}
+          onKeyPress={(e: any) => {
+            if (e.nativeEvent.key === "Enter" && !e.nativeEvent.shiftKey) {
+              e.preventDefault();
+              send();
+            }
+          }}
           blurOnSubmit={false}
         />
         <Pressable
@@ -409,7 +511,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sidebar: {
-    width: 320,
+    flex: 1,
     borderLeftWidth: 1,
     borderLeftColor: "#2d2650",
   },

@@ -50,3 +50,7 @@ export type { PenCanvasPanelProps } from "./panels/PenCanvasPanel";
 export { hitTestLayoutTree, screenToWorldPen } from "./pen/hitTest";
 
 
+
+// Resizable split utility
+export { ResizableSplit } from './ResizableSplit';
+export type { ResizableSplitProps } from './ResizableSplit';

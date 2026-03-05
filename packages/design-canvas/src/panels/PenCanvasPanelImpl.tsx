@@ -33,6 +33,7 @@ export interface PenCanvasPanelProps {
   selectedNodePaths?: string[][];
   onSelectionChange?: (paths: string[][]) => void;
   agentCursors?: import("./MultiplayerOverlay").AgentCursor[];
+  onInteractionEnd?: () => void;
 }
 
 const MIN_SCALE = 0.05;
