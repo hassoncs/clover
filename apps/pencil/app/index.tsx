@@ -2,7 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { PenCanvasPanel } from "@slopcade/design-canvas";
 import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { parsePenDocument } from "@slopcade/shared/types/pen";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -53,16 +59,18 @@ const THEMES = {
 		trafficLightClose: "#ff5f57",
 		trafficLightMinimize: "#febc2e",
 		trafficLightMaximize: "#28c840",
-	}
+	},
 } as const;
 
 type Theme = "dark" | "light";
 type ThemeColors = Record<keyof typeof THEMES.dark, string>;
 
-const ThemeContext = React.createContext<{ theme: Theme; colors: ThemeColors }>({
-	theme: "dark",
-	colors: THEMES.dark,
-});
+const ThemeContext = React.createContext<{ theme: Theme; colors: ThemeColors }>(
+	{
+		theme: "dark",
+		colors: THEMES.dark,
+	},
+);
 
 function useTheme() {
 	return React.useContext(ThemeContext);
@@ -90,6 +98,7 @@ const TYPE_ICONS: Record<string, IconName> = {
 	polygon: "shapes-outline",
 	path: "git-network-outline",
 	group: "apps-outline",
+	effect: "flash-outline",
 	image: "image-outline",
 	note: "document-text-outline",
 };
@@ -119,21 +128,41 @@ function loadSampleDocument(): PenDocument {
 	}
 }
 
-function getSelectedElementProperties(document: PenDocument, selectedNodePath: string[] | null): string | null {
-  if (!selectedNodePath || selectedNodePath.length === 0) return null;
-  const findNode = (nodes: PenNode[], path: string[]): PenNode | null => {
-    if (path.length === 0) return null;
-    const [first, ...rest] = path;
-    const node = nodes.find((n) => n.id === first);
-    if (!node) return null;
-    if (rest.length === 0) return node;
-    if ("children" in node && Array.isArray(node.children)) return findNode(node.children as PenNode[], rest);
-    return null;
-  };
-  const node = findNode(document.children, selectedNodePath);
-  if (!node) return null;
-  const { children, ...properties } = node as Record<string, unknown>;
-  return JSON.stringify(properties);
+function getSelectedElementProperties(
+	document: PenDocument,
+	selectedNodePath: string[] | null,
+): string | null {
+	if (!selectedNodePath || selectedNodePath.length === 0) return null;
+	const findNode = (nodes: PenNode[], path: string[]): PenNode | null => {
+		if (path.length === 0) return null;
+		const [first, ...rest] = path;
+		const node = nodes.find((n) => n.id === first);
+		if (!node) return null;
+		if (rest.length === 0) return node;
+		if (node.type === "ref") {
+			const descendants = (node as { descendants?: Record<string, unknown> })
+				.descendants;
+			const descendantPath = rest.join("/");
+			const descendantPatch =
+				descendants && typeof descendants[descendantPath] === "object"
+					? (descendants[descendantPath] as Record<string, unknown>)
+					: null;
+			if (descendantPatch) {
+				return {
+					type: "ref",
+					id: path.join("/"),
+					...descendantPatch,
+				} as PenNode;
+			}
+		}
+		if ("children" in node && Array.isArray(node.children))
+			return findNode(node.children as PenNode[], rest);
+		return null;
+	};
+	const node = findNode(document.children, selectedNodePath);
+	if (!node) return null;
+	const { children, ...properties } = node as Record<string, unknown>;
+	return JSON.stringify(properties);
 }
 
 function useDocumentHistory(initialDoc: PenDocument) {
@@ -318,7 +347,11 @@ function TitleBar({
 					<Text style={titleBarStyles.agentsButtonText}>Agents & MCP</Text>
 				</Pressable>
 				<View style={titleBarStyles.divider} />
-				<IconButton icon={theme === "dark" ? "sunny-outline" : "moon-outline"} onPress={onToggleTheme} accessibilityLabel="Toggle Theme" />
+				<IconButton
+					icon={theme === "dark" ? "sunny-outline" : "moon-outline"}
+					onPress={onToggleTheme}
+					accessibilityLabel="Toggle Theme"
+				/>
 				<IconButton icon="expand-outline" accessibilityLabel="Expand" />
 			</View>
 		</View>
@@ -544,20 +577,19 @@ function ChatSidebar({
 		"Add visual hierarchy",
 	];
 
-  const selectedNodeInfo = useMemo(() => {
-    if (!selectedNodePath || selectedNodePath.length === 0) return null;
-    const props = getSelectedElementProperties(document, selectedNodePath);
-    if (!props) return null;
-    const parsed = JSON.parse(props);
-    const type = parsed.type ?? "node";
-    const name = parsed.name ?? parsed.content ?? parsed.id?.slice(0, 8);
-    return { type, name: String(name), full: props };
-  }, [document, selectedNodePath]);
+	const selectedNodeInfo = useMemo(() => {
+		if (!selectedNodePath || selectedNodePath.length === 0) return null;
+		const props = getSelectedElementProperties(document, selectedNodePath);
+		if (!props) return null;
+		const parsed = JSON.parse(props);
+		const type = parsed.type ?? "node";
+		const name = parsed.name ?? parsed.content ?? parsed.id?.slice(0, 8);
+		return { type, name: String(name), full: props };
+	}, [document, selectedNodePath]);
 
-  const contextHint = selectedNodeInfo ? `Selected: ${selectedNodeInfo.type} "${selectedNodeInfo.name}"` : null;
-		selectedNodePath && selectedNodePath.length > 0
-			? `Selected: ${selectedNodePath[selectedNodePath.length - 1].slice(0, 8)}`
-			: null;
+	const contextHint = selectedNodeInfo
+		? `Selected: ${selectedNodeInfo.type} "${selectedNodeInfo.name}"`
+		: null;
 
 	const handleSend = useCallback(async () => {
 		const text = input.trim();
@@ -572,14 +604,18 @@ function ChatSidebar({
 		setMessages((prev) => [...prev, userMessage]);
 		setInput("");
 
-    const selectedElementJson = getSelectedElementProperties(document, selectedNodePath) ?? undefined;
+		const selectedElementJson =
+			getSelectedElementProperties(document, selectedNodePath) ?? undefined;
 
 		try {
 			const response = await sendMessageMutation.mutateAsync({
 				message: text,
 				documentJson: JSON.stringify(document),
 				selectedFrameId: selectedNodePath?.[0] ?? undefined,
-				selectedElementId: selectedNodePath?.[1] ?? undefined,
+				selectedElementId:
+					selectedNodePath && selectedNodePath.length > 0
+						? selectedNodePath.join("/")
+						: undefined,
 				selectedElementJson: selectedElementJson ?? undefined,
 			});
 
@@ -736,6 +772,12 @@ function ChatSidebar({
 					<TextInput
 						value={input}
 						onChangeText={setInput}
+						onKeyPress={(event) => {
+							if (event.nativeEvent.key === "Enter") {
+								event.preventDefault();
+								void handleSend();
+							}
+						}}
 						style={chatSidebarStyles.textInput}
 						placeholder="Describe what to change"
 						placeholderTextColor={C.textMuted}
@@ -859,18 +901,7 @@ export default function PencilScreen() {
 	const [activeTool, setActiveTool] = useState<ToolId>("pointer");
 	const selectedNodePath = selectedNodePaths[0] ?? null;
 
-	const bridgeOptions = useMemo(
-		() => ({
-			onNewDocument: () => {
-				setDocument(createEmptyDocument());
-				setSelectedNodePaths([]);
-			},
-			onSaveDocument: () => persistDocument(document),
-		}),
-		[document, setDocument],
-	);
-
-	usePencilBridge(document, setDocument, selectedNodePaths, bridgeOptions);
+	usePencilBridge(document, setDocument);
 
 	const { isConnected, agentCursors, sendDelta } = usePencilServer({
 		document,
@@ -968,7 +999,9 @@ export default function PencilScreen() {
 		[document, isConnected, sendDelta, setDocument],
 	);
 
-	const penCanvasTool = (activeTool === "pen" ? "pen" : "pointer") as "pointer" | "pen";
+	const penCanvasTool = (activeTool === "pen" ? "pen" : "pointer") as
+		| "pointer"
+		| "pen";
 	const penCanvasUiProps = useMemo(
 		() => ({
 			hidePalette: true,
@@ -983,524 +1016,533 @@ export default function PencilScreen() {
 
 	return (
 		<ThemeContext.Provider value={{ theme, colors }}>
-		<SafeAreaView style={styles.root}>
-			<TitleBar
-				canUndo={canUndo}
-				canRedo={canRedo}
-				onUndo={undo}
-				onRedo={redo}
-				onNewDocument={handleNewDocument}
-				onLoadDocument={handleLoadDocument}
-				onSaveDocument={handleSaveDocument}
-				showLayers={showLayers}
-				onToggleLayers={() => setShowLayers((prev) => !prev)}
-				isConnected={isConnected}
-				theme={theme}
-				onToggleTheme={() => setTheme(t => t === "dark" ? "light" : "dark")}
-			/>
-
-			<View style={styles.mainRow}>
-				<ToolSidebar
-					activeTool={activeTool}
-					onSelectTool={setActiveTool}
+			<SafeAreaView style={styles.root}>
+				<TitleBar
+					canUndo={canUndo}
+					canRedo={canRedo}
+					onUndo={undo}
+					onRedo={redo}
+					onNewDocument={handleNewDocument}
+					onLoadDocument={handleLoadDocument}
+					onSaveDocument={handleSaveDocument}
 					showLayers={showLayers}
 					onToggleLayers={() => setShowLayers((prev) => !prev)}
+					isConnected={isConnected}
+					theme={theme}
+					onToggleTheme={() =>
+						setTheme((t) => (t === "dark" ? "light" : "dark"))
+					}
 				/>
 
-				{showLayers ? (
-					<LayersPanel
-						document={document}
-						selectedNodePaths={selectedNodePaths}
-						onSelectNode={(path) => setSelectedNodePaths([path])}
+				<View style={styles.mainRow}>
+					<ToolSidebar
+						activeTool={activeTool}
+						onSelectTool={setActiveTool}
+						showLayers={showLayers}
+						onToggleLayers={() => setShowLayers((prev) => !prev)}
 					/>
-				) : null}
 
-				<View style={styles.canvasArea}>
-					<PenCanvasPanel
-						{...penCanvasUiProps}
-						document={document}
-						onAddNode={handleAddNode}
-						onDocumentChange={setDocument}
-						selectedNodePaths={selectedNodePaths}
-						onSelectionChange={setSelectedNodePaths}
-						agentCursors={agentCursors}
-						onInteractionEnd={commitHistory}
-					/>
+					{showLayers ? (
+						<LayersPanel
+							document={document}
+							selectedNodePaths={selectedNodePaths}
+							onSelectNode={(path) => setSelectedNodePaths([path])}
+						/>
+					) : null}
+
+					<View style={styles.canvasArea}>
+						<PenCanvasPanel
+							{...penCanvasUiProps}
+							document={document}
+							onAddNode={handleAddNode}
+							onDocumentChange={setDocument}
+							selectedNodePaths={selectedNodePaths}
+							onSelectionChange={setSelectedNodePaths}
+							agentCursors={agentCursors}
+							onInteractionEnd={commitHistory}
+						/>
+					</View>
+
+					{showChatSidebar ? (
+						<ChatSidebar
+							onClose={handleCloseChat}
+							selectedNodePath={selectedNodePath}
+							document={document}
+							onApplyOps={handleApplyChatOps}
+						/>
+					) : (
+						<ChatCollapsedStrip onOpen={handleOpenChat} />
+					)}
 				</View>
-
-				{showChatSidebar ? (
-					<ChatSidebar
-						onClose={handleCloseChat}
-						selectedNodePath={selectedNodePath}
-						document={document}
-						onApplyOps={handleApplyChatOps}
-					/>
-				) : (
-					<ChatCollapsedStrip onOpen={handleOpenChat} />
-				)}
-			</View>
-		</SafeAreaView>
+			</SafeAreaView>
 		</ThemeContext.Provider>
 	);
 }
 
-const getSharedStyles = (C: ThemeColors) => StyleSheet.create({
-	iconButton: {
-		width: 28,
-		height: 28,
-		borderRadius: 7,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	iconButtonActive: {
-		backgroundColor: C.rowHover,
-	},
-	iconButtonDisabled: {
-		opacity: 0.35,
-	},
-	iconButtonPressed: {
-		opacity: 0.85,
-	},
-	actionButton: {
-		height: 26,
-		borderRadius: 7,
-		borderWidth: 1,
-		borderColor: C.border,
-		backgroundColor: C.surface,
-		paddingHorizontal: 9,
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 5,
-	},
-	actionButtonText: {
-		color: C.text,
-		fontSize: 11,
-		fontWeight: "500",
-	},
-});
+const getSharedStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		iconButton: {
+			width: 28,
+			height: 28,
+			borderRadius: 7,
+			alignItems: "center",
+			justifyContent: "center",
+		},
+		iconButtonActive: {
+			backgroundColor: C.rowHover,
+		},
+		iconButtonDisabled: {
+			opacity: 0.35,
+		},
+		iconButtonPressed: {
+			opacity: 0.85,
+		},
+		actionButton: {
+			height: 26,
+			borderRadius: 7,
+			borderWidth: 1,
+			borderColor: C.border,
+			backgroundColor: C.surface,
+			paddingHorizontal: 9,
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 5,
+		},
+		actionButtonText: {
+			color: C.text,
+			fontSize: 11,
+			fontWeight: "500",
+		},
+	});
 
-const getTitleBarStyles = (C: ThemeColors) => StyleSheet.create({
-	container: {
-		height: 44,
-		borderBottomWidth: 1,
-		borderBottomColor: C.border,
-		backgroundColor: C.sidebar,
-		paddingHorizontal: 10,
-		flexDirection: "row",
-		alignItems: "center",
-	},
-	leftRail: {
-		width: 240,
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-	},
-	centerRail: {
-		flex: 1,
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 6,
-	},
-	rightRail: {
-		width: 470,
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "flex-end",
-		gap: 6,
-	},
-	trafficLights: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		marginRight: 2,
-	},
-	trafficLight: {
-		width: 12,
-		height: 12,
-		borderRadius: 999,
-	},
-	divider: {
-		width: 1,
-		height: 18,
-		backgroundColor: C.border,
-		marginHorizontal: 2,
-	},
-	filename: {
-		color: C.text,
-		fontSize: 13,
-		fontWeight: "500",
-	},
-	pathDivider: {
-		color: C.textMuted,
-		fontSize: 12,
-	},
-	pathText: {
-		color: C.textMuted,
-		fontSize: 12,
-	},
-	connectionDot: {
-		width: 8,
-		height: 8,
-		borderRadius: 999,
-		backgroundColor: "#22c55e",
-		marginLeft: 4,
-	},
-	agentsButton: {
-		height: 28,
-		borderRadius: 999,
-		borderWidth: 1,
-		borderColor: C.border,
-		backgroundColor: C.surface,
-		paddingHorizontal: 10,
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-	},
-	agentsButtonText: {
-		color: C.text,
-		fontSize: 11,
-		fontWeight: "600",
-	},
-});
+const getTitleBarStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			height: 44,
+			borderBottomWidth: 1,
+			borderBottomColor: C.border,
+			backgroundColor: C.sidebar,
+			paddingHorizontal: 10,
+			flexDirection: "row",
+			alignItems: "center",
+		},
+		leftRail: {
+			width: 240,
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 6,
+		},
+		centerRail: {
+			flex: 1,
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "center",
+			gap: 6,
+		},
+		rightRail: {
+			width: 470,
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "flex-end",
+			gap: 6,
+		},
+		trafficLights: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 8,
+			marginRight: 2,
+		},
+		trafficLight: {
+			width: 12,
+			height: 12,
+			borderRadius: 999,
+		},
+		divider: {
+			width: 1,
+			height: 18,
+			backgroundColor: C.border,
+			marginHorizontal: 2,
+		},
+		filename: {
+			color: C.text,
+			fontSize: 13,
+			fontWeight: "500",
+		},
+		pathDivider: {
+			color: C.textMuted,
+			fontSize: 12,
+		},
+		pathText: {
+			color: C.textMuted,
+			fontSize: 12,
+		},
+		connectionDot: {
+			width: 8,
+			height: 8,
+			borderRadius: 999,
+			backgroundColor: "#22c55e",
+			marginLeft: 4,
+		},
+		agentsButton: {
+			height: 28,
+			borderRadius: 999,
+			borderWidth: 1,
+			borderColor: C.border,
+			backgroundColor: C.surface,
+			paddingHorizontal: 10,
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 6,
+		},
+		agentsButtonText: {
+			color: C.text,
+			fontSize: 11,
+			fontWeight: "600",
+		},
+	});
 
-const getToolSidebarStyles = (C: ThemeColors) => StyleSheet.create({
-	container: {
-		width: 48,
-		borderRightWidth: 1,
-		borderRightColor: C.border,
-		backgroundColor: C.sidebar,
-		alignItems: "center",
-		paddingTop: 10,
-		paddingBottom: 8,
-		gap: 2,
-	},
-	separator: {
-		width: 24,
-		height: 1,
-		backgroundColor: C.border,
-		marginVertical: 8,
-	},
-	button: {
-		width: 36,
-		height: 36,
-		borderRadius: 7,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	buttonActive: {
-		backgroundColor: C.rowHover,
-	},
-	buttonPressed: {
-		opacity: 0.85,
-	},
-	flexSpacer: {
-		flex: 1,
-	},
-});
+const getToolSidebarStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			width: 48,
+			borderRightWidth: 1,
+			borderRightColor: C.border,
+			backgroundColor: C.sidebar,
+			alignItems: "center",
+			paddingTop: 10,
+			paddingBottom: 8,
+			gap: 2,
+		},
+		separator: {
+			width: 24,
+			height: 1,
+			backgroundColor: C.border,
+			marginVertical: 8,
+		},
+		button: {
+			width: 36,
+			height: 36,
+			borderRadius: 7,
+			alignItems: "center",
+			justifyContent: "center",
+		},
+		buttonActive: {
+			backgroundColor: C.rowHover,
+		},
+		buttonPressed: {
+			opacity: 0.85,
+		},
+		flexSpacer: {
+			flex: 1,
+		},
+	});
 
-const getLayersPanelStyles = (C: ThemeColors) => StyleSheet.create({
-	container: {
-		width: 200,
-		borderRightWidth: 1,
-		borderRightColor: C.border,
-		backgroundColor: C.sidebar,
-	},
-	header: {
-		height: 36,
-		borderBottomWidth: 1,
-		borderBottomColor: C.border,
-		justifyContent: "center",
-		paddingHorizontal: 12,
-	},
-	headerText: {
-		color: C.textMuted,
-		fontSize: 11,
-		fontWeight: "700",
-		letterSpacing: 0.6,
-	},
-	scrollView: {
-		flex: 1,
-	},
-	row: {
-		height: 26,
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-		paddingRight: 8,
-	},
-	rowSelected: {
-		backgroundColor: C.rowSelected,
-	},
-	rowPressed: {
-		opacity: 0.85,
-	},
-	chevronButton: {
-		width: 14,
-		height: 14,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	chevronSpacer: {
-		width: 14,
-	},
-	rowText: {
-		flex: 1,
-		color: C.textMuted,
-		fontSize: 11,
-	},
-	rowTextSelected: {
-		color: C.text,
-	},
-});
+const getLayersPanelStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			width: 200,
+			borderRightWidth: 1,
+			borderRightColor: C.border,
+			backgroundColor: C.sidebar,
+		},
+		header: {
+			height: 36,
+			borderBottomWidth: 1,
+			borderBottomColor: C.border,
+			justifyContent: "center",
+			paddingHorizontal: 12,
+		},
+		headerText: {
+			color: C.textMuted,
+			fontSize: 11,
+			fontWeight: "700",
+			letterSpacing: 0.6,
+		},
+		scrollView: {
+			flex: 1,
+		},
+		row: {
+			height: 26,
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 6,
+			paddingRight: 8,
+		},
+		rowSelected: {
+			backgroundColor: C.rowSelected,
+		},
+		rowPressed: {
+			opacity: 0.85,
+		},
+		chevronButton: {
+			width: 14,
+			height: 14,
+			alignItems: "center",
+			justifyContent: "center",
+		},
+		chevronSpacer: {
+			width: 14,
+		},
+		rowText: {
+			flex: 1,
+			color: C.textMuted,
+			fontSize: 11,
+		},
+		rowTextSelected: {
+			color: C.text,
+		},
+	});
 
-const getChatSidebarStyles = (C: ThemeColors) => StyleSheet.create({
-	container: {
-		width: 340,
-		borderLeftWidth: 1,
-		borderLeftColor: C.border,
-		backgroundColor: C.sidebar,
-	},
-	header: {
-		paddingHorizontal: 12,
-		paddingTop: 12,
-		paddingBottom: 10,
-		borderBottomWidth: 1,
-		borderBottomColor: C.border,
-		gap: 8,
-	},
-	headerTopRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-	},
-	headerActions: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-	},
-	title: {
-		color: C.text,
-		fontSize: 13,
-		fontWeight: "600",
-	},
-	newChatButton: {
-		height: 26,
-		borderRadius: 999,
-		borderWidth: 1,
-		borderColor: C.border,
-		paddingHorizontal: 10,
-		justifyContent: "center",
-		backgroundColor: C.surface,
-	},
-	newChatText: {
-		color: C.text,
-		fontSize: 11,
-		fontWeight: "500",
-	},
-	contextPill: {
-		alignSelf: "flex-start",
-		borderWidth: 1,
-		borderColor: C.border,
-		borderRadius: 999,
-		backgroundColor: C.surface,
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-	},
-	contextPillText: {
-		color: C.textMuted,
-		fontSize: 10,
-	},
-	messages: {
-		flex: 1,
-	},
-	messagesContent: {
-		padding: 12,
-		gap: 8,
-	},
-	emptyState: {
-		alignItems: "center",
-		paddingVertical: 28,
-		gap: 10,
-	},
-	emptyTitle: {
-		color: C.text,
-		fontSize: 13,
-		fontWeight: "600",
-	},
-	emptySubtitle: {
-		color: C.textMuted,
-		fontSize: 11,
-		textAlign: "center",
-		maxWidth: 240,
-		lineHeight: 16,
-	},
-	promptWrap: {
-		width: "100%",
-		flexDirection: "row",
-		flexWrap: "wrap",
-		justifyContent: "center",
-		gap: 8,
-		marginTop: 2,
-	},
-	promptPill: {
-		borderRadius: 999,
-		borderWidth: 1,
-		borderColor: C.border,
-		backgroundColor: C.surface,
-		paddingHorizontal: 10,
-		paddingVertical: 6,
-	},
-	promptPillText: {
-		color: C.text,
-		fontSize: 11,
-	},
-	tipText: {
-		color: C.textMuted,
-		fontSize: 10,
-	},
-	messageBubble: {
-		maxWidth: "86%",
-		borderRadius: 12,
-		paddingHorizontal: 10,
-		paddingVertical: 8,
-		gap: 6,
-	},
-	messageBubbleUser: {
-		alignSelf: "flex-end",
-		backgroundColor: C.bubbleUser,
-		borderBottomRightRadius: 4,
-	},
-	messageBubbleAssistant: {
-		alignSelf: "flex-start",
-		backgroundColor: C.bubbleAi,
-		borderWidth: 1,
-		borderColor: C.border,
-		borderBottomLeftRadius: 4,
-	},
-	messageText: {
-		fontSize: 12,
-		lineHeight: 18,
-	},
-	messageTextUser: {
-		color: C.text,
-	},
-	messageTextAssistant: {
-		color: C.text,
-	},
-	opsText: {
-		color: C.textMuted,
-		fontSize: 10,
-	},
-	bottomSection: {
-		borderTopWidth: 1,
-		borderTopColor: C.border,
-		paddingHorizontal: 12,
-		paddingTop: 8,
-		paddingBottom: 10,
-		gap: 8,
-	},
-	bottomHint: {
-		textAlign: "center",
-		color: C.textMuted,
-		fontSize: 10,
-	},
-	inputRow: {
-		flexDirection: "row",
-		alignItems: "flex-end",
-		gap: 8,
-	},
-	textInput: {
-		flex: 1,
-		minHeight: 42,
-		maxHeight: 120,
-		borderRadius: 10,
-		borderWidth: 1,
-		borderColor: C.border,
-		backgroundColor: C.surface,
-		paddingHorizontal: 12,
-		paddingVertical: 9,
-		color: C.text,
-		fontSize: 12,
-	},
-	sendButton: {
-		width: 34,
-		height: 34,
-		borderRadius: 999,
-		backgroundColor: C.accent,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	sendButtonDisabled: {
-		opacity: 0.4,
-	},
-	modelRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		gap: 6,
-	},
-	modelPill: {
-		flex: 1,
-		height: 30,
-		borderRadius: 999,
-		borderWidth: 1,
-		borderColor: C.border,
-		backgroundColor: C.surface,
-		paddingHorizontal: 10,
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-	},
-	modelText: {
-		flex: 1,
-		color: C.text,
-		fontSize: 11,
-	},
-	modelActions: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 2,
-	},
-});
+const getChatSidebarStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			width: 340,
+			borderLeftWidth: 1,
+			borderLeftColor: C.border,
+			backgroundColor: C.sidebar,
+		},
+		header: {
+			paddingHorizontal: 12,
+			paddingTop: 12,
+			paddingBottom: 10,
+			borderBottomWidth: 1,
+			borderBottomColor: C.border,
+			gap: 8,
+		},
+		headerTopRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "space-between",
+		},
+		headerActions: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 6,
+		},
+		title: {
+			color: C.text,
+			fontSize: 13,
+			fontWeight: "600",
+		},
+		newChatButton: {
+			height: 26,
+			borderRadius: 999,
+			borderWidth: 1,
+			borderColor: C.border,
+			paddingHorizontal: 10,
+			justifyContent: "center",
+			backgroundColor: C.surface,
+		},
+		newChatText: {
+			color: C.text,
+			fontSize: 11,
+			fontWeight: "500",
+		},
+		contextPill: {
+			alignSelf: "flex-start",
+			borderWidth: 1,
+			borderColor: C.border,
+			borderRadius: 999,
+			backgroundColor: C.surface,
+			paddingHorizontal: 10,
+			paddingVertical: 4,
+		},
+		contextPillText: {
+			color: C.textMuted,
+			fontSize: 10,
+		},
+		messages: {
+			flex: 1,
+		},
+		messagesContent: {
+			padding: 12,
+			gap: 8,
+		},
+		emptyState: {
+			alignItems: "center",
+			paddingVertical: 28,
+			gap: 10,
+		},
+		emptyTitle: {
+			color: C.text,
+			fontSize: 13,
+			fontWeight: "600",
+		},
+		emptySubtitle: {
+			color: C.textMuted,
+			fontSize: 11,
+			textAlign: "center",
+			maxWidth: 240,
+			lineHeight: 16,
+		},
+		promptWrap: {
+			width: "100%",
+			flexDirection: "row",
+			flexWrap: "wrap",
+			justifyContent: "center",
+			gap: 8,
+			marginTop: 2,
+		},
+		promptPill: {
+			borderRadius: 999,
+			borderWidth: 1,
+			borderColor: C.border,
+			backgroundColor: C.surface,
+			paddingHorizontal: 10,
+			paddingVertical: 6,
+		},
+		promptPillText: {
+			color: C.text,
+			fontSize: 11,
+		},
+		tipText: {
+			color: C.textMuted,
+			fontSize: 10,
+		},
+		messageBubble: {
+			maxWidth: "86%",
+			borderRadius: 12,
+			paddingHorizontal: 10,
+			paddingVertical: 8,
+			gap: 6,
+		},
+		messageBubbleUser: {
+			alignSelf: "flex-end",
+			backgroundColor: C.bubbleUser,
+			borderBottomRightRadius: 4,
+		},
+		messageBubbleAssistant: {
+			alignSelf: "flex-start",
+			backgroundColor: C.bubbleAi,
+			borderWidth: 1,
+			borderColor: C.border,
+			borderBottomLeftRadius: 4,
+		},
+		messageText: {
+			fontSize: 12,
+			lineHeight: 18,
+		},
+		messageTextUser: {
+			color: C.text,
+		},
+		messageTextAssistant: {
+			color: C.text,
+		},
+		opsText: {
+			color: C.textMuted,
+			fontSize: 10,
+		},
+		bottomSection: {
+			borderTopWidth: 1,
+			borderTopColor: C.border,
+			paddingHorizontal: 12,
+			paddingTop: 8,
+			paddingBottom: 10,
+			gap: 8,
+		},
+		bottomHint: {
+			textAlign: "center",
+			color: C.textMuted,
+			fontSize: 10,
+		},
+		inputRow: {
+			flexDirection: "row",
+			alignItems: "flex-end",
+			gap: 8,
+		},
+		textInput: {
+			flex: 1,
+			minHeight: 42,
+			maxHeight: 120,
+			borderRadius: 10,
+			borderWidth: 1,
+			borderColor: C.border,
+			backgroundColor: C.surface,
+			paddingHorizontal: 12,
+			paddingVertical: 9,
+			color: C.text,
+			fontSize: 12,
+		},
+		sendButton: {
+			width: 34,
+			height: 34,
+			borderRadius: 999,
+			backgroundColor: C.accent,
+			alignItems: "center",
+			justifyContent: "center",
+		},
+		sendButtonDisabled: {
+			opacity: 0.4,
+		},
+		modelRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "space-between",
+			gap: 6,
+		},
+		modelPill: {
+			flex: 1,
+			height: 30,
+			borderRadius: 999,
+			borderWidth: 1,
+			borderColor: C.border,
+			backgroundColor: C.surface,
+			paddingHorizontal: 10,
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 6,
+		},
+		modelText: {
+			flex: 1,
+			color: C.text,
+			fontSize: 11,
+		},
+		modelActions: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 2,
+		},
+	});
 
-const getChatCollapsedStripStyles = (C: ThemeColors) => StyleSheet.create({
-	container: {
-		width: 40,
-		borderLeftWidth: 1,
-		borderLeftColor: C.border,
-		backgroundColor: C.sidebar,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	contentWrap: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		transform: [{ rotate: "-90deg" }],
-	},
-	label: {
-		color: C.text,
-		fontSize: 11,
-		fontWeight: "600",
-	},
-});
+const getChatCollapsedStripStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		container: {
+			width: 40,
+			borderLeftWidth: 1,
+			borderLeftColor: C.border,
+			backgroundColor: C.sidebar,
+			alignItems: "center",
+			justifyContent: "center",
+		},
+		contentWrap: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 8,
+			transform: [{ rotate: "-90deg" }],
+		},
+		label: {
+			color: C.text,
+			fontSize: 11,
+			fontWeight: "600",
+		},
+	});
 
-const getStyles = (C: ThemeColors) => StyleSheet.create({
-	root: {
-		flex: 1,
-		backgroundColor: C.bg,
-	},
-	mainRow: {
-		flex: 1,
-		flexDirection: "row",
-		backgroundColor: C.bg,
-	},
-	canvasArea: {
-		flex: 1,
-		backgroundColor: C.bg,
-	},
-});
+const getStyles = (C: ThemeColors) =>
+	StyleSheet.create({
+		root: {
+			flex: 1,
+			backgroundColor: C.bg,
+		},
+		mainRow: {
+			flex: 1,
+			flexDirection: "row",
+			backgroundColor: C.bg,
+		},
+		canvasArea: {
+			flex: 1,
+			backgroundColor: C.bg,
+		},
+	});
 
 const STYLES = {
 	dark: {
@@ -1520,5 +1562,5 @@ const STYLES = {
 		chatSidebarStyles: getChatSidebarStyles(THEMES.light),
 		chatCollapsedStripStyles: getChatCollapsedStripStyles(THEMES.light),
 		main: getStyles(THEMES.light),
-	}
+	},
 };

@@ -272,6 +272,17 @@ export const PenImageSchema = z.object({
 
 export type PenImage = z.infer<typeof PenImageSchema>;
 
+export const PenEffectNodeSchema = z.object({
+	type: z.literal("effect"),
+	...PenEntityBaseShape,
+	shaderCode: z.string().optional(),
+	playing: z.boolean().optional(),
+	authoringMode: z.string().optional(),
+	uniforms: z.record(z.string(), z.any()).optional(),
+});
+
+export type PenEffectNode = z.infer<typeof PenEffectNodeSchema>;
+
 export const PenConnectionSchema = z.object({
 	type: z.literal("connection"),
 	...PenEntityBaseShape,
@@ -349,6 +360,7 @@ export type PenNode =
 	| PenRef
 	| PenNote
 	| PenImage
+	| PenEffectNode
 	| PenConnection;
 
 // Recursive node schemas use z.lazy() with `as z.ZodType<T>` casts (not `as any`).
@@ -403,6 +415,7 @@ export const PenNodeSchema = z.lazy(() =>
 		PenRefSchema,
 		PenNoteSchema,
 		PenImageSchema,
+		PenEffectNodeSchema,
 		PenConnectionSchema,
 	]),
 ) as z.ZodType<PenNode, z.ZodTypeDef, unknown>;

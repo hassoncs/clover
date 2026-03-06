@@ -12,7 +12,7 @@ const TITLE_COLOR = "#888888";
 const TITLE_OFFSET_Y = 20;
 
 export function FrameTitle({ layoutNode }: FrameTitleProps): React.ReactNode {
-	const font = useFont(FREDOKA_REGULAR as unknown as string, TITLE_FONT_SIZE);
+	const font = useFont(FREDOKA_REGULAR as Parameters<typeof useFont>[0], TITLE_FONT_SIZE);
 	const { node } = layoutNode;
 
 	if (node.type !== "frame" && node.type !== "group") return null;

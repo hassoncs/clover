@@ -52,21 +52,23 @@ export function FrameNode({ layoutNode, renderChildren }: NodeRendererProps): Re
 
 	let shape: React.ReactNode;
 	if (cornerRadius !== undefined && typeof cornerRadius === "number" && cornerRadius > 0) {
+		const safeRadius = Math.min(cornerRadius, width / 2, height / 2);
 		shape = (
-			<RoundedRect x={0} y={0} width={width} height={height} r={cornerRadius} color="transparent">
+			<RoundedRect x={0} y={0} width={width} height={height} r={safeRadius} color="transparent">
 				<PenFillRenderer fill={node.fill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
 				<PenEffectsRenderer effects={node.effects} />
 			</RoundedRect>
 		);
 	} else if (Array.isArray(cornerRadius) && cornerRadius.some((r) => r > 0)) {
+		const safeR = (r: number) => Math.min(Math.max(0, r), width / 2, height / 2);
 		const [tl, tr, br, bl] = cornerRadius;
 		const rrect = {
 			rect: { x: 0, y: 0, width, height },
-			topLeft: { x: tl, y: tl },
-			topRight: { x: tr, y: tr },
-			bottomRight: { x: br, y: br },
-			bottomLeft: { x: bl, y: bl },
+			topLeft: { x: safeR(tl), y: safeR(tl) },
+			topRight: { x: safeR(tr), y: safeR(tr) },
+			bottomRight: { x: safeR(br), y: safeR(br) },
+			bottomLeft: { x: safeR(bl), y: safeR(bl) },
 		};
 		shape = (
 			<RoundedRect rect={rrect} color="transparent">

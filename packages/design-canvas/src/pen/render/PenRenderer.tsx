@@ -10,6 +10,7 @@ import { estimateTextSize } from "../text-measure";
 import type { PenDrawingState } from "../../tools/penToolState";
 import { resolveTreeVariables } from "../variables";
 import { FrameTitle } from "./FrameTitle";
+import { EffectNode } from "./nodes/EffectNode";
 import { EllipseNode } from "./nodes/EllipseNode";
 import { FrameNode } from "./nodes/FrameNode";
 import { GroupNode } from "./nodes/GroupNode";
@@ -33,12 +34,36 @@ export interface PenRendererProps {
 	penDrawingState?: PenDrawingState;
 }
 
-const FONT_DEFS: Array<{ path: string; family: string }> = [
-	{ path: "/fonts/Fredoka-Regular.ttf", family: "Fredoka" },
-	{ path: "/fonts/Inter-Regular.ttf", family: "Inter" },
-	{ path: "/fonts/Inter-Bold.ttf", family: "Inter" },
-	{ path: "/fonts/Inter-Medium.ttf", family: "Inter" },
-];
+/** Statically bundled fonts available at /fonts/ in the dev server. */
+const LOCAL_FONTS: Record<string, string[]> = {
+	Fredoka: ["/fonts/Fredoka-Regular.ttf"],
+	Inter: ["/fonts/Inter-Regular.ttf", "/fonts/Inter-Bold.ttf", "/fonts/Inter-Medium.ttf"],
+	"JetBrains Mono": ["/fonts/JetBrainsMono-400.ttf", "/fonts/JetBrainsMono-700.ttf"],
+	Geist: ["/fonts/Geist-400.ttf", "/fonts/Geist-700.ttf"],
+};
+
+/**
+ * Walk a layout tree to collect all unique fontFamily values.
+ */
+function collectFontFamilies(nodes: LayoutNode[]): Set<string> {
+	const families = new Set<string>();
+	function walk(ln: LayoutNode) {
+		const node = ln.node;
+		if (node.type === "text") {
+			const text = node as { fontFamily?: string; content?: unknown };
+			if (text.fontFamily) families.add(text.fontFamily);
+			// Also check spans in rich text content
+			if (Array.isArray(text.content)) {
+				for (const span of text.content as Array<{ fontFamily?: string }>) {
+					if (span.fontFamily) families.add(span.fontFamily);
+				}
+			}
+		}
+		for (const child of ln.children) walk(child);
+	}
+	for (const ln of nodes) walk(ln);
+	return families;
+}
 
 function renderLayoutNode(
 	layoutNode: LayoutNode,
@@ -85,6 +110,8 @@ function renderLayoutNode(
 			return <NoteNode key={node.id} layoutNode={layoutNode} />;
 		case "image":
 			return <ImageNode key={node.id} layoutNode={layoutNode} />;
+		case "effect":
+			return <EffectNode key={node.id} layoutNode={layoutNode} />;
 		case "ref":
 			return null;
 		case "connection":
@@ -160,22 +187,48 @@ export function PenRenderer({
 	}, [layoutNodes, selectedNodePath]);
 
 	const [fontMgr, setFontMgr] = useState<SkTypefaceFontProvider | null>(null);
+
+	// Collect all font families from the resolved layout tree
+	const requiredFonts = useMemo(() => {
+		const families = collectFontFamilies(layoutNodes);
+		// Always include the default fallback
+		families.add("Fredoka");
+		families.add("Inter");
+		return Array.from(families);
+	}, [layoutNodes]);
+
 	useEffect(() => {
-		const mgr = Skia.TypefaceFontProvider.Make();
-		const pending = FONT_DEFS.map(({ path, family }) =>
-			fetch(path)
-				.then((res) => res.arrayBuffer())
-				.then((buf) => {
-					const data = Skia.Data.fromBytes(new Uint8Array(buf));
-					const tf = Skia.Typeface.MakeFreeTypeFaceFromData(data);
-					if (tf) mgr.registerFont(tf, family);
-				})
-				.catch(() => {
-					// Font not available — skip silently
-				}),
-		);
-		Promise.allSettled(pending).then(() => setFontMgr(mgr));
-	}, []);
+		let cancelled = false;
+		async function loadFonts() {
+			// Defensive guard for Skia availability
+			if (!Skia?.TypefaceFontProvider?.Make) return;
+
+			const mgr = Skia.TypefaceFontProvider.Make();
+
+			for (const family of requiredFonts) {
+				const urls = LOCAL_FONTS[family] ?? [];
+				if (urls.length === 0) continue;
+
+				for (const url of urls) {
+					try {
+						const res = await fetch(url);
+						if (!res.ok) continue;
+						const buf = await res.arrayBuffer();
+						const data = Skia.Data.fromBytes(new Uint8Array(buf));
+						const tf = Skia.Typeface.MakeFreeTypeFaceFromData(data);
+						if (tf) mgr.registerFont(tf, family);
+					} catch {
+						// Font file not available — skip
+					}
+				}
+			}
+
+			if (!cancelled) setFontMgr(mgr);
+		}
+
+		loadFonts();
+		return () => { cancelled = true; };
+	}, [requiredFonts]);
 
 	return (
 		<Canvas style={{ width, height }}>

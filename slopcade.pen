@@ -1,0 +1,3334 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "NHJSH",
+      "x": 0,
+      "y": 0,
+      "name": "Slopcade Landing Page",
+      "clip": true,
+      "width": 1440,
+      "fill": "$bg-primary",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "6I8GL",
+          "name": "Header",
+          "width": "fill_container",
+          "fill": "$bg-primary",
+          "padding": [
+            20,
+            80
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "uJSSe",
+              "name": "logo",
+              "fill": "$accent-lime",
+              "content": "SLOPCADE",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 24,
+              "fontWeight": "700",
+              "letterSpacing": 1
+            },
+            {
+              "type": "frame",
+              "id": "OqnfH",
+              "name": "navLinks",
+              "gap": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KcNYm",
+                  "name": "nav1",
+                  "fill": "$text-primary",
+                  "content": "Games",
+                  "fontFamily": "Manrope",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "QqmKQ",
+                  "name": "nav2",
+                  "fill": "$text-primary",
+                  "content": "Create",
+                  "fontFamily": "Manrope",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "DgeDm",
+                  "name": "nav3",
+                  "fill": "$text-primary",
+                  "content": "Pricing",
+                  "fontFamily": "Manrope",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "M5vCS",
+                  "name": "nav4",
+                  "fill": "$text-primary",
+                  "content": "Docs",
+                  "fontFamily": "Manrope",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ICAXo",
+              "name": "ctaBtn",
+              "fill": "$accent-lime",
+              "cornerRadius": 10,
+              "padding": [
+                10,
+                24
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "9OkRM",
+                  "name": "ctaText",
+                  "fill": "$bg-primary",
+                  "content": "Start Creating",
+                  "fontFamily": "Manrope",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "sAnpp",
+          "name": "Hero Section",
+          "width": "fill_container",
+          "fill": "$bg-primary",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            100,
+            120,
+            80,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "lRcni",
+              "name": "badge",
+              "fill": "#C4F82A15",
+              "cornerRadius": 100,
+              "stroke": {
+                "thickness": 1,
+                "fill": "$accent-lime"
+              },
+              "gap": 6,
+              "padding": [
+                6,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "FwTM9",
+                  "name": "badgeIcon",
+                  "width": 14,
+                  "height": 14,
+                  "iconFontName": "zap",
+                  "iconFontFamily": "lucide",
+                  "fill": "$accent-lime"
+                },
+                {
+                  "type": "text",
+                  "id": "BQ3bV",
+                  "name": "badgeText",
+                  "fill": "$accent-lime",
+                  "content": "AI-POWERED GAME ENGINE",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 1
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "fOzVj",
+              "name": "headline",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": 900,
+              "content": "Make Games. Break Games.\nPlay Games.",
+              "lineHeight": 1.1,
+              "textAlign": "center",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "text",
+              "id": "sPowO",
+              "name": "subline",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 700,
+              "content": "Slopcade is the AI game creation platform where anyone can describe a game idea,\nwatch it come to life instantly, remix other creators' games, and play with friends.",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "Manrope",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "qVgSn",
+              "name": "ctaRow",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "gQUI6",
+                  "name": "primaryCta",
+                  "fill": "$accent-lime",
+                  "cornerRadius": 12,
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    32
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "xSqzD",
+                      "name": "primaryIcon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "play",
+                      "iconFontFamily": "lucide",
+                      "fill": "$bg-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wny39",
+                      "name": "primaryText",
+                      "fill": "$bg-primary",
+                      "content": "Start Creating",
+                      "fontFamily": "Manrope",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nepZ0",
+                  "name": "secondaryCta",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-muted"
+                  },
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    32
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "gon2f",
+                      "name": "secIcon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "gamepad-2",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IewJi",
+                      "name": "secText",
+                      "fill": "$text-primary",
+                      "content": "Play Featured Games",
+                      "fontFamily": "Manrope",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "7rspn",
+              "name": "proofRow",
+              "gap": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "KTHZJ",
+                  "name": "proof1",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "uE4fO",
+                      "name": "p1icon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "zap",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MIvrT",
+                      "name": "p1text",
+                      "fill": "$text-tertiary",
+                      "content": "Prompt-to-Play",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fLzEH",
+                  "name": "proof2",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "WUJNH",
+                      "name": "p2icon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "shuffle",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Fd5rv",
+                      "name": "p2text",
+                      "fill": "$text-tertiary",
+                      "content": "Remix Any Game",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "f7G3L",
+                  "name": "proof3",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "2KJbE",
+                      "name": "p3icon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "users",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "irI29",
+                      "name": "p3text",
+                      "fill": "$text-tertiary",
+                      "content": "Real-Time Multiplayer",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LtPPM",
+                  "name": "proof4",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "zTDV4",
+                      "name": "p4icon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "monitor-smartphone",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "gkAKv",
+                      "name": "p4text",
+                      "fill": "$text-tertiary",
+                      "content": "Cross-Platform",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ng1Qm",
+              "name": "Game Editor Screenshot",
+              "width": 1000,
+              "height": 560,
+              "fill": "$bg-card",
+              "cornerRadius": 20,
+              "stroke": {
+                "thickness": 1,
+                "fill": "$border-subtle"
+              },
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1dRuf",
+                  "name": "ssLabel",
+                  "fill": "$text-muted",
+                  "content": "Game Editor Screenshot",
+                  "fontFamily": "Manrope",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nlXF5",
+          "name": "How It Works",
+          "width": "fill_container",
+          "fill": "$bg-card",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            80,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "7go1F",
+              "name": "sectionLabel",
+              "fill": "$accent-lime",
+              "content": "HOW IT WORKS",
+              "fontFamily": "Space Mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "0HboS",
+              "name": "sectionTitle",
+              "fill": "$text-primary",
+              "content": "From Idea to Playable Game in Minutes",
+              "textAlign": "center",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 36,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "QwHLl",
+              "name": "stepsRow",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "MhJJ3",
+                  "name": "card1",
+                  "width": "fill_container",
+                  "fill": "$bg-elevated",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "P0DYv",
+                      "name": "c1num",
+                      "width": 40,
+                      "height": 40,
+                      "fill": "$accent-lime",
+                      "cornerRadius": 100,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "RYjzs",
+                          "name": "c1numText",
+                          "fill": "$bg-primary",
+                          "content": "1",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "KZI8R",
+                      "name": "c1icon",
+                      "width": 28,
+                      "height": 28,
+                      "iconFontName": "zap",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "5In0C",
+                      "name": "c1title",
+                      "fill": "$text-primary",
+                      "content": "Describe Your Game",
+                      "textAlign": "center",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "H1aGE",
+                      "name": "c1desc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Type a prompt like &quot;a platformer with gravity flips&quot; and let AI handle the rest.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "y2iet",
+                  "name": "card2",
+                  "width": "fill_container",
+                  "fill": "$bg-elevated",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PWf6w",
+                      "name": "c2num",
+                      "width": 40,
+                      "height": 40,
+                      "fill": "$accent-lime",
+                      "cornerRadius": 100,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Knd9Q",
+                          "name": "c2numText",
+                          "fill": "$bg-primary",
+                          "content": "2",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "UJRSX",
+                      "name": "c2icon",
+                      "width": 28,
+                      "height": 28,
+                      "iconFontName": "sparkles",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "0S36B",
+                      "name": "c2title",
+                      "fill": "$text-primary",
+                      "content": "AI Builds It",
+                      "textAlign": "center",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "btkoE",
+                      "name": "c2desc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Watch as your game materializes — sprites, physics, logic, and mechanics generated in seconds.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "4s8vx",
+                  "name": "card3",
+                  "width": "fill_container",
+                  "fill": "$bg-elevated",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FY8uQ",
+                      "name": "c3num",
+                      "width": 40,
+                      "height": 40,
+                      "fill": "$accent-lime",
+                      "cornerRadius": 100,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "0hCOu",
+                          "name": "c3numText",
+                          "fill": "$bg-primary",
+                          "content": "3",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "bSSZG",
+                      "name": "c3icon",
+                      "width": 28,
+                      "height": 28,
+                      "iconFontName": "shuffle",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xttqQ",
+                      "name": "c3title",
+                      "fill": "$text-primary",
+                      "content": "Make It Yours",
+                      "textAlign": "center",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "7Rwbu",
+                      "name": "c3desc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Tweak the rules, swap assets, change themes. Fork anyone's game and make it your own.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Qe8SW",
+                  "name": "card4",
+                  "width": "fill_container",
+                  "fill": "$bg-elevated",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "h5JD6",
+                      "name": "c4num",
+                      "width": 40,
+                      "height": 40,
+                      "fill": "$accent-lime",
+                      "cornerRadius": 100,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lBzKz",
+                          "name": "c4numText",
+                          "fill": "$bg-primary",
+                          "content": "4",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "676IT",
+                      "name": "c4icon",
+                      "width": 28,
+                      "height": 28,
+                      "iconFontName": "gamepad-2",
+                      "iconFontFamily": "lucide",
+                      "fill": "$accent-lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "y9jFC",
+                      "name": "c4title",
+                      "fill": "$text-primary",
+                      "content": "Play With Friends",
+                      "textAlign": "center",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mQgIu",
+                      "name": "c4desc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Share a link and start playing together. Real-time multiplayer, no downloads required.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "osJ00",
+          "name": "Core Features",
+          "width": "fill_container",
+          "fill": "$bg-primary",
+          "layout": "vertical",
+          "gap": 80,
+          "padding": [
+            80,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "koxkM",
+              "name": "coreLabel",
+              "fill": "$accent-lime",
+              "content": "CORE FEATURES",
+              "fontFamily": "Space Mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "jW7KK",
+              "name": "coreTitle",
+              "fill": "$text-primary",
+              "content": "Built for Creators Who Mean It",
+              "textAlign": "center",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 36,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "4i40L",
+              "name": "featureA",
+              "width": "fill_container",
+              "gap": 64,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "MUpeE",
+                  "name": "featureAtext",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DfgtC",
+                      "name": "fAlabel",
+                      "fill": "#C4F82A20",
+                      "cornerRadius": 6,
+                      "padding": [
+                        4,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BWDoG",
+                          "name": "fAlabelText",
+                          "fill": "$accent-lime",
+                          "content": "PROMPT-TO-GAME",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "C45cS",
+                      "name": "fAtitle",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Type an Idea.\nGet a Playable Game.",
+                      "lineHeight": 1.15,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oTVGr",
+                      "name": "fAdesc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Describe your game concept in plain English — &quot;a tower defense game with cute animals&quot; — and Slopcade's AI engine generates a fully playable game with sprites, physics, and game logic. No coding experience needed.",
+                      "lineHeight": 1.6,
+                      "fontFamily": "Manrope",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "L6b5y",
+                  "name": "Screenshot Placeholder",
+                  "width": 600,
+                  "height": 400,
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oNTev",
+                      "name": "fAimgLabel",
+                      "fill": "$text-muted",
+                      "content": "Prompt-to-Game Screenshot",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bvt7L",
+              "name": "featureB",
+              "width": "fill_container",
+              "gap": 64,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NHnIZ",
+                  "name": "Screenshot Placeholder",
+                  "width": 600,
+                  "height": 400,
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "cVNgL",
+                      "name": "fBimgLabel",
+                      "fill": "$text-muted",
+                      "content": "Remix Editor Screenshot",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "I6Q5m",
+                  "name": "featureBtext",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "3WiMW",
+                      "name": "fBlabel",
+                      "fill": "#C4F82A20",
+                      "cornerRadius": 6,
+                      "padding": [
+                        4,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "CUqMj",
+                          "name": "fBlabelText",
+                          "fill": "$accent-lime",
+                          "content": "REMIXABILITY",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "LzPTw",
+                      "name": "fBtitle",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Fork Any Game.\nMake It Yours.",
+                      "lineHeight": 1.15,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Why0C",
+                      "name": "fBdesc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Every game on Slopcade is remixable. Fork a friend's game, swap out the theme, change the physics, add new mechanics. The remix tree tracks every fork so creators get credit.",
+                      "lineHeight": 1.6,
+                      "fontFamily": "Manrope",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "6SDZP",
+              "name": "featureC",
+              "width": "fill_container",
+              "gap": 64,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "pcK5B",
+                  "name": "featureCtext",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LzvI9",
+                      "name": "fClabel",
+                      "fill": "#C4F82A20",
+                      "cornerRadius": 6,
+                      "padding": [
+                        4,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HUpl9",
+                          "name": "fClabelText",
+                          "fill": "$accent-lime",
+                          "content": "SCRIPTING",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "dkQk4",
+                      "name": "fCtitle",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Real Scripting Power.\nNot a Toy.",
+                      "lineHeight": 1.15,
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "3tYHa",
+                      "name": "fCdesc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Under the hood, every game runs on a real JavaScript engine with a physics system, particle effects, and an entity-component architecture. Drop into code view anytime to tweak, extend, or go fully custom.",
+                      "lineHeight": 1.6,
+                      "fontFamily": "Manrope",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "17PS2",
+                  "name": "Screenshot Placeholder",
+                  "width": 600,
+                  "height": 400,
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "4RlYc",
+                      "name": "fCimgLabel",
+                      "fill": "$text-muted",
+                      "content": "Code Editor Screenshot",
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "12Agn",
+          "name": "Secondary Features Grid",
+          "width": "fill_container",
+          "fill": "$bg-card",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            80,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "KM8hU",
+              "name": "gridLabel",
+              "fill": "$accent-lime",
+              "content": "MORE FEATURES",
+              "fontFamily": "Space Mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "rsgeT",
+              "name": "gridTitle",
+              "fill": "$text-primary",
+              "content": "Everything You Need to Ship Games",
+              "textAlign": "center",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 36,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "Yj1VV",
+              "name": "gridWrap",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "bvjIa",
+                  "name": "row1",
+                  "width": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UfJUD",
+                      "name": "cardA",
+                      "width": "fill_container",
+                      "fill": "$bg-elevated",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border-subtle"
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 32,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "T5tLh",
+                          "name": "iconA",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#C4F82A15",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "z6n5J",
+                              "name": "iconAi",
+                              "width": 24,
+                              "height": 24,
+                              "iconFontName": "users",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "pBQb5",
+                          "name": "titleA",
+                          "fill": "$text-primary",
+                          "content": "Multiplayer Party Mode",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tvqRX",
+                          "name": "descA",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Share a link and play together in real-time. Up to 8 players, zero friction. Built-in voice chat and emoji reactions.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wd3Oy",
+                      "name": "cardB",
+                      "width": "fill_container",
+                      "fill": "$bg-elevated",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border-subtle"
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 32,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "emSHv",
+                          "name": "iconB",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#C4F82A15",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "KB1R7",
+                              "name": "iconBi",
+                              "width": 24,
+                              "height": 24,
+                              "iconFontName": "monitor-smartphone",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "nY4aN",
+                          "name": "titleB",
+                          "fill": "$text-primary",
+                          "content": "Cross-Platform",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "8LqBa",
+                          "name": "descB",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Games run everywhere — desktop, tablet, phone. One build, every screen. Progressive web app tech with native-feeling performance.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "srS88",
+                  "name": "row2",
+                  "width": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "p0ynT",
+                      "name": "cardC",
+                      "width": "fill_container",
+                      "fill": "$bg-elevated",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border-subtle"
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 32,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PBJUj",
+                          "name": "iconC",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#C4F82A15",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "5Jdgk",
+                              "name": "iconCi",
+                              "width": 24,
+                              "height": 24,
+                              "iconFontName": "palette",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "W8MhQ",
+                          "name": "titleC",
+                          "fill": "$text-primary",
+                          "content": "Swappable Themes",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZkSWv",
+                          "name": "descC",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Change the entire look of a game with one click. Pixel art, vector, hand-drawn, retro — swap visual styles without touching logic.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u2VsI",
+                      "name": "cardD",
+                      "width": "fill_container",
+                      "fill": "$bg-elevated",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border-subtle"
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 32,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uMWTa",
+                          "name": "iconD",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#C4F82A15",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "JsrjW",
+                              "name": "iconDi",
+                              "width": 24,
+                              "height": 24,
+                              "iconFontName": "blocks",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "74D7t",
+                          "name": "titleD",
+                          "fill": "$text-primary",
+                          "content": "Composable Prefabs",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qE6ph",
+                          "name": "descD",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Drag in pre-built game components — enemies, power-ups, UI widgets, particle effects. Mix and match like building blocks.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nnUDb",
+          "name": "Investor Proof",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            80,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "qvf79",
+              "name": "badge",
+              "fill": "#7C3AED20",
+              "cornerRadius": 100,
+              "padding": [
+                6,
+                16
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cWsw4",
+                  "name": "badgeText",
+                  "fill": "#7C3AED",
+                  "content": "INVESTOR DECK",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 2
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "mvSzE",
+              "name": "heading",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": 900,
+              "content": "Platform, Not a Single Title",
+              "textAlign": "center",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 48,
+              "fontWeight": "800"
+            },
+            {
+              "type": "text",
+              "id": "fwoN3",
+              "name": "subhead",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": 800,
+              "content": "Slopcade is a game creation platform with multiple product surfaces, AI-assisted content scaling, and multi-layer monetization — not one bet on one game.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Manrope",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "snPez",
+              "name": "Investor Cards Row",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hL1y4",
+                  "name": "Content Scalability",
+                  "width": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MXUJ0",
+                      "name": "icon1",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#C4F82A15",
+                      "cornerRadius": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "qTaXo",
+                          "name": "iconGlyph1",
+                          "width": 24,
+                          "height": 24,
+                          "iconFontName": "trending-up",
+                          "iconFontFamily": "lucide",
+                          "fill": "$accent-lime"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Hmv74",
+                      "name": "title1",
+                      "fill": "$text-primary",
+                      "content": "Content Scalability",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Ws26Y",
+                      "name": "desc1",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "AI-assisted generation plus remix behavior expands the playable catalog without linear content headcount growth.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JCnJ5",
+                  "name": "Multi-Layer Revenue",
+                  "width": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "k3MNJ",
+                      "name": "icon2",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#7C3AED15",
+                      "cornerRadius": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "cbFfm",
+                          "name": "iconGlyph2",
+                          "width": 24,
+                          "height": 24,
+                          "iconFontName": "layers",
+                          "iconFontFamily": "lucide",
+                          "fill": "$accent-purple"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "fx0pP",
+                      "name": "title2",
+                      "fill": "$text-primary",
+                      "content": "Multi-Layer Revenue",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "8bvb1",
+                      "name": "desc2",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Subscription + credits + creator revenue split enables diversified monetization architecture with multiple expansion levers.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eqCWn",
+                  "name": "Defensibility Moat",
+                  "width": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L4tCt",
+                      "name": "icon3",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#FA541C15",
+                      "cornerRadius": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "xMrUq",
+                          "name": "iconGlyph3",
+                          "width": 24,
+                          "height": 24,
+                          "iconFontName": "shield",
+                          "iconFontFamily": "lucide",
+                          "fill": "$accent-orange"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "OgJyW",
+                      "name": "title3",
+                      "fill": "$text-primary",
+                      "content": "Defensibility Moat",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "E0aIz",
+                      "name": "desc3",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Tooling depth, user-generated remix graph, real-time multiplayer infra, and cross-platform runtime create compounding barriers.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lXRCW",
+                  "name": "Technical Foundation",
+                  "width": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 28,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YLTzQ",
+                      "name": "icon4",
+                      "width": 48,
+                      "height": 48,
+                      "fill": "#14B8A615",
+                      "cornerRadius": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "mGRQb",
+                          "name": "iconGlyph4",
+                          "width": 24,
+                          "height": 24,
+                          "iconFontName": "server",
+                          "iconFontFamily": "lucide",
+                          "fill": "$accent-teal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "c4nhS",
+                      "name": "title4",
+                      "fill": "$text-primary",
+                      "content": "Technical Foundation",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Fcmhl",
+                      "name": "desc4",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Godot + React Native + QuickJS engine. Cloudflare Workers, Durable Objects, D1, R2. Built for scale from day one.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KFZdC",
+              "name": "Tech Stack Strip",
+              "width": "fill_container",
+              "gap": 32,
+              "padding": [
+                24,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "0V0GQ",
+                  "name": "t1",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "3wz3U",
+                      "name": "t1icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "box",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-tertiary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "t1kq5",
+                      "name": "t1text",
+                      "fill": "$text-tertiary",
+                      "content": "Godot",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "p0ybH",
+                  "name": "t2",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "uN3T4",
+                      "name": "t2icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "smartphone",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-tertiary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "1gDzz",
+                      "name": "t2text",
+                      "fill": "$text-tertiary",
+                      "content": "React Native",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "4vB7X",
+                  "name": "t3",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "LwDxY",
+                      "name": "t3icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "cloud",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-tertiary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DQLsL",
+                      "name": "t3text",
+                      "fill": "$text-tertiary",
+                      "content": "Cloudflare Workers",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "x9Pbx",
+                  "name": "t4",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "E3JXo",
+                      "name": "t4icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "database",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-tertiary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "na7Hx",
+                      "name": "t4text",
+                      "fill": "$text-tertiary",
+                      "content": "Durable Objects",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Nlpp8",
+                  "name": "t5",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "zxo71",
+                      "name": "t5icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "lock",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-tertiary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "leAot",
+                      "name": "t5text",
+                      "fill": "$text-tertiary",
+                      "content": "Supabase",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "hXblQ",
+          "name": "Creator Economy",
+          "width": "fill_container",
+          "fill": "$bg-card",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            80,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "4oAzE",
+              "name": "ceHeader",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "jaVQr",
+                  "name": "ceBadge",
+                  "fill": "#C4F82A20",
+                  "cornerRadius": 100,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0BMfD",
+                      "name": "ceBadgeText",
+                      "fill": "$accent-lime",
+                      "content": "CREATOR ECONOMY",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 2
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "LekcP",
+                  "name": "ceTitle",
+                  "fill": "$text-primary",
+                  "content": "Play. Create. Earn.",
+                  "textAlign": "center",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 48,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "xu1EZ",
+                  "name": "ceSubtitle",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 700,
+                  "content": "A clear path from player to creator to entrepreneur. Choose your tier and start building.",
+                  "lineHeight": 1.6,
+                  "textAlign": "center",
+                  "fontFamily": "Manrope",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "1qfvq",
+              "name": "Pricing Row",
+              "width": "fill_container",
+              "gap": 32,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "m1FRT",
+                  "name": "Free Tier",
+                  "width": 480,
+                  "fill": "$bg-primary",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border-subtle"
+                  },
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 36,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ebGSV",
+                      "name": "freeLabel",
+                      "fill": "$text-tertiary",
+                      "content": "FREE",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "frame",
+                      "id": "1aMKl",
+                      "name": "freePrice",
+                      "gap": 4,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "INgeJ",
+                          "name": "freePriceNum",
+                          "fill": "$text-primary",
+                          "content": "$0",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 48,
+                          "fontWeight": "800"
+                        },
+                        {
+                          "type": "text",
+                          "id": "4FICN",
+                          "name": "freePricePer",
+                          "fill": "$text-tertiary",
+                          "content": "/ forever",
+                          "fontFamily": "Manrope",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "DobHB",
+                      "name": "freeDesc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Start playing and creating games for free. Perfect for exploring the platform.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "L5szC",
+                      "name": "freeDivider",
+                      "width": "fill_container",
+                      "height": 1,
+                      "fill": "$border-subtle"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KgdNK",
+                      "name": "freeFeatures",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "5DSUB",
+                          "name": "ff1",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "NZf1U",
+                              "name": "ff1i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "8hQCS",
+                              "name": "ff1t",
+                              "fill": "$text-secondary",
+                              "content": "Play unlimited games",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "jpsBG",
+                          "name": "ff2",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "hVEwH",
+                              "name": "ff2i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "UzwLG",
+                              "name": "ff2t",
+                              "fill": "$text-secondary",
+                              "content": "Create up to 3 games",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "L1Oqi",
+                          "name": "ff3",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "jjuXW",
+                              "name": "ff3i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "1BxbZ",
+                              "name": "ff3t",
+                              "fill": "$text-secondary",
+                              "content": "Basic AI generation (limited Sparks)",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "I1osS",
+                          "name": "ff4",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "F8KsN",
+                              "name": "ff4i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "V7vZW",
+                              "name": "ff4t",
+                              "fill": "$text-secondary",
+                              "content": "Fork and remix public games",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "lZmhc",
+                          "name": "ff5",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "6pVPF",
+                              "name": "ff5i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "K2JVu",
+                              "name": "ff5t",
+                              "fill": "$text-secondary",
+                              "content": "Multiplayer party hosting",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "3hxbu",
+                      "name": "freeCTA",
+                      "width": "fill_container",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border-muted"
+                      },
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "7SN3m",
+                          "name": "freeCTAtext",
+                          "fill": "$text-primary",
+                          "content": "Get Started Free",
+                          "fontFamily": "Manrope",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XzKMq",
+                  "name": "Pro Tier",
+                  "width": 480,
+                  "fill": "$bg-primary",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 2,
+                    "fill": "$accent-lime"
+                  },
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 36,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "b1mZv",
+                      "name": "proLabelRow",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ILG4f",
+                          "name": "proLabel",
+                          "fill": "$accent-lime",
+                          "content": "PRO",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 2
+                        },
+                        {
+                          "type": "frame",
+                          "id": "prOQj",
+                          "name": "proPill",
+                          "fill": "#C4F82A20",
+                          "cornerRadius": 100,
+                          "padding": [
+                            4,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "3XxKm",
+                              "name": "proPillText",
+                              "fill": "$accent-lime",
+                              "content": "POPULAR",
+                              "fontFamily": "Space Mono",
+                              "fontSize": 10,
+                              "fontWeight": "500",
+                              "letterSpacing": 1
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KkLLc",
+                      "name": "proPrice",
+                      "gap": 4,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "RJfpX",
+                          "name": "proPriceNum",
+                          "fill": "$accent-lime",
+                          "content": "$9.99",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 48,
+                          "fontWeight": "800"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mU9xV",
+                          "name": "proPricePer",
+                          "fill": "$text-tertiary",
+                          "content": "/ month",
+                          "fontFamily": "Manrope",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "d7jHv",
+                      "name": "proDesc",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Unlimited creation power. More Sparks, revenue sharing, and priority access to new features.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "cn4Cc",
+                      "name": "proDivider",
+                      "width": "fill_container",
+                      "height": 1,
+                      "fill": "$border-subtle"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vnbWf",
+                      "name": "proFeatures",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "3RuU3",
+                          "name": "pf1",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "PCy6p",
+                              "name": "pf1i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Wg2Hw",
+                              "name": "pf1t",
+                              "fill": "$text-secondary",
+                              "content": "Everything in Free",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gLaVO",
+                          "name": "pf2",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "2kncW",
+                              "name": "pf2i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "1sM4v",
+                              "name": "pf2t",
+                              "fill": "$text-secondary",
+                              "content": "Unlimited game creation",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "1ffMW",
+                          "name": "pf3",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "6Zex6",
+                              "name": "pf3i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "TUUt0",
+                              "name": "pf3t",
+                              "fill": "$text-secondary",
+                              "content": "500 Sparks / month for AI generation",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "0uSzi",
+                          "name": "pf4",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "MNEof",
+                              "name": "pf4i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "v675K",
+                              "name": "pf4t",
+                              "fill": "$text-secondary",
+                              "content": "Creator revenue sharing",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gcUdI",
+                          "name": "pf5",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "j7pVq",
+                              "name": "pf5i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "KodZl",
+                              "name": "pf5t",
+                              "fill": "$text-secondary",
+                              "content": "Priority multiplayer hosting",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vlys8",
+                          "name": "pf6",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "paWkg",
+                              "name": "pf6i",
+                              "width": 16,
+                              "height": 16,
+                              "iconFontName": "check",
+                              "iconFontFamily": "lucide",
+                              "fill": "$accent-lime"
+                            },
+                            {
+                              "type": "text",
+                              "id": "O1CGq",
+                              "name": "pf6t",
+                              "fill": "$text-secondary",
+                              "content": "Custom themes and asset packs",
+                              "fontFamily": "Manrope",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zfexT",
+                      "name": "proCTA",
+                      "width": "fill_container",
+                      "fill": "$accent-lime",
+                      "cornerRadius": 12,
+                      "padding": [
+                        14,
+                        24
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "f21wi",
+                          "name": "proCTAtext",
+                          "fill": "#0A0A0A",
+                          "content": "Upgrade to Pro",
+                          "fontFamily": "Manrope",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zuNTj",
+              "name": "Sparks Info",
+              "width": "fill_container",
+              "fill": "$bg-primary",
+              "cornerRadius": 16,
+              "stroke": {
+                "thickness": 1,
+                "fill": "$border-subtle"
+              },
+              "gap": 24,
+              "padding": [
+                20,
+                32
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "DiRTY",
+                  "name": "sparkIcon",
+                  "width": 24,
+                  "height": 24,
+                  "iconFontName": "zap",
+                  "iconFontFamily": "lucide",
+                  "fill": "$accent-lime"
+                },
+                {
+                  "type": "text",
+                  "id": "NQ2bU",
+                  "name": "sparkText",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 800,
+                  "content": "Sparks are the credit system powering AI generation. Free users get a daily allowance. Pro users get 500/month with rollover. Need more? Buy additional Spark packs anytime.",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Manrope",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GipoK",
+          "name": "Final CTA",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            100,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "8vFyA",
+              "name": "CTA Glow BG",
+              "width": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "radial",
+                "enabled": true,
+                "rotation": 0,
+                "size": {
+                  "width": 1.5,
+                  "height": 1.5
+                },
+                "colors": [
+                  {
+                    "color": "#C4F82A10",
+                    "position": 0
+                  },
+                  {
+                    "color": "#0A0A0A00",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 24,
+              "layout": "vertical",
+              "gap": 32,
+              "padding": [
+                60,
+                80
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YsLiU",
+                  "name": "ctaHeadline",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 800,
+                  "content": "Ready to Make Something?",
+                  "textAlign": "center",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 56,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "r6qP8",
+                  "name": "ctaSub",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 600,
+                  "content": "Type a game idea. Play it today. Share it with the world.",
+                  "lineHeight": 1.6,
+                  "textAlign": "center",
+                  "fontFamily": "Manrope",
+                  "fontSize": 20,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "T2PoH",
+                  "name": "ctaButtons",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bfTTE",
+                      "name": "ctaPrimary",
+                      "fill": "$accent-lime",
+                      "cornerRadius": 12,
+                      "gap": 10,
+                      "padding": [
+                        16,
+                        36
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "3052x",
+                          "name": "ctaPrimaryIcon",
+                          "width": 20,
+                          "height": 20,
+                          "iconFontName": "zap",
+                          "iconFontFamily": "lucide",
+                          "fill": "#0A0A0A"
+                        },
+                        {
+                          "type": "text",
+                          "id": "wT5gD",
+                          "name": "ctaPrimaryText",
+                          "fill": "#0A0A0A",
+                          "content": "Start Creating",
+                          "fontFamily": "Manrope",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "reJmh",
+                      "name": "ctaSecondary",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border-muted"
+                      },
+                      "gap": 10,
+                      "padding": [
+                        16,
+                        36
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "9Jkjs",
+                          "name": "ctaSecIcon",
+                          "width": 20,
+                          "height": 20,
+                          "iconFontName": "play",
+                          "iconFontFamily": "lucide",
+                          "fill": "$text-primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "1mfMd",
+                          "name": "ctaSecText",
+                          "fill": "$text-primary",
+                          "content": "Play Featured Games",
+                          "fontFamily": "Manrope",
+                          "fontSize": 18,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "4e0fg",
+                  "name": "ctaTrust",
+                  "fill": "$text-tertiary",
+                  "content": "Free to start · No credit card required · Web, iOS, and Android",
+                  "textAlign": "center",
+                  "fontFamily": "Manrope",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "LNLsc",
+          "name": "Footer",
+          "width": "fill_container",
+          "fill": "$bg-card",
+          "layout": "vertical",
+          "gap": 48,
+          "padding": [
+            60,
+            120,
+            40,
+            120
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "VpUYQ",
+              "name": "Footer Top",
+              "width": "fill_container",
+              "gap": 48,
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ApKYd",
+                  "name": "Footer Brand",
+                  "width": 300,
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0e6TQ",
+                      "name": "brandName",
+                      "fill": "$accent-lime",
+                      "content": "SLOPCADE",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 24,
+                      "fontWeight": "800",
+                      "letterSpacing": 2
+                    },
+                    {
+                      "type": "text",
+                      "id": "QZ6ea",
+                      "name": "brandTagline",
+                      "fill": "$text-tertiary",
+                      "textGrowth": "fixed-width",
+                      "width": 280,
+                      "content": "AI-powered game engine where anyone can create, remix, and play infinite games.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "Manrope",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "M6DUV",
+                      "name": "brandSocials",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon_font",
+                          "id": "TWdBb",
+                          "name": "social1",
+                          "width": 20,
+                          "height": 20,
+                          "iconFontName": "twitter",
+                          "iconFontFamily": "lucide",
+                          "fill": "$text-tertiary"
+                        },
+                        {
+                          "type": "icon_font",
+                          "id": "Ic2Ie",
+                          "name": "social2",
+                          "width": 20,
+                          "height": 20,
+                          "iconFontName": "github",
+                          "iconFontFamily": "lucide",
+                          "fill": "$text-tertiary"
+                        },
+                        {
+                          "type": "icon_font",
+                          "id": "DVNZz",
+                          "name": "social3",
+                          "width": 20,
+                          "height": 20,
+                          "iconFontName": "youtube",
+                          "iconFontFamily": "lucide",
+                          "fill": "$text-tertiary"
+                        },
+                        {
+                          "type": "icon_font",
+                          "id": "MZZYY",
+                          "name": "social4",
+                          "width": 20,
+                          "height": 20,
+                          "iconFontName": "message-circle",
+                          "iconFontFamily": "lucide",
+                          "fill": "$text-tertiary"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b1bNX",
+                  "name": "Footer Nav",
+                  "gap": 80,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "jApTf",
+                      "name": "col1",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ltc4B",
+                          "name": "col1head",
+                          "fill": "$text-primary",
+                          "content": "Product",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "T84dn",
+                          "name": "col1a",
+                          "fill": "$text-tertiary",
+                          "content": "Game Engine",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Or45M",
+                          "name": "col1b",
+                          "fill": "$text-tertiary",
+                          "content": "Create",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "XjCLQ",
+                          "name": "col1c",
+                          "fill": "$text-tertiary",
+                          "content": "Play Games",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "TUVCA",
+                          "name": "col1d",
+                          "fill": "$text-tertiary",
+                          "content": "Remix",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "eKWo9",
+                          "name": "col1e",
+                          "fill": "$text-tertiary",
+                          "content": "Multiplayer",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "57KrE",
+                      "name": "col2",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "151wp",
+                          "name": "col2head",
+                          "fill": "$text-primary",
+                          "content": "Company",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "I796X",
+                          "name": "col2a",
+                          "fill": "$text-tertiary",
+                          "content": "About",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "KCSp1",
+                          "name": "col2b",
+                          "fill": "$text-tertiary",
+                          "content": "Blog",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "iRkYC",
+                          "name": "col2c",
+                          "fill": "$text-tertiary",
+                          "content": "Careers",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ov2UV",
+                          "name": "col2d",
+                          "fill": "$text-tertiary",
+                          "content": "Press Kit",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "E2ABA",
+                      "name": "col3",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "5SYpo",
+                          "name": "col3head",
+                          "fill": "$text-primary",
+                          "content": "Resources",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "2mnl0",
+                          "name": "col3a",
+                          "fill": "$text-tertiary",
+                          "content": "Documentation",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Qz0bO",
+                          "name": "col3b",
+                          "fill": "$text-tertiary",
+                          "content": "API Reference",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DnEu9",
+                          "name": "col3c",
+                          "fill": "$text-tertiary",
+                          "content": "Community",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jsIqq",
+                          "name": "col3d",
+                          "fill": "$text-tertiary",
+                          "content": "Support",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oQboR",
+                      "name": "col4",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "UcBx3",
+                          "name": "col4head",
+                          "fill": "$text-primary",
+                          "content": "Legal",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "v7cIV",
+                          "name": "col4a",
+                          "fill": "$text-tertiary",
+                          "content": "Privacy Policy",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mEl07",
+                          "name": "col4b",
+                          "fill": "$text-tertiary",
+                          "content": "Terms of Service",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VzZWM",
+                          "name": "col4c",
+                          "fill": "$text-tertiary",
+                          "content": "Cookie Policy",
+                          "fontFamily": "Manrope",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "panV6",
+              "name": "footerDivider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$border-subtle"
+            },
+            {
+              "type": "frame",
+              "id": "WGtmI",
+              "name": "Footer Bottom",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "HrhWp",
+                  "name": "copyright",
+                  "fill": "$text-muted",
+                  "content": "© 2026 Slopcade. All rights reserved.",
+                  "fontFamily": "Manrope",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "Y9a22",
+                  "name": "footerRight",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DPfrA",
+                      "name": "frLink1",
+                      "fill": "$text-muted",
+                      "content": "Status",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "z4sqv",
+                      "name": "frLink2",
+                      "fill": "$text-muted",
+                      "content": "Changelog",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hpUZq",
+                      "name": "frLink3",
+                      "fill": "$text-muted",
+                      "content": "Sitemap",
+                      "fontFamily": "Manrope",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "accent-lime": {
+      "type": "color",
+      "value": "#C4F82A"
+    },
+    "accent-orange": {
+      "type": "color",
+      "value": "#FA541C"
+    },
+    "accent-pink": {
+      "type": "color",
+      "value": "#F472B6"
+    },
+    "accent-purple": {
+      "type": "color",
+      "value": "#7C3AED"
+    },
+    "accent-teal": {
+      "type": "color",
+      "value": "#14B8A6"
+    },
+    "bg-card": {
+      "type": "color",
+      "value": "#18181B"
+    },
+    "bg-elevated": {
+      "type": "color",
+      "value": "#27272A"
+    },
+    "bg-primary": {
+      "type": "color",
+      "value": "#0A0A0A"
+    },
+    "border-muted": {
+      "type": "color",
+      "value": "#3F3F46"
+    },
+    "border-subtle": {
+      "type": "color",
+      "value": "#27272A"
+    },
+    "radius-lg": {
+      "type": "number",
+      "value": 20
+    },
+    "radius-md": {
+      "type": "number",
+      "value": 12
+    },
+    "radius-sm": {
+      "type": "number",
+      "value": 8
+    },
+    "spacing-lg": {
+      "type": "number",
+      "value": 48
+    },
+    "spacing-md": {
+      "type": "number",
+      "value": 32
+    },
+    "spacing-section": {
+      "type": "number",
+      "value": 80
+    },
+    "spacing-sm": {
+      "type": "number",
+      "value": 16
+    },
+    "spacing-xs": {
+      "type": "number",
+      "value": 8
+    },
+    "text-muted": {
+      "type": "color",
+      "value": "#52525B"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#A1A1AA"
+    },
+    "text-tertiary": {
+      "type": "color",
+      "value": "#71717A"
+    }
+  }
+}

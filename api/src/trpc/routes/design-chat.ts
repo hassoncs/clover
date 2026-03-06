@@ -18,6 +18,7 @@ addFrame: {"type":"addFrame","id":"f1","title":"Hero","width":1440,"height":900,
 addElement (rect): {"type":"addElement","frameId":"f1","element":{"type":"rect","x":0,"y":0,"width":400,"height":200,"zIndex":1,"fill":"#818cf8"}}
 addElement (text): {"type":"addElement","frameId":"f1","element":{"type":"text","x":20,"y":20,"width":360,"height":50,"zIndex":2,"content":"Hello World","fontSize":32,"color":"#ffffff","align":"center"}}
 addElement (circle): {"type":"addElement","frameId":"f1","element":{"type":"circle","x":50,"y":50,"width":100,"height":100,"zIndex":1,"fill":"#f97316"}}
+addElement (effect): {"type":"addElement","frameId":"f1","element":{"type":"effect","x":40,"y":40,"width":320,"height":180,"zIndex":1,"playing":true,"authoringMode":"code","shaderCode":"shader_type canvas_item;\\n\\nvoid fragment() {\\n  vec2 uv = UV;\\n  float t = TIME;\\n  vec3 col = 0.5 + 0.5 * cos(t + uv.xyx + vec3(0.0, 2.0, 4.0));\\n  COLOR = vec4(col, 1.0);\\n}"}}
 updateElement: {"type":"updateElement","frameId":"f1","elementId":"elem-id","patch":{"fill":"#ff0000"}}
 deleteElement: {"type":"deleteElement","frameId":"f1","elementId":"elem-id"}
 deleteFrame: {"type":"deleteFrame","id":"f1"}
@@ -29,6 +30,9 @@ RULES:
 - Frame default size: 1440x900 for screens, 400x300 for small components
 - Multiple frames: offset x by (previous frame width + 100)
 - Colors: "#0f172a"=dark-bg, "#818cf8"=indigo, "#4f46e5"=indigo-dark, "#ffffff"=white, "#94a3b8"=gray, "#f97316"=orange, "#10b981"=green, "#ef4444"=red
+- If context includes a selected element id and user asks to modify that element, use updateElement with that exact elementId.
+- For color requests like "make this red", update patch.fill for shapes and patch.fill or patch.color for text, depending on the selected node type.
+- For animated shader/effect/rainbow requests, use addElement with element.type="effect" and include shaderCode plus playing:true unless user asks to pause.
 - NEVER say you can't draw. ALWAYS produce ops when user asks for visuals.
 - Reply field: 1-2 sentences max, confirm what was created.
 
@@ -64,8 +68,10 @@ export const designChatRouter = router({
 			const model = openrouter("anthropic/claude-3-5-sonnet");
 
 			const contextLines: string[] = [];
-			if (input.selectedElementId) contextLines.push(`Selected element: ${input.selectedElementId}`);
-			else if (input.selectedFrameId) contextLines.push(`Selected frame: ${input.selectedFrameId}`);
+			if (input.selectedElementId)
+				contextLines.push(`Selected element: ${input.selectedElementId}`);
+			else if (input.selectedFrameId)
+				contextLines.push(`Selected frame: ${input.selectedFrameId}`);
 
 			if (input.selectedElementJson) {
 				try {
@@ -76,34 +82,51 @@ export const designChatRouter = router({
 					if (el.height) props.push(`h=${el.height}`);
 					if (el.fill) props.push(`fill=${el.fill}`);
 					if (el.color) props.push(`color=${el.color}`);
-					if (el.content) props.push(`content="${String(el.content).slice(0, 50)}"`);
+					if (el.content)
+						props.push(`content="${String(el.content).slice(0, 50)}"`);
 					if (el.fontSize) props.push(`fontSize=${el.fontSize}`);
 					if (el.x !== undefined) props.push(`x=${el.x}`);
 					if (el.y !== undefined) props.push(`y=${el.y}`);
 					contextLines.push(`Selected element properties: ${props.join(", ")}`);
-				} catch { /* ignore */ }
+				} catch {
+					/* ignore */
+				}
 			}
 
 			if (input.documentJson) {
 				try {
 					const doc = JSON.parse(input.documentJson);
-					const frames = (doc.frames ?? []) as any[];
-					if (frames.length === 0) {
+					const children = Array.isArray(doc.children) ? doc.children : [];
+					const frameLikeNodes = children.filter(
+						(node: any) =>
+							node && (node.type === "frame" || node.type === "group"),
+					) as any[];
+					if (children.length === 0) {
 						contextLines.push("Canvas is empty.");
+					} else if (frameLikeNodes.length === 0) {
+						contextLines.push(`Canvas has ${children.length} top-level nodes.`);
 					} else {
-						const frameList = frames.map((f: any) =>
-							`id="${f.id}" title="${f.title}" pos=(${f.position?.x ?? 0},${f.position?.y ?? 0}) size=${f.width}x${f.height} elements=${f.elements?.length ?? 0}`
-						).join("; ");
+						const frameList = frameLikeNodes
+							.map(
+								(f: any) =>
+									`id="${f.id}" name="${f.name ?? f.id}" pos=(${f.x ?? 0},${f.y ?? 0}) size=${f.width ?? 0}x${f.height ?? 0} children=${Array.isArray(f.children) ? f.children.length : 0}`,
+							)
+							.join("; ");
 						contextLines.push(`Existing frames: ${frameList}`);
-						const maxX = Math.max(...frames.map((f: any) => (f.position?.x ?? 0) + (f.width ?? 1440)));
+						const maxX = Math.max(
+							...frameLikeNodes.map((f: any) => (f.x ?? 0) + (f.width ?? 1440)),
+						);
 						contextLines.push(`New frames: start at x=${maxX + 100}`);
 					}
-				} catch { /* ignore */ }
+				} catch {
+					/* ignore */
+				}
 			}
 
-			const prompt = contextLines.length > 0
-				? `${input.message}\n\n[Canvas Context]\n${contextLines.join("\n")}`
-				: input.message;
+			const prompt =
+				contextLines.length > 0
+					? `${input.message}\n\n[Canvas Context]\n${contextLines.join("\n")}`
+					: input.message;
 
 			try {
 				const { text } = await generateText({

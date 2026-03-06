@@ -22,6 +22,12 @@ baseConfig.resolver.nodeModulesPaths = [
 	path.resolve(monorepoRoot, "node_modules"),
 ];
 
+baseConfig.resolver.sourceExts = [...baseConfig.resolver.sourceExts, "glsl"];
+
+baseConfig.transformer.babelTransformerPath = require.resolve(
+	"../../scripts/metro-glsl-transformer",
+);
+
 const nativeWindConfig = withNativeWind(baseConfig, { input: "./global.css" });
 
 const isDev = process.env.NODE_ENV !== "production";

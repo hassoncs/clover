@@ -397,6 +397,14 @@
 					"$(PODS_ROOT)/Headers/Private",
 					"$(PODS_ROOT)/Headers/Private/VisionCamera",
 					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Private",
+					"$(PODS_ROOT)/Headers/Private/VisionCamera",
+					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Private",
+					"$(PODS_ROOT)/Headers/Private/VisionCamera",
+					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
 				);
 				INFOPLIST_FILE = Slopcade/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -411,12 +419,12 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = me.ch5.slopcade.app;
-				PRODUCT_NAME = Slopcade;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.slopcade";
+				PRODUCT_NAME = "Slopcade";
 				SWIFT_OBJC_BRIDGING_HEADER = "Slopcade/Slopcade-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -439,6 +447,14 @@
 					"$(PODS_ROOT)/Headers/Private",
 					"$(PODS_ROOT)/Headers/Private/VisionCamera",
 					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Private",
+					"$(PODS_ROOT)/Headers/Private/VisionCamera",
+					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Private",
+					"$(PODS_ROOT)/Headers/Private/VisionCamera",
+					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
 				);
 				INFOPLIST_FILE = Slopcade/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -453,11 +469,11 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = me.ch5.slopcade.app;
-				PRODUCT_NAME = Slopcade;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.slopcade";
+				PRODUCT_NAME = "Slopcade";
 				SWIFT_OBJC_BRIDGING_HEADER = "Slopcade/Slopcade-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

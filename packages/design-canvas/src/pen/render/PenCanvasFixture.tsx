@@ -1,27 +1,46 @@
-import { Canvas } from "@shopify/react-native-skia";
-import { PenRenderer } from "@slopcade/design-canvas";
-import type { PenDocument } from "@slopcade/shared/types/pen";
-import React from "react";
+import React, { useMemo } from "react";
+import { Platform } from "react-native";
+import { WithSkiaWeb } from "@shopify/react-native-skia/lib/module/web";
+import type { PenCanvasFixtureInnerProps } from "./PenCanvasFixtureInner";
 
-export const PenCanvasFixture = ({
-	document,
-	width = 800,
-	height = 600,
-	camera = { translateX: 0, translateY: 0, scale: 1 },
-}: {
-	document: PenDocument;
-	width?: number;
-	height?: number;
-	camera?: { translateX: number; translateY: number; scale: number };
-}) => {
-	return (
-		<div style={{ width, height, border: "1px solid #ccc" }}>
-			<PenRenderer
-				document={document}
-				width={width}
-				height={height}
-				camera={camera}
-			/>
-		</div>
+export type PenCanvasFixtureProps = PenCanvasFixtureInnerProps;
+
+export const PenCanvasFixture = (props: PenCanvasFixtureProps) => {
+	const fallback = useMemo(
+		() => (
+			<div
+				style={{
+					width: props.width ?? 800,
+					height: props.height ?? 600,
+					background: "#111",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					color: "#666",
+					fontSize: 14,
+				}}
+			>
+				Loading canvas…
+			</div>
+		),
+		[props.width, props.height],
 	);
+
+	if (Platform.OS === "web") {
+		return (
+			<WithSkiaWeb
+				getComponent={() => {
+					return import("./PenCanvasFixtureInner").then(
+						(m) => ({ default: m.PenCanvasFixtureInner }),
+					) as any;
+				}}
+				fallback={fallback}
+				opts={{ locateFile: (file: string) => `/${file}` }}
+				componentProps={props}
+			/>
+		);
+	}
+
+	const NativeInner = require("./PenCanvasFixtureInner").PenCanvasFixtureInner;
+	return <NativeInner {...props} />;
 };

@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>slopcade</string>
-          <string>me.ch5.slopcade.app</string>
+          <string>app.slopcade</string>
         </array>
       </dict>
     </array>
@@ -77,7 +77,7 @@
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
     <key>UIUserInterfaceStyle</key>
-    <string>Light</string>
+    <string>Dark</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
   </dict>

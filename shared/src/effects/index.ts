@@ -107,6 +107,7 @@ export {
 	getShaderSkSL,
 	getSkSLCompatibleShaderKeys,
 } from "./shaders/index";
+export { rewriteGodotToSkSL } from "./skslRewrite";
 export type {
 	EffectsSnapshot,
 	FeedbackSnapshotState,

@@ -19,6 +19,22 @@ function isContainer(node: PenNode): node is ContainerNode {
 	return node.type === "frame" || node.type === "group";
 }
 
+/**
+ * Infer the effective layout direction for a container node.
+ * In .pen files, having justifyContent/alignItems/gap implies flex layout even
+ * when "layout" isn't explicitly set. Defaults to "horizontal" (CSS row) in
+ * that case, matching standard flexbox behavior.
+ */
+function inferLayout(container: ContainerNode): string {
+	const explicit = container.layout ?? "none";
+	if (explicit !== "none") return explicit;
+	const frame = container as PenFrame;
+	if (frame.justifyContent || frame.alignItems || (container.gap && container.gap > 0)) {
+		return "horizontal";
+	}
+	return "none";
+}
+
 function getTextContent(node: PenText): string {
 	if (typeof node.content === "string") return node.content;
 	return node.content.map((span) => span.content).join("");
@@ -30,8 +46,13 @@ function computeNodeSize(
 	parentHeight: number | null,
 	textMeasure: TextMeasureFn,
 ): { width: number; height: number } {
-	const wSpec = parseSizing((node as { width?: PenSizing }).width);
-	const hSpec = parseSizing((node as { height?: PenSizing }).height);
+	let wSpec = parseSizing((node as { width?: PenSizing }).width);
+	let hSpec = parseSizing((node as { height?: PenSizing }).height);
+
+	// In .pen files, width/height: undefined means "hug content" (fit_content),
+	// not collapse to 0. This applies to text, frames, and groups.
+	if (wSpec.kind === "auto") wSpec = { kind: "fit_content", fallback: null };
+	if (hSpec.kind === "auto") hSpec = { kind: "fit_content", fallback: null };
 
 	let width = resolveSize(wSpec, parentWidth, "width");
 	let height = resolveSize(hSpec, parentHeight, "height");
@@ -68,11 +89,13 @@ function computeFitContentSize(
 		const fontSize = node.fontSize ?? 16;
 		const fontFamily = node.fontFamily ?? "sans-serif";
 		const fontWeight = node.fontWeight;
-		const maxWidth =
+		// Only constrain width if the node has an explicit width set.
+		// fit_content text should measure at its unconstrained natural size.
+		const explicitWidth =
 			(node as { width?: PenSizing }).width !== undefined
 				? resolveSize(parseSizing((node as { width?: PenSizing }).width), null, "width") || undefined
 				: undefined;
-		return textMeasure(text, fontSize, fontFamily, fontWeight, maxWidth || undefined);
+		return textMeasure(text, fontSize, fontFamily, fontWeight, explicitWidth);
 	}
 
 	if (!isContainer(node)) {
@@ -86,7 +109,7 @@ function computeFitContentSize(
 
 	const [pt, pr, pb, pl] = parsePadding(node.padding);
 	const gap = node.gap ?? 0;
-	const layout = node.layout ?? "none";
+	const layout = inferLayout(node as ContainerNode);
 
 	if (layout === "horizontal") {
 		let totalWidth = pl + pr;
@@ -189,7 +212,7 @@ function layoutChildren(
 
 	const [pt, pr, pb, pl] = parsePadding(container.padding);
 	const gap = container.gap ?? 0;
-	const layout = container.layout ?? "none";
+	const layout = inferLayout(container);
 	const availableWidth = containerRect.width - pl - pr;
 	const availableHeight = containerRect.height - pt - pb;
 	const contentOriginX = containerRect.x + pl;

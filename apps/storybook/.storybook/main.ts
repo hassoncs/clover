@@ -1,7 +1,7 @@
 import type { StorybookConfig } from "@storybook/react-webpack5";
 import autoprefixer from "autoprefixer";
 import path from "path";
-import tailwindcss from "tailwindcss";
+import tailwindcssPostcss from "@tailwindcss/postcss";
 import { fileURLToPath } from "url";
 import type { Configuration, RuleSetRule } from "webpack";
 import webpack from "webpack";
@@ -27,6 +27,10 @@ const config: StorybookConfig = {
 		},
 		{
 			from: "../../../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts",
+			to: "/fonts",
+		},
+		{
+			from: "../static-fonts",
 			to: "/fonts",
 		},
 	],
@@ -62,7 +66,7 @@ const config: StorybookConfig = {
 					loader: "postcss-loader",
 					options: {
 						postcssOptions: {
-							plugins: [tailwindcss, autoprefixer],
+						plugins: [tailwindcssPostcss, autoprefixer],
 						},
 					},
 				},
@@ -141,13 +145,16 @@ const config: StorybookConfig = {
 			".jsx",
 			...(config.resolve.extensions || []),
 		];
+		// Prioritize compiled JS over react-native source fields.
+		// Without this, packages with 'react-native: src/index.ts' get their
+		// TypeScript source fed directly to webpack, which has no TS loader for node_modules.
+		config.resolve.mainFields = ["browser", "module", "main"];
 
 		config.resolve.alias = {
 			...config.resolve.alias,
 			"react-native$": "react-native-web",
 			"@slopcade/ui": path.resolve(__dirname, "../../../packages/ui/src"),
 			"@slopcade/design-canvas": path.resolve(__dirname, "../../../packages/design-canvas/src"),
-			"@slopcade/theme": path.resolve(__dirname, "../../../packages/theme/src"),
 			"@slopcade/theme": path.resolve(__dirname, "../../../packages/theme/src"),
 			"@slopcade/physics": path.resolve(
 				__dirname,
@@ -163,6 +170,29 @@ const config: StorybookConfig = {
 		};
 
 		config.plugins = config.plugins || [];
+
+		// Replace Skia.web.js at the resolved-path level.
+		// The alias approach doesn't work because the internal import
+		// is `export { Skia } from "./Skia"` (relative), which webpack
+		// resolves via extension priority (.web.js) without hitting aliases.
+		// NormalModuleReplacementPlugin intercepts AFTER path resolution.
+		config.plugins.push(
+			new webpack.NormalModuleReplacementPlugin(
+				/Skia\.web\.js$/,
+				(resource: { resource?: string; createData?: { resource?: string } }) => {
+					const res = resource.createData?.resource ?? resource.resource ?? "";
+					if (res.includes("@shopify/react-native-skia") && res.endsWith("Skia.web.js")) {
+						const stub = path.resolve(__dirname, "../stubs/skia-web.js");
+						if (resource.createData) {
+							resource.createData.resource = stub;
+						} else {
+							resource.resource = stub;
+						}
+					}
+				},
+			),
+		);
+
 		config.plugins.push(
 			new webpack.DefinePlugin({
 				__DEV__: JSON.stringify(false),

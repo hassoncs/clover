@@ -33,6 +33,7 @@ export function TextNode({ layoutNode, fontMgr }: NodeRendererProps): React.Reac
 
 	const paragraph = useMemo(() => {
 		if (!fontMgr) return null;
+		if (!Skia?.ParagraphBuilder?.Make) return null;
 
 		const textAlign = TEXT_ALIGN_MAP[node.textAlign ?? "left"] ?? TextAlign.Left;
 		const builder = Skia.ParagraphBuilder.Make({ textAlign }, fontMgr);
