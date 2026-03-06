@@ -44,7 +44,7 @@ export const designChatRouter = router({
 				message: z.string().min(1).max(10000),
 				documentJson: z.string().optional(),
 				selectedFrameId: z.string().nullable().optional(),
-selectedElementId: z.string().nullable().optional(),
+				selectedElementId: z.string().nullable().optional(),
 				selectedElementJson: z.string().optional(),
 			}),
 		)
@@ -64,6 +64,9 @@ selectedElementId: z.string().nullable().optional(),
 			const model = openrouter("anthropic/claude-3-5-sonnet");
 
 			const contextLines: string[] = [];
+			if (input.selectedElementId) contextLines.push(`Selected element: ${input.selectedElementId}`);
+			else if (input.selectedFrameId) contextLines.push(`Selected frame: ${input.selectedFrameId}`);
+
 			if (input.selectedElementJson) {
 				try {
 					const el = JSON.parse(input.selectedElementJson);
@@ -80,8 +83,6 @@ selectedElementId: z.string().nullable().optional(),
 					contextLines.push(`Selected element properties: ${props.join(", ")}`);
 				} catch { /* ignore */ }
 			}
-			else if (input.selectedElementId) contextLines.push(`Selected element: ${input.selectedElementId}`);
-			else if (input.selectedFrameId) contextLines.push(`Selected frame: ${input.selectedFrameId}`);
 
 			if (input.documentJson) {
 				try {

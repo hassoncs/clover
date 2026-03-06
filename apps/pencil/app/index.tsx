@@ -117,22 +117,23 @@ function loadSampleDocument(): PenDocument {
 	} catch {
 		return createEmptyDocument();
 	}
+}
 
 function getSelectedElementProperties(document: PenDocument, selectedNodePath: string[] | null): string | null {
-	if (!selectedNodePath || selectedNodePath.length === 0) return null;
-	const findNode = (nodes: PenNode[], path: string[]): PenNode | null => {
-		if (path.length === 0) return null;
-		const [first, ...rest] = path;
-		const node = nodes.find((n) => n.id === first);
-		if (!node) return null;
-		if (rest.length === 0) return node;
-		if ("children" in node && Array.isArray(node.children)) return findNode(node.children as PenNode[], rest);
-		return null;
-	};
-	const node = findNode(document.children, selectedNodePath);
-	if (!node) return null;
-	const { children, ...properties } = node as Record<string, unknown>;
-	return JSON.stringify(properties);
+  if (!selectedNodePath || selectedNodePath.length === 0) return null;
+  const findNode = (nodes: PenNode[], path: string[]): PenNode | null => {
+    if (path.length === 0) return null;
+    const [first, ...rest] = path;
+    const node = nodes.find((n) => n.id === first);
+    if (!node) return null;
+    if (rest.length === 0) return node;
+    if ("children" in node && Array.isArray(node.children)) return findNode(node.children as PenNode[], rest);
+    return null;
+  };
+  const node = findNode(document.children, selectedNodePath);
+  if (!node) return null;
+  const { children, ...properties } = node as Record<string, unknown>;
+  return JSON.stringify(properties);
 }
 
 function useDocumentHistory(initialDoc: PenDocument) {
@@ -543,17 +544,20 @@ function ChatSidebar({
 		"Add visual hierarchy",
 	];
 
-	const selectedNodeInfo = useMemo(() => {
-		if (!selectedNodePath || selectedNodePath.length === 0) return null;
-		const props = getSelectedElementProperties(document, selectedNodePath);
-		if (!props) return null;
-		const parsed = JSON.parse(props);
-		const type = parsed.type ?? "node";
-		const name = parsed.name ?? parsed.content ?? parsed.id?.slice(0, 8);
-		return { type, name: String(name), full: props };
-	}, [document, selectedNodePath]);
+  const selectedNodeInfo = useMemo(() => {
+    if (!selectedNodePath || selectedNodePath.length === 0) return null;
+    const props = getSelectedElementProperties(document, selectedNodePath);
+    if (!props) return null;
+    const parsed = JSON.parse(props);
+    const type = parsed.type ?? "node";
+    const name = parsed.name ?? parsed.content ?? parsed.id?.slice(0, 8);
+    return { type, name: String(name), full: props };
+  }, [document, selectedNodePath]);
 
-	const contextHint = selectedNodeInfo ? `Selected: ${selectedNodeInfo.type} "${selectedNodeInfo.name}"` : null;
+  const contextHint = selectedNodeInfo ? `Selected: ${selectedNodeInfo.type} "${selectedNodeInfo.name}"` : null;
+		selectedNodePath && selectedNodePath.length > 0
+			? `Selected: ${selectedNodePath[selectedNodePath.length - 1].slice(0, 8)}`
+			: null;
 
 	const handleSend = useCallback(async () => {
 		const text = input.trim();
@@ -567,7 +571,8 @@ function ChatSidebar({
 
 		setMessages((prev) => [...prev, userMessage]);
 		setInput("");
-		const selectedElementJson = getSelectedElementProperties(document, selectedNodePath);
+
+    const selectedElementJson = getSelectedElementProperties(document, selectedNodePath) ?? undefined;
 
 		try {
 			const response = await sendMessageMutation.mutateAsync({
@@ -575,7 +580,7 @@ function ChatSidebar({
 				documentJson: JSON.stringify(document),
 				selectedFrameId: selectedNodePath?.[0] ?? undefined,
 				selectedElementId: selectedNodePath?.[1] ?? undefined,
-				selectedElementJson,
+				selectedElementJson: selectedElementJson ?? undefined,
 			});
 
 			const applyResult = onApplyOps(response.ops);
