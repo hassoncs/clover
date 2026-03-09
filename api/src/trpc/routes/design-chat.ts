@@ -2,6 +2,10 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { z } from "zod";
 import { publicProcedure, router } from "@/trpc/index";
+import {
+	createScenarioClient,
+	ScenarioImageClient,
+} from "@/ai/providers/scenario";
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
@@ -18,6 +22,7 @@ addFrame: {"type":"addFrame","id":"f1","title":"Hero","width":1440,"height":900,
 addElement (rect): {"type":"addElement","frameId":"f1","element":{"type":"rect","x":0,"y":0,"width":400,"height":200,"zIndex":1,"fill":"#818cf8"}}
 addElement (text): {"type":"addElement","frameId":"f1","element":{"type":"text","x":20,"y":20,"width":360,"height":50,"zIndex":2,"content":"Hello World","fontSize":32,"color":"#ffffff","align":"center"}}
 addElement (circle): {"type":"addElement","frameId":"f1","element":{"type":"circle","x":50,"y":50,"width":100,"height":100,"zIndex":1,"fill":"#f97316"}}
+addElement (image): {"type":"addElement","frameId":"f1","element":{"type":"image","x":0,"y":0,"width":512,"height":512,"zIndex":1,"prompt":"a sunset over mountains, digital art","fit":"cover"}}
 addElement (effect): {"type":"addElement","frameId":"f1","element":{"type":"effect","x":40,"y":40,"width":320,"height":180,"zIndex":1,"playing":true,"authoringMode":"code","shaderCode":"shader_type canvas_item;\\n\\nvoid fragment() {\\n  vec2 uv = UV;\\n  float t = TIME;\\n  vec3 col = 0.5 + 0.5 * cos(t + uv.xyx + vec3(0.0, 2.0, 4.0));\\n  COLOR = vec4(col, 1.0);\\n}"}}
 updateElement: {"type":"updateElement","frameId":"f1","elementId":"elem-id","patch":{"fill":"#ff0000"}}
 deleteElement: {"type":"deleteElement","frameId":"f1","elementId":"elem-id"}
@@ -33,6 +38,7 @@ RULES:
 - If context includes a selected element id and user asks to modify that element, use updateElement with that exact elementId.
 - For color requests like "make this red", update patch.fill for shapes and patch.fill or patch.color for text, depending on the selected node type.
 - For animated shader/effect/rainbow requests, use addElement with element.type="effect" and include shaderCode plus playing:true unless user asks to pause.
+- For image requests (photos, illustrations, backgrounds, icons, logos, artwork), use addElement with element.type="image" and include a descriptive "prompt" field. The server will generate the image from the prompt. Write detailed, specific prompts for best results. fit can be "cover" (default), "contain", or "fill".
 - NEVER say you can't draw. ALWAYS produce ops when user asks for visuals.
 - Reply field: 1-2 sentences max, confirm what was created.
 
@@ -136,7 +142,6 @@ export const designChatRouter = router({
 					maxOutputTokens: 2048,
 				});
 
-				// Extract JSON — handle cases where model wraps in code block
 				const jsonText = text
 					.replace(/^```json\s*/i, "")
 					.replace(/^```\s*/i, "")
@@ -144,10 +149,36 @@ export const designChatRouter = router({
 					.trim();
 
 				const parsed = JSON.parse(jsonText);
+				const ops: any[] = Array.isArray(parsed.ops) ? parsed.ops : [];
+
+				// ── Generate images for any image elements with a prompt ──
+				const imagePromises: Promise<void>[] = [];
+				for (const op of ops) {
+					if (op?.type !== "addElement") continue;
+					const el = op.element;
+					if (el?.type !== "image" || !el.prompt) continue;
+
+					imagePromises.push(
+						generateImageUrl(ctx.env, el.prompt, el.width, el.height)
+							.then((url) => {
+								el.url = url;
+								delete el.prompt;
+							})
+							.catch((err) => {
+								console.error("[designChat] image gen failed:", err?.message ?? err);
+								el.url = "";
+								delete el.prompt;
+							}),
+					);
+				}
+
+				if (imagePromises.length > 0) {
+					await Promise.all(imagePromises);
+				}
 
 				return {
 					reply: String(parsed.reply ?? "Done."),
-					ops: Array.isArray(parsed.ops) ? parsed.ops : [],
+					ops,
 				};
 			} catch (err: any) {
 				console.error("[designChat] error:", err?.message ?? err);
@@ -155,3 +186,37 @@ export const designChatRouter = router({
 			}
 		}),
 });
+
+// ── Image generation via Scenario.com ─────────────────────────────────────────
+
+async function generateImageUrl(
+	env: {
+		SCENARIO_API_KEY?: string;
+		SCENARIO_SECRET_API_KEY?: string;
+		SCENARIO_API_URL?: string;
+	},
+	prompt: string,
+	width?: number,
+	height?: number,
+): Promise<string> {
+	const client = createScenarioClient(env);
+	const imageClient = new ScenarioImageClient(client);
+
+	const jobId = await imageClient.createGenerationJob({
+		prompt,
+		width: clampToMultipleOf8(width ?? 512, 256, 1024),
+		height: clampToMultipleOf8(height ?? 512, 256, 1024),
+		numSamples: 1,
+	});
+
+	const assetIds = await client.pollJobUntilComplete(jobId);
+	if (assetIds.length === 0) throw new Error("No assets generated");
+
+	const { url } = await client.getAssetDetails(assetIds[0]);
+	return url;
+}
+
+function clampToMultipleOf8(value: number, min: number, max: number): number {
+	const clamped = Math.max(min, Math.min(max, value));
+	return Math.round(clamped / 8) * 8;
+}

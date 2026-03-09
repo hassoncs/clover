@@ -138,6 +138,8 @@ npx expo start              # Wrong port!
 - **ios/ state**: After `devmux ensure ios-amen`, `ios/` is configured for amen. Run `pnpm prebuild` in `app/` to restore slopcade config.
 - **Font assets**: Custom fonts must be valid TTF/OTF binaries — verify with `file path/to/font.ttf`. GitHub HTML pages disguised as `.ttf` cause `CTFontManagerError 104` and a black screen.
 - **metro-amen renamed**: Previously `metro:amen` — renamed to `metro-amen` because colons in tmux session names (`omo-slopcade-metro:amen`) cause the session to appear as "running outside tmux" in devmux status.
+- **TSConfig GLSL declarations**: `apps/amen` and `apps/slopbox` must use `include: ["../../types/*.d.ts"]` (not `../types/*.d.ts`) to resolve GLSL type declarations in `/types/glsl.d.ts`. Using `../types` causes TS2307 errors on shared shader imports because the relative path from `apps/*/tsconfig.json` needs to escape two levels.
+- **Expo prebuild side effects**: Running app build scripts (`pnpm ios:amen`, etc.) can trigger `expo prebuild` which modifies `ios/*.xcodeproj`. If builds are verification-only (not deploying), restore unintended `pbxproj` diffs with `git checkout -- apps/*/ios/` before concluding to avoid polluting the working tree.
 
 ## File References
 

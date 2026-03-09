@@ -176,4 +176,76 @@ describe("applyDesignChatOpsToDocument", () => {
 		expect(effect.authoringMode).toBe("code");
 		expect(effect.uniforms).toEqual({ speed: 2.0 });
 	});
+
+	it("adds createdAt timestamp to nodes created by addElement ops", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [
+				{
+					type: "frame",
+					id: "screen",
+					width: 800,
+					height: 600,
+					children: [],
+				},
+			],
+		};
+
+		const beforeTimestamp = Date.now();
+		const result = applyDesignChatOpsToDocument(doc, [
+			{
+				type: "addElement",
+				frameId: "screen",
+				element: {
+					type: "rectangle",
+					id: "rect-1",
+					x: 10,
+					y: 20,
+					width: 100,
+					height: 50,
+				},
+			},
+		]);
+		const afterTimestamp = Date.now();
+
+		expect(result.errors).toEqual([]);
+		expect(result.appliedOps).toBe(1);
+		const frame = result.nextDocument.children[0] as {
+			children?: Array<Record<string, unknown>>;
+		};
+		const rect = frame.children?.[0];
+		expect(rect).toBeDefined();
+		expect(rect?.createdAt).toBeGreaterThanOrEqual(beforeTimestamp);
+		expect(rect?.createdAt).toBeLessThanOrEqual(afterTimestamp);
+	});
+
+	it("adds createdAt timestamp to frames created by addFrame ops", () => {
+		const doc: PenDocument = {
+			version: 1,
+			children: [],
+		};
+
+		const beforeTimestamp = Date.now();
+		const result = applyDesignChatOpsToDocument(doc, [
+			{
+				type: "addFrame",
+				id: "new-frame",
+				title: "Test Frame",
+				x: 0,
+				y: 0,
+				width: 800,
+				height: 600,
+			},
+		]);
+		const afterTimestamp = Date.now();
+
+		expect(result.errors).toEqual([]);
+		expect(result.appliedOps).toBe(1);
+		expect(result.nextDocument.children).toHaveLength(1);
+		const frame = result.nextDocument.children[0] as Record<string, unknown>;
+		expect(frame.type).toBe("frame");
+		expect(frame.id).toBe("new-frame");
+		expect(frame.createdAt).toBeGreaterThanOrEqual(beforeTimestamp);
+		expect(frame.createdAt).toBeLessThanOrEqual(afterTimestamp);
+	});
 });

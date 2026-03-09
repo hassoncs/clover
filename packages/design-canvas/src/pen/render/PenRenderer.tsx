@@ -1,14 +1,15 @@
-import { Canvas, Group, Paint, Rect, Skia } from "@shopify/react-native-skia";
 import type { SkTypefaceFontProvider } from "@shopify/react-native-skia";
+import { Canvas, Group, Paint, Rect, Skia } from "@shopify/react-native-skia";
 import type { PenDocument } from "@slopcade/shared/types/pen";
 import type React from "react";
 import { Fragment, useEffect, useMemo, useState } from "react";
+import type { PenDrawingState } from "../../tools/penToolState";
 import { buildComponentRegistry, resolveAllRefs } from "../components";
 import type { LayoutNode } from "../layout";
 import { layoutTree } from "../layout";
 import { estimateTextSize } from "../text-measure";
-import type { PenDrawingState } from "../../tools/penToolState";
 import { resolveTreeVariables } from "../variables";
+import { BuildChrome } from "./BuildChrome";
 import { FrameTitle } from "./FrameTitle";
 import { EffectNode } from "./nodes/EffectNode";
 import { EllipseNode } from "./nodes/EllipseNode";
@@ -37,8 +38,15 @@ export interface PenRendererProps {
 /** Statically bundled fonts available at /fonts/ in the dev server. */
 const LOCAL_FONTS: Record<string, string[]> = {
 	Fredoka: ["/fonts/Fredoka-Regular.ttf"],
-	Inter: ["/fonts/Inter-Regular.ttf", "/fonts/Inter-Bold.ttf", "/fonts/Inter-Medium.ttf"],
-	"JetBrains Mono": ["/fonts/JetBrainsMono-400.ttf", "/fonts/JetBrainsMono-700.ttf"],
+	Inter: [
+		"/fonts/Inter-Regular.ttf",
+		"/fonts/Inter-Bold.ttf",
+		"/fonts/Inter-Medium.ttf",
+	],
+	"JetBrains Mono": [
+		"/fonts/JetBrainsMono-400.ttf",
+		"/fonts/JetBrainsMono-700.ttf",
+	],
 	Geist: ["/fonts/Geist-400.ttf", "/fonts/Geist-700.ttf"],
 };
 
@@ -78,11 +86,9 @@ function renderLayoutNode(
 	switch (node.type) {
 		case "frame":
 			return (
-				<FrameNode
-					key={node.id}
-					layoutNode={layoutNode}
-					renderChildren={renderChildren}
-				/>
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<FrameNode layoutNode={layoutNode} renderChildren={renderChildren} />
+				</BuildChrome>
 			);
 		case "group":
 			return (
@@ -93,25 +99,61 @@ function renderLayoutNode(
 				/>
 			);
 		case "rectangle":
-			return <RectangleNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<RectangleNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "ellipse":
-			return <EllipseNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<EllipseNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "text":
-			return <TextNode key={node.id} layoutNode={layoutNode} fontMgr={fontMgr} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<TextNode layoutNode={layoutNode} fontMgr={fontMgr} />
+				</BuildChrome>
+			);
 		case "path":
-			return <PathNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<PathNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "line":
-			return <LineNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<LineNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "polygon":
-			return <PolygonNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<PolygonNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "icon_font":
-			return <IconFontNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<IconFontNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "note":
 			return <NoteNode key={node.id} layoutNode={layoutNode} />;
 		case "image":
-			return <ImageNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<ImageNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "effect":
-			return <EffectNode key={node.id} layoutNode={layoutNode} />;
+			return (
+				<BuildChrome key={node.id} layoutNode={layoutNode}>
+					<EffectNode layoutNode={layoutNode} />
+				</BuildChrome>
+			);
 		case "ref":
 			return null;
 		case "connection":
@@ -134,7 +176,11 @@ const SELECTION_COLOR = "#4F86FF";
 const HANDLE_SIZE = 6;
 const HANDLE_HALF = HANDLE_SIZE / 2;
 
-function SelectionChrome({ layoutNode }: { layoutNode: LayoutNode }): React.ReactNode {
+function SelectionChrome({
+	layoutNode,
+}: {
+	layoutNode: LayoutNode;
+}): React.ReactNode {
 	const { x, y, width, height } = layoutNode.rect;
 
 	const corners = [
@@ -149,9 +195,9 @@ function SelectionChrome({ layoutNode }: { layoutNode: LayoutNode }): React.Reac
 			<Rect x={x} y={y} width={width} height={height} color="transparent">
 				<Paint color={SELECTION_COLOR} style="stroke" strokeWidth={1.5} />
 			</Rect>
-			{corners.map((corner, i) => (
+			{corners.map((corner) => (
 				<Rect
-					key={i}
+					key={`${corner.cx}-${corner.cy}`}
 					x={corner.cx - HANDLE_HALF}
 					y={corner.cy - HANDLE_HALF}
 					width={HANDLE_SIZE}
@@ -176,7 +222,11 @@ export function PenRenderer({
 	const layoutNodes = useMemo(() => {
 		const registry = buildComponentRegistry(document.children);
 		const resolved = resolveAllRefs(document.children, registry);
-		const withVariables = resolveTreeVariables(resolved, document.variables, document.themes);
+		const withVariables = resolveTreeVariables(
+			resolved,
+			document.variables,
+			document.themes,
+		);
 		return layoutTree(withVariables, estimateTextSize);
 	}, [document]);
 
@@ -227,7 +277,9 @@ export function PenRenderer({
 		}
 
 		loadFonts();
-		return () => { cancelled = true; };
+		return () => {
+			cancelled = true;
+		};
 	}, [requiredFonts]);
 
 	return (

@@ -10,6 +10,7 @@ import React, {
 	useState,
 } from "react";
 import {
+	ActivityIndicator,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
@@ -419,6 +420,11 @@ interface LayersPanelProps {
 	document: PenDocument;
 	selectedNodePaths: string[][];
 	onSelectNode: (path: string[]) => void;
+	onReorder?: (
+		draggedId: string,
+		targetId: string,
+		insertAboveInPanel: boolean,
+	) => void;
 }
 
 interface LayerRow {
@@ -433,18 +439,22 @@ function LayersPanel({
 	document,
 	selectedNodePaths,
 	onSelectNode,
+	onReorder,
 }: LayersPanelProps) {
 	const { theme, colors: C } = useTheme();
 	const layersPanelStyles = STYLES[theme].layersPanelStyles;
 	const [collapsedIds, setCollapsedIds] = useState<Set<string>>(
 		() => new Set(),
 	);
+	const [dragId, setDragId] = useState<string | null>(null);
+	const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+	const [dropAbove, setDropAbove] = useState(true);
 
 	const rows = useMemo<LayerRow[]>(() => {
 		const nextRows: LayerRow[] = [];
 
 		const walk = (nodes: PenNode[], depth: number, basePath: string[]) => {
-			for (const node of nodes) {
+			for (const node of [...nodes].reverse()) {
 				const path = [...basePath, node.id];
 				const children =
 					"children" in node && Array.isArray(node.children)
@@ -480,6 +490,43 @@ function LayersPanel({
 		});
 	}, []);
 
+	const handleDragStart = useCallback((e: any, nodeId: string) => {
+		setDragId(nodeId);
+		e.dataTransfer?.setData("text/plain", nodeId);
+	}, []);
+
+	const handleDragOver = useCallback((e: any, nodeId: string) => {
+		e.preventDefault();
+		const rect = e.currentTarget?.getBoundingClientRect?.();
+		if (rect) {
+			setDropAbove(e.clientY < rect.top + rect.height / 2);
+		}
+		setDropTargetId(nodeId);
+	}, []);
+
+	const handleDragLeave = useCallback((e: any) => {
+		if (!e.currentTarget.contains?.(e.relatedTarget)) {
+			setDropTargetId(null);
+		}
+	}, []);
+
+	const handleDrop = useCallback(
+		(e: any, targetNodeId: string) => {
+			e.preventDefault();
+			if (dragId && dragId !== targetNodeId) {
+				onReorder?.(dragId, targetNodeId, dropAbove);
+			}
+			setDragId(null);
+			setDropTargetId(null);
+		},
+		[dragId, dropAbove, onReorder],
+	);
+
+	const handleDragEnd = useCallback(() => {
+		setDragId(null);
+		setDropTargetId(null);
+	}, []);
+
 	return (
 		<View style={layersPanelStyles.container}>
 			<View style={layersPanelStyles.header}>
@@ -492,11 +539,25 @@ function LayersPanel({
 					return (
 						<Pressable
 							key={row.path.join("/")}
+							// @ts-expect-error - HTML5 drag props on web
+							draggable
+							onDragStart={(e: any) => handleDragStart(e, row.node.id)}
+							onDragOver={(e: any) => handleDragOver(e, row.node.id)}
+							onDragLeave={handleDragLeave}
+							onDrop={(e: any) => handleDrop(e, row.node.id)}
+							onDragEnd={handleDragEnd}
 							style={({ pressed }) => [
 								layersPanelStyles.row,
 								{ paddingLeft: 8 + row.depth * 14 },
 								selected && layersPanelStyles.rowSelected,
 								pressed && layersPanelStyles.rowPressed,
+								dragId === row.node.id && { opacity: 0.4 },
+								dropTargetId === row.node.id &&
+									dropAbove &&
+									layersPanelStyles.rowDropAbove,
+								dropTargetId === row.node.id &&
+									!dropAbove &&
+									layersPanelStyles.rowDropBelow,
 							]}
 							onPress={() => onSelectNode(row.path)}
 						>
@@ -553,7 +614,10 @@ interface ChatSidebarProps {
 	onClose: () => void;
 	selectedNodePath: string[] | null;
 	document: PenDocument;
-	onApplyOps: (ops: unknown[]) => { appliedOps: number; errors: string[] };
+	onApplyOps: (
+		ops: unknown[],
+		onProgress: (step: number, total: number) => void,
+	) => Promise<{ appliedOps: number; errors: string[] }>;
 }
 
 function ChatSidebar({
@@ -566,8 +630,13 @@ function ChatSidebar({
 	const chatSidebarStyles = STYLES[theme].chatSidebarStyles;
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [input, setInput] = useState("");
+	const [applyProgress, setApplyProgress] = useState<{
+		step: number;
+		total: number;
+	} | null>(null);
 	const sendMessageMutation = trpc.designChat.sendMessage.useMutation();
 	const isSending = sendMessageMutation.isPending;
+	const isApplying = applyProgress !== null;
 	const scrollRef = useRef<ScrollView>(null);
 
 	const promptPills = [
@@ -619,7 +688,13 @@ function ChatSidebar({
 				selectedElementJson: selectedElementJson ?? undefined,
 			});
 
-			const applyResult = onApplyOps(response.ops);
+			const totalOps = Array.isArray(response.ops) ? response.ops.length : 0;
+			if (totalOps > 0) {
+				setApplyProgress({ step: 0, total: totalOps });
+			}
+			const applyResult = await onApplyOps(response.ops, (step, total) => {
+				setApplyProgress({ step, total });
+			});
 			const assistantMessage: ChatMessage = {
 				id: `a-${Date.now()}`,
 				role: "assistant",
@@ -640,6 +715,7 @@ function ChatSidebar({
 				},
 			]);
 		} finally {
+			setApplyProgress(null);
 			scrollRef.current?.scrollToEnd({ animated: true });
 		}
 	}, [
@@ -749,16 +825,40 @@ function ChatSidebar({
 					})
 				)}
 
-				{isSending ? (
+				{isSending || isApplying ? (
 					<View
 						style={[
 							chatSidebarStyles.messageBubble,
 							chatSidebarStyles.messageBubbleAssistant,
 						]}
 					>
-						<Text style={chatSidebarStyles.messageTextAssistant}>
-							Thinking...
-						</Text>
+						<View style={chatSidebarStyles.loadingRow}>
+							<ActivityIndicator size="small" color={C.accent} />
+							<Text style={chatSidebarStyles.messageTextAssistant}>
+								{isApplying && applyProgress
+									? `Applying ${applyProgress.step}/${applyProgress.total} changes...`
+									: "Thinking..."}
+							</Text>
+						</View>
+						{isApplying && applyProgress ? (
+							<View style={chatSidebarStyles.progressTrack}>
+								<View
+									style={[
+										chatSidebarStyles.progressFill,
+										{
+											width: `${Math.max(
+												8,
+												Math.round(
+													(applyProgress.step /
+														Math.max(1, applyProgress.total)) *
+														100,
+												),
+											)}%`,
+										},
+									]}
+								/>
+							</View>
+						) : null}
 					</View>
 				) : null}
 			</ScrollView>
@@ -786,10 +886,10 @@ function ChatSidebar({
 					/>
 					<Pressable
 						onPress={handleSend}
-						disabled={!input.trim() || isSending}
+						disabled={!input.trim() || isSending || isApplying}
 						style={({ pressed }) => [
 							chatSidebarStyles.sendButton,
-							(!input.trim() || isSending || pressed) &&
+							(!input.trim() || isSending || isApplying || pressed) &&
 								chatSidebarStyles.sendButtonDisabled,
 						]}
 					>
@@ -888,6 +988,69 @@ function ActionButton({ icon, label, onPress }: ActionButtonProps) {
 	);
 }
 
+type AgentCursorState = {
+	agentId: string;
+	x: number;
+	y: number;
+	action: string;
+	timestamp: number;
+};
+
+function wait(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getOpType(op: unknown): string {
+	if (!op || typeof op !== "object") return "op";
+	const candidate = (op as { type?: unknown }).type;
+	return typeof candidate === "string" ? candidate : "op";
+}
+
+function getCursorPointFromOp(
+	op: unknown,
+	fallback: { x: number; y: number },
+): { x: number; y: number } {
+	if (!op || typeof op !== "object") return fallback;
+	const typedOp = op as {
+		x?: unknown;
+		y?: unknown;
+		patch?: { x?: unknown; y?: unknown };
+		element?: { x?: unknown; y?: unknown };
+	};
+
+	const directX = typeof typedOp.x === "number" ? typedOp.x : null;
+	const directY = typeof typedOp.y === "number" ? typedOp.y : null;
+	if (directX !== null && directY !== null) {
+		return { x: directX, y: directY };
+	}
+
+	const patchX =
+		typedOp.patch && typeof typedOp.patch.x === "number"
+			? typedOp.patch.x
+			: null;
+	const patchY =
+		typedOp.patch && typeof typedOp.patch.y === "number"
+			? typedOp.patch.y
+			: null;
+	if (patchX !== null && patchY !== null) {
+		return { x: patchX, y: patchY };
+	}
+
+	const elementX =
+		typedOp.element && typeof typedOp.element.x === "number"
+			? typedOp.element.x
+			: null;
+	const elementY =
+		typedOp.element && typeof typedOp.element.y === "number"
+			? typedOp.element.y
+			: null;
+	if (elementX !== null && elementY !== null) {
+		return { x: elementX, y: elementY };
+	}
+
+	return fallback;
+}
+
 export default function PencilScreen() {
 	const [theme, setTheme] = useState<Theme>("dark");
 	const colors = THEMES[theme];
@@ -899,17 +1062,27 @@ export default function PencilScreen() {
 	const [chatCollapsed, setChatCollapsed] = useState(false);
 	const [showLayers, setShowLayers] = useState(true);
 	const [activeTool, setActiveTool] = useState<ToolId>("pointer");
+	const [localAgentCursor, setLocalAgentCursor] =
+		useState<AgentCursorState | null>(null);
 	const selectedNodePath = selectedNodePaths[0] ?? null;
+	const documentRef = useRef(document);
 
 	usePencilBridge(document, setDocument);
 
-	const { isConnected, agentCursors, sendDelta } = usePencilServer({
-		document,
-		setDocument,
-		onDocumentChange: (nextDocument) => {
-			persistDocument(nextDocument);
-		},
-	});
+	const isInteractingRef = useRef(false);
+	const { isConnected, agentCursors, sendDelta, flushPendingServerUpdate } =
+		usePencilServer({
+			document,
+			setDocument,
+			onDocumentChange: (nextDocument) => {
+				persistDocument(nextDocument);
+			},
+			isInteractingRef,
+		});
+
+	useEffect(() => {
+		documentRef.current = document;
+	}, [document]);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -988,15 +1161,102 @@ export default function PencilScreen() {
 	}, []);
 
 	const handleApplyChatOps = useCallback(
-		(ops: unknown[]) => {
-			const result = applyDesignChatOpsToDocument(document, ops);
-			setDocument(result.nextDocument);
-			if (isConnected) {
-				sendDelta(ops);
+		async (
+			ops: unknown[],
+			onProgress: (step: number, total: number) => void,
+		) => {
+			const opsArray = Array.isArray(ops) ? ops : [];
+			const total = opsArray.length;
+			if (total === 0) {
+				return { appliedOps: 0, errors: [] };
 			}
-			return { appliedOps: result.appliedOps, errors: result.errors };
+
+			let currentDoc = documentRef.current;
+			let appliedOps = 0;
+			const errors: string[] = [];
+			let lastPoint = { x: 520, y: 380 };
+
+			for (let i = 0; i < opsArray.length; i += 1) {
+				const op = opsArray[i];
+				const step = i + 1;
+				const point = getCursorPointFromOp(op, lastPoint);
+				lastPoint = point;
+
+				setLocalAgentCursor({
+					agentId: "radbot",
+					x: point.x,
+					y: point.y,
+					action: `${getOpType(op)} ${step}/${total}`,
+					timestamp: Date.now(),
+				});
+
+				const result = applyDesignChatOpsToDocument(currentDoc, [op]);
+				currentDoc = result.nextDocument;
+				setDocument(currentDoc);
+				appliedOps += result.appliedOps;
+				errors.push(...result.errors);
+
+				if (isConnected) {
+					sendDelta([op]);
+				}
+
+				onProgress(step, total);
+				await wait(120);
+			}
+
+			setTimeout(() => {
+				setLocalAgentCursor(null);
+			}, 900);
+
+			return { appliedOps, errors };
 		},
-		[document, isConnected, sendDelta, setDocument],
+		[isConnected, sendDelta, setDocument],
+	);
+
+	const mergedAgentCursors = useMemo(
+		() =>
+			localAgentCursor ? [...agentCursors, localAgentCursor] : agentCursors,
+		[agentCursors, localAgentCursor],
+	);
+
+	const handleLayerReorder = useCallback(
+		(draggedId: string, targetId: string, insertAboveInPanel: boolean) => {
+			setDocument((prev) => {
+				const next = JSON.parse(JSON.stringify(prev)) as typeof prev;
+
+				function findSiblings(nodes: PenNode[]): PenNode[] | null {
+					const hasDragged = nodes.some((n) => n.id === draggedId);
+					const hasTarget = nodes.some((n) => n.id === targetId);
+					if (hasDragged && hasTarget) return nodes;
+					for (const node of nodes) {
+						if ("children" in node && Array.isArray(node.children)) {
+							const found = findSiblings(node.children as PenNode[]);
+							if (found) return found;
+						}
+					}
+					return null;
+				}
+
+				const siblings = findSiblings(next.children);
+				if (!siblings) return prev;
+
+				const fromIdx = siblings.findIndex((n) => n.id === draggedId);
+				const toIdx = siblings.findIndex((n) => n.id === targetId);
+				if (fromIdx === -1 || toIdx === -1) return prev;
+
+				const [dragged] = siblings.splice(fromIdx, 1);
+				const newToIdx = siblings.findIndex((n) => n.id === targetId);
+
+				// Panel is reversed vs array:
+				// "above in panel" = higher index in array (rendered on top)
+				const insertAt = insertAboveInPanel ? newToIdx + 1 : newToIdx;
+				siblings.splice(Math.max(0, insertAt), 0, dragged);
+
+				return next;
+			});
+			commitHistory();
+		},
+		[setDocument, commitHistory],
 	);
 
 	const penCanvasTool = (activeTool === "pen" ? "pen" : "pointer") as
@@ -1047,6 +1307,7 @@ export default function PencilScreen() {
 							document={document}
 							selectedNodePaths={selectedNodePaths}
 							onSelectNode={(path) => setSelectedNodePaths([path])}
+							onReorder={handleLayerReorder}
 						/>
 					) : null}
 
@@ -1058,8 +1319,13 @@ export default function PencilScreen() {
 							onDocumentChange={setDocument}
 							selectedNodePaths={selectedNodePaths}
 							onSelectionChange={setSelectedNodePaths}
-							agentCursors={agentCursors}
-							onInteractionEnd={commitHistory}
+							agentCursors={mergedAgentCursors}
+							isInteractingRef={isInteractingRef}
+							onInteractionEnd={() => {
+								isInteractingRef.current = false;
+								flushPendingServerUpdate();
+								commitHistory();
+							}}
 						/>
 					</View>
 
@@ -1291,6 +1557,14 @@ const getLayersPanelStyles = (C: ThemeColors) =>
 		rowTextSelected: {
 			color: C.text,
 		},
+		rowDropAbove: {
+			borderTopWidth: 2,
+			borderTopColor: "#818cf8",
+		},
+		rowDropBelow: {
+			borderBottomWidth: 2,
+			borderBottomColor: "#818cf8",
+		},
 	});
 
 const getChatSidebarStyles = (C: ThemeColors) =>
@@ -1427,6 +1701,22 @@ const getChatSidebarStyles = (C: ThemeColors) =>
 		},
 		messageTextAssistant: {
 			color: C.text,
+		},
+		loadingRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 8,
+		},
+		progressTrack: {
+			height: 4,
+			borderRadius: 999,
+			backgroundColor: C.border,
+			overflow: "hidden",
+		},
+		progressFill: {
+			height: "100%",
+			backgroundColor: C.accent,
+			borderRadius: 999,
 		},
 		opsText: {
 			color: C.textMuted,

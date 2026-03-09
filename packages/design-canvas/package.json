@@ -12,6 +12,7 @@
 		"@slopcade/shared": "workspace:*",
 		"@slopcade/theme": "workspace:*",
 		"nanoid": "^5.0.7",
+		"react-resizable-panels": "^2.1.7",
 		"typeflex": "^0.1.0",
 		"yoga-layout": "^3.2.1"
 	},

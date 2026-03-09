@@ -101,6 +101,7 @@ function createElementNode(
 			content: asString(element.content, "Text"),
 			fontSize: asNumber(element.fontSize, 16),
 			fill: asString(element.color ?? element.fill, "#111827"),
+			createdAt: Date.now(),
 		};
 		return node;
 	}
@@ -114,6 +115,25 @@ function createElementNode(
 			width,
 			height,
 			fill: asString(element.fill, "#6366f1"),
+			createdAt: Date.now(),
+		};
+		return node;
+	}
+
+	if (rawType === "image") {
+		const node: PenNode = {
+			type: "image",
+			id,
+			x,
+			y,
+			width: asNumber(element.width, 400),
+			height: asNumber(element.height, 300),
+			url: asString(element.url, ""),
+			fit:
+				element.fit === "contain" || element.fit === "fill"
+					? element.fit
+					: "cover",
+			createdAt: Date.now(),
 		};
 		return node;
 	}
@@ -134,6 +154,7 @@ function createElementNode(
 			authoringMode: asString(element.authoringMode, "code"),
 			playing: asBoolean(element.playing, true),
 			uniforms: uniformsRecord ?? undefined,
+			createdAt: Date.now(),
 		};
 		return node;
 	}
@@ -146,6 +167,7 @@ function createElementNode(
 		width,
 		height,
 		fill: asString(element.fill, "#e5e7eb"),
+		createdAt: Date.now(),
 	};
 
 	if (typeof element.cornerRadius === "number") {
@@ -250,6 +272,7 @@ export function applyDesignChatOpsToDocument(
 					height: asNumber(op.height, 900),
 					layout: "none",
 					children: [],
+					createdAt: Date.now(),
 				};
 				nextDocument.children.push(frame);
 				appliedOps += 1;

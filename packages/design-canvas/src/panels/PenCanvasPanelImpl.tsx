@@ -34,7 +34,7 @@ export interface PenCanvasPanelProps {
 	onSelectionChange?: (paths: string[][]) => void;
 	agentCursors?: import("./MultiplayerOverlay").AgentCursor[];
 	onInteractionEnd?: () => void;
-	// UI suppression props for external shell integration
+	isInteractingRef?: React.MutableRefObject<boolean>;
 	hidePalette?: boolean;
 	externalActiveTool?: "pointer" | "pen";
 	hideHeader?: boolean;
@@ -416,6 +416,7 @@ export function PenCanvasPanel({
 	onSelectionChange,
 	agentCursors,
 	onInteractionEnd,
+	isInteractingRef,
 	hidePalette,
 	externalActiveTool,
 	hideHeader,
@@ -756,6 +757,7 @@ export function PenCanvasPanel({
 						paths: uniquePaths,
 						didMove: false,
 					};
+					if (isInteractingRef) isInteractingRef.current = true;
 					return;
 				}
 
@@ -789,6 +791,7 @@ export function PenCanvasPanel({
 		[
 			cameraMouseDown,
 			hitTestNodePath,
+			isInteractingRef,
 			penMouseDown,
 			penDocument.children,
 			selectedNodePaths,
@@ -917,6 +920,7 @@ export function PenCanvasPanel({
 			const drag = dragRef.current;
 			if (drag) {
 				dragRef.current = null;
+				if (isInteractingRef) isInteractingRef.current = false;
 				if (drag.didMove) onInteractionEnd?.();
 				return;
 			}
@@ -961,6 +965,7 @@ export function PenCanvasPanel({
 		},
 		[
 			cameraMouseUp,
+			isInteractingRef,
 			onInteractionEnd,
 			penMouseUp,
 			selectableLayoutNodes,

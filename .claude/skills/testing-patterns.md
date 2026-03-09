@@ -81,6 +81,7 @@ Managed by `simple-git-hooks` → `scripts/pre-commit.sh`:
 - **D1 mock column names**: Vitest D1 mock returns snake_case (`actor_id`) even when TypeScript types use camelCase — map accordingly
 - **FK constraint cleanup order**: In `beforeEach`, clear child tables (messages, threads) before parent tables (games, users) to avoid FK violations
 - **Consolidated smoke suites**: For security gates (moderation, billing, admin, invites, audit), a single `launch-gate.test.ts` file is preferred over scattered assertions
+- **App-level MicButton tests**: Mock `@slopcade/ui` exports rather than `react-native`/`react-native-reanimated` internals. App files like `apps/amen/MicButton.tsx` are thin re-exports of UI components — mocking RN internals can trigger `TurboModuleRegistry` failures in Vitest. Focus mocks on the app's actual imports.
 
 ## File References
 

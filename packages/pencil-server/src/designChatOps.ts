@@ -118,6 +118,20 @@ function createElementNode(
 		return node;
 	}
 
+	if (rawType === "image") {
+		const node: PenNode = {
+			type: "image",
+			id,
+			x,
+			y,
+			width: asNumber(element.width, 400),
+			height: asNumber(element.height, 300),
+			url: asString(element.url, ""),
+			fit: (element.fit === "contain" || element.fit === "fill") ? element.fit : "cover",
+		};
+		return node;
+	}
+
 	if (rawType === "effect" || rawType === "shader") {
 		const uniformsRecord = asRecord(element.uniforms);
 		const node: PenNode = {

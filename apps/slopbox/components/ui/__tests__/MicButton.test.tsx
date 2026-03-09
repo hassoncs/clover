@@ -1,31 +1,39 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
-import { MicButton } from '../MicButton';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import type { SpeechToTextError } from '@/lib/speech/types';
-import { vi, describe, it, expect } from 'vitest';
+import { MicButton } from '../MicButton';
 
-vi.mock('react-native', async () => {
-  const actual = await vi.importActual('react-native');
-  return {
-    ...actual,
-    Pressable: ({ onPressIn, onPressOut, onPress, children, testID, accessibilityRole, accessibilityLabel, ...props }: any) => (
-      <div
-        {...props}
-        data-testid={testID}
-        role={accessibilityRole}
-        aria-label={accessibilityLabel}
-        onMouseDown={onPressIn}
-        onMouseUp={onPressOut}
-        onClick={onPress}
-      >
-        {children}
-      </div>
-    ),
-  };
-});
-
-vi.mock('@expo/vector-icons', () => ({
-  Ionicons: (props: any) => <div data-testid="mic-icon" {...props} />,
+vi.mock('@slopcade/ui', () => ({
+  MicButton: ({
+    isRecording,
+    isConnecting,
+    error,
+    onPress,
+    onPressIn,
+    onPressOut,
+  }: {
+    isRecording?: boolean;
+    isConnecting?: boolean;
+    error?: SpeechToTextError | null;
+    onPress?: () => void;
+    onPressIn?: () => void;
+    onPressOut?: () => void;
+  }) => (
+    <button
+      type="button"
+      data-testid="mic-button"
+      aria-label="mic"
+      onClick={onPress}
+      onMouseDown={onPressIn}
+      onMouseUp={onPressOut}
+    >
+      <span data-testid="mic-icon" />
+      {isRecording ? <span data-testid="recording-indicator" /> : null}
+      {isConnecting ? <span data-testid="loading-indicator" /> : null}
+      {error ? <span data-testid="error-indicator" /> : null}
+    </button>
+  ),
 }));
 
 describe('MicButton', () => {
@@ -55,7 +63,7 @@ describe('MicButton', () => {
   it('renders error state when error is set', () => {
     const error: SpeechToTextError = { code: 'NETWORK_ERROR', message: 'Network error' };
     const { getByTestId } = render(<MicButton {...defaultProps} error={error} />);
-    expect(getByTestId('mic-button')).toBeTruthy();
+    expect(getByTestId('error-indicator')).toBeTruthy();
   });
 
   it('calls onPressIn when pressed (for hold mode)', () => {
