@@ -1,13 +1,9 @@
 import type { StorybookConfig } from "@storybook/react-webpack5";
+import tailwindcssPostcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
 import path from "path";
-import tailwindcssPostcss from "@tailwindcss/postcss";
-import { fileURLToPath } from "url";
 import type { Configuration, RuleSetRule } from "webpack";
 import webpack from "webpack";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const packagesPath = path.resolve(__dirname, "../../../packages");
 const sharedPath = path.resolve(__dirname, "../../../shared");
@@ -66,7 +62,7 @@ const config: StorybookConfig = {
 					loader: "postcss-loader",
 					options: {
 						postcssOptions: {
-						plugins: [tailwindcssPostcss, autoprefixer],
+							plugins: [tailwindcssPostcss, autoprefixer],
 						},
 					},
 				},
@@ -154,7 +150,10 @@ const config: StorybookConfig = {
 			...config.resolve.alias,
 			"react-native$": "react-native-web",
 			"@slopcade/ui": path.resolve(__dirname, "../../../packages/ui/src"),
-			"@slopcade/design-canvas": path.resolve(__dirname, "../../../packages/design-canvas/src"),
+			"@slopcade/design-canvas": path.resolve(
+				__dirname,
+				"../../../packages/design-canvas/src",
+			),
 			"@slopcade/theme": path.resolve(__dirname, "../../../packages/theme/src"),
 			"@slopcade/physics": path.resolve(
 				__dirname,
@@ -179,9 +178,15 @@ const config: StorybookConfig = {
 		config.plugins.push(
 			new webpack.NormalModuleReplacementPlugin(
 				/Skia\.web\.js$/,
-				(resource: { resource?: string; createData?: { resource?: string } }) => {
+				(resource: {
+					resource?: string;
+					createData?: { resource?: string };
+				}) => {
 					const res = resource.createData?.resource ?? resource.resource ?? "";
-					if (res.includes("@shopify/react-native-skia") && res.endsWith("Skia.web.js")) {
+					if (
+						res.includes("@shopify/react-native-skia") &&
+						res.endsWith("Skia.web.js")
+					) {
 						const stub = path.resolve(__dirname, "../stubs/skia-web.js");
 						if (resource.createData) {
 							resource.createData.resource = stub;

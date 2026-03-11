@@ -1,7 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { useTheme } from "@slopcade/theme";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	lazy,
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	Pressable,
 	ScrollView,
@@ -14,7 +22,9 @@ import { useDesignCamera } from "../camera/useDesignCamera";
 import type { DesignCamera } from "../camera/useDesignCamera.shared";
 import { buildComponentRegistry, resolveAllRefs } from "../pen/components";
 import { layoutTree } from "../pen/layout";
-import { PenRenderer } from "../pen/render/PenRenderer";
+
+const PenRenderer = lazy(() => import("../pen/render/PenRenderer"));
+
 import { estimateTextSize } from "../pen/text-measure";
 import { resolveTreeVariables } from "../pen/variables";
 import type { PenDrawingState } from "../tools/penToolState";
@@ -1204,44 +1214,50 @@ export function PenCanvasPanel({
 								onSelectNode={handleNodeTap}
 							/>
 						)}
-					<View
-						style={[{ flex: 1, position: "relative" }, {
-							cursor: (isMiddleMouseDown || isSpaceDragging)
-								? 'grabbing'
-								: isSpaceDown
-									? 'grab'
-									: 'default',
-						} as object]}
-						{...({
-							onWheel,
-							onMouseDown,
-							onMouseMove,
-							onMouseUp,
-							onMouseLeave: () => {
-								setIsMiddleMouseDown(false);
-								setIsSpaceDragging(false);
-								marqueeRef.current = null;
-								setMarqueeRect(null);
-								setHoveredNodePath(null);
-								if (activeToolRef.current === "pen") {
-									setPenState((prev) => ({
-										...prev,
-										cursorDocX: null,
-										cursorDocY: null,
-									}));
-								}
-							},
-						} as object)}
-					>
-							<PenRenderer
-								document={penDocument}
-								camera={camera}
-								width={showLayers ? width - 180 : width}
-								height={canvasHeight}
-								selectedNodePath={primarySelectedNodePath ?? undefined}
-								onNodeTap={handleNodeTap}
-								penDrawingState={activeTool === "pen" ? penState : undefined}
-							/>
+						<View
+							style={[
+								{ flex: 1, position: "relative" },
+								{
+									cursor:
+										isMiddleMouseDown || isSpaceDragging
+											? "grabbing"
+											: isSpaceDown
+												? "grab"
+												: "default",
+								} as object,
+							]}
+							{...({
+								onWheel,
+								onMouseDown,
+								onMouseMove,
+								onMouseUp,
+								onMouseLeave: () => {
+									setIsMiddleMouseDown(false);
+									setIsSpaceDragging(false);
+									marqueeRef.current = null;
+									setMarqueeRect(null);
+									setHoveredNodePath(null);
+									if (activeToolRef.current === "pen") {
+										setPenState((prev) => ({
+											...prev,
+											cursorDocX: null,
+											cursorDocY: null,
+										}));
+									}
+								},
+							} as object)}
+						>
+							<Suspense fallback={null}>
+								<PenRenderer
+									document={penDocument}
+									camera={camera}
+									width={showLayers ? width - 180 : width}
+									height={canvasHeight}
+									selectedNodePath={primarySelectedNodePath ?? undefined}
+									onNodeTap={handleNodeTap}
+									penDrawingState={activeTool === "pen" ? penState : undefined}
+								/>
+							</Suspense>
 							<MultiplayerOverlay
 								cursors={agentCursors ?? []}
 								document={penDocument}

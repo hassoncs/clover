@@ -1,5 +1,3 @@
-import { FREDOKA_REGULAR } from "../assets/fontSources";
-
 import {
 	Canvas,
 	Circle,
@@ -29,8 +27,9 @@ import type {
 import type React from "react";
 import { useCallback, useMemo, useRef } from "react";
 import { TouchableWithoutFeedback, View } from "react-native";
-import { hitTestDesignCanvas, screenToWorld } from "./designCanvasHitTest";
+import { FREDOKA_REGULAR } from "../assets/fontSources";
 import { useDesignImageResolver } from "../assets/useDesignImageResolver";
+import { hitTestDesignCanvas, screenToWorld } from "./designCanvasHitTest";
 
 interface WorldBounds {
 	left: number;
@@ -874,3 +873,6 @@ export function DesignCanvasRenderer({
 
 	return canvasContent;
 }
+
+// Default export for React.lazy() consumers
+export default DesignCanvasRenderer;

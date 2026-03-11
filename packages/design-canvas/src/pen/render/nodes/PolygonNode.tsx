@@ -25,16 +25,34 @@ function buildPolygonPathSVG(
 	return `M${pts.join(" L")} Z`;
 }
 
-export function PolygonNode({ layoutNode }: NodeRendererProps): React.ReactNode {
+export function PolygonNode({
+	layoutNode,
+}: NodeRendererProps): React.ReactNode {
 	const node = layoutNode.node as PenPolygon;
 	const { x, y, width, height } = layoutNode.rect;
 	const opacity = node.opacity ?? 1;
 	const sides = node.polygonCount ?? 3;
-	const pathData = buildPolygonPathSVG(width / 2, height / 2, width / 2, height / 2, sides);
+	const pathData = buildPolygonPathSVG(
+		width / 2,
+		height / 2,
+		width / 2,
+		height / 2,
+		sides,
+	);
 
 	return (
-		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
-			<Path path={pathData} color="transparent">
+		<Group
+			transform={buildNodeTransform(
+				x,
+				y,
+				width,
+				height,
+				node.flipX,
+				node.flipY,
+			)}
+			opacity={opacity}
+		>
+			<Path path={pathData}>
 				<PenFillRenderer fill={node.fill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
 				<PenEffectsRenderer effects={node.effects} />

@@ -1,4 +1,10 @@
-import { Group, ImageShader, Paint, Rect, useImage } from "@shopify/react-native-skia";
+import {
+	Group,
+	ImageShader,
+	Paint,
+	Rect,
+	useImage,
+} from "@shopify/react-native-skia";
 import type { PenImage } from "@slopcade/shared/types/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
@@ -19,11 +25,18 @@ export function ImageNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 
 	return (
 		<Group
-			transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)}
+			transform={buildNodeTransform(
+				x,
+				y,
+				width,
+				height,
+				node.flipX,
+				node.flipY,
+			)}
 			opacity={opacity}
 		>
 			{image && (
-				<Rect x={0} y={0} width={width} height={height} color="transparent">
+				<Rect x={0} y={0} width={width} height={height}>
 					<Paint style="fill">
 						<ImageShader
 							image={image}

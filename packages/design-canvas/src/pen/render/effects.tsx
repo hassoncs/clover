@@ -1,6 +1,7 @@
 import { BackdropFilter, Blur, Shadow } from "@shopify/react-native-skia";
 import type { PenEffect } from "@slopcade/shared/types/pen";
 import type React from "react";
+import { Platform } from "react-native";
 
 interface EffectsProps {
 	effects: PenEffect[] | undefined;
@@ -8,6 +9,7 @@ interface EffectsProps {
 
 export function PenEffectsRenderer({ effects }: EffectsProps): React.ReactNode {
 	if (!effects || effects.length === 0) return null;
+	if (Platform.OS === "web") return null;
 
 	const elements: React.ReactNode[] = [];
 
@@ -30,7 +32,11 @@ export function PenEffectsRenderer({ effects }: EffectsProps): React.ReactNode {
 
 		if (effect.blur != null) {
 			elements.push(
-				<Blur key={`blur-${elements.length}`} blur={effect.blur / 2} mode="clamp" />,
+				<Blur
+					key={`blur-${elements.length}`}
+					blur={effect.blur / 2}
+					mode="clamp"
+				/>,
 			);
 		}
 

@@ -30,10 +30,10 @@ export function BuildChrome({
 		typeof node.createdAt === "number" &&
 		Date.now() - node.createdAt < FRESH_THRESHOLD_MS;
 
-	const scale = useSharedValue(isFresh ? 0.95 : 1);
+	const scale = useSharedValue(isFresh ? 0.985 : 1);
 	const opacity = useSharedValue(isFresh ? 0 : 1);
 	const dashPhase = useSharedValue(0);
-	const borderOpacity = useSharedValue(isFresh ? 1 : 0);
+	const borderOpacity = useSharedValue(isFresh ? 0.85 : 0);
 
 	useEffect(() => {
 		if (!isFresh) return;

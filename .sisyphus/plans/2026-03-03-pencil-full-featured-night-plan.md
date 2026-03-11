@@ -15,31 +15,31 @@ Ship a production-credible design tool flow in `apps/pencil` where pointer inter
 ## Remaining Tonight
 
 ### 1) Pointer/Selection Hardening
-- [ ] Add marquee drag-select for area selection.
-- [ ] Add keyboard selection navigation (parent/child/sibling).
-- [ ] Add delete/backspace for selected nodes with undo-safe command path.
-- [ ] Add visual states for locked/hidden/reusable nodes.
+- [x] Add marquee drag-select for area selection.
+- [x] Add keyboard selection navigation (parent/child/sibling).
+- [x] Add delete/backspace for selected nodes with undo-safe command path.
+- [x] Add visual states for locked/hidden/reusable nodes.
 
 ### 2) Inspector Completeness
-- [ ] Add editable properties for position/size/opacity/fill/stroke.
-- [ ] Add batch editing behavior for multi-select shared fields.
-- [ ] Add component-aware inspector sections (`ref`, `descendants`, slot metadata).
+- [x] Add editable properties for position/size/opacity/fill/stroke.
+- [x] Add batch editing behavior for multi-select shared fields.
+- [x] Add component-aware inspector sections (`ref`, `descendants`, slot metadata).
 
 ### 3) Document Lifecycle
-- [ ] Add explicit Load action (load last, import JSON file).
-- [ ] Add Save As naming and predictable file naming.
-- [ ] Add workspace-backed persistence via `chatThreads.readWorkspaceFile` / `writeWorkspaceFile`.
-- [ ] Add stale/dirty indicators and recovery prompt.
+- [x] Add explicit Load action (load last, import JSON file).
+- [x] Add Save As naming and predictable file naming.
+- [x] Add workspace-backed persistence via `chatThreads.readWorkspaceFile` / `writeWorkspaceFile`.
+- [x] Add stale/dirty indicators and recovery prompt.
 
 ### 4) AI + Tooling UX
 - [ ] Add operation timeline panel with step-by-step playback.
 - [ ] Add optional ghost cursor animation during agent edits.
-- [ ] Add deterministic op validation before apply (schema + id targeting checks).
-- [ ] Add failure recovery actions in chat (retry, rollback last op batch).
+- [x] Add deterministic op validation before apply (schema + id targeting checks).
+- [x] Add failure recovery actions in chat (retry, rollback last op batch).
 
 ### 5) External MCP/CLI Parity
-- [ ] Extend MCP pencil tools to accept structured args reliably for `pencil_apply_ops`.
-- [ ] Add `pencil_new_document` and `pencil_save_document` tool operations.
+- [x] Extend MCP pencil tools to accept structured args reliably for `pencil_apply_ops`.
+- [x] Add `pencil_new_document` and `pencil_save_document` tool operations.
 - [ ] Add smoke script documenting outside-in flow: open -> apply ops -> screenshot -> verify.
 
 ### 6) Verification Gate

@@ -345,6 +345,14 @@ src/
 
 **Usage**: Import from `index.ts` - the platform-appropriate file loads automatically via Metro bundler resolution.
 
+### Pencil Web Skia Boundary
+<!-- learned: 2026-03-10 -->
+- Keep `apps/pencil/app/` route files free of direct `@shopify/react-native-skia` and `@slopcade/design-canvas` imports. Expo Router evaluates route modules eagerly on web, so Skia-reachable imports in `app/` can poison startup before `WithSkiaWeb` initializes CanvasKit.
+- The safe boundary is route-local lazy import in `apps/pencil/app/index.tsx`, with `WithSkiaWeb` living in `apps/pencil/components/PencilCanvasPanel.web.tsx`.
+- `apps/pencil/app/_layout.web.tsx` should not wrap the whole app in `WithSkiaWeb`; keep the boundary at the smallest panel that actually needs Skia.
+- Use `apps/pencil/app/webgl-probe.tsx` to separate browser/WebGL environment problems from Skia import-graph poisoning.
+- See skill: `skia-web-startup-boundary`
+
 ### Animations — Cross-Platform Only (No CSS)
 All animations **must** use `react-native-reanimated` — never CSS `@keyframes`, `<style>` tags, `dangerouslySetInnerHTML`, or the CSS `animation` property. Reanimated works on both web and native Metro, so there's no reason to use web-only CSS animations.
 

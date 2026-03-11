@@ -5,7 +5,7 @@ description: "Index of all available skills for the Slopcade project. Lists skil
 
 # Skill Index
 
-Updated: 2026-02-12 (post-audit)
+Updated: 2026-03-10 (skia-web-startup-boundary added)
 
 > All skills verified against source via grep. No fabricated types/interfaces remain.
 
@@ -19,6 +19,7 @@ Updated: 2026-02-12 (post-audit)
 ### Editor & UI
 - [editor-system](editor-system.md) - Dockview layouts, panels, CodeMirror editor, EditorContextValue
 - [editor-browser-testing](editor-browser-testing.md) - Agent-browser testing: dev auth, a11y landmarks, content mirrors, chat flow
+- [skia-web-startup-boundary](skia-web-startup-boundary.md) - Skia/CanvasKit web startup hazards, lazy import patterns, WithSkiaWeb boundaries
 
 ### Social & Community
 - [social-features](social-features.md) - 7 services (Comment, Rating, Follow, Bookmark, Block, Notification, Report)
@@ -73,7 +74,7 @@ Updated: 2026-02-12 (post-audit)
 
 ## Totals
 
-- **26 skill files** (22 top-level + 4 game-authoring sub-skills)
+- **27 skill files** (23 top-level + 4 game-authoring sub-skills)
 - All file paths verified via glob
 - All type signatures verified via grep/read of actual source
 - Dead cross-links fixed (coordinate-systems.md, shaders.md, rules-system.md removed)

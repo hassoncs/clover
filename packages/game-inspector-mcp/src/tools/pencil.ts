@@ -9,6 +9,28 @@ type PencilBridgeResult =
 	| { ok: true; opCount?: number }
 	| { ok: false; error: string };
 
+function normaliseOpsArg(raw: unknown): string {
+	if (typeof raw === "string") {
+		try {
+			const parsed = JSON.parse(raw);
+			if (!Array.isArray(parsed)) {
+				throw new Error("ops must be a JSON array");
+			}
+			return raw;
+		} catch (err) {
+			throw new Error(
+				`ops string is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+			);
+		}
+	}
+	if (Array.isArray(raw)) {
+		return JSON.stringify(raw);
+	}
+	throw new Error(
+		"ops must be a JSON array or a JSON-encoded string of an array",
+	);
+}
+
 export function registerPencilTools(
 	server: McpServer,
 	state: GameInspectorState,
@@ -177,12 +199,16 @@ Supported op types:
   { type: "deleteFrame", id }
   { type: "addElement", frameId, element: { id?, type?, label?, ...props } }
   { type: "updateElement", frameId, elementId, patch }
-  { type: "deleteElement", frameId, elementId }`,
+  { type: "deleteElement", frameId, elementId }
+
+The \`ops\` parameter accepts either:
+  - A native JSON array of op objects (preferred for structured callers)
+  - A JSON-encoded string of an array (legacy / string-only callers)`,
 		{
 			ops: z
-				.string()
+				.union([z.array(z.record(z.unknown())), z.string()])
 				.describe(
-					"JSON array of CanvasOp objects to apply to the design document",
+					"Array of CanvasOp objects (or a JSON-encoded string of that array) to apply to the design document",
 				),
 		},
 		async (args) => {
@@ -199,7 +225,22 @@ Supported op types:
 				};
 			}
 
-			const opsJson = args.ops as string;
+			let opsJson: string;
+			try {
+				opsJson = normaliseOpsArg(args.ops);
+			} catch (err) {
+				return {
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify({
+								ok: false,
+								error: err instanceof Error ? err.message : String(err),
+							}),
+						},
+					],
+				};
+			}
 
 			const result = await state.page.evaluate((json: string) => {
 				const bridge = (
@@ -214,6 +255,92 @@ Supported op types:
 				}
 				return bridge.applyOps(json);
 			}, opsJson);
+
+			return {
+				content: [{ type: "text" as const, text: JSON.stringify(result) }],
+			};
+		},
+	);
+
+	server.tool(
+		"pencil_new_document",
+		"Reset the live Pencil canvas to a new empty document. All current content is discarded.",
+		{},
+		async () => {
+			if (!state.page) {
+				return {
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify({
+								error: "No browser open. Call pencil_open first.",
+							}),
+						},
+					],
+				};
+			}
+
+			const result = await state.page.evaluate(() => {
+				const bridge = (
+					window as unknown as {
+						__PENCIL_BRIDGE__?: { newDocument?: () => string };
+					}
+				).__PENCIL_BRIDGE__;
+				if (!bridge) {
+					return { ok: false, error: "__PENCIL_BRIDGE__ not registered" };
+				}
+				if (typeof bridge.newDocument !== "function") {
+					return {
+						ok: false,
+						error:
+							"newDocument not available on bridge. Ensure the Pencil app is up to date.",
+					};
+				}
+				return JSON.parse(bridge.newDocument());
+			});
+
+			return {
+				content: [{ type: "text" as const, text: JSON.stringify(result) }],
+			};
+		},
+	);
+
+	server.tool(
+		"pencil_save_document",
+		"Persist the current Pencil document to localStorage and return its JSON. Equivalent to the in-app Save action (without triggering a file download).",
+		{},
+		async () => {
+			if (!state.page) {
+				return {
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify({
+								error: "No browser open. Call pencil_open first.",
+							}),
+						},
+					],
+				};
+			}
+
+			const result = await state.page.evaluate(() => {
+				const bridge = (
+					window as unknown as {
+						__PENCIL_BRIDGE__?: { saveDocument?: () => string };
+					}
+				).__PENCIL_BRIDGE__;
+				if (!bridge) {
+					return { ok: false, error: "__PENCIL_BRIDGE__ not registered" };
+				}
+				if (typeof bridge.saveDocument !== "function") {
+					return {
+						ok: false,
+						error:
+							"saveDocument not available on bridge. Ensure the Pencil app is up to date.",
+					};
+				}
+				return JSON.parse(bridge.saveDocument());
+			});
 
 			return {
 				content: [{ type: "text" as const, text: JSON.stringify(result) }],

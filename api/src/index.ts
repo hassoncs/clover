@@ -9,6 +9,7 @@ import { resolveChatModel } from "@/ai/chat-model-config";
 import { createModel } from "@/ai/model-factory";
 import type { MessageRow } from "@/chat/chat-handler";
 import { handleChatStream } from "@/chat/stream-handler";
+import { resolveCorsOrigin } from "@/cors";
 import { GameRepoDO } from "@/durable-objects/GameRepoDO";
 import { USER_COSTS } from "@/economy/pricing";
 import { WalletService } from "@/economy/wallet-service";
@@ -27,36 +28,10 @@ import { appRouter } from "@/trpc/router";
 
 const app = new Hono<{ Bindings: Env }>();
 
-const ALLOWED_ORIGINS = [
-	"http://localhost:8085",
-	"http://localhost:8086",
-	"http://localhost:8087",
-	"http://localhost:8088",
-	"http://localhost:8089",
-	"https://slopcade.app",
-	"https://www.slopcade.app",
-	"https://slopcade.com",
-	"https://www.slopcade.com",
-	"https://app.slopcade.com",
-	"https://amen.games",
-	"https://www.amen.games",
-	"https://app.amen.games",
-	"https://slopcade-api.hassoncs.workers.dev",
-];
-
 app.use(
 	"*",
 	cors({
-		origin: (origin) => {
-			if (!origin) return origin;
-			if (ALLOWED_ORIGINS.includes(origin)) return origin;
-			if (origin.endsWith(".slopcade.app")) return origin;
-			if (origin.endsWith(".slopcade.com")) return origin;
-			if (origin.endsWith(".amen.games")) return origin;
-			// devmux proxy: *.slopcade.localhost / *.amen.localhost
-			if (origin.match(/\.localhost(:\d+)?$/)) return origin;
-			return undefined;
-		},
+		origin: resolveCorsOrigin,
 		credentials: true,
 	}),
 );

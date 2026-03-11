@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@slopcade/theme";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
+	ActivityIndicator,
 	Pressable,
 	StyleSheet,
 	Text,
@@ -13,9 +14,10 @@ import {
 	GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { useDesignCamera } from "../camera/useDesignCamera";
-import { DesignCanvasRenderer } from "../core/DesignCanvasRenderer";
 import type { DesignCanvasHost } from "../host/types";
 import { useDesignInteractionsNative } from "../interactions/useDesignInteractionsNative";
+
+const DesignCanvasRenderer = lazy(() => import("../core/DesignCanvasRenderer"));
 
 export interface DesignCanvasPanelProps {
 	host: DesignCanvasHost;
@@ -270,17 +272,25 @@ export function DesignCanvasPanel({ host }: DesignCanvasPanelProps) {
 					<GestureHandlerRootView style={styles.gestureRoot}>
 						<GestureDetector gesture={gesture}>
 							<View style={{ flex: 1, width: "100%" }}>
-								<DesignCanvasRenderer
-									document={liveDocument || designDocument}
-									camera={camera}
-									selectedFrameId={selectedDesignFrameId}
-									selectedElementId={selectedDesignElementId}
-									selectedElementIds={localSelectedElementIds}
-									width={width}
-									height={height - 48}
-									snapLines={snapLines}
-									showGrid={false}
-								/>
+								<Suspense
+									fallback={
+										<View style={styles.rendererFallback}>
+											<ActivityIndicator color="#818cf8" />
+										</View>
+									}
+								>
+									<DesignCanvasRenderer
+										document={liveDocument || designDocument}
+										camera={camera}
+										selectedFrameId={selectedDesignFrameId}
+										selectedElementId={selectedDesignElementId}
+										selectedElementIds={localSelectedElementIds}
+										width={width}
+										height={height - 48}
+										snapLines={snapLines}
+										showGrid={false}
+									/>
+								</Suspense>
 							</View>
 						</GestureDetector>
 					</GestureHandlerRootView>
@@ -381,6 +391,12 @@ const styles = StyleSheet.create({
 		position: "relative",
 	},
 	gestureRoot: { flex: 1, width: "100%" },
+	rendererFallback: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "#050310",
+	},
 	message: { fontSize: 14, fontWeight: "500", textAlign: "center" },
 	frameListDropdown: {
 		position: "absolute",

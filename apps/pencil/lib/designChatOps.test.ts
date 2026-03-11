@@ -5,7 +5,7 @@ import type {
 } from "@slopcade/shared/types/pen";
 import { describe, expect, it } from "vitest";
 
-import { applyDesignChatOpsToDocument } from "./designChatOps";
+import { applyDesignChatOpsToDocument, validateDesignChatOps } from "./designChatOps";
 
 function makeRectangle(
 	overrides: Partial<PenRectangle> & { id: string },
@@ -247,5 +247,171 @@ describe("applyDesignChatOpsToDocument", () => {
 		expect(frame.id).toBe("new-frame");
 		expect(frame.createdAt).toBeGreaterThanOrEqual(beforeTimestamp);
 		expect(frame.createdAt).toBeLessThanOrEqual(afterTimestamp);
+	});
+});
+
+describe("validateDesignChatOps", () => {
+	const emptyDoc: PenDocument = { version: 1, children: [] };
+
+	const docWithFrame: PenDocument = {
+		version: 1,
+		children: [
+			{
+				type: "frame",
+				id: "f1",
+				width: 800,
+				height: 600,
+				children: [makeRectangle({ id: "r1" })],
+			},
+		],
+	};
+
+	it("returns no issues for a valid addFrame op", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "addFrame", id: "new-frame", x: 0, y: 0, width: 800, height: 600 },
+		]);
+		expect(issues).toHaveLength(0);
+	});
+
+	it("returns error when op is not an object", () => {
+		const issues = validateDesignChatOps(emptyDoc, [null, 42, "bad"]);
+		expect(issues).toHaveLength(3);
+		expect(issues.every((i) => i.severity === "error")).toBe(true);
+	});
+
+	it("returns error for missing type field", () => {
+		const issues = validateDesignChatOps(emptyDoc, [{ frameId: "f1" }]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/type/);
+	});
+
+	it("returns error for unknown op type", () => {
+		const issues = validateDesignChatOps(emptyDoc, [{ type: "magicTeleport" }]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/unsupported/);
+	});
+
+	it("returns error when deleteFrame is missing id", () => {
+		const issues = validateDesignChatOps(emptyDoc, [{ type: "deleteFrame" }]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/'id'/);
+	});
+
+	it("returns warning when deleteFrame id not found in doc", () => {
+		const issues = validateDesignChatOps(emptyDoc, [{ type: "deleteFrame", id: "ghost" }]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("warning");
+		expect(issues[0].message).toMatch(/not found/);
+	});
+
+	it("returns no issues when deleteFrame id exists", () => {
+		const issues = validateDesignChatOps(docWithFrame, [{ type: "deleteFrame", id: "f1" }]);
+		expect(issues).toHaveLength(0);
+	});
+
+	it("returns error when updateFrame is missing patch", () => {
+		const issues = validateDesignChatOps(docWithFrame, [{ type: "updateFrame", id: "f1" }]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/'patch'/);
+	});
+
+	it("returns no issues for valid updateFrame", () => {
+		const issues = validateDesignChatOps(docWithFrame, [
+			{ type: "updateFrame", id: "f1", patch: { width: 1000 } },
+		]);
+		expect(issues).toHaveLength(0);
+	});
+
+	it("returns error when addElement is missing frameId", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "addElement", element: { type: "rectangle" } },
+		]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/'frameId'/);
+	});
+
+	it("returns warning when addElement frameId not found in doc", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "addElement", frameId: "missing-frame", element: { type: "rectangle" } },
+		]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("warning");
+	});
+
+	it("returns no issues for valid addElement", () => {
+		const issues = validateDesignChatOps(docWithFrame, [
+			{ type: "addElement", frameId: "f1", element: { type: "rectangle", id: "r2" } },
+		]);
+		expect(issues).toHaveLength(0);
+	});
+
+	it("returns error when updateElement is missing elementId", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "updateElement", patch: { fill: "#ff0" } },
+		]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/'elementId'/);
+	});
+
+	it("returns error when updateElement is missing patch", () => {
+		const issues = validateDesignChatOps(docWithFrame, [
+			{ type: "updateElement", elementId: "r1" },
+		]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+		expect(issues[0].message).toMatch(/'patch'/);
+	});
+
+	it("returns warning when updateElement target not found", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "updateElement", elementId: "ghost-node", patch: { fill: "#ff0" } },
+		]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("warning");
+	});
+
+	it("returns no issues for valid updateElement", () => {
+		const issues = validateDesignChatOps(docWithFrame, [
+			{ type: "updateElement", elementId: "r1", patch: { fill: "#ff0" } },
+		]);
+		expect(issues).toHaveLength(0);
+	});
+
+	it("returns warning for slash-path target when root segment not found", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "updateElement", elementId: "missing/child", patch: { fill: "#ff0" } },
+		]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("warning");
+	});
+
+	it("returns no issues for slash-path update when root segment exists", () => {
+		const issues = validateDesignChatOps(docWithFrame, [
+			{ type: "updateElement", elementId: "f1/r1", patch: { fill: "#ff0" } },
+		]);
+		expect(issues).toHaveLength(0);
+	});
+
+	it("returns error when deleteElement is missing elementId", () => {
+		const issues = validateDesignChatOps(emptyDoc, [{ type: "deleteElement" }]);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe("error");
+	});
+
+	it("assigns correct opIndex for each issue in a mixed batch", () => {
+		const issues = validateDesignChatOps(emptyDoc, [
+			{ type: "addFrame", id: "ok" },
+			null,
+			{ type: "deleteFrame" },
+		]);
+		expect(issues).toHaveLength(2);
+		expect(issues[0].opIndex).toBe(1);
+		expect(issues[1].opIndex).toBe(2);
 	});
 });

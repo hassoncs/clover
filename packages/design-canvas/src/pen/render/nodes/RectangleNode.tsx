@@ -3,7 +3,7 @@ import type { PenRectangle } from "@slopcade/shared/types/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";
-import { PenFillRenderer } from "../fills";
+import { PenFillRenderer, resolveSolidFillColor } from "../fills";
 import { buildNodeTransform } from "../nodeTransform";
 import { PenStrokeRenderer } from "../strokes";
 
@@ -11,25 +11,44 @@ interface NodeRendererProps {
 	layoutNode: LayoutNode;
 }
 
-export function RectangleNode({ layoutNode }: NodeRendererProps): React.ReactNode {
+export function RectangleNode({
+	layoutNode,
+}: NodeRendererProps): React.ReactNode {
 	const node = layoutNode.node as PenRectangle;
 	const { x, y, width, height } = layoutNode.rect;
 	const opacity = node.opacity ?? 1;
+	const solidFillColor = resolveSolidFillColor(node.fill);
+	const decorativeFill = solidFillColor ? undefined : node.fill;
 
 	const cornerRadius = node.cornerRadius;
 
 	let shape: React.ReactNode;
-	if (cornerRadius !== undefined && typeof cornerRadius === "number" && cornerRadius > 0) {
+	if (
+		cornerRadius !== undefined &&
+		typeof cornerRadius === "number" &&
+		cornerRadius > 0
+	) {
 		const safeRadius = Math.min(cornerRadius, width / 2, height / 2);
 		shape = (
-			<RoundedRect x={0} y={0} width={width} height={height} r={safeRadius} color="transparent">
-				<PenFillRenderer fill={node.fill} width={width} height={height} />
+			<RoundedRect
+				x={0}
+				y={0}
+				width={width}
+				height={height}
+				r={safeRadius}
+				color={solidFillColor ?? undefined}
+			>
+				<PenFillRenderer fill={decorativeFill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
 				<PenEffectsRenderer effects={node.effects} />
 			</RoundedRect>
 		);
-	} else if (Array.isArray(cornerRadius) && (cornerRadius as number[]).some((r) => r > 0)) {
-		const safeR = (r: number) => Math.min(Math.max(0, r), width / 2, height / 2);
+	} else if (
+		Array.isArray(cornerRadius) &&
+		(cornerRadius as number[]).some((r) => r > 0)
+	) {
+		const safeR = (r: number) =>
+			Math.min(Math.max(0, r), width / 2, height / 2);
 		const [tl, tr, br, bl] = cornerRadius as [number, number, number, number];
 		const rrect = {
 			rect: { x: 0, y: 0, width, height },
@@ -39,16 +58,22 @@ export function RectangleNode({ layoutNode }: NodeRendererProps): React.ReactNod
 			bottomLeft: { x: safeR(bl), y: safeR(bl) },
 		};
 		shape = (
-			<RoundedRect rect={rrect} color="transparent">
-				<PenFillRenderer fill={node.fill} width={width} height={height} />
+			<RoundedRect rect={rrect} color={solidFillColor ?? undefined}>
+				<PenFillRenderer fill={decorativeFill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
 				<PenEffectsRenderer effects={node.effects} />
 			</RoundedRect>
 		);
 	} else {
 		shape = (
-			<Rect x={0} y={0} width={width} height={height} color="transparent">
-				<PenFillRenderer fill={node.fill} width={width} height={height} />
+			<Rect
+				x={0}
+				y={0}
+				width={width}
+				height={height}
+				color={solidFillColor ?? undefined}
+			>
+				<PenFillRenderer fill={decorativeFill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
 				<PenEffectsRenderer effects={node.effects} />
 			</Rect>
@@ -56,7 +81,17 @@ export function RectangleNode({ layoutNode }: NodeRendererProps): React.ReactNod
 	}
 
 	return (
-		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
+		<Group
+			transform={buildNodeTransform(
+				x,
+				y,
+				width,
+				height,
+				node.flipX,
+				node.flipY,
+			)}
+			opacity={opacity}
+		>
 			{shape}
 		</Group>
 	);

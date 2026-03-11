@@ -12,6 +12,93 @@ interface ApplyResult {
 	errors: string[];
 }
 
+const KNOWN_OP_TYPES = new Set([
+	"addFrame",
+	"deleteFrame",
+	"updateFrame",
+	"addElement",
+	"updateElement",
+	"deleteElement",
+]);
+
+export interface OpValidationIssue {
+	opIndex: number;
+	severity: "error" | "warning";
+	message: string;
+}
+
+export function validateDesignChatOps(
+	doc: PenDocument,
+	ops: unknown[],
+): OpValidationIssue[] {
+	const issues: OpValidationIssue[] = [];
+
+	for (let i = 0; i < ops.length; i++) {
+		const op = asRecord(ops[i]);
+		if (!op) {
+			issues.push({ opIndex: i, severity: "error", message: "op must be a non-null object" });
+			continue;
+		}
+
+		const type = asString(op.type, "");
+		if (!type) {
+			issues.push({ opIndex: i, severity: "error", message: "op missing required 'type' field" });
+			continue;
+		}
+		if (!KNOWN_OP_TYPES.has(type)) {
+			issues.push({ opIndex: i, severity: "error", message: `unsupported op type: '${type}'` });
+			continue;
+		}
+
+		if (type === "deleteFrame" || type === "updateFrame") {
+			const id = asString(op.id, "");
+			if (!id) {
+				issues.push({ opIndex: i, severity: "error", message: `${type}: 'id' must be a non-empty string` });
+				continue;
+			}
+			if (type === "updateFrame" && !asRecord(op.patch)) {
+				issues.push({ opIndex: i, severity: "error", message: "updateFrame: 'patch' must be a non-null object" });
+				continue;
+			}
+			if (!findNodeById(doc.children, id)) {
+				issues.push({ opIndex: i, severity: "warning", message: `${type}: node '${id}' not found in current document` });
+			}
+			continue;
+		}
+
+		if (type === "addElement") {
+			const frameId = asString(op.frameId, "");
+			if (!frameId) {
+				issues.push({ opIndex: i, severity: "error", message: "addElement: 'frameId' must be a non-empty string" });
+				continue;
+			}
+			if (!findContainerById(doc.children, frameId)) {
+				issues.push({ opIndex: i, severity: "warning", message: `addElement: frame '${frameId}' not found in current document` });
+			}
+			continue;
+		}
+
+		if (type === "updateElement" || type === "deleteElement") {
+			const elementId = asString(op.elementId, "");
+			if (!elementId) {
+				issues.push({ opIndex: i, severity: "error", message: `${type}: 'elementId' must be a non-empty string` });
+				continue;
+			}
+			if (type === "updateElement" && !asRecord(op.patch)) {
+				issues.push({ opIndex: i, severity: "error", message: "updateElement: 'patch' must be a non-null object" });
+				continue;
+			}
+			const rootId = elementId.split("/")[0];
+			if (rootId && !findNodeById(doc.children, rootId)) {
+				issues.push({ opIndex: i, severity: "warning", message: `${type}: node '${elementId}' not found in current document` });
+			}
+			continue;
+		}
+	}
+
+	return issues;
+}
+
 function asRecord(value: unknown): UnknownRecord | null {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
 	return value as UnknownRecord;

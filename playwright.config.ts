@@ -24,5 +24,10 @@ export default defineConfig({
 			testDir: "./tests/e2e/editor",
 			use: { ...devices["Desktop Chrome"] },
 		},
+		{
+			name: "skia",
+			testDir: "./tests/e2e/skia",
+			use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:8240" },
+		},
 	],
 });

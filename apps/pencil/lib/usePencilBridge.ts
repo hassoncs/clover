@@ -3,10 +3,10 @@ import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 
 interface PencilBridge {
-	/** Returns the current PenDocument as a JSON string. */
 	getDocument: () => string;
-	/** Returns current selection state as a JSON string. */
 	getSelection: () => string;
+	newDocument: () => string;
+	saveDocument: () => string;
 }
 
 declare global {
@@ -15,19 +15,21 @@ declare global {
 	}
 }
 
-/**
- * Registers window.__PENCIL_BRIDGE__ on web so the game-inspector MCP
- * (via Playwright page.evaluate) can read the live pen document.
- *
- * No-op on native.
- */
+const LOCAL_DOC_KEY = "pencil:last-document";
+
 export function usePencilBridge(
 	document: PenDocument,
-	_setDocument: (doc: PenDocument) => void,
+	setDocument: (doc: PenDocument) => void,
 ) {
 	const documentRef = useRef(document);
+	const setDocumentRef = useRef(setDocument);
+
 	useEffect(() => {
 		documentRef.current = document;
+	});
+
+	useEffect(() => {
+		setDocumentRef.current = setDocument;
 	});
 
 	useEffect(() => {
@@ -36,6 +38,21 @@ export function usePencilBridge(
 		window.__PENCIL_BRIDGE__ = {
 			getDocument: () => JSON.stringify(documentRef.current),
 			getSelection: () => JSON.stringify({ selectedNodePath: null }),
+			newDocument: () => {
+				const empty: PenDocument = { version: 1, children: [] };
+				setDocumentRef.current(empty);
+				if (typeof window !== "undefined") {
+					window.localStorage.setItem(LOCAL_DOC_KEY, JSON.stringify(empty));
+				}
+				return JSON.stringify({ ok: true });
+			},
+			saveDocument: () => {
+				const doc = documentRef.current;
+				if (typeof window !== "undefined") {
+					window.localStorage.setItem(LOCAL_DOC_KEY, JSON.stringify(doc));
+				}
+				return JSON.stringify({ ok: true, document: doc });
+			},
 		};
 
 		return () => {

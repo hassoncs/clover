@@ -1,8 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { DesignDocument } from "@slopcade/shared";
 import { useTheme } from "@slopcade/theme";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+	lazy,
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
+import {
+	ActivityIndicator,
 	Pressable,
 	StyleSheet,
 	Text,
@@ -10,9 +18,10 @@ import {
 	View,
 } from "react-native";
 import { useDesignCamera } from "../camera/useDesignCamera";
-import { DesignCanvasRenderer } from "../core/DesignCanvasRenderer";
 import type { DesignCanvasHost } from "../host/types";
 import { useDesignInteractions } from "../interactions/useDesignInteractions";
+
+const DesignCanvasRenderer = lazy(() => import("../core/DesignCanvasRenderer"));
 
 export interface DesignCanvasPanelProps {
 	host: DesignCanvasHost;
@@ -500,18 +509,26 @@ export function DesignCanvasPanel({ host }: DesignCanvasPanelProps) {
 							onMouseLeave: handleMouseLeave,
 						} as object)}
 					>
-						<DesignCanvasRenderer
-							document={liveDocument || designDocument}
-							camera={camera}
-							selectedFrameId={selectedDesignFrameId}
-							selectedElementId={selectedDesignElementId}
-							selectedElementIds={localSelectedElementIds}
-							onElementTap={handleElementTap}
-							width={width}
-							height={height - 48}
-							snapLines={snapLines}
-							showGrid={showGrid}
-						/>
+						<Suspense
+							fallback={
+								<View style={styles.rendererFallback}>
+									<ActivityIndicator color="#818cf8" />
+								</View>
+							}
+						>
+							<DesignCanvasRenderer
+								document={liveDocument || designDocument}
+								camera={camera}
+								selectedFrameId={selectedDesignFrameId}
+								selectedElementId={selectedDesignElementId}
+								selectedElementIds={localSelectedElementIds}
+								onElementTap={handleElementTap}
+								width={width}
+								height={height - 48}
+								snapLines={snapLines}
+								showGrid={showGrid}
+							/>
+						</Suspense>
 					</View>
 				) : (
 					<Text style={[styles.message, { color: c.textSecondary }]}>
@@ -703,5 +720,11 @@ const styles = StyleSheet.create({
 		color: "#92400E",
 		fontSize: 12,
 		fontWeight: "500",
+	},
+	rendererFallback: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "#050310",
 	},
 });

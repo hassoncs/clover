@@ -17,8 +17,18 @@ export function PathNode({ layoutNode }: NodeRendererProps): React.ReactNode {
 	const opacity = node.opacity ?? 1;
 
 	return (
-		<Group transform={buildNodeTransform(x, y, width, height, node.flipX, node.flipY)} opacity={opacity}>
-			<Path path={node.geometry} color="transparent">
+		<Group
+			transform={buildNodeTransform(
+				x,
+				y,
+				width,
+				height,
+				node.flipX,
+				node.flipY,
+			)}
+			opacity={opacity}
+		>
+			<Path path={node.geometry}>
 				<PenFillRenderer fill={node.fill} width={width} height={height} />
 				<PenStrokeRenderer stroke={node.stroke} width={width} height={height} />
 				<PenEffectsRenderer effects={node.effects} />

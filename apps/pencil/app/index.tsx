@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { PenCanvasPanel } from "@slopcade/design-canvas";
 import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
 import { parsePenDocument } from "@slopcade/shared/types/pen";
 import React, {
+	lazy,
+	Suspense,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -21,10 +22,27 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { applyDesignChatOpsToDocument } from "../lib/designChatOps";
+import type { PenCanvasPanelProps } from "../components/PencilCanvasPanel";
+import {
+	applyDesignChatOpsToDocument,
+	validateDesignChatOps,
+} from "../lib/designChatOps";
 import { trpc } from "../lib/trpc/trpc";
 import { usePencilBridge } from "../lib/usePencilBridge";
+import { usePencilDocumentSync } from "../lib/usePencilDocumentSync";
 import { usePencilServer } from "../lib/usePencilServer";
+
+const PenCanvasPanel = lazy(async () => {
+	const module =
+		Platform.OS === "web"
+			? await import("../components/PencilCanvasPanel.web")
+			: await import("../components/PencilCanvasPanel.native");
+
+	return {
+		default:
+			module.PencilCanvasPanel as React.ComponentType<PenCanvasPanelProps>,
+	};
+});
 
 const THEMES = {
 	dark: {
@@ -107,6 +125,49 @@ const TYPE_ICONS: Record<string, IconName> = {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const SAMPLE_PEN = require("../assets/sample.json");
 const LOCAL_DOC_KEY = "pencil:last-document";
+const DOC_META_KEY = "pencil:document-meta";
+
+interface DocMeta {
+	name: string;
+	savedAt: number;
+	savedChecksum: string;
+}
+
+function simpleHash(str: string): string {
+	let h = 5381;
+	for (let i = 0; i < str.length; i++) {
+		h = ((h << 5) + h) ^ str.charCodeAt(i);
+	}
+	return (h >>> 0).toString(36);
+}
+
+function docChecksum(doc: PenDocument): string {
+	return simpleHash(JSON.stringify(doc));
+}
+
+function loadDocMeta(): DocMeta | null {
+	if (typeof window === "undefined") return null;
+	try {
+		const raw = window.localStorage.getItem(DOC_META_KEY);
+		return raw ? (JSON.parse(raw) as DocMeta) : null;
+	} catch {
+		return null;
+	}
+}
+
+function saveDocMeta(meta: DocMeta) {
+	if (typeof window === "undefined") return;
+	window.localStorage.setItem(DOC_META_KEY, JSON.stringify(meta));
+}
+
+function hasUnsavedAutoSave(): boolean {
+	if (typeof window === "undefined") return false;
+	const persisted = window.localStorage.getItem(LOCAL_DOC_KEY);
+	if (!persisted) return false;
+	const meta = loadDocMeta();
+	if (!meta) return false;
+	return simpleHash(persisted) !== meta.savedChecksum;
+}
 
 function createEmptyDocument(): PenDocument {
 	return { version: 1, children: [] };
@@ -127,6 +188,17 @@ function loadSampleDocument(): PenDocument {
 	} catch {
 		return createEmptyDocument();
 	}
+}
+
+function loadLastDocument(): PenDocument {
+	if (typeof window === "undefined") return createEmptyDocument();
+	try {
+		const persisted = window.localStorage.getItem(LOCAL_DOC_KEY);
+		if (persisted) return parsePenDocument(JSON.parse(persisted));
+	} catch (_) {
+		return createEmptyDocument();
+	}
+	return createEmptyDocument();
 }
 
 function getSelectedElementProperties(
@@ -166,10 +238,12 @@ function getSelectedElementProperties(
 	return JSON.stringify(properties);
 }
 
-function useDocumentHistory(initialDoc: PenDocument) {
+function useDocumentHistory(initialDoc: PenDocument, onDirty?: () => void) {
 	const [state, setState] = useState({ history: [initialDoc], index: 0 });
 	const isDebouncingRef = useRef(false);
 	const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const onDirtyRef = useRef(onDirty);
+	onDirtyRef.current = onDirty;
 
 	const document = state.history[state.index];
 
@@ -183,6 +257,7 @@ function useDocumentHistory(initialDoc: PenDocument) {
 						? nextOrUpdater(prevDoc)
 						: nextOrUpdater;
 				if (prevDoc === nextDoc) return prevState;
+				onDirtyRef.current?.();
 
 				const newHistory = history.slice(0, index + 1);
 
@@ -242,12 +317,18 @@ interface TitleBarProps {
 	onRedo: () => void;
 	onNewDocument: () => void;
 	onLoadDocument: () => void;
+	onLoadLastDocument: () => void;
 	onSaveDocument: () => void;
+	onSaveAs: () => void;
 	showLayers: boolean;
 	onToggleLayers: () => void;
 	isConnected: boolean;
 	theme: Theme;
 	onToggleTheme: () => void;
+	docName: string;
+	isDirty: boolean;
+	syncStatus?: "idle" | "syncing" | "stale" | "error";
+	hasWorkspace?: boolean;
 }
 
 function TitleBar({
@@ -257,15 +338,24 @@ function TitleBar({
 	onRedo,
 	onNewDocument,
 	onLoadDocument,
+	onLoadLastDocument,
 	onSaveDocument,
+	onSaveAs,
 	showLayers,
 	onToggleLayers,
 	isConnected,
 	theme,
 	onToggleTheme,
+	docName,
+	isDirty,
+	syncStatus = "idle",
+	hasWorkspace = false,
 }: TitleBarProps) {
 	const { colors: C } = useTheme();
 	const titleBarStyles = STYLES[theme].titleBarStyles;
+	const [showLoadMenu, setShowLoadMenu] = useState(false);
+	const [showSaveMenu, setShowSaveMenu] = useState(false);
+
 	return (
 		<View style={titleBarStyles.container}>
 			<View style={titleBarStyles.leftRail}>
@@ -306,9 +396,30 @@ function TitleBar({
 
 			<View style={titleBarStyles.centerRail}>
 				<Ionicons name="document-outline" size={14} color={C.textMuted} />
-				<Text style={titleBarStyles.filename}>slopcade.pen</Text>
+				{isDirty ? (
+					<View
+						style={{
+							width: 6,
+							height: 6,
+							borderRadius: 999,
+							backgroundColor: C.accent,
+							marginRight: -2,
+						}}
+					/>
+				) : null}
+				<Text style={titleBarStyles.filename}>{docName}.pen</Text>
 				<Text style={titleBarStyles.pathDivider}>/</Text>
-				<Text style={titleBarStyles.pathText}>workspace</Text>
+				<Text style={titleBarStyles.pathText}>
+					{hasWorkspace
+						? syncStatus === "syncing"
+							? "workspace ↑"
+							: syncStatus === "stale"
+								? "workspace ⚠"
+								: syncStatus === "error"
+									? "workspace ✕"
+									: "workspace"
+						: "local"}
+				</Text>
 				<View
 					style={[
 						titleBarStyles.connectionDot,
@@ -332,16 +443,95 @@ function TitleBar({
 				/>
 				<View style={titleBarStyles.divider} />
 				<ActionButton icon="add" label="New" onPress={onNewDocument} />
-				<ActionButton
-					icon="folder-open-outline"
-					label="Load"
-					onPress={onLoadDocument}
-				/>
-				<ActionButton
-					icon="cloud-upload-outline"
-					label="Save"
-					onPress={onSaveDocument}
-				/>
+
+				<View style={{ position: "relative" as any }}>
+					<ActionButton
+						icon="folder-open-outline"
+						label="Load ▾"
+						onPress={() => {
+							setShowLoadMenu((v) => !v);
+							setShowSaveMenu(false);
+						}}
+					/>
+					{showLoadMenu ? (
+						<View
+							style={titleBarStyles.dropdown}
+							// @ts-expect-error - web only
+							onMouseLeave={() => setShowLoadMenu(false)}
+						>
+							<Pressable
+								style={titleBarStyles.dropdownItem}
+								onPress={() => {
+									setShowLoadMenu(false);
+									onLoadLastDocument();
+								}}
+							>
+								<Ionicons name="time-outline" size={12} color={C.textMuted} />
+								<Text style={titleBarStyles.dropdownItemText}>
+									Load Last Auto-Save
+								</Text>
+							</Pressable>
+							<Pressable
+								style={titleBarStyles.dropdownItem}
+								onPress={() => {
+									setShowLoadMenu(false);
+									onLoadDocument();
+								}}
+							>
+								<Ionicons
+									name="folder-open-outline"
+									size={12}
+									color={C.textMuted}
+								/>
+								<Text style={titleBarStyles.dropdownItemText}>
+									Import JSON File…
+								</Text>
+							</Pressable>
+						</View>
+					) : null}
+				</View>
+
+				<View style={{ position: "relative" as any }}>
+					<ActionButton
+						icon="cloud-upload-outline"
+						label={`${isDirty ? "● " : ""}Save ▾`}
+						onPress={() => {
+							setShowSaveMenu((v) => !v);
+							setShowLoadMenu(false);
+						}}
+					/>
+					{showSaveMenu ? (
+						<View
+							style={[titleBarStyles.dropdown, { right: 0 }]}
+							// @ts-expect-error - web only
+							onMouseLeave={() => setShowSaveMenu(false)}
+						>
+							<Pressable
+								style={titleBarStyles.dropdownItem}
+								onPress={() => {
+									setShowSaveMenu(false);
+									onSaveDocument();
+								}}
+							>
+								<Ionicons name="save-outline" size={12} color={C.textMuted} />
+								<Text style={titleBarStyles.dropdownItemText}>
+									Save ({docName}.pen.json)
+								</Text>
+							</Pressable>
+							<Pressable
+								style={titleBarStyles.dropdownItem}
+								onPress={() => {
+									setShowSaveMenu(false);
+									onSaveAs();
+								}}
+							>
+								<Ionicons name="pencil-outline" size={12} color={C.textMuted} />
+								<Text style={titleBarStyles.dropdownItemText}>Save As…</Text>
+							</Pressable>
+						</View>
+					) : null}
+				</View>
+
 				<View style={titleBarStyles.divider} />
 				<Pressable style={titleBarStyles.agentsButton}>
 					<Ionicons name="flash-outline" size={14} color={C.accent} />
@@ -608,6 +798,8 @@ interface ChatMessage {
 	ops?: unknown[];
 	appliedOps?: number;
 	opErrors?: string[];
+	docBeforeBatch?: PenDocument;
+	rolledBack?: boolean;
 }
 
 interface ChatSidebarProps {
@@ -618,6 +810,7 @@ interface ChatSidebarProps {
 		ops: unknown[],
 		onProgress: (step: number, total: number) => void,
 	) => Promise<{ appliedOps: number; errors: string[] }>;
+	onRollback: (snapshot: PenDocument) => void;
 }
 
 function ChatSidebar({
@@ -625,6 +818,7 @@ function ChatSidebar({
 	selectedNodePath,
 	document,
 	onApplyOps,
+	onRollback,
 }: ChatSidebarProps) {
 	const { theme, colors: C } = useTheme();
 	const chatSidebarStyles = STYLES[theme].chatSidebarStyles;
@@ -692,6 +886,7 @@ function ChatSidebar({
 			if (totalOps > 0) {
 				setApplyProgress({ step: 0, total: totalOps });
 			}
+			const docBeforeBatch = document;
 			const applyResult = await onApplyOps(response.ops, (step, total) => {
 				setApplyProgress({ step, total });
 			});
@@ -702,6 +897,7 @@ function ChatSidebar({
 				ops: response.ops,
 				appliedOps: applyResult.appliedOps,
 				opErrors: applyResult.errors,
+				docBeforeBatch,
 			};
 			setMessages((prev) => [...prev, assistantMessage]);
 		} catch (error: unknown) {
@@ -726,6 +922,42 @@ function ChatSidebar({
 		selectedNodePath,
 		sendMessageMutation,
 	]);
+
+	const handleRetry = useCallback(
+		async (message: ChatMessage) => {
+			if (!message.ops?.length || isApplying || isSending) return;
+			const total = message.ops.length;
+			setApplyProgress({ step: 0, total });
+			const result = await onApplyOps(message.ops, (step, tot) => {
+				setApplyProgress({ step, total: tot });
+			});
+			setMessages((prev) =>
+				prev.map((m) =>
+					m.id === message.id
+						? {
+								...m,
+								appliedOps: result.appliedOps,
+								opErrors: result.errors,
+								rolledBack: false,
+							}
+						: m,
+				),
+			);
+			setApplyProgress(null);
+		},
+		[isApplying, isSending, onApplyOps],
+	);
+
+	const handleRollback = useCallback(
+		(message: ChatMessage) => {
+			if (!message.docBeforeBatch) return;
+			onRollback(message.docBeforeBatch);
+			setMessages((prev) =>
+				prev.map((m) => (m.id === message.id ? { ...m, rolledBack: true } : m)),
+			);
+		},
+		[onRollback],
+	);
 
 	const clearChat = useCallback(() => {
 		setMessages([]);
@@ -815,10 +1047,58 @@ function ChatSidebar({
 								>
 									{message.content}
 								</Text>
-								{!user && Array.isArray(message.ops) ? (
-									<Text style={chatSidebarStyles.opsText}>
-										Applied {message.appliedOps ?? 0}/{message.ops.length} ops
-									</Text>
+								{!user &&
+								Array.isArray(message.ops) &&
+								message.ops.length > 0 ? (
+									<View style={chatSidebarStyles.recoveryRow}>
+										<Text style={chatSidebarStyles.opsText}>
+											{message.rolledBack
+												? "↩ Rolled back"
+												: `Applied ${message.appliedOps ?? 0}/${message.ops.length} ops`}
+										</Text>
+										{!message.rolledBack ? (
+											<>
+												<Pressable
+													onPress={() => void handleRetry(message)}
+													disabled={isApplying || isSending}
+													style={({ pressed }) => [
+														chatSidebarStyles.recoveryButton,
+														(isApplying || isSending || pressed) &&
+															chatSidebarStyles.recoveryButtonDisabled,
+													]}
+												>
+													<Ionicons
+														name="refresh-outline"
+														size={11}
+														color={C.textMuted}
+													/>
+													<Text style={chatSidebarStyles.recoveryButtonText}>
+														Retry
+													</Text>
+												</Pressable>
+												{message.docBeforeBatch ? (
+													<Pressable
+														onPress={() => handleRollback(message)}
+														disabled={isApplying || isSending}
+														style={({ pressed }) => [
+															chatSidebarStyles.recoveryButton,
+															(isApplying || isSending || pressed) &&
+																chatSidebarStyles.recoveryButtonDisabled,
+														]}
+													>
+														<Ionicons
+															name="arrow-undo-outline"
+															size={11}
+															color={C.textMuted}
+														/>
+														<Text style={chatSidebarStyles.recoveryButtonText}>
+															Rollback
+														</Text>
+													</Pressable>
+												) : null}
+											</>
+										) : null}
+									</View>
 								) : null}
 							</View>
 						);
@@ -917,6 +1197,77 @@ function ChatSidebar({
 				</View>
 			</View>
 		</KeyboardAvoidingView>
+	);
+}
+
+interface RecoveryBannerProps {
+	savedAt: number;
+	onContinue: () => void;
+	onDiscard: () => void;
+}
+
+function RecoveryBanner({
+	savedAt,
+	onContinue,
+	onDiscard,
+}: RecoveryBannerProps) {
+	const { colors: C } = useTheme();
+	const elapsed = Date.now() - savedAt;
+	const minutes = Math.round(elapsed / 60000);
+	const label =
+		minutes < 1
+			? "moments ago"
+			: minutes === 1
+				? "1 minute ago"
+				: minutes < 60
+					? `${minutes} minutes ago`
+					: `${Math.round(minutes / 60)} hours ago`;
+
+	return (
+		<View
+			style={{
+				backgroundColor: "#1c1a12",
+				borderBottomWidth: 1,
+				borderBottomColor: "#3d3720",
+				paddingHorizontal: 16,
+				paddingVertical: 8,
+				flexDirection: "row",
+				alignItems: "center",
+				gap: 10,
+			}}
+		>
+			<Ionicons name="warning-outline" size={14} color="#facc15" />
+			<Text style={{ color: "#fde68a", fontSize: 12, flex: 1 }}>
+				Unsaved work from {label}. Continue or discard?
+			</Text>
+			<Pressable
+				onPress={onContinue}
+				style={{
+					height: 24,
+					paddingHorizontal: 10,
+					borderRadius: 6,
+					backgroundColor: "#854d0e",
+					justifyContent: "center",
+				}}
+			>
+				<Text style={{ color: "#fef3c7", fontSize: 11, fontWeight: "600" }}>
+					Continue
+				</Text>
+			</Pressable>
+			<Pressable
+				onPress={onDiscard}
+				style={{
+					height: 24,
+					paddingHorizontal: 10,
+					borderRadius: 6,
+					borderWidth: 1,
+					borderColor: "#3d3720",
+					justifyContent: "center",
+				}}
+			>
+				<Text style={{ color: "#a1a1aa", fontSize: 11 }}>Discard</Text>
+			</Pressable>
+		</View>
 	);
 }
 
@@ -1055,8 +1406,16 @@ export default function PencilScreen() {
 	const [theme, setTheme] = useState<Theme>("dark");
 	const colors = THEMES[theme];
 	const styles = STYLES[theme].main;
+
+	const [docName, setDocName] = useState<string>(
+		() => loadDocMeta()?.name ?? "Untitled",
+	);
+	const [isDirty, setIsDirty] = useState(false);
+	const [showRecovery, setShowRecovery] = useState(() => hasUnsavedAutoSave());
+	const recoveryMeta = showRecovery ? loadDocMeta() : null;
+
 	const { document, setDocument, commitHistory, undo, redo, canUndo, canRedo } =
-		useDocumentHistory(loadSampleDocument());
+		useDocumentHistory(loadSampleDocument(), () => setIsDirty(true));
 	const [selectedNodePaths, setSelectedNodePaths] = useState<string[][]>([]);
 	const [chatOpen, setChatOpen] = useState(true);
 	const [chatCollapsed, setChatCollapsed] = useState(false);
@@ -1068,6 +1427,14 @@ export default function PencilScreen() {
 	const documentRef = useRef(document);
 
 	usePencilBridge(document, setDocument);
+
+	const { gameId: workspaceGameId, syncStatus } = usePencilDocumentSync({
+		document,
+		onRemoteDocument: (remoteDoc) => {
+			setDocument(remoteDoc);
+			setIsDirty(false);
+		},
+	});
 
 	const isInteractingRef = useRef(false);
 	const { isConnected, agentCursors, sendDelta, flushPendingServerUpdate } =
@@ -1117,21 +1484,51 @@ export default function PencilScreen() {
 	const handleNewDocument = useCallback(() => {
 		setDocument(createEmptyDocument());
 		setSelectedNodePaths([]);
+		setDocName("Untitled");
+		setIsDirty(false);
+		setShowRecovery(false);
 	}, [setDocument]);
 
-	const handleSaveDocument = useCallback(() => {
+	const exportDocumentToFile = useCallback((doc: PenDocument, name: string) => {
 		if (typeof window === "undefined") return;
-		const json = JSON.stringify(document, null, 2);
-		persistDocument(document);
-
+		const safe = name.replace(/[^a-zA-Z0-9-_ ]/g, "_").trim() || "Untitled";
+		const json = JSON.stringify(doc, null, 2);
 		const blob = new Blob([json], { type: "application/json" });
 		const url = URL.createObjectURL(blob);
 		const anchor = window.document.createElement("a");
 		anchor.href = url;
-		anchor.download = `pencil-${Date.now()}.pen.json`;
+		anchor.download = `${safe}.pen.json`;
 		anchor.click();
 		URL.revokeObjectURL(url);
-	}, [document]);
+		persistDocument(doc);
+		saveDocMeta({
+			name: safe,
+			savedAt: Date.now(),
+			savedChecksum: docChecksum(doc),
+		});
+		setDocName(safe);
+		setIsDirty(false);
+		setShowRecovery(false);
+	}, []);
+
+	const handleSaveDocument = useCallback(() => {
+		exportDocumentToFile(document, docName);
+	}, [document, docName, exportDocumentToFile]);
+
+	const handleSaveAs = useCallback(() => {
+		if (typeof window === "undefined") return;
+		const name = window.prompt("Document name:", docName);
+		if (!name?.trim()) return;
+		exportDocumentToFile(document, name.trim());
+	}, [document, docName, exportDocumentToFile]);
+
+	const handleLoadLastDocument = useCallback(() => {
+		const doc = loadLastDocument();
+		setDocument(doc);
+		setSelectedNodePaths([]);
+		setShowRecovery(false);
+		setIsDirty(false);
+	}, [setDocument]);
 
 	const handleLoadDocument = useCallback(() => {
 		if (typeof window === "undefined") return;
@@ -1143,8 +1540,16 @@ export default function PencilScreen() {
 			if (!file) return;
 			const text = await file.text();
 			const parsed = parsePenDocument(JSON.parse(text));
+			const importedName =
+				file.name
+					.replace(/\.(pen\.json|json|pen)$/, "")
+					.replace(/[^a-zA-Z0-9-_ ]/g, "_")
+					.trim() || "Imported";
 			setDocument(parsed);
 			setSelectedNodePaths([]);
+			setDocName(importedName);
+			setIsDirty(true);
+			setShowRecovery(false);
 			persistDocument(parsed);
 		};
 		input.click();
@@ -1174,11 +1579,31 @@ export default function PencilScreen() {
 			let currentDoc = documentRef.current;
 			let appliedOps = 0;
 			const errors: string[] = [];
+
+			const validationIssues = validateDesignChatOps(currentDoc, opsArray);
+			const schemaErrorIndices = new Set(
+				validationIssues
+					.filter((v) => v.severity === "error")
+					.map((v) => v.opIndex),
+			);
+			for (const issue of validationIssues) {
+				errors.push(
+					`[${issue.severity}] op[${issue.opIndex}]: ${issue.message}`,
+				);
+			}
+
 			let lastPoint = { x: 520, y: 380 };
 
 			for (let i = 0; i < opsArray.length; i += 1) {
 				const op = opsArray[i];
 				const step = i + 1;
+
+				if (schemaErrorIndices.has(i)) {
+					onProgress(step, total);
+					await wait(60);
+					continue;
+				}
+
 				const point = getCursorPointFromOp(op, lastPoint);
 				lastPoint = point;
 
@@ -1284,7 +1709,9 @@ export default function PencilScreen() {
 					onRedo={redo}
 					onNewDocument={handleNewDocument}
 					onLoadDocument={handleLoadDocument}
+					onLoadLastDocument={handleLoadLastDocument}
 					onSaveDocument={handleSaveDocument}
+					onSaveAs={handleSaveAs}
 					showLayers={showLayers}
 					onToggleLayers={() => setShowLayers((prev) => !prev)}
 					isConnected={isConnected}
@@ -1292,7 +1719,21 @@ export default function PencilScreen() {
 					onToggleTheme={() =>
 						setTheme((t) => (t === "dark" ? "light" : "dark"))
 					}
+					docName={docName}
+					isDirty={isDirty}
+					syncStatus={syncStatus}
+					hasWorkspace={!!workspaceGameId}
 				/>
+
+				{showRecovery && recoveryMeta ? (
+					<RecoveryBanner
+						savedAt={recoveryMeta.savedAt}
+						onContinue={() => setShowRecovery(false)}
+						onDiscard={() => {
+							handleNewDocument();
+						}}
+					/>
+				) : null}
 
 				<View style={styles.mainRow}>
 					<ToolSidebar
@@ -1312,21 +1753,23 @@ export default function PencilScreen() {
 					) : null}
 
 					<View style={styles.canvasArea}>
-						<PenCanvasPanel
-							{...penCanvasUiProps}
-							document={document}
-							onAddNode={handleAddNode}
-							onDocumentChange={setDocument}
-							selectedNodePaths={selectedNodePaths}
-							onSelectionChange={setSelectedNodePaths}
-							agentCursors={mergedAgentCursors}
-							isInteractingRef={isInteractingRef}
-							onInteractionEnd={() => {
-								isInteractingRef.current = false;
-								flushPendingServerUpdate();
-								commitHistory();
-							}}
-						/>
+						<Suspense fallback={<View style={styles.canvasFallback} />}>
+							<PenCanvasPanel
+								{...penCanvasUiProps}
+								document={document}
+								onAddNode={handleAddNode}
+								onDocumentChange={setDocument}
+								selectedNodePaths={selectedNodePaths}
+								onSelectionChange={setSelectedNodePaths}
+								agentCursors={mergedAgentCursors}
+								isInteractingRef={isInteractingRef}
+								onInteractionEnd={() => {
+									isInteractingRef.current = false;
+									flushPendingServerUpdate();
+									commitHistory();
+								}}
+							/>
+						</Suspense>
 					</View>
 
 					{showChatSidebar ? (
@@ -1335,6 +1778,10 @@ export default function PencilScreen() {
 							selectedNodePath={selectedNodePath}
 							document={document}
 							onApplyOps={handleApplyChatOps}
+							onRollback={(snapshot) => {
+								setDocument(snapshot);
+								commitHistory();
+							}}
 						/>
 					) : (
 						<ChatCollapsedStrip onOpen={handleOpenChat} />
@@ -1464,6 +1911,33 @@ const getTitleBarStyles = (C: ThemeColors) =>
 			color: C.text,
 			fontSize: 11,
 			fontWeight: "600",
+		},
+		dropdown: {
+			position: "absolute",
+			top: 30,
+			left: 0,
+			minWidth: 200,
+			backgroundColor: C.sidebar,
+			borderWidth: 1,
+			borderColor: C.border,
+			borderRadius: 8,
+			paddingVertical: 4,
+			zIndex: 1000,
+			shadowColor: "#000",
+			shadowOpacity: 0.3,
+			shadowRadius: 8,
+			shadowOffset: { width: 0, height: 4 },
+		},
+		dropdownItem: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 8,
+			paddingHorizontal: 12,
+			paddingVertical: 7,
+		},
+		dropdownItemText: {
+			color: C.text,
+			fontSize: 12,
 		},
 	});
 
@@ -1722,6 +2196,30 @@ const getChatSidebarStyles = (C: ThemeColors) =>
 			color: C.textMuted,
 			fontSize: 10,
 		},
+		recoveryRow: {
+			flexDirection: "row" as const,
+			alignItems: "center" as const,
+			flexWrap: "wrap" as const,
+			gap: 6,
+		},
+		recoveryButton: {
+			flexDirection: "row" as const,
+			alignItems: "center" as const,
+			gap: 3,
+			paddingHorizontal: 7,
+			paddingVertical: 3,
+			borderRadius: 6,
+			borderWidth: 1,
+			borderColor: C.border,
+			backgroundColor: C.surface,
+		},
+		recoveryButtonDisabled: {
+			opacity: 0.4,
+		},
+		recoveryButtonText: {
+			color: C.textMuted,
+			fontSize: 10,
+		},
 		bottomSection: {
 			borderTopWidth: 1,
 			borderTopColor: C.border,
@@ -1829,6 +2327,10 @@ const getStyles = (C: ThemeColors) =>
 			backgroundColor: C.bg,
 		},
 		canvasArea: {
+			flex: 1,
+			backgroundColor: C.bg,
+		},
+		canvasFallback: {
 			flex: 1,
 			backgroundColor: C.bg,
 		},

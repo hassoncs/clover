@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-const DEV_API_URL = "http://localhost:8789";
+const DEV_API_URL = "http://api.slopcade.localhost:1355";
 
 function getApiUrl(): string {
 	if (process.env.EXPO_PUBLIC_API_URL) {
@@ -13,7 +13,6 @@ function getApiUrl(): string {
 			return DEV_API_URL;
 		}
 
-		// Native: derive host from Expo debugger for physical device support
 		const debuggerHost =
 			Constants?.expoConfig?.hostUri ||
 			(Constants?.manifest as any)?.debuggerHost ||

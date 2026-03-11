@@ -1,0 +1,4 @@
+Total messages: 3 (Errors: 0, Warnings: 1)
+Returning 1 messages for level "warning"
+
+[WARNING] "shadow*" style props are deprecated. Use "boxShadow". @ http://localhost:8089/node_modules/.pnpm/expo-router@6.0.23_@expo+metro-runtime@6.1.2_@testing-library+react-native@13.3.3_jest@29.7.0_qw2lk634qmlb56il3puvev5asm/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.routerRoot=app:5607

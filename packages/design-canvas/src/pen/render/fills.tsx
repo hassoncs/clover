@@ -42,7 +42,21 @@ interface ImageFillProps {
 	height: number;
 }
 
-function GradientFill({ fill, width, height }: GradientFillProps): React.ReactNode {
+export function resolveSolidFillColor(
+	fill: PenFill | undefined,
+): string | null {
+	if (!fill || Array.isArray(fill)) return null;
+	if (typeof fill === "string") return fill;
+	if (fill.enabled === false) return null;
+	if (fill.type === "color") return fill.color;
+	return null;
+}
+
+function GradientFill({
+	fill,
+	width,
+	height,
+}: GradientFillProps): React.ReactNode {
 	const colors = fill.stops.map((s) => s.color);
 	const positions = fill.stops.map((s) => s.position);
 
@@ -119,7 +133,9 @@ function renderSingleFill(
 	if (fill.enabled === false) return null;
 
 	if (fill.type === "color") {
-		return <Paint key={key} color={fill.color} style="fill" opacity={fill.opacity} />;
+		return (
+			<Paint key={key} color={fill.color} style="fill" opacity={fill.opacity} />
+		);
 	}
 
 	if (fill.type === "gradient") {
@@ -141,22 +157,31 @@ function renderSingleFill(
 	return null;
 }
 
-export function PenFillRenderer({ fill, width, height }: FillProps): React.ReactNode {
+export function PenFillRenderer({
+	fill,
+	width,
+	height,
+}: FillProps): React.ReactNode {
 	if (!fill) return null;
 
 	if (Array.isArray(fill)) {
-		return fill.map((f, i) =>
-			Array.isArray(f)
-				? (
-						<PenFillRenderer
-							key={`fill-${i}`}
-							fill={f}
-							width={width}
-							height={height}
-						/>
-					)
-				: renderSingleFill(f, width, height, `fill-${i}`),
-		);
+		const rendered: React.ReactNode[] = [];
+		for (const nestedFill of fill) {
+			const fillKey = `fill-${JSON.stringify(nestedFill)}`;
+			if (Array.isArray(nestedFill)) {
+				rendered.push(
+					<PenFillRenderer
+						key={fillKey}
+						fill={nestedFill}
+						width={width}
+						height={height}
+					/>,
+				);
+			} else {
+				rendered.push(renderSingleFill(nestedFill, width, height, fillKey));
+			}
+		}
+		return rendered;
 	}
 
 	return renderSingleFill(fill, width, height, "fill-0");
