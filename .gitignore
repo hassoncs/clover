@@ -139,6 +139,7 @@ test_*.py
 
 # Work in progress / drafts
 .sisyphus/drafts/
+.sisyphus/worktrees/
 *.draft.md
 
 # Build cache logs
