@@ -1,4 +1,4 @@
-import type { PenDocument } from "@slopcade/protocol/pen";
+import type { PenDocument } from "@pencil/protocol/pen";
 import { useLocalSearchParams } from "expo-router";
 import { lazy, Suspense, useMemo, useState, type ComponentType } from "react";
 import {

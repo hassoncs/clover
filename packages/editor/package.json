@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@slopcade/api": "workspace:*",
-		"@slopcade/design-canvas": "workspace:*",
+		"@pencil/design-canvas": "file:../../.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz",
 		"@slopcade/app-lib": "workspace:*",
 		"@slopcade/editor-ai": "workspace:*",
 		"@slopcade/game-runtime": "workspace:*",

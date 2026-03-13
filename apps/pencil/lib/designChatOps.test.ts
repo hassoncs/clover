@@ -2,7 +2,7 @@ import type {
 	PenDocument,
 	PenRectangle,
 	PenRef,
-} from "@slopcade/protocol/pen";
+} from "@pencil/protocol/pen";
 import { describe, expect, it } from "vitest";
 
 import { applyDesignChatOpsToDocument, validateDesignChatOps } from "./designChatOps";

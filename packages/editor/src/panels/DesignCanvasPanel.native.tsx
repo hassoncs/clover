@@ -1,7 +1,7 @@
 import {
 	DesignCanvasPanel as BaseDesignCanvasPanel,
 	type DesignCanvasHost,
-} from "@slopcade/design-canvas";
+} from "@pencil/design-canvas";
 import { useEditor } from "../EditorProvider";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 

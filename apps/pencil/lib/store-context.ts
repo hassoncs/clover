@@ -1,7 +1,7 @@
 import type {
 	PencilDocumentStore,
 	PencilHostAdapter,
-} from "@slopcade/pencil-core/contracts";
+} from "@pencil/core/contracts";
 import {
 	createContext,
 	createElement,

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { PenDocument, PenNode } from "@slopcade/protocol/pen";
-import { parsePenDocument } from "@slopcade/protocol/pen";
+import type { PenDocument, PenNode } from "@pencil/protocol/pen";
+import { parsePenDocument } from "@pencil/protocol/pen";
 import React, {
 	lazy,
 	Suspense,

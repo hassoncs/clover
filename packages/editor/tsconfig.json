@@ -41,8 +41,7 @@
 			"@slopcade/shared": ["src/types/shims/shared.d.ts"],
 			"@slopcade/shared/*": ["../../shared/src/*"],
 			"@slopcade/theme": ["../theme/src/index.ts"],
-			"@slopcade/ui": ["src/types/shims/ui.d.ts"],
-			"@slopcade/design-canvas": ["../design-canvas/src/index.ts"]
+			"@slopcade/ui": ["src/types/shims/ui.d.ts"]
 		}
 	},
 	"include": ["src/**/*", "nativewind-env.d.ts"],

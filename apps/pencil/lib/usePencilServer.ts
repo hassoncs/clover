@@ -1,4 +1,4 @@
-import type { PenDocument } from "@slopcade/protocol/pen";
+import type { PenDocument } from "@pencil/protocol/pen";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 

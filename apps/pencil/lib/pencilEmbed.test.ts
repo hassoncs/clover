@@ -2,7 +2,7 @@ import type {
 	PenDocument,
 	PenFrame,
 	PenRectangle,
-} from "@slopcade/protocol/pen";
+} from "@pencil/protocol/pen";
 import { describe, expect, it } from "vitest";
 
 import {

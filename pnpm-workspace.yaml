@@ -10,6 +10,10 @@ packages:
   - 'apps/landing-amen'
   - 'shared'
   - 'packages/*'
+  - '!packages/design-canvas'
+  - '!packages/pencil-core'
+  - '!packages/pencil-server'
+  - '!packages/protocol'
   - 'apps/storybook'
 
 nodeLinker: hoisted

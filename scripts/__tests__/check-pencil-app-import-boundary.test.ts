@@ -34,7 +34,7 @@ describe("check-pencil-app-import-boundary", () => {
 			"apps/pencil/app/index.tsx":
 				'import { Canvas } from "@shopify/react-native-skia";\n',
 			"apps/pencil/app/other.tsx":
-				'import { PenCanvasPanel } from "@slopcade/design-canvas";\n',
+				'import { PenCanvasPanel } from "@pencil/design-canvas";\n',
 		});
 
 		expect(
@@ -47,7 +47,7 @@ describe("check-pencil-app-import-boundary", () => {
 			},
 			{
 				filePath: "apps/pencil/app/other.tsx",
-				moduleSpecifier: "@slopcade/design-canvas",
+				moduleSpecifier: "@pencil/design-canvas",
 				line: 1,
 			},
 		]);
@@ -67,7 +67,7 @@ describe("check-pencil-app-import-boundary", () => {
 	it("ignores tests outside the route tree", () => {
 		const root = createFixture({
 			"apps/pencil/components/PencilCanvasPanelInner.test.tsx":
-				'import { PenCanvasPanel } from "@slopcade/design-canvas";\n',
+				'import { PenCanvasPanel } from "@pencil/design-canvas";\n',
 		});
 
 		expect(findPencilAppImportBoundaryViolations(root)).toEqual([]);

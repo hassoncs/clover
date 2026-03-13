@@ -645,7 +645,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 1 (Start Immediately - No Dependencies)
 
-- [ ] **1. Freeze the ownership boundary in Slopcade**
+- [x] **1. Freeze the ownership boundary in Slopcade**
   - What: Update `docs/pencil/*.md` to reflect the standalone repo target and lock anti-coupling rules.
   - Depends: None
   - Blocks: 2
@@ -653,7 +653,7 @@ That is the shortest path to the end state you described, and it matches the pla
   - Skills: `writing-plans`
   - QA: `rg "adapter|integration|standalone repo|standalone local Pencil" docs/pencil` returns matches.
 
-- [ ] **6. Create the standalone `pencil` repository skeleton**
+- [x] **6. Create the standalone `pencil` repository skeleton**
   - What: Initialize `/Users/hassoncs/Workspaces/personal/pencil` with `.projectrc`, `package.json`, `pnpm-workspace.yaml`, `tsconfig.json`.
   - Depends: None
   - Blocks: 7
@@ -663,7 +663,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 2 (After Wave 1 Completes)
 
-- [ ] **2. Create the Pencil-owned protocol package**
+- [x] **2. Create the Pencil-owned protocol package**
   - What: Create `packages/protocol`, move `PenDocument` from `shared/src/types/pen.ts`, update imports in Pencil packages.
   - Depends: 1
   - Blocks: 3, 5
@@ -673,7 +673,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 3 (After Wave 2 Completes)
 
-- [ ] **3. Remove compile-time Slopcade API coupling**
+- [x] **3. Remove compile-time Slopcade API coupling**
   - What: Define host adapter interface in `pencil-core`, make Slopcade adapter implement it, remove direct `@slopcade/api/trpc` imports.
   - Depends: 2
   - Blocks: 4
@@ -681,7 +681,7 @@ That is the shortest path to the end state you described, and it matches the pla
   - Skills: `safe-ast-refactoring`, `testing-patterns`
   - QA: `rg "@slopcade/api/trpc" apps/pencil packages/pencil-core packages/pencil-server packages/design-canvas` returns no results; `pnpm exec tsc --noEmit -p apps/pencil/tsconfig.json` passes.
 
-- [ ] **5. Re-home `design-canvas` under Pencil ownership**
+- [x] **5. Re-home `design-canvas` under Pencil ownership**
   - What: Modify `packages/design-canvas` to depend on the new protocol package. Verify Skia web boundaries.
   - Depends: 2
   - Blocks: 7
@@ -691,7 +691,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 4 (After Wave 3 Completes)
 
-- [ ] **4. Make session/file identity canonical**
+- [x] **4. Make session/file identity canonical**
   - What: Refactor `pencilEmbed.ts` to use `sessionId + projectRoot + filePath` as primary identity. Deprecate `gameId`.
   - Depends: 3
   - Blocks: 7
@@ -701,7 +701,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 5 (After Wave 4 Completes)
 
-- [ ] **7. Extract code into the new repo with preserved history**
+- [x] **7. Extract code into the new repo with preserved history**
   - What: Clone Slopcade into the new repo dir, use `git filter-repo` to extract Pencil packages while preserving history.
   - Depends: 4, 5, 6
   - Blocks: 8
@@ -711,7 +711,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 6 (After Wave 5 Completes)
 
-- [ ] **8. Stand up standalone runtime in new repo**
+- [x] **8. Stand up standalone runtime in new repo**
   - What: In the new repo, rename packages to `@pencil/*`, update imports, and implement `pencil list/start/stop/attach`.
   - Depends: 7
   - Blocks: 9
@@ -721,7 +721,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 7 (After Wave 6 Completes)
 
-- [ ] **9. Convert Slopcade into a consumer repo**
+- [x] **9. Convert Slopcade into a consumer repo**
   - What: In Slopcade, remove extracted packages, consume `@pencil/*` via local tarballs, rewire adapter.
   - Depends: 8
   - Blocks: 10
@@ -731,7 +731,7 @@ That is the shortest path to the end state you described, and it matches the pla
 
 ### Wave 8 (After Wave 7 Completes)
 
-- [ ] **10. Release, local-dev workflow, and rollback runbook**
+- [x] **10. Release, local-dev workflow, and rollback runbook**
   - What: Write documentation in both repos detailing the release process, local dev workflow, and rollback steps.
   - Depends: 9
   - Blocks: None

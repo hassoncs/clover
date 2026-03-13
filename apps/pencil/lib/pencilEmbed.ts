@@ -1,5 +1,5 @@
-import type { PenDocument, PenNode } from "@slopcade/protocol/pen";
-import { parsePenDocument } from "@slopcade/protocol/pen";
+import type { PenDocument, PenNode } from "@pencil/protocol/pen";
+import { parsePenDocument } from "@pencil/protocol/pen";
 
 export const LOCAL_DOC_KEY = "pencil:last-document";
 

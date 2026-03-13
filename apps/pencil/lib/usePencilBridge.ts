@@ -1,4 +1,4 @@
-import type { PenDocument } from "@slopcade/protocol/pen";
+import type { PenDocument } from "@pencil/protocol/pen";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { LOCAL_DOC_KEY, type PencilRuntimeState } from "./pencilEmbed";

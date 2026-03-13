@@ -2,7 +2,7 @@ import type {
 	PenDocument,
 	PenFrame,
 	PenNode,
-} from "@slopcade/protocol/pen";
+} from "@pencil/protocol/pen";
 
 type UnknownRecord = Record<string, unknown>;
 

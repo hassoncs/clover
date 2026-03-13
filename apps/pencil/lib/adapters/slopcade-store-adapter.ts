@@ -3,8 +3,8 @@ import type {
 	PencilFileRef,
 	PencilHostAdapter,
 	PencilSessionRef,
-} from "@slopcade/pencil-core/contracts";
-import { parsePenDocument } from "@slopcade/protocol/pen";
+} from "@pencil/core/contracts";
+import { parsePenDocument } from "@pencil/protocol/pen";
 
 interface ReadWorkspaceFileResult {
 	exists: boolean;

@@ -5,6 +5,11 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@pencil/core': file:.sisyphus/vendor/pencil-tarballs/pencil-core-1.0.0.tgz
+  '@pencil/design-canvas': file:.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz
+  '@pencil/protocol': file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz
+  '@pencil/server': file:.sisyphus/vendor/pencil-tarballs/pencil-server-1.0.0.tgz
+  '@slopcade/theme': workspace:*
   react: 19.1.0
   react-dom: 19.1.0
   react-native: 0.81.4
@@ -687,6 +692,15 @@ importers:
       '@expo/vector-icons':
         specifier: ^14.0.0
         version: 14.1.0(expo-font@13.3.2(expo@54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native-webview@13.15.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@pencil/core':
+        specifier: file:/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/worktrees/2026-03-13-pencil-standalone-repo-extraction-refresh/.sisyphus/vendor/pencil-tarballs/pencil-core-1.0.0.tgz
+        version: file:.sisyphus/vendor/pencil-tarballs/pencil-core-1.0.0.tgz
+      '@pencil/design-canvas':
+        specifier: file:/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/worktrees/2026-03-13-pencil-standalone-repo-extraction-refresh/.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz
+        version: file:.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz(@shopify/react-native-skia@2.5.1(react-native-reanimated@4.2.2(react-native-worklets@0.7.4(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@pencil/protocol':
+        specifier: file:/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/worktrees/2026-03-13-pencil-standalone-repo-extraction-refresh/.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz
+        version: file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))
@@ -696,12 +710,6 @@ importers:
       '@slopcade/api':
         specifier: workspace:*
         version: link:../../api
-      '@slopcade/design-canvas':
-        specifier: workspace:*
-        version: link:../../packages/design-canvas
-      '@slopcade/pencil-core':
-        specifier: workspace:*
-        version: link:../../packages/pencil-core
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../../shared
@@ -1846,36 +1854,6 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.37)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  packages/design-canvas:
-    dependencies:
-      '@shopify/react-native-skia':
-        specifier: '*'
-        version: 2.5.1(react-native-reanimated@4.2.2(react-native-worklets@0.7.4(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      '@slopcade/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      '@slopcade/theme':
-        specifier: workspace:*
-        version: link:../theme
-      nanoid:
-        specifier: ^5.0.7
-        version: 5.1.6
-      react:
-        specifier: 19.1.0
-        version: 19.1.0
-      react-native:
-        specifier: 0.81.4
-        version: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
-      react-resizable-panels:
-        specifier: ^2.1.7
-        version: 2.1.9(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      typeflex:
-        specifier: ^0.1.0
-        version: 0.1.0
-      yoga-layout:
-        specifier: ^3.2.1
-        version: 3.2.1
-
   packages/economy-engine:
     dependencies:
       zod:
@@ -1891,15 +1869,15 @@ importers:
 
   packages/editor:
     dependencies:
+      '@pencil/design-canvas':
+        specifier: file:/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/worktrees/2026-03-13-pencil-standalone-repo-extraction-refresh/.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz
+        version: file:.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz(@shopify/react-native-skia@2.5.1(react-native-reanimated@4.2.2(react-native-worklets@0.7.4(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@slopcade/api':
         specifier: workspace:*
         version: link:../../api
       '@slopcade/app-lib':
         specifier: workspace:*
         version: link:../app-lib
-      '@slopcade/design-canvas':
-        specifier: workspace:*
-        version: link:../design-canvas
       '@slopcade/editor-ai':
         specifier: workspace:*
         version: link:../editor-ai
@@ -2057,49 +2035,6 @@ importers:
       react-native:
         specifier: 0.81.4
         version: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
-
-  packages/pencil-core:
-    dependencies:
-      '@slopcade/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      typescript:
-        specifier: '*'
-        version: 5.9.3
-
-  packages/pencil-server:
-    dependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.0.0
-        version: 1.27.1(zod@3.25.76)
-      '@slopcade/design-canvas':
-        specifier: workspace:*
-        version: link:../design-canvas
-      '@slopcade/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-      ws:
-        specifier: ^8.18.0
-        version: 8.19.0
-      zod:
-        specifier: ^3.24.2
-        version: 3.25.76
-    devDependencies:
-      '@types/express':
-        specifier: ^5.0.6
-        version: 5.0.6
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.19.15
-      '@types/ws':
-        specifier: ^8.5.14
-        version: 8.18.1
-      typescript:
-        specifier: ~5.9.3
-        version: 5.9.3
 
   packages/react-native-reanimated-mock: {}
 
@@ -4531,6 +4466,22 @@ packages:
     resolution: {integrity: sha512-6hIU3RQu45B+VNTY4Ru8ppFwjVS/S5qwYyGhBotmjxfEKk41I2DlGtRfGJndZ5+6lneE2pwloqunlOyZuX/XAw==}
     cpu: [x64]
     os: [win32]
+
+  '@pencil/core@file:.sisyphus/vendor/pencil-tarballs/pencil-core-1.0.0.tgz':
+    resolution: {integrity: sha512-ixH8czdn1MGeIUY2on4sO2XNxqvL+kXIdIGsQpX/6EqVIJ0yBmODl6QwV/I3vZFKXz+X9gniNCp4pdH/OplW3Q==, tarball: file:.sisyphus/vendor/pencil-tarballs/pencil-core-1.0.0.tgz}
+    version: 1.0.0
+
+  '@pencil/design-canvas@file:.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz':
+    resolution: {integrity: sha512-XEKwHfe3l996mpHpZUiJj1bNPn2H2ixG7SIIlwV9pGPh+xakSAyTYZJL2C/akAmJ4WCV1u/hor/Buy23XIIiHA==, tarball: file:.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz}
+    version: 1.0.0
+    peerDependencies:
+      '@shopify/react-native-skia': '*'
+      react: 19.1.0
+      react-native: 0.81.4
+
+  '@pencil/protocol@file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz':
+    resolution: {integrity: sha512-jhIpdIEiEGHPGHA8IGoI511XF2ohfWTqRN83ZItF0FjQtJs6APNLDBaKYC4CM8EswjBNrKIn3vVYId9lwY8SUA==, tarball: file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz}
+    version: 1.0.0
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -15486,6 +15437,28 @@ snapshots:
 
   '@oxc-resolver/binding-win32-x64-msvc@11.19.1':
     optional: true
+
+  '@pencil/core@file:.sisyphus/vendor/pencil-tarballs/pencil-core-1.0.0.tgz':
+    dependencies:
+      '@pencil/protocol': file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz
+
+  '@pencil/design-canvas@file:.sisyphus/vendor/pencil-tarballs/pencil-design-canvas-1.0.0.tgz(@shopify/react-native-skia@2.5.1(react-native-reanimated@4.2.2(react-native-worklets@0.7.4(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@pencil/protocol': file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz
+      '@shopify/react-native-skia': 2.5.1(react-native-reanimated@4.2.2(react-native-worklets@0.7.4(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@slopcade/theme': link:packages/theme
+      nanoid: 5.1.6
+      react: 19.1.0
+      react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
+      react-resizable-panels: 2.1.9(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      typeflex: 0.1.0
+      yoga-layout: 3.2.1
+    transitivePeerDependencies:
+      - react-dom
+
+  '@pencil/protocol@file:.sisyphus/vendor/pencil-tarballs/pencil-protocol-1.0.0.tgz':
+    dependencies:
+      zod: 3.25.76
 
   '@pkgjs/parseargs@0.11.0':
     optional: true

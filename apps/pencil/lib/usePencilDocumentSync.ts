@@ -1,8 +1,8 @@
 import type {
 	PencilDocumentStore,
 	PencilFileRef,
-} from "@slopcade/pencil-core/contracts";
-import type { PenDocument } from "@slopcade/protocol/pen";
+} from "@pencil/core/contracts";
+import type { PenDocument } from "@pencil/protocol/pen";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {

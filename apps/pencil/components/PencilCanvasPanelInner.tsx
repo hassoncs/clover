@@ -1,7 +1,7 @@
 import {
 	PenCanvasPanel as DesignCanvasPenCanvasPanel,
 	type PenCanvasPanelProps,
-} from "@slopcade/design-canvas";
+} from "@pencil/design-canvas";
 
 export type { PenCanvasPanelProps };
 

@@ -1,12 +1,12 @@
 import {
 	DesignCanvasPanel as BaseDesignCanvasPanel,
 	type DesignCanvasHost,
-} from "@slopcade/design-canvas";
+} from "@pencil/design-canvas";
 import { useEditor } from "../EditorProvider";
 import { useSharedWorkspaceFiles } from "../useWorkspaceFiles";
 
 /**
- * Editor-specific wrapper around @slopcade/design-canvas DesignCanvasPanel.
+ * Editor-specific wrapper around @pencil/design-canvas DesignCanvasPanel.
  *
  * Bridges the editor context (useEditor + useSharedWorkspaceFiles) into the
  * generic DesignCanvasHost adapter interface, keeping the canvas logic fully

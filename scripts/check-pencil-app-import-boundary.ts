@@ -5,7 +5,7 @@ import { join, relative } from "node:path";
 const ROUTE_ROOT = "apps/pencil/app";
 const FORBIDDEN_IMPORTS = [
 	"@shopify/react-native-skia",
-	"@slopcade/design-canvas",
+	"@pencil/design-canvas",
 ] as const;
 
 export interface ImportBoundaryViolation {
