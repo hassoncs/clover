@@ -1,4 +1,4 @@
-import type { DesignDocument, DesignElement } from "@slopcade/shared";
+import type { DesignDocument, DesignElement } from "@slopcade/protocol/design";
 import { nanoid } from "nanoid";
 
 // ── Op types ─────────────────────────────────────────────────────────────────

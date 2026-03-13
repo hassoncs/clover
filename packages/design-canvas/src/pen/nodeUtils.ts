@@ -1,4 +1,4 @@
-import type { PenNode } from "@slopcade/shared/types/pen";
+import type { PenNode } from "@slopcade/protocol/pen";
 
 export function getNodeChildren(node: PenNode): PenNode[] {
 	if ("children" in node && Array.isArray(node.children)) {

@@ -3,7 +3,7 @@ import type {
 	PenNode,
 	PenRectangle,
 	PenText,
-} from "@slopcade/shared/types/pen";
+} from "@slopcade/protocol/pen";
 import { describe, expect, it } from "vitest";
 import {
 	computeSharedNumericField,

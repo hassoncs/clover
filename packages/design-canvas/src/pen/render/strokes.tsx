@@ -1,5 +1,5 @@
 import { DashPathEffect, Paint } from "@shopify/react-native-skia";
-import type { PenStroke } from "@slopcade/shared/types/pen";
+import type { PenStroke } from "@slopcade/protocol/pen";
 import type React from "react";
 
 interface StrokeProps {

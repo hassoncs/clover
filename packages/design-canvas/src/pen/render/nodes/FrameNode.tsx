@@ -5,7 +5,7 @@ import {
 	Rect,
 	RoundedRect,
 } from "@shopify/react-native-skia";
-import type { PenFrame } from "@slopcade/shared/types/pen";
+import type { PenFrame } from "@slopcade/protocol/pen";
 import type React from "react";
 import { useEffect, useState } from "react";
 import type { LayoutNode } from "../../layout";

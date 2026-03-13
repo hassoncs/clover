@@ -1,5 +1,5 @@
 import { Group, Rect } from "@shopify/react-native-skia";
-import type { PenIconFont } from "@slopcade/shared/types/pen";
+import type { PenIconFont } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenFillRenderer } from "../fills";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PenTheme, PenVariable } from "@slopcade/shared/types/pen";
+import type { PenTheme, PenVariable } from "@slopcade/protocol/pen";
 import { buildThemeContext } from "../themes";
 import { resolveTreeVariables, resolveVariable } from "../variables";
 

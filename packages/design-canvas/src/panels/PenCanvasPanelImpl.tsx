@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
+import type { PenDocument, PenNode } from "@slopcade/protocol/pen";
 import { useTheme } from "@slopcade/theme";
 import {
 	lazy,

@@ -3,7 +3,7 @@ import {
 	type DesignDocument,
 	DesignSchemaError,
 	migrateDesignDocument,
-} from "@slopcade/shared";
+} from "@slopcade/protocol/design";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface UseDesignDocumentIO {

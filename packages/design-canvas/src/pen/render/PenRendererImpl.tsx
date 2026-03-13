@@ -1,6 +1,6 @@
 import type { SkTypefaceFontProvider } from "@shopify/react-native-skia";
 import { Canvas, Group, Paint, Rect, Skia } from "@shopify/react-native-skia";
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument } from "@slopcade/protocol/pen";
 import type React from "react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { PenDrawingState } from "../../tools/penToolState";

@@ -1,4 +1,4 @@
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument } from "@slopcade/protocol/pen";
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 

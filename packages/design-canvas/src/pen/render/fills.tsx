@@ -7,7 +7,7 @@ import {
 	useImage,
 	vec,
 } from "@shopify/react-native-skia";
-import type { PenFill, PenGradientStop } from "@slopcade/shared/types/pen";
+import type { PenFill, PenGradientStop } from "@slopcade/protocol/pen";
 import type React from "react";
 
 interface FillProps {

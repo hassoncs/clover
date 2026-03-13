@@ -9,7 +9,7 @@
  * Metro/webpack will use platform-specific files at runtime.
  */
 
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument } from "@slopcade/protocol/pen";
 
 export interface PenCanvasPanelProps {
 	document: PenDocument;

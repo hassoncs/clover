@@ -1,4 +1,4 @@
-import type { PenDocument, PenNode, PenThemedValue, PenVariable } from "@slopcade/shared/types/pen";
+import type { PenDocument, PenNode, PenThemedValue, PenVariable } from "@slopcade/protocol/pen";
 import { buildThemeContext, type ThemeContext } from "./themes";
 
 export function resolveVariable(

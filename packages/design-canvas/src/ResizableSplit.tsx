@@ -37,9 +37,9 @@ function ResizableSplitWeb(props: ResizableSplitProps) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const rp =
 		require("react-resizable-panels") as typeof import("react-resizable-panels");
-	const Group = rp.Group as any;
+	const Group = rp.PanelGroup as any;
 	const Panel = rp.Panel as any;
-	const Separator = rp.Separator as any;
+	const Separator = rp.PanelResizeHandle as any;
 
 	const {
 		direction,

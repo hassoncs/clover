@@ -1,5 +1,5 @@
-import type { DesignDocument } from "@slopcade/shared";
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { DesignDocument } from "@slopcade/protocol/design";
+import type { PenDocument } from "@slopcade/protocol/pen";
 
 export type DesignPhase = "idle" | "designing" | "approved" | "implementing";
 export type DesignMode = "idle" | "select" | "pan" | "draw";

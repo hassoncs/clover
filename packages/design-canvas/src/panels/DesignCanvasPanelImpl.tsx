@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { DesignDocument } from "@slopcade/shared";
+import type { DesignDocument } from "@slopcade/protocol/design";
 import { useTheme } from "@slopcade/theme";
 import {
 	lazy,

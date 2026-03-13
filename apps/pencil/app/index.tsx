@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { PenDocument, PenNode } from "@slopcade/shared/types/pen";
-import { parsePenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument, PenNode } from "@slopcade/protocol/pen";
+import { parsePenDocument } from "@slopcade/protocol/pen";
 import React, {
 	lazy,
 	Suspense,
@@ -22,11 +22,13 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import samplePen from "../assets/sample.json";
 import type { PenCanvasPanelProps } from "../components/PencilCanvasPanel";
 import {
 	applyDesignChatOpsToDocument,
 	validateDesignChatOps,
 } from "../lib/designChatOps";
+import { buildPencilRuntimeState, LOCAL_DOC_KEY } from "../lib/pencilEmbed";
 import { PencilStoreProvider } from "../lib/store-context";
 import { trpc } from "../lib/trpc/trpc";
 import { usePencilBridge } from "../lib/usePencilBridge";
@@ -123,9 +125,6 @@ const TYPE_ICONS: Record<string, IconName> = {
 	note: "document-text-outline",
 };
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const SAMPLE_PEN = require("../assets/sample.json");
-const LOCAL_DOC_KEY = "pencil:last-document";
 const DOC_META_KEY = "pencil:document-meta";
 
 interface DocMeta {
@@ -185,7 +184,7 @@ function loadSampleDocument(): PenDocument {
 			const persisted = window.localStorage.getItem(LOCAL_DOC_KEY);
 			if (persisted) return parsePenDocument(JSON.parse(persisted));
 		}
-		return parsePenDocument(SAMPLE_PEN);
+		return parsePenDocument(samplePen);
 	} catch {
 		return createEmptyDocument();
 	}
@@ -1212,7 +1211,6 @@ function RecoveryBanner({
 	onContinue,
 	onDiscard,
 }: RecoveryBannerProps) {
-	const { colors: C } = useTheme();
 	const elapsed = Date.now() - savedAt;
 	const minutes = Math.round(elapsed / 60000);
 	const label =
@@ -1427,14 +1425,36 @@ function PencilScreenContent() {
 	const selectedNodePath = selectedNodePaths[0] ?? null;
 	const documentRef = useRef(document);
 
-	usePencilBridge(document, setDocument);
-
-	const { gameId: workspaceGameId, syncStatus } = usePencilDocumentSync({
+	const {
+		sessionId: runtimeSessionId,
+		projectRoot: runtimeProjectRoot,
+		filePath: runtimeFilePath,
+		fileRef,
+		syncStatus,
+	} = usePencilDocumentSync({
 		document,
 		onRemoteDocument: (remoteDoc) => {
 			setDocument(remoteDoc);
 			setIsDirty(false);
 		},
+	});
+	const runtimeState = useMemo(
+		() =>
+			buildPencilRuntimeState({
+				document,
+				sessionId: runtimeSessionId,
+				projectRoot: runtimeProjectRoot,
+				filePath: runtimeFilePath,
+				targetId: selectedNodePath?.[selectedNodePath.length - 1] ?? null,
+				targetPath: selectedNodePath,
+				mode: "editor",
+			}),
+		[document, runtimeFilePath, runtimeProjectRoot, runtimeSessionId, selectedNodePath],
+	);
+
+	usePencilBridge(document, setDocument, {
+		selectedNodePath,
+		runtimeState,
 	});
 
 	const isInteractingRef = useRef(false);
@@ -1723,7 +1743,7 @@ function PencilScreenContent() {
 					docName={docName}
 					isDirty={isDirty}
 					syncStatus={syncStatus}
-					hasWorkspace={!!workspaceGameId}
+					hasWorkspace={!!fileRef}
 				/>
 
 				{showRecovery && recoveryMeta ? (

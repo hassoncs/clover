@@ -5,7 +5,7 @@ import {
 	Rect,
 	useImage,
 } from "@shopify/react-native-skia";
-import type { PenImage } from "@slopcade/shared/types/pen";
+import type { PenImage } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";

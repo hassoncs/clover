@@ -1,5 +1,5 @@
 import { Group, Oval } from "@shopify/react-native-skia";
-import type { PenEllipse } from "@slopcade/shared/types/pen";
+import type { PenEllipse } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";

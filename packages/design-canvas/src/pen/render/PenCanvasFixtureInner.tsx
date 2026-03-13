@@ -1,4 +1,4 @@
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument } from "@slopcade/protocol/pen";
 import type React from "react";
 import { View } from "react-native";
 import type { PenDrawingState } from "../../tools/penToolState";
@@ -25,16 +25,18 @@ export const PenCanvasFixtureInner = ({
 	hoveredNodePath,
 	penDrawingState,
 }: PenCanvasFixtureInnerProps) => {
+	void selectedNodePaths;
+	void hoveredNodePath;
+	const PenRendererComponent: any = PenRenderer;
+
 	return (
 		<View style={{ width, height, borderWidth: 1, borderColor: "#cbd5e1" }}>
-			<PenRenderer
+			<PenRendererComponent
 				document={document}
 				width={width}
 				height={height}
 				camera={camera}
 				selectedNodePath={selectedNodePath}
-				selectedNodePaths={selectedNodePaths}
-				hoveredNodePath={hoveredNodePath}
 				penDrawingState={penDrawingState}
 			/>
 		</View>

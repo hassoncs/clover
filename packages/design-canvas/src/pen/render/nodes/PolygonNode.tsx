@@ -1,5 +1,5 @@
 import { Group, Path } from "@shopify/react-native-skia";
-import type { PenPolygon } from "@slopcade/shared/types/pen";
+import type { PenPolygon } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";

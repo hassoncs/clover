@@ -1,4 +1,4 @@
-import type { PenFill, PenNode, PenStroke } from "@slopcade/shared/types/pen";
+import type { PenFill, PenNode, PenStroke } from "@slopcade/protocol/pen";
 
 // ── FieldValue ───────────────────────────────────────────────────────────────
 

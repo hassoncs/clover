@@ -2,7 +2,7 @@ import type {
 	DesignDocument,
 	DesignElement,
 	DesignFrame,
-} from "@slopcade/shared";
+} from "@slopcade/protocol/design";
 import { useCallback, useRef, useState } from "react";
 import { Gesture, type GestureType } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";

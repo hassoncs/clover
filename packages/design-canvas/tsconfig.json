@@ -17,8 +17,6 @@
 		"resolveJsonModule": true,
 		"baseUrl": ".",
 		"paths": {
-			"@slopcade/shared": ["../../shared/src/index.ts"],
-			"@slopcade/shared/*": ["../../shared/src/*"],
 			"@slopcade/theme": ["../theme/src/index.ts"]
 		}
 	},

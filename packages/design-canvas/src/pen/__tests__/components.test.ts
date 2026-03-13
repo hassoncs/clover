@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PenFrame, PenNode, PenRef, PenText } from "@slopcade/shared/types/pen";
+import type { PenFrame, PenNode, PenRef, PenText } from "@slopcade/protocol/pen";
 import { buildComponentRegistry, resolveAllRefs, resolveRef } from "../components";
 
 function makeFrame(overrides: Partial<PenFrame> & { id: string }): PenFrame {

@@ -1,4 +1,4 @@
-import type { PenTheme } from "@slopcade/shared/types/pen";
+import type { PenTheme } from "@slopcade/protocol/pen";
 
 export interface ThemeContext {
 	axes: Record<string, string>;

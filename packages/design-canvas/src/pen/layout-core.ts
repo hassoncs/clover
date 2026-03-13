@@ -2,7 +2,7 @@
 // Keeping these in a separate file avoids circular imports caused by Metro's
 // .web.ts platform extension resolution.
 
-import type { PenPadding, PenSizing } from "@slopcade/shared/types/pen";
+import type { PenPadding, PenSizing } from "@slopcade/protocol/pen";
 
 export interface LayoutRect {
 	x: number;
@@ -12,7 +12,7 @@ export interface LayoutRect {
 }
 
 export interface LayoutNode {
-	node: import("@slopcade/shared/types/pen").PenNode;
+	node: import("@slopcade/protocol/pen").PenNode;
 	rect: LayoutRect;
 	children: LayoutNode[];
 	clip: boolean;

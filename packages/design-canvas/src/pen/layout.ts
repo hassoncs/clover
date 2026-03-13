@@ -4,7 +4,7 @@ import type {
 	PenNode,
 	PenSizing,
 	PenText,
-} from "@slopcade/shared/types/pen";
+} from "@slopcade/protocol/pen";
 import type { SizingSpec } from "./layout-core";
 import { parsePadding, parseSizing } from "./layout-core";
 import type { TextMeasureFn } from "./text-measure";

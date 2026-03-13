@@ -3,7 +3,7 @@ import type {
 	PenGroup,
 	PenNode,
 	PenRef,
-} from "@slopcade/shared/types/pen";
+} from "@slopcade/protocol/pen";
 
 const POSITION_SIZE_KEYS = [
 	"x",

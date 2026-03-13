@@ -1,6 +1,6 @@
 import { Group, Rect, Shader, Skia, useClock } from "@shopify/react-native-skia";
-import { rewriteGodotToSkSL } from "@slopcade/shared/effects";
-import type { PenEffectNode } from "@slopcade/shared/types/pen";
+import { rewriteGodotToSkSL } from "./skslRewrite";
+import type { PenEffectNode } from "@slopcade/protocol/pen";
 import type React from "react";
 import { useMemo } from "react";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";

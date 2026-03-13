@@ -1,0 +1,17 @@
+{
+	"name": "@slopcade/pencil-core",
+	"version": "1.0.0",
+	"private": true,
+	"main": "./src/index.ts",
+	"react-native": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./contracts": "./src/contracts.ts",
+		"./contracts/document-store": "./src/contracts/document-store.ts",
+		"./contracts/host-adapter": "./src/contracts/host-adapter.ts"
+	},
+	"dependencies": {
+		"@slopcade/protocol": "workspace:*"
+	}
+}

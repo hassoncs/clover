@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PenFrame, PenNode, PenText } from "@slopcade/shared/types/pen";
+import type { PenFrame, PenNode, PenText } from "@slopcade/protocol/pen";
 import { estimateTextSize } from "../text-measure";
 import { layoutTree, parsePadding, parseSizing } from "../layout";
 

@@ -2,7 +2,7 @@ import type {
 	DesignDocument,
 	DesignElement,
 	DesignFrame,
-} from "@slopcade/shared";
+} from "@slopcade/protocol/design";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { hitTestDesignCanvas, screenToWorld } from "../core/designCanvasHitTest";
 

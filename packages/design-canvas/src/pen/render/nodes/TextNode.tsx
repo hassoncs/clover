@@ -1,6 +1,6 @@
 import { Group, Paragraph, Skia, TextAlign } from "@shopify/react-native-skia";
 import type { SkTypefaceFontProvider } from "@shopify/react-native-skia";
-import type { PenFill, PenText } from "@slopcade/shared/types/pen";
+import type { PenFill, PenText } from "@slopcade/protocol/pen";
 import type React from "react";
 import { useMemo } from "react";
 import type { LayoutNode } from "../../layout";

@@ -1,5 +1,5 @@
 import { Group, Line, vec } from "@shopify/react-native-skia";
-import type { PenLine } from "@slopcade/shared/types/pen";
+import type { PenLine } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { buildNodeTransform } from "../nodeTransform";

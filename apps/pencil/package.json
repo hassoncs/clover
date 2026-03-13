@@ -29,6 +29,7 @@
 		"@shopify/react-native-skia": "^2.4.14",
 		"@slopcade/design-canvas": "workspace:*",
 		"@slopcade/pencil-core": "workspace:*",
+		"@slopcade/protocol": "workspace:*",
 		"@slopcade/shared": "workspace:*",
 		"@slopcade/theme": "workspace:*",
 		"@slopcade/ui": "workspace:*",

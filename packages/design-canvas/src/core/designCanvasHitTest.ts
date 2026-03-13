@@ -1,4 +1,4 @@
-import type { DesignDocument, DesignElement } from "@slopcade/shared";
+import type { DesignDocument, DesignElement } from "@slopcade/protocol/design";
 
 export type HitTestResult =
 	| { frameId: string; elementId: string }

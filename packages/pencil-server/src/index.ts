@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { type PenDocument, parsePenDocument } from "@slopcade/shared/types/pen";
+import { type PenDocument, parsePenDocument } from "@slopcade/protocol/pen";
 import express from "express";
 import fs from "fs/promises";
 import { WebSocket, WebSocketServer } from "ws";

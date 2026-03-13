@@ -5,7 +5,7 @@ import type {
 	PenNode,
 	PenRef,
 	PenStroke,
-} from "@slopcade/shared/types/pen";
+} from "@slopcade/protocol/pen";
 import { useTheme } from "@slopcade/theme";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";

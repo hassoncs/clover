@@ -2,11 +2,11 @@ import type {
 	PencilDocumentStore,
 	PencilFileRef,
 } from "@slopcade/pencil-core/contracts";
-import type { PenDocument } from "@slopcade/shared/types/pen";
+import type { PenDocument } from "@slopcade/protocol/pen";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-	getConfiguredGameId,
+	getConfiguredLegacyWorkspaceId,
 	getConfiguredProjectRoot,
 	getConfiguredSessionId,
 	getConfiguredWorkspaceFilename,
@@ -27,9 +27,9 @@ interface UsePencilDocumentSyncOptions {
 }
 
 interface UsePencilDocumentSyncResult {
-	gameId: string | null;
 	sessionId: string | null;
 	projectRoot: string | null;
+	filePath: string | null;
 	fileRef: PencilFileRef | null;
 	syncStatus: SyncStatus;
 	syncError: string | null;
@@ -37,31 +37,31 @@ interface UsePencilDocumentSyncResult {
 }
 
 function buildFileRef({
-	gameId,
 	sessionId,
 	projectRoot,
-	filename,
+	filePath,
+	legacyWorkspaceId,
 }: {
-	gameId: string | null;
 	sessionId: string | null;
 	projectRoot: string | null;
-	filename: string;
+	filePath: string;
+	legacyWorkspaceId: string | null;
 }): PencilFileRef | null {
 	const binding = resolvePencilRuntimeBinding({
-		gameId,
 		sessionId,
 		projectRoot,
-		filename,
+		filePath,
+		legacyWorkspaceId,
 	});
-	if (binding.projectRef === "local-storage") {
+	if (!binding.identity) {
 		return null;
 	}
 	return {
 		session: {
-			id: binding.sessionId ?? `session:${binding.gameId}`,
-			project: { root: binding.projectRoot ?? binding.projectRef },
+			id: binding.identity.sessionId,
+			project: { root: binding.identity.projectRoot },
 		},
-		path: binding.filename,
+		path: binding.identity.filePath,
 	};
 }
 
@@ -75,10 +75,12 @@ export function usePencilDocumentSync({
 	const storeFromContext = usePencilStore();
 	const store = storeProp ?? storeFromContext;
 
-	const [gameId] = useState<string | null>(getConfiguredGameId);
 	const [sessionId] = useState<string | null>(getConfiguredSessionId);
 	const [projectRoot] = useState<string | null>(getConfiguredProjectRoot);
-	const [configuredFilename] = useState<string>(
+	const [legacyWorkspaceId] = useState<string | null>(
+		getConfiguredLegacyWorkspaceId,
+	);
+	const [configuredFilePath] = useState<string>(
 		() => filename?.trim() || getConfiguredWorkspaceFilename(),
 	);
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
@@ -90,15 +92,18 @@ export function usePencilDocumentSync({
 
 	const queryClient = useQueryClient();
 	const fileRef = buildFileRef({
-		gameId,
 		sessionId,
 		projectRoot,
-		filename: configuredFilename,
+		filePath: configuredFilePath,
+		legacyWorkspaceId,
 	});
-	const queryIdentity = sessionId ?? gameId ?? projectRoot ?? "local-storage";
+	const queryIdentity =
+		fileRef === null
+			? "local-storage"
+			: `${fileRef.session.id}:${fileRef.session.project.root}:${fileRef.path}`;
 
 	const readQuery = useQuery({
-		queryKey: ["pencil", "document", queryIdentity, configuredFilename],
+		queryKey: ["pencil", "document", queryIdentity],
 		queryFn: async () => {
 			if (!store || !fileRef) return null;
 			const doc = await store.load(fileRef);
@@ -161,7 +166,7 @@ export function usePencilDocumentSync({
 			setSyncStatus("idle");
 			setSyncError(null);
 			queryClient.setQueryData(
-				["pencil", "document", queryIdentity, configuredFilename],
+				["pencil", "document", queryIdentity],
 				{ document: docWithTimestamp, raw: JSON.stringify(docWithTimestamp) },
 			);
 		} catch (e) {
@@ -169,7 +174,6 @@ export function usePencilDocumentSync({
 			setSyncError(e instanceof Error ? e.message : "Sync failed");
 		}
 	}, [
-		configuredFilename,
 		fileRef,
 		queryIdentity,
 		saveMutation,
@@ -196,9 +200,9 @@ export function usePencilDocumentSync({
 	}, [pushToWorkspace]);
 
 	return {
-		gameId,
-		sessionId,
-		projectRoot,
+		sessionId: fileRef?.session.id ?? sessionId,
+		projectRoot: fileRef?.session.project.root ?? projectRoot,
+		filePath: fileRef?.path ?? null,
 		fileRef,
 		syncStatus,
 		syncError,

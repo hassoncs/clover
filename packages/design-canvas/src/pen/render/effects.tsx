@@ -1,5 +1,5 @@
 import { BackdropFilter, Blur, Shadow } from "@shopify/react-native-skia";
-import type { PenEffect } from "@slopcade/shared/types/pen";
+import type { PenEffect } from "@slopcade/protocol/pen";
 import type React from "react";
 
 interface EffectsProps {

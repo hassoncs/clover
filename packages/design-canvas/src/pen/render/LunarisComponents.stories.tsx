@@ -1,4 +1,4 @@
-import type { PenDocument, PenFrame, PenNode } from "@slopcade/shared/types/pen";
+import type { PenDocument, PenFrame, PenNode } from "@slopcade/protocol/pen";
 import type { Meta, StoryObj } from "@storybook/react";
 import { LUNARIS_DESIGN_SYSTEM } from "./fixtures/lunaris-design-system";
 import { PenCanvasFixture } from "./PenCanvasFixture";

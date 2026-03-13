@@ -23,7 +23,7 @@ import type {
 	DesignDocument,
 	DesignElement,
 	DesignFrame,
-} from "@slopcade/shared";
+} from "@slopcade/protocol/design";
 import type React from "react";
 import { useCallback, useMemo, useRef } from "react";
 import { TouchableWithoutFeedback, View } from "react-native";

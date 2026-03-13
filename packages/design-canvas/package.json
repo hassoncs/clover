@@ -9,7 +9,7 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"@slopcade/shared": "workspace:*",
+		"@slopcade/protocol": "workspace:*",
 		"@slopcade/theme": "workspace:*",
 		"nanoid": "^5.0.7",
 		"react-resizable-panels": "^2.1.7",

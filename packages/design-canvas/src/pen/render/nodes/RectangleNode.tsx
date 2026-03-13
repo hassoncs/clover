@@ -1,5 +1,5 @@
 import { Group, Rect, RoundedRect } from "@shopify/react-native-skia";
-import type { PenRectangle } from "@slopcade/shared/types/pen";
+import type { PenRectangle } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { PenEffectsRenderer } from "../effects";

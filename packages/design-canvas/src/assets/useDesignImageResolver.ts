@@ -1,4 +1,4 @@
-import type { DesignElement } from "@slopcade/shared";
+import type { DesignElement } from "@slopcade/protocol/design";
 import { useEffect, useRef, useState } from "react";
 
 /**

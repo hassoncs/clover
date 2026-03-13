@@ -1,5 +1,5 @@
 import { Group } from "@shopify/react-native-skia";
-import type { PenGroup } from "@slopcade/shared/types/pen";
+import type { PenGroup } from "@slopcade/protocol/pen";
 import type React from "react";
 import type { LayoutNode } from "../../layout";
 import { buildNodeTransform } from "../nodeTransform";

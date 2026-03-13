@@ -1,5 +1,5 @@
 import type { DesignCamera } from "../camera/useDesignCamera.shared";
-import type { PenPath } from "@slopcade/shared/types/pen";
+import type { PenPath } from "@slopcade/protocol/pen";
 
 export interface PenAnchor {
 	docX: number;
