@@ -27,6 +27,7 @@ import {
 	applyDesignChatOpsToDocument,
 	validateDesignChatOps,
 } from "../lib/designChatOps";
+import { PencilStoreProvider } from "../lib/store-context";
 import { trpc } from "../lib/trpc/trpc";
 import { usePencilBridge } from "../lib/usePencilBridge";
 import { usePencilDocumentSync } from "../lib/usePencilDocumentSync";
@@ -1402,7 +1403,7 @@ function getCursorPointFromOp(
 	return fallback;
 }
 
-export default function PencilScreen() {
+function PencilScreenContent() {
 	const [theme, setTheme] = useState<Theme>("dark");
 	const colors = THEMES[theme];
 	const styles = STYLES[theme].main;
@@ -1789,6 +1790,14 @@ export default function PencilScreen() {
 				</View>
 			</SafeAreaView>
 		</ThemeContext.Provider>
+	);
+}
+
+export default function PencilScreen() {
+	return (
+		<PencilStoreProvider>
+			<PencilScreenContent />
+		</PencilStoreProvider>
 	);
 }
 

@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
+import { PencilStoreProvider } from "../lib/store-context";
 import { TRPCProvider } from "../lib/trpc/client";
 
 export default function RootLayout() {
@@ -16,16 +17,19 @@ export default function RootLayout() {
 
 	return (
 		<TRPCProvider>
-			<GestureHandlerRootView
-				style={{ flex: 1 }}
-				className={Platform.OS === "web" ? "no-select" : undefined}
-			>
-				<SafeAreaProvider>
-					<Stack screenOptions={{ headerShown: false }}>
-						<Stack.Screen name="index" />
-					</Stack>
-				</SafeAreaProvider>
-			</GestureHandlerRootView>
+			<PencilStoreProvider>
+				<GestureHandlerRootView
+					style={{ flex: 1 }}
+					className={Platform.OS === "web" ? "no-select" : undefined}
+				>
+					<SafeAreaProvider>
+						<Stack screenOptions={{ headerShown: false }}>
+							<Stack.Screen name="index" />
+							<Stack.Screen name="embed" />
+						</Stack>
+					</SafeAreaProvider>
+				</GestureHandlerRootView>
+			</PencilStoreProvider>
 		</TRPCProvider>
 	);
 }

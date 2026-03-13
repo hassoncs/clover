@@ -1,8 +1,20 @@
 {
-	"active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/pencil-skia-recovery.md",
-	"started_at": "2026-03-10T16:35:44.797Z",
-	"session_ids": ["ses_3276546ccffedLutgioFyceC0T"],
-	"plan_name": "pencil-skia-recovery",
-	"agent": "atlas",
-	"worktree_path": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/worktrees/pencil-skia-recovery"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/pencil-skia-recovery.md",
+  "started_at": "2026-03-10T16:35:44.797Z",
+  "session_ids": [
+    "ses_3276546ccffedLutgioFyceC0T",
+    "ses_3206277ffffeWM6icpdob1yVxz",
+    "ses_32062716bffeUooXtNhiA2K4QJ",
+    "ses_320626aacffe1avfWi9viC6HuY",
+    "ses_320392e47ffesXQMVJDmk0qNef",
+    "ses_31c9ffb95ffe0SMFcsg0R8ERKK",
+    "ses_31c9fea49ffeH9hLcsNU11AmSJ",
+    "ses_31c9fd3a5ffe5cwJVUaV4GhnHB",
+    "ses_31c9fdcd7ffelTBlQtFVs3YWIX",
+    "ses_31c9e9c7effe4SfPIGKnY22Rzt",
+    "ses_31c952866ffeIJfxqchq1BAlfe"
+  ],
+  "plan_name": "pencil-skia-recovery",
+  "agent": "atlas",
+  "worktree_path": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/worktrees/pencil-skia-recovery"
 }

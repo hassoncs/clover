@@ -5,6 +5,10 @@ import path from "path";
 import type { Configuration, RuleSetRule } from "webpack";
 import webpack from "webpack";
 
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const packagesPath = path.resolve(__dirname, "../../../packages");
 const sharedPath = path.resolve(__dirname, "../../../shared");
 

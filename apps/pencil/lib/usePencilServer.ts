@@ -2,10 +2,19 @@ import type { PenDocument } from "@slopcade/shared/types/pen";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 
-const SERVER_URL =
-	process.env.EXPO_PUBLIC_PENCIL_SERVER_URL || "ws://localhost:8090/ws";
 const SERVER_SYNC_ENABLED =
 	process.env.EXPO_PUBLIC_PENCIL_SERVER_SYNC === "true";
+
+function getServerUrl(): string {
+	if (process.env.EXPO_PUBLIC_PENCIL_SERVER_URL) {
+		return process.env.EXPO_PUBLIC_PENCIL_SERVER_URL;
+	}
+	if (Platform.OS === "web" && typeof window !== "undefined") {
+		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+		return `${protocol}//${window.location.host}/ws`;
+	}
+	return "ws://localhost:8090/ws";
+}
 
 interface AgentCursor {
 	agentId: string;
@@ -35,6 +44,7 @@ export function usePencilServer({
 	const wsRef = useRef<WebSocket | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 	const [agentCursors, setAgentCursors] = useState<AgentCursor[]>([]);
+	const serverUrlRef = useRef(getServerUrl());
 	const documentRef = useRef(document);
 	const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
 		null,
@@ -54,7 +64,7 @@ export function usePencilServer({
 		if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
 		try {
-			const ws = new WebSocket(SERVER_URL);
+			const ws = new WebSocket(serverUrlRef.current);
 
 			ws.onopen = () => {
 				console.info("[pencil-server] Connected to WebSocket server");
@@ -190,6 +200,6 @@ export function usePencilServer({
 		sendCursorUpdate,
 		sendDelta,
 		flushPendingServerUpdate,
-		serverUrl: SERVER_URL,
+		serverUrl: serverUrlRef.current,
 	};
 }

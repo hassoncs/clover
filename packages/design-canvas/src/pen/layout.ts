@@ -1,9 +1,15 @@
-import type { PenFrame, PenGroup, PenNode, PenSizing, PenText } from "@slopcade/shared/types/pen";
-import type { TextMeasureFn } from "./text-measure";
+import type {
+	PenFrame,
+	PenGroup,
+	PenNode,
+	PenSizing,
+	PenText,
+} from "@slopcade/shared/types/pen";
 import type { SizingSpec } from "./layout-core";
 import { parsePadding, parseSizing } from "./layout-core";
+import type { TextMeasureFn } from "./text-measure";
 
-export type { LayoutRect, LayoutNode, SizingSpec } from "./layout-core";
+export type { LayoutNode, LayoutRect, SizingSpec } from "./layout-core";
 export { parsePadding, parseSizing } from "./layout-core";
 
 // On native, layout is always synchronously available (no WASM loading needed).
@@ -29,9 +35,25 @@ function inferLayout(container: ContainerNode): string {
 	const explicit = container.layout ?? "none";
 	if (explicit !== "none") return explicit;
 	const frame = container as PenFrame;
-	if (frame.justifyContent || frame.alignItems || (container.gap && container.gap > 0)) {
+	if (
+		frame.justifyContent ||
+		frame.alignItems ||
+		(container.gap && container.gap > 0)
+	) {
 		return "horizontal";
 	}
+
+	// When multiple children are fill_container along the same axis, assume
+	// horizontal flex so the layout engine distributes space evenly instead
+	// of giving each child the full parent width (layout === "none" behavior).
+	const children = container.children ?? [];
+	if (children.length > 1) {
+		const fillWidthCount = children.filter(
+			(c) => (c as { width?: PenSizing }).width === "fill_container",
+		).length;
+		if (fillWidthCount > 1) return "horizontal";
+	}
+
 	return "none";
 }
 
@@ -66,7 +88,11 @@ function computeNodeSize(
 	return { width, height };
 }
 
-function resolveSize(spec: SizingSpec, parentSize: number | null, _axis: string): number {
+function resolveSize(
+	spec: SizingSpec,
+	parentSize: number | null,
+	_axis: string,
+): number {
 	switch (spec.kind) {
 		case "fixed":
 			return spec.value;
@@ -93,7 +119,11 @@ function computeFitContentSize(
 		// fit_content text should measure at its unconstrained natural size.
 		const explicitWidth =
 			(node as { width?: PenSizing }).width !== undefined
-				? resolveSize(parseSizing((node as { width?: PenSizing }).width), null, "width") || undefined
+				? resolveSize(
+						parseSizing((node as { width?: PenSizing }).width),
+						null,
+						"width",
+					) || undefined
 				: undefined;
 		return textMeasure(text, fontSize, fontFamily, fontWeight, explicitWidth);
 	}
@@ -150,7 +180,13 @@ function computeFitContentSize(
 	return { width: maxRight + pr, height: maxBottom + pb };
 }
 
-type JustifyContent = "start" | "center" | "end" | "space-between" | "space-around" | "space-evenly";
+type JustifyContent =
+	| "start"
+	| "center"
+	| "end"
+	| "space-between"
+	| "space-around"
+	| "space-evenly";
 type AlignItems = "start" | "center" | "end" | "stretch";
 
 function computeMainAxisOffsets(
@@ -169,7 +205,10 @@ function computeMainAxisOffsets(
 			return { startOffset: freeSpace, spaceBetween: gap };
 		case "space-between":
 			if (childCount <= 1) return { startOffset: 0, spaceBetween: gap };
-			return { startOffset: 0, spaceBetween: gap + freeSpace / (childCount - 1) };
+			return {
+				startOffset: 0,
+				spaceBetween: gap + freeSpace / (childCount - 1),
+			};
 		case "space-around": {
 			const space = freeSpace / childCount;
 			return { startOffset: space / 2, spaceBetween: gap + space };
@@ -222,7 +261,12 @@ function layoutChildren(
 		return children.map((child) => {
 			const childRelX = (child as { x?: number }).x ?? 0;
 			const childRelY = (child as { y?: number }).y ?? 0;
-			const childSize = computeNodeSize(child, availableWidth, availableHeight, textMeasure);
+			const childSize = computeNodeSize(
+				child,
+				availableWidth,
+				availableHeight,
+				textMeasure,
+			);
 			const childRect: LayoutRect = {
 				x: contentOriginX + childRelX,
 				y: contentOriginY + childRelY,
@@ -250,8 +294,12 @@ function layoutChildren(
 	const childInfos: ChildInfo[] = children.map((child) => {
 		const wSpec = parseSizing((child as { width?: PenSizing }).width);
 		const hSpec = parseSizing((child as { height?: PenSizing }).height);
-		const mainIsFill = isHorizontal ? wSpec.kind === "fill_container" : hSpec.kind === "fill_container";
-		const crossIsFill = isHorizontal ? hSpec.kind === "fill_container" : wSpec.kind === "fill_container";
+		const mainIsFill = isHorizontal
+			? wSpec.kind === "fill_container"
+			: hSpec.kind === "fill_container";
+		const crossIsFill = isHorizontal
+			? hSpec.kind === "fill_container"
+			: wSpec.kind === "fill_container";
 
 		let width = 0;
 		let height = 0;
@@ -277,8 +325,12 @@ function layoutChildren(
 		.filter((c) => !c.isFillMain)
 		.reduce((sum, c) => sum + (isHorizontal ? c.width : c.height), 0);
 	const totalGap = (children.length - 1) * gap;
-	const remainingMain = (isHorizontal ? availableWidth : availableHeight) - fixedMainTotal - totalGap;
-	const fillMainSize = fillCount > 0 ? Math.max(0, remainingMain / fillCount) : 0;
+	const remainingMain =
+		(isHorizontal ? availableWidth : availableHeight) -
+		fixedMainTotal -
+		totalGap;
+	const fillMainSize =
+		fillCount > 0 ? Math.max(0, remainingMain / fillCount) : 0;
 
 	for (const info of childInfos) {
 		if (info.isFillMain) {
@@ -287,7 +339,12 @@ function layoutChildren(
 				if (info.hSpec.kind === "fill_container") {
 					info.height = availableHeight;
 				} else {
-					const size = computeNodeSize(info.child, info.width, availableHeight, textMeasure);
+					const size = computeNodeSize(
+						info.child,
+						info.width,
+						availableHeight,
+						textMeasure,
+					);
 					info.height = size.height;
 				}
 			} else {
@@ -295,7 +352,12 @@ function layoutChildren(
 				if (info.wSpec.kind === "fill_container") {
 					info.width = availableWidth;
 				} else {
-					const size = computeNodeSize(info.child, availableWidth, info.height, textMeasure);
+					const size = computeNodeSize(
+						info.child,
+						availableWidth,
+						info.height,
+						textMeasure,
+					);
 					info.width = size.width;
 				}
 			}
@@ -315,7 +377,8 @@ function layoutChildren(
 		gap,
 	);
 
-	let mainCursor = (isHorizontal ? contentOriginX : contentOriginY) + startOffset;
+	let mainCursor =
+		(isHorizontal ? contentOriginX : contentOriginY) + startOffset;
 	const crossOrigin = isHorizontal ? contentOriginY : contentOriginX;
 	const containerCross = isHorizontal ? availableHeight : availableWidth;
 
@@ -323,11 +386,25 @@ function layoutChildren(
 		const childMain = isHorizontal ? info.width : info.height;
 		const childCross = isHorizontal ? info.height : info.width;
 
-		const crossOffset = computeCrossAxisOffset(alignItems, childCross, containerCross);
+		const crossOffset = computeCrossAxisOffset(
+			alignItems,
+			childCross,
+			containerCross,
+		);
 
 		const childRect: LayoutRect = isHorizontal
-			? { x: mainCursor, y: crossOrigin + crossOffset, width: info.width, height: info.height }
-			: { x: crossOrigin + crossOffset, y: mainCursor, width: info.width, height: info.height };
+			? {
+					x: mainCursor,
+					y: crossOrigin + crossOffset,
+					width: info.width,
+					height: info.height,
+				}
+			: {
+					x: crossOrigin + crossOffset,
+					y: mainCursor,
+					width: info.width,
+					height: info.height,
+				};
 
 		mainCursor += childMain;
 		if (i < childInfos.length - 1) mainCursor += spaceBetween;
@@ -342,16 +419,26 @@ function buildLayoutNode(
 	textMeasure: TextMeasureFn,
 ): LayoutNode {
 	const clip = node.type === "frame" ? (node.clip ?? false) : false;
-	const children = isContainer(node) ? layoutChildren(node, rect, textMeasure) : [];
+	const children = isContainer(node)
+		? layoutChildren(node, rect, textMeasure)
+		: [];
 	return { node, rect, children, clip };
 }
 
-export function layoutTree(nodes: PenNode[], textMeasure: TextMeasureFn): LayoutNode[] {
+export function layoutTree(
+	nodes: PenNode[],
+	textMeasure: TextMeasureFn,
+): LayoutNode[] {
 	return nodes.map((node) => {
 		const absX = (node as { x?: number }).x ?? 0;
 		const absY = (node as { y?: number }).y ?? 0;
 		const size = computeNodeSize(node, null, null, textMeasure);
-		const rect: LayoutRect = { x: absX, y: absY, width: size.width, height: size.height };
+		const rect: LayoutRect = {
+			x: absX,
+			y: absY,
+			width: size.width,
+			height: size.height,
+		};
 		return buildLayoutNode(node, rect, textMeasure);
 	});
 }

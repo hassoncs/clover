@@ -26,11 +26,23 @@ export function estimateTextSize(
 	text: string,
 	fontSize: number,
 	fontFamily: string,
-	_fontWeight?: string,
+	fontWeight?: string,
 	maxWidth?: number,
 ): { width: number; height: number } {
 	const lineHeight = fontSize * 1.2;
-	const charWidthRatio = MONOSPACE_FONTS.has(fontFamily) ? 0.62 : 0.55;
+	const isMonospace = MONOSPACE_FONTS.has(fontFamily);
+	const isBold =
+		fontWeight === "bold" ||
+		fontWeight === "700" ||
+		fontWeight === "800" ||
+		fontWeight === "900";
+
+	// Bold glyphs are ~15% wider than regular; monospace is fixed-width at 0.62.
+	let charWidthRatio = isMonospace ? 0.62 : 0.55;
+	if (isBold && !isMonospace) {
+		charWidthRatio = 0.63;
+	}
+
 	// Add 10% buffer to prevent the Skia paragraph from wrapping when
 	// the layout engine says it fits.
 	const singleLineWidth = text.length * fontSize * charWidthRatio * 1.1;

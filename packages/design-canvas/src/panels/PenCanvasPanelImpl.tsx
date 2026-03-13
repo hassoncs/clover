@@ -49,6 +49,8 @@ export interface PenCanvasPanelProps {
 	externalActiveTool?: "pointer" | "pen";
 	hideHeader?: boolean;
 	hideLayers?: boolean;
+	hideInspector?: boolean;
+	autoFit?: boolean;
 }
 
 const MIN_SCALE = 0.05;
@@ -431,6 +433,8 @@ export function PenCanvasPanel({
 	externalActiveTool,
 	hideHeader,
 	hideLayers,
+	hideInspector,
+	autoFit,
 }: PenCanvasPanelProps) {
 	const { editorColors: c } = useTheme();
 	const { width, height } = useWindowDimensions();
@@ -446,7 +450,7 @@ export function PenCanvasPanel({
 	const [showFrameList, setShowFrameList] = useState(false);
 	const [selectedFrameIndex, setSelectedFrameIndex] = useState(0);
 	const [showLayers, setShowLayers] = useState(false);
-	const [showInspector, setShowInspector] = useState(true);
+	const [showInspector, setShowInspector] = useState(!hideInspector);
 	const [selectedNodePaths, setSelectedNodePaths] = useState<string[][]>([]);
 	const [hoveredNodePath, setHoveredNodePath] = useState<string[] | null>(null);
 	const [marqueeRect, setMarqueeRect] = useState<{
@@ -499,6 +503,10 @@ export function PenCanvasPanel({
 		if (!selectedNodePathsProp) return;
 		setSelectedNodePaths(selectedNodePathsProp);
 	}, [selectedNodePathsProp]);
+
+	useEffect(() => {
+		setShowInspector(!hideInspector);
+	}, [hideInspector]);
 
 	const updateSelection = useCallback(
 		(updater: (prev: string[][]) => string[][]) => {
@@ -999,11 +1007,16 @@ export function PenCanvasPanel({
 			.filter((node): node is PenNode => node !== null);
 	}, [penDocument.children, selectedNodePaths]);
 
-	const canvasHeight = height - 48;
+	const canvasHeight = height - (hideHeader ? 0 : 48);
 
 	const handleZoomToFit = useCallback(() => {
 		setCamera(computeZoomToFit(penDocument, width, canvasHeight));
 	}, [penDocument, width, canvasHeight, setCamera]);
+
+	useEffect(() => {
+		if (!autoFit) return;
+		setCamera(computeZoomToFit(penDocument, width, canvasHeight));
+	}, [autoFit, canvasHeight, penDocument, setCamera, width]);
 
 	const handleNodeTap = useCallback(
 		(nodePath: string[]) => {
@@ -1269,7 +1282,7 @@ export function PenCanvasPanel({
 									onSelectTool={switchTool}
 								/>
 							)}
-							{showInspector && selectedNodes.length > 0 && (
+							{!hideInspector && showInspector && selectedNodes.length > 0 && (
 								<View
 									style={[
 										styles.inspectorPopover,

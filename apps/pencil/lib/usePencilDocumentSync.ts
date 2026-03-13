@@ -1,43 +1,86 @@
+import type {
+	PencilDocumentStore,
+	PencilFileRef,
+} from "@slopcade/pencil-core/contracts";
 import type { PenDocument } from "@slopcade/shared/types/pen";
-import { parsePenDocument } from "@slopcade/shared/types/pen";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { trpc } from "./trpc/trpc";
+import {
+	getConfiguredGameId,
+	getConfiguredProjectRoot,
+	getConfiguredSessionId,
+	getConfiguredWorkspaceFilename,
+	resolvePencilRuntimeBinding,
+} from "./pencilEmbed";
+import { usePencilStore } from "./store-context";
 
-const WORKSPACE_GAME_ID_KEY = "pencil:workspace-game-id";
-const WORKSPACE_FILENAME = "pencil-document.pen.json";
 const SYNC_DEBOUNCE_MS = 1500;
 
 export type SyncStatus = "idle" | "syncing" | "stale" | "error";
 
-function getConfiguredGameId(): string | null {
-	if (typeof window === "undefined") return null;
-	try {
-		const urlParams = new URLSearchParams(window.location.search);
-		const fromUrl = urlParams.get("gameId");
-		if (fromUrl) return fromUrl;
-		return window.localStorage.getItem(WORKSPACE_GAME_ID_KEY);
-	} catch {
-		return null;
-	}
-}
-
 interface UsePencilDocumentSyncOptions {
 	document: PenDocument;
 	onRemoteDocument: (doc: PenDocument) => void;
+	readOnly?: boolean;
+	filename?: string;
+	store?: PencilDocumentStore;
 }
 
 interface UsePencilDocumentSyncResult {
 	gameId: string | null;
+	sessionId: string | null;
+	projectRoot: string | null;
+	fileRef: PencilFileRef | null;
 	syncStatus: SyncStatus;
 	syncError: string | null;
 	syncNow: () => void;
 }
 
+function buildFileRef({
+	gameId,
+	sessionId,
+	projectRoot,
+	filename,
+}: {
+	gameId: string | null;
+	sessionId: string | null;
+	projectRoot: string | null;
+	filename: string;
+}): PencilFileRef | null {
+	const binding = resolvePencilRuntimeBinding({
+		gameId,
+		sessionId,
+		projectRoot,
+		filename,
+	});
+	if (binding.projectRef === "local-storage") {
+		return null;
+	}
+	return {
+		session: {
+			id: binding.sessionId ?? `session:${binding.gameId}`,
+			project: { root: binding.projectRoot ?? binding.projectRef },
+		},
+		path: binding.filename,
+	};
+}
+
 export function usePencilDocumentSync({
 	document,
 	onRemoteDocument,
+	readOnly = false,
+	filename,
+	store: storeProp,
 }: UsePencilDocumentSyncOptions): UsePencilDocumentSyncResult {
+	const storeFromContext = usePencilStore();
+	const store = storeProp ?? storeFromContext;
+
 	const [gameId] = useState<string | null>(getConfiguredGameId);
+	const [sessionId] = useState<string | null>(getConfiguredSessionId);
+	const [projectRoot] = useState<string | null>(getConfiguredProjectRoot);
+	const [configuredFilename] = useState<string>(
+		() => filename?.trim() || getConfiguredWorkspaceFilename(),
+	);
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
 	const [syncError, setSyncError] = useState<string | null>(null);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,21 +88,43 @@ export function usePencilDocumentSync({
 	const documentRef = useRef(document);
 	documentRef.current = document;
 
-	const readQuery = trpc.chatThreads.readWorkspaceFile.useQuery(
-		{ gameId: gameId!, filename: WORKSPACE_FILENAME },
-		{ enabled: !!gameId, retry: false },
-	);
+	const queryClient = useQueryClient();
+	const fileRef = buildFileRef({
+		gameId,
+		sessionId,
+		projectRoot,
+		filename: configuredFilename,
+	});
+	const queryIdentity = sessionId ?? gameId ?? projectRoot ?? "local-storage";
 
-	const writeMutation = trpc.chatThreads.writeWorkspaceFile.useMutation();
-	const utils = trpc.useUtils();
+	const readQuery = useQuery({
+		queryKey: ["pencil", "document", queryIdentity, configuredFilename],
+		queryFn: async () => {
+			if (!store || !fileRef) return null;
+			const doc = await store.load(fileRef);
+			if (!doc) return null;
+			return { document: doc, raw: JSON.stringify(doc) };
+		},
+		enabled: !!fileRef && !!store,
+		retry: false,
+	});
+
+	const saveMutation = useMutation({
+		mutationFn: async (doc: PenDocument) => {
+			if (!store || !fileRef) throw new Error("No store available");
+			await store.save(fileRef, doc);
+			return doc;
+		},
+	});
 
 	useEffect(() => {
-		if (!gameId || readQuery.isLoading) return;
+		if (!fileRef || readQuery.isLoading) return;
 
-		if (readQuery.data?.content) {
+		if (readQuery.data?.raw) {
 			try {
-				const remote = parsePenDocument(JSON.parse(readQuery.data.content));
-				const remoteTimestamp = (remote as { _syncedAt?: number })._syncedAt ?? 0;
+				const remote = readQuery.data.document;
+				const remoteTimestamp =
+					(remote as { _syncedAt?: number })._syncedAt ?? 0;
 				const localTimestamp = loadedAtRef.current;
 				if (localTimestamp === null) {
 					loadedAtRef.current = remoteTimestamp;
@@ -71,13 +136,19 @@ export function usePencilDocumentSync({
 				setSyncStatus("error");
 				setSyncError("Failed to parse remote document");
 			}
-		} else if (readQuery.isSuccess && !readQuery.data?.content) {
+		} else if (readQuery.isSuccess && !readQuery.data) {
 			loadedAtRef.current = Date.now();
 		}
-	}, [gameId, readQuery.isLoading, readQuery.data, readQuery.isSuccess, onRemoteDocument]);
+	}, [
+		fileRef,
+		readQuery.isLoading,
+		readQuery.data,
+		readQuery.isSuccess,
+		onRemoteDocument,
+	]);
 
 	const pushToWorkspace = useCallback(async () => {
-		if (!gameId) return;
+		if (!fileRef || !store) return;
 		setSyncStatus("syncing");
 		const now = Date.now();
 		const docWithTimestamp = {
@@ -85,23 +156,31 @@ export function usePencilDocumentSync({
 			_syncedAt: now,
 		};
 		try {
-			const content = JSON.stringify(docWithTimestamp, null, 2);
-			await writeMutation.mutateAsync({ gameId, filename: WORKSPACE_FILENAME, content });
+			await saveMutation.mutateAsync(docWithTimestamp);
 			loadedAtRef.current = now;
 			setSyncStatus("idle");
 			setSyncError(null);
-			utils.chatThreads.readWorkspaceFile.setData(
-				{ gameId, filename: WORKSPACE_FILENAME },
-				{ exists: true, content },
+			queryClient.setQueryData(
+				["pencil", "document", queryIdentity, configuredFilename],
+				{ document: docWithTimestamp, raw: JSON.stringify(docWithTimestamp) },
 			);
 		} catch (e) {
 			setSyncStatus("error");
 			setSyncError(e instanceof Error ? e.message : "Sync failed");
 		}
-	}, [gameId, writeMutation, utils]);
+	}, [
+		configuredFilename,
+		fileRef,
+		queryIdentity,
+		saveMutation,
+		queryClient,
+		store,
+	]);
 
 	useEffect(() => {
-		if (!gameId) return;
+		void document;
+		if (readOnly) return;
+		if (!fileRef || !store) return;
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 		debounceRef.current = setTimeout(() => {
 			void pushToWorkspace();
@@ -109,12 +188,20 @@ export function usePencilDocumentSync({
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [document, gameId, pushToWorkspace]);
+	}, [document, fileRef, pushToWorkspace, readOnly, store]);
 
 	const syncNow = useCallback(() => {
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 		void pushToWorkspace();
 	}, [pushToWorkspace]);
 
-	return { gameId, syncStatus, syncError, syncNow };
+	return {
+		gameId,
+		sessionId,
+		projectRoot,
+		fileRef,
+		syncStatus,
+		syncError,
+		syncNow,
+	};
 }
