@@ -5,9 +5,6 @@ import path from "path";
 import type { Configuration, RuleSetRule } from "webpack";
 import webpack from "webpack";
 
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const packagesPath = path.resolve(__dirname, "../../../packages");
 const sharedPath = path.resolve(__dirname, "../../../shared");
@@ -21,6 +18,10 @@ const config: StorybookConfig = {
 	addons: ["@storybook/addon-essentials", "@storybook/addon-interactions"],
 
 	staticDirs: [
+		{
+			from: "../public",
+			to: "/",
+		},
 		{
 			from: "../../../node_modules/.pnpm/canvaskit-wasm@0.40.0/node_modules/canvaskit-wasm/bin/full",
 			to: "/",
@@ -61,7 +62,18 @@ const config: StorybookConfig = {
 			test: /\.css$/,
 			use: [
 				"style-loader",
-				"css-loader",
+				{
+					loader: "css-loader",
+					options: {
+						url: {
+							filter: (url: string) => {
+								// Don't process absolute URLs (like /pattern.svg)
+								if (url.startsWith("/")) return false;
+								return true;
+							},
+						},
+					},
+				},
 				{
 					loader: "postcss-loader",
 					options: {

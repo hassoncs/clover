@@ -33,7 +33,7 @@
 		"api": {
 			"cwd": ".",
 			"command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
-			"port": 8789,
+			"proxy": true,
 			"dashboard": false,
 			"dependsOn": ["games-watcher", "r2-pull-watcher"]
 		},
@@ -161,22 +161,22 @@
 		},
 		"backlog": {
 			"cwd": ".",
-			"command": "backlog browser --no-open --port 6420",
-			"port": 6420,
+			"command": "backlog browser --no-open --port {{PORT}}",
+			"proxy": true,
 			"dashboard": false
 		},
 		"admin": {
 			"cwd": "apps/admin",
 			"comment": "Admin web app. Supabase creds injected via hush -t app.",
-			"command": "npx hush run -t app -- pnpm dev",
-			"port": 5173,
+			"command": "npx hush run -t app -- pnpm dev -- --port {{PORT}}",
+			"proxy": true,
 			"dashboard": true,
 			"dependsOn": ["api"]
 		},
 		"storybook": {
 			"cwd": "apps/storybook",
-			"command": "npx hush run -t app -- pnpm storybook",
-			"port": 6007,
+			"command": "npx hush run -t app -- npx storybook dev --port {{PORT}} --no-open",
+			"proxy": true,
 			"dashboard": true
 		},
 		"beads-ui": {
