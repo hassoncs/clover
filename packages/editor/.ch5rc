@@ -1,3 +1,5 @@
 name = "slopcade-editor"
 emoji = "🖥️"
 group = "apps"
+tier = "library"
+runtime = "none"
