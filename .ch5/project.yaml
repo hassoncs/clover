@@ -1,0 +1,28 @@
+id: slopcade
+version: 1
+project:
+  id: slopcade
+  name: Slopcade
+  kind: app
+  lifecycle: active
+  summary: React Native game app with nested editor package
+  owners:
+    - id: chris
+      role: owner
+  tags:
+    - expo
+    - react-native
+    - game
+    - editor
+  roots:
+    - locator: .
+      role: primary
+  repos:
+    - id: primary
+      locator: .
+      role: primary
+  docs:
+    - locator: README.md
+      role: overview
+    - locator: AGENTS.md
+      role: agent-guide

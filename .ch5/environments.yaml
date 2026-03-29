@@ -1,0 +1,20 @@
+version: 1
+environments:
+  local:
+    id: local
+    releaseStage: local-dev
+    placement: mac
+    ephemeral: false
+  preview:
+    id: preview
+    releaseStage: preview
+    placement: cloud
+    ephemeral: true
+  production:
+    id: production
+    releaseStage: production
+    placement: ios-app-store
+    ephemeral: false
+    approval:
+      required: true
+      kind: manual

@@ -1,0 +1,15 @@
+version: 1
+integrations:
+  expo:
+    id: expo
+    provider: expo
+    accountRef: personal-expo
+  eas:
+    id: eas
+    provider: eas
+    accountRef: personal-expo
+  app-store-connect:
+    id: app-store-connect
+    provider: apple
+    baseUrls:
+      - https://appstoreconnect.apple.com

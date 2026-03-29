@@ -1,0 +1,9 @@
+version: 1
+services:
+  metro:
+    id: metro
+    kind: helper
+    port: 8081
+    health:
+      kind: port
+      port: 8081

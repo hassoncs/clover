@@ -1,0 +1,20 @@
+version: 1
+artifacts:
+  slopcade-app:
+    id: slopcade-app
+    kind: binary
+    locator: .
+    name: Slopcade App
+    runtimeRef: expo
+    platform: ios
+  slopcade-editor:
+    id: slopcade-editor
+    kind: library
+    locator: packages/editor/
+    name: Slopcade Editor
+    packageManager: pnpm
+  slopcade-web:
+    id: slopcade-web
+    kind: site
+    locator: .
+    buildOutput: dist/
