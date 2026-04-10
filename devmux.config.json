@@ -1,190 +1,193 @@
 {
-	"version": 1,
-	"project": "slopcade",
-	"defaults": {
-		"startupTimeoutSeconds": 120
-	},
-	"proxy": {
-		"enabled": true
-	},
-	"services": {
-		"game-inspector": {
-			"cwd": "packages/game-inspector-mcp",
-			"command": "pnpm build && node dist/index.js",
-			"dashboard": false
-		},
-		"game-inspector-tsc": {
-			"cwd": "packages/game-inspector-mcp",
-			"command": "pnpm build && tsc --watch --preserveWatchOutput"
-		},
-		"bridge-watch": {
-			"cwd": ".",
-			"command": "npx tsx scripts/watch-bridge.ts"
-		},
-		"games-watcher": {
-			"cwd": "api",
-			"command": "npx tsx scripts/sync-r2.ts --watch"
-		},
-		"r2-pull-watcher": {
-			"cwd": "api",
-			"command": "npx tsx scripts/sync-r2-pull.ts --watch",
-			"dashboard": false
-		},
-		"api": {
-			"cwd": ".",
-			"command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
-			"proxy": true,
-			"dashboard": false,
-			"dependsOn": ["games-watcher", "r2-pull-watcher"]
-		},
-		"godot": {
-			"cwd": ".",
-			"command": "node scripts/export-godot.mjs --watch"
-		},
+  "version": 1,
+  "project": "slopcade",
+  "defaults": {
+    "startupTimeoutSeconds": 120
+  },
+  "proxy": {
+    "enabled": true,
+    "hostnamePattern": "{service}.{project}.town.lan"
+  },
+  "services": {
+    "game-inspector": {
+      "cwd": "packages/game-inspector-mcp",
+      "command": "pnpm build && node dist/index.js",
+      "dashboard": false
+    },
+    "game-inspector-tsc": {
+      "cwd": "packages/game-inspector-mcp",
+      "command": "pnpm build && tsc --watch --preserveWatchOutput"
+    },
+    "bridge-watch": {
+      "cwd": ".",
+      "command": "npx tsx scripts/watch-bridge.ts"
+    },
+    "games-watcher": {
+      "cwd": "api",
+      "command": "npx tsx scripts/sync-r2.ts --watch"
+    },
+    "r2-pull-watcher": {
+      "cwd": "api",
+      "command": "npx tsx scripts/sync-r2-pull.ts --watch",
+      "dashboard": false
+    },
+    "api": {
+      "cwd": ".",
+      "command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true hush run -t api-workers -- pnpm --filter @slopcade/api dev",
+      "health": { "type": "port", "port": 8789 },
+      "proxy": true,
+      "dashboard": false,
+      "dependsOn": ["games-watcher", "r2-pull-watcher"]
+    },
+    "godot": {
+      "cwd": ".",
+      "command": "node scripts/export-godot.mjs --watch"
+    },
 
-		"metro": {
-			"cwd": "apps/slopcade",
-			"comment": "Slopcade Metro (port 8085). Can run simultaneously with metro-amen (port 8086).",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
-			"health": { "type": "port", "port": 8085 },
-			"proxy": false,
-			"dashboard": false,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"metro-amen": {
-			"cwd": "apps/amen",
-			"comment": "Amen Metro (port 8086). Can run simultaneously with metro (port 8085).",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- npx expo start --dev-client --port 8086",
-			"health": { "type": "port", "port": 8086 },
-			"proxy": false,
-			"dashboard": false,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"metro-slopbox": {
-			"cwd": "apps/slopbox",
-			"comment": "Slopbox Metro (port 8087). Can run simultaneously with metro (port 8085) and metro-amen (port 8086).",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8087 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8087 npx hush run -t app -- npx expo start --dev-client --port 8087",
-			"health": { "type": "port", "port": 8087 },
-			"proxy": false,
-			"dashboard": false,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"metro-shader": {
-			"cwd": "apps/shader-editor",
-			"comment": "Shader Editor Metro (port 8088). Shader/effects editor app.",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8088 npx hush run -t app -- npx expo start --dev-client --port 8088",
-			"health": { "type": "port", "port": 8088 },
-			"proxy": false,
-			"dashboard": false,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"metro-pencil": {
-			"cwd": "apps/pencil",
-			"comment": "Pencil design canvas Metro (port 8089). AI-powered Figma-like canvas app.",
-			"command": "RCT_METRO_PORT=8089 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8089 npx hush run -t app -- npx expo start --dev-client --port 8089",
-			"health": { "type": "port", "port": 8089 },
-			"proxy": false,
-			"dashboard": false,
-			"dependsOn": ["api"]
-		},
-		"web-pencil": {
-			"cwd": "apps/pencil",
-			"comment": "Pencil design canvas web (port 8089).",
-			"command": "RCT_METRO_PORT=8089 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8089 npx hush run -t app -- npx expo start --web --port 8089",
-			"health": { "type": "port", "port": 8089 },
-			"proxy": false,
-			"dashboard": true,
-			"dependsOn": ["api"]
-		},
-		"ios": {
-			"cwd": "apps/slopcade",
-			"comment": "Build + install slopcade on iOS simulator. One-shot: exits when done. Starts metro if not running.",
-			"command": "RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8085 npx expo run:ios --no-bundler",
-			"dashboard": false,
-			"dependsOn": ["metro"]
-		},
-		"ios-amen": {
-			"cwd": "apps/amen",
-			"comment": "Build + install amen on iOS simulator (bundle: games.amen.app).",
-			"command": "RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8086 npx expo run:ios --no-bundler",
-			"dashboard": false,
-			"dependsOn": ["metro-amen"]
-		},
-		"ios-slopbox": {
-			"cwd": "apps/slopbox",
-			"comment": "Build + install slopbox on iOS simulator (bundle: tv.slopbox.app).",
-			"command": "RCT_METRO_PORT=8087 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8087 npx expo run:ios --no-bundler",
-			"dashboard": false,
-			"dependsOn": ["metro-slopbox"]
-		},
-		"ios-shader": {
-			"cwd": "apps/shader-editor",
-			"comment": "Build + install shader-editor on iOS simulator (bundle: com.slopcade.shader-editor).",
-			"command": "RCT_METRO_PORT=8088 npx hush run -t app -- npx expo run:ios --no-bundler",
-			"dashboard": false,
-			"dependsOn": ["metro-shader"]
-		},
-		"web": {
-			"cwd": "apps/slopcade",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
-			"health": { "type": "port", "port": 8085 },
-			"proxy": false,
-			"dashboard": true,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"web-amen": {
-			"cwd": "apps/amen",
-			"comment": "Amen web (port 8086). Can run simultaneously with web (port 8085).",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8086",
-			"health": { "type": "port", "port": 8086 },
-			"proxy": false,
-			"dashboard": true,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"web-slopbox": {
-			"cwd": "apps/slopbox",
-			"comment": "Slopbox web (port 8087). Can run simultaneously with web (port 8085) and web-amen (port 8086).",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8087",
-			"health": { "type": "port", "port": 8087 },
-			"proxy": false,
-			"dashboard": true,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"web-shader": {
-			"cwd": "apps/shader-editor",
-			"comment": "Shader Editor web (port 8088).",
-			"command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8088",
-			"health": { "type": "port", "port": 8088 },
-			"proxy": false,
-			"dashboard": true,
-			"dependsOn": ["api", "godot", "bridge-watch", "admin"]
-		},
-		"backlog": {
-			"cwd": ".",
-			"command": "backlog browser --no-open --port {{PORT}}",
-			"proxy": true,
-			"dashboard": false
-		},
-		"admin": {
-			"cwd": "apps/admin",
-			"comment": "Admin web app. Supabase creds injected via hush -t app.",
-			"command": "npx hush run -t app -- pnpm dev -- --port {{PORT}}",
-			"proxy": true,
-			"dashboard": true,
-			"dependsOn": ["api"]
-		},
-		"storybook": {
-			"cwd": "apps/storybook",
-			"command": "npx hush run -t app -- npx storybook dev --port {{PORT}} --no-open",
-			"proxy": true,
-			"dashboard": true
-		},
-		"beads-ui": {
-			"cwd": ".",
-			"comment": "Beads issue tracker web UI.",
-			"command": "BEADS_DOLT_DATABASE=beads_sl BEADS_DB=/Users/hassoncs/gt/slopcade/.beads/dolt bdui start --port 8030",
-			"port": 8030,
-			"dashboard": false
-		}
-	}
+    "metro": {
+      "cwd": "apps/slopcade",
+      "comment": "Slopcade Metro (port 8085). Can run simultaneously with metro-amen (port 8086).",
+      "command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
+      "health": { "type": "port", "port": 8085 },
+      "proxy": false,
+      "dashboard": false,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "metro-amen": {
+      "cwd": "apps/amen",
+      "comment": "Amen Metro (port 8086). Can run simultaneously with metro (port 8085).",
+      "command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8086 npx hush run -t app -- npx expo start --dev-client --port 8086",
+      "health": { "type": "port", "port": 8086 },
+      "proxy": false,
+      "dashboard": false,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "metro-slopbox": {
+      "cwd": "apps/slopbox",
+      "comment": "Slopbox Metro (port 8087). Can run simultaneously with metro (port 8085) and metro-amen (port 8086).",
+      "command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8087 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8087 npx hush run -t app -- npx expo start --dev-client --port 8087",
+      "health": { "type": "port", "port": 8087 },
+      "proxy": false,
+      "dashboard": false,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "metro-shader": {
+      "cwd": "apps/shader-editor",
+      "comment": "Shader Editor Metro (port 8088). Shader/effects editor app.",
+      "command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8088 npx hush run -t app -- npx expo start --dev-client --port 8088",
+      "health": { "type": "port", "port": 8088 },
+      "proxy": false,
+      "dashboard": false,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "metro-pencil": {
+      "cwd": "apps/pencil",
+      "comment": "Pencil design canvas Metro (port 8089). AI-powered Figma-like canvas app.",
+      "command": "RCT_METRO_PORT=8089 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8089 npx hush run -t app -- npx expo start --dev-client --port 8089",
+      "health": { "type": "port", "port": 8089 },
+      "proxy": false,
+      "dashboard": false,
+      "dependsOn": ["api"]
+    },
+    "web-pencil": {
+      "cwd": "apps/pencil",
+      "comment": "Pencil design canvas web (port 8089).",
+      "command": "RCT_METRO_PORT=8089 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8089 npx hush run -t app -- npx expo start --web --port 8089",
+      "health": { "type": "port", "port": 8089 },
+      "proxy": false,
+      "dashboard": true,
+      "dependsOn": ["api"]
+    },
+    "ios": {
+      "cwd": "apps/slopcade",
+      "comment": "Build + install slopcade on iOS simulator. One-shot: exits when done. Starts metro if not running.",
+      "command": "RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8085 npx expo run:ios --no-bundler",
+      "dashboard": false,
+      "dependsOn": ["metro"]
+    },
+    "ios-amen": {
+      "cwd": "apps/amen",
+      "comment": "Build + install amen on iOS simulator (bundle: games.amen.app).",
+      "command": "RCT_METRO_PORT=8086 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8086 npx expo run:ios --no-bundler",
+      "dashboard": false,
+      "dependsOn": ["metro-amen"]
+    },
+    "ios-slopbox": {
+      "cwd": "apps/slopbox",
+      "comment": "Build + install slopbox on iOS simulator (bundle: tv.slopbox.app).",
+      "command": "RCT_METRO_PORT=8087 npx hush run -t app -- node scripts/preflight-check.mjs && RCT_METRO_PORT=8087 npx expo run:ios --no-bundler",
+      "dashboard": false,
+      "dependsOn": ["metro-slopbox"]
+    },
+    "ios-shader": {
+      "cwd": "apps/shader-editor",
+      "comment": "Build + install shader-editor on iOS simulator (bundle: com.slopcade.shader-editor).",
+      "command": "RCT_METRO_PORT=8088 npx hush run -t app -- npx expo run:ios --no-bundler",
+      "dashboard": false,
+      "dependsOn": ["metro-shader"]
+    },
+    "web": {
+      "cwd": "apps/slopcade",
+      "command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
+      "health": { "type": "port", "port": 8085 },
+      "proxy": false,
+      "dashboard": true,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "web-amen": {
+      "cwd": "apps/amen",
+      "comment": "Amen web (port 8086). Can run simultaneously with web (port 8085).",
+      "command": "WITH_ROZENITE=true hush run -t app -- node scripts/preflight-check.mjs && EXPO_NO_DOCTOR=1 WITH_ROZENITE=true hush run -t app -- npx expo start --web --port 8086",
+      "health": { "type": "port", "port": 8086 },
+      "proxy": true,
+      "dashboard": true,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "web-slopbox": {
+      "cwd": "apps/slopbox",
+      "comment": "Slopbox web (port 8087). Can run simultaneously with web (port 8085) and web-amen (port 8086).",
+      "command": "WITH_ROZENITE=true hush run -t app -- node scripts/preflight-check.mjs && EXPO_NO_DOCTOR=1 WITH_ROZENITE=true hush run -t app -- npx expo start --web --port 8087",
+      "health": { "type": "port", "port": 8087 },
+      "proxy": true,
+      "dashboard": true,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "web-shader": {
+      "cwd": "apps/shader-editor",
+      "comment": "Shader Editor web (port 8088).",
+      "command": "node ../../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8088",
+      "health": { "type": "port", "port": 8088 },
+      "proxy": false,
+      "dashboard": true,
+      "dependsOn": ["api", "godot", "bridge-watch", "admin"]
+    },
+    "backlog": {
+      "cwd": ".",
+      "command": "backlog browser --no-open --port {{PORT}}",
+      "proxy": true,
+      "dashboard": false
+    },
+    "admin": {
+      "cwd": "apps/admin",
+      "comment": "Admin web app. Supabase creds injected via hush -t app.",
+      "command": "hush run -t app -- pnpm dev -- --port {{PORT}}",
+      "health": { "type": "port", "port": 5173 },
+      "proxy": true,
+      "dashboard": true,
+      "dependsOn": ["api"]
+    },
+    "storybook": {
+      "cwd": "apps/storybook",
+      "command": "npx hush run -t app -- npx storybook dev --port {{PORT}} --no-open",
+      "proxy": true,
+      "dashboard": true
+    },
+    "beads-ui": {
+      "cwd": ".",
+      "comment": "Beads issue tracker web UI.",
+      "command": "BEADS_DOLT_DATABASE=beads_sl BEADS_DB=/Users/hassoncs/gt/slopcade/.beads/dolt bdui start --port 8030",
+      "port": 8030,
+      "dashboard": false
+    }
+  }
 }

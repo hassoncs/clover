@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
-const TYPES_PATH = resolve(ROOT, 'app/lib/godot/types.ts');
+const TYPES_PATH = resolve(ROOT, 'packages/godot-bridge/src/types.ts');
 
 let debounceTimer: NodeJS.Timeout | null = null;
 let isGenerating = false;

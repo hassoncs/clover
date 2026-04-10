@@ -1,0 +1,1 @@
+{"version":3,"file":"EffectNode.d.ts","sourceRoot":"","sources":["EffectNode.tsx"],"names":[],"mappings":"AAGA,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAG/B,OAAO,KAAK,EAAE,UAAU,EAAE,MAAM,cAAc,CAAC;AAE/C,UAAU,iBAAiB;IAC1B,UAAU,EAAE,UAAU,CAAC;CACvB;AAED,wBAAgB,UAAU,CAAC,EAAE,UAAU,EAAE,EAAE,iBAAiB,GAAG,KAAK,CAAC,SAAS,CAwE7E"}

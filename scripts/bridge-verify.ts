@@ -8,7 +8,7 @@ const ROOT = resolve(__dirname, "..");
 const GODOT_SCRIPTS_DIR = resolve(ROOT, "godot_project/scripts");
 const REGISTRY_PATH = resolve(
 	ROOT,
-	"app/lib/godot/generated/bridge-registry.json",
+	"packages/godot-bridge/src/generated/bridge-registry.json",
 );
 
 type GdArgType = "string" | "float" | "int" | "bool" | "json" | "variant";
@@ -57,7 +57,7 @@ function inferArgType(expr: string): GdArgType {
 
 function extractMaxArgIndex(body: string): number {
 	let maxIndex = -1;
-	const argPattern = /args\[(\d+)\]/g;
+	const argPattern = /\b_?args?\[(\d+)\]/g;
 	for (
 		let match = argPattern.exec(body);
 		match !== null;
@@ -67,7 +67,7 @@ function extractMaxArgIndex(body: string): number {
 		if (idx > maxIndex) maxIndex = idx;
 	}
 
-	const sizeCheckPattern = /args\.size\(\)\s*(?:<|>=?|==)\s*(\d+)/g;
+	const sizeCheckPattern = /\b_?args?\.size\(\)\s*(?:<|>=?|==)\s*(\d+)/g;
 	for (
 		let match = sizeCheckPattern.exec(body);
 		match !== null;
@@ -85,10 +85,10 @@ function extractArgTypes(body: string, argCount: number): GdArgType[] {
 	const types: GdArgType[] = [];
 	for (let i = 0; i < argCount; i++) {
 		const patterns = [
-			new RegExp(`str\\(args\\[${i}\\]\\)`),
-			new RegExp(`float\\(args\\[${i}\\]\\)`),
-			new RegExp(`int\\(args\\[${i}\\]\\)`),
-			new RegExp(`bool\\(args\\[${i}\\]\\)`),
+			new RegExp(`str\\((_?args?)\\[${i}\\]\\)`),
+			new RegExp(`float\\((_?args?)\\[${i}\\]\\)`),
+			new RegExp(`int\\((_?args?)\\[${i}\\]\\)`),
+			new RegExp(`bool\\((_?args?)\\[${i}\\]\\)`),
 		];
 		if (patterns[0].test(body)) types.push("string");
 		else if (patterns[1].test(body)) types.push("float");
@@ -97,6 +97,35 @@ function extractArgTypes(body: string, argCount: number): GdArgType[] {
 		else types.push("variant");
 	}
 	return types;
+}
+
+function inferSignatureArgType(typeName: string | undefined): GdArgType {
+	if (!typeName) return "variant";
+	const normalized = typeName.trim().toLowerCase();
+	if (normalized === "string") return "string";
+	if (normalized === "float") return "float";
+	if (normalized === "int") return "int";
+	if (normalized === "bool" || normalized === "boolean") return "bool";
+	return "variant";
+}
+
+function parseDeclaredParams(
+	paramStr: string,
+): Array<{ name: string; type: GdArgType }> {
+	if (!paramStr) return [];
+	return paramStr
+		.split(",")
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.map((part) => {
+			const [namePart, typePart] = part
+				.split(":", 2)
+				.map((value) => value.trim());
+			return {
+				name: namePart,
+				type: inferSignatureArgType(typePart),
+			};
+		});
 }
 
 function isJsonBlobHandler(body: string): boolean {
@@ -158,6 +187,10 @@ export function parseGodotHandlers(scriptsDir: string): GodotHandler[] {
 			const fullMethodName = funcMatch[1];
 			const snakeName = fullMethodName.slice(4); // strip _js_
 			const paramStr = funcMatch[2].trim();
+			const declaredParams = parseDeclaredParams(paramStr);
+			const usesArgsArrayParam =
+				declaredParams.length === 1 &&
+				/^_?args?$/.test(declaredParams[0]?.name ?? "");
 
 			// Collect the full function body
 			let body = line;
@@ -185,19 +218,32 @@ export function parseGodotHandlers(scriptsDir: string): GodotHandler[] {
 			// Check for alias (delegates to another _js_ method)
 			const aliasCheck = isAliasHandler(body, fullMethodName);
 
+			const hasIndexedArgs = /\b_?args?\[\d+\]/.test(body);
+			const hasExplicitSignatureParams =
+				declaredParams.length > 0 && !usesArgsArrayParam;
+
 			// Check for _args or no-args pattern
-			const isNoArgs =
-				paramStr.startsWith("_args") ||
-				paramStr.startsWith("_arg") ||
-				!body.includes("args[");
+			const isNoArgs = hasExplicitSignatureParams
+				? false
+				: usesArgsArrayParam
+					? !hasIndexedArgs
+					: declaredParams.length === 0;
 
 			// Check for JSON blob pattern
 			const jsonBlob = isJsonBlobHandler(body);
 
 			// Extract arg count and types
 			const maxArgIndex = extractMaxArgIndex(body);
-			const argCount = isNoArgs ? 0 : maxArgIndex + 1;
-			const argTypes = isNoArgs ? [] : extractArgTypes(body, argCount);
+			const argCount = hasExplicitSignatureParams
+				? declaredParams.length
+				: isNoArgs
+					? 0
+					: maxArgIndex + 1;
+			const argTypes = hasExplicitSignatureParams
+				? declaredParams.map((param) => param.type)
+				: isNoArgs
+					? []
+					: extractArgTypes(body, argCount);
 
 			handlers.push({
 				methodName: fullMethodName,

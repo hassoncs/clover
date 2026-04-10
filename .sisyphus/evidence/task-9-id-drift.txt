@@ -1,8 +1,0 @@
-DOCUMENTATION OF ID DRIFT (T9):
-
-Folder: r2/games/party/headsUp/
-Manifest Slug: "headsUp"
-Registry ID (expected): "heads-up"
-
-The folder and manifest slug use camelCase "headsUp", while the registry ID used in other parts of the system (like content pack tokens) is "heads-up". 
-This drift is documented as per T9 requirements but NOT fixed to avoid breaking registry.ts imports and other dependencies.

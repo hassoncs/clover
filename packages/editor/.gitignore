@@ -1,0 +1,6 @@
+.env
+.env.local
+.env.*.local
+.hush.local
+.hush.encrypted
+node_modules/

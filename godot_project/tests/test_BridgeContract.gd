@@ -11,7 +11,7 @@ var _ts_to_snake: Dictionary = {}
 func _load_name_map() -> void:
 	var project_dir = ProjectSettings.globalize_path("res://")
 	var repo_root = project_dir.trim_suffix("/").get_base_dir()
-	var registry_path = repo_root + "/app/lib/godot/generated/bridge-registry.json"
+	var registry_path = repo_root + "/packages/godot-bridge/src/generated/bridge-registry.json"
 
 	var file = FileAccess.open(registry_path, FileAccess.READ)
 	assert_that(file).is_not_null()

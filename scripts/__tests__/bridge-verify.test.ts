@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, "../..");
 const REGISTRY_PATH = resolve(
 	ROOT,
-	"app/lib/godot/generated/bridge-registry.json",
+	"packages/godot-bridge/src/generated/bridge-registry.json",
 );
 
 function createTempGdDir(files: Record<string, string>): string {
@@ -67,6 +67,25 @@ describe("bridge-verify", () => {
 			const handlers = parseGodotHandlers(dir);
 			expect(handlers).toHaveLength(1);
 			expect(handlers[0].isJsonBlob).toBe(true);
+		});
+
+		it("extracts typed signature handler args without args-array indexing", () => {
+			const dir = createTempGdDir({
+				"Test.gd": `func _js_place_voxel(x: float, y: float, z: float, color: String) -> String:
+	return "voxel_1"
+`,
+			});
+			const handlers = parseGodotHandlers(dir);
+			expect(handlers).toHaveLength(1);
+			expect(handlers[0].snakeName).toBe("place_voxel");
+			expect(handlers[0].argCount).toBe(4);
+			expect(handlers[0].argTypes).toEqual([
+				"float",
+				"float",
+				"float",
+				"string",
+			]);
+			expect(handlers[0].isNoArgs).toBe(false);
 		});
 
 		it("detects alias handler", () => {

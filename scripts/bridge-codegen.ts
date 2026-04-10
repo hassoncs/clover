@@ -20,9 +20,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, "..");
-const TYPES_PATH = resolve(ROOT, "app/lib/godot/types.ts");
+const TYPES_PATH = resolve(ROOT, "packages/godot-bridge/src/types.ts");
 const SHARED_TYPES_DIR = resolve(ROOT, "shared/src/types");
-const OUTPUT_DIR = resolve(ROOT, "app/lib/godot/generated");
+const OUTPUT_DIR = resolve(ROOT, "packages/godot-bridge/src/generated");
 const OUTPUT_PATH = resolve(OUTPUT_DIR, "bridge-registry.json");
 const GDSCRIPT_OUTPUT_DIR = resolve(
 	ROOT,

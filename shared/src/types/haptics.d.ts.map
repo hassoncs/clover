@@ -1,0 +1,1 @@
+{"version":3,"file":"haptics.d.ts","sourceRoot":"","sources":["haptics.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,WAAW,GAAG,OAAO,GAAG,QAAQ,GAAG,OAAO,GAAG,OAAO,GAAG,MAAM,CAAC;AAC1E,MAAM,MAAM,UAAU,GAAG,QAAQ,GAAG,cAAc,GAAG,WAAW,CAAC;AACjE,MAAM,MAAM,iBAAiB,GAAG,SAAS,GAAG,SAAS,GAAG,OAAO,CAAC"}

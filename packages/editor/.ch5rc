@@ -1,5 +1,7 @@
+id = "slopcade-editor"
 name = "slopcade-editor"
 emoji = "🖥️"
 group = "apps"
 tier = "library"
 runtime = "none"
+cmux_color="#F59E0B"

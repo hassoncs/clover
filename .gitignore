@@ -138,6 +138,7 @@ test_*.py
 *_test.py
 
 # Work in progress / drafts
+.sisyphus/
 .sisyphus/drafts/
 .sisyphus/worktrees/
 *.draft.md
@@ -155,7 +156,8 @@ godot_project/addons/camera-texture/bin/
 godot_project/addons/camera-texture/.sconsign.dblite
 godot_project/addons/camera-texture/src/*.os
 godot_project/addons/camera-texture/src/*.o
-.worktrees
+.worktrees/
+.mcp_data/
 
 # gdUnit4 reports
 godot_project/reports/
@@ -166,3 +168,19 @@ godot_project/reports/
 # Generated audio/sound assets (synced to R2 separately)
 r2/audio/
 r2/sounds/
+
+# Mutagen
+.mutagen.yml
+
+# Mutagen
+.mutagen.yml
+
+# Standard workspace patterns
+.env.local
+*.log
+.mutagen.yml
+
+# Standard workspace patterns
+.env.local
+*.log
+.mutagen.yml

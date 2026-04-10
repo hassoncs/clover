@@ -1,0 +1,1 @@
+{"version":3,"file":"audio-announcer-lines.d.ts","sourceRoot":"","sources":["audio-announcer-lines.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,gBAAgB;IAChC,EAAE,EAAE,MAAM,CAAC;IACX,KAAK,EAAE,MAAM,CAAC;IACd,IAAI,EAAE,MAAM,CAAC;IACb,cAAc,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC,CAAC;CACxC;AAED,eAAO,MAAM,eAAe,EAAE,gBAAgB,EAwD7C,CAAC"}

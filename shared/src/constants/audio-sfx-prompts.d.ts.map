@@ -1,0 +1,1 @@
+{"version":3,"file":"audio-sfx-prompts.d.ts","sourceRoot":"","sources":["audio-sfx-prompts.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,YAAY;IAC5B,EAAE,EAAE,MAAM,CAAC;IACX,MAAM,EAAE,MAAM,CAAC;IACf,QAAQ,EAAE,MAAM,CAAC;IACjB,eAAe,CAAC,EAAE,MAAM,CAAC;IACzB,IAAI,EAAE,MAAM,EAAE,CAAC;CACf;AAED,eAAO,MAAM,WAAW,EAAE,YAAY,EA8HrC,CAAC"}

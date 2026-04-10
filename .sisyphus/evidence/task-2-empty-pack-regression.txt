@@ -1,6 +1,0 @@
-Empty contentPacks regression check:
-
-- rival-roster: [] (Correct - intentionally empty)
-- shirt-clash: [] (Correct - intentionally empty)
-
-Both games correctly have empty contentPacks as they do not use external content packs.
